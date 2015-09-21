@@ -48,3 +48,16 @@ class QueryTestCase(unittest.TestCase):
         self.assertEquals(len(hashes), nb_hashes)
         self.assertIn('some-hash', hashes)
         self.assertIn('some other hash', hashes)
+
+
+    @istest
+    def group_by_checksum(self):
+        input_sha1 = 'f1d2d2f924e986ac86fdf7b36c94bcdf32beec15'
+        input_sha256 = '084c799cd551dd1d8d5c5f9a5d593b2e931f5e36122ee5c793c1d08a19839cc0'
+
+        res = query.group_by_checksums([input_sha1, input_sha256, input_sha1])
+
+        # for i in res:
+        #     print(i)
+        self.assertEquals(res['sha1'], input_sha1)
+        self.assertEquals(res['sha256'], input_sha256)
