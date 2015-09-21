@@ -1,4 +1,15 @@
 swh-web-ui
 ==========
 
-swh's web application
+SWH's web application
+
+# Configuration file sample
+
+~/.config/swh/web-ui.ini
+
+    [main]
+    log_dir = /tmp/swh/web-ui/log
+    db_url  = dbname=softwareheritage-dev
+    debug   = None
+    host    = 127.0.0.1
+    port    = 6543
