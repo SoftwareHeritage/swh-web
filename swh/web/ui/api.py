@@ -45,18 +45,17 @@ def public():
 
 @app.route('/public/search')
 def search():
-    return render_template('search.html')
+    hash_to_lookup = request.args.get('q')
+    if hash_to_lookup:
+        flash("Search hash '%s' posted!" % hash_to_lookup)
+        resp_result = [{'title': 'something',
+                        'text': 'not none'}]
+    else:
+        resp_result = []
 
-
-@app.route('/public/search', methods=['POST'])
-def post_search():
-    hash_to_lookup = request.form['hash']
-    flash("Search hash '%s' posted!" % hash_to_lookup)
-    resp = [{'title': 'something', 'text': 'not none'}]
-    #resp = []
     return render_template('search.html',
                            searched_hash=hash_to_lookup,
-                           entries=resp)
+                           entries=resp_result)
 
 
 def run(conf):
