@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (C) 2015  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU General Public License version 3, or any later version
@@ -8,6 +7,10 @@
 import logging
 
 from flask import Flask, redirect, render_template, url_for, flash, request
+
+from swh.web.ui.model import content
+from swh.web.ui.controller import service
+from swh.web.ui import query
 
 
 SECRET_KEY = 'development key'
@@ -45,16 +48,17 @@ def public():
 
 @app.route('/public/search')
 def search():
-    hash_to_lookup = request.args.get('q')
-    if hash_to_lookup:
-        flash("Search hash '%s' posted!" % hash_to_lookup)
-        resp_result = [{'title': 'something',
-                        'text': 'not none'}]
+    nb_hashes = request.args.get('nb_hashes')
+    if nb_hashes:
+        nb_hashes, hashes = query.parse(request.args)
+        flash('Search hashes %s posted!' % hashes)
+        resp_result = service.search(content.Content(hashes))
     else:
+        hashes = []
         resp_result = []
 
     return render_template('search.html',
-                           searched_hash=hash_to_lookup,
+                           searched_hash=hashes,
                            entries=resp_result)
 
 
@@ -65,8 +69,8 @@ def run(conf):
         conf is a dictionary of keywords:
         - 'db_url' the db url's access (through psycopg2 format)
         - 'content_storage_dir' revisions/directories/contents storage on disk
-        - 'host'   to override the default 127.0.0.1 to open or not the server to
-        the world
+        - 'host'   to override the default 127.0.0.1 to open or not the server
+        to the world
         - 'port'   to override the default of 5000 (from the underlying layer:
         flask)
         - 'debug'  activate the verbose logs
