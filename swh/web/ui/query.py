@@ -17,8 +17,9 @@ def parse(args):
     hashes = []
     for i in range(1, nb_hashes + 1):
         key = 'hash' + str(i)
-        if args[key] and len(args[key]) > 0:
-            hashes.append(args[key])
+        v = args[key]
+        if v and len(v) > 0:
+            hashes.append(v)
         else:
             nb_hashes -= 1
 
