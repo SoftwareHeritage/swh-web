@@ -7,15 +7,27 @@
 
 import logging
 
-from flask import Flask
+from flask import Flask, redirect, render_template, url_for, flash, request
+
+
+SECRET_KEY = 'development key'
 
 
 # api's definition
 app = Flask(__name__)
+app.config.from_object(__name__)
 
 
 @app.route('/')
-def hello():
+def main():
+    """Main application view.
+    At the moment, redirect to the content search view.
+    """
+    return redirect(url_for('info'))
+
+
+@app.route('/info')
+def info():
     """A simple api to define what the server is all about.
 
     """
@@ -23,9 +35,28 @@ def hello():
     return 'Dev SWH UI'
 
 
-@app.route('/some/<something>', methods=['GET'])
-def do_something(something):
-    return 'GET on %s' % something
+@app.route('/public')
+def public():
+    """Main application view.
+    At the moment, redirect to the content search view.
+    """
+    return redirect(url_for('search'))
+
+
+@app.route('/public/search')
+def search():
+    return render_template('search.html')
+
+
+@app.route('/public/search', methods=['POST'])
+def post_search():
+    hash_to_lookup = request.form['hash']
+    flash("Search hash '%s' posted!" % hash_to_lookup)
+    resp = [{'title': 'something', 'text': 'not none'}]
+    #resp = []
+    return render_template('search.html',
+                           searched_hash=hash_to_lookup,
+                           entries=resp)
 
 
 def run(conf):
@@ -58,4 +89,4 @@ debug: %s""" % (conf['host'], conf.get('port', None), conf['debug']))
 
     app.run(host=conf['host'],
             port=conf.get('port', None),
-            debug=conf['debug'] == 'true')
+            debug=conf['debug'])

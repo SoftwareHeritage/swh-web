@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block body %}
+  <form action="{{ url_for('search') }}" method=post class=search>
+    <dl>
+      <dt>Hash:
+      <dd><input type=text size=32 name=hash value={{ searched_hash }} >
+      <dd><input type=submit value=Search>
+    </dl>
+  </form>
+  {% if searched_hash %}
+    <ul class=entries>
+    {% for entry in entries %}
+      <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
+    {% else %}
+      <li><em>This content has not yet been seen.</em>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
