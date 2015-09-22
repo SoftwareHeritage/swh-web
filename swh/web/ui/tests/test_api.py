@@ -45,16 +45,12 @@ class ApiTestCase(unittest.TestCase):
         rv = self.app.get('/public/search')
 
         self.assertEquals(rv.status_code, 200)  # check this api
-        self.assertRegexpMatches(rv.data, b'name=nb_hashes value=2')
-        self.assertRegexpMatches(rv.data, b'name=hash1 value=>')
-        self.assertRegexpMatches(rv.data, b'name=hash2 value=>')
+        self.assertRegexpMatches(rv.data, b'name=q value=>')
 
     @istest
     def search_2(self):
         # when
-        rv = self.app.get('/public/search?nb_hashes=2&hash1=something-to-look-for&hash2=another-thingy')
+        rv = self.app.get('/public/search?q=one-hash-to-look-for:another-one')
 
         self.assertEquals(rv.status_code, 200)  # check this api
-        self.assertRegexpMatches(rv.data, b'name=nb_hashes value=2')
-        self.assertRegexpMatches(rv.data, b'name=hash1 value=something-to-look-for>')
-        self.assertRegexpMatches(rv.data, b'name=hash2 value=another-thingy>')
+        self.assertRegexpMatches(rv.data, b'name=q value=one-hash-to-look-for:another-one')

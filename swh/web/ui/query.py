@@ -7,26 +7,17 @@
 import re
 
 
-def parse(args):
+def parse(query):
     """Parse a formalized get query.
 
     Arg:
-        args, a dictionary of values:
-        - nb_hashes is the number of hashes expected to be found in args
-        - hash# with # a number between 1 and nb_hashes
+        query, a colon separated value hash
+
+    Returns:
+        List of hashes
+
     """
-    nb_hashes = int(args.get('nb_hashes', '1'))
-
-    hashes = []
-    for i in range(1, nb_hashes + 1):
-        key = 'hash' + str(i)
-        v = args[key]
-        if v and len(v) > 0:
-            hashes.append(v)
-        else:
-            nb_hashes -= 1
-
-    return nb_hashes, hashes
+    return query.split(':')
 
 
 # Regexp to filter and check inputs

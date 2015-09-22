@@ -14,40 +14,19 @@ class QueryTestCase(unittest.TestCase):
     @istest
     def parse(self):
         # when
-        nb_hashes, hashes = query.parse({'nb_hashes': '1', 'hash1': 'some-hash'})
+        actual_hashes = query.parse("a:b:c")
 
         # then
-        self.assertEquals(nb_hashes, 1, "Should be 1 hash")
-        self.assertEquals(hashes, ['some-hash'])
+        self.assertEquals(actual_hashes, ['a', 'b', 'c'],
+                          "Should be a, b, c hashes")
 
     @istest
     def parse_2(self):
         # when
-        nb_hashes, hashes = query.parse({'nb_hashes': '3',
-                                         'hash3': 'some other hash',
-                                         'hash2': 'yet again hash',
-                                         'hash1': 'some-hash'})
+        actual_hashes = query.parse("a")
 
         # then
-        self.assertEquals(nb_hashes, 3, "Should be 3 hashes")
-        self.assertEquals(len(hashes), nb_hashes)
-        self.assertIn('some-hash', hashes)
-        self.assertIn('yet again hash', hashes)
-        self.assertIn('some other hash', hashes)
-
-    @istest
-    def parse_3(self):
-        # when
-        nb_hashes, hashes = query.parse({'nb_hashes': '3',
-                                         'hash3': 'some other hash',
-                                         'hash2': '',
-                                         'hash1': 'some-hash'})
-
-        # then
-        self.assertEquals(nb_hashes, 2, "Should be 2 hashes")
-        self.assertEquals(len(hashes), nb_hashes)
-        self.assertIn('some-hash', hashes)
-        self.assertIn('some other hash', hashes)
+        self.assertEquals(actual_hashes, ['a'], "Should be only a hash")
 
 
     @istest

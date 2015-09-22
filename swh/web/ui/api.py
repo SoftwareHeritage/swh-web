@@ -48,17 +48,17 @@ def public():
 
 @app.route('/public/search')
 def search():
-    nb_hashes = request.args.get('nb_hashes')
-    if nb_hashes:
-        nb_hashes, hashes = query.parse(request.args)
-        flash('Search hashes %s posted!' % hashes)
+    q = request.args.get('q', '')
+    if q:
+        flash('Search hash %s posted!' % q)
+        hashes = query.group_by_checksums(query.parse(q))
         resp_result = service.search(content.Content(hashes))
     else:
-        hashes = []
+        q = ''
         resp_result = []
 
     return render_template('search.html',
-                           searched_hash=hashes,
+                           searched_hash=q,
                            entries=resp_result)
 
 

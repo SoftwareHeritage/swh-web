@@ -1,11 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
 <form action="{{ url_for('search') }}" method=get class=search>
-  <input type=hidden name=nb_hashes value=2>
   <dl>
-    <dt>Hashes:
-    <dd><input type=text size=32 name=hash1 value={{ searched_hash[0] }}>
-    <dd><input type=text size=32 name=hash2 value={{ searched_hash[1] }}>
+    <dt>Hashes (colon separated values):
+    <dd><input type=text size=32 name=q value={{ searched_hash }}>
     <dd><input type=submit value=Search>
   </dl>
   </form>
