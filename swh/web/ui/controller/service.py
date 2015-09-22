@@ -5,6 +5,7 @@
 
 
 from swh.web.ui.back import http, api_query
+import json
 
 
 def search(base_url, hashes):
@@ -21,11 +22,16 @@ def search(base_url, hashes):
          OSError (no route to host), etc... Network issues in general
     """
     def deal_with_result(res):
-        print("result:", res)
-        return res.data
+        if res.ok:
+            output = res.content.decode('utf-8')
+            if output:
+                h_res = json.loads(output)
+                return h_res['found']
+            return False
+        return False
 
     #return []
     #return [{'title': 'some title', 'text': 'some text'}]
 
-    q = api_query.api_storage_content_present(hashes)
+    q = api_query.api_storage_content_present({'content': [hashes]})
     return http.execute(base_url, q, result_fn=deal_with_result)

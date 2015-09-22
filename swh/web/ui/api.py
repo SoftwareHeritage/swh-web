@@ -36,26 +36,28 @@ def info():
 def public():
     """Main application view.
     At the moment, redirect to the content search view.
+
     """
     return redirect(url_for('search'))
 
 
 @app.route('/public/search')
 def search():
+    """Search for hashes in swh-storage.
+
+    """
     q = request.args.get('q', '')
     if q:
         flash('Search hash %s posted!' % q)
         hashes = query.group_by_checksums(query.parse(q))
         api_backend = app.config['conf']['api_backend']
-        resp_result = service.search(api_backend, hashes)
-    else:
-        q = ''
-        resp_result = []
-
+        present = service.search(api_backend, hashes)
+        return render_template('search.html',
+                               searched_hash=q,
+                               present='Found!' if present else 'Not found!')
     return render_template('search.html',
-                           searched_hash=q,
-                           entries=resp_result)
-
+                           searched_hash='',
+                           present='')
 
 def run(conf):
     """Run the api's server.

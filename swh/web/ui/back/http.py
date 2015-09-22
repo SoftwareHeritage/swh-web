@@ -49,16 +49,13 @@ def execute(base_url,
     Raises:
         None
     """
-    print(query)
     method_fn = query_dispatch[query['method']]
 
-    print(method_fn)
     res = method_fn(compute_simple_url(base_url, query['url']),
                     data=query.get('data'),
                     headers=query.get('headers'))
 
     return result_fn(res)
-
 
 
 def create_request(method, api_url, data=None):
