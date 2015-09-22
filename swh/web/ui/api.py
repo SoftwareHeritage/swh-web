@@ -6,19 +6,13 @@
 
 import logging
 
-from flask import Flask, redirect, render_template, url_for, flash, request
+from flask import redirect, render_template, url_for, flash, request
 
+
+from swh.web.ui.main import app
 from swh.web.ui.model import content
-from swh.web.ui.controller import service
 from swh.web.ui import query
-
-
-SECRET_KEY = 'development key'
-
-
-# api's definition
-app = Flask(__name__)
-app.config.from_object(__name__)
+from swh.web.ui.controller import service
 
 
 @app.route('/')
@@ -52,7 +46,8 @@ def search():
     if q:
         flash('Search hash %s posted!' % q)
         hashes = query.group_by_checksums(query.parse(q))
-        resp_result = service.search(content.Content(hashes))
+        api_backend = app.config['conf']['api_backend']
+        resp_result = service.search(api_backend, hashes)
     else:
         q = ''
         resp_result = []
@@ -87,7 +82,6 @@ host: %s
 port: %s
 debug: %s""" % (conf['host'], conf.get('port', None), conf['debug']))
 
-    # app.config is the app's state (accessible)
     app.config.update({'conf': conf})
 
     app.run(host=conf['host'],

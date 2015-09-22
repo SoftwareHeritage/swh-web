@@ -8,8 +8,17 @@ SWH's web application
 ~/.config/swh/web-ui.ini
 
     [main]
+    # where to log information
     log_dir = /tmp/swh/web-ui/log
-    db_url  = dbname=softwareheritage-dev
-    debug   = None
-    host    = 127.0.0.1
-    port    = 6543
+    
+    # for dev only
+    debug = true
+    
+    # current server (0.0.0.0 for world opening)
+    host = 127.0.0.1
+    
+    # its port
+    port = 6543
+    
+    # the backend this server communicates to
+    api_backend = http://127.0.0.1:5000

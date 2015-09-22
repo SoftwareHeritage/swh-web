@@ -4,16 +4,28 @@
 # See top-level LICENSE file for more information
 
 
-def search(content):
+from swh.web.ui.back import http, api_query
+
+
+def search(base_url, hashes):
     """Search a content with given hashes.
 
     Args:
-         content, it's an object to look up in SWH's back.
+         hashes, dictionary of hash indexed by key, sha1, sha256, etc...
 
     Returns:
          None if no content is found.
          An enriched content if the content is found.
 
+    Raises:
+         OSError (no route to host), etc... Network issues in general
     """
+    def deal_with_result(res):
+        print("result:", res)
+        return res.data
+
     #return []
-    return [{'title': 'some title', 'text': 'some text'}]
+    #return [{'title': 'some title', 'text': 'some text'}]
+
+    q = api_query.api_storage_content_present(hashes)
+    return http.execute(base_url, q, result_fn=deal_with_result)
