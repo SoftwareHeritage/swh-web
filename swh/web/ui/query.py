@@ -6,6 +6,8 @@
 
 import re
 
+from swh.core import hashutil
+
 
 def parse(query):
     """Parse a formalized get query.
@@ -31,8 +33,8 @@ def group_by_checksums(hashes):
     hashes_m = {}
     for h in hashes:
         if re.search(sha256_regexp, h):
-            hashes_m.update({'sha256': h})
+            hashes_m.update({'sha256': hashutil.hex_to_hash(h)})
         elif re.search(sha1_regexp, h):
-            hashes_m.update({'sha1': h})
+            hashes_m.update({'sha1': hashutil.hex_to_hash(h)})
 
     return hashes_m

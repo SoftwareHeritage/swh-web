@@ -8,7 +8,7 @@ import unittest
 from nose.tools import istest
 
 from swh.web.ui import query
-
+from swh.core import hashutil
 
 class QueryTestCase(unittest.TestCase):
     @istest
@@ -38,5 +38,5 @@ class QueryTestCase(unittest.TestCase):
 
         # for i in res:
         #     print(i)
-        self.assertEquals(res['sha1'], input_sha1)
-        self.assertEquals(res['sha256'], input_sha256)
+        self.assertEquals(res['sha1'], hashutil.hex_to_hash(input_sha1))
+        self.assertEquals(res['sha256'], hashutil.hex_to_hash(input_sha256))

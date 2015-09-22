@@ -5,6 +5,7 @@
 
 
 from swh.web.ui.back import http, api_query
+from swh.core import hashutil
 import json
 
 
@@ -33,5 +34,5 @@ def search(base_url, hashes):
     #return []
     #return [{'title': 'some title', 'text': 'some text'}]
 
-    q = api_query.api_storage_content_present({'content': [hashes]})
+    q = api_query.api_storage_content_present({'content': hashes})
     return http.execute(base_url, q, result_fn=deal_with_result)

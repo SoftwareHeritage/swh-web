@@ -7,6 +7,7 @@ import requests
 import json
 
 from swh.web.ui.main import app
+from swh.core.json import SWHJSONEncoder
 
 
 if 'conf' in app.config:
@@ -70,7 +71,8 @@ def create_request(method, api_url, data=None):
     query = {'method': method,
              'url': api_url}
     if data:
-        query.update({'data': json.dumps(data) if data else '',
+        json_data = json.dumps(data, cls=SWHJSONEncoder) if data else ''
+        query.update({'data': json_data,
                       'headers': {'Content-Type': MIMETYPE}})
 
     return query
