@@ -10,7 +10,6 @@ from flask import redirect, render_template, url_for, flash, request
 
 
 from swh.web.ui.main import app
-from swh.web.ui.model import content
 from swh.web.ui import query
 from swh.web.ui.controller import service
 
@@ -52,9 +51,16 @@ def search():
         hashes = query.group_by_checksums(query.parse(q))
         api_backend = app.config['conf']['api_backend']
         present = service.search(api_backend, hashes)
+        if present is None:
+            message = "This is not a hash. Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."
+        elif present:
+            message = 'Found!'
+        else:
+            message = 'Not found!'
+
         return render_template('search.html',
                                searched_hash=q,
-                               present='Found!' if present else 'Not found!')
+                               present=message)
     return render_template('search.html',
                            searched_hash='',
                            present='')

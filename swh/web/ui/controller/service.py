@@ -5,7 +5,8 @@
 
 
 from swh.web.ui.back import http, api_query
-from swh.core import hashutil
+from swh.core.json import SWHJSONDecoder
+
 import json
 
 
@@ -22,17 +23,16 @@ def search(base_url, hashes):
     Raises:
          OSError (no route to host), etc... Network issues in general
     """
-    def deal_with_result(res):
+    def unserialize_result(res):
         if res.ok:
             output = res.content.decode('utf-8')
             if output:
-                h_res = json.loads(output)
-                return h_res['found']
+                h_res = json.loads(output, cls=SWHJSONDecoder)
+                if h_res:
+                    return h_res['found']
+                return None
             return False
         return False
 
-    #return []
-    #return [{'title': 'some title', 'text': 'some text'}]
-
     q = api_query.api_storage_content_present({'content': hashes})
-    return http.execute(base_url, q, result_fn=deal_with_result)
+    return http.execute(base_url, q, result_fn=unserialize_result)
