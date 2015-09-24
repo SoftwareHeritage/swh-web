@@ -26,12 +26,7 @@ def search(base_url, hashes):
     def unserialize_result(res):
         if res.ok:
             output = res.content.decode('utf-8')
-            if output:
-                h_res = json.loads(output, cls=SWHJSONDecoder)
-                if h_res:
-                    return h_res['found']
-                return None
-            return False
+            return json.loads(output, cls=SWHJSONDecoder) if output else False
         return False
 
     q = api_query.api_storage_content_present({'content': hashes})
