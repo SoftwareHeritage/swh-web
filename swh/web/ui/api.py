@@ -49,14 +49,16 @@ def search():
     if q:
         flash('Search hash %s posted!' % q)
         hashes = query.group_by_checksums(query.parse(q))
-        api_backend = app.config['conf']['api_backend']
-        present = service.search(api_backend, hashes)
-        if present is None:
-            message = "This is not a hash. Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."
-        elif present:
-            message = 'Found!'
+        if hashes != {}:
+            api_backend = app.config['conf']['api_backend']
+            present = service.search(api_backend, hashes)
+            if present:
+                message = 'Found!'
+            else:
+                message = 'Not found!'
         else:
-            message = 'Not found!'
+            message = """This is not a hash.
+Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
 
         return render_template('search.html',
                                searched_hash=q,
