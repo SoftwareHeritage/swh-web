@@ -21,7 +21,7 @@ DEFAULT_CONF_FILE = '~/.config/swh/web-ui.ini'
 
 # default configuration
 DEFAULT_CONF = {
-    'log_dir': ('string', '/tmp/swh-loader-git/log'),
+    'log_dir': ('string', '/tmp/swh/loader-git/log'),
     'db_url': ('string', 'dbname=softwareheritage-dev'),
     'debug': ('bool'  , None),
     'host': ('string', '127.0.0.1'),
@@ -49,7 +49,7 @@ if __name__ == '__main__':
    config.prepare_folders(conf, 'log_dir')
    conf.update({
        'storage': Storage(conf['db_url'],
-                      "/tmp/swh-loader-git/content-storage/")  # hard-coded right now
+                      "/tmp/swh/loader-git/content-storage/")  # hard-coded right now
    })
    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                        level=logging.DEBUG if args.verbose else logging.INFO)
