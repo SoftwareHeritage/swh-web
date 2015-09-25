@@ -31,16 +31,7 @@ def info():
     return 'Dev SWH UI'
 
 
-@app.route('/public')
-def public():
-    """Main application view.
-    At the moment, redirect to the content search view.
-
-    """
-    return redirect(url_for('search'))
-
-
-@app.route('/public/search')
+@app.route('/search')
 def search():
     """Search for hashes in swh-storage.
 
