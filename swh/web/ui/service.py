@@ -9,10 +9,10 @@ from swh.web.ui import query
 
 
 def lookup_hash(q):
-    """Given a string query q of hashes, lookup its hash to the backend.
+    """Given a string query q of one hash, lookup its hash to the backend.
 
     Args:
-         query, string of ':' delimited hashes (sha1, sha256, etc...)
+         query, hash as a string (sha1, sha256, etc...)
 
     Returns:
          a string message (found, not found or a potential error explanation)
@@ -20,9 +20,9 @@ def lookup_hash(q):
     Raises:
          OSError (no route to host), etc... Network issues in general
     """
-    hashes = query.group_by_checksums(query.parse(q))
-    if hashes != {}:
-        present = main.storage().content_present(hashes)
+    hash = query.categorize_hash(q)
+    if hash != {}:
+        present = main.storage().content_present(hash)
         return 'Found!' if present else 'Not Found'
     return """This is not a hash.
 Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""

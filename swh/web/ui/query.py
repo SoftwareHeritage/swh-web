@@ -9,32 +9,16 @@ import re
 from swh.core import hashutil
 
 
-def parse(query):
-    """Parse a formalized get query.
-
-    Args:
-        query, a colon separated value hash
-
-    Returns:
-        List of hashes
-
-    Raises:
-        AttributeError if query is None
-
-    """
-    return query.split(':')
-
-
 # Regexp to filter and check inputs
 sha256_regexp='[0-9a-f]{64}'
 sha1_regexp='[0-9a-f]{40}'
 
 
-def group_by_checksums(hashes):
-    """Check that the checksums have the right format.
+def categorize_hash(hash):
+    """Categorize the hash string according to what it is.
 
     Args:
-        hashes: a list of string which should represent hashes (sha1 or sha256)
+        hash: hash string representation (sha1 or sha256)
 
     Returns:
         A dictionary of hash indexed by their nature (sha1, sha256)
@@ -44,14 +28,13 @@ def group_by_checksums(hashes):
         None
 
     """
-    hashes_m = {}
-    for h in hashes:
-        try:
-            if re.search(sha256_regexp, h):
-                hashes_m.update({'sha256': hashutil.hex_to_hash(h)})
-            elif re.search(sha1_regexp, h):
-                hashes_m.update({'sha1': hashutil.hex_to_hash(h)})
-        except ValueError:  # ignore silently to check the other inputs
-            continue
+    try:
+        h = hashutil.hex_to_hash(hash)
+    except ValueError:  # ignore silently to check the other inputs
+        return {}
 
-    return hashes_m
+    if re.search(sha256_regexp, hash):
+        return {'sha256': h}
+    if re.search(sha1_regexp, hash):
+        return {'sha1': h}
+    return {}
