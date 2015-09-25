@@ -31,32 +31,34 @@ def info():
     return 'Dev SWH UI'
 
 
+def lookup_hash(api_backend, query_hash):
+    """Lookup a hash in the query.
+
+    """
+    hashes = query.group_by_checksums(query.parse(query_hash))
+    if hashes != {}:
+        present = service.search(api_backend, hashes)
+        return 'Found!' if present else 'Not Found'
+    return """This is not a hash.
+Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
+
+
 @app.route('/search')
 def search():
     """Search for hashes in swh-storage.
 
     """
     q = request.args.get('q', '')
-    if q:
-        flash('Search hash %s posted!' % q)
-        hashes = query.group_by_checksums(query.parse(q))
-        if hashes != {}:
-            api_backend = app.config['conf']['api_backend']
-            present = service.search(api_backend, hashes)
-            if present:
-                message = 'Found!'
-            else:
-                message = 'Not found!'
-        else:
-            message = """This is not a hash.
-Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
 
-        return render_template('search.html',
-                               searched_hash=q,
-                               present=message)
+    if q:
+        flash("Search hash '%s' posted!" % q)
+        message = lookup_hash(app.config['conf']['api_backend'], q)
+    else:
+        message = ''
+
     return render_template('search.html',
-                           searched_hash='',
-                           present='')
+                           q=q,
+                           message=message)
 
 def run(conf):
     """Run the api's server.
