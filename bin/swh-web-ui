@@ -21,12 +21,12 @@ DEFAULT_CONF_FILE = '~/.config/swh/web-ui.ini'
 
 # default configuration
 DEFAULT_CONF = {
+    'storage_args': ('list[str]', ['http://localhost:5000/']),
+    'storage_class': ('str', 'remote_storage'),
     'log_dir': ('string', '/tmp/swh/loader-git/log'),
-    'db_url': ('string', 'dbname=softwareheritage-dev'),
     'debug': ('bool'  , None),
     'host': ('string', '127.0.0.1'),
     'port': ('int'   , 6543),
-#    'api': ('string', 'http://127.0.0.1:5000')  # FIXME: use storage directly
 }
 
 
@@ -44,13 +44,18 @@ def parse_args():
 
 
 if __name__ == '__main__':
-   args = parse_args()
-   conf = config.read(args.config or DEFAULT_CONF_FILE, DEFAULT_CONF)
-   config.prepare_folders(conf, 'log_dir')
-   conf.update({
-       'storage': Storage(conf['db_url'],
-                      "/tmp/swh/loader-git/content-storage/")  # hard-coded right now
-   })
-   logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
-                       level=logging.DEBUG if args.verbose else logging.INFO)
-   controller.run(conf)
+    args = parse_args()
+    conf = config.read(args.config or DEFAULT_CONF_FILE, DEFAULT_CONF)
+    config.prepare_folders(conf, 'log_dir')
+
+    if conf['storage_class'] == 'remote_storage':
+        from swh.storage.remote_storage import RemoteStorage as Storage
+    else:
+        from swh.storage import Storage
+
+    conf.update({
+        'storage': Storage(*conf['storage_args'])
+    })
+    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
+                        level=logging.DEBUG if args.verbose else logging.INFO)
+    controller.run(conf)

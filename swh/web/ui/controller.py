@@ -31,13 +31,13 @@ def info():
     return 'Dev SWH UI'
 
 
-def lookup_hash(api_backend, query_hash):
+def lookup_hash(query_hash):
     """Lookup a hash in the query.
 
     """
     hashes = query.group_by_checksums(query.parse(query_hash))
     if hashes != {}:
-        present = service.search(api_backend, hashes)
+        present = service.search(hashes)
         return 'Found!' if present else 'Not Found'
     return """This is not a hash.
 Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
@@ -52,7 +52,7 @@ def search():
 
     if q:
         flash("Search hash '%s' posted!" % q)
-        message = lookup_hash(app.config['conf']['api_backend'], q)
+        message = lookup_hash(q)
     else:
         message = ''
 

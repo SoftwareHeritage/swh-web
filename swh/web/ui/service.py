@@ -4,13 +4,10 @@
 # See top-level LICENSE file for more information
 
 
-from swh.web.ui.back import http, api_query
-from swh.core.json import SWHJSONDecoder
-
-import json
+from swh.web.ui import main
 
 
-def search(base_url, hashes):
+def search(hashes):
     """Search a content with given hashes.
 
     Args:
@@ -23,11 +20,4 @@ def search(base_url, hashes):
     Raises:
          OSError (no route to host), etc... Network issues in general
     """
-    def unserialize_result(res):
-        if res.ok:
-            output = res.content.decode('utf-8')
-            return json.loads(output, cls=SWHJSONDecoder) if output else False
-        return False
-
-    q = api_query.api_storage_content_present({'content': hashes})
-    return http.execute(base_url, q, result_fn=unserialize_result)
+    return main.storage().content_present(hashes)

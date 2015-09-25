@@ -13,3 +13,10 @@ SECRET_KEY = 'development key'
 # api's definition
 app = Flask(__name__)
 app.config.from_object(__name__)
+
+
+def storage():
+    """Return the current application's storage.
+
+    """
+    return app.config['conf']['storage']
