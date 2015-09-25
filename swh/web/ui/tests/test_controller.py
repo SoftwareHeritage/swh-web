@@ -7,7 +7,7 @@ import unittest
 
 from nose.tools import istest
 
-from swh.web.ui import api
+from swh.web.ui import controller
 
 
 class ApiTestCase(unittest.TestCase):
@@ -16,9 +16,9 @@ class ApiTestCase(unittest.TestCase):
     def setUpClass(self):
         conf = {'api_backend': 'https://somewhere.org:4321'}
 
-        api.app.config['TESTING'] = True
-        api.app.config.update({'conf': conf})
-        self.app = api.app.test_client()
+        controller.app.config['TESTING'] = True
+        controller.app.config.update({'conf': conf})
+        self.app = controller.app.test_client()
 
     @istest
     def info(self):
@@ -35,17 +35,10 @@ class ApiTestCase(unittest.TestCase):
 
         self.assertEquals(rv.status_code, 302)  # check that it redirects to /info
 
-    @istest
-    def public_redirects_to_search(self):
-        # when
-        rv = self.app.get('/public', follow_redirects=False)
-
-        self.assertEquals(rv.status_code, 302)  # check that it redirects to /public/search
-
     # @istest
     def search_1(self):
         # when
-        rv = self.app.get('/public/search')
+        rv = self.app.get('/search')
 
         self.assertEquals(rv.status_code, 200)  # check this api
         self.assertRegexpMatches(rv.data, b'name=q value=>')
@@ -53,7 +46,7 @@ class ApiTestCase(unittest.TestCase):
     # @istest
     def search_2(self):
         # when
-        rv = self.app.get('/public/search?q=one-hash-to-look-for:another-one')
+        rv = self.app.get('/search?q=one-hash-to-look-for:another-one')
 
         self.assertEquals(rv.status_code, 200)  # check this api
         self.assertRegexpMatches(rv.data, b'name=q value=one-hash-to-look-for:another-one')

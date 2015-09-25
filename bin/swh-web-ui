@@ -11,7 +11,7 @@ import logging
 import os
 
 from swh.core import config
-from swh.web.ui import api
+from swh.web.ui import controller
 from swh.storage import Storage
 
 
@@ -53,4 +53,4 @@ if __name__ == '__main__':
    })
    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                        level=logging.DEBUG if args.verbose else logging.INFO)
-   api.run(conf)
+   controller.run(conf)

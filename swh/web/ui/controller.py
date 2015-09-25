@@ -11,7 +11,7 @@ from flask import redirect, render_template, url_for, flash, request
 
 from swh.web.ui.main import app
 from swh.web.ui import query
-from swh.web.ui.controller import service
+from swh.web.ui import service
 
 
 @app.route('/')
