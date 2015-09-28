@@ -181,6 +181,76 @@ def organization(id):
     return 'Organization information at %s' % id
 
 
+@app.route('/browse/directory/<string:timestamp>/<string:origin_type>+<path:origin_url>|/<path:branch>|/<path:path>')
+def directory_at_origin(timestamp, origin_type, origin_url, branch, path):
+    """Show directory information at timestamp, origin-type, origin-url, branch
+    and path.
+
+    Those parameters are separated by the `|` terminator.
+
+    Args:
+        timestamp: the timestamp to look for. can be latest or some iso8601 date
+    format. (TODO: decide the time matching policy.)
+        origin_type: origin's type
+        origin_url: origin's url (can contain `/`)
+        branch: branch name which can contain `/`
+        path: path to directory or file
+
+    Returns:
+        Directory information at the given parameters.
+
+    """
+    return 'Directory at (%s, %s, %s, %s, %s)' % (timestamp,
+                                                  origin_type,
+                                                  origin_url,
+                                                  branch,
+                                                  path)
+
+
+@app.route('/browse/revision/<string:timestamp>/<string:origin_type>+<path:origin_url>|/<path:branch>')
+def revision_at_origin_and_branch(timestamp, origin_type, origin_url, branch):
+    """Show revision information at timestamp, origin, and branch.
+
+    Those parameters are separated by the `|` terminator.
+
+    Args:
+        timestamp: the timestamp to look for. can be latest or some iso8601 date
+        format. (TODO: decide the time matching policy.)
+        origin_type: origin's type
+        origin_url: origin's url (can contain `/`)
+        branch: branch name which can contain /
+
+    Returns:
+        Revision information at the given parameters.
+
+    """
+    return 'Revision at (ts=%s, type=%s, url=%s, branch=%s)' % (timestamp,
+                                                                origin_type,
+                                                                origin_url,
+                                                                branch)
+
+
+@app.route('/browse/revision/<string:timestamp>/<string:origin_type>+<path:origin_url>|')
+def revision_at_origin(timestamp, origin_type, origin_url):
+    """Show revision information at timestamp, origin, and branch.
+
+    Those parameters are separated by the `|` terminator.
+
+    Args:
+        timestamp: the timestamp to look for. can be latest or some iso8601 date
+        format. (TODO: decide the time matching policy.)
+        origin_type: origin's type
+        origin_url: origin's url (can contain `/`)
+
+    Returns:
+        Revision information at the given parameters.
+
+    """
+    return 'Revision at (timestamp=%s, type=%s, url=%s)' % (timestamp,
+                                                            origin_type,
+                                                            origin_url)
+
+
 def run(conf):
     """Run the api's server.
 
