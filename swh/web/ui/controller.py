@@ -47,6 +47,140 @@ def search():
                            q=q,
                            message=message)
 
+
+@app.route('/browse/revision/<sha1_git>')
+def revision(sha1_git):
+    """Show commit information.
+
+    Args:
+        sha1_git: the revision's sha1
+
+    Returns:
+        Revision information
+    """
+    return render_template('revision.html',
+                           sha1_git=sha1_git)
+
+
+@app.route('/browse/directory/<sha1_git>')
+def directory(sha1_git):
+    """Show directory information.
+
+    Args:
+        sha1_git: the directory's sha1
+
+    Returns:
+        Directory information
+    """
+    return render_template('directory.html',
+                           sha1_git=sha1_git)
+
+
+@app.route('/browse/directory/<sha1_git>/<path:p>')
+def directory_at_path(sha1_git, p):
+    """Show directory information for the sha1_git at path.
+
+    Args:
+        sha1_git: the directory's sha1
+        path: file or directory pointed to
+
+    Returns:
+        Directory information at sha1_git + path
+    """
+    return render_template('directory.html',
+                           sha1_git=sha1_git,
+                           path=p)
+
+
+@app.route('/browse/content/<hash>:<sha>')
+def content(hash, sha):
+    """Show content information.
+
+    Args:
+        hash: hash according to HASH_ALGO, where HASH_ALGO is
+    one of: sha1, sha1_git, sha256. This means that several different URLs (at
+    least one per HASH_ALGO) will point to the same content
+        sha: the sha with 'hash' format
+
+    Returns:
+        The content's information at sha1_git
+
+    """
+    return render_template('content.html',
+                           hash=hash,
+                           sha=sha)
+
+
+@app.route('/browse/release/<sha1_git>')
+def release(sha1_git):
+    """Show release's information.
+
+    Args:
+        sha1_git: sha1_git for this particular release
+
+    Returns:
+        Release's information
+
+    """
+    return 'Release information at %s' % sha1_git
+
+
+@app.route('/browse/person/<int:id>')
+def person(id):
+    """Show Person's information at id.
+
+    Args:
+        id: person's unique identifier
+
+    Returns:
+        Person's information
+
+    """
+    return 'Person information at %s' % id
+
+
+@app.route('/browse/origin/<int:id>')
+def origin(id):
+    """Show origin's information at id.
+
+    Args:
+        id: origin's unique identifier
+
+    Returns:
+        Origin's information
+
+    """
+    return 'Origin information at %s' % id
+
+
+@app.route('/browse/project/<int:id>')
+def project(id):
+    """Show project's information at id.
+
+    Args:
+        id: project's unique identifier
+
+    Returns:
+        Project's information
+
+    """
+    return 'Project information at %s' % id
+
+
+@app.route('/browse/organization/<int:id>')
+def organization(id):
+    """Show organization's information at id.
+
+    Args:
+        id: organization's unique identifier
+
+    Returns:
+        Organization's information
+
+    """
+    return 'Organization information at %s' % id
+
+
 def run(conf):
     """Run the api's server.
 

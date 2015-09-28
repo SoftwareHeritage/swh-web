@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block body %}
+
+Directory {{ sha1_git }}
+
+{% if path %}
+with path {{ path }}
+{% endif %}
+{% endblock %}
