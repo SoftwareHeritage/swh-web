@@ -33,7 +33,7 @@ class ApiTestCase(unittest.TestCase):
         # when
         rv = self.app.get('/', follow_redirects=False)
 
-        self.assertEquals(rv.status_code, 302)  # check that it redirects to /info
+        self.assertEquals(rv.status_code, 302)  # check redirects to /info
 
     # @istest
     def search_1(self):
@@ -49,4 +49,6 @@ class ApiTestCase(unittest.TestCase):
         rv = self.app.get('/search?q=one-hash-to-look-for:another-one')
 
         self.assertEquals(rv.status_code, 200)  # check this api
-        self.assertRegexpMatches(rv.data, b'name=q value=one-hash-to-look-for:another-one')
+        self.assertRegexpMatches(
+            rv.data,
+            b'name=q value=one-hash-to-look-for:another-one')
