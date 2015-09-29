@@ -49,7 +49,7 @@ if __name__ == '__main__':
     config.prepare_folders(conf, 'log_dir')
 
     if conf['storage_class'] == 'remote_storage':
-        from swh.storage.remote_storage import RemoteStorage as Storage
+        from swh.storage.api.client import RemoteStorage as Storage
     else:
         from swh.storage import Storage
 
