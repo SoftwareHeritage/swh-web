@@ -1,1 +1,6 @@
+*.pyc
+*.sw?
+*~
+.coverage
+.eggs/
 __pycache__
