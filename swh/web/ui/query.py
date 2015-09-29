@@ -10,8 +10,8 @@ from swh.core import hashutil
 
 
 # Regexp to filter and check inputs
-sha256_regexp='[0-9a-f]{64}'
-sha1_regexp='[0-9a-f]{40}'
+sha256_regexp = '[0-9a-f]{64}'
+sha1_regexp = '[0-9a-f]{40}'
 
 
 def categorize_hash(hash):
