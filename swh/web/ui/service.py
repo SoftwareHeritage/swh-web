@@ -26,3 +26,18 @@ def lookup_hash(q):
         return 'Found!' if present else 'Not Found'
     return """This is not a hash.
 Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
+
+
+def lookup_hash_origin(hash):
+    """Given a hash, return the origin of such content if any is found.
+
+    Args:
+        hash: key/value dictionary
+
+    Returns:
+        The origin for such hash if it's found.
+
+    Raises:
+        OSError (no route to host), etc... Network issues in general
+    """
+    return "origin is 'master' from 'date'"

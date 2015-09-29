@@ -7,10 +7,15 @@
 import logging
 
 from flask import redirect, render_template, url_for, flash, request
+from flask import make_response
 
 
+from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
-from swh.web.ui import service
+from swh.web.ui import service, query
+
+
+hash_filter_keys = ALGORITHMS
 
 
 @app.route('/')
@@ -106,9 +111,34 @@ def content(hash, sha):
         The content's information at sha1_git
 
     """
+    # Checks user input
+    if hash not in hash_filter_keys:
+        return make_response(
+            'Bad request, sha must be one of sha1, sha1_git, sha256',
+            400)
+
+    h = query.categorize_hash(sha)
+    if h == {}:
+        return make_response(
+            'Bad request, %s is not of type %s' % (sha, hash),
+            400)
+
+    if hash == 'sha256' and not h.get(hash):
+        return make_response(
+            'Bad request, %s is not of type sha256' % (sha,),
+            400)
+
+    if hash != 'sha256' and not h.get('sha1') and not h.get('sha1_git'):
+        return make_response(
+            'Bad request, %s is not of type sha1 or sha1_git' % (sha,),
+            400)
+
+    message = service.lookup_hash_origin(h)
+
     return render_template('content.html',
                            hash=hash,
-                           sha=sha)
+                           sha=sha,
+                           message=message)
 
 
 @app.route('/browse/release/<sha1_git>')
