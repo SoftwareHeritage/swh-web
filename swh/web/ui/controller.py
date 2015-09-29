@@ -237,7 +237,8 @@ def revision_at_origin(timestamp, origin_type, origin_url):
     Those parameters are separated by the `|` terminator.
 
     Args:
-        timestamp: the timestamp to look for. can be latest or some iso8601 date
+        timestamp: the timestamp to look for. can be latest or iso8601
+        date
         format. (TODO: decide the time matching policy.)
         origin_type: origin's type
         origin_url: origin's url (can contain `/`)
