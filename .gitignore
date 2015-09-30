@@ -4,3 +4,4 @@
 .coverage
 .eggs/
 __pycache__
+version.txt
