@@ -28,6 +28,37 @@ def lookup_hash(q):
 Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
 
 
+def _origin_seen(hash, data):
+    """Given an origin, compute a message string with the right information.
+
+    Args:
+        origin: a dictionary with keys:
+          - origin: a dictionary with type and url keys
+          - occurrence: a dictionary with a validity range
+
+    Returns:
+        message as a string
+
+    """
+    if data is None:
+        return 'Content with hash %s is unknown as of now.' % hash
+
+    origin_type = data['origin_type']
+    origin_url = data['origin_url']
+    revision = data['revision']
+    branch = data['branch']
+    path = data['path']
+    print("data:", data)
+    return """The content with hash %s has been seen on origin with type '%s'
+at url '%s'. The revision was identified at '%s' on branch '%s'.
+The file's path referenced was '%s'.""" % (hash,
+                                           origin_type,
+                                           origin_url,
+                                           revision,
+                                           branch,
+                                           path)
+
+
 def lookup_hash_origin(hash):
     """Given a hash, return the origin of such content if any is found.
 
@@ -40,4 +71,5 @@ def lookup_hash_origin(hash):
     Raises:
         OSError (no route to host), etc... Network issues in general
     """
-    return "origin is 'master' from 'date'"
+    data = main.storage().content_find_occurrence(hash)
+    return _origin_seen(hash, data)
