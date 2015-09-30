@@ -22,7 +22,7 @@ def lookup_hash(q):
     """
     hash = query.categorize_hash(q)
     if hash != {}:
-        present = main.storage().content_find(hash)
+        present = main.storage().content_exist(hash)
         return 'Found!' if present else 'Not Found'
     return """This is not a hash.
 Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
