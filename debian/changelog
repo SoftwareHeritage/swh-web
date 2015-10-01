@@ -1,5 +1,8 @@
-swh-web-ui (0.0.1-1) unstable; urgency=low
+swh-web (0.0.1-1~swh1) unstable-swh; urgency=medium
 
-  * Import initial source package.
+  * Initial release
+  * v0.0.1
+  * Hash lookup to check existence in swh's backend
+  * Hash lookup to detail a content
 
- -- Antoine R. Dumont <antoine.romain.dumont@gmail.com>  Wed, 30 Sep 2015 16:24:02 +0200
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 01 Oct 2015 10:01:29 +0200

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+django-admin migrate --settings=swh.web.settings.production
