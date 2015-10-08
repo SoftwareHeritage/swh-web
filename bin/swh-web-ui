@@ -12,7 +12,6 @@ import os
 
 from swh.core import config
 from swh.web.ui import controller
-from swh.storage import Storage
 
 
 # Default configuration file
@@ -24,9 +23,9 @@ DEFAULT_CONF = {
     'storage_args': ('list[str]', ['http://localhost:5000/']),
     'storage_class': ('str', 'remote_storage'),
     'log_dir': ('string', '/tmp/swh/loader-git/log'),
-    'debug': ('bool'  , None),
+    'debug': ('bool', None),
     'host': ('string', '127.0.0.1'),
-    'port': ('int'   , 6543),
+    'port': ('int', 6543),
 }
 
 
