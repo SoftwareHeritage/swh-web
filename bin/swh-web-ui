@@ -10,25 +10,13 @@ import argparse
 import logging
 import os
 
-from swh.core import config
-from swh.web.ui import controller
-from swh.storage import Storage
+from swh.web.ui import controller, main
 
 
 # Default configuration file
 DEFAULT_CONF_FILE = '~/.config/swh/web-ui.ini'
 
-
-# default configuration
-DEFAULT_CONF = {
-    'storage_args': ('list[str]', ['http://localhost:5000/']),
-    'storage_class': ('str', 'remote_storage'),
-    'log_dir': ('string', '/tmp/swh/loader-git/log'),
-    'debug': ('bool'  , None),
-    'host': ('string', '127.0.0.1'),
-    'port': ('int'   , 6543),
-}
-
+# Default configuration in swh.web.ui.main
 
 def parse_args():
     """Parse the configuration for the cli.
@@ -45,17 +33,9 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    conf = config.read(args.config or DEFAULT_CONF_FILE, DEFAULT_CONF)
-    config.prepare_folders(conf, 'log_dir')
+    conf = main.read_config(args.config or DEFAULT_CONF_FILE)
 
-    if conf['storage_class'] == 'remote_storage':
-        from swh.storage.api.client import RemoteStorage as Storage
-    else:
-        from swh.storage import Storage
-
-    conf.update({
-        'storage': Storage(*conf['storage_args'])
-    })
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.DEBUG if args.verbose else logging.INFO)
+
     controller.run(conf)

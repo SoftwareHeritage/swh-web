@@ -298,6 +298,7 @@ def run(conf):
         - 'port'   to override the default of 5000 (from the underlying layer:
         flask)
         - 'debug'  activate the verbose logs
+        - 'secret_key' the flask secret key
 
     Returns:
         Never
@@ -311,6 +312,7 @@ host: %s
 port: %s
 debug: %s""" % (conf['host'], conf.get('port', None), conf['debug']))
 
+    app.secret_key = conf['secret_key']
     app.config.update({'conf': conf})
 
     app.run(host=conf['host'],
