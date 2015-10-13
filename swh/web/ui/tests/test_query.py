@@ -10,6 +10,7 @@ from nose.tools import istest
 from swh.web.ui import query
 from swh.core import hashutil
 
+
 class QueryTestCase(unittest.TestCase):
     @istest
     def categorize_hash(self):
