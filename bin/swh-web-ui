@@ -18,6 +18,7 @@ DEFAULT_CONF_FILE = '~/.config/swh/web-ui.ini'
 
 # Default configuration in swh.web.ui.main
 
+
 def parse_args():
     """Parse the configuration for the cli.
     """
