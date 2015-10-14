@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import logging
+import os
 
 from flask import Flask
 
@@ -42,8 +43,15 @@ def read_config(config_file):
     return conf
 
 
+def load_controllers():
+    """Load the controllers for the application"""
+    from swh.web.ui import controller  # flake8: noqa
+
+
 def run_from_webserver(environ, start_response):
     """Run the WSGI app from the webserver, loading the configuration."""
+
+    load_controllers()
 
     config_path = '/etc/softwareheritage/webapp/webapp.ini'
 
@@ -52,8 +60,8 @@ def run_from_webserver(environ, start_response):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
 
-    handler = logging.StreamHandler()
-    app.logger.addHandler(handler)
+    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
+                        level=logging.INFO)
 
     return app(environ, start_response)
 
