@@ -43,8 +43,15 @@ def read_config(config_file):
     return conf
 
 
+def load_controllers():
+    """Load the controllers for the application"""
+    from swh.web.ui import controller  # flake8: noqa
+
+
 def run_from_webserver(environ, start_response):
     """Run the WSGI app from the webserver, loading the configuration."""
+
+    load_controllers()
 
     config_path = '/etc/softwareheritage/webapp/webapp.ini'
 
