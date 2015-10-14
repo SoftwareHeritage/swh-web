@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import logging
+import os
 
 from flask import Flask
 
@@ -52,8 +53,8 @@ def run_from_webserver(environ, start_response):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
 
-    handler = logging.StreamHandler()
-    app.logger.addHandler(handler)
+    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
+                        level=logging.INFO)
 
     return app(environ, start_response)
 
