@@ -1,3 +1,9 @@
+swh-web (0.0.3-1~swh1) unstable-swh; urgency=medium
+
+  * Prepare deployment of swh-web-ui v0.0.3
+
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Wed, 14 Oct 2015 11:09:33 +0200
+
 swh-web (0.0.2-1~swh1) unstable-swh; urgency=medium
 
   * Prepare swh.web.ui v0.0.2 deployment
