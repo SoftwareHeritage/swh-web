@@ -1,6 +1,6 @@
 # Copyright (C) 2015  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import unittest
@@ -13,12 +13,12 @@ from swh.web.ui import controller
 class ApiTestCase(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         conf = {'api_backend': 'https://somewhere.org:4321'}
 
         controller.app.config['TESTING'] = True
         controller.app.config.update({'conf': conf})
-        self.app = controller.app.test_client()
+        cls.app = controller.app.test_client()
 
     @istest
     def info(self):
@@ -52,3 +52,10 @@ class ApiTestCase(unittest.TestCase):
         self.assertRegexpMatches(
             rv.data,
             b'name=q value=one-hash-to-look-for:another-one')
+
+    # @istest
+    def api_1_stat_counters(self):
+        rv = self.app.get('/api/1/stat/counters')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
