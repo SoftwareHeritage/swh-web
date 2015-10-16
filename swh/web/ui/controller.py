@@ -6,7 +6,7 @@
 
 import logging
 
-from flask import redirect, render_template, url_for, flash, request
+from flask import redirect, render_template, url_for, flash, jsonify, request
 from flask import make_response
 
 
@@ -284,6 +284,12 @@ def revision_at_origin(timestamp, origin_type, origin_url):
     return 'Revision at (timestamp=%s, type=%s, url=%s)' % (timestamp,
                                                             origin_type,
                                                             origin_url)
+
+
+@app.route('/api/1/stat/counters')
+def api_stats():
+    """Return statistics as a JSON object"""
+    return jsonify(service.stat_counters())
 
 
 def run(conf):

@@ -52,3 +52,10 @@ class ApiTestCase(unittest.TestCase):
         self.assertRegexpMatches(
             rv.data,
             b'name=q value=one-hash-to-look-for:another-one')
+
+    # @istest
+    def api_1_stat_counters(self):
+        rv = self.app.get('/api/1/stat/counters')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
