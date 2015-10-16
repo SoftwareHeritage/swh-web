@@ -13,12 +13,12 @@ from swh.web.ui import controller
 class ApiTestCase(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         conf = {'api_backend': 'https://somewhere.org:4321'}
 
         controller.app.config['TESTING'] = True
         controller.app.config.update({'conf': conf})
-        self.app = controller.app.test_client()
+        cls.app = controller.app.test_client()
 
     @istest
     def info(self):
