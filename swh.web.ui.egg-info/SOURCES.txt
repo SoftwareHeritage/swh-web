@@ -23,6 +23,7 @@ swh.web.ui.egg-info/dependency_links.txt
 swh.web.ui.egg-info/requires.txt
 swh.web.ui.egg-info/top_level.txt
 swh/web/ui/controller.py
+swh/web/ui/decorators.py
 swh/web/ui/main.py
 swh/web/ui/query.py
 swh/web/ui/service.py
