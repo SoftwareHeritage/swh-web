@@ -13,6 +13,7 @@ from flask import make_response
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service, query
+from swh.web.ui.decorators import jsonp
 
 
 hash_filter_keys = ALGORITHMS
@@ -287,6 +288,7 @@ def revision_at_origin(timestamp, origin_type, origin_url):
 
 
 @app.route('/api/1/stat/counters')
+@jsonp
 def api_stats():
     """Return statistics as a JSON object"""
     return jsonify(service.stat_counters())
