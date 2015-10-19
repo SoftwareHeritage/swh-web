@@ -14,7 +14,7 @@ from swh.web.ui import controller, main
 
 
 # Default configuration file
-DEFAULT_CONF_FILE = '~/.config/swh/web-ui.ini'
+DEFAULT_CONF_FILE = '~/.config/swh/webapp.ini'
 
 # Default configuration in swh.web.ui.main
 
