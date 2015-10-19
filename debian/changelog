@@ -1,3 +1,10 @@
+swh-web (0.0.7-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.7
+  * Add @jsonp abilities to /api/1/stat/counters endpoint
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 19 Oct 2015 14:01:40 +0200
+
 swh-web (0.0.4-1~swh1) unstable-swh; urgency=medium
 
   * Prepare swh.web.ui v0.0.4 deployment
