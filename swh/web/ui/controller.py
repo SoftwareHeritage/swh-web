@@ -322,9 +322,7 @@ def run(conf):
         ?
 
     """
-    print("""SWH Web UI run
-host: %s
-port: %s
+    print("""SWH Web UI available at http://%s:%s/
 debug: %s""" % (conf['host'], conf.get('port', None), conf['debug']))
 
     app.secret_key = conf['secret_key']
