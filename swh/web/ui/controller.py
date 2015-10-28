@@ -293,6 +293,14 @@ def api_stats():
     return jsonify(service.stat_counters())
 
 
+@app.route('/api/1/search/<string:q>/')
+@jsonp
+def api_search(q):
+    """Return search results as a JSON object"""
+    return jsonify({'query': q,
+                    'found': service.lookup_hash(q)})
+
+
 def run(conf):
     """Run the api's server.
 
