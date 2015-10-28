@@ -48,7 +48,7 @@ def _origin_seen(hash, data):
     revision = data['revision']
     branch = data['branch']
     path = data['path']
-    print("data:", data)
+
     return """The content with hash %s has been seen on origin with type '%s'
 at url '%s'. The revision was identified at '%s' on branch '%s'.
 The file's path referenced was '%s'.""" % (hash,
