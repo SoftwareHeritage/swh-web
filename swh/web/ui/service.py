@@ -9,23 +9,16 @@ from swh.web.ui import query
 
 
 def lookup_hash(q):
-    """Given a string query q of one hash, lookup its hash to the backend.
+    """Checks if the storage contains a given content checksum
 
-    Args:
-         query, hash as a string (sha1, sha256, etc...)
+    Args: query string
 
     Returns:
-         a string message (found, not found or a potential error explanation)
+        True or False, according to whether the checksum is present or not
 
-    Raises:
-         OSError (no route to host), etc... Network issues in general
     """
-    hash = query.categorize_hash(q)
-    if hash != {}:
-        present = main.storage().content_exist(hash)
-        return 'Found!' if present else 'Not Found'
-    return """This is not a hash.
-Hint: hexadecimal string with length either 20 (sha1) or 32 (sha256)."""
+    (algo, hash) = query.parse_hash(q)
+    return main.storage().content_exist({algo: hash})
 
 
 def _origin_seen(hash, data):

@@ -1,13 +1,16 @@
 {% extends "layout.html" %}
 {% block body %}
-<form action="{{ url_for('search') }}" method=get class=search>
-  <dl>
-    <dt>Hashes (colon separated values):
-    <dd><input type=text size=32 name=q value={{ q }}>
-    <dd><input type=submit value=Search>
-  </dl>
+<div id="search_form">
+  <form action="{{ url_for('search') }}" method="get" class="search">
+    Content hash:
+    <input type="text" size="70" name="q" value="{{ q }}">
+    <input type="submit" value="Search">
   </form>
-  <ul class=entries>
-    <li><h2>{{ message | safe }}</h2>
-  </ul>
+</div>
+{% if message is not none %}
+<div id="message">{{ message | safe }}</div>
+{% endif %}
+{% if found is not none %}
+<div id="search_results">Found: {{ found | safe }}</div>
+{% endif %}
 {% endblock %}
