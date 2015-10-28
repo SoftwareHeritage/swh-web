@@ -5,7 +5,7 @@ SWH's web application
 
 # Configuration file sample
 
-~/.config/swh/web-ui.ini
+~/.config/swh/webapp.ini
 
     [main]
     # where to log information

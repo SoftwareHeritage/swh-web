@@ -6,35 +6,53 @@
 
 import re
 
-from swh.core import hashutil
+from swh.core.hashutil import ALGORITHMS, hex_to_hash
 
 
-# Regexp to filter and check inputs
-sha256_regexp = '[0-9a-f]{64}'
-sha1_regexp = '[0-9a-f]{40}'
+SHA256_RE = re.compile(r'^[0-9a-f]{64}$', re.IGNORECASE)
+SHA1_RE = re.compile(r'^[0-9a-f]{40}$', re.IGNORECASE)
 
 
-def categorize_hash(hash):
-    """Categorize the hash string according to what it is.
+def parse_hash(q):
+    """Detect the hash type of a user submitted query string.
 
     Args:
-        hash: hash string representation (sha1 or sha256)
+        query string with the following format: "[HASH_TYPE:]HEX_CHECKSUM",
+        where HASH_TYPE is optional, defaults to "sha1", and can be one of
+        swh.core.hashutil.ALGORITHMS
 
     Returns:
-        A dictionary of hash indexed by their nature (sha1, sha256)
-        The dictionary will be empty if nothing matches
+        A pair (hash_algorithm, byte hash value)
 
     Raises:
-        None
+        ValueError if the given query string does not correspond to a valid
+        hash value
 
     """
-    try:
-        h = hashutil.hex_to_hash(hash)
-    except ValueError:  # ignore silently to check the other inputs
-        return {}
+    def guess_algo(q):
+        if SHA1_RE.match(q):
+            return 'sha1'
+        elif SHA256_RE.match(q):
+            return 'sha256'
+        else:
+            raise ValueError('invalid checksum query string')
 
-    if re.search(sha256_regexp, hash):
-        return {'sha256': h}
-    if re.search(sha1_regexp, hash):
-        return {'sha1': h}
-    return {}
+    def check_algo(algo, hex):
+        if (algo in set(['sha1', 'sha1_git']) and not SHA1_RE.match(hex)) \
+           or (algo == 'sha256' and not SHA256_RE.match(hex)):
+            raise ValueError('invalid hash for algorithm ' + algo)
+
+    parts = q.split(':')
+    if len(parts) > 2:
+        raise ValueError('invalid checksum query string')
+    elif len(parts) == 1:
+        parts = (guess_algo(q), q)
+    elif len(parts) == 2:
+        check_algo(parts[0], parts[1])
+    algo = parts[0]
+    hash = hex_to_hash(parts[1])
+
+    if algo not in ALGORITHMS:
+        raise ValueError('unknown hash algorithm: ' + algo)
+
+    return (algo, hash)
