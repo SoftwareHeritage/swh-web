@@ -12,25 +12,22 @@ from swh.core import hashutil
 
 
 class QueryTestCase(unittest.TestCase):
+
     @istest
-    def categorize_hash(self):
-        input_sha1 = 'f1d2d2f924e986ac86fdf7b36c94bcdf32beec15'
+    def parse_hash(self):
+        q = 'f1d2d2f924e986ac86fdf7b36c94bcdf32beec15'
+        r = query.parse_hash(q)
+        self.assertEquals(r, ('sha1', hashutil.hex_to_hash(q)))
 
-        res = query.categorize_hash(input_sha1)
+    @istest
+    def parse_hash_2(self):
+        q = '084C799CD551DD1D8D5C5F9A5D593B2' \
+            'E931F5E36122ee5c793c1d08a19839cc0'
+        r = query.parse_hash(q)
+        self.assertEquals(r, ('sha256', hashutil.hex_to_hash(q)))
 
-        self.assertEquals(res, {'sha1': hashutil.hex_to_hash(input_sha1)})
-
-    def categorize_hash_2(self):
-        input_sha256 = \
-            '084c799cd551dd1d8d5c5f9a5d593b2e931f5e36122ee5c793c1d08a19839cc0'
-
-        res = query.categorize_hash(input_sha256)
-
-        self.assertEquals(res, {'sha256': hashutil.hex_to_hash(input_sha256)})
-
-    def categorize_hash_3(self):
-        input_bad_length = '1234567890987654'
-
-        res = query.categorize_hash(input_bad_length)
-
-        self.assertEquals(res, {})
+    @istest
+    def parse_hash_3(self):
+        q = '1234567890987654'
+        with self.assertRaises(ValueError):
+            query.parse_hash(q)
