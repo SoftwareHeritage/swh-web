@@ -6,7 +6,7 @@
 
 import logging
 
-from flask import redirect, render_template, url_for, flash, jsonify, request
+from flask import redirect, render_template, url_for, jsonify, request
 from flask import make_response
 
 
@@ -42,16 +42,15 @@ def search():
 
     """
     q = request.args.get('q', '')
+    env = {'q': q, 'message': '', 'found': None}
 
-    if q:
-        flash("Search hash '%s' posted!" % q)
-        message = service.lookup_hash(q)
-    else:
-        message = ''
+    try:
+        if q:
+            env['found'] = service.lookup_hash(q)
+    except ValueError:
+        env['message'] = 'Error: invalid query string'
 
-    return render_template('search.html',
-                           q=q,
-                           message=message)
+    return render_template('search.html', **env)
 
 
 @app.route('/browse/revision/<sha1_git>')
@@ -294,6 +293,14 @@ def api_stats():
     return jsonify(service.stat_counters())
 
 
+@app.route('/api/1/search/<string:q>/')
+@jsonp
+def api_search(q):
+    """Return search results as a JSON object"""
+    return jsonify({'query': q,
+                    'found': service.lookup_hash(q)})
+
+
 def run(conf):
     """Run the api's server.
 
@@ -315,9 +322,7 @@ def run(conf):
         ?
 
     """
-    print("""SWH Web UI run
-host: %s
-port: %s
+    print("""SWH Web UI available at http://%s:%s/
 debug: %s""" % (conf['host'], conf.get('port', None), conf['debug']))
 
     app.secret_key = conf['secret_key']
