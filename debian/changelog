@@ -1,3 +1,9 @@
+swh-web (0.0.8-1~swh1) unstable-swh; urgency=medium
+
+  * version 0.0.8
+
+ -- Stefano Zacchiroli <zack@upsilon.cc>  Wed, 28 Oct 2015 20:59:40 +0100
+
 swh-web (0.0.7-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.7
