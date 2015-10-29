@@ -12,7 +12,7 @@ from flask import make_response
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
-from swh.web.ui import service, query
+from swh.web.ui import service
 from swh.web.ui.decorators import jsonp
 
 
@@ -97,6 +97,37 @@ def directory_at_path(sha1_git, p):
                            path=p)
 
 
+def _origin_seen(hash, data):
+    """Given an origin, compute a message string with the right information.
+
+    Args:
+        origin: a dictionary with keys:
+          - origin: a dictionary with type and url keys
+          - occurrence: a dictionary with a validity range
+
+    Returns:
+        message as a string
+
+    """
+    if data is None:
+        return 'Content with hash %s is unknown as of now.' % hash
+
+    origin_type = data['origin_type']
+    origin_url = data['origin_url']
+    revision = data['revision']
+    branch = data['branch']
+    path = data['path']
+
+    return """The content with hash %s has been seen on origin with type '%s'
+at url '%s'. The revision was identified at '%s' on branch '%s'.
+The file's path referenced was '%s'.""" % (hash,
+                                           origin_type,
+                                           origin_url,
+                                           revision,
+                                           branch,
+                                           path)
+
+
 @app.route('/browse/content/<hash>:<sha>')
 def content(hash, sha):
     """Show content information.
@@ -117,23 +148,13 @@ def content(hash, sha):
             'Bad request, sha must be one of sha1, sha1_git, sha256',
             400)
 
-    h = query.categorize_hash(sha)
-    if h == {}:
-        return make_response(
-            'Bad request, %s is not of type %s' % (sha, hash),
-            400)
-
-    if hash == 'sha256' and not h.get(hash):
-        return make_response(
-            'Bad request, %s is not of type sha256' % (sha,),
-            400)
-
-    if hash != 'sha256' and not h.get('sha1') and not h.get('sha1_git'):
-        return make_response(
-            'Bad request, %s is not of type sha1 or sha1_git' % (sha,),
-            400)
-
-    message = service.lookup_hash_origin(h)
+    q = "%s:%s" % (hash, sha)
+    found = service.lookup_hash(q)
+    if not found:
+        message = "Hash %s was not found." % hash
+    else:
+        origin = service.lookup_hash_origin(q)
+        message = _origin_seen(hash, origin)
 
     return render_template('content.html',
                            hash=hash,
@@ -299,6 +320,14 @@ def api_search(q):
     """Return search results as a JSON object"""
     return jsonify({'query': q,
                     'found': service.lookup_hash(q)})
+
+
+@app.route('/api/1/browse/<string:q>/')
+@jsonp
+def api_browse(q):
+    """Return search results as a JSON object"""
+    return jsonify({'query': q,
+                    'origin': service.lookup_hash_origin(q)})
 
 
 def run(conf):
