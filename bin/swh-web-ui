@@ -7,16 +7,12 @@
 
 
 import argparse
-import logging
-import os
 
-from swh.web.ui import controller, main
+from swh.web.ui import main
 
 
 # Default configuration file
 DEFAULT_CONF_FILE = '~/.config/swh/webapp.ini'
-
-# Default configuration in swh.web.ui.main
 
 
 def parse_args():
@@ -34,9 +30,6 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    conf = main.read_config(args.config or DEFAULT_CONF_FILE)
+    config_path = args.config or DEFAULT_CONF_FILE
 
-    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
-                        level=logging.DEBUG if args.verbose else logging.INFO)
-
-    controller.run(conf)
+    main.run_debug_from(config_path, args.verbose)

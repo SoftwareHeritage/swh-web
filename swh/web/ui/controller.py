@@ -328,35 +328,3 @@ def api_browse(q):
     """Return search results as a JSON object"""
     return jsonify({'query': q,
                     'origin': service.lookup_hash_origin(q)})
-
-
-def run(conf):
-    """Run the api's server.
-
-    Args:
-        conf is a dictionary of keywords:
-        - 'db_url' the db url's access (through psycopg2 format)
-        - 'content_storage_dir' revisions/directories/contents storage on disk
-        - 'host'   to override the default 127.0.0.1 to open or not the server
-        to the world
-        - 'port'   to override the default of 5000 (from the underlying layer:
-        flask)
-        - 'debug'  activate the verbose logs
-        - 'secret_key' the flask secret key
-
-    Returns:
-        Never
-
-    Raises:
-        ?
-
-    """
-    print("""SWH Web UI available at http://%s:%s/
-debug: %s""" % (conf['host'], conf.get('port', None), conf['debug']))
-
-    app.secret_key = conf['secret_key']
-    app.config.update({'conf': conf})
-
-    app.run(host=conf['host'],
-            port=conf.get('port', None),
-            debug=conf['debug'])
