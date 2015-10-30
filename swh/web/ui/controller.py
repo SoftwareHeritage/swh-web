@@ -143,19 +143,16 @@ def content(hash, sha):
         The content's information at sha1_git
 
     """
-    # Checks user input
     if hash not in hash_filter_keys:
-        return make_response(
-            'Bad request, sha must be one of sha1, sha1_git, sha256',
-            400)
-
-    q = "%s:%s" % (hash, sha)
-    found = service.lookup_hash(q)
-    if not found:
-        message = "Hash %s was not found." % hash
+        message = 'The checksum must be one of sha1, sha1_git, sha256'
     else:
-        origin = service.lookup_hash_origin(q)
-        message = _origin_seen(hash, origin)
+        q = "%s:%s" % (hash, sha)
+        found = service.lookup_hash(q)
+        if not found:
+            message = "Hash %s was not found." % hash
+        else:
+            origin = service.lookup_hash_origin(q)
+            message = _origin_seen(hash, origin)
 
     return render_template('content.html',
                            hash=hash,
