@@ -103,7 +103,9 @@ def run_debug_from(config_path, verbose=False):
     port = conf.get('port')
     debug = conf.get('debug')
 
-    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
-                        level=logging.DEBUG if verbose else logging.INFO)
+    log_file = os.path.join(conf['log_dir'], 'web-ui.log')
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO,
+                        handlers=[logging.FileHandler(log_file),
+                                  logging.StreamHandler()])
 
-    app.run(host=host, port=port, debug=debug)  # , use_reloader=False)
+    app.run(host=host, port=port, debug=debug)
