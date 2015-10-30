@@ -10,6 +10,7 @@ from flask import Flask
 
 from swh.core import config
 
+
 DEFAULT_CONFIG = {
     'storage_args': ('list[str]', ['http://localhost:5000/']),
     'storage_class': ('str', 'remote_storage'),
@@ -48,6 +49,13 @@ def load_controllers():
     from swh.web.ui import controller  # flake8: noqa
 
 
+def storage():
+    """Return the current application's storage.
+
+    """
+    return app.config['conf']['storage']
+
+
 def run_from_webserver(environ, start_response):
     """Run the WSGI app from the webserver, loading the configuration."""
 
@@ -66,8 +74,38 @@ def run_from_webserver(environ, start_response):
     return app(environ, start_response)
 
 
-def storage():
-    """Return the current application's storage.
+def run_debug_from(config_path, verbose=False):
+    """Run the api's server in dev mode.
+
+    Args:
+        conf is a dictionary of keywords:
+        - 'db_url' the db url's access (through psycopg2 format)
+        - 'content_storage_dir' revisions/directories/contents storage on disk
+        - 'host'   to override the default 127.0.0.1 to open or not the server
+        to the world
+        - 'port'   to override the default of 5000 (from the underlying layer:
+        flask)
+        - 'debug'  activate the verbose logs
+        - 'secret_key' the flask secret key
+
+    Returns:
+        Never
 
     """
-    return app.config['conf']['storage']
+    load_controllers()
+
+    conf = read_config(config_path)
+
+    app.secret_key = conf['secret_key']
+    app.config['conf'] = conf
+
+    host = conf.get('host', '127.0.0.1')
+    port = conf.get('port')
+    debug = conf.get('debug')
+
+    log_file = os.path.join(conf['log_dir'], 'web-ui.log')
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO,
+                        handlers=[logging.FileHandler(log_file),
+                                  logging.StreamHandler()])
+
+    app.run(host=host, port=port, debug=debug)

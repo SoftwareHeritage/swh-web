@@ -1,8 +1,8 @@
-SWH_WEB_UI=./bin/swh-web-ui
+SWH_WEB_UI=./bin/swh-web-ui-dev
 FLAG=-v
 
 run-test:
-	$(SWH_WEB_UI) $(FLAG) --config ./resources/test/web-ui.ini
+	$(SWH_WEB_UI) $(FLAG) --config ./resources/test/webapp.ini
 
 run: # works with the default ~/.config/swh/web-ui.ini file
 	$(SWH_WEB_UI) $(FLAG)
