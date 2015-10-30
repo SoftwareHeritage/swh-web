@@ -3,11 +3,20 @@ swh-web-ui
 
 SWH's web application
 
+Dev mode
+--------
+
 # Configuration file sample
 
 ~/.config/swh/webapp.ini
 
     [main]
+    # the dedicated storage arguments, comma separated list of values
+    storage_args = http://localhost:5000/
+
+    # either remote_storage or local_storage
+    storage_class = remote_storage
+
     # where to log information
     log_dir = /tmp/swh/web-ui/log
     
@@ -19,6 +28,16 @@ SWH's web application
     
     # its port
     port = 6543
-    
-    # the backend this server communicates to
-    api_backend = http://127.0.0.1:5000
+
+# Run
+
+    ./bin/swh-web-ui-dev -v -c ~/.config/swh/webapp.ini
+
+
+Server mode
+-----------
+
+uwsgi is used.
+cf. https://forge.softwareheritage.org/diffusion/SPPROF/browse/master/manifests/swh/deploy/webapp.pp
+
+for more information.
