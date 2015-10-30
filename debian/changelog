@@ -1,3 +1,14 @@
+swh-web (0.0.9-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.9
+  * Remove query entry in api response
+  * Deal with bad request properly with api calls
+  * Improve coverage
+  * Improve dev starting up app
+  * Fix duplicated print statement in dev app startup
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 30 Oct 2015 17:24:15 +0100
+
 swh-web (0.0.8-1~swh1) unstable-swh; urgency=medium
 
   * version 0.0.8
