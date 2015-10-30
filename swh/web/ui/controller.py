@@ -5,6 +5,7 @@
 
 
 import logging
+import json
 
 from flask import redirect, render_template, url_for, jsonify, request
 from flask import make_response
@@ -312,6 +313,19 @@ def revision_at_origin(timestamp, origin_type, origin_url):
 def api_stats():
     """Return statistics as a JSON object"""
     return jsonify(service.stat_counters())
+
+
+@app.errorhandler(ValueError)
+def value_error_as_bad_request(error):
+    """Compute a bad request and add body as payload.
+
+    """
+    response = make_response(
+        'Bad request',
+        400)
+    response.headers['Content-type'] = 'application/json'
+    response.data = json.dumps({"error": str(error)})
+    return response
 
 
 @app.route('/api/1/search/<string:q>/')
