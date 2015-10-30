@@ -5,6 +5,7 @@
 
 
 import logging
+import json
 
 from flask import redirect, render_template, url_for, jsonify, request
 from flask import make_response
@@ -12,7 +13,7 @@ from flask import make_response
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
-from swh.web.ui import service, query
+from swh.web.ui import service
 from swh.web.ui.decorators import jsonp
 
 
@@ -97,6 +98,37 @@ def directory_at_path(sha1_git, p):
                            path=p)
 
 
+def _origin_seen(hash, data):
+    """Given an origin, compute a message string with the right information.
+
+    Args:
+        origin: a dictionary with keys:
+          - origin: a dictionary with type and url keys
+          - occurrence: a dictionary with a validity range
+
+    Returns:
+        message as a string
+
+    """
+    if data is None:
+        return 'Content with hash %s is unknown as of now.' % hash
+
+    origin_type = data['origin_type']
+    origin_url = data['origin_url']
+    revision = data['revision']
+    branch = data['branch']
+    path = data['path']
+
+    return """The content with hash %s has been seen on origin with type '%s'
+at url '%s'. The revision was identified at '%s' on branch '%s'.
+The file's path referenced was '%s'.""" % (hash,
+                                           origin_type,
+                                           origin_url,
+                                           revision,
+                                           branch,
+                                           path)
+
+
 @app.route('/browse/content/<hash>:<sha>')
 def content(hash, sha):
     """Show content information.
@@ -111,29 +143,16 @@ def content(hash, sha):
         The content's information at sha1_git
 
     """
-    # Checks user input
     if hash not in hash_filter_keys:
-        return make_response(
-            'Bad request, sha must be one of sha1, sha1_git, sha256',
-            400)
-
-    h = query.categorize_hash(sha)
-    if h == {}:
-        return make_response(
-            'Bad request, %s is not of type %s' % (sha, hash),
-            400)
-
-    if hash == 'sha256' and not h.get(hash):
-        return make_response(
-            'Bad request, %s is not of type sha256' % (sha,),
-            400)
-
-    if hash != 'sha256' and not h.get('sha1') and not h.get('sha1_git'):
-        return make_response(
-            'Bad request, %s is not of type sha1 or sha1_git' % (sha,),
-            400)
-
-    message = service.lookup_hash_origin(h)
+        message = 'The checksum must be one of sha1, sha1_git, sha256'
+    else:
+        q = "%s:%s" % (hash, sha)
+        found = service.lookup_hash(q)
+        if not found:
+            message = "Hash %s was not found." % hash
+        else:
+            origin = service.lookup_hash_origin(q)
+            message = _origin_seen(hash, origin)
 
     return render_template('content.html',
                            hash=hash,
@@ -293,41 +312,28 @@ def api_stats():
     return jsonify(service.stat_counters())
 
 
+@app.errorhandler(ValueError)
+def value_error_as_bad_request(error):
+    """Compute a bad request and add body as payload.
+
+    """
+    response = make_response(
+        'Bad request',
+        400)
+    response.headers['Content-type'] = 'application/json'
+    response.data = json.dumps({"error": str(error)})
+    return response
+
+
 @app.route('/api/1/search/<string:q>/')
 @jsonp
 def api_search(q):
     """Return search results as a JSON object"""
-    return jsonify({'query': q,
-                    'found': service.lookup_hash(q)})
+    return jsonify({'found': service.lookup_hash(q)})
 
 
-def run(conf):
-    """Run the api's server.
-
-    Args:
-        conf is a dictionary of keywords:
-        - 'db_url' the db url's access (through psycopg2 format)
-        - 'content_storage_dir' revisions/directories/contents storage on disk
-        - 'host'   to override the default 127.0.0.1 to open or not the server
-        to the world
-        - 'port'   to override the default of 5000 (from the underlying layer:
-        flask)
-        - 'debug'  activate the verbose logs
-        - 'secret_key' the flask secret key
-
-    Returns:
-        Never
-
-    Raises:
-        ?
-
-    """
-    print("""SWH Web UI available at http://%s:%s/
-debug: %s""" % (conf['host'], conf.get('port', None), conf['debug']))
-
-    app.secret_key = conf['secret_key']
-    app.config.update({'conf': conf})
-
-    app.run(host=conf['host'],
-            port=conf.get('port', None),
-            debug=conf['debug'])
+@app.route('/api/1/browse/<string:q>/')
+@jsonp
+def api_browse(q):
+    """Return search results as a JSON object"""
+    return jsonify({'origin': service.lookup_hash_origin(q)})

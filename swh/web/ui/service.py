@@ -4,8 +4,7 @@
 # See top-level LICENSE file for more information
 
 
-from swh.web.ui import main
-from swh.web.ui import query
+from swh.web.ui import converters, main, query
 
 
 def lookup_hash(q):
@@ -21,51 +20,18 @@ def lookup_hash(q):
     return main.storage().content_exist({algo: hash})
 
 
-def _origin_seen(hash, data):
-    """Given an origin, compute a message string with the right information.
+def lookup_hash_origin(q):
+    """Return information about the checksum contained in the query q.
 
-    Args:
-        origin: a dictionary with keys:
-          - origin: a dictionary with type and url keys
-          - occurrence: a dictionary with a validity range
+    Args: query string
 
     Returns:
-        message as a string
+        True or False, according to whether the checksum is present or not
 
     """
-    if data is None:
-        return 'Content with hash %s is unknown as of now.' % hash
-
-    origin_type = data['origin_type']
-    origin_url = data['origin_url']
-    revision = data['revision']
-    branch = data['branch']
-    path = data['path']
-
-    return """The content with hash %s has been seen on origin with type '%s'
-at url '%s'. The revision was identified at '%s' on branch '%s'.
-The file's path referenced was '%s'.""" % (hash,
-                                           origin_type,
-                                           origin_url,
-                                           revision,
-                                           branch,
-                                           path)
-
-
-def lookup_hash_origin(hash):
-    """Given a hash, return the origin of such content if any is found.
-
-    Args:
-        hash: key/value dictionary
-
-    Returns:
-        The origin for such hash if it's found.
-
-    Raises:
-        OSError (no route to host), etc... Network issues in general
-    """
-    data = main.storage().content_find_occurrence(hash)
-    return _origin_seen(hash, data)
+    algo, h = query.parse_hash(q)
+    origin = main.storage().content_find_occurrence({algo: h})
+    return converters.from_origin(origin)
 
 
 def stat_counters():
