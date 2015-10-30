@@ -1,4 +1,4 @@
-SWH_WEB_UI=./bin/swh-web-ui
+SWH_WEB_UI=./bin/swh-web-ui-dev
 FLAG=-v
 
 run-test:

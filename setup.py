@@ -22,7 +22,7 @@ setup(
     author_email='swh-devel@inria.fr',
     url='https://forge.softwareheritage.org/diffusion/DWUI/',
     packages=['swh.web.ui', 'swh.web.ui.tests'],
-    scripts=['bin/swh-web-ui'],
+    scripts=[],
     install_requires=parse_requirements(),
     setup_requires=['vcversioner'],
     vcversioner={},
