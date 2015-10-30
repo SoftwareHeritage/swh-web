@@ -332,13 +332,11 @@ def value_error_as_bad_request(error):
 @jsonp
 def api_search(q):
     """Return search results as a JSON object"""
-    return jsonify({'query': q,
-                    'found': service.lookup_hash(q)})
+    return jsonify({'found': service.lookup_hash(q)})
 
 
 @app.route('/api/1/browse/<string:q>/')
 @jsonp
 def api_browse(q):
     """Return search results as a JSON object"""
-    return jsonify({'query': q,
-                    'origin': service.lookup_hash_origin(q)})
+    return jsonify({'origin': service.lookup_hash_origin(q)})
