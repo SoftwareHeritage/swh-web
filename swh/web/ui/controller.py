@@ -320,7 +320,7 @@ def value_error_as_bad_request(error):
     response = make_response(
         'Bad request',
         400)
-    response.headers['Content-type'] = 'application/json'
+    response.headers['Content-Type'] = 'application/json'
     response.data = json.dumps({"error": str(error)})
     return response
 
