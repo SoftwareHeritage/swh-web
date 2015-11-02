@@ -3,8 +3,8 @@
 <div id="search_form">
   <form action="{{ url_for('search') }}" method="get" class="search">
     Content hash:
-    <input type="text" size="70" name="q" value="{{ q }}">
-    <input type="submit" value="Search">
+    <input type="text" size="70" name="q" value="{{ q }}" />
+    <input type="submit" value="Search" />
   </form>
 </div>
 {% if message is not none %}
