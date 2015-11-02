@@ -1,3 +1,9 @@
+swh-web (0.0.10-1~swh1~bpo9+1) stretch-swh; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Stefano Zacchiroli <zack@upsilon.cc>  Mon, 02 Nov 2015 13:59:45 +0100
+
 swh-web (0.0.10-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.10
