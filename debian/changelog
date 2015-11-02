@@ -1,3 +1,12 @@
+swh-web (0.0.10-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.10
+  * set document.domain to parent domain softwareheritage.org
+  * improve HTML templates to be (more) valid
+  * cosmetic change in Content-Type JSON header
+
+ -- Stefano Zacchiroli <zack@upsilon.cc>  Mon, 02 Nov 2015 13:59:45 +0100
+
 swh-web (0.0.9-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.9
