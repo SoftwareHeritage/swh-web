@@ -23,17 +23,10 @@ class ApiTestCase(unittest.TestCase):
     @istest
     def info(self):
         # when
-        rv = self.app.get('/info')
+        rv = self.app.get('/about')
 
         self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.data, b'Dev SWH UI')
-
-    @istest
-    def main_redirects_to_info(self):
-        # when
-        rv = self.app.get('/', follow_redirects=False)
-
-        self.assertEquals(rv.status_code, 302)  # check redirects to /info
+        self.assertIn(b'About', rv.data)
 
     # @istest
     def search_1(self):
