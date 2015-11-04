@@ -1,11 +1,12 @@
 {% extends "layout.html" %}
 {% block title %}Search{% endblock %}
 {% block content %}
-<div id="search_form">
-  <form action="{{ url_for('search') }}" method="get" class="search">
-    Content hash:
-    <input type="text" size="70" name="q" value="{{ q }}" />
-    <input type="submit" value="Search" />
+<div class="input-group" style="width: 80%;">
+  <form action="{{ url_for('search') }}" method="get">
+    <input type="text" class="form-control"
+	   name="q" value="{{ q }}"
+	   placeholder="SHA-1 or SHA-256 checksum" />
+    <button type="submit" class="btn btn-default">Search</button>
   </form>
 </div>
 {% if message is not none %}
