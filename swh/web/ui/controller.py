@@ -6,7 +6,7 @@
 
 import json
 
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, flash
 from flask import make_response
 
 
@@ -24,6 +24,8 @@ def main():
     """Home page
 
     """
+    flash('This Web app is still work in progress, use at your own risk',
+          'warning')
     # return redirect(url_for('about'))
     return render_template('home.html')
 

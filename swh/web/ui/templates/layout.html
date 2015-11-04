@@ -17,15 +17,21 @@
   <script>document.domain = "softwareheritage.org";</script>
 </head>
 <body>
-  <div class="title">
-    <h1>{{ self.title() }}</h1>
+  <div class="jumbotron">
+    <div class="container">
+      <h1>{{ self.title() }}</h1>
+    </div>
   </div>
-  <div class="messages">
-    {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-    {% endfor %}
-  </div>
-  <div class="content jumbotron">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container messages">
+	{% for category, message in messages %}
+	<div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+	{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <div class="container content">
     {% block content %}{% endblock %}
   </div>
 </body>
