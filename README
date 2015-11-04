@@ -33,6 +33,13 @@ Dev mode
 
     ./bin/swh-web-ui-dev -v -c ~/.config/swh/webapp.ini
 
+In order to do anything useful with the web app you will also need a storage
+backend that the app can talk to. You can run one as follows
+
+    python3 -m swh.storage.api.server ~/.config/swh/storage.ini
+
+See the doc of the swh-storage module for how to configure the backend.
+
 
 Server mode
 -----------
