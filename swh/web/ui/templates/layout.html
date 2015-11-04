@@ -19,14 +19,14 @@
 <body>
   <div class="title">
     <h1>{{ self.title() }}</h1>
-    <div class="messages">
+  </div>
+  <div class="messages">
     {% for message in get_flashed_messages() %}
-      <div class="flash">{{ message }}</div>
+    <div class="flash">{{ message }}</div>
     {% endfor %}
-    </div>
-    <div class="content">
+  </div>
+  <div class="content jumbotron">
     {% block content %}{% endblock %}
-    </div>
   </div>
 </body>
 </html>
