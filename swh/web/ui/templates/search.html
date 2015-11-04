@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
-{% block body %}
+{% block title %}Search{% endblock %}
+{% block content %}
 <div id="search_form">
   <form action="{{ url_for('search') }}" method="get" class="search">
     Content hash:

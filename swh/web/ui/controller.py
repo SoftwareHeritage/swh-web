@@ -4,10 +4,9 @@
 # See top-level LICENSE file for more information
 
 
-import logging
 import json
 
-from flask import redirect, render_template, url_for, jsonify, request
+from flask import render_template, jsonify, request
 from flask import make_response
 
 
@@ -22,19 +21,16 @@ hash_filter_keys = ALGORITHMS
 
 @app.route('/')
 def main():
-    """Main application view.
-    At the moment, redirect to the content search view.
-    """
-    return redirect(url_for('info'))
-
-
-@app.route('/info')
-def info():
-    """A simple api to define what the server is all about.
+    """Home page
 
     """
-    logging.info('Dev SWH UI')
-    return 'Dev SWH UI'
+    # return redirect(url_for('about'))
+    return render_template('home.html')
+
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 
 @app.route('/search')
