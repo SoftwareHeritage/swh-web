@@ -9,13 +9,13 @@ import json
 from flask import render_template, jsonify, request, flash
 from flask import make_response
 
-from swh.core import hashutil
+from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service, upload
 from swh.web.ui.decorators import jsonp
 
 
-hash_filter_keys = hashutil.ALGORITHMS
+hash_filter_keys = ALGORITHMS
 
 
 @app.route('/')
@@ -67,7 +67,7 @@ def uploadnsearch():
 
                 message = 'The file %s with hash %s has%sbeen found.' % (
                     filename,
-                    hashutil.hash_to_hex(sha1),
+                    sha1,
                     ' ' if found else ' not ')
 
                 env.update({
@@ -369,3 +369,22 @@ def api_search(q):
 def api_browse(q):
     """Return search results as a JSON object"""
     return jsonify({'origin': service.lookup_hash_origin(q)})
+
+
+@app.route('/api/1/uploadnsearch/', methods=['POST'])
+@jsonp
+def api_uploadnsearch():
+    """Upload the file's content in the post body request.
+       Compute the hash and determine if it exists in the storage.
+    """
+    file = request.files['filename']
+    try:
+        tmpdir, filename, filepath = upload.save_in_upload_folder(file)
+        if filepath:
+            sha1, found = service.hash_and_search(filepath)
+            return jsonify({'sha1': sha1,
+                            'filename': filename,
+                            'found': found})
+    finally:
+        if tmpdir:
+            upload.cleanup(tmpdir)

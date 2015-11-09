@@ -8,21 +8,27 @@ from swh.web.ui import converters, main, query
 from swh.core import hashutil
 
 
-def hash_and_search(filepath):
-    """Hash the filepath's content as sha1, then search in storage if it exists.
+def hash_and_search(filepath_or_data):
+    """Hash the filepath_or_data's content as sha1, then search in storage if
+    it exists.
 
     Args:
         Filepath of the file to hash and search.
 
     Returns:
-        Tuple (sha1, found as True or false).
+        Tuple (hex sha1, found as True or false).
         The found boolean, according to whether the sha1 of the file
         is present or not.
 
     """
-    hash = hashutil.hashfile(filepath)
+    if isinstance(filepath_or_data, str):
+        hash = hashutil.hashfile(filepath_or_data)
+    else:
+        hash = hashutil.hashdata(filepath_or_data)
+
     sha1 = hash['sha1']
-    return sha1, main.storage().content_exist({'sha1': sha1})
+    return (hashutil.hash_to_hex(sha1),
+            main.storage().content_exist({'sha1': sha1}))
 
 
 def lookup_hash(q):

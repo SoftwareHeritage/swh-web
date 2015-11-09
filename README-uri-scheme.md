@@ -60,5 +60,25 @@ policy).
   - Show all revisions (~git log) of origin and branch at a given timestamp
 
 
+### Upload and search
+
+* /1/api/uploadnsearch/
+
+Post a file's content to api.
+Api computes the sha1 hash and checks in the storage if such sha1 exists.
+Json answer:
+
+    {'sha1': hexadecimal sha1,
+     'found': true or false}
+
+Sample:
+
+    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch/
+    {
+        "found": false,
+        "sha1": "e95097ad2d607b4c89c1ce7ca1fef2a1e4450558"
+    }%
+
+
 Search namespace
 ----------------
