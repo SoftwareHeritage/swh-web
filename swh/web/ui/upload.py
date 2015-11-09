@@ -11,7 +11,7 @@ from werkzeug import secure_filename
 
 
 UPLOAD_FOLDER = '/tmp/swh-web-ui/uploads'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+# ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
 def allowed_file(filename):
@@ -39,7 +39,7 @@ def save_in_upload_folder(file):
 
     """
     if not file:
-        return None, None
+        return None, None, None
 
     filename = file.filename
     if allowed_file(filename):

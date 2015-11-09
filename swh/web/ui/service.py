@@ -4,8 +4,8 @@
 # See top-level LICENSE file for more information
 
 
-from swh.web.ui import converters, main, query
 from swh.core import hashutil
+from swh.web.ui import converters, main, query, upload
 
 
 def hash_and_search(filepath_or_data):
@@ -29,6 +29,22 @@ def hash_and_search(filepath_or_data):
     sha1 = hash['sha1']
     return (hashutil.hash_to_hex(sha1),
             main.storage().content_exist({'sha1': sha1}))
+
+
+def upload_and_search(file):
+    """Upload a file and compute its hash.
+
+    """
+    tmpdir, filename, filepath = upload.save_in_upload_folder(file)
+    try:
+        sha1, found = None, None
+        if filepath:
+            sha1, found = hash_and_search(filepath)
+        return filename, sha1, found
+    finally:
+        # clean up
+        if tmpdir:
+            upload.cleanup(tmpdir)
 
 
 def lookup_hash(q):

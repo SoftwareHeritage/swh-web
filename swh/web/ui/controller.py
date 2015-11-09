@@ -11,7 +11,7 @@ from flask import make_response
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
-from swh.web.ui import service, upload
+from swh.web.ui import service
 from swh.web.ui.decorators import jsonp
 
 
@@ -61,27 +61,20 @@ def uploadnsearch():
     if request.method == 'POST':
         file = request.files['filename']
         try:
-            tmpdir, filename, filepath = upload.save_in_upload_folder(file)
-            if filepath:
-                sha1, found = service.hash_and_search(filepath)
+            filename, sha1, found = service.upload_and_search(file)
+            message = 'The file %s with hash %s has%sbeen found.' % (
+                filename,
+                sha1,
+                ' ' if found else ' not ')
 
-                message = 'The file %s with hash %s has%sbeen found.' % (
-                    filename,
-                    sha1,
-                    ' ' if found else ' not ')
-
-                env.update({
-                    'filename': filename,
-                    'sha1': sha1,
-                    'found': found,
-                    'message': message
-                })
+            env.update({
+                'filename': filename,
+                'sha1': sha1,
+                'found': found,
+                'message': message
+            })
         except ValueError:
             env['message'] = 'Error: invalid query string'
-        finally:
-            # clean up
-            if tmpdir:
-                upload.cleanup(tmpdir)
 
     return render_template('upload_and_search.html', **env)
 
@@ -378,13 +371,7 @@ def api_uploadnsearch():
        Compute the hash and determine if it exists in the storage.
     """
     file = request.files['filename']
-    try:
-        tmpdir, filename, filepath = upload.save_in_upload_folder(file)
-        if filepath:
-            sha1, found = service.hash_and_search(filepath)
-            return jsonify({'sha1': sha1,
-                            'filename': filename,
-                            'found': found})
-    finally:
-        if tmpdir:
-            upload.cleanup(tmpdir)
+    filename, sha1, found = service.upload_and_search(file)
+    return jsonify({'sha1': sha1,
+                    'filename': filename,
+                    'found': found})
