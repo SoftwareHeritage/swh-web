@@ -9,14 +9,13 @@ import json
 from flask import render_template, jsonify, request, flash
 from flask import make_response
 
-
-from swh.core.hashutil import ALGORITHMS
+from swh.core import hashutil
 from swh.web.ui.main import app
 from swh.web.ui import service, upload
 from swh.web.ui.decorators import jsonp
 
 
-hash_filter_keys = ALGORITHMS
+hash_filter_keys = hashutil.ALGORITHMS
 
 
 @app.route('/')
@@ -64,9 +63,18 @@ def uploadnsearch():
         try:
             tmpdir, filename, filepath = upload.save_in_upload_folder(file)
             if filepath:
+                sha1, found = service.hash_and_search(filepath)
+
+                message = 'The file %s with hash %s has%sbeen found.' % (
+                    filename,
+                    hashutil.hash_to_hex(sha1),
+                    ' ' if found else ' not ')
+
                 env.update({
                     'filename': filename,
-                    'found': service.hash_and_search(filepath)
+                    'sha1': sha1,
+                    'found': found,
+                    'message': message
                 })
         except ValueError:
             env['message'] = 'Error: invalid query string'
