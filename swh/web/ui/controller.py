@@ -12,7 +12,7 @@ from flask import make_response
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
-from swh.web.ui import service
+from swh.web.ui import service, upload
 from swh.web.ui.decorators import jsonp
 
 
@@ -57,16 +57,23 @@ def uploadnsearch():
     """Upload and search for hashes in swh-storage.
 
     """
-    q = request.args.get('q', '')
-    env = {'q': q, 'message': '', 'found': None}
+    env = {'filename': None, 'message': '', 'found': None}
 
     if request.method == 'POST':
-        # file = request.files['file']
+        file = request.files['filename']
         try:
-            if q:
-                env['found'] = service.upload_and_hash(q)
+            tmpdir, filename, filepath = upload.save_in_upload_folder(file)
+            if filepath:
+                env.update({
+                    'filename': filename,
+                    'found': service.hash_and_search(filepath)
+                })
         except ValueError:
             env['message'] = 'Error: invalid query string'
+        finally:
+            # clean up
+            if tmpdir:
+                upload.cleanup(tmpdir)
 
     return render_template('upload_and_search.html', **env)
 

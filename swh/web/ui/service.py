@@ -5,10 +5,22 @@
 
 
 from swh.web.ui import converters, main, query
+from swh.core import hashutil
 
 
-def upload_and_search(q):
-    pass
+def hash_and_search(filepath):
+    """Hash the filepath's content as sha1, then search in storage if it exists.
+
+    Args:
+        Filepath of the file to hash and search.
+
+    Returns:
+        True or False, according to whether the sha1 of the file
+        is present or not
+
+    """
+    hash = hashutil.hashfile(filepath)
+    return main.storage().content_exist({'sha1': hash['sha1']})
 
 
 def lookup_hash(q):
