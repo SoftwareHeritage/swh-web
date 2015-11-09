@@ -54,8 +54,12 @@ def save_in_upload_folder(file):
 
         return tmpdir, filename, filepath
 
-def cleanup(dir):
+
+def cleanup(tmpdir):
     """Clean up after oneself.
 
+    Args:
+        The directory dir to destroy.
     """
-    shutil.rmtree(dir)
+    assert (os.path.commonprefix([UPLOAD_FOLDER, tmpdir]) == UPLOAD_FOLDER)
+    shutil.rmtree(tmpdir)
