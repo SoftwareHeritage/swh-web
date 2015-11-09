@@ -19,6 +19,7 @@ DEFAULT_CONFIG = {
     'host': ('string', '127.0.0.1'),
     'port': ('int', 6543),
     'secret_key': ('string', 'development key'),
+    'max_upload_size': ('int', 16 * 1024 * 1024)
 }
 
 
@@ -67,6 +68,7 @@ def run_from_webserver(environ, start_response):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
+    app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
 
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.INFO)
@@ -98,6 +100,7 @@ def run_debug_from(config_path, verbose=False):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')
