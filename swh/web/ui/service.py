@@ -7,6 +7,10 @@
 from swh.web.ui import converters, main, query
 
 
+def upload_and_search(q):
+    pass
+
+
 def lookup_hash(q):
     """Checks if the storage contains a given content checksum
 

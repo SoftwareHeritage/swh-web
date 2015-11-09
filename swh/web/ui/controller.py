@@ -52,6 +52,25 @@ def search():
     return render_template('search.html', **env)
 
 
+@app.route('/uploadnsearch', methods=['GET', 'POST'])
+def uploadnsearch():
+    """Upload and search for hashes in swh-storage.
+
+    """
+    q = request.args.get('q', '')
+    env = {'q': q, 'message': '', 'found': None}
+
+    if request.method == 'POST':
+        # file = request.files['file']
+        try:
+            if q:
+                env['found'] = service.upload_and_hash(q)
+        except ValueError:
+            env['message'] = 'Error: invalid query string'
+
+    return render_template('upload_and_search.html', **env)
+
+
 @app.route('/browse/revision/<sha1_git>')
 def revision(sha1_git):
     """Show commit information.
