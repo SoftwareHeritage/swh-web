@@ -12,15 +12,24 @@ from werkzeug import secure_filename
 from swh.web.ui import main
 
 
-def allowed_file(filename, allowed_extensions='*'):
-    """Filter on filename extensions.
-
+def allowed_file(filename, allowed_extensions=[]):
+    """Filter on filename extension.
     The filename to check for permission.
+
+    Args:
+        filename. If no extension on the filename, the filename itself is
+        checked against allowed extensions (example of current extensionless
+        filenames: README, LICENCE, BUGS, etc...)
+
+    Returns:
+        True if allowed, False otherwise.
 
     """
     if allowed_extensions == []:
         return True
-    return '.' in filename and filename.rsplit('.', 1)[1] in allowed_extensions
+    if '.' in filename:
+        return filename.rsplit('.', 1)[1] in allowed_extensions
+    return filename in allowed_extensions
 
 
 def save_in_upload_folder(file):
