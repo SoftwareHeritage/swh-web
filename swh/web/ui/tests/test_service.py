@@ -133,21 +133,23 @@ class ServiceTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.service.upload')
     @istest
-    def test_upload_and_search_upload_OK(self, mock_upload):
+    def test_upload_and_search_upload_OK_basic_case(self, mock_upload):
         # given (cf. decorators patch)
         mock_upload.save_in_upload_folder.return_value = (
             '/tmp/blah', 'some-filename', None)
         mock_upload.cleanup.return_value = None
 
+        file = MagicMock()
+        file.filename = 'some-filename'
+
         # when
         actual_file, actual_hash, actual_search = service.upload_and_search(
-            '/some/path/to/file')
+            file)
 
         # then
         self.assertEqual(actual_file, 'some-filename')
         self.assertIsNone(actual_hash)
         self.assertIsNone(actual_search)
 
-        mock_upload.save_in_upload_folder.assert_called_with(
-            '/some/path/to/file')
+        mock_upload.save_in_upload_folder.assert_called_with(file)
         mock_upload.cleanup.assert_called_with('/tmp/blah')
