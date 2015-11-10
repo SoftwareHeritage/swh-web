@@ -6,32 +6,17 @@
 import unittest
 
 from nose.tools import istest
-
 from unittest.mock import MagicMock
 
 from swh.core import hashutil
-from swh.storage.api.client import RemoteStorage as Storage
-from swh.web.ui import service, controller
-
-
-# Because the Storage's __init__ function does side effect at startup...
-class RemoteStorageAdapter(Storage):
-    def __init__(self, base_url):
-        self.base_url = base_url
+from swh.web.ui import service
+from swh.web.ui.tests.test_app import init_app_test_with_mock_storage
 
 
 class ServiceTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.storage = RemoteStorageAdapter('http://localhost:5000/')  # Mock
-
-        # inject the mock data
-        conf = {'api_backend': 'https://somewhere.org:4321',
-                'storage': cls.storage}
-
-        controller.app.config['TESTING'] = True
-        controller.app.config.update({'conf': conf})
-        cls.app = controller.app.test_client()
+        cls.app, cls.storage = init_app_test_with_mock_storage()
 
     @istest
     def lookup_hash_does_not_exist(self):
