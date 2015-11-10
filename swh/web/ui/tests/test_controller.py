@@ -14,7 +14,7 @@ class ApiTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.app, _ = test_app.init_app()
+        cls.app, _, _ = test_app.init_app()
 
     @istest
     def info(self):

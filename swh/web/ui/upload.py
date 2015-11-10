@@ -6,8 +6,7 @@
 import os
 import tempfile
 import shutil
-
-from werkzeug import secure_filename
+import werkzeug
 
 from swh.web.ui import main
 
@@ -54,7 +53,7 @@ def save_in_upload_folder(file):
 
     filename = file.filename
     if allowed_file(filename, allowed_extensions):
-        filename = secure_filename(filename)
+        filename = werkzeug.secure_filename(filename)
 
         tmpdir = tempfile.mkdtemp(suffix='tmp',
                                   prefix='swh.web.ui-',

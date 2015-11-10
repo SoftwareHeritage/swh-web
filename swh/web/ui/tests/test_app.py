@@ -43,10 +43,11 @@ def init_app(base_url='https://somewhere.org:4321'):
 
     # inject the mock data
     conf = {'storage': storage,
-            'upload_folder': '/some/upload-dir'}
+            'upload_folder': '/some/upload-dir',
+            'upload_allowed_extensions': ['txt']}
 
     controller.app.config['TESTING'] = True
     controller.app.config.update({'conf': conf})
     app = controller.app.test_client()
 
-    return app, storage
+    return app, controller.app.config, storage
