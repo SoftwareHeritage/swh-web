@@ -80,6 +80,21 @@ class ApiTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.controller.service')
     @istest
+    def api_1_stat_counters_raise_error(self, mock_service):
+        # given
+        mock_service.stat_counters.side_effect = ValueError(
+            'voluntary error to check the bad request middleware.')
+        # when
+        rv = self.app.get('/api/1/stat/counters')
+        # then
+        self.assertEquals(rv.status_code, 400)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'voluntary error to check the bad request middleware.'})
+
+    @patch('swh.web.ui.controller.service')
+    @istest
     def api_1_stat_counters(self, mock_service):
         # given
         mock_service.stat_counters.return_value = {
