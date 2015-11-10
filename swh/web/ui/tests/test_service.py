@@ -10,13 +10,13 @@ from unittest.mock import MagicMock
 
 from swh.core import hashutil
 from swh.web.ui import service
-from swh.web.ui.tests.test_app import init_app_test_with_mock_storage
+from swh.web.ui.tests import test_app
 
 
 class ServiceTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app, cls.storage = init_app_test_with_mock_storage()
+        cls.app, cls.storage = test_app.init_app()
 
     @istest
     def lookup_hash_does_not_exist(self):

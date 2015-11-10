@@ -7,18 +7,14 @@ import unittest
 
 from nose.tools import istest
 
-from swh.web.ui import controller
+from swh.web.ui.tests import test_app
 
 
 class ApiTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf = {'api_backend': 'https://somewhere.org:4321'}
-
-        controller.app.config['TESTING'] = True
-        controller.app.config.update({'conf': conf})
-        cls.app = controller.app.test_client()
+        cls.app, _ = test_app.init_app()
 
     @istest
     def info(self):

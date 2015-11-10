@@ -22,12 +22,21 @@ def _init_mock_storage():
 
     NOT FOR PRODUCTION
 
+    Returns:
+        An instance of swh.storage.api.client.RemoteStorage destined to be
+        mocked (it does not do any rest call)
+
     """
     return RemoteStorageAdapter('http://somewhere.org:4321/')  # Mock
 
 
-def init_app_test_with_mock_storage():
-    """Function to initiate a flask app with mock storage.
+def init_app():
+    """Function to initiate a flask app with storage designed to be mocked.
+
+    Returns:
+        Tuple app and storage.
+
+    NOT FOR PRODUCTION
 
     """
     storage = _init_mock_storage()
