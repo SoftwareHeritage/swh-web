@@ -4,8 +4,10 @@
 # See top-level LICENSE file for more information
 
 import unittest
+import json
 
 from nose.tools import istest
+from unittest.mock import patch
 
 from swh.web.ui.tests import test_app
 
@@ -42,9 +44,50 @@ class ApiTestCase(unittest.TestCase):
             rv.data,
             b'name=q value=one-hash-to-look-for:another-one')
 
-    # @istest
-    def api_1_stat_counters(self):
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_1_stat_counters(self, mock_service):
+        # given
+        mock_service.stat_counters.return_value = {
+            "content": 1770830,
+            "directory": 211683,
+            "directory_entry_dir": 209167,
+            "directory_entry_file": 1807094,
+            "directory_entry_rev": 0,
+            "entity": 0,
+            "entity_history": 0,
+            "occurrence": 0,
+            "occurrence_history": 19600,
+            "origin": 1096,
+            "person": 0,
+            "release": 8584,
+            "revision": 7792,
+            "revision_history": 0,
+            "skipped_content": 0
+        }
+
+        # when
         rv = self.app.get('/api/1/stat/counters')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
+
+    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.controller.request')
+    @istest
+    def api_uploadnsearch(self, mock_request, mock_service):
+        # given
+        mock_request.files = {'filename': 'simple-filename'}
+        mock_service.upload_and_search.return_value = (
+            'simple-filename', 'some-hex-sha1', False)
+
+        # when
+        rv = self.app.post('/api/1/uploadnsearch/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'filename': 'simple-filename',
+                                          'sha1': 'some-hex-sha1',
+                                          'found': False})
