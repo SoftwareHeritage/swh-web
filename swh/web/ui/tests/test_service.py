@@ -10,6 +10,7 @@ from nose.tools import istest
 from unittest.mock import patch
 
 from swh.web.ui import service
+from swh.web.ui import controller
 
 
 class MockStorage():
@@ -46,6 +47,15 @@ class MockStorage():
 
 
 class ServiceTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # inject the mock data
+        conf = {'api_backend': 'https://somewhere.org:4321',
+                'storage': MockStorage()}
+
+        controller.app.config['TESTING'] = True
+        controller.app.config.update({'conf': conf})
+        cls.app = controller.app.test_client()
 
     @istest
     def lookup_hash(self):
@@ -69,10 +79,10 @@ class ServiceTestCase(unittest.TestCase):
         }
 
         # when
-        with patch('swh.web.ui.main.storage',
-                   return_value=MockStorage()):
-            actual_origin = service.lookup_hash_origin(
-                'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
+        # with patch('swh.web.ui.main.storage',
+        #            return_value=MockStorage()):
+        actual_origin = service.lookup_hash_origin(
+            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
         self.assertEqual(actual_origin, expected_origin)
@@ -83,8 +93,8 @@ class ServiceTestCase(unittest.TestCase):
         expected_stats = MockStorage().stat_counters()
 
         # when
-        with patch('swh.web.ui.main.storage', return_value=MockStorage()):
-            actual_stats = service.stat_counters()
+        # with patch('swh.web.ui.main.storage', return_value=MockStorage()):
+        actual_stats = service.stat_counters()
 
         # then
         self.assertEqual(actual_stats, expected_stats)
