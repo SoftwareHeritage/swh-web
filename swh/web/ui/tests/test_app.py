@@ -43,7 +43,8 @@ def init_app():
 
     # inject the mock data
     conf = {'api_backend': 'https://somewhere.org:4321',
-            'storage': storage}
+            'storage': storage,
+            'upload_folder': '/some/upload-dir'}
 
     controller.app.config['TESTING'] = True
     controller.app.config.update({'conf': conf})
