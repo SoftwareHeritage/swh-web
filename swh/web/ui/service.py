@@ -8,8 +8,8 @@ from swh.core import hashutil
 from swh.web.ui import converters, main, query, upload
 
 
-def hash_and_search(filepath_or_data):
-    """Hash the filepath_or_data's content as sha1, then search in storage if
+def hash_and_search(filepath):
+    """Hash the filepath's content as sha1, then search in storage if
     it exists.
 
     Args:
@@ -21,11 +21,7 @@ def hash_and_search(filepath_or_data):
         is present or not.
 
     """
-    if isinstance(filepath_or_data, str):
-        hash = hashutil.hashfile(filepath_or_data)
-    else:
-        hash = hashutil.hashdata(filepath_or_data)
-
+    hash = hashutil.hashfile(filepath)
     sha1 = hash['sha1']
     return (hashutil.hash_to_hex(sha1),
             main.storage().content_exist({'sha1': sha1}))
