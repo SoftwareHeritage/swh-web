@@ -6,9 +6,9 @@
 import unittest
 
 from nose.tools import istest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from swh.core import hashutil
+from swh.core.hashutil import hex_to_hash
 from swh.web.ui import service
 from swh.web.ui.tests import test_app
 
@@ -33,7 +33,7 @@ class ServiceTestCase(unittest.TestCase):
         # check the function has been called with parameters
         self.storage.content_exist.assert_called_with({
             'sha1':
-            hashutil.hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f')})
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f')})
 
     @istest
     def lookup_hash_exist(self):
@@ -49,7 +49,7 @@ class ServiceTestCase(unittest.TestCase):
 
         self.storage.content_exist.assert_called_with({
             'sha1':
-            hashutil.hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
+            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
 
     @istest
     def lookup_hash_origin(self):
@@ -79,7 +79,7 @@ class ServiceTestCase(unittest.TestCase):
 
         self.storage.content_find_occurrence.assert_called_with(
             {'sha1_git':
-             hashutil.hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
+             hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
 
     @istest
     def stat_counters(self):
@@ -111,3 +111,22 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEqual(actual_stats, expected_stats)
 
         self.storage.stat_counters.assert_called_with()
+
+    @istest
+    def hash_and_search(self):
+        # given
+        self.storage.content_exist = MagicMock(return_value=False)
+
+        bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        # when
+        with patch(
+                'swh.core.hashutil.hashfile',
+                return_value={'sha1': bhash}):
+            actual_hash, actual_search = service.hash_and_search('/some/path')
+
+        # then
+        self.assertEqual(actual_hash,
+                         '456caf10e9535160d90e874b45aa426de762f19f')
+        self.assertFalse(actual_search)
+
+        self.storage.content_exist.assert_called_with({'sha1': bhash})

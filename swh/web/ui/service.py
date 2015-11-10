@@ -22,9 +22,8 @@ def hash_and_search(filepath):
 
     """
     hash = hashutil.hashfile(filepath)
-    sha1 = hash['sha1']
-    return (hashutil.hash_to_hex(sha1),
-            main.storage().content_exist({'sha1': sha1}))
+    return (hashutil.hash_to_hex(hash['sha1']),
+            main.storage().content_exist(hash))
 
 
 def upload_and_search(file):
