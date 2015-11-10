@@ -9,6 +9,7 @@ from nose.tools import istest
 
 from unittest.mock import MagicMock
 
+from swh.core import hashutil
 from swh.storage.api.client import RemoteStorage as Storage
 from swh.web.ui import service, controller
 
@@ -41,7 +42,13 @@ class ServiceTestCase(unittest.TestCase):
         actual_lookup = service.lookup_hash(
             'sha1:123caf10e9535160d90e874b45aa426de762f19f')
 
+        # then
         self.assertFalse(actual_lookup)
+
+        # check the function has been called with parameters
+        self.storage.content_exist.assert_called_with({
+            'sha1':
+            hashutil.hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f')})
 
     @istest
     def lookup_hash_exist(self):
@@ -50,9 +57,14 @@ class ServiceTestCase(unittest.TestCase):
 
         # when
         actual_lookup = service.lookup_hash(
-            'sha1:123caf10e9535160d90e874b45aa426de762f19f')
+            'sha1:456caf10e9535160d90e874b45aa426de762f19f')
 
+        # then
         self.assertTrue(actual_lookup)
+
+        self.storage.content_exist.assert_called_with({
+            'sha1':
+            hashutil.hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
 
     @istest
     def lookup_hash_origin(self):
@@ -79,6 +91,10 @@ class ServiceTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_origin, expected_origin)
+
+        self.storage.content_find_occurrence.assert_called_with(
+            {'sha1_git':
+             hashutil.hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
 
     @istest
     def stat_counters(self):
@@ -108,3 +124,5 @@ class ServiceTestCase(unittest.TestCase):
         # then
         expected_stats = input_stats
         self.assertEqual(actual_stats, expected_stats)
+
+        self.storage.stat_counters.assert_called_with()
