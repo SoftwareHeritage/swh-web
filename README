@@ -31,7 +31,7 @@ Dev mode
 
     # Upload folder for temporary upload and hash
     upload_folder = /tmp/swh-web-ui/uploads
-    
+
     # Allowed extensions for upload (commented or empty means all is accepted)
     # Otherwise, comma separated values of extensions.
     # upload_allowed_extensions = txt, csv
