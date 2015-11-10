@@ -9,20 +9,18 @@ import shutil
 
 from werkzeug import secure_filename
 
-
-UPLOAD_FOLDER = '/tmp/swh-web-ui/uploads'
-# ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+from swh.web.ui import main
 
 
-def allowed_file(filename):
+def allowed_file(filename, allowed_extensions='*'):
     """Filter on filename extensions.
 
     The filename to check for permission.
 
     """
-    # return '.' in filename and \
-    #        filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-    return True
+    if allowed_extensions == '*':
+        return True
+    return '.' in filename and filename.rsplit('.', 1)[1] in allowed_extensions
 
 
 def save_in_upload_folder(file):
@@ -38,16 +36,20 @@ def save_in_upload_folder(file):
         - the complete path filepath
 
     """
+    main_conf = main.app.config['conf']
+    upload_folder = main_conf['upload_folder']
+    allowed_extensions = main_conf['upload_allowed_extensions']
+
     if not file:
         return None, None, None
 
     filename = file.filename
-    if allowed_file(filename):
+    if allowed_file(filename, allowed_extensions):
         filename = secure_filename(filename)
 
         tmpdir = tempfile.mkdtemp(suffix='tmp',
                                   prefix='swh.web.ui-',
-                                  dir=UPLOAD_FOLDER)
+                                  dir=upload_folder)
 
         filepath = os.path.join(tmpdir, filename)
         file.save(filepath)  # persist on disk (not found how to avoid this)
@@ -61,5 +63,6 @@ def cleanup(tmpdir):
     Args:
         The directory dir to destroy.
     """
-    assert (os.path.commonprefix([UPLOAD_FOLDER, tmpdir]) == UPLOAD_FOLDER)
+    upload_folder = main.app.config['conf']['upload_folder']
+    assert (os.path.commonprefix([upload_folder, tmpdir]) == upload_folder)
     shutil.rmtree(tmpdir)

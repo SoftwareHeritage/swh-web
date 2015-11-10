@@ -19,7 +19,9 @@ DEFAULT_CONFIG = {
     'host': ('string', '127.0.0.1'),
     'port': ('int', 6543),
     'secret_key': ('string', 'development key'),
-    'max_upload_size': ('int', 16 * 1024 * 1024)
+    'max_upload_size': ('int', 16 * 1024 * 1024),
+    'upload_folder': ('string', '/tmp/swh-web-ui/uploads'),
+    'upload_allowed_extensions': ('string', '*')
 }
 
 
