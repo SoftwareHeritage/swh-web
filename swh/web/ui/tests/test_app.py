@@ -16,7 +16,7 @@ class RemoteStorageAdapter(Storage):
         self.base_url = base_url
 
 
-def _init_mock_storage():
+def _init_mock_storage(base_url='https://somewhere.org:4321'):
     """Instanciate a remote storage whose goal is to be mocked in a test
     context.
 
@@ -27,10 +27,10 @@ def _init_mock_storage():
         mocked (it does not do any rest call)
 
     """
-    return RemoteStorageAdapter('http://somewhere.org:4321/')  # Mock
+    return RemoteStorageAdapter(base_url)  # destined to be used as mock
 
 
-def init_app():
+def init_app(base_url='https://somewhere.org:4321'):
     """Function to initiate a flask app with storage designed to be mocked.
 
     Returns:
@@ -39,11 +39,10 @@ def init_app():
     NOT FOR PRODUCTION
 
     """
-    storage = _init_mock_storage()
+    storage = _init_mock_storage(base_url)
 
     # inject the mock data
-    conf = {'api_backend': 'https://somewhere.org:4321',
-            'storage': storage,
+    conf = {'storage': storage,
             'upload_folder': '/some/upload-dir'}
 
     controller.app.config['TESTING'] = True
