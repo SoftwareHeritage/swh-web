@@ -46,6 +46,40 @@ class ApiTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.controller.service')
     @istest
+    def api_browse(self, mock_service):
+        # given
+        mock_service.lookup_hash_origin.return_value = {
+            'origin': 'some-origin'
+        }
+
+        # when
+        rv = self.app.get('/api/1/browse/sha1:foo/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'origin': {'origin': 'some-origin'}})
+
+        mock_service.lookup_hash_origin.assert_called_once_with('sha1:foo')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_search(self, mock_service):
+        # given
+        mock_service.lookup_hash.return_value = False
+
+        # when
+        rv = self.app.get('/api/1/search/sha1:blah/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'found': False})
+
+        mock_service.lookup_hash.assert_called_once_with('sha1:blah')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
     def api_1_stat_counters(self, mock_service):
         # given
         mock_service.stat_counters.return_value = {
@@ -69,8 +103,28 @@ class ApiTestCase(unittest.TestCase):
         # when
         rv = self.app.get('/api/1/stat/counters')
 
+        response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
+        self.assertEquals(response_data, {
+            "content": 1770830,
+            "directory": 211683,
+            "directory_entry_dir": 209167,
+            "directory_entry_file": 1807094,
+            "directory_entry_rev": 0,
+            "entity": 0,
+            "entity_history": 0,
+            "occurrence": 0,
+            "occurrence_history": 19600,
+            "origin": 1096,
+            "person": 0,
+            "release": 8584,
+            "revision": 7792,
+            "revision_history": 0,
+            "skipped_content": 0
+        })
+
+        mock_service.stat_counters.assert_called_once_with()
 
     @patch('swh.web.ui.controller.service')
     @patch('swh.web.ui.controller.request')
@@ -91,3 +145,6 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(response_data, {'filename': 'simple-filename',
                                           'sha1': 'some-hex-sha1',
                                           'found': False})
+
+        mock_service.upload_and_search.assert_called_once_with(
+            'simple-filename')
