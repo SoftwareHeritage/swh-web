@@ -18,7 +18,7 @@ def allowed_file(filename, allowed_extensions='*'):
     The filename to check for permission.
 
     """
-    if allowed_extensions == '*':
+    if allowed_extensions == []:
         return True
     return '.' in filename and filename.rsplit('.', 1)[1] in allowed_extensions
 
@@ -55,6 +55,9 @@ def save_in_upload_folder(file):
         file.save(filepath)  # persist on disk (not found how to avoid this)
 
         return tmpdir, filename, filepath
+    else:
+        raise ValueError(
+            'Only %s extensions are valid for upload.' % allowed_extensions)
 
 
 def cleanup(tmpdir):

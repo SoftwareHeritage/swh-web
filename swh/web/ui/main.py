@@ -21,7 +21,7 @@ DEFAULT_CONFIG = {
     'secret_key': ('string', 'development key'),
     'max_upload_size': ('int', 16 * 1024 * 1024),
     'upload_folder': ('string', '/tmp/swh-web-ui/uploads'),
-    'upload_allowed_extensions': ('string', '*')
+    'upload_allowed_extensions': ('list[str]', [])  # means all are accepted
 }
 
 
