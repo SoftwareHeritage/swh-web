@@ -102,7 +102,7 @@ def run_debug_from(config_path, verbose=False):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+    app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
 
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')
