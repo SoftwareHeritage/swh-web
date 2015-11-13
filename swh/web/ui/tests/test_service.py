@@ -153,3 +153,25 @@ class ServiceTestCase(unittest.TestCase):
 
         mock_upload.save_in_upload_folder.assert_called_with(file)
         mock_upload.cleanup.assert_called_with('/tmp/blah')
+
+    @istest
+    def lookup_origin(self):
+        # given
+        self.storage.origin_get = MagicMock(return_value={
+            'id': 'origin-id',
+            'lister': 'uuid-lister',
+            'project': 'uuid-project',
+            'url': 'ftp://some/url/to/origin',
+            'type': 'ftp'})
+
+        # when
+        actual_origin = service.lookup_origin('origin-id')
+
+        # then
+        self.assertEqual(actual_origin, {'id': 'origin-id',
+                                         'lister': 'uuid-lister',
+                                         'project': 'uuid-project',
+                                         'url': 'ftp://some/url/to/origin',
+                                         'type': 'ftp'})
+
+        self.storage.origin_get.assert_called_with({'id': 'origin-id'})

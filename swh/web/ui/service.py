@@ -69,6 +69,19 @@ def lookup_hash_origin(q):
     return converters.from_origin(origin)
 
 
+def lookup_origin(origin_id):
+    """Return information about the origin with id origin_id.
+
+    Args:
+        origin_id as string
+
+    Returns:
+        origin information as dict.
+
+    """
+    return main.storage().origin_get({'id': origin_id})
+
+
 def stat_counters():
     """Return the stat counters for Software Heritage
 

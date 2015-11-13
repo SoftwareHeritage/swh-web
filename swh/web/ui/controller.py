@@ -357,6 +357,13 @@ def api_search(q):
     return jsonify({'found': service.lookup_hash(q)})
 
 
+@app.route('/api/1/origin/<string:origin_id>')
+@jsonp
+def api_origin(origin_id):
+    """Return information about origin"""
+    return jsonify({'origin': service.lookup_origin(origin_id)})
+
+
 @app.route('/api/1/browse/<string:q>/')
 @jsonp
 def api_browse(q):

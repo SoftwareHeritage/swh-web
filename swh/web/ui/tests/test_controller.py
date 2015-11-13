@@ -163,3 +163,32 @@ class ApiTestCase(unittest.TestCase):
 
         mock_service.upload_and_search.assert_called_once_with(
             'simple-filename')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_origin(self, mock_service):
+        # given
+        mock_service.lookup_origin.return_value = {
+            'id': 'origin-0',
+            'lister': 'uuid-lister-0',
+            'project': 'uuid-project-0',
+            'url': 'ftp://some/url/to/origin/0',
+            'type': 'ftp'}
+
+        # when
+        rv = self.app.get('/api/1/origin/origin-0')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'origin': {
+                'id': 'origin-0',
+                'lister': 'uuid-lister-0',
+                'project': 'uuid-project-0',
+                'url': 'ftp://some/url/to/origin/0',
+                'type': 'ftp'
+            }
+        })
