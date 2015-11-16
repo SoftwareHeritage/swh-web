@@ -82,11 +82,11 @@ def lookup_origin(origin_id):
     return main.storage().origin_get({'id': origin_id})
 
 
-def lookup_release(release_sha1):
-    """Return information about the release with sha1 release_sha1.
+def lookup_release(release_sha1_git):
+    """Return information about the release with sha1 release_sha1_git.
 
     Args:
-        release_sha1: The release's sha1 as hexadecimal
+        release_sha1_git: The release's sha1 as hexadecimal
 
     Returns:
         Release information as dict.
@@ -95,7 +95,7 @@ def lookup_release(release_sha1):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    algo, hBinSha1 = query.parse_hash(release_sha1)
+    algo, hBinSha1 = query.parse_hash(release_sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise ValueError('Only sha1_git is supported.')
 

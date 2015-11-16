@@ -364,11 +364,11 @@ def api_origin(origin_id):
     return jsonify({'origin': service.lookup_origin(origin_id)})
 
 
-@app.route('/api/1/release/<string:release_id>')
+@app.route('/api/1/release/<string:sha1_git>')
 @jsonp
-def api_release(release_id):
-    """Return information about origin"""
-    return jsonify({'release': service.lookup_release(release_id)})
+def api_release(sha1_git):
+    """Return information about release with id sha1_git."""
+    return jsonify({'release': service.lookup_release(sha1_git)})
 
 
 @app.route('/api/1/browse/<string:q>/')
