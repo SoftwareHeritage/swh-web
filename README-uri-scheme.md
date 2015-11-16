@@ -10,6 +10,39 @@ To be anchored where browsing starts (e.g., at /api/1)
 
 * /revision/<SHA1_GIT>: show commit information
 
+    $curl http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5
+    {
+      "revision": {
+        "author_email": "robot@softwareheritage.org",
+        "author_name": "Software Heritage",
+        "committer_date": "Mon, 17 Jan 2000 10:23:54 GMT",
+        "committer_date_offset": 0,
+        "committer_email": "robot@softwareheritage.org",
+        "committer_name": "Software Heritage",
+        "date": "Mon, 17 Jan 2000 10:23:54 GMT",
+        "date_offset": 0,
+        "directory": "7834ef7e7c357ce2af928115c6c6a42b7e2a44e6",
+        "id": "18d8be353ed3480476f032475e7c233eff7371d5",
+        "message": "synthetic revision message",
+        "metadata": {
+          "original_artifact": [
+            {
+              "archive_type": "tar",
+              "name": "webbase-5.7.0.tar.gz",
+              "sha1": "147f73f369733d088b7a6fa9c4e0273dcd3c7ccd",
+              "sha1_git": "6a15ea8b881069adedf11feceec35588f2cfe8f1",
+              "sha256": "401d0df797110bea805d358b85bcc1ced29549d3d73f309d36484e7edf7bb912"
+            }
+          ]
+        },
+        "parents": [
+          null
+        ],
+        "synthetic": true,
+        "type": "tar"
+      }
+    }
+
 * /directory/<SHA1_GIT>: show directory information (including ls)
 
 * /directory/<SHA1_GIT>/path/to/file-or-dir: ditto, but for dir pointed by path

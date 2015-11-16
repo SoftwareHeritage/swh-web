@@ -101,3 +101,70 @@ class ConvertersTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_release, expected_release)
+
+    @istest
+    def from_revision(self):
+        revision_input = {
+            'id': hashutil.hex_to_hash(
+                '18d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hashutil.hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author_name': b'Software Heritage',
+            'author_email': b'robot@softwareheritage.org',
+            'committer_name': b'Software Heritage',
+            'committer_email': b'robot@softwareheritage.org',
+            'message': b'synthetic revision message',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54,
+                                                tzinfo=None),
+            'committer_date_offset': 0,
+            'synthetic': True,
+            'type': 'tar',
+            'parents': [],
+            'metadata': {
+                'original_artifact': [{
+                    'archive_type': 'tar',
+                    'name': 'webbase-5.7.0.tar.gz',
+                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
+                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
+                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
+                    '309d36484e7edf7bb912',
+
+                }]
+            },
+        }
+
+        expected_revision = {
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54,
+                                                tzinfo=None),
+            'committer_date_offset': 0,
+            'parents': [],
+            'type': 'tar',
+            'synthetic': True,
+            'metadata': {
+                'original_artifact': [{
+                    'archive_type': 'tar',
+                    'name': 'webbase-5.7.0.tar.gz',
+                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
+                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
+                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
+                    '309d36484e7edf7bb912'
+                }]
+            },
+        }
+
+        # when
+        actual_revision = converters.from_revision(revision_input)
+
+        # then
+        self.assertEqual(actual_revision, expected_revision)

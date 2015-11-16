@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
 import unittest
 
 from nose.tools import istest
@@ -178,7 +179,6 @@ class ServiceTestCase(unittest.TestCase):
 
     @istest
     def lookup_release(self):
-        import datetime
         # given
         self.storage.release_get = MagicMock(return_value=[{
             'id': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
@@ -235,3 +235,51 @@ class ServiceTestCase(unittest.TestCase):
             self.assertIn('sha1_git supported', cm.exception.args[0])
 
         self.storage.release_get.called = False
+
+    @istest
+    def lookup_revision(self):
+        # given
+        self.storage.revision_get = MagicMock(return_value=[{
+            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author_name': b'bill & boule',
+            'author_email': b'bill@boule.org',
+            'committer_name': b'boule & bill',
+            'committer_email': b'boule@bill.org',
+            'message': b'elegant fix for bug 31415957',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }])
+
+        # when
+        actual_revision = service.lookup_revision(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertEqual(actual_revision, {
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'bill & boule',
+            'author_email': 'bill@boule.org',
+            'committer_name': 'boule & bill',
+            'committer_email': 'boule@bill.org',
+            'message': 'elegant fix for bug 31415957',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        })
+
+        self.storage.revision_get.assert_called_with(
+            [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])

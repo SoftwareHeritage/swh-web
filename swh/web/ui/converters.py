@@ -54,3 +54,46 @@ def from_release(release):
         else:
             new_release[key] = value
     return new_release
+
+
+def from_revision(revision):
+    """Convert from an SWH revision to a json serializable revision dictionary.
+
+    Args:
+        revision: Dict with the following keys
+        - id: identifier of the revision (sha1 in bytes)
+        - directory: identifier of the directory the revision points to (sha1
+        in bytes)
+        - author_name, author_email: author's revision name and email
+        - committer_name, committer_email: committer's revision name and email
+        - message: revision's message
+        - date, date_offset: revision's author date
+        - committer_date, committer_date_offset: revision's commit date
+        - parents: list of parents for such revision
+        - synthetic: revision's property nature
+        - type: revision's type (git, tar or dsc at the moment)
+        - metadata: if the revision is synthetic, this can reference dynamic
+        properties.
+
+    Returns:
+        Revision dictionary with the same keys as inputs, only:
+        - sha1s are in hexadecimal strings (id, directory)
+        - bytes are decoded in string (author_name, committer_name,
+        author_email, committer_email, message)
+        - remaining keys are left as is
+
+    """
+    new_revision = {}
+    for key, value in revision.items():
+        if key in ['id', 'directory']:
+            new_revision[key] = hashutil.hash_to_hex(value) if value else None
+        elif key in ['author_name',
+                     'committer_name',
+                     'author_email',
+                     'committer_email',
+                     'message']:
+            new_revision[key] = value.decode('utf-8')
+        else:
+            new_revision[key] = value
+
+    return new_revision

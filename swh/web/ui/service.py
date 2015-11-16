@@ -106,6 +106,30 @@ def lookup_release(release_sha1_git):
     return None
 
 
+def lookup_revision(rev_sha1_git, rev_type='git'):
+    """Return information about the revision with sha1 revision_sha1_git.
+
+    Args:
+        revision_sha1_git: The revision's sha1 as hexadecimal
+
+    Returns:
+        Revision information as dict.
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+
+    """
+    algo, hBinSha1 = query.parse_hash(rev_sha1_git)
+    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
+        raise ValueError('Only sha1_git is supported.')
+
+    res = main.storage().revision_get([hBinSha1])
+
+    if res and len(res) >= 1:
+        return converters.from_revision(res[0])
+    return None
+
+
 def stat_counters():
     """Return the stat counters for Software Heritage
 

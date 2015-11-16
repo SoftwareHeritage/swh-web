@@ -218,3 +218,43 @@ class ApiTestCase(unittest.TestCase):
                 'author': 'author-id',
             }
         })
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_revision(self, mock_service):
+        # given
+        mock_revision = {
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': [],
+            'type': 'tar',
+            'synthetic': True,
+            'metadata': {
+                'original_artifact': [{
+                    'archive_type': 'tar',
+                    'name': 'webbase-5.7.0.tar.gz',
+                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
+                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
+                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
+                    '309d36484e7edf7bb912'
+                }]
+            },
+        }
+        mock_service.lookup_revision.return_value = mock_revision
+
+        # when
+        rv = self.app.get('/api/1/revision/revision-0')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {"revision": mock_revision})

@@ -371,6 +371,15 @@ def api_release(sha1_git):
     return jsonify({'release': service.lookup_release(sha1_git)})
 
 
+@app.route('/api/1/revision/<string:sha1_git>')
+@jsonp
+def api_revision(sha1_git):
+    """Return information about revision with id sha1_git.
+
+    """
+    return jsonify({'revision': service.lookup_revision(sha1_git)})
+
+
 @app.route('/api/1/browse/<string:q>/')
 @jsonp
 def api_browse(q):
