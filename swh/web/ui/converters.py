@@ -7,7 +7,7 @@ from swh.core import hashutil
 
 
 def from_origin(origin):
-    """Convert from an swh origin to an origin dictionary.
+    """Convert from an SWH origin to an origin dictionary.
 
     """
     new_origin = {}
@@ -23,7 +23,7 @@ def from_origin(origin):
 
 
 def from_release(release):
-    """Convert from an swh release to a json serializable release dictionary.
+    """Convert from an SWH release to a json serializable release dictionary.
 
     Args:
         release: Dict with the following keys
@@ -47,7 +47,7 @@ def from_release(release):
     """
     new_release = {}
     for key, value in release.items():
-        if key == 'id' or key == 'revision':
+        if key in ['id', 'revision']:
             new_release[key] = hashutil.hash_to_hex(value) if value else None
         elif key == 'comment':
             new_release[key] = value.decode('utf-8')
