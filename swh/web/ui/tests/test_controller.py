@@ -192,3 +192,29 @@ class ApiTestCase(unittest.TestCase):
                 'type': 'ftp'
             }
         })
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_release(self, mock_service):
+        # given
+        mock_service.lookup_release.return_value = {
+            'id': 'release-0',
+            'revision': 'revision-sha1',
+            'author': 'author-id',
+        }
+
+        # when
+        rv = self.app.get('/api/1/release/release-0')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'release': {
+                'id': 'release-0',
+                'revision': 'revision-sha1',
+                'author': 'author-id',
+            }
+        })

@@ -364,6 +364,13 @@ def api_origin(origin_id):
     return jsonify({'origin': service.lookup_origin(origin_id)})
 
 
+@app.route('/api/1/release/<string:release_id>')
+@jsonp
+def api_release(release_id):
+    """Return information about origin"""
+    return jsonify({'release': service.lookup_release(release_id)})
+
+
 @app.route('/api/1/browse/<string:q>/')
 @jsonp
 def api_browse(q):

@@ -175,3 +175,63 @@ class ServiceTestCase(unittest.TestCase):
                                          'type': 'ftp'})
 
         self.storage.origin_get.assert_called_with({'id': 'origin-id'})
+
+    @istest
+    def lookup_release(self):
+        import datetime
+        # given
+        self.storage.release_get = MagicMock(return_value=[{
+            'id': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
+            'revision': None,
+            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
+                                      tzinfo=datetime.timezone.utc),
+            'date_offset': None,
+            'name': 'v0.0.1',
+            'comment': b'synthetic release',
+            'synthetic': True,
+        }])
+
+        # when
+        actual_release = service.lookup_release(
+            '65a55bbdf3629f916219feb3dcc7393ded1bc8db')
+
+        # then
+        self.assertEqual(actual_release, {
+            'id': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
+            'revision': None,
+            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
+                                      tzinfo=datetime.timezone.utc),
+            'date_offset': None,
+            'name': 'v0.0.1',
+            'comment': 'synthetic release',
+            'synthetic': True,
+        })
+
+        self.storage.release_get.assert_called_with(
+            [hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db')])
+
+    @istest
+    def lookup_release_ko_id_checksum_not_ok_because_not_a_sha1(self):
+        # given
+        self.storage.release_get = MagicMock()
+
+        with self.assertRaises(ValueError) as cm:
+            # when
+            service.lookup_release('not-a-sha1')
+            self.assertIn('invalid checksum', cm.exception.args[0])
+
+        self.storage.release_get.called = False
+
+    @istest
+    def lookup_release_ko_id_checksum_ok_but_not_a_sha1(self):
+        # given
+        self.storage.release_get = MagicMock()
+
+        # when
+        with self.assertRaises(ValueError) as cm:
+            service.lookup_release(
+                '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4daf5'
+                '1aea892abe')
+            self.assertIn('sha1_git supported', cm.exception.args[0])
+
+        self.storage.release_get.called = False

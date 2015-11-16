@@ -26,6 +26,22 @@ To be anchored where browsing starts (e.g., at /browse)
 
 * /release/<SHA1_GIT>: show release information
 
+Sample:
+    $ curl -X GET http://localhost:6543/api/1/release/4a1b6d7dd0a923ed90156c4e2f5db030095d8e08
+
+    {
+      "release": {
+        "author": 1,
+        "comment": "synthetic release message",
+        "date": "Sat, 04 Mar 2000 07:50:35 GMT",
+        "date_offset": 0,
+        "id": "4a1b6d7dd0a923ed90156c4e2f5db030095d8e08",
+        "name": "4.0.6",
+        "revision": "5c7814ce9978d4e16f3858925b5cea611e500eec",
+        "synthetic": true
+      }
+    }
+
 * /person/<PERSON_ID>: show person information
 
 * /origin/<ORIGIN_ID>: show origin information
