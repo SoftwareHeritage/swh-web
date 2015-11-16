@@ -6,7 +6,7 @@ Browsing namespace
 
 ### Global
 
-To be anchored where browsing starts (e.g., at /browse)
+To be anchored where browsing starts (e.g., at /api/1)
 
 * /revision/<SHA1_GIT>: show commit information
 
@@ -27,8 +27,8 @@ To be anchored where browsing starts (e.g., at /browse)
 * /release/<SHA1_GIT>: show release information
 
 Sample:
-    $ curl -X GET http://localhost:6543/api/1/release/4a1b6d7dd0a923ed90156c4e2f5db030095d8e08
 
+    $ curl -X GET http://localhost:6543/api/1/release/4a1b6d7dd0a923ed90156c4e2f5db030095d8e08
     {
       "release": {
         "author": 1,
@@ -40,11 +40,24 @@ Sample:
         "revision": "5c7814ce9978d4e16f3858925b5cea611e500eec",
         "synthetic": true
       }
-    }
+    }%
 
 * /person/<PERSON_ID>: show person information
 
 * /origin/<ORIGIN_ID>: show origin information
+
+Sample:
+
+    $ curl -X GET http://localhost:6543/api/1/origin/1
+    {
+      "origin": {
+        "id": 1,
+        "lister": null,
+        "project": null,
+        "type": "ftp",
+        "url": "rsync://ftp.gnu.org/old-gnu/solfege"
+      }
+    }%
 
 * /project/<PROJECT_ID>: show project information
 
