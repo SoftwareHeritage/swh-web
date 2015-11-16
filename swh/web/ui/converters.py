@@ -6,20 +6,43 @@
 from swh.core import hashutil
 
 
+def from_swh(dict_swh, hashess=[], bytess=[]):
+    """Convert from an swh dictionary to something reasonably json
+    serializable.
+
+    Args:
+        - dict_swh: the origin dictionary needed to be transformed
+        - hashess: list/set of keys representing hashes values (sha1, sha256,
+        sha1_git, etc...) as bytes. Those need to be transformed in hexadecimal
+        string
+        - bytess: list/set of keys representing bytes values which needs to
+        be decoded
+
+        The remaining keys are copied as is in the output.
+
+    Returns:
+        dictionary equivalent as dict_swh only with its keys `converted`.
+
+    """
+    new_dict = {}
+    for key, value in dict_swh.items():
+        if key in hashess:
+            new_dict[key] = hashutil.hash_to_hex(value) if value else None
+        elif key in bytess:
+            new_dict[key] = value.decode('utf-8')
+        else:
+            new_dict[key] = value
+
+    return new_dict
+
+
 def from_origin(origin):
     """Convert from an SWH origin to an origin dictionary.
 
     """
-    new_origin = {}
-    for key, value in origin.items():
-        if key == 'revision':
-            new_origin[key] = hashutil.hash_to_hex(value)
-        elif key == 'path':
-            new_origin[key] = value.decode('utf-8')
-        else:
-            new_origin[key] = value
-
-    return new_origin
+    return from_swh(origin,
+                    hashess=set(['revision']),
+                    bytess=set(['path']))
 
 
 def from_release(release):
@@ -45,15 +68,9 @@ def from_release(release):
         - synthetic: the synthetic property (boolean)
 
     """
-    new_release = {}
-    for key, value in release.items():
-        if key in ['id', 'revision']:
-            new_release[key] = hashutil.hash_to_hex(value) if value else None
-        elif key == 'comment':
-            new_release[key] = value.decode('utf-8')
-        else:
-            new_release[key] = value
-    return new_release
+    return from_swh(release,
+                    hashess=set(['id', 'revision']),
+                    bytess=set(['comment']))
 
 
 def from_revision(revision):
@@ -83,17 +100,10 @@ def from_revision(revision):
         - remaining keys are left as is
 
     """
-    new_revision = {}
-    for key, value in revision.items():
-        if key in ['id', 'directory']:
-            new_revision[key] = hashutil.hash_to_hex(value) if value else None
-        elif key in ['author_name',
-                     'committer_name',
-                     'author_email',
-                     'committer_email',
-                     'message']:
-            new_revision[key] = value.decode('utf-8')
-        else:
-            new_revision[key] = value
-
-    return new_revision
+    return from_swh(revision,
+                    hashess=set(['id', 'directory']),
+                    bytess=set(['author_name',
+                                'committer_name',
+                                'author_email',
+                                'committer_email',
+                                'message']))

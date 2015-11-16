@@ -15,6 +15,30 @@ from swh.web.ui import converters
 class ConvertersTestCase(unittest.TestCase):
 
     @istest
+    def from_swh(self):
+        some_input = {
+            'a': 'something',
+            'b': 'someone',
+            'c': b'sharp-0.3.4.tgz',
+            'd': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',
+            'e': b'sharp.html/doc_002dS_005fISREG.html'
+        }
+
+        expected_output = {
+            'a': 'something',
+            'b': 'someone',
+            'c': 'sharp-0.3.4.tgz',
+            'd': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'e': 'sharp.html/doc_002dS_005fISREG.html'
+        }
+
+        actual_output = converters.from_swh(some_input,
+                                            hashess=set(['d']),
+                                            bytess=set(['c', 'e']))
+
+        self.assertEquals(expected_output, actual_output)
+
+    @istest
     def from_origin(self):
         # given
         origin_input = {
