@@ -46,7 +46,7 @@ def upload_and_search(file):
 def lookup_hash(q):
     """Checks if the storage contains a given content checksum
 
-    Args: query string
+    Args: query string of the form <hash_algo:hash>
 
     Returns:
         True or False, according to whether the checksum is present or not
@@ -59,7 +59,7 @@ def lookup_hash(q):
 def lookup_hash_origin(q):
     """Return information about the checksum contained in the query q.
 
-    Args: query string
+    Args: query string of the form <hash_algo:hash>
 
     Returns:
         True or False, according to whether the checksum is present or not
