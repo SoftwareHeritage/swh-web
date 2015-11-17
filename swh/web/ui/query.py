@@ -7,6 +7,7 @@
 import re
 
 from swh.core.hashutil import ALGORITHMS, hex_to_hash
+from swh.web.ui.exc import BadInputExc
 
 
 SHA256_RE = re.compile(r'^[0-9a-f]{64}$', re.IGNORECASE)
@@ -35,16 +36,16 @@ def parse_hash(q):
         elif SHA256_RE.match(q):
             return 'sha256'
         else:
-            raise ValueError('invalid checksum query string')
+            raise BadInputExc('invalid checksum query string')
 
     def check_algo(algo, hex):
         if (algo in set(['sha1', 'sha1_git']) and not SHA1_RE.match(hex)) \
            or (algo == 'sha256' and not SHA256_RE.match(hex)):
-            raise ValueError('invalid hash for algorithm ' + algo)
+            raise BadInputExc('invalid hash for algorithm ' + algo)
 
     parts = q.split(':')
     if len(parts) > 2:
-        raise ValueError('invalid checksum query string')
+        raise BadInputExc('invalid checksum query string')
     elif len(parts) == 1:
         parts = (guess_algo(q), q)
     elif len(parts) == 2:
@@ -53,6 +54,6 @@ def parse_hash(q):
     hash = hex_to_hash(parts[1])
 
     if algo not in ALGORITHMS:
-        raise ValueError('unknown hash algorithm: ' + algo)
+        raise BadInputExc('unknown hash algorithm: ' + algo)
 
     return (algo, hash)

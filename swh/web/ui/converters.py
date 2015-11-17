@@ -24,6 +24,9 @@ def from_swh(dict_swh, hashess=[], bytess=[]):
         dictionary equivalent as dict_swh only with its keys `converted`.
 
     """
+    if not dict_swh:
+        return dict_swh
+
     new_dict = {}
     for key, value in dict_swh.items():
         if key in hashess:

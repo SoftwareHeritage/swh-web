@@ -39,6 +39,11 @@ class ConvertersTestCase(unittest.TestCase):
         self.assertEquals(expected_output, actual_output)
 
     @istest
+    def from_swh_empty(self):
+        # when
+        self.assertEquals({}, converters.from_swh({}))
+
+    @istest
     def from_origin(self):
         # given
         origin_input = {

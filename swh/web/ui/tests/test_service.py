@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 
 from swh.core.hashutil import hex_to_hash
 from swh.web.ui import service
+from swh.web.ui.exc import BadInputExc
 from swh.web.ui.tests import test_app
 
 
@@ -215,7 +216,7 @@ class ServiceTestCase(unittest.TestCase):
         # given
         self.storage.release_get = MagicMock()
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(BadInputExc) as cm:
             # when
             service.lookup_release('not-a-sha1')
             self.assertIn('invalid checksum', cm.exception.args[0])
@@ -228,7 +229,7 @@ class ServiceTestCase(unittest.TestCase):
         self.storage.release_get = MagicMock()
 
         # when
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(BadInputExc) as cm:
             service.lookup_release(
                 '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4daf5'
                 '1aea892abe')

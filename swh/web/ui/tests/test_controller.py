@@ -64,9 +64,28 @@ class ApiTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.controller.service')
     @istest
+    def api_browse_not_found(self, mock_service):
+        # given
+        mock_service.lookup_hash_origin.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/browse/sha256:oof/')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Origin from content with checksum sha256:oof not found.'
+        })
+
+        mock_service.lookup_hash_origin.assert_called_once_with('sha256:oof')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
     def api_search(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = False
+        mock_service.lookup_hash.return_value = True
 
         # when
         rv = self.app.get('/api/1/search/sha1:blah/')
@@ -74,9 +93,25 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'found': False})
+        self.assertEquals(response_data, {'found': True})
 
         mock_service.lookup_hash.assert_called_once_with('sha1:blah')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_search_not_found(self, mock_service):
+        # given
+        mock_service.lookup_hash.return_value = False
+
+        # when
+        rv = self.app.get('/api/1/search/sha1:halb/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'found': False})
+
+        mock_service.lookup_hash.assert_called_once_with('sha1:halb')
 
     @patch('swh.web.ui.controller.service')
     @istest
@@ -195,6 +230,23 @@ class ApiTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.controller.service')
     @istest
+    def api_origin_not_found(self, mock_service):
+        # given
+        mock_service.lookup_origin.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/origin/origin-0')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Origin with id origin-0 not found.'
+        })
+
+    @patch('swh.web.ui.controller.service')
+    @istest
     def api_release(self, mock_service):
         # given
         mock_service.lookup_release.return_value = {
@@ -217,6 +269,24 @@ class ApiTestCase(unittest.TestCase):
                 'revision': 'revision-sha1',
                 'author': 'author-id',
             }
+        })
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_release_not_found(self, mock_service):
+        # given
+        mock_service.lookup_release.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/release/release-0')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Release with sha1_git release-0 not found.'
         })
 
     @patch('swh.web.ui.controller.service')
@@ -258,3 +328,20 @@ class ApiTestCase(unittest.TestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {"revision": mock_revision})
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_revision_not_found(self, mock_service):
+        # given
+        mock_service.lookup_revision.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/revision/revision-0')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Revision with sha1_git revision-0 not found.'})

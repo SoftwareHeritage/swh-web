@@ -6,6 +6,7 @@
 
 from swh.core import hashutil
 from swh.web.ui import converters, main, query, upload
+from swh.web.ui.exc import BadInputExc
 
 
 def hash_and_search(filepath):
@@ -97,7 +98,7 @@ def lookup_release(release_sha1_git):
     """
     algo, hBinSha1 = query.parse_hash(release_sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise ValueError('Only sha1_git is supported.')
+        raise BadInputExc('Only sha1_git is supported.')
 
     res = main.storage().release_get([hBinSha1])
 
@@ -121,7 +122,7 @@ def lookup_revision(rev_sha1_git, rev_type='git'):
     """
     algo, hBinSha1 = query.parse_hash(rev_sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise ValueError('Only sha1_git is supported.')
+        raise BadInputExc('Only sha1_git is supported.')
 
     res = main.storage().revision_get([hBinSha1])
 

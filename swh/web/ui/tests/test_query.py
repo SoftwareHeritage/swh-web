@@ -7,8 +7,9 @@ import unittest
 
 from nose.tools import istest
 
-from swh.web.ui import query
 from swh.core import hashutil
+from swh.web.ui import query
+from swh.web.ui.exc import BadInputExc
 
 
 class QueryTestCase(unittest.TestCase):
@@ -29,5 +30,5 @@ class QueryTestCase(unittest.TestCase):
     @istest
     def parse_hash_3(self):
         q = '1234567890987654'
-        with self.assertRaises(ValueError):
+        with self.assertRaises(BadInputExc):
             query.parse_hash(q)

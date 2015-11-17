@@ -13,6 +13,7 @@ from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service
 from swh.web.ui.decorators import jsonp
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
 hash_filter_keys = ALGORITHMS
@@ -45,7 +46,7 @@ def search():
     try:
         if q:
             env['found'] = service.lookup_hash(q)
-    except ValueError:
+    except BadInputExc:
         env['message'] = 'Error: invalid query string'
 
     return render_template('search.html', **env)
@@ -73,7 +74,7 @@ def uploadnsearch():
                 'found': found,
                 'message': message
             })
-        except ValueError:
+        except BadInputExc:
             env['message'] = 'Error: invalid query string'
 
     return render_template('upload_and_search.html', **env)
@@ -337,17 +338,30 @@ def api_stats():
     return jsonify(service.stat_counters())
 
 
+def _make_error_response(default_error_msg, error_code, error):
+    """Private function to create a custom error response.
+
+    """
+    response = make_response(default_error_msg, error_code)
+    response.headers['Content-Type'] = 'application/json'
+    response.data = json.dumps({"error": str(error)})
+    return response
+
+
 @app.errorhandler(ValueError)
 def value_error_as_bad_request(error):
     """Compute a bad request and add body as payload.
 
     """
-    response = make_response(
-        'Bad request',
-        400)
-    response.headers['Content-Type'] = 'application/json'
-    response.data = json.dumps({"error": str(error)})
-    return response
+    return _make_error_response('Bad request', 400, error)
+
+
+@app.errorhandler(NotFoundExc)
+def value_not_found(error):
+    """Compute a not found and add body as payload.
+
+    """
+    return _make_error_response('Not found', 404, error)
 
 
 @app.route('/api/1/search/<string:q>/')
@@ -361,14 +375,20 @@ def api_search(q):
 @jsonp
 def api_origin(origin_id):
     """Return information about origin"""
-    return jsonify({'origin': service.lookup_origin(origin_id)})
+    ori = service.lookup_origin(origin_id)
+    if not ori:
+        raise NotFoundExc('Origin with id %s not found.' % origin_id)
+    return jsonify({'origin': ori})
 
 
 @app.route('/api/1/release/<string:sha1_git>')
 @jsonp
 def api_release(sha1_git):
     """Return information about release with id sha1_git."""
-    return jsonify({'release': service.lookup_release(sha1_git)})
+    rel = service.lookup_release(sha1_git)
+    if not rel:
+        raise NotFoundExc('Release with sha1_git %s not found.' % sha1_git)
+    return jsonify({'release': rel})
 
 
 @app.route('/api/1/revision/<string:sha1_git>')
@@ -377,14 +397,21 @@ def api_revision(sha1_git):
     """Return information about revision with id sha1_git.
 
     """
-    return jsonify({'revision': service.lookup_revision(sha1_git)})
+    rev = service.lookup_revision(sha1_git)
+    if not rev:
+        raise NotFoundExc('Revision with sha1_git %s not found.' % sha1_git)
+    return jsonify({'revision': rev})
 
 
 @app.route('/api/1/browse/<string:q>/')
 @jsonp
 def api_browse(q):
     """Return search results as a JSON object"""
-    return jsonify({'origin': service.lookup_hash_origin(q)})
+    ori_with_details = service.lookup_hash_origin(q)
+    if not ori_with_details:
+        raise NotFoundExc(
+            'Origin from content with checksum %s not found.' % q)
+    return jsonify({'origin': ori_with_details})
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
