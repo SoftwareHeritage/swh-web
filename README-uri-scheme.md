@@ -57,6 +57,22 @@ To be anchored where browsing starts (e.g., at /api/1)
   least one per HASH_ALGO) will point to the same content
   - HASH_ALGO defaults to "sha1" (?)
 
+    curl -X GET http://localhost:6543/api/1/content/sha1:486b486d2a4998929c68265fa85ab2326db5528a/
+    {
+        "data": "The GNU cfs-el web homepage is at\n@uref{http://www.gnu.org/software/cfs-el/cfs-el.html}.\n\nYou can find the latest distribution of GNU cfs-el at\n@uref{ftp://ftp.gnu.org/gnu/} or at any of its mirrors.\n",
+        "origin": {
+             "branch": "cfs-el-0.5.0.tar.gz",
+             "origin_type": "ftp",
+             "origin_url": "rsync://ftp.gnu.org/old-gnu/cfs-el",
+             "path": "cfs-el-0.5.0/doc/distribution.texinfo",
+             "revision": "8604ec5a0cd1f81ec81c89c324ddc85e12f91d69"
+         },
+         "sha1": "486b486d2a4998929c68265fa85ab2326db5528a"
+    }
+
+    curl -X GET http://localhost:6543/api/1/content/sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08/
+    {"error": "Content with sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08 not found."}
+
 * /release/<SHA1_GIT>: show release information
 
 Sample:

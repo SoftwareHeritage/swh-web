@@ -197,3 +197,33 @@ class ConvertersTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_revision, expected_revision)
+
+    @istest
+    def from_content(self):
+        content_input = {
+            'sha1': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
+                                         '2ebda5'),
+            'sha256': hashutil.hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                           'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                             'c5b00a6d03'),
+            'data': b'data in bytes',
+            'length': 10,
+            'status': 'visible',
+        }
+
+        expected_content = {
+            'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
+            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
+            '7d3bf96c926',
+            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'data': 'data in bytes',
+            'length': 10,
+            'status': 'visible',
+        }
+
+        # when
+        actual_content = converters.from_content(content_input)
+
+        # then
+        self.assertEqual(actual_content, expected_content)

@@ -110,3 +110,10 @@ def from_revision(revision):
                                 'author_email',
                                 'committer_email',
                                 'message']))
+
+
+def from_content(content):
+    """Convert swh content to serializable content dictionary."""
+    return from_swh(content,
+                    hashess=set(['sha1', 'sha1_git', 'sha256']),
+                    bytess=set(['data']))

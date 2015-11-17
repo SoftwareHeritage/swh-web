@@ -7,7 +7,7 @@ import unittest
 import json
 
 from nose.tools import istest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from swh.web.ui.tests import test_app
 
@@ -46,40 +46,118 @@ class ApiTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.controller.service')
     @istest
-    def api_browse(self, mock_service):
+    def api_content_with_details(self, mock_service):
         # given
         mock_service.lookup_hash_origin.return_value = {
-            'origin': 'some-origin'
+            'origin_type': 'git',
+            'origin_url': 'https://url/user/repo',
+            'branch': 'master',
+            'revision': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'path': '/some/path/to/somewhere',
+        }
+
+        mock_service.lookup_content.return_value = {
+            'data': 'some content data',
+            'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
+            'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560'
+            'cde9b067a4f',
+            'length': 17,
+            'status': 'visible'
         }
 
         # when
-        rv = self.app.get('/api/1/browse/sha1:foo/')
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'origin': {'origin': 'some-origin'}})
+        self.assertEquals(response_data, {
+            'origin': {
+                'origin_type': 'git',
+                'origin_url': 'https://url/user/repo',
+                'branch': 'master',
+                'revision': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+                'path': '/some/path/to/somewhere',
+            },
+            'data': 'some content data',
+            'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
+            'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
+            'de9b067a4f',
+            'length': 17,
+            'status': 'visible'
+        })
 
-        mock_service.lookup_hash_origin.assert_called_once_with('sha1:foo')
+        mock_service.lookup_hash_origin.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        mock_service.lookup_content.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.controller.service')
     @istest
-    def api_browse_not_found(self, mock_service):
+    def api_content_origin_not_found(self, mock_service):
         # given
         mock_service.lookup_hash_origin.return_value = None
+        mock_service.lookup_content.return_value = {
+            'data': 'some content data..',
+            'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
+            'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560'
+            'cde9b067a4f',
+            'length': 19,
+            'status': 'absent'
+        }
 
         # when
-        rv = self.app.get('/api/1/browse/sha256:oof/')
+        rv = self.app.get('/api/1/content/sha1_git:b4e8f472ffcb01a03875b26e4'
+                          '62eb568739f6882/')
 
-        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Origin from content with checksum sha256:oof not found.'
+            'origin': None,
+            'data': 'some content data..',
+            'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
+            'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
+            'de9b067a4f',
+            'length': 19,
+            'status': 'absent'
         })
 
-        mock_service.lookup_hash_origin.assert_called_once_with('sha256:oof')
+        mock_service.lookup_hash_origin.assert_called_once_with(
+            'sha1_git:b4e8f472ffcb01a03875b26e462eb568739f6882')
+        mock_service.lookup_content.assert_called_once_with(
+            'sha1_git:b4e8f472ffcb01a03875b26e462eb568739f6882')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_content_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content.return_value = None
+        mock_service.lookup_hash_origin = MagicMock()
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
+            'be4735637006560c/')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
+            '68b3be4735637006560c not found.'
+        })
+
+        mock_service.lookup_content.assert_called_once_with(
+            'sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
+            'be4735637006560c')
+        mock_service.lookup_hash_origin.called = False
 
     @patch('swh.web.ui.controller.service')
     @istest

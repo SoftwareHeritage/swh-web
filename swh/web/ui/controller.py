@@ -403,15 +403,28 @@ def api_revision(sha1_git):
     return jsonify({'revision': rev})
 
 
-@app.route('/api/1/browse/<string:q>/')
+@app.route('/api/1/content/<string:q>/')
 @jsonp
-def api_browse(q):
-    """Return search results as a JSON object"""
-    ori_with_details = service.lookup_hash_origin(q)
-    if not ori_with_details:
-        raise NotFoundExc(
-            'Origin from content with checksum %s not found.' % q)
-    return jsonify({'origin': ori_with_details})
+def api_content_with_details(q):
+    """Return content information up to its origin if found.
+
+    Args:
+        q is of the form algo_hash:hash
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the content is not found.
+
+    """
+    content = service.lookup_content(q)
+    if not content:
+        raise NotFoundExc('Content with %s not found.' % q)
+
+    origin_detail = service.lookup_hash_origin(q)
+    output = {'origin': origin_detail if origin_detail else None}
+    for key, value in content.items():
+        output[key] = value
+    return jsonify(output)
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])

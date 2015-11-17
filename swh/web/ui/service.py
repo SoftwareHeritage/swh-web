@@ -131,6 +131,20 @@ def lookup_revision(rev_sha1_git, rev_type='git'):
     return None
 
 
+def lookup_content(q):
+    """Lookup the content designed by q.
+
+    Args:
+        q: The release's sha1 as hexadecimal
+
+    """
+    (algo, hash) = query.parse_hash(q)
+    res = main.storage().content_get([hash])
+    if res and len(res) >= 1:
+        return converters.from_content(res[0])
+    return None
+
+
 def stat_counters():
     """Return the stat counters for Software Heritage
 
