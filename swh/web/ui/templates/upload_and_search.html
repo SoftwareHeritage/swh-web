@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Upload, hash and search{% endblock %}
+{% block content %}
+{% if message is not none %}
+<div>
+  <form action="{{ url_for('uploadnsearch') }}"
+        method="post"
+        enctype="multipart/form-data">
+    <div class="form-group">
+      <input type="file"
+             class="form-control"
+             name="filename"
+             value="{{ filename }}"
+             placeholder="File to upload, hash and search for SHA-1 or SHA-256 checksum" />
+    </div>
+    <button type="submit" class="btn btn-default">Search</button>
+  </form>
+</div>
+<div id="message">{{ message | safe }}</div>
+{% endif %}
+{% endblock %}

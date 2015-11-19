@@ -3,18 +3,90 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
 import unittest
 
 from nose.tools import istest
+from unittest.mock import MagicMock, patch
 
-from unittest.mock import patch
-
+from swh.core.hashutil import hex_to_hash
 from swh.web.ui import service
+from swh.web.ui.exc import BadInputExc
+from swh.web.ui.tests import test_app
 
 
-class MockStorage():
+class ServiceTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        _, _, cls.storage = test_app.init_app()
+
+    @istest
+    def lookup_hash_does_not_exist(self):
+        # given
+        self.storage.content_exist = MagicMock(return_value=False)
+
+        # when
+        actual_lookup = service.lookup_hash(
+            'sha1:123caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertFalse(actual_lookup)
+
+        # check the function has been called with parameters
+        self.storage.content_exist.assert_called_with({
+            'sha1':
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f')})
+
+    @istest
+    def lookup_hash_exist(self):
+        # given
+        self.storage.content_exist = MagicMock(return_value=True)
+
+        # when
+        actual_lookup = service.lookup_hash(
+            'sha1:456caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertTrue(actual_lookup)
+
+        self.storage.content_exist.assert_called_with({
+            'sha1':
+            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
+
+    @istest
+    def lookup_hash_origin(self):
+        # given
+        self.storage.content_find_occurrence = MagicMock(return_value={
+            'origin_type': 'sftp',
+            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
+            'branch': 'octavio-3.4.0.tar.gz',
+            'revision': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
+            'path': b'octavio-3.4.0/doc/interpreter/octave.html/doc_002dS_005fISREG.html'  # noqa
+        })
+        expected_origin = {
+            'origin_type': 'sftp',
+            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
+            'branch': 'octavio-3.4.0.tar.gz',
+            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'path': 'octavio-3.4.0/doc/interpreter/octave.html/doc'
+                    '_002dS_005fISREG.html'
+        }
+
+        # when
+        actual_origin = service.lookup_hash_origin(
+            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertEqual(actual_origin, expected_origin)
+
+        self.storage.content_find_occurrence.assert_called_with(
+            {'sha1_git':
+             hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
+
+    @istest
     def stat_counters(self):
-        return {
+        # given
+        input_stats = {
             "content": 1770830,
             "directory": 211683,
             "directory_entry_dir": 209167,
@@ -31,60 +103,231 @@ class MockStorage():
             "revision_history": 0,
             "skipped_content": 0
         }
-
-    def content_find_occurrence(self, h):
-        return {
-            'origin_type': 'sftp',
-            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
-            'branch': 'octavio-3.4.0.tar.gz',
-            'revision': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
-            'path': b'octavio-3.4.0/doc/interpreter/octave.html/doc_002dS_005fISREG.html'  # noqa
-        }
-
-    def content_exist(self, h):
-        return False
-
-
-class ServiceTestCase(unittest.TestCase):
-
-    @istest
-    def lookup_hash(self):
-        with patch('swh.web.ui.main.storage',
-                   return_value=MockStorage()):
-            actual_lookup = service.lookup_hash(
-                'sha1:123caf10e9535160d90e874b45aa426de762f19f')
-
-        self.assertFalse(actual_lookup)
-
-    @istest
-    def lookup_hash_origin(self):
-        # given
-        expected_origin = {
-            'origin_type': 'sftp',
-            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
-            'branch': 'octavio-3.4.0.tar.gz',
-            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'path': 'octavio-3.4.0/doc/interpreter/octave.html/doc'
-                    '_002dS_005fISREG.html'
-        }
+        self.storage.stat_counters = MagicMock(return_value=input_stats)
 
         # when
-        with patch('swh.web.ui.main.storage',
-                   return_value=MockStorage()):
-            actual_origin = service.lookup_hash_origin(
-                'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
+        actual_stats = service.stat_counters()
 
         # then
-        self.assertEqual(actual_origin, expected_origin)
-
-    @istest
-    def stat_counters(self):
-        # given
-        expected_stats = MockStorage().stat_counters()
-
-        # when
-        with patch('swh.web.ui.main.storage', return_value=MockStorage()):
-            actual_stats = service.stat_counters()
-
-        # then
+        expected_stats = input_stats
         self.assertEqual(actual_stats, expected_stats)
+
+        self.storage.stat_counters.assert_called_with()
+
+    @istest
+    def hash_and_search(self):
+        # given
+        self.storage.content_exist = MagicMock(return_value=False)
+
+        bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        # when
+        with patch(
+                'swh.core.hashutil.hashfile',
+                return_value={'sha1': bhash}):
+            actual_hash, actual_search = service.hash_and_search('/some/path')
+
+        # then
+        self.assertEqual(actual_hash,
+                         '456caf10e9535160d90e874b45aa426de762f19f')
+        self.assertFalse(actual_search)
+
+        self.storage.content_exist.assert_called_with({'sha1': bhash})
+
+    @patch('swh.web.ui.service.upload')
+    @istest
+    def test_upload_and_search_upload_OK_basic_case(self, mock_upload):
+        # given (cf. decorators patch)
+        mock_upload.save_in_upload_folder.return_value = (
+            '/tmp/blah', 'some-filename', None)
+        mock_upload.cleanup.return_value = None
+
+        file = MagicMock()
+        file.filename = 'some-filename'
+
+        # when
+        actual_file, actual_hash, actual_search = service.upload_and_search(
+            file)
+
+        # then
+        self.assertEqual(actual_file, 'some-filename')
+        self.assertIsNone(actual_hash)
+        self.assertIsNone(actual_search)
+
+        mock_upload.save_in_upload_folder.assert_called_with(file)
+        mock_upload.cleanup.assert_called_with('/tmp/blah')
+
+    @istest
+    def lookup_origin(self):
+        # given
+        self.storage.origin_get = MagicMock(return_value={
+            'id': 'origin-id',
+            'lister': 'uuid-lister',
+            'project': 'uuid-project',
+            'url': 'ftp://some/url/to/origin',
+            'type': 'ftp'})
+
+        # when
+        actual_origin = service.lookup_origin('origin-id')
+
+        # then
+        self.assertEqual(actual_origin, {'id': 'origin-id',
+                                         'lister': 'uuid-lister',
+                                         'project': 'uuid-project',
+                                         'url': 'ftp://some/url/to/origin',
+                                         'type': 'ftp'})
+
+        self.storage.origin_get.assert_called_with({'id': 'origin-id'})
+
+    @istest
+    def lookup_release(self):
+        # given
+        self.storage.release_get = MagicMock(return_value=[{
+            'id': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
+            'revision': None,
+            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
+                                      tzinfo=datetime.timezone.utc),
+            'date_offset': None,
+            'name': 'v0.0.1',
+            'comment': b'synthetic release',
+            'synthetic': True,
+        }])
+
+        # when
+        actual_release = service.lookup_release(
+            '65a55bbdf3629f916219feb3dcc7393ded1bc8db')
+
+        # then
+        self.assertEqual(actual_release, {
+            'id': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
+            'revision': None,
+            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
+                                      tzinfo=datetime.timezone.utc),
+            'date_offset': None,
+            'name': 'v0.0.1',
+            'comment': 'synthetic release',
+            'synthetic': True,
+        })
+
+        self.storage.release_get.assert_called_with(
+            [hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db')])
+
+    @istest
+    def lookup_release_ko_id_checksum_not_ok_because_not_a_sha1(self):
+        # given
+        self.storage.release_get = MagicMock()
+
+        with self.assertRaises(BadInputExc) as cm:
+            # when
+            service.lookup_release('not-a-sha1')
+            self.assertIn('invalid checksum', cm.exception.args[0])
+
+        self.storage.release_get.called = False
+
+    @istest
+    def lookup_release_ko_id_checksum_ok_but_not_a_sha1(self):
+        # given
+        self.storage.release_get = MagicMock()
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_release(
+                '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4daf5'
+                '1aea892abe')
+            self.assertIn('sha1_git supported', cm.exception.args[0])
+
+        self.storage.release_get.called = False
+
+    @istest
+    def lookup_revision(self):
+        # given
+        self.storage.revision_get = MagicMock(return_value=[{
+            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author_name': b'bill & boule',
+            'author_email': b'bill@boule.org',
+            'committer_name': b'boule & bill',
+            'committer_email': b'boule@bill.org',
+            'message': b'elegant fix for bug 31415957',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }])
+
+        # when
+        actual_revision = service.lookup_revision(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertEqual(actual_revision, {
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'bill & boule',
+            'author_email': 'bill@boule.org',
+            'committer_name': 'boule & bill',
+            'committer_email': 'boule@bill.org',
+            'message': 'elegant fix for bug 31415957',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        })
+
+        self.storage.revision_get.assert_called_with(
+            [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
+
+    @istest
+    def lookup_content_empty(self):
+        # given
+        self.storage.content_get = MagicMock(return_value=[])
+
+        # when
+        actual_content = service.lookup_content(
+            'sha1:18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertIsNone(actual_content)
+
+        self.storage.content_get.assert_called_with(
+            [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
+
+    @istest
+    def lookup_content(self):
+        # given
+        self.storage.content_get = MagicMock(return_value=[{
+            'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
+            'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                  'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                    'c5b00a6d03'),
+            'data': b"content's data",
+            'length': 190,
+            'status': 'absent',
+        }])
+
+        # when
+        actual_content = service.lookup_content(
+            'sha1:18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertEqual(actual_content, {
+            'sha1': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
+            '7d3bf96c926',
+            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'data': "content's data",
+            'length': 190,
+            'status': 'absent',
+        })
+
+        self.storage.content_get.assert_called_with(
+            [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
