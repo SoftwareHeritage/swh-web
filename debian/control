@@ -18,5 +18,4 @@ Architecture: all
 Depends: python3-swh.storage (>= 0.0.18~),
          ${misc:Depends},
          ${python3:Depends}
-
 Description: Software Heritage Web UI
