@@ -371,34 +371,41 @@ def api_search(q):
     return jsonify({'found': service.lookup_hash(q)})
 
 
+def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
+    """Factorize function regarding the api to lookup for data."""
+    res = lookup_fn(criteria)
+    if not res:
+        raise NotFoundExc(error_msg_if_not_found)
+    return jsonify(res)
+
+
 @app.route('/api/1/origin/<string:origin_id>')
 @jsonp
 def api_origin(origin_id):
-    """Return information about origin"""
-    ori = service.lookup_origin(origin_id)
-    if not ori:
-        raise NotFoundExc('Origin with id %s not found.' % origin_id)
-    return jsonify(ori)
+    """Return information about origin."""
+    return _api_lookup(
+        origin_id, lookup_fn=service.lookup_origin,
+        error_msg_if_not_found='Origin with id %s not found.' % origin_id)
 
 
 @app.route('/api/1/person/<string:person_id>')
 @jsonp
 def api_person(person_id):
-    """Return information about person"""
-    person = service.lookup_person(person_id)
-    if not person:
-        raise NotFoundExc('Person with id %s not found.' % person_id)
-    return jsonify(person)
+    """Return information about person."""
+    return _api_lookup(
+        person_id, lookup_fn=service.lookup_person,
+        error_msg_if_not_found='Person with id %s not found.' % person_id)
 
 
 @app.route('/api/1/release/<string:sha1_git>')
 @jsonp
 def api_release(sha1_git):
     """Return information about release with id sha1_git."""
-    rel = service.lookup_release(sha1_git)
-    if not rel:
-        raise NotFoundExc('Release with sha1_git %s not found.' % sha1_git)
-    return jsonify(rel)
+    error_msg = 'Release with sha1_git %s not found.' % sha1_git
+    return _api_lookup(
+        sha1_git,
+        lookup_fn=service.lookup_release,
+        error_msg_if_not_found=error_msg)
 
 
 @app.route('/api/1/revision/<string:sha1_git>')
@@ -407,10 +414,11 @@ def api_revision(sha1_git):
     """Return information about revision with id sha1_git.
 
     """
-    rev = service.lookup_revision(sha1_git)
-    if not rev:
-        raise NotFoundExc('Revision with sha1_git %s not found.' % sha1_git)
-    return jsonify(rev)
+    error_msg = 'Revision with sha1_git %s not found.' % sha1_git
+    return _api_lookup(
+        sha1_git,
+        lookup_fn=service.lookup_revision,
+        error_msg_if_not_found=error_msg)
 
 
 @app.route('/api/1/content/<string:q>/')
