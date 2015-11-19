@@ -309,7 +309,8 @@ class ApiTestCase(unittest.TestCase):
         stub_release = {
             'id': 'release-0',
             'revision': 'revision-sha1',
-            'author': 'author-id',
+            'author_name': 'author release name',
+            'author_email': 'author@email',
         }
 
         mock_service.lookup_release.return_value = stub_release

@@ -112,6 +112,8 @@ class ConvertersTestCase(unittest.TestCase):
             'name': 'v0.1.1',
             'comment': b'comment on release',
             'synthetic': False,
+            'author_name': b'bob',
+            'author_email': b'bob@alice.net',
         }
 
         expected_release = {
@@ -123,6 +125,8 @@ class ConvertersTestCase(unittest.TestCase):
             'name': 'v0.1.1',
             'comment': 'comment on release',
             'synthetic': False,
+            'author_name': 'bob',
+            'author_email': 'bob@alice.net',
         }
 
         # when

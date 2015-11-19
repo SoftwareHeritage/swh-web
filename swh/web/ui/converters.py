@@ -73,7 +73,7 @@ def from_release(release):
     """
     return from_swh(release,
                     hashess=set(['id', 'revision']),
-                    bytess=set(['comment']))
+                    bytess=set(['comment', 'author_name', 'author_email']))
 
 
 def from_revision(revision):
