@@ -1,3 +1,16 @@
+swh-web (0.0.11-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.11
+  * Open /1/api/content/<algo:hash>/
+  * Open /api/1/revision/<SHA1_GIT>
+  * Open /api/1/release/<SHA1_GIT>
+  * Open /api/1/uploadnsearch/ (POST)
+  * Open /api/1/origin/
+  * Unify 404 and 400 responses on api
+  * Increase code coverage
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 19 Nov 2015 11:24:46 +0100
+
 swh-web (0.0.10-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.10
