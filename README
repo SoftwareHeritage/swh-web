@@ -19,20 +19,38 @@ Dev mode
 
     # where to log information
     log_dir = /tmp/swh/web-ui/log
-    
+
     # for dev only
     debug = true
-    
+
     # current server (0.0.0.0 for world opening)
     host = 127.0.0.1
-    
+
     # its port
     port = 6543
+
+    # Upload folder for temporary upload and hash
+    upload_folder = /tmp/swh-web-ui/uploads
+
+    # Allowed extensions for upload (commented or empty means all is accepted)
+    # Otherwise, comma separated values of extensions.
+    # upload_allowed_extensions = txt, csv
+    # upload_allowed_extensions =
 
 # Run
 
     ./bin/swh-web-ui-dev -v -c ~/.config/swh/webapp.ini
 
+In order to do anything useful with the web app you will also need a storage
+backend that the app can talk to. You can run one as follows
+
+    python3 -m swh.storage.api.server ~/.config/swh/storage.ini
+
+See the doc of the swh-storage module for how to configure the backend.
+
+# Test
+
+    make test
 
 Server mode
 -----------

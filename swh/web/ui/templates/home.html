@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-Directory {{ sha1_git }}
-{% if path %}
-with path {{ path }}
-{% endif %}
+<ul>
+  <li><a href="about">about</a></li>
+  <li><a href="search">search</a></li>
+</ul>
 {% endblock %}
