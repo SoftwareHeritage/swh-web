@@ -45,6 +45,59 @@ To be anchored where browsing starts (e.g., at /api/1)
 
 * /directory/<SHA1_GIT>: show directory information (including ls)
 
+    curl -X GET http://localhost:6543/api/1/directory/3126f46e2f7dc752227131a2a658265e58f53e38?recursive=True
+    {
+        "directory_entries": [
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "Makefile.am",
+          "perms": 100644,
+          "sha1": "b0283d8126f975e7b4a4348d13b07ddebe2cf8bf",
+          "sha1_git": "e0522786777256d57c5210219bcbe8dacdad273d",
+          "sha256": "897f3189dcfba96281b2190325c54afc74a42e2419c053baadfadc14386935ee",
+          "status": "visible",
+          "target": "e0522786777256d57c5210219bcbe8dacdad273d",
+          "type": "file"
+        },
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "Makefile.in",
+          "perms": 100644,
+          "sha1": "81f5757b9451811cfb3ef84612e45a973c70b4e6",
+          "sha1_git": "3b948d966fd8e99f93670025f63a550168d57d71",
+          "sha256": "f5acd84a40f05d997a36b8846c4872a92ee57083abb77c82e05e9763c8edb59a",
+          "status": "visible",
+          "target": "3b948d966fd8e99f93670025f63a550168d57d71",
+              "type": "file"
+        },
+
+        ... snip ...
+
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "webtools.h",
+          "perms": 100644,
+          "sha1": "4b4c942ddd490ec1e312074ddfac352097886c02",
+          "sha1_git": "e6fb8969d00e23dd152df5e7fb167118eab67342",
+          "sha256": "95ffe6c0108f6ec48ccb0c93e966b54f1494f5cc353b066644c11fa47766620f",
+          "status": "visible",
+          "target": "e6fb8969d00e23dd152df5e7fb167118eab67342",
+          "type": "file"
+        },
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "ylwrap",
+          "perms": 100644,
+          "sha1": "9073938df9ae47d585bfdf176bfff45d06f3e13e",
+          "sha1_git": "13fc38d75f2a47bc55e90ad5bf8d8a0184b14878",
+          "sha256": "184eb644e51154c79b42df70c22955b818d057491f84ca0e579e4f9e48a60d7b",
+          "status": "visible",
+          "target": "13fc38d75f2a47bc55e90ad5bf8d8a0184b14878",
+          "type": "file"
+        }
+      ]
+    }
+
 * /directory/<SHA1_GIT>/path/to/file-or-dir: ditto, but for dir pointed by path
 
   - note: this is the same as /dir/<SHA1_GIT'>, where <SHA1_GIT'> is the

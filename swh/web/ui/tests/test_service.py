@@ -366,3 +366,74 @@ class ServiceTestCase(unittest.TestCase):
 
         self.storage.person_get.assert_called_with(['person_id'])
 
+    @istest
+    def lookup_directory_bad_checksum(self):
+        # given
+        self.storage.directory_get = MagicMock()
+
+        # when
+        with self.assertRaises(BadInputExc):
+            service.lookup_directory('directory_id')
+
+        # then
+        self.storage.directory_get.called = False
+
+    @istest
+    def lookup_directory_not_found(self):
+        # given
+        self.storage.directory_get = MagicMock(return_value=[])
+
+        # when
+        actual_directory = service.lookup_directory(
+            '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+        # then
+        self.assertIsNone(actual_directory)
+
+        self.storage.directory_get.assert_called_with(
+            hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
+            False)
+
+    @istest
+    def lookup_directory(self):
+        # given
+        dir_entries_input = {
+            'sha1': hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
+                                '2ebda5'),
+            'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                  'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                    'c5b00a6d03'),
+            'target': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                  'c5b00a6d03'),
+            'dir_id': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                  'c5b00a6d03'),
+            'name': b'bob',
+            'type': 10,
+        }
+
+        expected_dir_entries = {
+            'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
+            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d2747'
+            'd3bf96c926',
+            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'target': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'dir_id': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'name': 'bob',
+            'type': 10,
+        }
+
+        self.storage.directory_get = MagicMock(
+            return_value=[dir_entries_input])
+
+        # when
+        actual_directory = service.lookup_directory(
+            '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+        # then
+        self.assertIsNotNone(actual_directory)
+        self.assertEqual(actual_directory, [expected_dir_entries])
+
+        self.storage.directory_get.assert_called_with(
+            hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
+            False)

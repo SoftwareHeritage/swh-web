@@ -253,3 +253,37 @@ class ConvertersTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_person, expected_person)
+
+    @istest
+    def from_directory_entries(self):
+        dir_entries_input = {
+            'sha1': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
+                                         '2ebda5'),
+            'sha256': hashutil.hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                           'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                             'c5b00a6d03'),
+            'target': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                           'c5b00a6d03'),
+            'dir_id': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                           'c5b00a6d03'),
+            'name': b'bob',
+            'type': 10,
+        }
+
+        expected_dir_entries = {
+            'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
+            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d2747'
+            'd3bf96c926',
+            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'target': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'dir_id': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'name': 'bob',
+            'type': 10,
+        }
+
+        # when
+        actual_dir_entries = converters.from_directory_entry(dir_entries_input)
+
+        # then
+        self.assertEqual(actual_dir_entries, expected_dir_entries)

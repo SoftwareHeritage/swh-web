@@ -421,6 +421,18 @@ def api_revision(sha1_git):
         error_msg_if_not_found=error_msg)
 
 
+@app.route('/api/1/directory/<string:sha1_git>')
+@jsonp
+def api_directory(sha1_git):
+    """Return information about release with id sha1_git."""
+    recursive_flag = request.args.get('recursive', False)
+    directory_entries = service.lookup_directory(sha1_git,
+                                                 recursive_flag)
+    if not directory_entries:
+        raise NotFoundExc('Directory with sha1_git %s not found.' % sha1_git)
+    return jsonify({'directory_entries': list(directory_entries)})
+
+
 @app.route('/api/1/content/<string:q>/')
 @jsonp
 def api_content_with_details(q):

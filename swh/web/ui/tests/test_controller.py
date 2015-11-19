@@ -437,3 +437,42 @@ class ApiTestCase(unittest.TestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
             'error': 'Person with id 666 not found.'})
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_directory(self, mock_service):
+        # given
+        stub_directory = [{
+            'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+        }]
+        mock_service.lookup_directory.return_value = stub_directory
+
+        # when
+        rv = self.app.get('/api/1/directory/'
+                          '18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'directory_entries': stub_directory})
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_directory_not_found(self, mock_service):
+        # given
+        mock_service.lookup_directory.return_value = []
+
+        # when
+        rv = self.app.get('/api/1/directory/'
+                          '66618d8be353ed3480476f032475e7c233eff737')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Directory with sha1_git '
+            '66618d8be353ed3480476f032475e7c233eff737 not found.'})

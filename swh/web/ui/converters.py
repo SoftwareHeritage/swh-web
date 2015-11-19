@@ -128,3 +128,16 @@ def from_person(person):
     return from_swh(person,
                     hashess=set(),
                     bytess=set(['name', 'email']))
+
+
+def from_directory_entry(dir_entry):
+    """Convert swh person to serializable person dictionary.
+
+    """
+    return from_swh(dir_entry,
+                    hashess=set(['dir_id',
+                                 'sha1_git',
+                                 'sha1',
+                                 'sha256',
+                                 'target']),
+                    bytess=set(['name']))
