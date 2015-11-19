@@ -83,6 +83,22 @@ def lookup_origin(origin_id):
     return main.storage().origin_get({'id': origin_id})
 
 
+def lookup_person(person_id):
+    """Return information about the person with id person_id.
+
+    Args:
+        person_id as string
+
+    Returns:
+        person information as dict.
+
+    """
+    persons = main.storage().person_get([person_id])
+    if not persons:
+        return None
+    return converters.from_person(persons[0])
+
+
 def lookup_release(release_sha1_git):
     """Return information about the release with sha1 release_sha1_git.
 

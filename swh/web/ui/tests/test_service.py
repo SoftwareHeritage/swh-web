@@ -331,3 +331,24 @@ class ServiceTestCase(unittest.TestCase):
 
         self.storage.content_get.assert_called_with(
             [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
+
+    @istest
+    def lookup_person(self):
+        # given
+        self.storage.person_get = MagicMock(return_value=[{
+            'id': 'person_id',
+            'name': b'some_name',
+            'email': b'some-email',
+        }])
+
+        # when
+        actual_person = service.lookup_person('person_id')
+
+        # then
+        self.assertEqual(actual_person, {
+            'id': 'person_id',
+            'name': 'some_name',
+            'email': 'some-email',
+        })
+
+        self.storage.person_get.assert_called_with(['person_id'])

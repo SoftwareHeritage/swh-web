@@ -399,3 +399,41 @@ class ApiTestCase(unittest.TestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
             'error': 'Revision with sha1_git revision-0 not found.'})
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_person(self, mock_service):
+        # given
+        stub_person = {
+            'id': '198003',
+            'name': 'Software Heritage',
+            'email': 'robot@softwareheritage.org',
+        }
+        mock_service.lookup_person.return_value = stub_person
+
+        # when
+        rv = self.app.get('/api/1/person/198003')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, stub_person)
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_person_not_found(self, mock_service):
+        # given
+        mock_service.lookup_person.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/person/666')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Person with id 666 not found.'})

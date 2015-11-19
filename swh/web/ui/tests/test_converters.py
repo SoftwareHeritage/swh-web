@@ -231,3 +231,25 @@ class ConvertersTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_content, expected_content)
+
+    @istest
+    def from_person(self):
+        person_input = {
+            'id': 10,
+            'anything': 'else',
+            'name': b'bob',
+            'email': b'bob@foo.alice',
+        }
+
+        expected_person = {
+            'id': 10,
+            'anything': 'else',
+            'name': 'bob',
+            'email': 'bob@foo.alice',
+        }
+
+        # when
+        actual_person = converters.from_person(person_input)
+
+        # then
+        self.assertEqual(actual_person, expected_person)

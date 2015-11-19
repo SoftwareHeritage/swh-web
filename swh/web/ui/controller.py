@@ -381,6 +381,16 @@ def api_origin(origin_id):
     return jsonify(ori)
 
 
+@app.route('/api/1/person/<string:person_id>')
+@jsonp
+def api_person(person_id):
+    """Return information about person"""
+    person = service.lookup_person(person_id)
+    if not person:
+        raise NotFoundExc('Person with id %s not found.' % person_id)
+    return jsonify(person)
+
+
 @app.route('/api/1/release/<string:sha1_git>')
 @jsonp
 def api_release(sha1_git):

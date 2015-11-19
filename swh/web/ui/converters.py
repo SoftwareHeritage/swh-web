@@ -113,7 +113,18 @@ def from_revision(revision):
 
 
 def from_content(content):
-    """Convert swh content to serializable content dictionary."""
+    """Convert swh content to serializable content dictionary.
+
+    """
     return from_swh(content,
                     hashess=set(['sha1', 'sha1_git', 'sha256']),
                     bytess=set(['data']))
+
+
+def from_person(person):
+    """Convert swh person to serializable person dictionary.
+
+    """
+    return from_swh(person,
+                    hashess=set(),
+                    bytess=set(['name', 'email']))
