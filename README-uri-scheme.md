@@ -93,6 +93,16 @@ Sample:
 
 * /person/<PERSON_ID>: show person information
 
+    curl http://localhost:6543/api/1/person/1
+    {
+      "email": "robot@softwareheritage.org",
+      "id": 1,
+      "name": "Software Heritage"
+    }
+
+    curl http://localhost:6543/api/1/person/2
+    {"error": "Person with id 2 not found."}
+
 * /origin/<ORIGIN_ID>: show origin information
 
 Sample:
