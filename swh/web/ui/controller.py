@@ -4,17 +4,16 @@
 # See top-level LICENSE file for more information
 
 
-import logging
 import json
 
-from flask import redirect, render_template, url_for, jsonify, request
+from flask import render_template, jsonify, request, flash
 from flask import make_response
-
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service
 from swh.web.ui.decorators import jsonp
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
 hash_filter_keys = ALGORITHMS
@@ -22,19 +21,18 @@ hash_filter_keys = ALGORITHMS
 
 @app.route('/')
 def main():
-    """Main application view.
-    At the moment, redirect to the content search view.
-    """
-    return redirect(url_for('info'))
-
-
-@app.route('/info')
-def info():
-    """A simple api to define what the server is all about.
+    """Home page
 
     """
-    logging.info('Dev SWH UI')
-    return 'Dev SWH UI'
+    flash('This Web app is still work in progress, use at your own risk',
+          'warning')
+    # return redirect(url_for('about'))
+    return render_template('home.html')
+
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 
 @app.route('/search')
@@ -48,10 +46,38 @@ def search():
     try:
         if q:
             env['found'] = service.lookup_hash(q)
-    except ValueError:
+    except BadInputExc:
         env['message'] = 'Error: invalid query string'
 
     return render_template('search.html', **env)
+
+
+@app.route('/uploadnsearch', methods=['GET', 'POST'])
+def uploadnsearch():
+    """Upload and search for hashes in swh-storage.
+
+    """
+    env = {'filename': None, 'message': '', 'found': None}
+
+    if request.method == 'POST':
+        file = request.files['filename']
+        try:
+            filename, sha1, found = service.upload_and_search(file)
+            message = 'The file %s with hash %s has%sbeen found.' % (
+                filename,
+                sha1,
+                ' ' if found else ' not ')
+
+            env.update({
+                'filename': filename,
+                'sha1': sha1,
+                'found': found,
+                'message': message
+            })
+        except BadInputExc:
+            env['message'] = 'Error: invalid query string'
+
+    return render_template('upload_and_search.html', **env)
 
 
 @app.route('/browse/revision/<sha1_git>')
@@ -312,17 +338,30 @@ def api_stats():
     return jsonify(service.stat_counters())
 
 
+def _make_error_response(default_error_msg, error_code, error):
+    """Private function to create a custom error response.
+
+    """
+    response = make_response(default_error_msg, error_code)
+    response.headers['Content-Type'] = 'application/json'
+    response.data = json.dumps({"error": str(error)})
+    return response
+
+
 @app.errorhandler(ValueError)
 def value_error_as_bad_request(error):
     """Compute a bad request and add body as payload.
 
     """
-    response = make_response(
-        'Bad request',
-        400)
-    response.headers['Content-Type'] = 'application/json'
-    response.data = json.dumps({"error": str(error)})
-    return response
+    return _make_error_response('Bad request', 400, error)
+
+
+@app.errorhandler(NotFoundExc)
+def value_not_found(error):
+    """Compute a not found and add body as payload.
+
+    """
+    return _make_error_response('Not found', 404, error)
 
 
 @app.route('/api/1/search/<string:q>/')
@@ -332,8 +371,70 @@ def api_search(q):
     return jsonify({'found': service.lookup_hash(q)})
 
 
-@app.route('/api/1/browse/<string:q>/')
+@app.route('/api/1/origin/<string:origin_id>')
 @jsonp
-def api_browse(q):
-    """Return search results as a JSON object"""
-    return jsonify({'origin': service.lookup_hash_origin(q)})
+def api_origin(origin_id):
+    """Return information about origin"""
+    ori = service.lookup_origin(origin_id)
+    if not ori:
+        raise NotFoundExc('Origin with id %s not found.' % origin_id)
+    return jsonify(ori)
+
+
+@app.route('/api/1/release/<string:sha1_git>')
+@jsonp
+def api_release(sha1_git):
+    """Return information about release with id sha1_git."""
+    rel = service.lookup_release(sha1_git)
+    if not rel:
+        raise NotFoundExc('Release with sha1_git %s not found.' % sha1_git)
+    return jsonify(rel)
+
+
+@app.route('/api/1/revision/<string:sha1_git>')
+@jsonp
+def api_revision(sha1_git):
+    """Return information about revision with id sha1_git.
+
+    """
+    rev = service.lookup_revision(sha1_git)
+    if not rev:
+        raise NotFoundExc('Revision with sha1_git %s not found.' % sha1_git)
+    return jsonify(rev)
+
+
+@app.route('/api/1/content/<string:q>/')
+@jsonp
+def api_content_with_details(q):
+    """Return content information up to its origin if found.
+
+    Args:
+        q is of the form algo_hash:hash
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the content is not found.
+
+    """
+    content = service.lookup_content(q)
+    if not content:
+        raise NotFoundExc('Content with %s not found.' % q)
+
+    origin_detail = service.lookup_hash_origin(q)
+    output = {'origin': origin_detail if origin_detail else None}
+    for key, value in content.items():
+        output[key] = value
+    return jsonify(output)
+
+
+@app.route('/api/1/uploadnsearch/', methods=['POST'])
+@jsonp
+def api_uploadnsearch():
+    """Upload the file's content in the post body request.
+       Compute the hash and determine if it exists in the storage.
+    """
+    file = request.files['filename']
+    filename, sha1, found = service.upload_and_search(file)
+    return jsonify({'sha1': sha1,
+                    'filename': filename,
+                    'found': found})

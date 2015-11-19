@@ -6,9 +6,42 @@ Browsing namespace
 
 ### Global
 
-To be anchored where browsing starts (e.g., at /browse)
+To be anchored where browsing starts (e.g., at /api/1)
 
 * /revision/<SHA1_GIT>: show commit information
+
+    $curl http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5
+    {
+      "revision": {
+        "author_email": "robot@softwareheritage.org",
+        "author_name": "Software Heritage",
+        "committer_date": "Mon, 17 Jan 2000 10:23:54 GMT",
+        "committer_date_offset": 0,
+        "committer_email": "robot@softwareheritage.org",
+        "committer_name": "Software Heritage",
+        "date": "Mon, 17 Jan 2000 10:23:54 GMT",
+        "date_offset": 0,
+        "directory": "7834ef7e7c357ce2af928115c6c6a42b7e2a44e6",
+        "id": "18d8be353ed3480476f032475e7c233eff7371d5",
+        "message": "synthetic revision message",
+        "metadata": {
+          "original_artifact": [
+            {
+              "archive_type": "tar",
+              "name": "webbase-5.7.0.tar.gz",
+              "sha1": "147f73f369733d088b7a6fa9c4e0273dcd3c7ccd",
+              "sha1_git": "6a15ea8b881069adedf11feceec35588f2cfe8f1",
+              "sha256": "401d0df797110bea805d358b85bcc1ced29549d3d73f309d36484e7edf7bb912"
+            }
+          ]
+        },
+        "parents": [
+          null
+        ],
+        "synthetic": true,
+        "type": "tar"
+      }
+    }
 
 * /directory/<SHA1_GIT>: show directory information (including ls)
 
@@ -24,11 +57,56 @@ To be anchored where browsing starts (e.g., at /browse)
   least one per HASH_ALGO) will point to the same content
   - HASH_ALGO defaults to "sha1" (?)
 
+    curl -X GET http://localhost:6543/api/1/content/sha1:486b486d2a4998929c68265fa85ab2326db5528a/
+    {
+        "data": "The GNU cfs-el web homepage is at\n@uref{http://www.gnu.org/software/cfs-el/cfs-el.html}.\n\nYou can find the latest distribution of GNU cfs-el at\n@uref{ftp://ftp.gnu.org/gnu/} or at any of its mirrors.\n",
+        "origin": {
+             "branch": "cfs-el-0.5.0.tar.gz",
+             "origin_type": "ftp",
+             "origin_url": "rsync://ftp.gnu.org/old-gnu/cfs-el",
+             "path": "cfs-el-0.5.0/doc/distribution.texinfo",
+             "revision": "8604ec5a0cd1f81ec81c89c324ddc85e12f91d69"
+         },
+         "sha1": "486b486d2a4998929c68265fa85ab2326db5528a"
+    }
+
+    curl -X GET http://localhost:6543/api/1/content/sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08/
+    {"error": "Content with sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08 not found."}
+
 * /release/<SHA1_GIT>: show release information
+
+Sample:
+
+    $ curl -X GET http://localhost:6543/api/1/release/4a1b6d7dd0a923ed90156c4e2f5db030095d8e08
+    {
+      "release": {
+        "author": 1,
+        "comment": "synthetic release message",
+        "date": "Sat, 04 Mar 2000 07:50:35 GMT",
+        "date_offset": 0,
+        "id": "4a1b6d7dd0a923ed90156c4e2f5db030095d8e08",
+        "name": "4.0.6",
+        "revision": "5c7814ce9978d4e16f3858925b5cea611e500eec",
+        "synthetic": true
+      }
+    }%
 
 * /person/<PERSON_ID>: show person information
 
 * /origin/<ORIGIN_ID>: show origin information
+
+Sample:
+
+    $ curl -X GET http://localhost:6543/api/1/origin/1
+    {
+      "origin": {
+        "id": 1,
+        "lister": null,
+        "project": null,
+        "type": "ftp",
+        "url": "rsync://ftp.gnu.org/old-gnu/solfege"
+      }
+    }%
 
 * /project/<PROJECT_ID>: show project information
 
@@ -58,6 +136,26 @@ policy).
 * /revision/<TIMESTAMP>/<ORIGIN>|/<BRANCH>|
 
   - Show all revisions (~git log) of origin and branch at a given timestamp
+
+
+### Upload and search
+
+* /1/api/uploadnsearch/
+
+Post a file's content to api.
+Api computes the sha1 hash and checks in the storage if such sha1 exists.
+Json answer:
+
+    {'sha1': hexadecimal sha1,
+     'found': true or false}
+
+Sample:
+
+    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch/
+    {
+        "found": false,
+        "sha1": "e95097ad2d607b4c89c1ce7ca1fef2a1e4450558"
+    }%
 
 
 Search namespace
