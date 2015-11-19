@@ -352,3 +352,17 @@ class ServiceTestCase(unittest.TestCase):
         })
 
         self.storage.person_get.assert_called_with(['person_id'])
+
+    @istest
+    def lookup_person_not_found(self):
+        # given
+        self.storage.person_get = MagicMock(return_value=[])
+
+        # when
+        actual_person = service.lookup_person('person_id')
+
+        # then
+        self.assertIsNone(actual_person)
+
+        self.storage.person_get.assert_called_with(['person_id'])
+
