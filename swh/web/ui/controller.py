@@ -378,7 +378,7 @@ def api_origin(origin_id):
     ori = service.lookup_origin(origin_id)
     if not ori:
         raise NotFoundExc('Origin with id %s not found.' % origin_id)
-    return jsonify({'origin': ori})
+    return jsonify(ori)
 
 
 @app.route('/api/1/release/<string:sha1_git>')
@@ -388,7 +388,7 @@ def api_release(sha1_git):
     rel = service.lookup_release(sha1_git)
     if not rel:
         raise NotFoundExc('Release with sha1_git %s not found.' % sha1_git)
-    return jsonify({'release': rel})
+    return jsonify(rel)
 
 
 @app.route('/api/1/revision/<string:sha1_git>')
@@ -400,7 +400,7 @@ def api_revision(sha1_git):
     rev = service.lookup_revision(sha1_git)
     if not rev:
         raise NotFoundExc('Revision with sha1_git %s not found.' % sha1_git)
-    return jsonify({'revision': rev})
+    return jsonify(rev)
 
 
 @app.route('/api/1/content/<string:q>/')

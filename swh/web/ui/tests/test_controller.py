@@ -210,7 +210,7 @@ class ApiTestCase(unittest.TestCase):
     @istest
     def api_1_stat_counters(self, mock_service):
         # given
-        mock_service.stat_counters.return_value = {
+        stub_stats = {
             "content": 1770830,
             "directory": 211683,
             "directory_entry_dir": 209167,
@@ -227,30 +227,15 @@ class ApiTestCase(unittest.TestCase):
             "revision_history": 0,
             "skipped_content": 0
         }
+        mock_service.stat_counters.return_value = stub_stats
 
         # when
         rv = self.app.get('/api/1/stat/counters')
 
-        response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
-        self.assertEquals(response_data, {
-            "content": 1770830,
-            "directory": 211683,
-            "directory_entry_dir": 209167,
-            "directory_entry_file": 1807094,
-            "directory_entry_rev": 0,
-            "entity": 0,
-            "entity_history": 0,
-            "occurrence": 0,
-            "occurrence_history": 19600,
-            "origin": 1096,
-            "person": 0,
-            "release": 8584,
-            "revision": 7792,
-            "revision_history": 0,
-            "skipped_content": 0
-        })
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, stub_stats)
 
         mock_service.stat_counters.assert_called_once_with()
 
@@ -281,12 +266,14 @@ class ApiTestCase(unittest.TestCase):
     @istest
     def api_origin(self, mock_service):
         # given
-        mock_service.lookup_origin.return_value = {
+        stub_origin = {
             'id': 'origin-0',
             'lister': 'uuid-lister-0',
             'project': 'uuid-project-0',
             'url': 'ftp://some/url/to/origin/0',
-            'type': 'ftp'}
+            'type': 'ftp'
+        }
+        mock_service.lookup_origin.return_value = stub_origin
 
         # when
         rv = self.app.get('/api/1/origin/origin-0')
@@ -296,15 +283,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {
-            'origin': {
-                'id': 'origin-0',
-                'lister': 'uuid-lister-0',
-                'project': 'uuid-project-0',
-                'url': 'ftp://some/url/to/origin/0',
-                'type': 'ftp'
-            }
-        })
+        self.assertEquals(response_data, stub_origin)
 
     @patch('swh.web.ui.controller.service')
     @istest
@@ -327,11 +306,13 @@ class ApiTestCase(unittest.TestCase):
     @istest
     def api_release(self, mock_service):
         # given
-        mock_service.lookup_release.return_value = {
+        stub_release = {
             'id': 'release-0',
             'revision': 'revision-sha1',
             'author': 'author-id',
         }
+
+        mock_service.lookup_release.return_value = stub_release
 
         # when
         rv = self.app.get('/api/1/release/release-0')
@@ -341,13 +322,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {
-            'release': {
-                'id': 'release-0',
-                'revision': 'revision-sha1',
-                'author': 'author-id',
-            }
-        })
+        self.assertEquals(response_data, stub_release)
 
     @patch('swh.web.ui.controller.service')
     @istest
@@ -371,7 +346,7 @@ class ApiTestCase(unittest.TestCase):
     @istest
     def api_revision(self, mock_service):
         # given
-        mock_revision = {
+        stub_revision = {
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
             'author_name': 'Software Heritage',
@@ -395,7 +370,7 @@ class ApiTestCase(unittest.TestCase):
                 }]
             },
         }
-        mock_service.lookup_revision.return_value = mock_revision
+        mock_service.lookup_revision.return_value = stub_revision
 
         # when
         rv = self.app.get('/api/1/revision/revision-0')
@@ -405,7 +380,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {"revision": mock_revision})
+        self.assertEquals(response_data, stub_revision)
 
     @patch('swh.web.ui.controller.service')
     @istest
