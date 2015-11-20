@@ -6,7 +6,10 @@
 import logging
 import os
 
-from flask import Flask
+# from flask import Flask
+from flask.ext.api import FlaskAPI, renderers
+# from flask.ext.api import renderers
+import yaml
 
 from swh.core import config
 
@@ -26,7 +29,22 @@ DEFAULT_CONFIG = {
 
 
 # api's definition
-app = Flask(__name__)
+# app = Flask(__name__)
+app = FlaskAPI(__name__)
+
+
+
+class YAMLRenderer(renderers.BaseRenderer):
+    media_type = 'application/yaml'
+
+    def render(self, data, media_type, **options):
+        return yaml.dump(data, encoding=self.charset)
+
+app.config['DEFAULT_RENDERERS'] = [
+    'flask.ext.api.renderers.JSONRenderer',
+    'flask.ext.api.renderers.BrowsableAPIRenderer',
+    'swh.web.ui.main.YAMLRenderer'
+]
 
 
 def read_config(config_file):

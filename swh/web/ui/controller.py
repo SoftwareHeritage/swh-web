@@ -6,7 +6,7 @@
 
 import json
 
-from flask import render_template, jsonify, request, flash
+from flask import render_template, request, flash
 from flask import make_response
 
 from swh.core.hashutil import ALGORITHMS
@@ -146,7 +146,7 @@ def content(hash, sha):
 @jsonp
 def api_stats():
     """Return statistics as a JSON object"""
-    return jsonify(service.stat_counters())
+    return service.stat_counters()
 
 
 def _make_error_response(default_error_msg, error_code, error):
@@ -179,7 +179,7 @@ def value_not_found(error):
 @jsonp
 def api_search(q):
     """Return search results as a JSON object"""
-    return jsonify({'found': service.lookup_hash(q)})
+    return {'found': service.lookup_hash(q)}
 
 
 def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
@@ -187,7 +187,7 @@ def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
     res = lookup_fn(criteria)
     if not res:
         raise NotFoundExc(error_msg_if_not_found)
-    return jsonify(res)
+    return res
 
 
 @app.route('/api/1/origin/<int:origin_id>')
@@ -241,7 +241,7 @@ def api_directory(sha1_git):
                                                  recursive_flag)
     if not directory_entries:
         raise NotFoundExc('Directory with sha1_git %s not found.' % sha1_git)
-    return jsonify({'directory_entries': list(directory_entries)})
+    return {'directory_entries': list(directory_entries)}
 
 
 @app.route('/api/1/content/<string:q>/')
@@ -265,7 +265,7 @@ def api_content_with_details(q):
     output = {'origin': origin_detail if origin_detail else None}
     for key, value in content.items():
         output[key] = value
-    return jsonify(output)
+    return output
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
@@ -276,6 +276,6 @@ def api_uploadnsearch():
     """
     file = request.files['filename']
     filename, sha1, found = service.upload_and_search(file)
-    return jsonify({'sha1': sha1,
-                    'filename': filename,
-                    'found': found})
+    return {'sha1': sha1,
+            'filename': filename,
+            'found': found}
