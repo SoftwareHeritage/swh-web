@@ -9,6 +9,9 @@ import json
 from flask import render_template, request, flash
 from flask import make_response
 
+from flask.ext.api.decorators import set_renderers
+from flask.ext.api.renderers import HTMLRenderer
+
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service
@@ -20,6 +23,7 @@ hash_filter_keys = ALGORITHMS
 
 
 @app.route('/')
+@set_renderers(HTMLRenderer)
 def main():
     """Home page
 
@@ -31,11 +35,13 @@ def main():
 
 
 @app.route('/about')
+@set_renderers(HTMLRenderer)
 def about():
     return render_template('about.html')
 
 
 @app.route('/search')
+@set_renderers(HTMLRenderer)
 def search():
     """Search for hashes in swh-storage.
 
@@ -53,6 +59,7 @@ def search():
 
 
 @app.route('/uploadnsearch', methods=['GET', 'POST'])
+@set_renderers(HTMLRenderer)
 def uploadnsearch():
     """Upload and search for hashes in swh-storage.
 
