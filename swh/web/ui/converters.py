@@ -38,6 +38,9 @@ def from_swh(dict_swh, hashess=[], bytess=[]):
     def convert_bytes(v):
         return v.decode('utf-8')
 
+    if not dict_swh:
+        return dict_swh
+
     new_dict = {}
     for key, value in dict_swh.items():
         if key in hashess:
