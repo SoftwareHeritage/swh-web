@@ -6,6 +6,14 @@
 from swh.core import hashutil
 
 
+def fmap(f, data):
+    if isinstance(data, list):
+        return [f(x) for x in data]
+    if isinstance(data, dict):
+        return {k: f(v) for (k, v) in data.items()}
+    return f(data)
+
+
 def from_swh(dict_swh, hashess=[], bytess=[]):
     """Convert from an swh dictionary to something reasonably json
     serializable.
@@ -24,15 +32,18 @@ def from_swh(dict_swh, hashess=[], bytess=[]):
         dictionary equivalent as dict_swh only with its keys `converted`.
 
     """
-    if not dict_swh:
-        return dict_swh
+    def convert_hashes_bytes(v):
+        return hashutil.hash_to_hex(v) if v else None
+
+    def convert_bytes(v):
+        return v.decode('utf-8')
 
     new_dict = {}
     for key, value in dict_swh.items():
         if key in hashess:
-            new_dict[key] = hashutil.hash_to_hex(value) if value else None
+            new_dict[key] = fmap(convert_hashes_bytes, value)
         elif key in bytess:
-            new_dict[key] = value.decode('utf-8')
+            new_dict[key] = fmap(convert_bytes, value)
         else:
             new_dict[key] = value
 
@@ -104,7 +115,7 @@ def from_revision(revision):
 
     """
     return from_swh(revision,
-                    hashess=set(['id', 'directory']),
+                    hashess=set(['id', 'directory', 'parents']),
                     bytess=set(['author_name',
                                 'committer_name',
                                 'author_email',

@@ -20,8 +20,10 @@ class ConvertersTestCase(unittest.TestCase):
             'a': 'something',
             'b': 'someone',
             'c': b'sharp-0.3.4.tgz',
-            'd': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',
-            'e': b'sharp.html/doc_002dS_005fISREG.html'
+            'd': hashutil.hex_to_hash(
+                'b04caf10e9535160d90e874b45aa426de762f19f'),
+            'e': b'sharp.html/doc_002dS_005fISREG.html',
+            'g': [b'utf-8-to-decode', b'another-one'],
         }
 
         expected_output = {
@@ -29,12 +31,13 @@ class ConvertersTestCase(unittest.TestCase):
             'b': 'someone',
             'c': 'sharp-0.3.4.tgz',
             'd': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'e': 'sharp.html/doc_002dS_005fISREG.html'
+            'e': 'sharp.html/doc_002dS_005fISREG.html',
+            'g': ['utf-8-to-decode', 'another-one'],
         }
 
         actual_output = converters.from_swh(some_input,
                                             hashess=set(['d']),
-                                            bytess=set(['c', 'e']))
+                                            bytess=set(['c', 'e', 'g']))
 
         self.assertEquals(expected_output, actual_output)
 
@@ -154,7 +157,12 @@ class ConvertersTestCase(unittest.TestCase):
             'committer_date_offset': 0,
             'synthetic': True,
             'type': 'tar',
-            'parents': [],
+            'parents': [
+                hashutil.hex_to_hash(
+                    '29d8be353ed3480476f032475e7c244eff7371d5'),
+                hashutil.hex_to_hash(
+                    '30d8be353ed3480476f032475e7c244eff7371d5')
+            ],
             'metadata': {
                 'original_artifact': [{
                     'archive_type': 'tar',
@@ -181,7 +189,10 @@ class ConvertersTestCase(unittest.TestCase):
             'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54,
                                                 tzinfo=None),
             'committer_date_offset': 0,
-            'parents': [],
+            'parents': [
+                '29d8be353ed3480476f032475e7c244eff7371d5',
+                '30d8be353ed3480476f032475e7c244eff7371d5'
+            ],
             'type': 'tar',
             'synthetic': True,
             'metadata': {
