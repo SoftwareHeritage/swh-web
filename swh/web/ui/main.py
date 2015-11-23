@@ -6,10 +6,7 @@
 import logging
 import os
 
-# from flask import Flask
-from flask.ext.api import FlaskAPI, renderers
-# from flask.ext.api import renderers
-import yaml
+from flask.ext.api import FlaskAPI
 
 from swh.core import config
 
@@ -29,22 +26,7 @@ DEFAULT_CONFIG = {
 
 
 # api's definition
-# app = Flask(__name__)
 app = FlaskAPI(__name__)
-
-
-
-class YAMLRenderer(renderers.BaseRenderer):
-    media_type = 'application/yaml'
-
-    def render(self, data, media_type, **options):
-        return yaml.dump(data, encoding=self.charset)
-
-app.config['DEFAULT_RENDERERS'] = [
-    'flask.ext.api.renderers.JSONRenderer',
-    'flask.ext.api.renderers.BrowsableAPIRenderer',
-    'swh.web.ui.main.YAMLRenderer'
-]
 
 
 def read_config(config_file):
@@ -89,6 +71,11 @@ def run_from_webserver(environ, start_response):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
     app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    app.config['DEFAULT_RENDERERS'] = [
+        'flask.ext.api.renderers.JSONRenderer',
+        'flask.ext.api.renderers.BrowsableAPIRenderer',
+        'swh.web.ui.renderers.YAMLRenderer'
+    ]
 
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.INFO)
@@ -121,6 +108,11 @@ def run_debug_from(config_path, verbose=False):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
     app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    app.config['DEFAULT_RENDERERS'] = [
+        'flask.ext.api.renderers.JSONRenderer',
+        'flask.ext.api.renderers.BrowsableAPIRenderer',
+        'swh.web.ui.renderers.YAMLRenderer'
+    ]
 
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')
