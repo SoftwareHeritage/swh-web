@@ -10,6 +10,8 @@ from flask.ext.api import FlaskAPI
 
 from swh.core import config
 
+from swh.web.ui.renderers import RENDERERS
+
 
 DEFAULT_CONFIG = {
     'storage_args': ('list[str]', ['http://localhost:5000/']),
@@ -23,7 +25,6 @@ DEFAULT_CONFIG = {
     'upload_folder': ('string', '/tmp/swh-web-ui/uploads'),
     'upload_allowed_extensions': ('list[str]', [])  # means all are accepted
 }
-
 
 # api's definition
 app = FlaskAPI(__name__)
@@ -71,11 +72,7 @@ def run_from_webserver(environ, start_response):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
     app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
-    app.config['DEFAULT_RENDERERS'] = [
-        'flask.ext.api.renderers.JSONRenderer',
-        'flask.ext.api.renderers.BrowsableAPIRenderer',
-        'swh.web.ui.renderers.YAMLRenderer'
-    ]
+    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.INFO)
@@ -108,11 +105,7 @@ def run_debug_from(config_path, verbose=False):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
     app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
-    app.config['DEFAULT_RENDERERS'] = [
-        'flask.ext.api.renderers.JSONRenderer',
-        'flask.ext.api.renderers.BrowsableAPIRenderer',
-        'swh.web.ui.renderers.YAMLRenderer'
-    ]
+    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')

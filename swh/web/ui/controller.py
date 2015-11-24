@@ -4,13 +4,14 @@
 # See top-level LICENSE file for more information
 
 
-import json
-
 from flask import render_template, request, flash
 from flask import make_response
 
 from flask.ext.api.decorators import set_renderers
+from flask_api.mediatypes import MediaType
 from flask.ext.api.renderers import HTMLRenderer
+
+from swh.web.ui.renderers import RENDERERS_BY_TYPE
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
@@ -160,9 +161,22 @@ def _make_error_response(default_error_msg, error_code, error):
     """Private function to create a custom error response.
 
     """
+    # if nothing is requested by client, use json
+    default_application_type = 'application/json'
+    accept_type = request.headers.get('Accept', default_application_type)
+    renderer = RENDERERS_BY_TYPE.get(
+        accept_type,
+        RENDERERS_BY_TYPE[default_application_type])
+
+    # for edge cases, use the elected renderer's media type
+    accept_type = renderer.media_type
     response = make_response(default_error_msg, error_code)
-    response.headers['Content-Type'] = 'application/json'
-    response.data = json.dumps({"error": str(error)})
+    response.headers['Content-Type'] = accept_type
+    response.data = renderer.render({"error": str(error)},
+                                    media_type=MediaType(accept_type),
+                                    status=error_code,
+                                    headers={'Content-Type': accept_type})
+
     return response
 
 
