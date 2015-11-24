@@ -60,6 +60,15 @@ def storage():
     return app.config['conf']['storage']
 
 
+def setup_app(app, conf):
+    app.secret_key = conf['secret_key']
+    app.config['conf'] = conf
+    app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    app.config['DEFAULT_RENDERERS'] = RENDERERS
+
+    return app
+
+
 def run_from_webserver(environ, start_response):
     """Run the WSGI app from the webserver, loading the configuration."""
 

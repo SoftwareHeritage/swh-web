@@ -5,6 +5,7 @@
 
 import unittest
 import json
+import yaml
 
 from nose.tools import istest
 from unittest.mock import patch, MagicMock
@@ -136,7 +137,7 @@ class ApiTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.controller.service')
     @istest
-    def api_content_not_found(self, mock_service):
+    def api_content_not_found_as_json(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
         mock_service.lookup_hash_origin = MagicMock()
@@ -149,6 +150,33 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
+            '68b3be4735637006560c not found.'
+        })
+
+        mock_service.lookup_content.assert_called_once_with(
+            'sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
+            'be4735637006560c')
+        mock_service.lookup_hash_origin.called = False
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_content_not_found_as_yaml(self, mock_service):
+        # given
+        mock_service.lookup_content.return_value = None
+        mock_service.lookup_hash_origin = MagicMock()
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
+            'be4735637006560c/',
+            headers={'accept': 'application/yaml'})
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/yaml')
+
+        response_data = yaml.load(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
             'error': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
             '68b3be4735637006560c not found.'
@@ -174,6 +202,24 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(response_data, {'found': True})
 
         mock_service.lookup_hash.assert_called_once_with('sha1:blah')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_search_as_yaml(self, mock_service):
+        # given
+        mock_service.lookup_hash.return_value = True
+
+        # when
+        rv = self.app.get('/api/1/search/sha1:halb/',
+                          headers={'Accept': 'application/yaml'})
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/yaml')
+
+        response_data = yaml.load(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'found': True})
+
+        mock_service.lookup_hash.assert_called_once_with('sha1:halb')
 
     @patch('swh.web.ui.controller.service')
     @istest
