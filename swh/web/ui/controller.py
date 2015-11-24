@@ -116,6 +116,7 @@ The file's path referenced was '%s'.""" % (hash,
 
 
 @app.route('/browse/content/<hash>:<sha>')
+@set_renderers(HTMLRenderer)
 def content(hash, sha):
     """Show content information.
 
