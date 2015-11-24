@@ -190,7 +190,7 @@ def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
     return jsonify(res)
 
 
-@app.route('/api/1/origin/<string:origin_id>')
+@app.route('/api/1/origin/<int:origin_id>')
 @jsonp
 def api_origin(origin_id):
     """Return information about origin."""
@@ -199,7 +199,7 @@ def api_origin(origin_id):
         error_msg_if_not_found='Origin with id %s not found.' % origin_id)
 
 
-@app.route('/api/1/person/<string:person_id>')
+@app.route('/api/1/person/<int:person_id>')
 @jsonp
 def api_person(person_id):
     """Return information about person."""

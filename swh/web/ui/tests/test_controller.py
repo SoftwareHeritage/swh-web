@@ -267,7 +267,7 @@ class ApiTestCase(unittest.TestCase):
     def api_origin(self, mock_service):
         # given
         stub_origin = {
-            'id': 'origin-0',
+            'id': 1234,
             'lister': 'uuid-lister-0',
             'project': 'uuid-project-0',
             'url': 'ftp://some/url/to/origin/0',
@@ -276,7 +276,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_origin.return_value = stub_origin
 
         # when
-        rv = self.app.get('/api/1/origin/origin-0')
+        rv = self.app.get('/api/1/origin/1234')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -285,6 +285,8 @@ class ApiTestCase(unittest.TestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, stub_origin)
 
+        mock_service.lookup_origin.assert_called_with(1234)
+
     @patch('swh.web.ui.controller.service')
     @istest
     def api_origin_not_found(self, mock_service):
@@ -292,15 +294,17 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_origin.return_value = None
 
         # when
-        rv = self.app.get('/api/1/origin/origin-0')
+        rv = self.app.get('/api/1/origin/4321')
 
         # then
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Origin with id origin-0 not found.'
+            'error': 'Origin with id 4321 not found.'
         })
+
+        mock_service.lookup_origin.assert_called_with(4321)
 
     @patch('swh.web.ui.controller.service')
     @istest
