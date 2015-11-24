@@ -12,7 +12,6 @@ from flask.ext.api.renderers import HTMLRenderer
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service, renderers
-from swh.web.ui.decorators import jsonp
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
@@ -148,7 +147,6 @@ def content(hash, sha):
 
 
 @app.route('/api/1/stat/counters')
-@jsonp
 def api_stats():
     """Return statistics as a JSON object"""
     return service.stat_counters()
@@ -171,7 +169,6 @@ def value_not_found(error):
 
 
 @app.route('/api/1/search/<string:q>/')
-@jsonp
 def api_search(q):
     """Return search results as a JSON object"""
     return {'found': service.lookup_hash(q)}
@@ -186,7 +183,6 @@ def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
 
 
 @app.route('/api/1/origin/<int:origin_id>')
-@jsonp
 def api_origin(origin_id):
     """Return information about origin."""
     return _api_lookup(
@@ -195,7 +191,6 @@ def api_origin(origin_id):
 
 
 @app.route('/api/1/person/<int:person_id>')
-@jsonp
 def api_person(person_id):
     """Return information about person."""
     return _api_lookup(
@@ -204,7 +199,6 @@ def api_person(person_id):
 
 
 @app.route('/api/1/release/<string:sha1_git>')
-@jsonp
 def api_release(sha1_git):
     """Return information about release with id sha1_git."""
     error_msg = 'Release with sha1_git %s not found.' % sha1_git
@@ -215,7 +209,6 @@ def api_release(sha1_git):
 
 
 @app.route('/api/1/revision/<string:sha1_git>')
-@jsonp
 def api_revision(sha1_git):
     """Return information about revision with id sha1_git.
 
@@ -228,7 +221,6 @@ def api_revision(sha1_git):
 
 
 @app.route('/api/1/directory/<string:sha1_git>')
-@jsonp
 def api_directory(sha1_git):
     """Return information about release with id sha1_git."""
     recursive_flag = request.args.get('recursive', False)
@@ -240,7 +232,6 @@ def api_directory(sha1_git):
 
 
 @app.route('/api/1/content/<string:q>/')
-@jsonp
 def api_content_with_details(q):
     """Return content information up to its origin if found.
 
@@ -264,7 +255,6 @@ def api_content_with_details(q):
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
-@jsonp
 def api_uploadnsearch():
     """Upload the file's content in the post body request.
        Compute the hash and determine if it exists in the storage.

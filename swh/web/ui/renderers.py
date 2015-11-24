@@ -17,8 +17,18 @@ class YAMLRenderer(renderers.BaseRenderer):
         return yaml.dump(data, encoding=self.charset)
 
 
+class JSONPRenderer(renderers.JSONRenderer):
+    def render(self, data, media_type, **options):
+        # Requested indentation may be set in the Accept header.
+        res = super().render(data, media_type, **options)
+        jsonp = request.args.get('callback')
+        if jsonp:
+            return '%s(%s)' % (jsonp, res)
+        return res
+
+
 RENDERERS = [
-    'flask.ext.api.renderers.JSONRenderer',
+    'swh.web.ui.renderers.JSONPRenderer',
     'flask.ext.api.renderers.BrowsableAPIRenderer',
     'flask.ext.api.parsers.URLEncodedParser',
     'swh.web.ui.renderers.YAMLRenderer',
@@ -26,7 +36,7 @@ RENDERERS = [
 
 
 RENDERERS_INSTANCE = [
-    renderers.JSONRenderer(),
+    JSONPRenderer(),
     renderers.BrowsableAPIRenderer(),
     parsers.URLEncodedParser(),
     YAMLRenderer(),
