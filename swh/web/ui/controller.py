@@ -5,17 +5,13 @@
 
 
 from flask import render_template, request, flash
-from flask import make_response
 
 from flask.ext.api.decorators import set_renderers
-from flask_api.mediatypes import MediaType
 from flask.ext.api.renderers import HTMLRenderer
-
-from swh.web.ui.renderers import RENDERERS_BY_TYPE
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
-from swh.web.ui import service
+from swh.web.ui import service, renderers
 from swh.web.ui.decorators import jsonp
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 
@@ -157,35 +153,12 @@ def api_stats():
     return service.stat_counters()
 
 
-def _make_error_response(default_error_msg, error_code, error):
-    """Private function to create a custom error response.
-
-    """
-    # if nothing is requested by client, use json
-    default_application_type = 'application/json'
-    accept_type = request.headers.get('Accept', default_application_type)
-    renderer = RENDERERS_BY_TYPE.get(
-        accept_type,
-        RENDERERS_BY_TYPE[default_application_type])
-
-    # for edge cases, use the elected renderer's media type
-    accept_type = renderer.media_type
-    response = make_response(default_error_msg, error_code)
-    response.headers['Content-Type'] = accept_type
-    response.data = renderer.render({"error": str(error)},
-                                    media_type=MediaType(accept_type),
-                                    status=error_code,
-                                    headers={'Content-Type': accept_type})
-
-    return response
-
-
 @app.errorhandler(ValueError)
 def value_error_as_bad_request(error):
     """Compute a bad request and add body as payload.
 
     """
-    return _make_error_response('Bad request', 400, error)
+    return renderers.error_response('Bad request', 400, error)
 
 
 @app.errorhandler(NotFoundExc)
@@ -193,7 +166,7 @@ def value_not_found(error):
     """Compute a not found and add body as payload.
 
     """
-    return _make_error_response('Not found', 404, error)
+    return renderers.error_response('Not found', 404, error)
 
 
 @app.route('/api/1/search/<string:q>/')
