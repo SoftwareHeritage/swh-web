@@ -227,7 +227,7 @@ def api_directory(sha1_git):
                                                  recursive_flag)
     if not directory_entries:
         raise NotFoundExc('Directory with sha1_git %s not found.' % sha1_git)
-    return {'directory_entries': list(directory_entries)}
+    return list(directory_entries)
 
 
 @app.route('/api/1/content/<string:q>/')

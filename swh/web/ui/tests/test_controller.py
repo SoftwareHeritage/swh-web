@@ -506,7 +506,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'directory_entries': stub_directory})
+        self.assertEquals(response_data, stub_directory)
 
     @patch('swh.web.ui.controller.service')
     @istest
