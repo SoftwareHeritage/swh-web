@@ -6,11 +6,21 @@ Browsing namespace
 
 ### Global
 
+The api /api/1 is partially browsable on defined endpoints.
+
+Also, you can specify specify 'Accept' header using your favorite
+client side to see the answer being transformed accordingly.
+
+Support of the following 'Accept' header:
+- application/json
+- application/yaml
+- text/html
+
 To be anchored where browsing starts (e.g., at /api/1)
 
 * /revision/<SHA1_GIT>: show commit information
 
-    $curl http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5
+    $ curl -H 'Accept: application/json' http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5
     {
       "revision": {
         "author_email": "robot@softwareheritage.org",
