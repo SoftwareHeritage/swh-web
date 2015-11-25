@@ -22,7 +22,6 @@ To be anchored where browsing starts (e.g., at /api/1)
 
     $ curl -H 'Accept: application/json' http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5
     {
-      "revision": {
         "author_email": "robot@softwareheritage.org",
         "author_name": "Software Heritage",
         "committer_date": "Mon, 17 Jan 2000 10:23:54 GMT",
@@ -50,14 +49,12 @@ To be anchored where browsing starts (e.g., at /api/1)
         ],
         "synthetic": true,
         "type": "tar"
-      }
     }
 
 * /directory/<SHA1_GIT>: show directory information (including ls)
 
     curl -X GET http://localhost:6543/api/1/directory/3126f46e2f7dc752227131a2a658265e58f53e38?recursive=True
-    {
-        "directory_entries": [
+    [
         {
           "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
           "name": "Makefile.am",
@@ -105,8 +102,7 @@ To be anchored where browsing starts (e.g., at /api/1)
           "target": "13fc38d75f2a47bc55e90ad5bf8d8a0184b14878",
           "type": "file"
         }
-      ]
-    }
+    ]
 
 * /directory/<SHA1_GIT>/path/to/file-or-dir: ditto, but for dir pointed by path
 
@@ -142,8 +138,8 @@ Sample:
 
     $ curl -X GET http://localhost:6543/api/1/release/4a1b6d7dd0a923ed90156c4e2f5db030095d8e08
     {
-      "release": {
-        "author": 1,
+        "author_name": "Software Heritage",
+        "author_email": "robot@softwareheritage.org",
         "comment": "synthetic release message",
         "date": "Sat, 04 Mar 2000 07:50:35 GMT",
         "date_offset": 0,
@@ -151,7 +147,6 @@ Sample:
         "name": "4.0.6",
         "revision": "5c7814ce9978d4e16f3858925b5cea611e500eec",
         "synthetic": true
-      }
     }%
 
 * /person/<PERSON_ID>: show person information
@@ -172,13 +167,11 @@ Sample:
 
     $ curl -X GET http://localhost:6543/api/1/origin/1
     {
-      "origin": {
         "id": 1,
         "lister": null,
         "project": null,
         "type": "ftp",
         "url": "rsync://ftp.gnu.org/old-gnu/solfege"
-      }
     }%
 
 * /project/<PROJECT_ID>: show project information
