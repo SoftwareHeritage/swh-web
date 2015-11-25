@@ -21,6 +21,10 @@ class PlainRenderer(renderers.BaseRenderer):
 
 
 class YAMLRenderer(renderers.BaseRenderer):
+    """Renderer for application/yaml.
+    Orchestrate from python data structure to yaml.
+
+    """
     media_type = 'application/yaml'
 
     def render(self, data, media_type, **options):
@@ -28,6 +32,14 @@ class YAMLRenderer(renderers.BaseRenderer):
 
 
 class JSONPRenderer(renderers.JSONRenderer):
+    """Renderer for application/json.
+    Serializes in json the data and returns it.
+
+    Also deals with jsonp.  If callback is found in request parameter,
+    wrap the result as a function with name the value of the parameter
+    query 'callback'.
+
+    """
     def render(self, data, media_type, **options):
         # Requested indentation may be set in the Accept header.
         res = super().render(data, media_type, **options)

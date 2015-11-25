@@ -268,8 +268,8 @@ def api_content_with_details(q):
         Only works with current sha1
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
-        NotFoundExc if the content is not found.
+        - BadInputExc in case of unknown algo_hash or bad hash
+        - NotFoundExc if the content is not found.
 
     """
     content = service.lookup_content(q)
