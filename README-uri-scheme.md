@@ -125,6 +125,17 @@ To be anchored where browsing starts (e.g., at /api/1)
     curl -X GET http://localhost:6543/api/1/content/sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08/
     {"error": "Content with sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08 not found."}
 
+* /content/[<hash_algo:]<HASH>/raw
+
+    curl -H 'Accept: text/plain' http://localhost:6543/api/1/content/sha1:486b486d2a4998929c68265fa85ab2326db5528a/raw
+
+    The GNU cfs-el web homepage is at
+    @uref{http://www.gnu.org/software/cfs-el/cfs-el.html}.
+
+    You can find the latest distribution of GNU cfs-el at
+    @uref{ftp://ftp.gnu.org/gnu/} or at any of its mirrors.
+
+
 * /release/<SHA1_GIT>: show release information
 
 Sample:

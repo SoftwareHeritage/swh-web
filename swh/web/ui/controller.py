@@ -279,6 +279,32 @@ def api_content_with_details(q):
     return content
 
 
+@app.route('/api/1/content/<string:q>/raw')
+@set_renderers(renderers.PlainRenderer)
+def api_content_raw(q):
+    """Return content information on the content with provided hash.
+
+    Args:
+        q is of the form (algo_hash:)hash with algo_hash in
+        (sha1, sha1_git, sha256).
+        If no algo_hash is provided, will work with default sha1
+        algorithm
+
+    Actual limitation:
+        Only works with current sha1
+
+    Raises:
+        - BadInputExc in case of unknown algo_hash or bad hash
+        - NotFoundExc if the content is not found.
+
+    """
+    content = service.lookup_content(q)
+    if not content:
+        raise NotFoundExc('Content with %s not found.' % q)
+
+    return content['data']
+
+
 @app.route('/api/1/uploadnsearch', methods=['POST'])
 def api_uploadnsearch():
     """Upload the file's content in the post body request.

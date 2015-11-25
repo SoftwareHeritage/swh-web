@@ -10,6 +10,16 @@ from flask.ext.api import renderers, parsers
 from flask_api.mediatypes import MediaType
 
 
+class PlainRenderer(renderers.BaseRenderer):
+    """Renderer for plain/text, do nothing but send the data as is.
+
+    """
+    media_type = 'text/plain'
+
+    def render(self, data, media_type, **options):
+        return data
+
+
 class YAMLRenderer(renderers.BaseRenderer):
     media_type = 'application/yaml'
 
@@ -32,6 +42,7 @@ RENDERERS = [
     'flask.ext.api.renderers.BrowsableAPIRenderer',
     'flask.ext.api.parsers.URLEncodedParser',
     'swh.web.ui.renderers.YAMLRenderer',
+    'swh.web.ui.renderers.PlainRenderer',
 ]
 
 

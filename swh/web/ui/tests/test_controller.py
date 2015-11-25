@@ -181,6 +181,47 @@ class ApiTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.controller.service')
     @istest
+    def api_content_raw(self, mock_service):
+        # given
+        stub_content = {'data': 'some content data'}
+        mock_service.lookup_content.return_value = stub_content
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw',
+            headers={'Content-Type': 'text/plain'})
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'text/plain')
+        self.assertEquals(rv.data.decode('utf-8'), stub_content['data'])
+
+        mock_service.lookup_content.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
+    def api_content_raw_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content.return_value = None
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw',
+            headers={'Content-Type': 'text/plain'})
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
+            '6c5b00a6d03 not found.'
+        })
+
+        mock_service.lookup_content.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.controller.service')
+    @istest
     def api_search(self, mock_service):
         # given
         mock_service.lookup_hash.return_value = True
