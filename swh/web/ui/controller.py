@@ -47,7 +47,7 @@ def search():
 
     try:
         if q:
-            env['found'] = service.lookup_hash(q)
+            env.update(service.lookup_hash(q))
     except BadInputExc:
         env['message'] = 'Error: invalid query string'
 
@@ -129,21 +129,20 @@ def content(hash, sha):
         The content's information at sha1_git
 
     """
+    env = {'hash': hash, 'sha': sha}
+
     if hash not in hash_filter_keys:
         message = 'The checksum must be one of sha1, sha1_git, sha256'
     else:
         q = "%s:%s" % (hash, sha)
-        found = service.lookup_hash(q)
+        found = service.lookup_hash(q)['found']
         if not found:
-            message = "Hash %s was not found." % hash
+            message = "Hash %s was not found." % sha
         else:
             origin = service.lookup_hash_origin(q)
             message = _origin_seen(hash, origin)
-
-    return render_template('content.html',
-                           hash=hash,
-                           sha=sha,
-                           message=message)
+    env['message'] = message
+    return render_template('content.html', **env)
 
 
 @app.route('/api/1/stat/counters')

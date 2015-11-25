@@ -53,7 +53,8 @@ def lookup_hash(q):
 
     """
     (algo, hash) = query.parse_hash(q)
-    return main.storage().content_exist({algo: hash})
+    found = main.storage().content_exist({algo: hash})
+    return {'found': found}
 
 
 def lookup_hash_origin(q):

@@ -30,7 +30,7 @@ class ServiceTestCase(unittest.TestCase):
             'sha1:123caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertFalse(actual_lookup)
+        self.assertEquals({'found': False}, actual_lookup)
 
         # check the function has been called with parameters
         self.storage.content_exist.assert_called_with({
@@ -47,7 +47,7 @@ class ServiceTestCase(unittest.TestCase):
             'sha1:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertTrue(actual_lookup)
+        self.assertEquals({'found': True}, actual_lookup)
 
         self.storage.content_exist.assert_called_with({
             'sha1':
