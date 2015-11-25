@@ -117,12 +117,14 @@ To be anchored where browsing starts (e.g., at /api/1)
   - HASH_ALGO defaults to "sha1" (?)
 
     curl -X GET http://localhost:6543/api/1/content/sha1:486b486d2a4998929c68265fa85ab2326db5528a
+
     {
-        "data": "The GNU cfs-el web homepage is at\n@uref{http://www.gnu.org/software/cfs-el/cfs-el.html}.\n\nYou can find the latest distribution of GNU cfs-el at\n@uref{ftp://ftp.gnu.org/gnu/} or at any of its mirrors.\n",
+        "data": "/api/1/content/486b486d2a4998929c68265fa85ab2326db5528a/raw",
          "sha1": "486b486d2a4998929c68265fa85ab2326db5528a"
     }
 
     curl -X GET http://localhost:6543/api/1/content/sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08/
+
     {"error": "Content with sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08 not found."}
 
 * /content/[<hash_algo:]<HASH>/raw

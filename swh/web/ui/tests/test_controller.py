@@ -115,7 +115,8 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'data': 'some content data',
+            'data': '/api/1/content/'
+                    '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
