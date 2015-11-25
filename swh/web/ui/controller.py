@@ -167,7 +167,7 @@ def value_not_found(error):
     return renderers.error_response('Not found', 404, error)
 
 
-@app.route('/api/1/search/<string:q>/')
+@app.route('/api/1/search/<string:q>')
 def api_search(q):
     """Return search results as a JSON object"""
     return {'found': service.lookup_hash(q)}
@@ -254,7 +254,7 @@ def api_content_checksum_to_origin(q):
     return service.lookup_hash_origin(q)
 
 
-@app.route('/api/1/content/<string:q>/')
+@app.route('/api/1/content/<string:q>')
 def api_content_with_details(q):
     """Return content information on the content with provided hash.
 
@@ -279,7 +279,7 @@ def api_content_with_details(q):
     return content
 
 
-@app.route('/api/1/uploadnsearch/', methods=['POST'])
+@app.route('/api/1/uploadnsearch', methods=['POST'])
 def api_uploadnsearch():
     """Upload the file's content in the post body request.
        Compute the hash and determine if it exists in the storage.

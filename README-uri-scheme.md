@@ -224,7 +224,7 @@ Json answer:
 
 Sample:
 
-    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch/
+    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch
     {
         "found": false,
         "sha1": "e95097ad2d607b4c89c1ce7ca1fef2a1e4450558"

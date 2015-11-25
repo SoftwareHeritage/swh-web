@@ -109,7 +109,7 @@ class ApiTestCase(unittest.TestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -137,7 +137,7 @@ class ApiTestCase(unittest.TestCase):
         # when
         rv = self.app.get(
             '/api/1/content/sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
-            'be4735637006560c/')
+            'be4735637006560c')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -162,7 +162,7 @@ class ApiTestCase(unittest.TestCase):
         # when
         rv = self.app.get(
             '/api/1/content/sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
-            'be4735637006560c/',
+            'be4735637006560c',
             headers={'accept': 'application/yaml'})
 
         self.assertEquals(rv.status_code, 404)
@@ -186,7 +186,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_hash.return_value = True
 
         # when
-        rv = self.app.get('/api/1/search/sha1:blah/')
+        rv = self.app.get('/api/1/search/sha1:blah')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -202,7 +202,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_hash.return_value = True
 
         # when
-        rv = self.app.get('/api/1/search/sha1:halb/',
+        rv = self.app.get('/api/1/search/sha1:halb',
                           headers={'Accept': 'application/yaml'})
 
         self.assertEquals(rv.status_code, 200)
@@ -220,7 +220,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_hash.return_value = False
 
         # when
-        rv = self.app.get('/api/1/search/sha1:halb/')
+        rv = self.app.get('/api/1/search/sha1:halb')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -287,7 +287,7 @@ class ApiTestCase(unittest.TestCase):
             'simple-filename', 'some-hex-sha1', False)
 
         # when
-        rv = self.app.post('/api/1/uploadnsearch/')
+        rv = self.app.post('/api/1/uploadnsearch')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
