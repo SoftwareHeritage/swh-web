@@ -63,7 +63,7 @@ def lookup_hash_origin(q):
     Args: query string of the form <hash_algo:hash>
 
     Returns:
-        True or False, according to whether the checksum is present or not
+        origin as dictionary if found for the given content.
 
     """
     algo, h = query.parse_hash(q)

@@ -230,12 +230,42 @@ def api_directory(sha1_git):
     return list(directory_entries)
 
 
-@app.route('/api/1/content/<string:q>/')
-def api_content_with_details(q):
-    """Return content information up to its origin if found.
+@app.route('/api/1/browse/<string:q>')
+def api_content_checksum_to_origin(q):
+    """Return content information up to one of its origin if the content
+    is found.
 
     Args:
-        q is of the form algo_hash:hash
+        q is of the form algo_hash:hash with algo_hash in
+        (sha1, sha1_git, sha256)
+
+    Returns:
+        Information on one possible origin for such content.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the content is not found.
+
+    """
+    found = service.lookup_hash(q)['found']
+    if not found:
+        raise NotFoundExc('Content with %s not found.' % q)
+
+    return service.lookup_hash_origin(q)
+
+
+@app.route('/api/1/content/<string:q>/')
+def api_content_with_details(q):
+    """Return content information on the content with provided hash.
+
+    Args:
+        q is of the form (algo_hash:)hash with algo_hash in
+        (sha1, sha1_git, sha256).
+        If no algo_hash is provided, will work with default sha1
+        algorithm
+
+    Actual limitation:
+        Only works with current sha1
 
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash
@@ -246,11 +276,7 @@ def api_content_with_details(q):
     if not content:
         raise NotFoundExc('Content with %s not found.' % q)
 
-    origin_detail = service.lookup_hash_origin(q)
-    output = {'origin': origin_detail if origin_detail else None}
-    for key, value in content.items():
-        output[key] = value
-    return output
+    return content
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
