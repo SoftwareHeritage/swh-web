@@ -11,7 +11,7 @@ from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
-from swh.web.ui import service, renderers
+from swh.web.ui import service, renderers, utils
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
@@ -143,6 +143,25 @@ def content(hash, sha):
             message = _origin_seen(hash, origin)
     env['message'] = message
     return render_template('content.html', **env)
+
+
+@app.route('/api')
+@app.route('/api/')
+def api_main_points():
+    """List the current api endpoints starting with /api/.
+
+    """
+    return utils.filter_endpoints(app.url_map, '/api', blacklist=['/api/'])
+
+
+@app.route('/api/1')
+@app.route('/api/1/')
+def api_main_points_v1():
+    """List the current api v1 endpoints starting with /api/.
+
+    """
+    return utils.filter_endpoints(app.url_map, '/api/1',
+                                  blacklist=['/api/1/'])
 
 
 @app.route('/api/1/stat/counters')
