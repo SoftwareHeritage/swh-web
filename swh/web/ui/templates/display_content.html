@@ -2,8 +2,7 @@
 {% block title %}Display Content{% endblock %}
 {% block content %}
 <div id="message">{{ message }}</div>
-
-{% if content_raw is not none %}
-<pre>{{ content['data'] | safe }}<pre>
-{% endif %}
+  {% if content_raw is not none %}
+  <pre>{{ content['data'] }}</pre>
+  {% endif %}
 {% endblock %}
