@@ -116,17 +116,19 @@ The file's path referenced was '%s'.""" % (hash,
 
 @app.route('/browse/content/<string:q>')
 @set_renderers(HTMLRenderer)
-def content(q):
+def content_with_origin(q):
     """Show content information.
 
     Args:
-        hash: hash according to HASH_ALGO, where HASH_ALGO is
-    one of: sha1, sha1_git, sha256. This means that several different URLs (at
-    least one per HASH_ALGO) will point to the same content
-        sha: the sha with 'hash' format
+        - q: query string of the form <algo_hash:hash> with
+        `algo_hash` in sha1, sha1_git, sha256.
+
+        This means that several different URLs (at least one per
+        HASH_ALGO) will point to the same content sha: the sha with
+        'hash' format
 
     Returns:
-        The content's information at sha1_git
+        The content's information at for a given checksum.
 
     """
     env = {'q': q}
