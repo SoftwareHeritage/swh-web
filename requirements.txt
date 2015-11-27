@@ -3,4 +3,4 @@
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 Flask
 swh.core
-swh.storage >= 0.0.18
+swh.storage >= 0.0.19
