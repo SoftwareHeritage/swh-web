@@ -204,7 +204,7 @@ def prepare_directory_listing(files):
     return ls
 
 
-@app.route('/browse/directory/<string:sha1_git>/')
+@app.route('/browse/directory/<string:sha1_git>')
 @set_renderers(HTMLRenderer)
 def browse_directory(sha1_git):
     """Show directory information.
