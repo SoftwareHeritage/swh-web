@@ -189,12 +189,8 @@ def prepare_directory_listing(files):
     for entry in files:
         new_entry = {}
         if entry['type'] == 'dir':
-            sha1_git = entry.get('sha1_git')
-            if sha1_git:
-                new_entry['link'] = url_for('browse_directory',
-                                            sha1_git=sha1_git)
-            else:
-                new_entry['link'] = None
+            new_entry['link'] = url_for('browse_directory',
+                                        sha1_git=entry['target'])
         else:
             new_entry['link'] = url_for('show_content',
                                         q=entry['sha1'])
