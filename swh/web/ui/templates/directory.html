@@ -3,8 +3,12 @@
 {% block content %}
 {{ message }}
 {% if ls is not none %}
-  {% for e in ls %}
+{% for e in ls %}
+    {% if e.link is not none %}
       <div><p><a href="{{e.link}}">{{ e.name }}</a></p></div>
+    {% else %}
+      <div><p>{{ e.name }}</p></div>
+    {% endif %}
   {% endfor %}
 {% endif %}
 {% endblock %}

@@ -149,6 +149,61 @@ def content_with_origin(q):
     return render_template('content.html', **env)
 
 
+@app.route('/browse/content/<string:q>/raw')
+@set_renderers(HTMLRenderer)
+def show_content(q):
+    """Given a hash and a checksum, display the content's raw data.
+
+    Args:
+        q is of the form algo_hash:hash with algo_hash in
+        (sha1, sha1_git, sha256)
+
+    Returns:
+        Information on one possible origin for such content.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the content is not found.
+
+    """
+    env = {}
+    try:
+        content = service.lookup_content_raw(q)
+        if content is None:
+            message = 'Content with %s not found.'
+
+        message = 'Content %s' % content['sha1']
+        env['content'] = content
+    except BadInputExc as e:
+        message = e
+
+    env['message'] = message
+    return render_template('display_content.html', **env)
+
+
+def prepare_directory_listing(files):
+    """Given a list of dictionary files, return a view ready dictionary.
+
+    """
+    ls = []
+    for entry in files:
+        new_entry = {}
+        if entry['type'] == 'dir':
+            sha1_git = entry.get('sha1_git')
+            if sha1_git:
+                new_entry['link'] = url_for('browse_directory',
+                                            sha1_git=sha1_git)
+            else:
+                new_entry['link'] = None
+        else:
+            new_entry['link'] = url_for('show_content',
+                                        q=entry['sha1'])
+        new_entry['name'] = entry['name']
+        ls.append(new_entry)
+
+    return ls
+
+
 @app.route('/browse/directory/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
 def browse_directory(sha1_git):
@@ -163,24 +218,12 @@ def browse_directory(sha1_git):
     env = {'sha1_git': sha1_git}
 
     try:
-        directory_list = service.lookup_directory(sha1_git)
-        if not directory_list:
+        files = service.lookup_directory(sha1_git)
+        if not files:
             message = "Directory %s was not found." % sha1_git
         else:
             message = "Listing for directory %s:" % sha1_git
-            ls = []
-            for entry in directory_list:
-                new_entry = {}
-                if entry['type'] == 'dir':
-                    new_entry['link'] = url_for('browse_directory',
-                                                q=entry['sha1_git'])
-                else:
-                    new_entry['link'] = url_for('content_with_origin',
-                                                q=entry['sha1'])
-                new_entry['name'] = entry['name']
-                ls.append(new_entry)
-
-            env['ls'] = ls
+            env['ls'] = prepare_directory_listing(files)
 
     except BadInputExc as e:  # do not like it but do not duplicate code
         message = e
