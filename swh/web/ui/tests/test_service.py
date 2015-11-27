@@ -461,8 +461,7 @@ class ServiceTestCase(unittest.TestCase):
         self.assertIsNone(actual_directory)
 
         self.storage.directory_get.assert_called_with(
-            hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
-            False)
+            hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'))
 
     @istest
     def lookup_directory(self):
@@ -505,5 +504,4 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEqual(actual_directory, [expected_dir_entries])
 
         self.storage.directory_get.assert_called_with(
-            hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
-            False)
+            hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'))

@@ -100,7 +100,7 @@ def lookup_person(person_id):
     return converters.from_person(persons[0])
 
 
-def lookup_directory(sha1_git, recursive=False):
+def lookup_directory(sha1_git):
     """Return information about the directory with id sha1_git.
 
     Args:
@@ -114,7 +114,7 @@ def lookup_directory(sha1_git, recursive=False):
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    directory_entries = main.storage().directory_get(hBinSha1, recursive)
+    directory_entries = main.storage().directory_get(hBinSha1)
     if not directory_entries:
         return None
 

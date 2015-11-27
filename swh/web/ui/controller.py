@@ -241,9 +241,7 @@ def api_revision(sha1_git):
 @app.route('/api/1/directory/<string:sha1_git>')
 def api_directory(sha1_git):
     """Return information about release with id sha1_git."""
-    recursive_flag = request.args.get('recursive', False)
-    directory_entries = service.lookup_directory(sha1_git,
-                                                 recursive_flag)
+    directory_entries = service.lookup_directory(sha1_git)
     if not directory_entries:
         raise NotFoundExc('Directory with sha1_git %s not found.' % sha1_git)
     return list(directory_entries)
