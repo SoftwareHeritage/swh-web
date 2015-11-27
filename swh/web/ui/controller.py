@@ -149,6 +149,47 @@ def content_with_origin(q):
     return render_template('content.html', **env)
 
 
+@app.route('/browse/directory/<string:sha1_git>/')
+@set_renderers(HTMLRenderer)
+def browse_directory(sha1_git):
+    """Show directory information.
+
+    Args:
+        - sha1_git: the directory's sha1 git identifier.
+
+    Returns:
+        The content's information at sha1_git
+    """
+    env = {'sha1_git': sha1_git}
+
+    try:
+        directory_list = service.lookup_directory(sha1_git)
+        if not directory_list:
+            message = "Directory %s was not found." % sha1_git
+        else:
+            message = "Listing for directory %s:" % sha1_git
+            ls = []
+            for entry in directory_list:
+                new_entry = {}
+                if entry['type'] == 'dir':
+                    new_entry['link'] = url_for('browse_directory',
+                                                q=entry['sha1_git'])
+                else:
+                    new_entry['link'] = url_for('content_with_origin',
+                                                q=entry['sha1'])
+                new_entry['name'] = entry['name']
+                ls.append(new_entry)
+
+            env['ls'] = ls
+
+    except BadInputExc as e:  # do not like it but do not duplicate code
+        message = e
+
+    env['message'] = message
+
+    return render_template('directory.html', **env)
+
+
 @app.route('/api')
 @app.route('/api/')
 def api_main_points():
