@@ -23,14 +23,14 @@ class ServiceTestCase(unittest.TestCase):
     @istest
     def lookup_hash_does_not_exist(self):
         # given
-        self.storage.content_exist = MagicMock(return_value=False)
+        self.storage.content_exist = MagicMock(return_value=None)
 
         # when
         actual_lookup = service.lookup_hash(
             'sha1:123caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': False}, actual_lookup)
+        self.assertEquals({'found': None}, actual_lookup)
 
         # check the function has been called with parameters
         self.storage.content_exist.assert_called_with({
@@ -40,14 +40,17 @@ class ServiceTestCase(unittest.TestCase):
     @istest
     def lookup_hash_exist(self):
         # given
-        self.storage.content_exist = MagicMock(return_value=True)
+        stub_content = {
+                'sha1': hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+            }
+        self.storage.content_exist = MagicMock(return_value=stub_content)
 
         # when
         actual_lookup = service.lookup_hash(
             'sha1:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': True}, actual_lookup)
+        self.assertEquals({'found': stub_content}, actual_lookup)
 
         self.storage.content_exist.assert_called_with({
             'sha1':
