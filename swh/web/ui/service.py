@@ -48,8 +48,8 @@ def lookup_hash(q):
 
     Args: query string of the form <hash_algo:hash>
 
-    Returns:
-        True or False, according to whether the checksum is present or not
+    Returns: Dict with key found to True or False, according to
+        whether the checksum is present or not
 
     """
     (algo, hash) = query.parse_hash(q)
