@@ -27,15 +27,17 @@ class ServiceTestCase(unittest.TestCase):
 
         # when
         actual_lookup = service.lookup_hash(
-            'sha1:123caf10e9535160d90e874b45aa426de762f19f')
+            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': None}, actual_lookup)
+        self.assertEquals({'found': None,
+                           'algo': 'sha1_git'}, actual_lookup)
 
         # check the function has been called with parameters
         self.storage.content_find.assert_called_with({
-            'sha1':
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f')})
+            'sha1_git':
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f')
+        })
 
     @istest
     def lookup_hash_exist(self):
@@ -50,11 +52,13 @@ class ServiceTestCase(unittest.TestCase):
             'sha1:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': stub_content}, actual_lookup)
+        self.assertEquals({'found': stub_content,
+                           'algo': 'sha1'}, actual_lookup)
 
         self.storage.content_find.assert_called_with({
             'sha1':
-            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
+            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'),
+        })
 
     @istest
     def lookup_hash_origin(self):

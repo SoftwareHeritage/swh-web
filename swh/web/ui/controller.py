@@ -114,9 +114,9 @@ The file's path referenced was '%s'.""" % (hash,
                                            path)
 
 
-@app.route('/browse/content/<hash>:<sha>')
+@app.route('/browse/content/<string:q>')
 @set_renderers(HTMLRenderer)
-def content(hash, sha):
+def content(q):
     """Show content information.
 
     Args:
@@ -129,18 +129,20 @@ def content(hash, sha):
         The content's information at sha1_git
 
     """
-    env = {'hash': hash, 'sha': sha}
+    env = {'q': q}
 
-    if hash not in hash_filter_keys:
-        message = 'The checksum must be one of sha1, sha1_git, sha256'
-    else:
-        q = "%s:%s" % (hash, sha)
-        found = service.lookup_hash(q)['found']
+    try:
+        content = service.lookup_hash(q)
+        found = content['found']
+
         if not found:
-            message = "Hash %s was not found." % sha
+            message = "Hash %s was not found." % content['algo']
         else:
             origin = service.lookup_hash_origin(q)
             message = _origin_seen(hash, origin)
+    except BadInputExc as e:  # do not like it but do not duplicate code
+        message = e
+
     env['message'] = message
     return render_template('content.html', **env)
 
