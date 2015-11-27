@@ -53,7 +53,7 @@ def lookup_hash(q):
 
     """
     (algo, hash) = query.parse_hash(q)
-    found = main.storage().content_exist({algo: hash})
+    found = main.storage().content_find({algo: hash})
     return {'found': found}
 
 
@@ -180,9 +180,32 @@ def lookup_content(q):
 
     """
     (algo, hash) = query.parse_hash(q)
-    res = main.storage().content_get([hash])
-    if res and len(res) >= 1:
-        return converters.from_content(res[0])
+    c = main.storage().content_find({algo: hash})
+    if c:
+        return converters.from_content(c)
+    return None
+
+
+def lookup_content_raw(q):
+    """Lookup the content designed by q.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Returns:
+        dict with 'sha1' and 'data' keys.
+        data representing its raw data decoded.
+
+    """
+    (algo, hash) = query.parse_hash(q)
+    c = main.storage().content_find({algo: hash})
+    if not c:
+        return None
+
+    sha1 = c['sha1']
+    contents = main.storage().content_get([sha1])
+    if contents and len(contents) >= 1:
+        return converters.from_content(contents[0])
     return None
 
 

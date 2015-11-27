@@ -24,6 +24,7 @@ class ConvertersTestCase(unittest.TestCase):
                 'b04caf10e9535160d90e874b45aa426de762f19f'),
             'e': b'sharp.html/doc_002dS_005fISREG.html',
             'g': [b'utf-8-to-decode', b'another-one'],
+            'h': 'something filtered',
         }
 
         expected_output = {
@@ -37,7 +38,8 @@ class ConvertersTestCase(unittest.TestCase):
 
         actual_output = converters.from_swh(some_input,
                                             hashess=set(['d']),
-                                            bytess=set(['c', 'e', 'g']))
+                                            bytess=set(['c', 'e', 'g']),
+                                            blacklist=set(['h']))
 
         self.assertEquals(expected_output, actual_output)
 
@@ -232,6 +234,7 @@ class ConvertersTestCase(unittest.TestCase):
             'status': 'visible',
         }
 
+        # 'status' is filtered
         expected_content = {
             'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
             'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
@@ -239,7 +242,6 @@ class ConvertersTestCase(unittest.TestCase):
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'data': 'data in bytes',
             'length': 10,
-            'status': 'visible',
         }
 
         # when

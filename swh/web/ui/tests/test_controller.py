@@ -185,7 +185,7 @@ class ApiTestCase(unittest.TestCase):
     def api_content_raw(self, mock_service):
         # given
         stub_content = {'data': 'some content data'}
-        mock_service.lookup_content.return_value = stub_content
+        mock_service.lookup_content_raw.return_value = stub_content
 
         # when
         rv = self.app.get(
@@ -196,14 +196,14 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(rv.mimetype, 'text/plain')
         self.assertEquals(rv.data.decode('utf-8'), stub_content['data'])
 
-        mock_service.lookup_content.assert_called_once_with(
+        mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.controller.service')
     @istest
     def api_content_raw_not_found(self, mock_service):
         # given
-        mock_service.lookup_content.return_value = None
+        mock_service.lookup_content_raw.return_value = None
 
         # when
         rv = self.app.get(
@@ -218,7 +218,7 @@ class ApiTestCase(unittest.TestCase):
             '6c5b00a6d03 not found.'
         })
 
-        mock_service.lookup_content.assert_called_once_with(
+        mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.controller.service')

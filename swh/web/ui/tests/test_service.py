@@ -23,7 +23,7 @@ class ServiceTestCase(unittest.TestCase):
     @istest
     def lookup_hash_does_not_exist(self):
         # given
-        self.storage.content_exist = MagicMock(return_value=None)
+        self.storage.content_find = MagicMock(return_value=None)
 
         # when
         actual_lookup = service.lookup_hash(
@@ -33,7 +33,7 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEquals({'found': None}, actual_lookup)
 
         # check the function has been called with parameters
-        self.storage.content_exist.assert_called_with({
+        self.storage.content_find.assert_called_with({
             'sha1':
             hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f')})
 
@@ -43,7 +43,7 @@ class ServiceTestCase(unittest.TestCase):
         stub_content = {
                 'sha1': hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
             }
-        self.storage.content_exist = MagicMock(return_value=stub_content)
+        self.storage.content_find = MagicMock(return_value=stub_content)
 
         # when
         actual_lookup = service.lookup_hash(
@@ -52,7 +52,7 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEquals({'found': stub_content}, actual_lookup)
 
-        self.storage.content_exist.assert_called_with({
+        self.storage.content_find.assert_called_with({
             'sha1':
             hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')})
 
@@ -289,9 +289,48 @@ class ServiceTestCase(unittest.TestCase):
             [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
 
     @istest
-    def lookup_content_empty(self):
+    def lookup_content_raw_not_found(self):
         # given
-        self.storage.content_get = MagicMock(return_value=[])
+        self.storage.content_find = MagicMock(return_value=None)
+
+        # when
+        actual_content = service.lookup_content_raw(
+            'sha1:18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertIsNone(actual_content)
+
+        self.storage.content_find.assert_called_with(
+            {'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')})
+
+    @istest
+    def lookup_content_raw(self):
+        # given
+        self.storage.content_find = MagicMock(return_value={
+            'sha1': '18d8be353ed3480476f032475e7c233eff7371d5',
+        })
+        self.storage.content_get = MagicMock(return_value=[{
+            'data': b'binary data',
+        }, {}])
+
+        # when
+        actual_content = service.lookup_content_raw(
+            'sha256:39007420ca5de7cb3cfc15196335507e'
+            'e76c98930e7e0afa4d2747d3bf96c926')
+
+        # then
+        self.assertEquals(actual_content, {'data': 'binary data'})
+
+        self.storage.content_find.assert_called_once_with(
+            {'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                   'e76c98930e7e0afa4d2747d3bf96c926')})
+        self.storage.content_get.assert_called_once_with(
+            ['18d8be353ed3480476f032475e7c233eff7371d5'])
+
+    @istest
+    def lookup_content_not_found(self):
+        # given
+        self.storage.content_find = MagicMock(return_value=None)
 
         # when
         actual_content = service.lookup_content(
@@ -300,22 +339,21 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertIsNone(actual_content)
 
-        self.storage.content_get.assert_called_with(
-            [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
+        self.storage.content_find.assert_called_with(
+            {'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')})
 
     @istest
-    def lookup_content(self):
+    def lookup_content_with_sha1(self):
         # given
-        self.storage.content_get = MagicMock(return_value=[{
+        self.storage.content_find = MagicMock(return_value={
             'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
             'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
                                   'e76c98930e7e0afa4d2747d3bf96c926'),
             'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
                                     'c5b00a6d03'),
-            'data': b"content's data",
             'length': 190,
             'status': 'absent',
-        }])
+        })
 
         # when
         actual_content = service.lookup_content(
@@ -327,13 +365,42 @@ class ServiceTestCase(unittest.TestCase):
             'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
             '7d3bf96c926',
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'data': "content's data",
             'length': 190,
-            'status': 'absent',
         })
 
-        self.storage.content_get.assert_called_with(
-            [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
+        self.storage.content_find.assert_called_with(
+            {'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')})
+
+    @istest
+    def lookup_content_with_sha256(self):
+        # given
+        self.storage.content_find = MagicMock(return_value={
+            'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
+            'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                  'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                    'c5b00a6d03'),
+            'length': 360,
+            'status': 'visible',
+        })
+
+        # when
+        actual_content = service.lookup_content(
+            'sha256:39007420ca5de7cb3cfc15196335507e'
+            'e76c98930e7e0afa4d2747d3bf96c926')
+
+        # then
+        self.assertEqual(actual_content, {
+            'sha1': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
+            '7d3bf96c926',
+            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'length': 360,
+        })
+
+        self.storage.content_find.assert_called_with(
+            {'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                   'e76c98930e7e0afa4d2747d3bf96c926')})
 
     @istest
     def lookup_person(self):

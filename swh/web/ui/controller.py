@@ -292,7 +292,7 @@ def api_content_raw(q):
         - NotFoundExc if the content is not found.
 
     """
-    content = service.lookup_content(q)
+    content = service.lookup_content_raw(q)
     if not content:
         raise NotFoundExc('Content with %s not found.' % q)
 

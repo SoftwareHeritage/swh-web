@@ -14,7 +14,7 @@ def fmap(f, data):
     return f(data)
 
 
-def from_swh(dict_swh, hashess=[], bytess=[]):
+def from_swh(dict_swh, hashess=[], bytess=[], blacklist=[]):
     """Convert from an swh dictionary to something reasonably json
     serializable.
 
@@ -47,6 +47,8 @@ def from_swh(dict_swh, hashess=[], bytess=[]):
             new_dict[key] = fmap(convert_hashes_bytes, value)
         elif key in bytess:
             new_dict[key] = fmap(convert_bytes, value)
+        elif key in blacklist:
+            continue
         else:
             new_dict[key] = value
 
@@ -132,7 +134,8 @@ def from_content(content):
     """
     return from_swh(content,
                     hashess=set(['sha1', 'sha1_git', 'sha256']),
-                    bytess=set(['data']))
+                    bytess=set(['data']),
+                    blacklist=set(['status']))
 
 
 def from_person(person):
