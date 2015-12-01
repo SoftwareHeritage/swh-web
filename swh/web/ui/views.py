@@ -49,11 +49,11 @@ def search():
         if q:
             r = service.lookup_hash(q)
             env['message'] = 'Content with hash %s%sfound!' % (
-                q, ''
-                if r['found'] == True else ' not ')
-
-    except BadInputExc:
-        env['message'] = 'Error: invalid query string'
+                q,
+                ' ' if r['found'] == True else ' not '
+            )
+    except BadInputExc as e:
+        env['message'] = str(e)
 
     return render_template('search.html', **env)
 

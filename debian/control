@@ -9,7 +9,8 @@ Build-Depends: debhelper (>= 9),
                python3-setuptools,
                python3-swh.core,
                python3-swh.storage (>= 0.0.19~),
-               python3-vcversioner
+               python3-vcversioner,
+               python3-blinker
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
