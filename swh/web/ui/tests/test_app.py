@@ -30,11 +30,15 @@ def _init_mock_storage(base_url='https://somewhere.org:4321'):
     return RemoteStorageAdapter(base_url)  # destined to be used as mock
 
 
-def init_app(base_url='https://somewhere.org:4321'):
+def create_app(base_url='https://somewhere.org:4321'):
     """Function to initiate a flask app with storage designed to be mocked.
 
     Returns:
-        Tuple app and storage.
+        Tuple:
+        - app test client (for testing api, client decorator from flask)
+        - application's full configuration
+        - the storage instance to stub and mock
+        - the main app without any decoration
 
     NOT FOR PRODUCTION
 
@@ -53,6 +57,4 @@ def init_app(base_url='https://somewhere.org:4321'):
     main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
     main.load_controllers()
 
-    app = main.app.test_client()
-
-    return app, main.app.config, storage
+    return main.app.test_client(), main.app.config, storage, main.app

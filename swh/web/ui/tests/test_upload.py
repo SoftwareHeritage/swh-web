@@ -15,7 +15,7 @@ from swh.web.ui.tests import test_app
 class UploadTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app, cls.config, cls.storage = test_app.init_app()
+        cls.app, cls.config, cls.storage, _ = test_app.create_app()
 
     @istest
     def allowed_file_ok(self):

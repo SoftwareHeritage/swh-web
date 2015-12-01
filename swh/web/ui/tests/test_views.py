@@ -5,16 +5,15 @@
 
 from nose.tools import istest
 
-from swh.web.ui import main
+from swh.web.ui.tests import test_app
 from flask.ext.testing import TestCase
 
 
 class ViewsTestCase(TestCase):
 
     def create_app(self):
-        app = main.app
-        app.config['TESTING'] = True
-        return app
+        _, _, _, appToDecorate = test_app.create_app()
+        return appToDecorate
 
     @istest
     def info(self):

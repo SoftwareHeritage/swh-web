@@ -18,7 +18,7 @@ from swh.web.ui.tests import test_app
 class ServiceTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        _, _, cls.storage = test_app.init_app()
+        _, _, cls.storage, _ = test_app.create_app()
 
     @istest
     def lookup_hash_does_not_exist(self):
