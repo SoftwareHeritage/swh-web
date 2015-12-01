@@ -43,11 +43,15 @@ def search():
 
     """
     q = request.args.get('q', '')
-    env = {'q': q, 'message': '', 'found': None}
+    env = {'q': q, 'message': ''}
 
     try:
         if q:
-            env.update(service.lookup_hash(q))
+            r = service.lookup_hash(q)
+            env['message'] = 'Content with hash %s%sfound!' % (
+                q, ''
+                if r['found'] == True else ' not ')
+
     except BadInputExc:
         env['message'] = 'Error: invalid query string'
 
