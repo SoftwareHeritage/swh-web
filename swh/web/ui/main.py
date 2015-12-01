@@ -50,7 +50,7 @@ def read_config(config_file):
 
 def load_controllers():
     """Load the controllers for the application"""
-    from swh.web.ui import controller  # flake8: noqa
+    from swh.web.ui import controller, errorhandler  # flake8: noqa
 
 
 def storage():

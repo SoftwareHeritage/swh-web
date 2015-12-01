@@ -8,7 +8,7 @@
 
 from swh.web.ui import controller
 from swh.storage.api.client import RemoteStorage as Storage
-from swh.web.ui import renderers
+from swh.web.ui import renderers, main
 
 
 # Because the Storage's __init__ function does side effect at startup...
@@ -52,6 +52,8 @@ def init_app(base_url='https://somewhere.org:4321'):
     controller.app.config.update({'conf': conf})
     controller.app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
     controller.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
+    main.load_controllers()
+
     app = controller.app.test_client()
 
     return app, controller.app.config, storage
