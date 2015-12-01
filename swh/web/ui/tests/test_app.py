@@ -6,7 +6,6 @@
 # Functions defined here are NOT DESIGNED FOR PRODUCTION
 
 
-from swh.web.ui import controller
 from swh.storage.api.client import RemoteStorage as Storage
 from swh.web.ui import renderers, main
 
@@ -48,12 +47,12 @@ def init_app(base_url='https://somewhere.org:4321'):
             'upload_allowed_extensions': ['txt'],
             'max_upload_size': 1024}
 
-    controller.app.config['TESTING'] = True
-    controller.app.config.update({'conf': conf})
-    controller.app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
-    controller.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
+    main.app.config['TESTING'] = True
+    main.app.config.update({'conf': conf})
+    main.app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
     main.load_controllers()
 
-    app = controller.app.test_client()
+    app = main.app.test_client()
 
-    return app, controller.app.config, storage
+    return app, main.app.config, storage
