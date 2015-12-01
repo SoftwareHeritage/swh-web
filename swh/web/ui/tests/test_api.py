@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
 import json
 import yaml
 
@@ -13,11 +12,7 @@ from unittest.mock import patch, MagicMock
 from swh.web.ui.tests import test_app
 
 
-class ApiTestCase(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.app, _, _, _ = test_app.create_app()
+class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest

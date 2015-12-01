@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import datetime
-import unittest
 
 from nose.tools import istest
 from unittest.mock import MagicMock, patch
@@ -15,10 +14,7 @@ from swh.web.ui.exc import BadInputExc
 from swh.web.ui.tests import test_app
 
 
-class ServiceTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        _, _, cls.storage, _ = test_app.create_app()
+class ServiceTestCase(test_app.SWHApiTestCase):
 
     @istest
     def lookup_hash_does_not_exist(self):

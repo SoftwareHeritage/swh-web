@@ -5,9 +5,10 @@
 
 # Functions defined here are NOT DESIGNED FOR PRODUCTION
 
-
+import unittest
 from swh.storage.api.client import RemoteStorage as Storage
 from swh.web.ui import renderers, main
+from flask.ext.testing import TestCase
 
 
 # Because the Storage's __init__ function does side effect at startup...
@@ -58,3 +59,28 @@ def create_app(base_url='https://somewhere.org:4321'):
     main.load_controllers()
 
     return main.app.test_client(), main.app.config, storage, main.app
+
+
+class SWHApiTestCase(unittest.TestCase):
+    """Testing API class.
+
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.app, cls.app_config, cls.storage, _ = create_app()
+
+
+class SWHViewTestCase(TestCase):
+    """Testing view class.
+
+    cf. http://pythonhosted.org/Flask-Testing/
+    """
+    # This inhibits template rendering
+    # render_templates = False
+    def create_app(self):
+        """Initialize a Flask-Testing application instance to test view
+        without template rendering
+
+        """
+        _, _, _, appToDecorate = create_app()
+        return appToDecorate

@@ -6,14 +6,9 @@
 from nose.tools import istest
 
 from swh.web.ui.tests import test_app
-from flask.ext.testing import TestCase
 
 
-class ViewsTestCase(TestCase):
-
-    def create_app(self):
-        _, _, _, appToDecorate = test_app.create_app()
-        return appToDecorate
+class ViewTestCase(test_app.SWHViewTestCase):
 
     @istest
     def info(self):
