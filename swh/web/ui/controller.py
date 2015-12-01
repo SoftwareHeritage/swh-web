@@ -20,7 +20,7 @@ hash_filter_keys = ALGORITHMS
 
 @app.route('/')
 @set_renderers(HTMLRenderer)
-def main():
+def homepage():
     """Home page
 
     """
