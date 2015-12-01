@@ -147,7 +147,7 @@ def content_with_origin(q):
             origin = service.lookup_hash_origin(q)
             message = _origin_seen(hash, origin)
     except BadInputExc as e:  # do not like it but do not duplicate code
-        message = e
+        message = str(e)
 
     env['message'] = message
     return render_template('content.html', **env)
@@ -220,15 +220,16 @@ def browse_directory(sha1_git):
 
     try:
         files = service.lookup_directory(sha1_git)
-        if not files:
-            message = "Directory %s was not found." % sha1_git
-        else:
+        if files:
             message = "Listing for directory %s:" % sha1_git
-            env['ls'] = prepare_directory_listing(files)
-
+            files = prepare_directory_listing(files)
+        else:
+            message = "Directory %s was not found." % sha1_git
+            files = []
     except BadInputExc as e:  # do not like it but do not duplicate code
-        message = e
+        message = str(e)
+        files = []
 
     env['message'] = message
-
+    env['files'] = files
     return render_template('directory.html', **env)

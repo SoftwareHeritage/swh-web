@@ -3,7 +3,7 @@
 {% block content %}
 {{ message }}
 {% if ls is not none %}
-  {% for e in ls %}
+  {% for e in files %}
     <div><p><a href="{{e.link}}">{{ e.name }}</a></p></div>
   {% endfor %}
 {% endif %}
