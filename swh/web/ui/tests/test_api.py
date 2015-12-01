@@ -45,7 +45,7 @@ class ApiTestCase(unittest.TestCase):
             rv.data,
             b'name=q value=one-hash-to-look-for:another-one')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_content_checksum_to_origin(self, mock_service):
         mock_service.lookup_hash.return_value = {'found': True}
@@ -73,7 +73,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_hash_origin.assert_called_once_with(
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_content_checksum_to_origin_sha_not_found(self, mock_service):
         # given
@@ -93,7 +93,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_hash.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_content_with_details(self, mock_service):
         # given
@@ -128,7 +128,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_content.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_content_not_found_as_json(self, mock_service):
         # given
@@ -153,7 +153,7 @@ class ApiTestCase(unittest.TestCase):
             'be4735637006560c')
         mock_service.lookup_hash_origin.called = False
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_content_not_found_as_yaml(self, mock_service):
         # given
@@ -180,7 +180,7 @@ class ApiTestCase(unittest.TestCase):
             'be4735637006560c')
         mock_service.lookup_hash_origin.called = False
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_content_raw(self, mock_service):
         # given
@@ -199,7 +199,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_content_raw_not_found(self, mock_service):
         # given
@@ -221,7 +221,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_search(self, mock_service):
         # given
@@ -237,7 +237,7 @@ class ApiTestCase(unittest.TestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:blah')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_search_as_yaml(self, mock_service):
         # given
@@ -255,7 +255,7 @@ class ApiTestCase(unittest.TestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:halb')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_search_not_found(self, mock_service):
         # given
@@ -271,7 +271,7 @@ class ApiTestCase(unittest.TestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:halb')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_1_stat_counters_raise_error(self, mock_service):
         # given
@@ -286,7 +286,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(response_data, {
             'error': 'voluntary error to check the bad request middleware.'})
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_1_stat_counters(self, mock_service):
         # given
@@ -319,8 +319,8 @@ class ApiTestCase(unittest.TestCase):
 
         mock_service.stat_counters.assert_called_once_with()
 
-    @patch('swh.web.ui.controller.service')
-    @patch('swh.web.ui.controller.request')
+    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.api.request')
     @istest
     def api_uploadnsearch(self, mock_request, mock_service):
         # given
@@ -342,7 +342,7 @@ class ApiTestCase(unittest.TestCase):
         mock_service.upload_and_search.assert_called_once_with(
             'simple-filename')
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_origin(self, mock_service):
         # given
@@ -367,7 +367,7 @@ class ApiTestCase(unittest.TestCase):
 
         mock_service.lookup_origin.assert_called_with(1234)
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_origin_not_found(self, mock_service):
         # given
@@ -386,7 +386,7 @@ class ApiTestCase(unittest.TestCase):
 
         mock_service.lookup_origin.assert_called_with(4321)
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_release(self, mock_service):
         # given
@@ -409,7 +409,7 @@ class ApiTestCase(unittest.TestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, stub_release)
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_release_not_found(self, mock_service):
         # given
@@ -427,7 +427,7 @@ class ApiTestCase(unittest.TestCase):
             'error': 'Release with sha1_git release-0 not found.'
         })
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_revision(self, mock_service):
         # given
@@ -467,7 +467,7 @@ class ApiTestCase(unittest.TestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, stub_revision)
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_revision_not_found(self, mock_service):
         # given
@@ -484,7 +484,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(response_data, {
             'error': 'Revision with sha1_git revision-0 not found.'})
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_person(self, mock_service):
         # given
@@ -505,7 +505,7 @@ class ApiTestCase(unittest.TestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, stub_person)
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_person_not_found(self, mock_service):
         # given
@@ -522,7 +522,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEquals(response_data, {
             'error': 'Person with id 666 not found.'})
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_directory(self, mock_service):
         # given
@@ -542,7 +542,7 @@ class ApiTestCase(unittest.TestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, stub_directory)
 
-    @patch('swh.web.ui.controller.service')
+    @patch('swh.web.ui.api.service')
     @istest
     def api_directory_not_found(self, mock_service):
         # given
