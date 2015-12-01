@@ -3,23 +3,23 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
-
 from nose.tools import istest
 
-from swh.web.ui.tests import test_app
+from swh.web.ui import main
+from flask.ext.testing import TestCase
 
 
-class ViewsTestCase(unittest.TestCase):
+class ViewsTestCase(TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.app, _, _ = test_app.init_app()
+    def create_app(self):
+        app = main.app
+        app.config['TESTING'] = True
+        return app
 
     @istest
     def info(self):
         # when
-        rv = self.app.get('/about')
+        rv = self.client.get('/about')
 
         self.assertEquals(rv.status_code, 200)
         self.assertIn(b'About', rv.data)
@@ -27,7 +27,7 @@ class ViewsTestCase(unittest.TestCase):
     # @istest
     def search_1(self):
         # when
-        rv = self.app.get('/search')
+        rv = self.client.get('/search')
 
         self.assertEquals(rv.status_code, 200)  # check this api
         self.assertRegexpMatches(rv.data, b'name=q value=>')
@@ -35,7 +35,7 @@ class ViewsTestCase(unittest.TestCase):
     # @istest
     def search_2(self):
         # when
-        rv = self.app.get('/search?q=one-hash-to-look-for:another-one')
+        rv = self.client.get('/search?q=one-hash-to-look-for:another-one')
 
         self.assertEquals(rv.status_code, 200)  # check this api
         self.assertRegexpMatches(
