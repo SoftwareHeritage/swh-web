@@ -20,11 +20,10 @@ def hash_and_search(filepath):
         Tuple (hex sha1, found as True or false).
         The found boolean, according to whether the sha1 of the file
         is present or not.
-
     """
     hash = hashutil.hashfile(filepath)
     return (hashutil.hash_to_hex(hash['sha1']),
-            main.storage().content_exist(hash))
+            main.storage().content_find(hash))
 
 
 def upload_and_search(file):

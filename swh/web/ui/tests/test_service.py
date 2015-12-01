@@ -124,9 +124,11 @@ class ServiceTestCase(unittest.TestCase):
     @istest
     def hash_and_search(self):
         # given
-        self.storage.content_exist = MagicMock(return_value=False)
-
         bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_find = MagicMock(return_value={
+            'sha1': bhash,
+        })
+
         # when
         with patch(
                 'swh.core.hashutil.hashfile',
@@ -136,9 +138,11 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEqual(actual_hash,
                          '456caf10e9535160d90e874b45aa426de762f19f')
-        self.assertFalse(actual_search)
+        self.assertEquals(actual_search, {
+            'sha1': bhash,
+        })
 
-        self.storage.content_exist.assert_called_with({'sha1': bhash})
+        self.storage.content_find.assert_called_once_with({'sha1': bhash})
 
     @patch('swh.web.ui.service.upload')
     @istest
