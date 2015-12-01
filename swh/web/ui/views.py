@@ -173,15 +173,16 @@ def show_content(q):
     env = {}
     try:
         content = service.lookup_content_raw(q)
-        if content is None:
-            message = 'Content with %s not found.'
-
-        message = 'Content %s' % content['sha1']
-        env['content'] = content
+        if content:
+            message = 'Content %s' % content['sha1']
+        else:
+            message = 'Content with %s not found.' % q
     except BadInputExc as e:
-        message = e
+        message = str(e)
+        content = None
 
     env['message'] = message
+    env['content'] = content
     return render_template('display_content.html', **env)
 
 
