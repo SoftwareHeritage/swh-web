@@ -5,6 +5,7 @@
 
 import unittest
 
+from unittest.mock import patch
 from nose.tools import istest
 
 from swh.web.ui import utils
@@ -78,3 +79,40 @@ class UtilsTestCase(unittest.TestCase):
                 'endpoint': 'bar'
             }
         })
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def prepare_directory_listing(self, mock_flask):
+        # given
+        def mock_url_for(url_key, **kwds):
+            if url_key == 'browse_directory':
+                sha1_git = kwds['sha1_git']
+                return '/path/to/url/dir' + '/' + sha1_git
+            else:
+                sha1_git = kwds['q']
+                return '/path/to/url/file' + '/' + sha1_git
+
+        mock_flask.url_for.side_effect = mock_url_for
+
+        inputs = [{'type': 'dir',
+                   'target': '123',
+                   'name': 'some-dir-name'},
+                  {'type': 'file',
+                   'sha1': '654',
+                   'name': 'some-filename'},
+                  {'type': 'dir',
+                   'target': '987',
+                   'name': 'some-other-dirname'}]
+
+        expected_output = [{'link': '/path/to/url/dir/123',
+                            'name': 'some-dir-name'},
+                           {'link': '/path/to/url/file/654',
+                            'name': 'some-filename'},
+                           {'link': '/path/to/url/dir/987',
+                            'name': 'some-other-dirname'}]
+
+        # when
+        actual_outputs = utils.prepare_directory_listing(inputs)
+
+        # then
+        self.assertEquals(actual_outputs, expected_output)

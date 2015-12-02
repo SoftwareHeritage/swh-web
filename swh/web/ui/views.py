@@ -4,13 +4,13 @@
 # See top-level LICENSE file for more information
 
 
-from flask import render_template, flash, request, url_for
+from flask import render_template, flash, request
 
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
-from swh.web.ui import service
+from swh.web.ui import service, utils
 from swh.web.ui.exc import BadInputExc
 from swh.web.ui.main import app
 
@@ -186,25 +186,6 @@ def show_content(q):
     return render_template('display_content.html', **env)
 
 
-def prepare_directory_listing(files):
-    """Given a list of dictionary files, return a view ready dictionary.
-
-    """
-    ls = []
-    for entry in files:
-        new_entry = {}
-        if entry['type'] == 'dir':
-            new_entry['link'] = url_for('browse_directory',
-                                        sha1_git=entry['target'])
-        else:
-            new_entry['link'] = url_for('show_content',
-                                        q=entry['sha1'])
-        new_entry['name'] = entry['name']
-        ls.append(new_entry)
-
-    return ls
-
-
 @app.route('/browse/directory/<string:sha1_git>')
 @set_renderers(HTMLRenderer)
 def browse_directory(sha1_git):
@@ -219,12 +200,12 @@ def browse_directory(sha1_git):
     env = {'sha1_git': sha1_git}
 
     try:
-        files = service.lookup_directory(sha1_git)
-        if files:
+        directory_files = service.lookup_directory(sha1_git)
+        if directory_files:
             message = "Listing for directory %s:" % sha1_git
-            files = prepare_directory_listing(files)
+            files = utils.prepare_directory_listing(directory_files)
         else:
-            message = "Directory %s was not found." % sha1_git
+            message = "Directory %s not found." % sha1_git
             files = []
     except BadInputExc as e:  # do not like it but do not duplicate code
         message = str(e)

@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import flask
+
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
     """Filter endpoints by prefix url rule.
@@ -29,3 +31,22 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
             out[r.rule] = {'methods': sorted(map(str, r.methods)),
                            'endpoint': r.endpoint}
     return out
+
+
+def prepare_directory_listing(files):
+    """Given a list of dictionary files, return a view ready dictionary.
+
+    """
+    ls = []
+    for entry in files:
+        new_entry = {}
+        if entry['type'] == 'dir':
+            new_entry['link'] = flask.url_for('browse_directory',
+                                              sha1_git=entry['target'])
+        else:
+            new_entry['link'] = flask.url_for('show_content',
+                                              q=entry['sha1'])
+        new_entry['name'] = entry['name']
+        ls.append(new_entry)
+
+    return ls
