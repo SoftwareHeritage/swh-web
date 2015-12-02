@@ -18,6 +18,7 @@ class SWHFilterRenderer():
     def filter_by_fields(self, data):
         fields = request.args.get('fields')
         if fields:
+            fields = set(fields.split(','))
             data = utils.filter_field_keys(data, fields)
 
         return data

@@ -51,7 +51,8 @@ class RendererTestCase(unittest.TestCase):
         # then
         self.assertEquals(actual_data, {'a': 'some-data'})
 
-        mock_utils.filter_field_keys.assert_called_once_with(input_data, 'a,c')
+        mock_utils.filter_field_keys.assert_called_once_with(input_data,
+                                                             {'a', 'c'})
 
     @istest
     def plainRenderer(self):
