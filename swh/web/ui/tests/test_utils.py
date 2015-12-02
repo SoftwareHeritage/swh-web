@@ -105,11 +105,14 @@ class UtilsTestCase(unittest.TestCase):
                    'name': 'some-other-dirname'}]
 
         expected_output = [{'link': '/path/to/url/dir/123',
-                            'name': 'some-dir-name'},
+                            'name': 'some-dir-name',
+                            'type': 'dir'},
                            {'link': '/path/to/url/file/654',
-                            'name': 'some-filename'},
+                            'name': 'some-filename',
+                            'type': 'file'},
                            {'link': '/path/to/url/dir/987',
-                            'name': 'some-other-dirname'}]
+                            'name': 'some-other-dirname',
+                            'type': 'dir'}]
 
         # when
         actual_outputs = utils.prepare_directory_listing(inputs)

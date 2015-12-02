@@ -39,14 +39,14 @@ def prepare_directory_listing(files):
     """
     ls = []
     for entry in files:
-        new_entry = {}
+        new_entry = {'name': entry['name'],
+                     'type': entry['type']}
         if entry['type'] == 'dir':
             new_entry['link'] = flask.url_for('browse_directory',
                                               sha1_git=entry['target'])
         else:
             new_entry['link'] = flask.url_for('show_content',
                                               q=entry['sha1'])
-        new_entry['name'] = entry['name']
         ls.append(new_entry)
 
     return ls
