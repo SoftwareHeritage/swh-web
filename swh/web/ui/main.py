@@ -36,7 +36,7 @@ def read_config(config_file):
        dict"""
 
     conf = config.read(config_file, DEFAULT_CONFIG)
-    config.prepare_folders(conf, 'log_dir')
+    config.prepare_folders(conf, 'log_dir', 'upload_folder')
 
     if conf['storage_class'] == 'remote_storage':
         from swh.storage.api.client import RemoteStorage as Storage
