@@ -8,6 +8,19 @@ import yaml
 from flask import make_response, request
 from flask.ext.api import renderers, parsers
 from flask_api.mediatypes import MediaType
+from swh.web.ui import utils
+
+
+class SWHFilterRenderer():
+    """Base renderer for swh's common behavior.
+
+    """
+    def filter_by_fields(self, data):
+        fields = request.args.get('fields')
+        if fields:
+            data = utils.filter_field_keys(data, fields)
+
+        return data
 
 
 class PlainRenderer(renderers.BaseRenderer):
@@ -20,7 +33,7 @@ class PlainRenderer(renderers.BaseRenderer):
         return data
 
 
-class YAMLRenderer(renderers.BaseRenderer):
+class YAMLRenderer(renderers.BaseRenderer, SWHFilterRenderer):
     """Renderer for application/yaml.
     Orchestrate from python data structure to yaml.
 
@@ -28,10 +41,11 @@ class YAMLRenderer(renderers.BaseRenderer):
     media_type = 'application/yaml'
 
     def render(self, data, media_type, **options):
+        data = self.filter_by_fields(data)
         return yaml.dump(data, encoding=self.charset)
 
 
-class JSONPRenderer(renderers.JSONRenderer):
+class JSONPRenderer(renderers.JSONRenderer, SWHFilterRenderer):
     """Renderer for application/json.
     Serializes in json the data and returns it.
 
@@ -41,7 +55,7 @@ class JSONPRenderer(renderers.JSONRenderer):
 
     """
     def render(self, data, media_type, **options):
-        # Requested indentation may be set in the Accept header.
+        data = self.filter_by_fields(data)
         res = super().render(data, media_type, **options)
         jsonp = request.args.get('callback')
         if jsonp:

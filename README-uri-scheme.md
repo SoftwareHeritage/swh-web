@@ -18,6 +18,10 @@ Support of the following 'Accept' header:
 
 To be anchored where browsing starts (e.g., at /api/1)
 
+* /api/ and /api/1/
+
+List endpoint methods as per the client's 'Accept' header request.
+
 * /revision/<SHA1_GIT>: show commit information
 
     $ curl -H 'Accept: application/json' http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5

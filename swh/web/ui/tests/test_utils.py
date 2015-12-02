@@ -119,3 +119,48 @@ class UtilsTestCase(unittest.TestCase):
 
         # then
         self.assertEquals(actual_outputs, expected_output)
+
+    @istest
+    def filter_field_keys_dict_unknown_keys(self):
+        # when
+        actual_res = utils.filter_field_keys({'a': 1, 'c': 2, 'b': 3}, 'd')
+
+        # then
+        self.assertEqual(actual_res, {})
+
+    @istest
+    def filter_field_keys_dict(self):
+        # when
+        actual_res = utils.filter_field_keys({'a': 1, 'c': 2, 'b': 3}, 'a,b')
+
+        # then
+        self.assertEqual(actual_res, {'a': 1, 'b': 3})
+
+    @istest
+    def filter_field_keys_list_unknown_keys(self):
+        # when
+        actual_res = utils.filter_field_keys([{'a': 1, 'c': 2, 'b': 3},
+                                              {'1': 1, '2': 2, 'b': 3}], 'd')
+
+        # then
+        self.assertEqual(actual_res, [{}, {}])
+
+    @istest
+    def filter_field_keys_list(self):
+        # when
+        actual_res = utils.filter_field_keys([{'a': 1, 'c': 2, 'b': 3},
+                                              {'1': 1, '2': 2, 'b': 3}], 'a,1')
+
+        # then
+        self.assertEqual(actual_res, [{'a': 1}, {'1': 1}])
+
+    @istest
+    def filter_field_keys_other(self):
+        # given
+        inputSet = set([1, 2])
+
+        # when
+        actual_res = utils.filter_field_keys(inputSet, 'a,1')
+
+        # then
+        self.assertEqual(actual_res, inputSet)

@@ -50,3 +50,34 @@ def prepare_directory_listing(files):
         ls.append(new_entry)
 
     return ls
+
+
+def filter_field_keys(obj, field_keys):
+    """Given an object instance (directory or list), and a csv field keys
+    to filter on.
+
+    Return the object instance with filtered keys.
+
+    Note: Returns obj as is if it's an instance of types not in (dictionary,
+    list)
+
+    Args:
+        - obj: one object (dictionary, list...) to filter.
+        - field_keys: csv or set of keys to filter the object on
+
+    Returns:
+        obj filtered on field_keys
+
+    """
+    if isinstance(obj, dict):
+        filt_dict = {}
+        for key, value in obj.items():
+            if key in field_keys:
+                filt_dict[key] = value
+        return filt_dict
+    elif isinstance(obj, list):
+        filt_list = []
+        for e in obj:
+            filt_list.append(filter_field_keys(e, field_keys))
+        return filt_list
+    return obj
