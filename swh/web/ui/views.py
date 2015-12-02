@@ -69,7 +69,11 @@ def uploadnsearch():
     if request.method == 'POST':
         file = request.files['filename']
         try:
-            filename, sha1, found = service.upload_and_search(file)
+            uploaded_content = service.upload_and_search(file)
+            filename = uploaded_content['filename']
+            sha1 = uploaded_content['sha1']
+            found = uploaded_content['found']
+
             message = 'The file %s with hash %s has%sbeen found.' % (
                 filename,
                 sha1,

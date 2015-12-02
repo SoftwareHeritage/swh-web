@@ -21,9 +21,15 @@ def hash_and_search(filepath):
         The found boolean, according to whether the sha1 of the file
         is present or not.
     """
-    hash = hashutil.hashfile(filepath)
-    return (hashutil.hash_to_hex(hash['sha1']),
-            main.storage().content_find(hash))
+    h = hashutil.hashfile(filepath)
+    c = main.storage().content_find(h)
+    if c:
+        r = converters.from_content(c)
+        r['found'] = True
+        return r
+    else:
+        return {'sha1': hashutil.hash_to_hex(h['sha1']),
+                'found': False}
 
 
 def upload_and_search(file):
@@ -31,11 +37,11 @@ def upload_and_search(file):
 
     """
     tmpdir, filename, filepath = upload.save_in_upload_folder(file)
+    res = {'filename': filename}
     try:
-        sha1, found = None, None
-        if filepath:
-            sha1, found = hash_and_search(filepath)
-        return filename, sha1, found
+        content = hash_and_search(filepath)
+        res.update(content)
+        return res
     finally:
         # clean up
         if tmpdir:

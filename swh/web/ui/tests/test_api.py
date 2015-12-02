@@ -294,8 +294,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def api_uploadnsearch(self, mock_request, mock_service):
         # given
         mock_request.files = {'filename': 'simple-filename'}
-        mock_service.upload_and_search.return_value = (
-            'simple-filename', 'some-hex-sha1', False)
+        mock_service.upload_and_search.return_value = {
+            'filename': 'simple-filename',
+            'sha1': 'some-hex-sha1',
+            'found': False,
+        }
 
         # when
         rv = self.app.post('/api/1/uploadnsearch')

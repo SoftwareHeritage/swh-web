@@ -11,7 +11,7 @@ from flask.ext.api.decorators import set_renderers
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service, renderers, utils
-from swh.web.ui.exc import NotFoundExc
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
 hash_filter_keys = ALGORITHMS
@@ -257,10 +257,21 @@ def api_content_with_details(q):
 @app.route('/api/1/uploadnsearch', methods=['POST'])
 def api_uploadnsearch():
     """Upload the file's content in the post body request.
-       Compute the hash and determine if it exists in the storage.
+       Compute its hash and determine if it exists in the storage.
+
+    Args:
+        request.files filled with the filename's data to upload.
+
+    Returns:
+        Dictionary with 'sha1', 'filename' and 'found' predicate depending
+        on whether we find it or not.
+
+    Raises:
+        BadInputExc in case of the form submitted is incorrect.
+
     """
-    file = request.files['filename']
-    filename, sha1, found = service.upload_and_search(file)
-    return {'sha1': sha1,
-            'filename': filename,
-            'found': found}
+    file = request.files.get('filename')
+    if not file:
+        raise BadInputExc('Bad request, missing \'filename\' entry in form.')
+
+    return service.upload_and_search(file)

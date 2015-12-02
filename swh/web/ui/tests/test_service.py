@@ -117,51 +117,79 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         self.storage.stat_counters.assert_called_with()
 
+    @patch('swh.web.ui.service.hashutil')
     @istest
-    def hash_and_search(self):
+    def hash_and_search(self, mock_hashutil):
         # given
         bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        mock_hashutil.hashfile.return_value = {'sha1': bhash}
         self.storage.content_find = MagicMock(return_value={
             'sha1': bhash,
+            'sha1_git': bhash,
         })
 
         # when
-        with patch(
-                'swh.core.hashutil.hashfile',
-                return_value={'sha1': bhash}):
-            actual_hash, actual_search = service.hash_and_search('/some/path')
+        actual_content = service.hash_and_search('/some/path')
 
         # then
-        self.assertEqual(actual_hash,
-                         '456caf10e9535160d90e874b45aa426de762f19f')
-        self.assertEquals(actual_search, {
-            'sha1': bhash,
+        self.assertEqual(actual_content, {
+            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+            'sha1_git': '456caf10e9535160d90e874b45aa426de762f19f',
+            'found': True,
         })
 
+        mock_hashutil.hashfile.assert_called_once_with('/some/path')
         self.storage.content_find.assert_called_once_with({'sha1': bhash})
+
+    @patch('swh.web.ui.service.hashutil')
+    @istest
+    def hash_and_search_not_found(self, mock_hashutil):
+        # given
+        bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        mock_hashutil.hashfile.return_value = {'sha1': bhash}
+        mock_hashutil.hash_to_hex = MagicMock(
+            return_value='456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_find = MagicMock(return_value=None)
+
+        # when
+        actual_content = service.hash_and_search('/some/path')
+
+        # then
+        self.assertEqual(actual_content, {
+            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+            'found': False,
+        })
+
+        mock_hashutil.hashfile.assert_called_once_with('/some/path')
+        self.storage.content_find.assert_called_once_with({'sha1': bhash})
+        mock_hashutil.hash_to_hex.assert_called_once_with(bhash)
 
     @patch('swh.web.ui.service.upload')
     @istest
-    def test_upload_and_search_upload_OK_basic_case(self, mock_upload):
-        # given (cf. decorators patch)
+    def test_upload_and_search(self, mock_upload):
         mock_upload.save_in_upload_folder.return_value = (
-            '/tmp/blah', 'some-filename', None)
+            '/tmp/dir', 'some-filename', '/tmp/dir/path/some-filename')
+
+        service.hash_and_search = MagicMock(side_effect=lambda filepath:
+                                            {'sha1': 'blah',
+                                             'found': True})
         mock_upload.cleanup.return_value = None
 
-        file = MagicMock()
-        file.filename = 'some-filename'
+        file = MagicMock(filename='some-filename')
 
         # when
-        actual_file, actual_hash, actual_search = service.upload_and_search(
-            file)
+        actual_res = service.upload_and_search(file)
 
         # then
-        self.assertEqual(actual_file, 'some-filename')
-        self.assertIsNone(actual_hash)
-        self.assertIsNone(actual_search)
+        self.assertEqual(actual_res, {
+            'filename': 'some-filename',
+            'sha1': 'blah',
+            'found': True})
 
         mock_upload.save_in_upload_folder.assert_called_with(file)
-        mock_upload.cleanup.assert_called_with('/tmp/blah')
+        mock_upload.cleanup.assert_called_with('/tmp/dir')
+        service.hash_and_search.assert_called_once_with(
+            '/tmp/dir/path/some-filename')
 
     @istest
     def lookup_origin(self):
