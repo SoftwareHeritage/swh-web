@@ -200,7 +200,65 @@ found.
         "origin_type": "git",
         "revision": "8f8640a1c024c2ef85fa8e8d9297ea289134472d",
         "branch": "refs/remotes/origin/master"
+        }
+
+#### Global behavior
+
+The api routes outputs json as default.
+
+The client can use specific filters and compose them as (s)he sees fit.
+
+##### fields
+
+The client can filter the result output by field names when requesting
+`application/json` or `application/yaml` output.
+
+Ex:
+
+    curl http://localhost:6543/api/1/stat/counters?fields=revision,release,content
+
+    {
+        "content": 133616,
+        "revision": 1042,
+        "release": 660
     }
+
+##### jsonp
+
+When using the accept header 'application/json', the route can be
+enhanced by adding a `callback` parameter.  This will output the
+result in a json function whose name is the callback parameter
+
+Ex:
+
+    curl http://localhost:6543/api/1/stat/counters?callback=jsonp&fields=directory_entry_dir,revision,entity
+
+    jsonp({
+        "directory_entry_dir": 12478,
+        "revision": 1042,
+        "entity": 0
+    })
+
+##### error
+
+When an error is raised, the error code response is used:
+- 400: user's input is not correct regarding the API
+- 404: user's input is ok but we did not found what (s)he was looking forbidden
+
+And the body of the response should be a dictionary with some more information on the error.
+
+Bad request sample:
+
+    curl http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d
+    {"error": "Invalid checksum query string 18d8be353ed3480476f032475e7c233eff7371d"}
+
+    curl http://localhost:6543/api/1/revision/sha1:18d8be353ed3480476f032475e7c233eff7371d
+    {"error": "Invalid hash 18d8be353ed3480476f032475e7c233eff7371d for algorithm sha1"}
+
+Not found sample:
+
+    curl http://localhost:6543/api/1/revision/sha1:18d8be353ed3480476f032475e7c233eff7371df
+    {"error": "Revision with sha1_git sha1:18d8be353ed3480476f032475e7c233eff7371df not found."}
 
 ### Occurrence
 
