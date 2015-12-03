@@ -166,10 +166,14 @@ class ConvertersTestCase(unittest.TestCase):
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
             'directory': hashutil.hex_to_hash(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author_name': b'Software Heritage',
-            'author_email': b'robot@softwareheritage.org',
-            'committer_name': b'Software Heritage',
-            'committer_email': b'robot@softwareheritage.org',
+            'author': {
+                'name': b'Software Heritage',
+                'email': b'robot@softwareheritage.org',
+            },
+            'committer': {
+                'name': b'Software Heritage',
+                'email': b'robot@softwareheritage.org',
+            },
             'message': b'synthetic revision message',
             'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
             'date_offset': 0,
@@ -200,10 +204,14 @@ class ConvertersTestCase(unittest.TestCase):
         expected_revision = {
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
+            'author': {
+                'name': 'Software Heritage',
+                'email': 'robot@softwareheritage.org',
+            },
+            'committer': {
+                'name': 'Software Heritage',
+                'email': 'robot@softwareheritage.org',
+            },
             'message': 'synthetic revision message',
             'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
             'date_offset': 0,

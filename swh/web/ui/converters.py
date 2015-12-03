@@ -123,10 +123,8 @@ def from_revision(revision):
     """
     return from_swh(revision,
                     hashess=set(['id', 'directory', 'parents']),
-                    bytess=set(['author_name',
-                                'committer_name',
-                                'author_email',
-                                'committer_email',
+                    bytess=set(['name',
+                                'email',
                                 'message']))
 
 

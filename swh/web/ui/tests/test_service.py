@@ -279,10 +279,14 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
             'directory': hex_to_hash(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author_name': b'bill & boule',
-            'author_email': b'bill@boule.org',
-            'committer_name': b'boule & bill',
-            'committer_email': b'boule@bill.org',
+            'author': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'committer': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
             'message': b'elegant fix for bug 31415957',
             'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
             'date_offset': 0,
@@ -302,10 +306,14 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_revision, {
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'bill & boule',
-            'author_email': 'bill@boule.org',
-            'committer_name': 'boule & bill',
-            'committer_email': 'boule@bill.org',
+            'author': {
+                'name': 'bill & boule',
+                'email': 'bill@boule.org',
+            },
+            'committer': {
+                'name': 'boule & bill',
+                'email': 'boule@bill.org',
+            },
             'message': 'elegant fix for bug 31415957',
             'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
             'date_offset': 0,
