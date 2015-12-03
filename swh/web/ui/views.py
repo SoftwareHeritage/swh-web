@@ -68,6 +68,7 @@ def uploadnsearch():
 
     if request.method == 'POST':
         file = request.files['filename']
+
         try:
             uploaded_content = service.upload_and_search(file)
             filename = uploaded_content['filename']
@@ -85,13 +86,13 @@ def uploadnsearch():
                 'found': found,
                 'message': message
             })
-        except BadInputExc:
-            env['message'] = 'Error: invalid query string'
+        except BadInputExc as e:
+            env['message'] = str(e)
 
     return render_template('upload_and_search.html', **env)
 
 
-def _origin_seen(hash, data):
+def _origin_seen(q, data):
     """Given an origin, compute a message string with the right information.
 
     Args:
@@ -100,12 +101,9 @@ def _origin_seen(hash, data):
           - occurrence: a dictionary with a validity range
 
     Returns:
-        message as a string
+        Message as a string
 
     """
-    if data is None:
-        return 'Content with hash %s is unknown as of now.' % hash
-
     origin_type = data['origin_type']
     origin_url = data['origin_url']
     revision = data['revision']
@@ -114,7 +112,7 @@ def _origin_seen(hash, data):
 
     return """The content with hash %s has been seen on origin with type '%s'
 at url '%s'. The revision was identified at '%s' on branch '%s'.
-The file's path referenced was '%s'.""" % (hash,
+The file's path referenced was '%s'.""" % (q,
                                            origin_type,
                                            origin_url,
                                            revision,
@@ -143,13 +141,11 @@ def content_with_origin(q):
 
     try:
         content = service.lookup_hash(q)
-        found = content['found']
-
-        if not found:
-            message = "Hash %s was not found." % content['algo']
+        if not content.get('found'):
+            message = "Hash %s was not found." % q
         else:
             origin = service.lookup_hash_origin(q)
-            message = _origin_seen(hash, origin)
+            message = _origin_seen(q, origin)
     except BadInputExc as e:  # do not like it but do not duplicate code
         message = str(e)
 

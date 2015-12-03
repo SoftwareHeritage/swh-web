@@ -230,3 +230,159 @@ class ViewTestCase(test_app.SWHViewTestCase):
             'some-sha1')
         mock_utils.prepare_directory_listing.assert_called_once_with(
             stub_directory_ls)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def content_with_origin_content_not_found(self, mock_service):
+        # given
+        mock_service.lookup_hash.return_value = {'found': False}
+
+        # when
+        rv = self.client.get('/browse/content/sha256:some-sha256')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertEqual(self.get_context_variable('message'),
+                         'Hash sha256:some-sha256 was not found.')
+
+        mock_service.lookup_hash.assert_called_once_with(
+            'sha256:some-sha256')
+        mock_service.lookup_hash_origin.called = False
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def content_with_origin_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_hash.side_effect = BadInputExc('Invalid hash')
+
+        # when
+        rv = self.client.get('/browse/content/sha256:some-sha256')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertEqual(
+            self.get_context_variable('message'), 'Invalid hash')
+
+        mock_service.lookup_hash.assert_called_once_with(
+            'sha256:some-sha256')
+        mock_service.lookup_hash_origin.called = False
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def content_with_origin(self, mock_service):
+        # given
+        mock_service.lookup_hash.return_value = {'found': True}
+        mock_service.lookup_hash_origin.return_value = {
+            'origin_type': 'ftp',
+            'origin_url': '/some/url',
+            'revision': 'revision-hash',
+            'branch': 'master',
+            'path': '/path/to',
+        }
+
+        # when
+        rv = self.client.get('/browse/content/sha256:some-sha256')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertEqual(
+            self.get_context_variable('message'),
+            "The content with hash sha256:some-sha256 has been seen on " +
+            "origin with type 'ftp'\n" +
+            "at url '/some/url'. The revision was identified at " +
+            "'revision-hash' on branch 'master'.\n" +
+            "The file's path referenced was '/path/to'.")
+
+        mock_service.lookup_hash.assert_called_once_with(
+            'sha256:some-sha256')
+        mock_service.lookup_hash_origin.assert_called_once_with(
+            'sha256:some-sha256')
+
+    @istest
+    def uploadnsearch_get(self):
+        # when
+        rv = self.client.get('/uploadnsearch')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('filename'), None)
+        self.assertEqual(self.get_context_variable('found'), None)
+        self.assert_template_used('upload_and_search.html')
+
+    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.request')
+    @istest
+    def uploadnsearch_post_not_found(self, mock_request, mock_service):
+        # given
+        mock_request.method = 'POST'
+        mock_request.files = dict(filename='foobar')
+        mock_service.upload_and_search.return_value = {'filename': 'foobar',
+                                                       'sha1': 'blahhash',
+                                                       'found': False}
+
+        # when
+        # the mock mock_request completes the post request
+        rv = self.client.post('/uploadnsearch')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('message'),
+                         'The file foobar with hash blahhash has not been'
+                         ' found.')
+        self.assertEqual(self.get_context_variable('filename'), 'foobar')
+        self.assertEqual(self.get_context_variable('found'), False)
+        self.assertEqual(self.get_context_variable('sha1'), 'blahhash')
+        self.assert_template_used('upload_and_search.html')
+
+        mock_service.upload_and_search.called = True
+
+    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.request')
+    @istest
+    def uploadnsearch_post_found(self, mock_request, mock_service):
+        # given
+        mock_request.method = 'POST'
+        mock_request.files = dict(filename='foobar')
+        mock_service.upload_and_search.return_value = {'filename': 'foobar',
+                                                       'sha1': 'hash-blah',
+                                                       'found': True}
+
+        # when
+        # the mock mock_request completes the post request
+        rv = self.client.post('/uploadnsearch')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('message'),
+                         'The file foobar with hash hash-blah has been found.')
+        self.assertEqual(self.get_context_variable('filename'), 'foobar')
+        self.assertEqual(self.get_context_variable('found'), True)
+        self.assertEqual(self.get_context_variable('sha1'), 'hash-blah')
+        self.assert_template_used('upload_and_search.html')
+
+        mock_service.upload_and_search.called = True
+
+    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.request')
+    @istest
+    def uploadnsearch_post_bad_input(self, mock_request, mock_service):
+        # given
+        mock_request.method = 'POST'
+        mock_request.files = dict(filename='foobar')
+        mock_service.upload_and_search.side_effect = BadInputExc(
+            'Invalid hash')
+
+        # when
+        # the mock mock_request completes the post request
+        rv = self.client.post('/uploadnsearch')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('message'), 'Invalid hash')
+        self.assert_template_used('upload_and_search.html')
+
+        mock_service.upload_and_search.called = True
