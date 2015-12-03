@@ -8,13 +8,9 @@ from flask import request, url_for
 
 from flask.ext.api.decorators import set_renderers
 
-from swh.core.hashutil import ALGORITHMS
 from swh.web.ui.main import app
 from swh.web.ui import service, renderers, utils
 from swh.web.ui.exc import BadInputExc, NotFoundExc
-
-
-hash_filter_keys = ALGORITHMS
 
 
 @app.route('/browse')
