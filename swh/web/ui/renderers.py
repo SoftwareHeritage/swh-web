@@ -89,9 +89,16 @@ class SWHJSONRenderer(renderers.JSONRenderer,
         return self.enrich_with_jsonp(res)
 
 
+class SWHBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
+    """SWH's browsable api renderer.
+
+    """
+    template = "api.html"
+
+
 RENDERERS = [
     'swh.web.ui.renderers.SWHJSONRenderer',
-    'flask.ext.api.renderers.BrowsableAPIRenderer',
+    'swh.web.ui.renderers.SWHBrowsableAPIRenderer',
     'flask.ext.api.parsers.URLEncodedParser',
     'swh.web.ui.renderers.YAMLRenderer',
     'swh.web.ui.renderers.PlainRenderer',
@@ -100,7 +107,7 @@ RENDERERS = [
 
 RENDERERS_INSTANCE = [
     SWHJSONRenderer(),
-    renderers.BrowsableAPIRenderer(),
+    SWHBrowsableAPIRenderer(),
     parsers.URLEncodedParser(),
     YAMLRenderer(),
 ]
