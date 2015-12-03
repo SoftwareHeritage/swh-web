@@ -55,16 +55,16 @@ class YAMLRenderer(renderers.BaseRenderer, SWHFilterEnricher):
 class JSONPEnricher():
     """JSONP rendering.
 
-    Defines a jsonp function that extracts a potential 'callback'
-    request parameter holding the function name and wraps the data
-    inside a call to such function
-
-    e.g:
-    GET /blah/foo/bar renders: {'output': 'wrapped'}
-    GET /blah/foo/bar?callback=fn renders: fn({'output': 'wrapped'})
-
     """
-    def enrich(self, data):
+    def enrich_with_jsonp(self, data):
+        """Defines a jsonp function that extracts a potential 'callback'
+           request parameter holding the function name and wraps the data
+           inside a call to such function
+
+           e.g:
+           GET /blah/foo/bar renders: {'output': 'wrapped'}
+           GET /blah/foo/bar?callback=fn renders: fn({'output': 'wrapped'})
+        """
         jsonp = request.args.get('callback')
         if jsonp:
             return '%s(%s)' % (jsonp, data)
@@ -86,7 +86,7 @@ class SWHJSONRenderer(renderers.JSONRenderer,
     def render(self, data, media_type, **options):
         data = self.filter_by_fields(data)
         res = super().render(data, media_type, **options)
-        return self.enrich(res)
+        return self.enrich_with_jsonp(res)
 
 
 RENDERERS = [

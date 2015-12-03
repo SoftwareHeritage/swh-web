@@ -171,7 +171,7 @@ class RendererTestCase(unittest.TestCase):
         jsonpEnricher = renderers.JSONPEnricher()
 
         # when
-        actual_output = jsonpEnricher.enrich({'output': 'test'})
+        actual_output = jsonpEnricher.enrich_with_jsonp({'output': 'test'})
 
         # then
         self.assertEqual(actual_output, "jsonpfn({'output': 'test'})")
@@ -184,7 +184,7 @@ class RendererTestCase(unittest.TestCase):
         jsonpEnricher = renderers.JSONPEnricher()
 
         # when
-        actual_output = jsonpEnricher.enrich({'output': 'test'})
+        actual_output = jsonpEnricher.enrich_with_jsonp({'output': 'test'})
 
         # then
         self.assertEqual(actual_output, {'output': 'test'})
