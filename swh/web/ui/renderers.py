@@ -11,11 +11,17 @@ from flask_api.mediatypes import MediaType
 from swh.web.ui import utils
 
 
-class SWHFilterRenderer():
-    """Base renderer for swh's common behavior.
+class SWHFilterEnricher():
+    """Global filter on fields.
 
     """
     def filter_by_fields(self, data):
+        """Extract a request parameter 'fields' if it exists to permit the
+           filtering on the data dict's keys.
+
+           If such field is not provided, returns the data as is.
+
+        """
         fields = request.args.get('fields')
         if fields:
             fields = set(fields.split(','))
@@ -34,7 +40,7 @@ class PlainRenderer(renderers.BaseRenderer):
         return data
 
 
-class YAMLRenderer(renderers.BaseRenderer, SWHFilterRenderer):
+class YAMLRenderer(renderers.BaseRenderer, SWHFilterEnricher):
     """Renderer for application/yaml.
     Orchestrate from python data structure to yaml.
 
@@ -67,7 +73,7 @@ class JSONPEnricher():
 
 
 class SWHJSONRenderer(renderers.JSONRenderer,
-                      SWHFilterRenderer,
+                      SWHFilterEnricher,
                       JSONPEnricher):
     """Renderer for application/json.
     Serializes in json the data and returns it.

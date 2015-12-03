@@ -22,7 +22,7 @@ class RendererTestCase(unittest.TestCase):
         # given
         mock_request.args = {}
 
-        swhFilterRenderer = renderers.SWHFilterRenderer()
+        swhFilterRenderer = renderers.SWHFilterEnricher()
 
         input_data = {'a': 'some-data'}
 
@@ -40,7 +40,7 @@ class RendererTestCase(unittest.TestCase):
         mock_request.args = {'fields': 'a,c'}
         mock_utils.filter_field_keys.return_value = {'a': 'some-data'}
 
-        swhFilterRenderer = renderers.SWHFilterRenderer()
+        swhFilterRenderer = renderers.SWHFilterEnricher()
 
         input_data = {'a': 'some-data',
                       'b': 'some-other-data'}
