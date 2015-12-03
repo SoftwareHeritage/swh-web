@@ -57,7 +57,7 @@ List endpoint methods as per the client's 'Accept' header request.
 
 * /directory/<SHA1_GIT>: show directory information (including ls)
 
-    curl -X GET http://localhost:6543/api/1/directory/3126f46e2f7dc752227131a2a658265e58f53e38?recursive=True
+    curl -X GET http://localhost:6543/api/1/directory/3126f46e2f7dc752227131a2a658265e58f53e38
     [
         {
           "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
