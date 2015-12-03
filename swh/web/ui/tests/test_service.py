@@ -218,12 +218,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         self.storage.release_get = MagicMock(return_value=[{
             'id': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
-            'revision': None,
+            'target': None,
             'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': None,
-            'name': 'v0.0.1',
-            'comment': b'synthetic release',
+            'name': b'v0.0.1',
+            'message': b'synthetic release',
             'synthetic': True,
         }])
 
@@ -234,12 +233,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(actual_release, {
             'id': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
-            'revision': None,
+            'target': None,
             'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': None,
             'name': 'v0.0.1',
-            'comment': 'synthetic release',
+            'message': 'synthetic release',
             'synthetic': True,
         })
 

@@ -51,9 +51,31 @@ class ConvertersTestCase(unittest.TestCase):
         }
 
         actual_output = converters.from_swh(some_input,
-                                            hashess=set(['d']),
-                                            bytess=set(['c', 'e', 'g', 'l']),
-                                            blacklist=set(['h', 'm', 'n']))
+                                            hashess={'d'},
+                                            bytess={'c', 'e', 'g', 'l'},
+                                            blacklist={'h', 'm', 'n'})
+
+        self.assertEquals(expected_output, actual_output)
+
+    @istest
+    def from_swh_edge_cases_do_no_conversion_if_none_or_not_bytes(self):
+        some_input = {
+            'a': 'something',
+            'b': None,
+            'c': 'someone',
+            'd': None,
+        }
+
+        expected_output = {
+            'a': 'something',
+            'b': None,
+            'c': 'someone',
+            'd': None,
+        }
+
+        actual_output = converters.from_swh(some_input,
+                                            hashess={'a', 'b'},
+                                            bytess={'c', 'd'})
 
         self.assertEquals(expected_output, actual_output)
 
@@ -97,24 +119,33 @@ class ConvertersTestCase(unittest.TestCase):
         release_input = {
             'id': hashutil.hex_to_hash(
                 'aad23fa492a0c5fed0708a6703be875448c86884'),
-            'revision': hashutil.hex_to_hash(
+            'target': hashutil.hex_to_hash(
                 '5e46d564378afc44b31bb89f99d5675195fbdf67'),
+            'target_type': 'revision',
             'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': None,
-            'name': 'v0.0.1',
-            'comment': b'some comment on release',
+            'author': {
+                'name': b'author name',
+                'email': b'author@email',
+            },
+            'name': b'v0.0.1',
+            'message': b'some comment on release',
             'synthetic': True,
         }
 
         expected_release = {
             'id': 'aad23fa492a0c5fed0708a6703be875448c86884',
-            'revision': '5e46d564378afc44b31bb89f99d5675195fbdf67',
+            'target': '5e46d564378afc44b31bb89f99d5675195fbdf67',
+            'target_type': 'revision',
             'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': None,
+            'author': {
+                'name': 'author name',
+                'email': 'author@email',
+            },
             'name': 'v0.0.1',
-            'comment': 'some comment on release',
+            'message': 'some comment on release',
+            'target_type': 'revision',
             'synthetic': True,
         }
 
@@ -129,28 +160,30 @@ class ConvertersTestCase(unittest.TestCase):
         release_input = {
             'id': hashutil.hex_to_hash(
                 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e'),
-            'revision': None,
+            'target': None,
             'date': datetime.datetime(2016, 3, 2, 10, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': 1,
-            'name': 'v0.1.1',
-            'comment': b'comment on release',
+            'name': b'v0.1.1',
+            'message': b'comment on release',
             'synthetic': False,
-            'author_name': b'bob',
-            'author_email': b'bob@alice.net',
+            'author': {
+                'name': b'bob',
+                'email': b'bob@alice.net',
+            },
         }
 
         expected_release = {
             'id': 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e',
-            'revision': None,
+            'target': None,
             'date': datetime.datetime(2016, 3, 2, 10, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': 1,
             'name': 'v0.1.1',
-            'comment': 'comment on release',
+            'message': 'comment on release',
             'synthetic': False,
-            'author_name': 'bob',
-            'author_email': 'bob@alice.net',
+            'author': {
+                'name': 'bob',
+                'email': 'bob@alice.net',
+            },
         }
 
         # when

@@ -33,10 +33,23 @@ def from_swh(dict_swh, hashess=[], bytess=[], blacklist=[]):
 
     """
     def convert_hashes_bytes(v):
-        return hashutil.hash_to_hex(v) if v else None
+        """v is supposedly a hash as bytes, returns it converted in hex.
+
+        """
+        if v and isinstance(v, bytes):
+            return hashutil.hash_to_hex(v)
+        return v
 
     def convert_bytes(v):
-        return v.decode('utf-8')
+        """v is supposedly a bytes string, decode as utf-8.
+
+        FIXME: Improve decoding policy.
+        If not utf-8, break!
+
+        """
+        if v and isinstance(v, bytes):
+            return v.decode('utf-8')
+        return v
 
     if not dict_swh:
         return dict_swh
@@ -90,8 +103,8 @@ def from_release(release):
 
     """
     return from_swh(release,
-                    hashess=set(['id', 'revision']),
-                    bytess=set(['comment', 'author_name', 'author_email']))
+                    hashess=set(['id', 'target']),
+                    bytess=set(['message', 'name', 'email']))
 
 
 def from_revision(revision):
