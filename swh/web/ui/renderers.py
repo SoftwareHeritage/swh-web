@@ -46,7 +46,29 @@ class YAMLRenderer(renderers.BaseRenderer, SWHFilterRenderer):
         return yaml.dump(data, encoding=self.charset)
 
 
-class JSONPRenderer(renderers.JSONRenderer, SWHFilterRenderer):
+class JSONPEnricher():
+    """JSONP rendering.
+
+    Defines a jsonp function that extracts a potential 'callback'
+    request parameter holding the function name and wraps the data
+    inside a call to such function
+
+    e.g:
+    GET /blah/foo/bar renders: {'output': 'wrapped'}
+    GET /blah/foo/bar?callback=fn renders: fn({'output': 'wrapped'})
+
+    """
+    def enrich(self, data):
+        jsonp = request.args.get('callback')
+        if jsonp:
+            return '%s(%s)' % (jsonp, data)
+
+        return data
+
+
+class SWHJSONRenderer(renderers.JSONRenderer,
+                      SWHFilterRenderer,
+                      JSONPEnricher):
     """Renderer for application/json.
     Serializes in json the data and returns it.
 
@@ -58,14 +80,11 @@ class JSONPRenderer(renderers.JSONRenderer, SWHFilterRenderer):
     def render(self, data, media_type, **options):
         data = self.filter_by_fields(data)
         res = super().render(data, media_type, **options)
-        jsonp = request.args.get('callback')
-        if jsonp:
-            return '%s(%s)' % (jsonp, res)
-        return res
+        return self.enrich(res)
 
 
 RENDERERS = [
-    'swh.web.ui.renderers.JSONPRenderer',
+    'swh.web.ui.renderers.SWHJSONRenderer',
     'flask.ext.api.renderers.BrowsableAPIRenderer',
     'flask.ext.api.parsers.URLEncodedParser',
     'swh.web.ui.renderers.YAMLRenderer',
@@ -74,7 +93,7 @@ RENDERERS = [
 
 
 RENDERERS_INSTANCE = [
-    JSONPRenderer(),
+    SWHJSONRenderer(),
     renderers.BrowsableAPIRenderer(),
     parsers.URLEncodedParser(),
     YAMLRenderer(),

@@ -109,7 +109,7 @@ class RendererTestCase(unittest.TestCase):
     def jsonRenderer_basic(self, mock_request):
         # given
         mock_request.args = {}
-        jsonRenderer = renderers.JSONPRenderer()
+        jsonRenderer = renderers.SWHJSONRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
@@ -129,7 +129,7 @@ class RendererTestCase(unittest.TestCase):
     def jsonRenderer_basic_with_filter(self, mock_request):
         # given
         mock_request.args = {'fields': 'target'}
-        jsonRenderer = renderers.JSONPRenderer()
+        jsonRenderer = renderers.SWHJSONRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
@@ -150,7 +150,7 @@ class RendererTestCase(unittest.TestCase):
         # given
         mock_request.args = {'fields': 'target',
                              'callback': 'jsonpfn'}
-        jsonRenderer = renderers.JSONPRenderer()
+        jsonRenderer = renderers.SWHJSONRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
@@ -162,3 +162,29 @@ class RendererTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_data, 'jsonpfn({"target": "sha1-dir"})')
+
+    @patch('swh.web.ui.renderers.request')
+    @istest
+    def jsonpEnricher_basic_with_filter_and_jsonp(self, mock_request):
+        # given
+        mock_request.args = {'callback': 'jsonpfn'}
+        jsonpEnricher = renderers.JSONPEnricher()
+
+        # when
+        actual_output = jsonpEnricher.enrich({'output': 'test'})
+
+        # then
+        self.assertEqual(actual_output, "jsonpfn({'output': 'test'})")
+
+    @patch('swh.web.ui.renderers.request')
+    @istest
+    def jsonpEnricher_do_nothing(self, mock_request):
+        # given
+        mock_request.args = {}
+        jsonpEnricher = renderers.JSONPEnricher()
+
+        # when
+        actual_output = jsonpEnricher.enrich({'output': 'test'})
+
+        # then
+        self.assertEqual(actual_output, {'output': 'test'})
