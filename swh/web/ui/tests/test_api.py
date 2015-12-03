@@ -13,7 +13,6 @@ from swh.web.ui.tests import test_app
 
 
 class ApiTestCase(test_app.SWHApiTestCase):
-
     @patch('swh.web.ui.api.service')
     @istest
     def api_content_checksum_to_origin(self, mock_service):

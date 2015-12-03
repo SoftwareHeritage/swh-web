@@ -17,9 +17,22 @@ from swh.web.ui.exc import BadInputExc, NotFoundExc
 hash_filter_keys = ALGORITHMS
 
 
+@app.route('/browse')
+@app.route('/browse/')
+def api_browse_endpoints():
+    """List the current api endpoints starting with /api or /api/.
+
+    Returns:
+        List of endpoints at /api
+
+    """
+    return utils.filter_endpoints(app.url_map, '/browse',
+                                  blacklist=['/browse/'])
+
+
 @app.route('/api')
 @app.route('/api/')
-def api_main_points():
+def api_main_endpoints():
     """List the current api endpoints starting with /api or /api/.
 
     Returns:
@@ -31,7 +44,7 @@ def api_main_points():
 
 @app.route('/api/1')
 @app.route('/api/1/')
-def api_main_points_v1():
+def api_main_v1_endpoints():
     """List the current api v1 endpoints starting with /api/1 or /api/1/.
 
     Returns:
