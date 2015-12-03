@@ -25,6 +25,14 @@ class ConvertersTestCase(unittest.TestCase):
             'e': b'sharp.html/doc_002dS_005fISREG.html',
             'g': [b'utf-8-to-decode', b'another-one'],
             'h': 'something filtered',
+            'i': {'e': b'something'},
+            'j': {
+                'k': {
+                    'l': [b'bytes thing', b'another thingy'],
+                    'n': 'dont care either'
+                },
+                'm': 'dont care'
+            }
         }
 
         expected_output = {
@@ -34,12 +42,18 @@ class ConvertersTestCase(unittest.TestCase):
             'd': 'b04caf10e9535160d90e874b45aa426de762f19f',
             'e': 'sharp.html/doc_002dS_005fISREG.html',
             'g': ['utf-8-to-decode', 'another-one'],
+            'i': {'e': 'something'},
+            'j': {
+                'k': {
+                    'l': ['bytes thing', 'another thingy']
+                }
+            },
         }
 
         actual_output = converters.from_swh(some_input,
                                             hashess=set(['d']),
-                                            bytess=set(['c', 'e', 'g']),
-                                            blacklist=set(['h']))
+                                            bytess=set(['c', 'e', 'g', 'l']),
+                                            blacklist=set(['h', 'm', 'n']))
 
         self.assertEquals(expected_output, actual_output)
 
