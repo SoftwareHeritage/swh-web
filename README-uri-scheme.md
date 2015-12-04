@@ -1,10 +1,10 @@
 URI scheme
 ==========
 
-Browsing namespace
-------------------
+API
+---
 
-### Global
+### Endpoints
 
 The api /api/1 is partially browsable on defined endpoints (/api, /api/1).
 
@@ -100,11 +100,6 @@ The following routes are to be anchored at at /api/1
         }
     ]
 
-* /directory/<SHA1_GIT>/path/to/file-or-dir: ditto, but for dir pointed by path
-
-  - note: this is the same as /dir/<SHA1_GIT'>, where <SHA1_GIT'> is the
-  sha1_git ID of the dir pointed by path
-
 * /content/[<HASH_ALGO>:]<HASH>: show content information
 
   - content is specified by HASH, according to HASH_ALGO, where HASH_ALGO is
@@ -176,10 +171,6 @@ Sample:
         "url": "rsync://ftp.gnu.org/old-gnu/solfege"
     }%
 
-* /project/<PROJECT_ID>: show project information
-
-* /organization/<ORGANIZATION_ID>: show organization information
-
 * /browse/<SHA:HASH>
 
 Return content information up to one of its origin if the content is
@@ -194,21 +185,70 @@ found.
         "branch": "refs/remotes/origin/master"
     }
 
-#### Global behavior
+* /uploadnsearch/
+
+Post a file's content to api.
+Api computes the sha1 hash and checks in the storage if such sha1 exists.
+Json answer:
+
+    {'sha1': hexadecimal sha1,
+     'found': true or false}
+
+Sample:
+
+    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch
+    {
+        "found": false,
+        "sha1": "e95097ad2d607b4c89c1ce7ca1fef2a1e4450558"
+    }%
+
+* /project/<PROJECT_ID>: show project information
+
+* /organization/<ORGANIZATION_ID>: show organization information
+
+* /directory/<SHA1_GIT>/path/to/file-or-dir: ditto, but for file or directory pointed by path
+
+  - note: This is the same as /directory/<SHA1_GIT>, where <SHA1_GIT>
+  is the sha1_git ID of the directory pointed by path or
+  /content/sha1_git:<SHA1_GIT> (for content)
+
+* /directory/path/to/file-or-dir?timestamp=<TIMESTAMP>&origin=<ORIGIN>&branch=<BRANCH>
+
+  - Same as /directory/<SHA1_GIT> but looking up sha1 git using origin
+    and branch at a given timestamp for a specific path
+    /path/to/file-or-dir
+
+* /revision/?timestamp=<TIMESTAMP>&origin=<ORIGIN>&branch=<BRANCH>
+
+  - Show all revisions (~git log) of origin and branch at a given timestamp
+
+* /revision/<SHA1_GIT>?timestamp=<TIMESTAMP>&origin=<ORIGIN>
+
+  - Same as /revision/<SHA1_GIT> but looking up sha1 git using origin
+    at a given timestamp.
+
+* /revision/?timestamp=<TIMESTAMP>&origin=<ORIGIN>
+
+Show all branches of origin at a given timestamp.
+
+-* /revision/<TIMESTAMP>/<ORIGIN>|
+-
+-  - Show all branches of origin at a given timestamp
+
+### Global behavior
 
 The api routes outputs 'application/json' as default.
 
-##### Accept header
+#### Accept header
 
 Also, you can specify the following 'Accept' header in your client query:
 - application/json
 - application/yaml
 - text/html
 
-
 The client can use specific filters and compose them as (s)he sees fit.
 
-##### fields
+#### Fields
 
 The client can filter the result output by field names when requesting
 `application/json` or `application/yaml` output.
@@ -222,7 +262,7 @@ Ex:
         "release": 660
     }
 
-##### jsonp
+#### JSONP
 
 When using the accept header 'application/json', the route can be
 enhanced by adding a `callback` parameter.  This will output the
@@ -238,7 +278,7 @@ Ex:
         "entity": 0
     })
 
-##### error
+#### Error
 
 When an error is raised, the error code response is used:
 - 400: user's input is not correct regarding the API
@@ -258,52 +298,3 @@ Not found sample:
 
     curl http://localhost:6543/api/1/revision/sha1:18d8be353ed3480476f032475e7c233eff7371df
     {"error": "Revision with sha1_git sha1:18d8be353ed3480476f032475e7c233eff7371df not found."}
-
-### Occurrence
-
-Origin/Branch do not contain `|` so it is used as a terminator.
-Origin is <TYPE+URL>.
-Timestamp is one of: latest or an ISO8601 date (TODO: decide the time matching
-policy).
-
-* /directory/<TIMESTAMP>/<ORIGIN>|/<BRANCH>|/path/to/file-or-dir
-
-  - Same as /directory/<SHA1_GIT> but looking up sha1 git using origin and
-    branch at a given timestamp
-
-* /revision/<TIMESTAMP>/<ORIGIN>|/<BRANCH>
-
-  - Same as /revision/<SHA1_GIT> but looking up sha1 git using origin and
-    branch at a given timestamp
-
-* /revision/<TIMESTAMP>/<ORIGIN>|
-
-  - Show all branches of origin at a given timestamp
-
-* /revision/<TIMESTAMP>/<ORIGIN>|/<BRANCH>|
-
-  - Show all revisions (~git log) of origin and branch at a given timestamp
-
-
-### Upload and search
-
-* /1/api/uploadnsearch/
-
-Post a file's content to api.
-Api computes the sha1 hash and checks in the storage if such sha1 exists.
-Json answer:
-
-    {'sha1': hexadecimal sha1,
-     'found': true or false}
-
-Sample:
-
-    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch
-    {
-        "found": false,
-        "sha1": "e95097ad2d607b4c89c1ce7ca1fef2a1e4450558"
-    }%
-
-
-Search namespace
-----------------
