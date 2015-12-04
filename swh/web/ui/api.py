@@ -170,7 +170,8 @@ def api_revision(sha1_git):
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')
 def api_revision_log(sha1_git):
-    """Return information about revision with id sha1_git.
+    """Show all revisions (~git log) starting from sha1_git.
+       The first element returned is the given sha1_git.
 
     Args:
         sha1_git: the revision's hash

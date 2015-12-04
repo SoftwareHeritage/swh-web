@@ -202,6 +202,57 @@ Sample:
         "sha1": "e95097ad2d607b4c89c1ce7ca1fef2a1e4450558"
     }%
 
+* /revision/<SHA1_GIT>/log
+
+Show all revisions (~git log) starting from <sha1_git>.
+The first element is the given sha1_git.
+
+Sample:
+
+    curl http://localhost:6543/api/1/revision/7026b7c1a2af56521e951c01ed20f255fa054238/log/
+
+    [
+        {
+            "id": "7026b7c1a2af56521e951c01ed20f255fa054238",
+            "parents": [],
+            "type": "git",
+            "committer_date": "Mon, 12 Oct 2015 11:05:53 GMT",
+            "synthetic": false,
+            "committer": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "message": "+1 limitation\n",
+            "author": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "date": "Mon, 12 Oct 2015 11:05:53 GMT",
+            "metadata": null,
+            "directory": "a33a9acf2419b9a291e8a02302e6347dcffde5a6"
+        },
+        {
+            "id": "368a48fe15b7db2383775f97c6b247011b3f14f4",
+            "parents": [],
+            "type": "git",
+            "committer_date": "Mon, 12 Oct 2015 10:57:11 GMT",
+            "synthetic": false,
+            "committer": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "message": "actually fix bug\n",
+            "author": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "date": "Mon, 12 Oct 2015 10:57:11 GMT",
+            "metadata": null,
+            "directory": "1d5188e4991510c74d62272f0301352c5c1b850b"
+            },
+            ...
+    ]
+
 * /project/<PROJECT_ID>: show project information
 
 * /organization/<ORGANIZATION_ID>: show organization information
@@ -218,9 +269,6 @@ Sample:
     and branch at a given timestamp for a specific path
     /path/to/file-or-dir
 
-* /revision/?timestamp=<TIMESTAMP>&origin=<ORIGIN>&branch=<BRANCH>
-
-  - Show all revisions (~git log) of origin and branch at a given timestamp
 
 * /revision/<SHA1_GIT>?timestamp=<TIMESTAMP>&origin=<ORIGIN>
 
