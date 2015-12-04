@@ -6,21 +6,13 @@ Browsing namespace
 
 ### Global
 
-The api /api/1 is partially browsable on defined endpoints.
-
-Also, you can specify specify 'Accept' header using your favorite
-client side to see the answer being transformed accordingly.
-
-Support of the following 'Accept' header:
-- application/json
-- application/yaml
-- text/html
-
-To be anchored where browsing starts (e.g., at /api/1)
+The api /api/1 is partially browsable on defined endpoints (/api, /api/1).
 
 * /api/ and /api/1/
 
 List endpoint methods as per the client's 'Accept' header request.
+
+The following routes are to be anchored at at /api/1
 
 * /revision/<SHA1_GIT>: show commit information
 
@@ -200,11 +192,19 @@ found.
         "origin_type": "git",
         "revision": "8f8640a1c024c2ef85fa8e8d9297ea289134472d",
         "branch": "refs/remotes/origin/master"
-        }
+    }
 
 #### Global behavior
 
-The api routes outputs json as default.
+The api routes outputs 'application/json' as default.
+
+##### Accept header
+
+Also, you can specify the following 'Accept' header in your client query:
+- application/json
+- application/yaml
+- text/html
+
 
 The client can use specific filters and compose them as (s)he sees fit.
 
@@ -216,7 +216,6 @@ The client can filter the result output by field names when requesting
 Ex:
 
     curl http://localhost:6543/api/1/stat/counters?fields=revision,release,content
-
     {
         "content": 133616,
         "revision": 1042,
