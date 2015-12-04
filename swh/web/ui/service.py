@@ -178,6 +178,28 @@ def lookup_revision(rev_sha1_git, rev_type='git'):
     return None
 
 
+def lookup_revision_log(rev_sha1_git):
+    """Return information about the revision with sha1 revision_sha1_git.
+
+    Args:
+        revision_sha1_git: The revision's sha1 as hexadecimal
+
+    Returns:
+        Revision information as dict.
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+
+    """
+    algo, hBinSha1 = query.parse_hash(rev_sha1_git)
+    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
+        raise BadInputExc('Only sha1_git is supported.')
+
+    revision_entries = main.storage().revision_log(hBinSha1)
+
+    return map(converters.from_revision, revision_entries)
+
+
 def lookup_content(q):
     """Lookup the content designed by q.
 

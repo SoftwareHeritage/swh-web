@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-
 from flask import request, url_for
 
 from flask.ext.api.decorators import set_renderers
@@ -81,6 +80,8 @@ def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
     res = lookup_fn(criteria)
     if not res:
         raise NotFoundExc(error_msg_if_not_found)
+    if isinstance(res, map):
+        return list(res)
     return res
 
 
@@ -164,6 +165,28 @@ def api_revision(sha1_git):
     return _api_lookup(
         sha1_git,
         lookup_fn=service.lookup_revision,
+        error_msg_if_not_found=error_msg)
+
+
+@app.route('/api/1/revision/<string:sha1_git>/log/')
+def api_revision_log(sha1_git):
+    """Return information about revision with id sha1_git.
+
+    Args:
+        sha1_git: the revision's hash
+
+    Returns:
+        Information on the revision if found.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the revision is not found.
+
+    """
+    error_msg = 'Revision with sha1_git %s not found.' % sha1_git
+    return _api_lookup(
+        sha1_git,
+        lookup_fn=service.lookup_revision_log,
         error_msg_if_not_found=error_msg)
 
 

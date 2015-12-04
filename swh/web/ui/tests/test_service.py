@@ -327,6 +327,63 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             [hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')])
 
     @istest
+    def lookup_revision_log(self):
+        # given
+        stub_revision_log = [{
+            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'committer': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
+            'message': b'elegant fix for bug 31415957',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }]
+        self.storage.revision_log = MagicMock(return_value=stub_revision_log)
+
+        # when
+        actual_revision = service.lookup_revision_log(
+            'abcdbe353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertEqual(list(actual_revision), [{
+            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'bill & boule',
+                'email': 'bill@boule.org',
+            },
+            'committer': {
+                'name': 'boule & bill',
+                'email': 'boule@bill.org',
+            },
+            'message': 'elegant fix for bug 31415957',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }])
+
+        self.storage.revision_log.assert_called_with(
+            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'))
+
+    @istest
     def lookup_content_raw_not_found(self):
         # given
         self.storage.content_find = MagicMock(return_value=None)
@@ -541,7 +598,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # then
         self.assertIsNotNone(actual_directory)
-        self.assertEqual(actual_directory, [expected_dir_entries])
+        self.assertEqual(list(actual_directory), [expected_dir_entries])
 
         self.storage.directory_get.assert_called_with(
             hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'))

@@ -4,12 +4,14 @@
 # See top-level LICENSE file for more information
 
 import json
+import unittest
 import yaml
 
 from nose.tools import istest
 from unittest.mock import patch, MagicMock
 
 from swh.web.ui.tests import test_app
+from swh.web.ui import api, exc
 
 
 class ApiTestCase(test_app.SWHApiTestCase):
@@ -467,6 +469,62 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
+    def api_revision_log(self, mock_service):
+        # given
+        stub_revision = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': [],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+        mock_service.lookup_revision_log.return_value = stub_revision
+
+        # when
+        rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42'
+                          'b7e2a44e6/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, stub_revision)
+
+        mock_service.lookup_revision_log.assert_called_once_with(
+            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_revision_log_not_found(self, mock_service):
+        # given
+        mock_service.lookup_revision_log.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42b7'
+                          'e2a44e6/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'Revision with sha1_git'
+            ' 8834ef7e7c357ce2af928115c6c6a42b7e2a44e6 not found.'})
+
+        mock_service.lookup_revision_log.assert_called_once_with(
+            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
+
+    @patch('swh.web.ui.api.service')
+    @istest
     def api_person(self, mock_service):
         # given
         stub_person = {
@@ -541,3 +599,37 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, {
             'error': 'Directory with sha1_git '
             '66618d8be353ed3480476f032475e7c233eff737 not found.'})
+
+
+class ApiUtils(unittest.TestCase):
+
+    @istest
+    def api_lookup_not_found(self):
+        # when
+        with self.assertRaises(exc.NotFoundExc) as e:
+            api._api_lookup('something',
+                            lambda x: None,
+                            'this is the error message raised as it is None')
+
+        self.assertEqual(e.exception.args[0],
+                         'this is the error message raised as it is None')
+
+    @istest
+    def api_lookup_with_result(self):
+        # when
+        actual_result = api._api_lookup('something',
+                                        lambda x: x + '!',
+                                        'this is the error which won\'t be '
+                                        'used here')
+
+        self.assertEqual(actual_result, 'something!')
+
+    @istest
+    def api_lookup_with_result_as_map(self):
+        # when
+        actual_result = api._api_lookup([1, 2, 3],
+                                        lambda x: map(lambda y: y+1, x),
+                                        'this is the error which won\'t be '
+                                        'used here')
+
+        self.assertEqual(actual_result, [2, 3, 4])
