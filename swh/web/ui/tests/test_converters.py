@@ -32,7 +32,8 @@ class ConvertersTestCase(unittest.TestCase):
                     'n': 'dont care either'
                 },
                 'm': 'dont care'
-            }
+            },
+            'o': 'something'
         }
 
         expected_output = {
@@ -51,9 +52,9 @@ class ConvertersTestCase(unittest.TestCase):
         }
 
         actual_output = converters.from_swh(some_input,
-                                            hashess={'d'},
+                                            hashess={'d', 'o'},
                                             bytess={'c', 'e', 'g', 'l'},
-                                            blacklist={'h', 'm', 'n'})
+                                            blacklist={'h', 'm', 'n', 'o'})
 
         self.assertEquals(expected_output, actual_output)
 

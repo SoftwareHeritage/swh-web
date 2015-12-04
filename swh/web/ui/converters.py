@@ -56,14 +56,14 @@ def from_swh(dict_swh, hashess=[], bytess=[], blacklist=[]):
 
     new_dict = {}
     for key, value in dict_swh.items():
-        if isinstance(value, dict):
+        if key in blacklist:
+            continue
+        elif isinstance(value, dict):
             new_dict[key] = from_swh(value, hashess, bytess, blacklist)
         elif key in hashess:
             new_dict[key] = fmap(convert_hashes_bytes, value)
         elif key in bytess:
             new_dict[key] = fmap(convert_bytes, value)
-        elif key in blacklist:
-            continue
         else:
             new_dict[key] = value
 
