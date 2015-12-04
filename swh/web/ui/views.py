@@ -174,6 +174,8 @@ def show_content(q):
     try:
         content = service.lookup_content_raw(q)
         if content:
+            # FIXME: will break if not utf-8
+            content['data'] = content['data'].decode('utf-8')
             message = 'Content %s' % content['sha1']
         else:
             message = 'Content with %s not found.' % q

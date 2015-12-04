@@ -146,9 +146,9 @@ def from_content(content):
 
     """
     return from_swh(content,
-                    hashess=set(['sha1', 'sha1_git', 'sha256']),
-                    bytess=set(['data']),
-                    blacklist=set(['status']))
+                    hashess={'sha1', 'sha1_git', 'sha256'},
+                    bytess={},
+                    blacklist={'status'})
 
 
 def from_person(person):

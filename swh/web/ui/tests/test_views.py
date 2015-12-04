@@ -97,7 +97,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # given
         stub_content_raw = {
             'sha1': 'sha1-hash',
-            'data': 'some-data'
+            'data': b'some-data'
         }
         mock_service.lookup_content_raw.return_value = stub_content_raw
 

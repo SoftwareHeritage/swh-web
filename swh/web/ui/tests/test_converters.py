@@ -295,7 +295,7 @@ class ConvertersTestCase(unittest.TestCase):
             'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
             '7d3bf96c926',
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'data': 'data in bytes',
+            'data': b'data in bytes',
             'length': 10,
         }
 

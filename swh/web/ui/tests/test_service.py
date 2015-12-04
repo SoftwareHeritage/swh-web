@@ -357,7 +357,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'e76c98930e7e0afa4d2747d3bf96c926')
 
         # then
-        self.assertEquals(actual_content, {'data': 'binary data'})
+        self.assertEquals(actual_content, {'data': b'binary data'})
 
         self.storage.content_find.assert_called_once_with(
             {'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'

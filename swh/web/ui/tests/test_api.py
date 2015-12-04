@@ -162,7 +162,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             headers={'Content-Type': 'text/plain'})
 
         self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.mimetype, 'text/plain')
+        self.assertEquals(rv.mimetype, 'application/octet-stream')
         self.assertEquals(rv.data.decode('utf-8'), stub_content['data'])
 
         mock_service.lookup_content_raw.assert_called_once_with(

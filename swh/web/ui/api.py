@@ -209,7 +209,7 @@ def api_content_checksum_to_origin(q):
 
 
 @app.route('/api/1/content/<string:q>/raw/')
-@set_renderers(renderers.PlainRenderer)
+@set_renderers(renderers.BytesRenderer)
 def api_content_raw(q):
     """Return content's raw data if content is found.
 

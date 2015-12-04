@@ -30,14 +30,23 @@ class SWHFilterEnricher():
         return data
 
 
-class PlainRenderer(renderers.BaseRenderer):
+class DoNothingRenderer(renderers.BaseRenderer):
+    def render(self, data, media_type, **options):
+        return data
+
+
+class PlainRenderer(DoNothingRenderer):
     """Renderer for plain/text, do nothing but send the data as is.
 
     """
     media_type = 'text/plain'
 
-    def render(self, data, media_type, **options):
-        return data
+
+class BytesRenderer(DoNothingRenderer):
+    """Renderer for plain/text, do nothing but send the data as is.
+
+    """
+    media_type = 'application/octet-stream'
 
 
 class YAMLRenderer(renderers.BaseRenderer, SWHFilterEnricher):
