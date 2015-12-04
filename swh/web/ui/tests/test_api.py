@@ -195,7 +195,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_search(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = True
+        mock_service.lookup_hash.return_value = {
+            'found': {
+                'sha1': 'or something'
+            }
+        }
 
         # when
         rv = self.app.get('/api/1/search/sha1:blah/')
@@ -211,7 +215,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_search_as_yaml(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = True
+        mock_service.lookup_hash.return_value = {
+            'found': {
+                'sha1': 'sha1 hash'
+            }
+        }
 
         # when
         rv = self.app.get('/api/1/search/sha1:halb/',
@@ -229,7 +237,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_search_not_found(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = False
+        mock_service.lookup_hash.return_value = {}
 
         # when
         rv = self.app.get('/api/1/search/sha1:halb/')

@@ -72,7 +72,8 @@ def api_search(q):
         BadInputExc in case of unknown algo_hash or bad hash
 
     """
-    return {'found': service.lookup_hash(q)}
+    r = service.lookup_hash(q).get('found')
+    return {'found': True if r else False}
 
 
 def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
