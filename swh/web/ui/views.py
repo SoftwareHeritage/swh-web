@@ -36,37 +36,30 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/search')
+@app.route('/search', methods=['GET', 'POST'])
 @set_renderers(HTMLRenderer)
 def search():
     """Search for hashes in swh-storage.
 
     """
+    env = {'filename': None, 'message': '', 'found': None, 'q': ''}
+
     q = request.args.get('q', '')
-    env = {'q': q, 'message': ''}
+    if q:
+        env = {'q': q, 'message': ''}
 
-    try:
-        if q:
-            r = service.lookup_hash(q)
-            env['message'] = 'Content with hash %s%sfound!' % (
-                q,
-                ' ' if r['found'] == True else ' not '
-            )
-    except BadInputExc as e:
-        env['message'] = str(e)
+        try:
+            if q:
+                r = service.lookup_hash(q)
+                env['message'] = 'Content with hash %s%sfound!' % (
+                    q,
+                    ' ' if r['found'] == True else ' not '
+                )
+                env['q'] = q
+        except BadInputExc as e:
+            env['message'] = str(e)
 
-    return render_template('search.html', **env)
-
-
-@app.route('/uploadnsearch', methods=['GET', 'POST'])
-@set_renderers(HTMLRenderer)
-def uploadnsearch():
-    """Upload and search for hashes in swh-storage.
-
-    """
-    env = {'filename': None, 'message': '', 'found': None}
-
-    if request.method == 'POST':
+    elif request.method == 'POST':
         file = request.files['filename']
 
         try:
