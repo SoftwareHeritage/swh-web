@@ -13,7 +13,6 @@ from swh.web.ui import converters
 
 
 class ConvertersTestCase(unittest.TestCase):
-
     @istest
     def from_swh(self):
         some_input = {

@@ -4,14 +4,7 @@
 # See top-level LICENSE file for more information
 
 from swh.core import hashutil
-
-
-def fmap(f, data):
-    if isinstance(data, list):
-        return [f(x) for x in data]
-    if isinstance(data, dict):
-        return {k: f(v) for (k, v) in data.items()}
-    return f(data)
+from swh.web.ui import utils
 
 
 def from_swh(dict_swh, hashess={}, bytess={}, blacklist={},
@@ -68,9 +61,9 @@ def from_swh(dict_swh, hashess={}, bytess={}, blacklist={},
             new_dict[key] = from_swh(value, hashess, bytess, blacklist,
                                      convert, convert_fn)
         elif key in hashess:
-            new_dict[key] = fmap(convert_hashes_bytes, value)
+            new_dict[key] = utils.fmap(convert_hashes_bytes, value)
         elif key in bytess:
-            new_dict[key] = fmap(convert_bytes, value)
+            new_dict[key] = utils.fmap(convert_bytes, value)
         elif key in convert:
             new_dict[key] = convert_fn(value)
         else:

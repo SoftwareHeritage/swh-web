@@ -81,3 +81,11 @@ def filter_field_keys(obj, field_keys):
             filt_list.append(filter_field_keys(e, field_keys))
         return filt_list
     return obj
+
+
+def fmap(f, data):
+    if isinstance(data, list):
+        return [f(x) for x in data]
+    if isinstance(data, dict):
+        return {k: f(v) for (k, v) in data.items()}
+    return f(data)

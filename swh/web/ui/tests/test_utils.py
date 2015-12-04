@@ -172,3 +172,12 @@ class UtilsTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_res, inputSet)
+
+    @istest
+    def fmap(self):
+        self.assertEquals([2, 3, 4],
+                          utils.fmap(lambda x: x+1, [1, 2, 3]))
+        self.assertEquals({'a': 2, 'b': 4},
+                          utils.fmap(lambda x: x*2, {'a': 1, 'b': 2}))
+        self.assertEquals(100,
+                          utils.fmap(lambda x: x*10, 10))
