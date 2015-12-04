@@ -390,7 +390,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
                                     'c5b00a6d03'),
             'length': 190,
-            'status': 'absent',
+            'status': 'hidden',
         })
 
         # when
@@ -404,6 +404,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             '7d3bf96c926',
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'length': 190,
+            'status': 'absent',
         })
 
         self.storage.content_find.assert_called_with(
@@ -434,6 +435,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             '7d3bf96c926',
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'length': 360,
+            'status': 'visible',
         })
 
         self.storage.content_find.assert_called_with(

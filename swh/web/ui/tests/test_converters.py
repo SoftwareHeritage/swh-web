@@ -33,7 +33,11 @@ class ConvertersTestCase(unittest.TestCase):
                 },
                 'm': 'dont care'
             },
-            'o': 'something'
+            'o': 'something',
+            'p': 'bar',
+            'q': 'intact',
+            'r': {'p': 'also intact',
+                  'q': 'bar'},
         }
 
         expected_output = {
@@ -49,12 +53,21 @@ class ConvertersTestCase(unittest.TestCase):
                     'l': ['bytes thing', 'another thingy']
                 }
             },
+            'p': 'foo',
+            'q': 'intact',
+            'r': {'p': 'also intact',
+                  'q': 'foo'},
         }
+
+        def test_convert_fn(v):
+            return 'foo' if v == 'bar' else v
 
         actual_output = converters.from_swh(some_input,
                                             hashess={'d', 'o'},
                                             bytess={'c', 'e', 'g', 'l'},
-                                            blacklist={'h', 'm', 'n', 'o'})
+                                            blacklist={'h', 'm', 'n', 'o'},
+                                            convert={'p', 'q'},
+                                            convert_fn=test_convert_fn)
 
         self.assertEquals(expected_output, actual_output)
 
@@ -287,7 +300,7 @@ class ConvertersTestCase(unittest.TestCase):
                                              'c5b00a6d03'),
             'data': b'data in bytes',
             'length': 10,
-            'status': 'visible',
+            'status': 'hidden',
         }
 
         # 'status' is filtered
@@ -298,6 +311,7 @@ class ConvertersTestCase(unittest.TestCase):
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'data': b'data in bytes',
             'length': 10,
+            'status': 'absent',
         }
 
         # when
@@ -343,6 +357,7 @@ class ConvertersTestCase(unittest.TestCase):
                                            'c5b00a6d03'),
             'name': b'bob',
             'type': 10,
+            'status': 'hidden',
         }
 
         expected_dir_entries = {
@@ -354,6 +369,7 @@ class ConvertersTestCase(unittest.TestCase):
             'dir_id': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'name': 'bob',
             'type': 10,
+            'status': 'absent',
         }
 
         # when

@@ -14,7 +14,8 @@ def fmap(f, data):
     return f(data)
 
 
-def from_swh(dict_swh, hashess=[], bytess=[], blacklist=[]):
+def from_swh(dict_swh, hashess={}, bytess={}, blacklist={},
+             convert={}, convert_fn=lambda x: x):
     """Convert from an swh dictionary to something reasonably json
     serializable.
 
@@ -25,6 +26,11 @@ def from_swh(dict_swh, hashess=[], bytess=[], blacklist=[]):
         string
         - bytess: list/set of keys representing bytes values which needs to
         be decoded
+        - blacklist: set of keys to filter out from the conversion
+        - convert: set of keys whose associated values need to be converted
+        using convert_fn
+        - convert_fn: the conversion function to apply on the value of key
+        in 'convert'
 
         The remaining keys are copied as is in the output.
 
@@ -59,11 +65,14 @@ def from_swh(dict_swh, hashess=[], bytess=[], blacklist=[]):
         if key in blacklist:
             continue
         elif isinstance(value, dict):
-            new_dict[key] = from_swh(value, hashess, bytess, blacklist)
+            new_dict[key] = from_swh(value, hashess, bytess, blacklist,
+                                     convert, convert_fn)
         elif key in hashess:
             new_dict[key] = fmap(convert_hashes_bytes, value)
         elif key in bytess:
             new_dict[key] = fmap(convert_bytes, value)
+        elif key in convert:
+            new_dict[key] = convert_fn(value)
         else:
             new_dict[key] = value
 
@@ -148,7 +157,9 @@ def from_content(content):
     return from_swh(content,
                     hashess={'sha1', 'sha1_git', 'sha256'},
                     bytess={},
-                    blacklist={'status'})
+                    blacklist={},
+                    convert={'status'},
+                    convert_fn=lambda v: 'absent' if v == 'hidden' else v)
 
 
 def from_person(person):
@@ -170,4 +181,7 @@ def from_directory_entry(dir_entry):
                                  'sha1',
                                  'sha256',
                                  'target']),
-                    bytess=set(['name']))
+                    bytess=set(['name']),
+                    blacklist={},
+                    convert={'status'},
+                    convert_fn=lambda v: 'absent' if v == 'hidden' else v)
