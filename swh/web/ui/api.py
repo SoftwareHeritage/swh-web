@@ -13,7 +13,6 @@ from swh.web.ui import service, renderers, utils
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
-@app.route('/browse')
 @app.route('/browse/')
 def api_browse_endpoints():
     """List the current api endpoints starting with /api or /api/.
@@ -22,11 +21,9 @@ def api_browse_endpoints():
         List of endpoints at /api
 
     """
-    return utils.filter_endpoints(app.url_map, '/browse',
-                                  blacklist=['/browse/'])
+    return utils.filter_endpoints(app.url_map, '/browse')
 
 
-@app.route('/api')
 @app.route('/api/')
 def api_main_endpoints():
     """List the current api endpoints starting with /api or /api/.
@@ -35,10 +32,9 @@ def api_main_endpoints():
         List of endpoints at /api
 
     """
-    return utils.filter_endpoints(app.url_map, '/api', blacklist=['/api/'])
+    return utils.filter_endpoints(app.url_map, '/api')
 
 
-@app.route('/api/1')
 @app.route('/api/1/')
 def api_main_v1_endpoints():
     """List the current api v1 endpoints starting with /api/1 or /api/1/.
@@ -47,11 +43,10 @@ def api_main_v1_endpoints():
         List of endpoints at /api/1
 
     """
-    return utils.filter_endpoints(app.url_map, '/api/1',
-                                  blacklist=['/api/1/'])
+    return utils.filter_endpoints(app.url_map, '/api/1')
 
 
-@app.route('/api/1/stat/counters')
+@app.route('/api/1/stat/counters/')
 def api_stats():
     """Return statistics on SWH storage.
 
@@ -62,7 +57,7 @@ def api_stats():
     return service.stat_counters()
 
 
-@app.route('/api/1/search/<string:q>')
+@app.route('/api/1/search/<string:q>/')
 def api_search(q):
     """Search a content per hash.
 
@@ -88,7 +83,7 @@ def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
     return res
 
 
-@app.route('/api/1/origin/<int:origin_id>')
+@app.route('/api/1/origin/<int:origin_id>/')
 def api_origin(origin_id):
     """Return information about origin with id origin_id.
 
@@ -108,7 +103,7 @@ def api_origin(origin_id):
         error_msg_if_not_found='Origin with id %s not found.' % origin_id)
 
 
-@app.route('/api/1/person/<int:person_id>')
+@app.route('/api/1/person/<int:person_id>/')
 def api_person(person_id):
     """Return information about person with identifier person_id.
 
@@ -127,7 +122,7 @@ def api_person(person_id):
         error_msg_if_not_found='Person with id %s not found.' % person_id)
 
 
-@app.route('/api/1/release/<string:sha1_git>')
+@app.route('/api/1/release/<string:sha1_git>/')
 def api_release(sha1_git):
     """Return information about release with id sha1_git.
 
@@ -149,7 +144,7 @@ def api_release(sha1_git):
         error_msg_if_not_found=error_msg)
 
 
-@app.route('/api/1/revision/<string:sha1_git>')
+@app.route('/api/1/revision/<string:sha1_git>/')
 def api_revision(sha1_git):
     """Return information about revision with id sha1_git.
 
@@ -171,7 +166,7 @@ def api_revision(sha1_git):
         error_msg_if_not_found=error_msg)
 
 
-@app.route('/api/1/directory/<string:sha1_git>')
+@app.route('/api/1/directory/<string:sha1_git>/')
 def api_directory(sha1_git):
     """Return information about release with id sha1_git.
 
@@ -189,7 +184,7 @@ def api_directory(sha1_git):
     return list(directory_entries)
 
 
-@app.route('/api/1/browse/<string:q>')
+@app.route('/api/1/browse/<string:q>/')
 def api_content_checksum_to_origin(q):
     """Return content information up to one of its origin if the content
     is found.
@@ -213,7 +208,7 @@ def api_content_checksum_to_origin(q):
     return service.lookup_hash_origin(q)
 
 
-@app.route('/api/1/content/<string:q>/raw')
+@app.route('/api/1/content/<string:q>/raw/')
 @set_renderers(renderers.PlainRenderer)
 def api_content_raw(q):
     """Return content's raw data if content is found.
@@ -238,7 +233,7 @@ def api_content_raw(q):
     return content['data']
 
 
-@app.route('/api/1/content/<string:q>')
+@app.route('/api/1/content/<string:q>/')
 def api_content_with_details(q):
     """Return content information if content is found.
 
@@ -263,7 +258,7 @@ def api_content_with_details(q):
     return content
 
 
-@app.route('/api/1/uploadnsearch', methods=['POST'])
+@app.route('/api/1/uploadnsearch/', methods=['POST'])
 def api_uploadnsearch():
     """Upload the file's content in the post body request.
        Compute its hash and determine if it exists in the storage.

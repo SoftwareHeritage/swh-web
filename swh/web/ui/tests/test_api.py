@@ -28,7 +28,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/browse/sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+            '/api/1/browse/sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -48,7 +48,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_hash.return_value = {'found': False}
         # when
         rv = self.app.get(
-            '/api/1/browse/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+            '/api/1/browse/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -77,14 +77,14 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
             'data': '/api/1/content/'
-                    '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw',
+                    '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
@@ -106,7 +106,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # when
         rv = self.app.get(
             '/api/1/content/sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
-            'be4735637006560c')
+            'be4735637006560c/')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -131,7 +131,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # when
         rv = self.app.get(
             '/api/1/content/sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
-            'be4735637006560c',
+            'be4735637006560c/',
             headers={'accept': 'application/yaml'})
 
         self.assertEquals(rv.status_code, 404)
@@ -157,7 +157,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw',
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/raw/',
             headers={'Content-Type': 'text/plain'})
 
         self.assertEquals(rv.status_code, 200)
@@ -175,7 +176,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw',
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/raw/',
             headers={'Content-Type': 'text/plain'})
 
         self.assertEquals(rv.status_code, 404)
@@ -196,7 +198,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_hash.return_value = True
 
         # when
-        rv = self.app.get('/api/1/search/sha1:blah')
+        rv = self.app.get('/api/1/search/sha1:blah/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -212,7 +214,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_hash.return_value = True
 
         # when
-        rv = self.app.get('/api/1/search/sha1:halb',
+        rv = self.app.get('/api/1/search/sha1:halb/',
                           headers={'Accept': 'application/yaml'})
 
         self.assertEquals(rv.status_code, 200)
@@ -230,7 +232,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_hash.return_value = False
 
         # when
-        rv = self.app.get('/api/1/search/sha1:halb')
+        rv = self.app.get('/api/1/search/sha1:halb/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -246,7 +248,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.stat_counters.side_effect = ValueError(
             'voluntary error to check the bad request middleware.')
         # when
-        rv = self.app.get('/api/1/stat/counters')
+        rv = self.app.get('/api/1/stat/counters/')
         # then
         self.assertEquals(rv.status_code, 400)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -278,7 +280,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.stat_counters.return_value = stub_stats
 
         # when
-        rv = self.app.get('/api/1/stat/counters')
+        rv = self.app.get('/api/1/stat/counters/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -300,7 +302,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # when
-        rv = self.app.post('/api/1/uploadnsearch')
+        rv = self.app.post('/api/1/uploadnsearch/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -327,7 +329,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_origin.return_value = stub_origin
 
         # when
-        rv = self.app.get('/api/1/origin/1234')
+        rv = self.app.get('/api/1/origin/1234/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -345,7 +347,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_origin.return_value = None
 
         # when
-        rv = self.app.get('/api/1/origin/4321')
+        rv = self.app.get('/api/1/origin/4321/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -371,7 +373,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_release.return_value = stub_release
 
         # when
-        rv = self.app.get('/api/1/release/release-0')
+        rv = self.app.get('/api/1/release/release-0/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -387,7 +389,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_release.return_value = None
 
         # when
-        rv = self.app.get('/api/1/release/release-0')
+        rv = self.app.get('/api/1/release/release-0/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -429,7 +431,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision.return_value = stub_revision
 
         # when
-        rv = self.app.get('/api/1/revision/revision-0')
+        rv = self.app.get('/api/1/revision/revision-0/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -445,7 +447,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision.return_value = None
 
         # when
-        rv = self.app.get('/api/1/revision/revision-0')
+        rv = self.app.get('/api/1/revision/revision-0/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -467,7 +469,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_person.return_value = stub_person
 
         # when
-        rv = self.app.get('/api/1/person/198003')
+        rv = self.app.get('/api/1/person/198003/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -483,7 +485,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_person.return_value = None
 
         # when
-        rv = self.app.get('/api/1/person/666')
+        rv = self.app.get('/api/1/person/666/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -504,7 +506,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get('/api/1/directory/'
-                          '18d8be353ed3480476f032475e7c233eff7371d5')
+                          '18d8be353ed3480476f032475e7c233eff7371d5/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -521,7 +523,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get('/api/1/directory/'
-                          '66618d8be353ed3480476f032475e7c233eff737')
+                          '66618d8be353ed3480476f032475e7c233eff737/')
 
         # then
         self.assertEquals(rv.status_code, 404)
