@@ -160,8 +160,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # when
         rv = self.app.get(
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-            '/raw/',
-            headers={'Content-Type': 'text/plain'})
+            '/raw/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/octet-stream')
@@ -179,8 +178,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # when
         rv = self.app.get(
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-            '/raw/',
-            headers={'Content-Type': 'text/plain'})
+            '/raw/')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
