@@ -124,10 +124,7 @@ def lookup_directory(sha1_git):
     if not directory_entries:
         return None
 
-    res = []
-    for directory_entry in directory_entries:
-        res.append(converters.from_directory_entry(directory_entry))
-    return res
+    return map(converters.from_directory_entry, directory_entries)
 
 
 def lookup_release(release_sha1_git):

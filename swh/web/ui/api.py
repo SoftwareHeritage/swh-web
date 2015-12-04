@@ -202,10 +202,11 @@ def api_directory(sha1_git):
         NotFoundExc if the content is not found.
 
     """
-    directory_entries = service.lookup_directory(sha1_git)
-    if not directory_entries:
-        raise NotFoundExc('Directory with sha1_git %s not found.' % sha1_git)
-    return list(directory_entries)
+    error_msg = 'Directory with sha1_git %s not found.' % sha1_git
+    return _api_lookup(
+        sha1_git,
+        lookup_fn=service.lookup_directory,
+        error_msg_if_not_found=error_msg)
 
 
 @app.route('/api/1/browse/<string:q>/')
