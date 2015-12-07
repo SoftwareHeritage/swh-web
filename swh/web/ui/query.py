@@ -36,24 +36,23 @@ def parse_hash(q):
         elif SHA256_RE.match(q):
             return 'sha256'
         else:
-            raise BadInputExc('invalid checksum query string')
+            raise BadInputExc('Invalid checksum query string %s' % q)
 
     def check_algo(algo, hex):
-        if (algo in set(['sha1', 'sha1_git']) and not SHA1_RE.match(hex)) \
+        if (algo in {'sha1', 'sha1_git'} and not SHA1_RE.match(hex)) \
            or (algo == 'sha256' and not SHA256_RE.match(hex)):
-            raise BadInputExc('invalid hash for algorithm ' + algo)
+            raise BadInputExc('Invalid hash %s for algorithm %s' % (hex, algo))
 
     parts = q.split(':')
     if len(parts) > 2:
-        raise BadInputExc('invalid checksum query string')
+        raise BadInputExc('Invalid checksum query string %s' % q)
     elif len(parts) == 1:
         parts = (guess_algo(q), q)
     elif len(parts) == 2:
         check_algo(parts[0], parts[1])
+
     algo = parts[0]
-    hash = hex_to_hash(parts[1])
-
     if algo not in ALGORITHMS:
-        raise BadInputExc('unknown hash algorithm: ' + algo)
+        raise BadInputExc('Unknown hash algorithm %s' % algo)
 
-    return (algo, hash)
+    return (algo, hex_to_hash(parts[1]))

@@ -5,9 +5,10 @@
 
 # Functions defined here are NOT DESIGNED FOR PRODUCTION
 
-
-from swh.web.ui import controller
+import unittest
 from swh.storage.api.client import RemoteStorage as Storage
+from swh.web.ui import renderers, main
+from flask.ext.testing import TestCase
 
 
 # Because the Storage's __init__ function does side effect at startup...
@@ -30,11 +31,15 @@ def _init_mock_storage(base_url='https://somewhere.org:4321'):
     return RemoteStorageAdapter(base_url)  # destined to be used as mock
 
 
-def init_app(base_url='https://somewhere.org:4321'):
+def create_app(base_url='https://somewhere.org:4321'):
     """Function to initiate a flask app with storage designed to be mocked.
 
     Returns:
-        Tuple app and storage.
+        Tuple:
+        - app test client (for testing api, client decorator from flask)
+        - application's full configuration
+        - the storage instance to stub and mock
+        - the main app without any decoration
 
     NOT FOR PRODUCTION
 
@@ -44,10 +49,38 @@ def init_app(base_url='https://somewhere.org:4321'):
     # inject the mock data
     conf = {'storage': storage,
             'upload_folder': '/some/upload-dir',
-            'upload_allowed_extensions': ['txt']}
+            'upload_allowed_extensions': ['txt'],
+            'max_upload_size': 1024}
 
-    controller.app.config['TESTING'] = True
-    controller.app.config.update({'conf': conf})
-    app = controller.app.test_client()
+    main.app.config['TESTING'] = True
+    main.app.config.update({'conf': conf})
+    main.app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
+    main.load_controllers()
 
-    return app, controller.app.config, storage
+    return main.app.test_client(), main.app.config, storage, main.app
+
+
+class SWHApiTestCase(unittest.TestCase):
+    """Testing API class.
+
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.app, cls.app_config, cls.storage, _ = create_app()
+
+
+class SWHViewTestCase(TestCase):
+    """Testing view class.
+
+    cf. http://pythonhosted.org/Flask-Testing/
+    """
+    # This inhibits template rendering
+    # render_templates = False
+    def create_app(self):
+        """Initialize a Flask-Testing application instance to test view
+        without template rendering
+
+        """
+        _, _, _, appToDecorate = create_app()
+        return appToDecorate

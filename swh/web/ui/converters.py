@@ -4,9 +4,11 @@
 # See top-level LICENSE file for more information
 
 from swh.core import hashutil
+from swh.web.ui import utils
 
 
-def from_swh(dict_swh, hashess=[], bytess=[]):
+def from_swh(dict_swh, hashess={}, bytess={}, blacklist={},
+             convert={}, convert_fn=lambda x: x):
     """Convert from an swh dictionary to something reasonably json
     serializable.
 
@@ -17,6 +19,11 @@ def from_swh(dict_swh, hashess=[], bytess=[]):
         string
         - bytess: list/set of keys representing bytes values which needs to
         be decoded
+        - blacklist: set of keys to filter out from the conversion
+        - convert: set of keys whose associated values need to be converted
+        using convert_fn
+        - convert_fn: the conversion function to apply on the value of key
+        in 'convert'
 
         The remaining keys are copied as is in the output.
 
@@ -24,15 +31,41 @@ def from_swh(dict_swh, hashess=[], bytess=[]):
         dictionary equivalent as dict_swh only with its keys `converted`.
 
     """
+    def convert_hashes_bytes(v):
+        """v is supposedly a hash as bytes, returns it converted in hex.
+
+        """
+        if v and isinstance(v, bytes):
+            return hashutil.hash_to_hex(v)
+        return v
+
+    def convert_bytes(v):
+        """v is supposedly a bytes string, decode as utf-8.
+
+        FIXME: Improve decoding policy.
+        If not utf-8, break!
+
+        """
+        if v and isinstance(v, bytes):
+            return v.decode('utf-8')
+        return v
+
     if not dict_swh:
         return dict_swh
 
     new_dict = {}
     for key, value in dict_swh.items():
-        if key in hashess:
-            new_dict[key] = hashutil.hash_to_hex(value) if value else None
+        if key in blacklist:
+            continue
+        elif isinstance(value, dict):
+            new_dict[key] = from_swh(value, hashess, bytess, blacklist,
+                                     convert, convert_fn)
+        elif key in hashess:
+            new_dict[key] = utils.fmap(convert_hashes_bytes, value)
         elif key in bytess:
-            new_dict[key] = value.decode('utf-8')
+            new_dict[key] = utils.fmap(convert_bytes, value)
+        elif key in convert:
+            new_dict[key] = convert_fn(value)
         else:
             new_dict[key] = value
 
@@ -72,8 +105,8 @@ def from_release(release):
 
     """
     return from_swh(release,
-                    hashess=set(['id', 'revision']),
-                    bytess=set(['comment']))
+                    hashess=set(['id', 'target']),
+                    bytess=set(['message', 'name', 'email']))
 
 
 def from_revision(revision):
@@ -104,16 +137,44 @@ def from_revision(revision):
 
     """
     return from_swh(revision,
-                    hashess=set(['id', 'directory']),
-                    bytess=set(['author_name',
-                                'committer_name',
-                                'author_email',
-                                'committer_email',
+                    hashess=set(['id', 'directory', 'parents']),
+                    bytess=set(['name',
+                                'email',
                                 'message']))
 
 
 def from_content(content):
-    """Convert swh content to serializable content dictionary."""
+    """Convert swh content to serializable content dictionary.
+
+    """
     return from_swh(content,
-                    hashess=set(['sha1', 'sha1_git', 'sha256']),
-                    bytess=set(['data']))
+                    hashess={'sha1', 'sha1_git', 'sha256'},
+                    bytess={},
+                    blacklist={},
+                    convert={'status'},
+                    convert_fn=lambda v: 'absent' if v == 'hidden' else v)
+
+
+def from_person(person):
+    """Convert swh person to serializable person dictionary.
+
+    """
+    return from_swh(person,
+                    hashess=set(),
+                    bytess=set(['name', 'email']))
+
+
+def from_directory_entry(dir_entry):
+    """Convert swh person to serializable person dictionary.
+
+    """
+    return from_swh(dir_entry,
+                    hashess=set(['dir_id',
+                                 'sha1_git',
+                                 'sha1',
+                                 'sha256',
+                                 'target']),
+                    bytess=set(['name']),
+                    blacklist={},
+                    convert={'status'},
+                    convert_fn=lambda v: 'absent' if v == 'hidden' else v)

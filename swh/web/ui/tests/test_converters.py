@@ -13,15 +13,30 @@ from swh.web.ui import converters
 
 
 class ConvertersTestCase(unittest.TestCase):
-
     @istest
     def from_swh(self):
         some_input = {
             'a': 'something',
             'b': 'someone',
             'c': b'sharp-0.3.4.tgz',
-            'd': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',
-            'e': b'sharp.html/doc_002dS_005fISREG.html'
+            'd': hashutil.hex_to_hash(
+                'b04caf10e9535160d90e874b45aa426de762f19f'),
+            'e': b'sharp.html/doc_002dS_005fISREG.html',
+            'g': [b'utf-8-to-decode', b'another-one'],
+            'h': 'something filtered',
+            'i': {'e': b'something'},
+            'j': {
+                'k': {
+                    'l': [b'bytes thing', b'another thingy'],
+                    'n': 'dont care either'
+                },
+                'm': 'dont care'
+            },
+            'o': 'something',
+            'p': 'bar',
+            'q': 'intact',
+            'r': {'p': 'also intact',
+                  'q': 'bar'},
         }
 
         expected_output = {
@@ -29,12 +44,51 @@ class ConvertersTestCase(unittest.TestCase):
             'b': 'someone',
             'c': 'sharp-0.3.4.tgz',
             'd': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'e': 'sharp.html/doc_002dS_005fISREG.html'
+            'e': 'sharp.html/doc_002dS_005fISREG.html',
+            'g': ['utf-8-to-decode', 'another-one'],
+            'i': {'e': 'something'},
+            'j': {
+                'k': {
+                    'l': ['bytes thing', 'another thingy']
+                }
+            },
+            'p': 'foo',
+            'q': 'intact',
+            'r': {'p': 'also intact',
+                  'q': 'foo'},
+        }
+
+        def test_convert_fn(v):
+            return 'foo' if v == 'bar' else v
+
+        actual_output = converters.from_swh(some_input,
+                                            hashess={'d', 'o'},
+                                            bytess={'c', 'e', 'g', 'l'},
+                                            blacklist={'h', 'm', 'n', 'o'},
+                                            convert={'p', 'q'},
+                                            convert_fn=test_convert_fn)
+
+        self.assertEquals(expected_output, actual_output)
+
+    @istest
+    def from_swh_edge_cases_do_no_conversion_if_none_or_not_bytes(self):
+        some_input = {
+            'a': 'something',
+            'b': None,
+            'c': 'someone',
+            'd': None,
+        }
+
+        expected_output = {
+            'a': 'something',
+            'b': None,
+            'c': 'someone',
+            'd': None,
         }
 
         actual_output = converters.from_swh(some_input,
-                                            hashess=set(['d']),
-                                            bytess=set(['c', 'e']))
+                                            hashess={'a', 'b'},
+                                            bytess={'c', 'd'})
 
         self.assertEquals(expected_output, actual_output)
 
@@ -42,6 +96,11 @@ class ConvertersTestCase(unittest.TestCase):
     def from_swh_empty(self):
         # when
         self.assertEquals({}, converters.from_swh({}))
+
+    @istest
+    def from_swh_none(self):
+        # when
+        self.assertIsNone(converters.from_swh(None))
 
     @istest
     def from_origin(self):
@@ -73,24 +132,33 @@ class ConvertersTestCase(unittest.TestCase):
         release_input = {
             'id': hashutil.hex_to_hash(
                 'aad23fa492a0c5fed0708a6703be875448c86884'),
-            'revision': hashutil.hex_to_hash(
+            'target': hashutil.hex_to_hash(
                 '5e46d564378afc44b31bb89f99d5675195fbdf67'),
+            'target_type': 'revision',
             'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': None,
-            'name': 'v0.0.1',
-            'comment': b'some comment on release',
+            'author': {
+                'name': b'author name',
+                'email': b'author@email',
+            },
+            'name': b'v0.0.1',
+            'message': b'some comment on release',
             'synthetic': True,
         }
 
         expected_release = {
             'id': 'aad23fa492a0c5fed0708a6703be875448c86884',
-            'revision': '5e46d564378afc44b31bb89f99d5675195fbdf67',
+            'target': '5e46d564378afc44b31bb89f99d5675195fbdf67',
+            'target_type': 'revision',
             'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': None,
+            'author': {
+                'name': 'author name',
+                'email': 'author@email',
+            },
             'name': 'v0.0.1',
-            'comment': 'some comment on release',
+            'message': 'some comment on release',
+            'target_type': 'revision',
             'synthetic': True,
         }
 
@@ -105,24 +173,30 @@ class ConvertersTestCase(unittest.TestCase):
         release_input = {
             'id': hashutil.hex_to_hash(
                 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e'),
-            'revision': None,
+            'target': None,
             'date': datetime.datetime(2016, 3, 2, 10, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': 1,
-            'name': 'v0.1.1',
-            'comment': b'comment on release',
+            'name': b'v0.1.1',
+            'message': b'comment on release',
             'synthetic': False,
+            'author': {
+                'name': b'bob',
+                'email': b'bob@alice.net',
+            },
         }
 
         expected_release = {
             'id': 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e',
-            'revision': None,
+            'target': None,
             'date': datetime.datetime(2016, 3, 2, 10, 0, 0,
                                       tzinfo=datetime.timezone.utc),
-            'date_offset': 1,
             'name': 'v0.1.1',
-            'comment': 'comment on release',
+            'message': 'comment on release',
             'synthetic': False,
+            'author': {
+                'name': 'bob',
+                'email': 'bob@alice.net',
+            },
         }
 
         # when
@@ -138,10 +212,14 @@ class ConvertersTestCase(unittest.TestCase):
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
             'directory': hashutil.hex_to_hash(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author_name': b'Software Heritage',
-            'author_email': b'robot@softwareheritage.org',
-            'committer_name': b'Software Heritage',
-            'committer_email': b'robot@softwareheritage.org',
+            'author': {
+                'name': b'Software Heritage',
+                'email': b'robot@softwareheritage.org',
+            },
+            'committer': {
+                'name': b'Software Heritage',
+                'email': b'robot@softwareheritage.org',
+            },
             'message': b'synthetic revision message',
             'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
             'date_offset': 0,
@@ -150,7 +228,12 @@ class ConvertersTestCase(unittest.TestCase):
             'committer_date_offset': 0,
             'synthetic': True,
             'type': 'tar',
-            'parents': [],
+            'parents': [
+                hashutil.hex_to_hash(
+                    '29d8be353ed3480476f032475e7c244eff7371d5'),
+                hashutil.hex_to_hash(
+                    '30d8be353ed3480476f032475e7c244eff7371d5')
+            ],
             'metadata': {
                 'original_artifact': [{
                     'archive_type': 'tar',
@@ -167,17 +250,24 @@ class ConvertersTestCase(unittest.TestCase):
         expected_revision = {
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
+            'author': {
+                'name': 'Software Heritage',
+                'email': 'robot@softwareheritage.org',
+            },
+            'committer': {
+                'name': 'Software Heritage',
+                'email': 'robot@softwareheritage.org',
+            },
             'message': 'synthetic revision message',
             'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
             'date_offset': 0,
             'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54,
                                                 tzinfo=None),
             'committer_date_offset': 0,
-            'parents': [],
+            'parents': [
+                '29d8be353ed3480476f032475e7c244eff7371d5',
+                '30d8be353ed3480476f032475e7c244eff7371d5'
+            ],
             'type': 'tar',
             'synthetic': True,
             'metadata': {
@@ -209,17 +299,18 @@ class ConvertersTestCase(unittest.TestCase):
                                              'c5b00a6d03'),
             'data': b'data in bytes',
             'length': 10,
-            'status': 'visible',
+            'status': 'hidden',
         }
 
+        # 'status' is filtered
         expected_content = {
             'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
             'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
             '7d3bf96c926',
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'data': 'data in bytes',
+            'data': b'data in bytes',
             'length': 10,
-            'status': 'visible',
+            'status': 'absent',
         }
 
         # when
@@ -227,3 +318,61 @@ class ConvertersTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_content, expected_content)
+
+    @istest
+    def from_person(self):
+        person_input = {
+            'id': 10,
+            'anything': 'else',
+            'name': b'bob',
+            'email': b'bob@foo.alice',
+        }
+
+        expected_person = {
+            'id': 10,
+            'anything': 'else',
+            'name': 'bob',
+            'email': 'bob@foo.alice',
+        }
+
+        # when
+        actual_person = converters.from_person(person_input)
+
+        # then
+        self.assertEqual(actual_person, expected_person)
+
+    @istest
+    def from_directory_entries(self):
+        dir_entries_input = {
+            'sha1': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
+                                         '2ebda5'),
+            'sha256': hashutil.hex_to_hash('39007420ca5de7cb3cfc15196335507e'
+                                           'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                             'c5b00a6d03'),
+            'target': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                           'c5b00a6d03'),
+            'dir_id': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
+                                           'c5b00a6d03'),
+            'name': b'bob',
+            'type': 10,
+            'status': 'hidden',
+        }
+
+        expected_dir_entries = {
+            'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
+            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d2747'
+            'd3bf96c926',
+            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'target': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'dir_id': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'name': 'bob',
+            'type': 10,
+            'status': 'absent',
+        }
+
+        # when
+        actual_dir_entries = converters.from_directory_entry(dir_entries_input)
+
+        # then
+        self.assertEqual(actual_dir_entries, expected_dir_entries)
