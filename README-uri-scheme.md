@@ -1,18 +1,23 @@
 URI scheme
 ==========
 
-Browsing namespace
-------------------
+API
+---
 
-### Global
+### Endpoints
 
-To be anchored where browsing starts (e.g., at /api/1)
+The api /api/1 is partially browsable on defined endpoints (/api, /api/1).
+
+* /api/ and /api/1/
+
+List endpoint methods as per the client's 'Accept' header request.
+
+The following routes are to be anchored at at /api/1
 
 * /revision/<SHA1_GIT>: show commit information
 
-    $curl http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5
+    $ curl -H 'Accept: application/json' http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5
     {
-      "revision": {
         "author_email": "robot@softwareheritage.org",
         "author_name": "Software Heritage",
         "committer_date": "Mon, 17 Jan 2000 10:23:54 GMT",
@@ -40,15 +45,60 @@ To be anchored where browsing starts (e.g., at /api/1)
         ],
         "synthetic": true,
         "type": "tar"
-      }
     }
 
 * /directory/<SHA1_GIT>: show directory information (including ls)
 
-* /directory/<SHA1_GIT>/path/to/file-or-dir: ditto, but for dir pointed by path
+    curl -X GET http://localhost:6543/api/1/directory/3126f46e2f7dc752227131a2a658265e58f53e38
+    [
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "Makefile.am",
+          "perms": 100644,
+          "sha1": "b0283d8126f975e7b4a4348d13b07ddebe2cf8bf",
+          "sha1_git": "e0522786777256d57c5210219bcbe8dacdad273d",
+          "sha256": "897f3189dcfba96281b2190325c54afc74a42e2419c053baadfadc14386935ee",
+          "status": "visible",
+          "target": "e0522786777256d57c5210219bcbe8dacdad273d",
+          "type": "file"
+        },
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "Makefile.in",
+          "perms": 100644,
+          "sha1": "81f5757b9451811cfb3ef84612e45a973c70b4e6",
+          "sha1_git": "3b948d966fd8e99f93670025f63a550168d57d71",
+          "sha256": "f5acd84a40f05d997a36b8846c4872a92ee57083abb77c82e05e9763c8edb59a",
+          "status": "visible",
+          "target": "3b948d966fd8e99f93670025f63a550168d57d71",
+              "type": "file"
+        },
 
-  - note: this is the same as /dir/<SHA1_GIT'>, where <SHA1_GIT'> is the
-  sha1_git ID of the dir pointed by path
+        ... snip ...
+
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "webtools.h",
+          "perms": 100644,
+          "sha1": "4b4c942ddd490ec1e312074ddfac352097886c02",
+          "sha1_git": "e6fb8969d00e23dd152df5e7fb167118eab67342",
+          "sha256": "95ffe6c0108f6ec48ccb0c93e966b54f1494f5cc353b066644c11fa47766620f",
+          "status": "visible",
+          "target": "e6fb8969d00e23dd152df5e7fb167118eab67342",
+          "type": "file"
+        },
+        {
+          "dir_id": "3126f46e2f7dc752227131a2a658265e58f53e38",
+          "name": "ylwrap",
+          "perms": 100644,
+          "sha1": "9073938df9ae47d585bfdf176bfff45d06f3e13e",
+          "sha1_git": "13fc38d75f2a47bc55e90ad5bf8d8a0184b14878",
+          "sha256": "184eb644e51154c79b42df70c22955b818d057491f84ca0e579e4f9e48a60d7b",
+          "status": "visible",
+          "target": "13fc38d75f2a47bc55e90ad5bf8d8a0184b14878",
+          "type": "file"
+        }
+    ]
 
 * /content/[<HASH_ALGO>:]<HASH>: show content information
 
@@ -57,21 +107,27 @@ To be anchored where browsing starts (e.g., at /api/1)
   least one per HASH_ALGO) will point to the same content
   - HASH_ALGO defaults to "sha1" (?)
 
-    curl -X GET http://localhost:6543/api/1/content/sha1:486b486d2a4998929c68265fa85ab2326db5528a/
+    curl -X GET http://localhost:6543/api/1/content/sha1:486b486d2a4998929c68265fa85ab2326db5528a
+
     {
-        "data": "The GNU cfs-el web homepage is at\n@uref{http://www.gnu.org/software/cfs-el/cfs-el.html}.\n\nYou can find the latest distribution of GNU cfs-el at\n@uref{ftp://ftp.gnu.org/gnu/} or at any of its mirrors.\n",
-        "origin": {
-             "branch": "cfs-el-0.5.0.tar.gz",
-             "origin_type": "ftp",
-             "origin_url": "rsync://ftp.gnu.org/old-gnu/cfs-el",
-             "path": "cfs-el-0.5.0/doc/distribution.texinfo",
-             "revision": "8604ec5a0cd1f81ec81c89c324ddc85e12f91d69"
-         },
+        "data": "/api/1/content/486b486d2a4998929c68265fa85ab2326db5528a/raw",
          "sha1": "486b486d2a4998929c68265fa85ab2326db5528a"
     }
 
     curl -X GET http://localhost:6543/api/1/content/sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08/
+
     {"error": "Content with sha1:4a1b6d7dd0a923ed90156c4e2f5db030095d8e08 not found."}
+
+* /content/[<hash_algo:]<HASH>/raw
+
+    curl -H 'Accept: text/plain' http://localhost:6543/api/1/content/sha1:486b486d2a4998929c68265fa85ab2326db5528a/raw
+
+    The GNU cfs-el web homepage is at
+    @uref{http://www.gnu.org/software/cfs-el/cfs-el.html}.
+
+    You can find the latest distribution of GNU cfs-el at
+    @uref{ftp://ftp.gnu.org/gnu/} or at any of its mirrors.
+
 
 * /release/<SHA1_GIT>: show release information
 
@@ -79,8 +135,8 @@ Sample:
 
     $ curl -X GET http://localhost:6543/api/1/release/4a1b6d7dd0a923ed90156c4e2f5db030095d8e08
     {
-      "release": {
-        "author": 1,
+        "author_name": "Software Heritage",
+        "author_email": "robot@softwareheritage.org",
         "comment": "synthetic release message",
         "date": "Sat, 04 Mar 2000 07:50:35 GMT",
         "date_offset": 0,
@@ -88,10 +144,19 @@ Sample:
         "name": "4.0.6",
         "revision": "5c7814ce9978d4e16f3858925b5cea611e500eec",
         "synthetic": true
-      }
     }%
 
 * /person/<PERSON_ID>: show person information
+
+    curl http://localhost:6543/api/1/person/1
+    {
+      "email": "robot@softwareheritage.org",
+      "id": 1,
+      "name": "Software Heritage"
+    }
+
+    curl http://localhost:6543/api/1/person/2
+    {"error": "Person with id 2 not found."}
 
 * /origin/<ORIGIN_ID>: show origin information
 
@@ -99,48 +164,28 @@ Sample:
 
     $ curl -X GET http://localhost:6543/api/1/origin/1
     {
-      "origin": {
         "id": 1,
         "lister": null,
         "project": null,
         "type": "ftp",
         "url": "rsync://ftp.gnu.org/old-gnu/solfege"
-      }
     }%
 
-* /project/<PROJECT_ID>: show project information
+* /browse/<SHA:HASH>
 
-* /organization/<ORGANIZATION_ID>: show organization information
+Return content information up to one of its origin if the content is
+found.
 
-### Occurrence
+    curl http://localhost:6543/api/1/browse/sha1:2e98ab73456aad8dfc6cc50d562ee1b80d201753
+    {
+        "path": "republique.py",
+        "origin_url": "file:///dev/null",
+        "origin_type": "git",
+        "revision": "8f8640a1c024c2ef85fa8e8d9297ea289134472d",
+        "branch": "refs/remotes/origin/master"
+    }
 
-Origin/Branch do not contain `|` so it is used as a terminator.
-Origin is <TYPE+URL>.
-Timestamp is one of: latest or an ISO8601 date (TODO: decide the time matching
-policy).
-
-* /directory/<TIMESTAMP>/<ORIGIN>|/<BRANCH>|/path/to/file-or-dir
-
-  - Same as /directory/<SHA1_GIT> but looking up sha1 git using origin and
-    branch at a given timestamp
-
-* /revision/<TIMESTAMP>/<ORIGIN>|/<BRANCH>
-
-  - Same as /revision/<SHA1_GIT> but looking up sha1 git using origin and
-    branch at a given timestamp
-
-* /revision/<TIMESTAMP>/<ORIGIN>|
-
-  - Show all branches of origin at a given timestamp
-
-* /revision/<TIMESTAMP>/<ORIGIN>|/<BRANCH>|
-
-  - Show all revisions (~git log) of origin and branch at a given timestamp
-
-
-### Upload and search
-
-* /1/api/uploadnsearch/
+* /uploadnsearch/
 
 Post a file's content to api.
 Api computes the sha1 hash and checks in the storage if such sha1 exists.
@@ -151,12 +196,153 @@ Json answer:
 
 Sample:
 
-    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch/
+    $ curl -X POST -F filename=@/path/to/file http://localhost:6543/api/1/uploadnsearch
     {
         "found": false,
         "sha1": "e95097ad2d607b4c89c1ce7ca1fef2a1e4450558"
     }%
 
+* /revision/<SHA1_GIT>/log
 
-Search namespace
-----------------
+Show all revisions (~git log) starting from <sha1_git>.
+The first element is the given sha1_git.
+
+Sample:
+
+    curl http://localhost:6543/api/1/revision/7026b7c1a2af56521e951c01ed20f255fa054238/log/
+
+    [
+        {
+            "id": "7026b7c1a2af56521e951c01ed20f255fa054238",
+            "parents": [],
+            "type": "git",
+            "committer_date": "Mon, 12 Oct 2015 11:05:53 GMT",
+            "synthetic": false,
+            "committer": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "message": "+1 limitation\n",
+            "author": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "date": "Mon, 12 Oct 2015 11:05:53 GMT",
+            "metadata": null,
+            "directory": "a33a9acf2419b9a291e8a02302e6347dcffde5a6"
+        },
+        {
+            "id": "368a48fe15b7db2383775f97c6b247011b3f14f4",
+            "parents": [],
+            "type": "git",
+            "committer_date": "Mon, 12 Oct 2015 10:57:11 GMT",
+            "synthetic": false,
+            "committer": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "message": "actually fix bug\n",
+            "author": {
+                "email": "a3nm@a3nm.net",
+                "name": "Antoine Amarilli"
+            },
+            "date": "Mon, 12 Oct 2015 10:57:11 GMT",
+            "metadata": null,
+            "directory": "1d5188e4991510c74d62272f0301352c5c1b850b"
+            },
+            ...
+    ]
+
+* /project/<PROJECT_ID>: show project information
+
+* /organization/<ORGANIZATION_ID>: show organization information
+
+* /directory/<SHA1_GIT>/path/to/file-or-dir: ditto, but for file or directory pointed by path
+
+  - note: This is the same as /directory/<SHA1_GIT>, where <SHA1_GIT>
+  is the sha1_git ID of the directory pointed by path or
+  /content/sha1_git:<SHA1_GIT> (for content)
+
+* /directory/path/to/file-or-dir?timestamp=<TIMESTAMP>&origin=<ORIGIN>&branch=<BRANCH>
+
+  - Same as /directory/<SHA1_GIT> but looking up sha1 git using origin
+    and branch at a given timestamp for a specific path
+    /path/to/file-or-dir
+
+
+* /revision/<SHA1_GIT>?timestamp=<TIMESTAMP>&origin=<ORIGIN>
+
+  - Same as /revision/<SHA1_GIT> but looking up sha1 git using origin
+    at a given timestamp.
+
+* /revision/?timestamp=<TIMESTAMP>&origin=<ORIGIN>
+
+Show all branches of origin at a given timestamp.
+
+-* /revision/<TIMESTAMP>/<ORIGIN>|
+-
+-  - Show all branches of origin at a given timestamp
+
+### Global behavior
+
+The api routes outputs 'application/json' as default.
+
+#### Accept header
+
+Also, you can specify the following 'Accept' header in your client query:
+- application/json
+- application/yaml
+- text/html
+
+The client can use specific filters and compose them as (s)he sees fit.
+
+#### Fields
+
+The client can filter the result output by field names when requesting
+`application/json` or `application/yaml` output.
+
+Ex:
+
+    curl http://localhost:6543/api/1/stat/counters?fields=revision,release,content
+    {
+        "content": 133616,
+        "revision": 1042,
+        "release": 660
+    }
+
+#### JSONP
+
+When using the accept header 'application/json', the route can be
+enhanced by adding a `callback` parameter.  This will output the
+result in a json function whose name is the callback parameter
+
+Ex:
+
+    curl http://localhost:6543/api/1/stat/counters?callback=jsonp&fields=directory_entry_dir,revision,entity
+
+    jsonp({
+        "directory_entry_dir": 12478,
+        "revision": 1042,
+        "entity": 0
+    })
+
+#### Error
+
+When an error is raised, the error code response is used:
+- 400: user's input is not correct regarding the API
+- 404: user's input is ok but we did not found what (s)he was looking forbidden
+
+And the body of the response should be a dictionary with some more information on the error.
+
+Bad request sample:
+
+    curl http://localhost:6543/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d
+    {"error": "Invalid checksum query string 18d8be353ed3480476f032475e7c233eff7371d"}
+
+    curl http://localhost:6543/api/1/revision/sha1:18d8be353ed3480476f032475e7c233eff7371d
+    {"error": "Invalid hash 18d8be353ed3480476f032475e7c233eff7371d for algorithm sha1"}
+
+Not found sample:
+
+    curl http://localhost:6543/api/1/revision/sha1:18d8be353ed3480476f032475e7c233eff7371df
+    {"error": "Revision with sha1_git sha1:18d8be353ed3480476f032475e7c233eff7371df not found."}
