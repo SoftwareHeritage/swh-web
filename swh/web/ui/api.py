@@ -3,13 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from flask import request, url_for
+from flask import request, url_for, Response
 
-from flask.ext.api.decorators import set_renderers
 
-from swh.web.ui.main import app
-from swh.web.ui import service, renderers, utils
+from swh.web.ui import service, utils
 from swh.web.ui.exc import BadInputExc, NotFoundExc
+from swh.web.ui.main import app
 
 
 @app.route('/browse/')
@@ -235,7 +234,6 @@ def api_content_checksum_to_origin(q):
 
 
 @app.route('/api/1/content/<string:q>/raw/')
-@set_renderers(renderers.BytesRenderer)
 def api_content_raw(q):
     """Return content's raw data if content is found.
 
@@ -245,18 +243,21 @@ def api_content_raw(q):
         When algo_hash is not provided, 'hash' is considered sha1.
 
     Returns:
-        Content's raw data in text/plain.
+        Content's raw data in application/octet-stream
 
     Raises:
         - BadInputExc in case of unknown algo_hash or bad hash
         - NotFoundExc if the content is not found.
 
     """
+    def generate(content):
+        yield content['data']
+
     content = service.lookup_content_raw(q)
     if not content:
         raise NotFoundExc('Content with %s not found.' % q)
 
-    return content['data']
+    return Response(generate(content), mimetype='application/octet-stream')
 
 
 @app.route('/api/1/content/<string:q>/')
