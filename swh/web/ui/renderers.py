@@ -30,25 +30,6 @@ class SWHFilterEnricher():
         return data
 
 
-class DoNothingRenderer(renderers.BaseRenderer):
-    def render(self, data, media_type, **options):
-        return data
-
-
-class PlainRenderer(DoNothingRenderer):
-    """Renderer for plain/text, do nothing but send the data as is.
-
-    """
-    media_type = 'text/plain'
-
-
-class BytesRenderer(DoNothingRenderer):
-    """Renderer for plain/text, do nothing but send the data as is.
-
-    """
-    media_type = 'application/octet-stream'
-
-
 class YAMLRenderer(renderers.BaseRenderer, SWHFilterEnricher):
     """Renderer for application/yaml.
     Orchestrate from python data structure to yaml.
@@ -110,7 +91,6 @@ RENDERERS = [
     'swh.web.ui.renderers.SWHBrowsableAPIRenderer',
     'flask.ext.api.parsers.URLEncodedParser',
     'swh.web.ui.renderers.YAMLRenderer',
-    'swh.web.ui.renderers.PlainRenderer',
 ]
 
 

@@ -54,43 +54,6 @@ class RendererTestCase(unittest.TestCase):
         mock_utils.filter_field_keys.assert_called_once_with(input_data,
                                                              {'a', 'c'})
 
-    @istest
-    def doNothingRenderer(self):
-        # given
-        doNothingRenderer = renderers.DoNothingRenderer()
-        input_data = 'some data'
-
-        # when
-        actual_data = doNothingRenderer.render(input_data, 'some-media-type')
-
-        # then
-        self.assertEqual(actual_data, input_data)  # do nothing on data
-
-    @istest
-    def plainRenderer(self):
-        # given
-        plainRenderer = renderers.PlainRenderer()
-        input_data = 'some data'
-
-        # when
-        actual_data = plainRenderer.render(input_data, 'some-media-type')
-
-        # then
-        self.assertEqual(actual_data, input_data)  # do nothing on data
-
-    @istest
-    def bytesRenderer(self):
-        # given
-        bytesRenderer = renderers.BytesRenderer()
-        input_data = b'some data'
-
-        # when
-        actual_data = bytesRenderer.render(input_data, 'some-media-type')
-
-        # then
-        self.assertEqual('application/octet-stream', bytesRenderer.media_type)
-        self.assertEqual(actual_data, input_data)  # do nothing on data
-
     @patch('swh.web.ui.renderers.request')
     @istest
     def yamlRenderer_without_filter(self, mock_request):
