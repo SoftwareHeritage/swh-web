@@ -41,34 +41,60 @@ def about():
 def search():
     """Search for hashes in swh-storage.
 
-    """
-    env = {'filename': None, 'message': '', 'found': None, 'q': ''}
+    One form to submit either:
+    - hash query to look up in swh storage
+    - some file content to upload, compute its hash and look it up in swh
+      storage
+    - both
 
-    q = request.args.get('q', '')
+    Returns:
+        dict representing data to look for in swh storage.
+        The following keys are returned:
+        - file: File submitted for upload
+        - filename: Filename submitted for upload
+        - q: Query on hash to look for
+        - message: Message detailing if data has been found or not.
+
+    """
+    env = {'filename': None,
+           'message': '',
+           'q': None,
+           'file': None}
+    data = None
+    q = env['q']
+    file = env['file']
+
+    if request.method == 'GET':
+        data = request.args
+    elif request.method == 'POST':
+        data = request.data
+
+    # could either be a query for sha1 hash
+    q = data.get('q')
+    # or hash and search a file
+    file = request.files.get('filename')
+
     if q:
-        env = {'q': q, 'message': ''}
+        env['q'] = q
 
         try:
-            if q:
-                r = service.lookup_hash(q)
-                env['message'] = 'Content with hash %s%sfound!' % (
-                    q,
-                    ' ' if r['found'] == True else ' not '
-                )
-                env['q'] = q
+            r = service.lookup_hash(q)
+            env['message'] = 'Content with hash %s%sfound!' % (
+                q,
+                ' ' if r.get('found') else ' not '
+            )
         except BadInputExc as e:
             env['message'] = str(e)
 
-    elif request.method == 'POST':
-        file = request.files['filename']
-
+    if file:
+        env['file'] = file
         try:
             uploaded_content = service.upload_and_search(file)
             filename = uploaded_content['filename']
             sha1 = uploaded_content['sha1']
             found = uploaded_content['found']
 
-            message = 'The file %s with hash %s has%sbeen found.' % (
+            message = 'File %s with hash %s%sfound!' % (
                 filename,
                 sha1,
                 ' ' if found else ' not ')
@@ -76,11 +102,12 @@ def search():
             env.update({
                 'filename': filename,
                 'sha1': sha1,
-                'found': found,
-                'message': message
+                'message': '\n\n'.join([env['message'], message])
             })
         except BadInputExc as e:
             env['message'] = str(e)
+
+    env['q'] = q if q else ''
 
     return render_template('upload_and_search.html', **env)
 
