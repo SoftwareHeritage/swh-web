@@ -20,11 +20,16 @@ def hash_and_search(filepath):
         Tuple (hex sha1, found as True or false).
         The found boolean, according to whether the sha1 of the file
         is present or not.
-
     """
-    hash = hashutil.hashfile(filepath)
-    return (hashutil.hash_to_hex(hash['sha1']),
-            main.storage().content_exist(hash))
+    h = hashutil.hashfile(filepath)
+    c = main.storage().content_find(h)
+    if c:
+        r = converters.from_content(c)
+        r['found'] = True
+        return r
+    else:
+        return {'sha1': hashutil.hash_to_hex(h['sha1']),
+                'found': False}
 
 
 def upload_and_search(file):
@@ -32,11 +37,11 @@ def upload_and_search(file):
 
     """
     tmpdir, filename, filepath = upload.save_in_upload_folder(file)
+    res = {'filename': filename}
     try:
-        sha1, found = None, None
-        if filepath:
-            sha1, found = hash_and_search(filepath)
-        return filename, sha1, found
+        content = hash_and_search(filepath)
+        res.update(content)
+        return res
     finally:
         # clean up
         if tmpdir:
@@ -48,12 +53,14 @@ def lookup_hash(q):
 
     Args: query string of the form <hash_algo:hash>
 
-    Returns:
-        True or False, according to whether the checksum is present or not
+    Returns: Dict with key found to True or False, according to
+        whether the checksum is present or not
 
     """
     (algo, hash) = query.parse_hash(q)
-    return main.storage().content_exist({algo: hash})
+    found = main.storage().content_find({algo: hash})
+    return {'found': found,
+            'algo': algo}
 
 
 def lookup_hash_origin(q):
@@ -62,7 +69,7 @@ def lookup_hash_origin(q):
     Args: query string of the form <hash_algo:hash>
 
     Returns:
-        True or False, according to whether the checksum is present or not
+        origin as dictionary if found for the given content.
 
     """
     algo, h = query.parse_hash(q)
@@ -81,6 +88,43 @@ def lookup_origin(origin_id):
 
     """
     return main.storage().origin_get({'id': origin_id})
+
+
+def lookup_person(person_id):
+    """Return information about the person with id person_id.
+
+    Args:
+        person_id as string
+
+    Returns:
+        person information as dict.
+
+    """
+    persons = main.storage().person_get([person_id])
+    if not persons:
+        return None
+    return converters.from_person(persons[0])
+
+
+def lookup_directory(sha1_git):
+    """Return information about the directory with id sha1_git.
+
+    Args:
+        sha1_git as string
+
+    Returns:
+        directory information as dict.
+
+    """
+    algo, hBinSha1 = query.parse_hash(sha1_git)
+    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
+        raise BadInputExc('Only sha1_git is supported.')
+
+    directory_entries = main.storage().directory_get(hBinSha1)
+    if not directory_entries:
+        return None
+
+    return map(converters.from_directory_entry, directory_entries)
 
 
 def lookup_release(release_sha1_git):
@@ -131,6 +175,28 @@ def lookup_revision(rev_sha1_git, rev_type='git'):
     return None
 
 
+def lookup_revision_log(rev_sha1_git):
+    """Return information about the revision with sha1 revision_sha1_git.
+
+    Args:
+        revision_sha1_git: The revision's sha1 as hexadecimal
+
+    Returns:
+        Revision information as dict.
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+
+    """
+    algo, hBinSha1 = query.parse_hash(rev_sha1_git)
+    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
+        raise BadInputExc('Only sha1_git is supported.')
+
+    revision_entries = main.storage().revision_log(hBinSha1)
+
+    return map(converters.from_revision, revision_entries)
+
+
 def lookup_content(q):
     """Lookup the content designed by q.
 
@@ -139,9 +205,32 @@ def lookup_content(q):
 
     """
     (algo, hash) = query.parse_hash(q)
-    res = main.storage().content_get([hash])
-    if res and len(res) >= 1:
-        return converters.from_content(res[0])
+    c = main.storage().content_find({algo: hash})
+    if c:
+        return converters.from_content(c)
+    return None
+
+
+def lookup_content_raw(q):
+    """Lookup the content designed by q.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Returns:
+        dict with 'sha1' and 'data' keys.
+        data representing its raw data decoded.
+
+    """
+    (algo, hash) = query.parse_hash(q)
+    c = main.storage().content_find({algo: hash})
+    if not c:
+        return None
+
+    sha1 = c['sha1']
+    contents = main.storage().content_get([sha1])
+    if contents and len(contents) >= 1:
+        return converters.from_content(contents[0])
     return None
 
 

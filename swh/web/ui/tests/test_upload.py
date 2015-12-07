@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
-
 from nose.tools import istest
 from unittest.mock import patch, MagicMock
 
@@ -12,11 +10,7 @@ from swh.web.ui import upload
 from swh.web.ui.tests import test_app
 
 
-class UploadTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.app, cls.config, cls.storage = test_app.init_app()
-
+class UploadTestCase(test_app.SWHApiTestCase):
     @istest
     def allowed_file_ok(self):
         # when
@@ -122,7 +116,7 @@ class UploadTestCase(unittest.TestCase):
     @istest
     def save_in_upload_folder_OK(self, mock_tempfile, mock_werkzeug):
         # given
-        upload_folder = self.config['conf']['upload_folder']
+        upload_folder = self.app_config['conf']['upload_folder']
 
         # mock the dependencies
         mock_werkzeug.secure_filename.return_value = 'some-allowed-file.txt'

@@ -6,9 +6,11 @@
 import logging
 import os
 
-from flask import Flask
+from flask.ext.api import FlaskAPI
 
 from swh.core import config
+
+from swh.web.ui.renderers import RENDERERS
 
 
 DEFAULT_CONFIG = {
@@ -24,9 +26,8 @@ DEFAULT_CONFIG = {
     'upload_allowed_extensions': ('list[str]', [])  # means all are accepted
 }
 
-
 # api's definition
-app = Flask(__name__)
+app = FlaskAPI(__name__)
 
 
 def read_config(config_file):
@@ -35,7 +36,7 @@ def read_config(config_file):
        dict"""
 
     conf = config.read(config_file, DEFAULT_CONFIG)
-    config.prepare_folders(conf, 'log_dir')
+    config.prepare_folders(conf, 'log_dir', 'upload_folder')
 
     if conf['storage_class'] == 'remote_storage':
         from swh.storage.api.client import RemoteStorage as Storage
@@ -49,7 +50,7 @@ def read_config(config_file):
 
 def load_controllers():
     """Load the controllers for the application"""
-    from swh.web.ui import controller  # flake8: noqa
+    from swh.web.ui import api, errorhandler, views  # flake8: noqa
 
 
 def storage():
@@ -57,6 +58,15 @@ def storage():
 
     """
     return app.config['conf']['storage']
+
+
+def setup_app(app, conf):
+    app.secret_key = conf['secret_key']
+    app.config['conf'] = conf
+    app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    app.config['DEFAULT_RENDERERS'] = RENDERERS
+
+    return app
 
 
 def run_from_webserver(environ, start_response):
@@ -71,6 +81,7 @@ def run_from_webserver(environ, start_response):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
     app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.INFO)
@@ -103,6 +114,7 @@ def run_debug_from(config_path, verbose=False):
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
     app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
+    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')
