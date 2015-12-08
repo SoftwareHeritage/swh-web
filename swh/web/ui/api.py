@@ -11,6 +11,17 @@ from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.main import app
 
 
+@app.route('/browse/directory/')
+def api_browse_directory_endpoint():
+    """Describe the /browse/directory endpoints available.
+
+    Sample:
+        GET /browse/directory/8d7dc91d18546a91564606c3e3695a5ab568d179/
+
+    """
+    return utils.filter_endpoints(app.url_map, '/browse/directory/')
+
+
 @app.route('/browse/')
 def api_browse_endpoints():
     """List the current api endpoints starting with /api or /api/.
