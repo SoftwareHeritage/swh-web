@@ -30,13 +30,13 @@ def homepage():
     return render_template('home.html')
 
 
-@app.route('/about')
+@app.route('/about/')
 @set_renderers(HTMLRenderer)
 def about():
     return render_template('about.html')
 
 
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/search/', methods=['GET', 'POST'])
 @set_renderers(HTMLRenderer)
 def search():
     """Search for hashes in swh-storage.
@@ -113,7 +113,7 @@ The file's path referenced was '%s'.""" % (q,
                                            path)
 
 
-@app.route('/browse/content/<string:q>')
+@app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
 def content_with_origin(q):
     """Show content information.
@@ -146,7 +146,7 @@ def content_with_origin(q):
     return render_template('content.html', **env)
 
 
-@app.route('/browse/content/<string:q>/raw')
+@app.route('/browse/content/<string:q>/raw/')
 @set_renderers(HTMLRenderer)
 def show_content(q):
     """Given a hash and a checksum, display the content's raw data.
@@ -181,7 +181,7 @@ def show_content(q):
     return render_template('display_content.html', **env)
 
 
-@app.route('/browse/directory/<string:sha1_git>')
+@app.route('/browse/directory/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
 def browse_directory(sha1_git):
     """Show directory information.

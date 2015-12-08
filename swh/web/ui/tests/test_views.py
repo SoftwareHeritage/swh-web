@@ -16,7 +16,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @istest
     def info(self):
         # when
-        rv = self.client.get('/about')
+        rv = self.client.get('/about/')
 
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('about.html')
@@ -25,7 +25,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @istest
     def search_default(self):
         # when
-        rv = self.client.get('/search')
+        rv = self.client.get('/search/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), '')
@@ -44,7 +44,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         }
 
         # when
-        rv = self.client.get('/search?q=sha1:123')
+        rv = self.client.get('/search/?q=sha1:123')
 
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('upload_and_search.html')
@@ -64,7 +64,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         }
 
         # when
-        rv = self.client.get('/search?q=sha1:456')
+        rv = self.client.get('/search/?q=sha1:456')
 
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('upload_and_search.html')
@@ -83,7 +83,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         )
 
         # when
-        rv = self.client.get('/search?q=sha1:invalid-hash')
+        rv = self.client.get('/search/?q=sha1:invalid-hash')
 
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('upload_and_search.html')
@@ -107,7 +107,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         # when
         # the mock mock_request completes the post request
-        rv = self.client.post('/search')
+        rv = self.client.post('/search/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -135,7 +135,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         # when
         # the mock mock_request completes the post request
-        rv = self.client.post('/search')
+        rv = self.client.post('/search/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -161,7 +161,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         # when
         # the mock mock_request completes the post request
-        rv = self.client.post('/search')
+        rv = self.client.post('/search/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -181,7 +181,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_content_raw.return_value = stub_content_raw
 
         # when
-        rv = self.client.get('/browse/content/sha1:sha1-hash/raw')
+        rv = self.client.get('/browse/content/sha1:sha1-hash/raw/')
 
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('display_content.html')
@@ -200,7 +200,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_content_raw.return_value = None
 
         # when
-        rv = self.client.get('/browse/content/sha1:sha1-unknown/raw')
+        rv = self.client.get('/browse/content/sha1:sha1-unknown/raw/')
 
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('display_content.html')
@@ -218,7 +218,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             'Invalid hash')
 
         # when
-        rv = self.client.get('/browse/content/sha2:sha1-invalid/raw')
+        rv = self.client.get('/browse/content/sha2:sha1-invalid/raw/')
 
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('display_content.html')
@@ -236,7 +236,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_directory.side_effect = BadInputExc('Invalid hash')
 
         # when
-        rv = self.client.get('/browse/directory/sha2-invalid')
+        rv = self.client.get('/browse/directory/sha2-invalid/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -255,7 +255,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_directory.return_value = None
 
         # when
-        rv = self.client.get('/browse/directory/some-sha1')
+        rv = self.client.get('/browse/directory/some-sha1/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -294,7 +294,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_utils.prepare_directory_listing.return_value = stub_directory_map
 
         # when
-        rv = self.client.get('/browse/directory/some-sha1')
+        rv = self.client.get('/browse/directory/some-sha1/')
 
         # then
         print(self.templates)
@@ -317,7 +317,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_hash.return_value = {'found': False}
 
         # when
-        rv = self.client.get('/browse/content/sha256:some-sha256')
+        rv = self.client.get('/browse/content/sha256:some-sha256/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -336,7 +336,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_hash.side_effect = BadInputExc('Invalid hash')
 
         # when
-        rv = self.client.get('/browse/content/sha256:some-sha256')
+        rv = self.client.get('/browse/content/sha256:some-sha256/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -362,7 +362,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         }
 
         # when
-        rv = self.client.get('/browse/content/sha256:some-sha256')
+        rv = self.client.get('/browse/content/sha256:some-sha256/')
 
         # then
         self.assertEquals(rv.status_code, 200)
