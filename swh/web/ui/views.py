@@ -113,7 +113,7 @@ The file's path referenced was '%s'.""" % (q,
                                            path)
 
 
-@app.route('/browse/content/<string:q>/')
+# @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
 def content_with_origin(q):
     """Show content information.
