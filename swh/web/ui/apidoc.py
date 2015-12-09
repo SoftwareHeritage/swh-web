@@ -13,6 +13,9 @@ from swh.web.ui.main import app
 def api_doc_browse_directory_endpoint():
     """List endpoints mounted at /browse/directory/.
 
+    Sample:
+        GET /browse/directory/3ece177bd38aaa55dd92ece88cd57a9f083b7660/
+
     """
     return utils.filter_endpoints(main.rules(), '/browse/directory/')
 
