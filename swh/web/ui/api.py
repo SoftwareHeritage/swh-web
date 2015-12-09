@@ -14,10 +14,7 @@ from swh.web.ui.main import app
 
 @app.route('/browse/directory/')
 def api_browse_directory_endpoint():
-    """Describe the /browse/directory endpoints available.
-
-    Sample:
-        GET /browse/directory/8d7dc91d18546a91564606c3e3695a5ab568d179/
+    """List endpoints mounted at /browse/directory/.
 
     """
     return utils.filter_endpoints(main.rules(), '/browse/directory/')
@@ -25,10 +22,7 @@ def api_browse_directory_endpoint():
 
 @app.route('/browse/')
 def api_browse_endpoints():
-    """List the current api endpoints starting with /api or /api/.
-
-    Returns:
-        List of endpoints at /api
+    """List endpoints mounted at /browse/.
 
     """
     return utils.filter_endpoints(main.rules(), '/browse')
@@ -36,10 +30,7 @@ def api_browse_endpoints():
 
 @app.route('/api/')
 def api_main_endpoints():
-    """List the current api endpoints starting with /api or /api/.
-
-    Returns:
-        List of endpoints at /api
+    """List endpoints mounted at /api/.
 
     """
     return utils.filter_endpoints(main.rules(), '/api')
@@ -47,10 +38,15 @@ def api_main_endpoints():
 
 @app.route('/api/1/')
 def api_main_v1_endpoints():
-    """List the current api v1 endpoints starting with /api/1 or /api/1/.
+    """List endpoints mounted at /api/1/.
 
-    Returns:
-        List of endpoints at /api/1
+    """
+    return utils.filter_endpoints(main.rules(), '/api/1')
+
+
+@app.route('/api/1/stat/')
+def api_stat_main_v1_endpoints():
+    """List endpoints mounted at /api/1/stat/.
 
     """
     return utils.filter_endpoints(main.rules(), '/api/1')
