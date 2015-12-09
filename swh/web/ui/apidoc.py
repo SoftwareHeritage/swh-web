@@ -4,49 +4,46 @@
 # See top-level LICENSE file for more information
 
 
-from swh.web.ui import utils
-from swh.web.ui import main
+import os
+from swh.web.ui import utils, main
 from swh.web.ui.main import app
 
 
-@app.route('/browse/directory/')
-def api_doc_browse_directory_endpoint():
-    """List endpoints mounted at /browse/directory/.
+def _create_url_doc_endpoints(rules):
+    def split_path(path, acc):
+        rpath = os.path.dirname(path)
+        if rpath == '/':
+            yield from acc
+        else:
+            acc.append(rpath+'/')
+            yield from split_path(rpath, acc)
 
-    Sample:
-        GET /browse/directory/3ece177bd38aaa55dd92ece88cd57a9f083b7660/
-
-    """
-    return utils.filter_endpoints(main.rules(), '/browse/directory/')
-
-
-@app.route('/browse/')
-def api_doc_browse_endpoints():
-    """List endpoints mounted at /browse/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/browse/')
-
-
-@app.route('/api/')
-def api_doc_main_endpoints():
-    """List endpoints mounted at /api/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/api/')
+    url_doc_endpoints = set()
+    for rule in rules:
+        url_rule = rule['rule']
+        url_doc_endpoints.add(url_rule)
+        if '<' in url_rule or '>' in url_rule:
+            continue
+        acc = []
+        for rpath in split_path(url_rule, acc):
+            if rpath in url_doc_endpoints:
+                continue
+            yield rpath
+            url_doc_endpoints.add(rpath)
 
 
-@app.route('/api/1/')
-def api_doc_main_v1_endpoints():
-    """List endpoints mounted at /api/1/.
+def install_browsable_api_endpoints():
+    """Install browsable endpoints.
 
     """
-    return utils.filter_endpoints(main.rules(), '/api/1/')
+    url_doc_endpoints = _create_url_doc_endpoints(main.rules())
+    for url_doc in url_doc_endpoints:
+        endpoint_name = 'doc_api_' + url_doc.strip('/').replace('/', '_')
 
-
-@app.route('/api/1/stat/')
-def api_doc_stat_main_v1_endpoints():
-    """List endpoints mounted at /api/1/stat/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/api/1/stat/')
+        def view_func(url_doc=url_doc):
+            return utils.filter_endpoints(main.rules(),
+                                          url_doc)
+        app.add_url_rule(rule=url_doc,
+                         endpoint=endpoint_name,
+                         view_func=view_func,
+                         methods=['GET'])
