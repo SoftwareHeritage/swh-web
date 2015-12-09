@@ -25,7 +25,7 @@ def api_doc_browse_endpoints():
     """List endpoints mounted at /browse/.
 
     """
-    return utils.filter_endpoints(main.rules(), '/browse')
+    return utils.filter_endpoints(main.rules(), '/browse/')
 
 
 @app.route('/api/')
@@ -33,7 +33,7 @@ def api_doc_main_endpoints():
     """List endpoints mounted at /api/.
 
     """
-    return utils.filter_endpoints(main.rules(), '/api')
+    return utils.filter_endpoints(main.rules(), '/api/')
 
 
 @app.route('/api/1/')
@@ -41,7 +41,7 @@ def api_doc_main_v1_endpoints():
     """List endpoints mounted at /api/1/.
 
     """
-    return utils.filter_endpoints(main.rules(), '/api/1')
+    return utils.filter_endpoints(main.rules(), '/api/1/')
 
 
 @app.route('/api/1/stat/')
@@ -49,4 +49,4 @@ def api_doc_stat_main_v1_endpoints():
     """List endpoints mounted at /api/1/stat/.
 
     """
-    return utils.filter_endpoints(main.rules(), '/api/1')
+    return utils.filter_endpoints(main.rules(), '/api/1/stat/')
