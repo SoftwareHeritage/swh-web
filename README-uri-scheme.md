@@ -54,7 +54,7 @@ want to see:
   Links to parent commits maintains a reference to <SHA1_GIT>, using the
   /history/ URL scheme (see below).
 
-* /revision/<SHA1_GIT>/history/<SHA1_GIT_ROOT>/
+* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/
 
   Show information about revision SHA1_GIT, limited to the sub-graph rooted at
   <SHA1_GIT_ROOT>. The obtained page show both parent and child commits of
@@ -69,7 +69,7 @@ want to see:
   and might be simplified redirecting to it.
 
 * /revision/<SHA1_GIT>/directory/[<PATH>]
-* /revision/<SHA1_GIT>/history/<SHA1_GIT_ROOT>/directory/[<PATH>]
+* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/directory/[<PATH>]
 
   Starting from the revision identified as in the previous URLs, navigate the
   directory associated to that revision.
