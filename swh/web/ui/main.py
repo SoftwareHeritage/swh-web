@@ -9,6 +9,7 @@ import os
 from flask.ext.api import FlaskAPI
 from swh.core import config
 
+from swh.web.ui import utils
 from swh.web.ui.renderers import RENDERERS
 
 
@@ -50,7 +51,7 @@ def read_config(config_file):
 def load_controllers():
     """Load the controllers for the application"""
     from swh.web.ui import api, errorhandler, views, apidoc  # flake8: noqa
-    api.install_browsable_api_endpoints()
+    install_browsable_api_endpoints()
 
 
 def rules():
@@ -66,6 +67,47 @@ def rules():
         yield {'rule': rule.rule,
                'methods': rule.methods,
                'endpoint': rule.endpoint}
+
+def _create_url_doc_endpoints(rules):
+    def split_path(path, acc):
+        rpath = os.path.dirname(path)
+        if rpath == '/':
+            yield from acc
+        else:
+            acc.append(rpath+'/')
+            yield from split_path(rpath, acc)
+
+    url_doc_endpoints = set()
+    for rule in rules:
+        url_rule = rule['rule']
+        url_doc_endpoints.add(url_rule)
+        if '<' in rule or '>' in url_rule:
+            continue
+        acc = []
+        for rpath in split_path(url_rule, acc):
+            if rpath in url_doc_endpoints:
+                continue
+            yield rpath
+            url_doc_endpoints.add(rpath)
+
+
+def install_browsable_api_endpoints():
+    """Install browsable endpoints.
+
+    """
+    url_doc_endpoints = _create_url_doc_endpoints(rules())
+    # url_doc_endpoints = ['/api/1/stat/', '/api/', '/api/1/']
+    for url_doc in url_doc_endpoints:
+        endpoint_name = 'doc_api_' + url_doc.strip('/').replace('/', '_')
+        view_func = lambda : utils.filter_endpoints(rules(), url_doc)
+#        print(url_doc, endpoint_name, view_func)
+        app.add_url_rule(rule=url_doc,
+                         endpoint=endpoint_name,
+                         view_func=view_func,
+                         methods=['GET'])
+
+#    print(app.url_map._rules)
+
 
 def storage():
     """Return the current application's storage.
