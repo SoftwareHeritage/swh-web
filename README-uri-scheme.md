@@ -44,6 +44,48 @@ want to see:
   directory might be mounted in multiple places, which might vary across
   commits)
 
+
+### Context: a specific revision (AKA commit)
+
+* /revision/<SHA1_GIT>/
+
+  Show information about a given revision, pointing to parent commits only
+  (i.e., no links/info about child commits as they cannot be limit a priori).
+  Links to parent commits maintains a reference to <SHA1_GIT>, using the
+  /history/ URL scheme (see below).
+
+* /revision/<SHA1_GIT>/history/<SHA1_GIT_ROOT>/
+
+  Show information about revision SHA1_GIT, limited to the sub-graph rooted at
+  <SHA1_GIT_ROOT>. The obtained page show both parent and child commits of
+  <SHA1_GIT>, but exclude all commits that are *not* transitively reacheable
+  (going back in time) from <SHA1_GIT_ROOT>.
+
+  Links to all commits SHA1_GIT' reachable from SHA1_GIT are of the form
+  /revision/<SHA1_GIT'>/history/<SHA1_GIT_ROOT>/, where SHA1_GIT_ROOT is the
+  same as before.  In the degenerate case of browsing back to the commit root,
+  we might end up on the URL /revision/<SHA1_GIT_1>/history/<SHA1_GIT_2>/ where
+  SHA1_GIT_1 == SHA1_GIT_2. That URL is equivalent to /revision/<SHA1_GIT_1>/
+  and might be simplified redirecting to it.
+
+* /revision/<SHA1_GIT>/directory/[<PATH>]
+* /revision/<SHA1_GIT>/history/<SHA1_GIT_ROOT>/directory/[<PATH>]
+
+  Starting from the revision identified as in the previous URLs, navigate the
+  directory associated to that revision.
+
+  When <PATH> is absent, show the content of the root directory for the given
+  revision. When <PATH> is present, treat it as a local path starting at that
+  root directory, resolve it, and show the content of the obtained directory.
+
+  Links to *sub*-directory/files append new parts to <PATH>. Links to parent
+  directories remove trailing parts of <PATH>. Note that this latter operation
+  is well-defined, given that we are looking at a specific revision and
+  navigation starts at the root directory.
+
+
+### Context: a specific point in spacetime
+
 TODO: TO BE CONTINUED
 
 
