@@ -7,13 +7,15 @@ User URLs
 
 ### Context-independent browsing
 
-Context-independent URLs provide information about SWH objects (e.g., commits,
-directories, blobs, people) , independently of the contexts where they have
-been found found (e.g., specific repositories, branches, revisions).
+Context-independent URLs provide information about SWH objects (e.g.,
+revisions, directories, contents, person, ...), independently of the
+contexts where they have been found (e.g., specific repositories,
+branches, commits, ...).
 
-The following endpoints are the same of the API case (see below), and just
-render the corresponding information for user consumption. Where hyperlinks are
-created, they always point to other, context-independent user URLs:
+The following endpoints are the same of the API case (see below), and
+just render the corresponding information for user consumption. Where
+hyperlinks are created, they always point to other context-independent
+user URLs:
 
 * /content/[<HASH_ALGO>:]<HASH>
 * /content/[<HASH_ALGO>:]<HASH>/raw
@@ -39,34 +41,36 @@ want to see:
 - the commits that descend (i.e., are based on and hence more recent) from a
   given commit but only in a given repository, ignoring "forks" elsewhere
 
-- the parent directory of a given one, limited to a specific commit and
-  starting root directory (note indeed that in the general case a given
-  directory might be mounted in multiple places, which might vary across
-  commits)
+- the parent directory of a given one, limited to a specific revision
+  and starting root directory (note indeed that in the general case a
+  given directory might be mounted in multiple places, which might
+  vary across revisions)
 
 
 ### Context: a specific revision (AKA commit)
 
 * /revision/<SHA1_GIT>/
 
-  Show information about a given revision, pointing to parent commits only
-  (i.e., no links/info about child commits as they cannot be limit a priori).
-  Links to parent commits maintains a reference to <SHA1_GIT>, using the
-  /history/ URL scheme (see below).
+  Show information about a given revision, pointing to parent
+  revisions only (i.e., no links/info about child revisions as they
+  cannot be limited a priori).  Links to parent revisions maintains a
+  reference to <SHA1_GIT>, using the /history/ URL scheme (see below).
 
 * /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/
 
-  Show information about revision SHA1_GIT, limited to the sub-graph rooted at
-  <SHA1_GIT_ROOT>. The obtained page show both parent and child commits of
-  <SHA1_GIT>, but exclude all commits that are *not* transitively reacheable
-  (going back in time) from <SHA1_GIT_ROOT>.
+  Show information about revision SHA1_GIT, limited to the sub-graph
+  rooted at <SHA1_GIT_ROOT>. The obtained page show both parent and
+  child revisions of <SHA1_GIT>, but exclude all revisions that are
+  *not* transitively reachable (going back in time) from
+  <SHA1_GIT_ROOT>.
 
-  Links to all commits SHA1_GIT' reachable from SHA1_GIT are of the form
-  /revision/<SHA1_GIT'>/history/<SHA1_GIT_ROOT>/, where SHA1_GIT_ROOT is the
-  same as before.  In the degenerate case of browsing back to the commit root,
-  we might end up on the URL /revision/<SHA1_GIT_1>/history/<SHA1_GIT_2>/ where
-  SHA1_GIT_1 == SHA1_GIT_2. That URL is equivalent to /revision/<SHA1_GIT_1>/
-  and might be simplified redirecting to it.
+  Links to all revisions SHA1_GIT' reachable from SHA1_GIT are of the
+  form /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT'>/, where
+  SHA1_GIT_ROOT is the same as before.  In the degenerate case of
+  browsing back to the revision root, we might end up on the URL
+  /revision/<SHA1_GIT_1>/history/<SHA1_GIT_2>/ where SHA1_GIT_1 ==
+  SHA1_GIT_2. That URL is equivalent to /revision/<SHA1_GIT_1>/ and
+  might be simplified redirecting to it.
 
 * /revision/<SHA1_GIT>/directory/[<PATH>]
 * /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/directory/[<PATH>]
@@ -411,32 +415,6 @@ Sample:
   is the sha1_git ID of the directory pointed by path or
   /content/sha1_git:<SHA1_GIT> (for content)
 
-* /directory/path/to/file-or-dir?timestamp=<TIMESTAMP>&origin=<ORIGIN>&branch=<BRANCH>
-
-  TODO: remove this?
-
-  - Same as /directory/<SHA1_GIT> but looking up sha1 git using origin
-    and branch at a given timestamp for a specific path
-    /path/to/file-or-dir
-
-
-* /revision/<SHA1_GIT>?timestamp=<TIMESTAMP>&origin=<ORIGIN>
-
-  TODO: remove this?
-
-  - Same as /revision/<SHA1_GIT> but looking up sha1 git using origin
-    at a given timestamp.
-
-* /revision/?timestamp=<TIMESTAMP>&origin=<ORIGIN>
-
-  TODO: remove this?
-
-Show all branches of origin at a given timestamp.
-
--* /revision/<TIMESTAMP>/<ORIGIN>|
-- TODO: remove this?
--
--  - Show all branches of origin at a given timestamp
 
 ### Global behavior
 
