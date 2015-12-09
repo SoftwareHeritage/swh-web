@@ -6,50 +6,9 @@
 from flask import request, url_for, Response
 
 
-from swh.web.ui import service, utils
+from swh.web.ui import service
 from swh.web.ui.exc import BadInputExc, NotFoundExc
-from swh.web.ui import main
 from swh.web.ui.main import app
-
-
-@app.route('/browse/directory/')
-def api_browse_directory_endpoint():
-    """List endpoints mounted at /browse/directory/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/browse/directory/')
-
-
-@app.route('/browse/')
-def api_browse_endpoints():
-    """List endpoints mounted at /browse/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/browse')
-
-
-@app.route('/api/')
-def api_main_endpoints():
-    """List endpoints mounted at /api/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/api')
-
-
-@app.route('/api/1/')
-def api_main_v1_endpoints():
-    """List endpoints mounted at /api/1/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/api/1')
-
-
-@app.route('/api/1/stat/')
-def api_stat_main_v1_endpoints():
-    """List endpoints mounted at /api/1/stat/.
-
-    """
-    return utils.filter_endpoints(main.rules(), '/api/1')
 
 
 @app.route('/api/1/stat/counters/')
