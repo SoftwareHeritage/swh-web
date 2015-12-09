@@ -1,8 +1,54 @@
 URI scheme
 ==========
 
-API
----
+
+User URLs
+---------
+
+### Context-independent browsing
+
+Context-independent URLs provide information about SWH objects (e.g., commits,
+directories, blobs, people) , independently of the contexts where they have
+been found found (e.g., specific repositories, branches, revisions).
+
+The following endpoints are the same of the API case (see below), and just
+render the corresponding information for user consumption. Where hyperlinks are
+created, they always point to other, context-independent user URLs:
+
+* /content/[<HASH_ALGO>:]<HASH>
+* /content/[<HASH_ALGO>:]<HASH>/raw
+* /directory/<SHA1_GIT>
+* /organization/<ORGANIZATION_ID>
+* /origin/<ORIGIN_ID>
+* /person/<PERSON_ID>
+* /project/<PROJECT_ID>
+* /release/<SHA1_GIT>
+* /revision/<SHA1_GIT>
+* /revision/<SHA1_GIT>/log
+
+Currently, the above endpoints are mounted below the top-level /browse/
+namespace.
+
+
+### Context-dependent browsing
+
+Context-dependent URLs provide information about SWH objects, limited to
+specific contexts where the objects have been found. For example, users might
+want to see:
+
+- the commits that descend (i.e., are based on and hence more recent) from a
+  given commit but only in a given repository, ignoring "forks" elsewhere
+
+- the parent directory of a given one, limited to a specific commit and
+  starting root directory (note indeed that in the general case a given
+  directory might be mounted in multiple places, which might vary across
+  commits)
+
+TODO: TO BE CONTINUED
+
+
+API URLs
+--------
 
 ### Endpoints
 
@@ -173,6 +219,9 @@ Sample:
 
 * /browse/<SHA:HASH>
 
+  TODO: rename this to something more explicit about the fact we want more
+  information about some content
+
 Return content information up to one of its origin if the content is
 found.
 
@@ -186,6 +235,8 @@ found.
     }
 
 * /uploadnsearch/
+
+  TODO: remove this?
 
 Post a file's content to api.
 Api computes the sha1 hash and checks in the storage if such sha1 exists.
@@ -265,6 +316,8 @@ Sample:
 
 * /directory/path/to/file-or-dir?timestamp=<TIMESTAMP>&origin=<ORIGIN>&branch=<BRANCH>
 
+  TODO: remove this?
+
   - Same as /directory/<SHA1_GIT> but looking up sha1 git using origin
     and branch at a given timestamp for a specific path
     /path/to/file-or-dir
@@ -272,14 +325,19 @@ Sample:
 
 * /revision/<SHA1_GIT>?timestamp=<TIMESTAMP>&origin=<ORIGIN>
 
+  TODO: remove this?
+
   - Same as /revision/<SHA1_GIT> but looking up sha1 git using origin
     at a given timestamp.
 
 * /revision/?timestamp=<TIMESTAMP>&origin=<ORIGIN>
 
+  TODO: remove this?
+
 Show all branches of origin at a given timestamp.
 
 -* /revision/<TIMESTAMP>/<ORIGIN>|
+- TODO: remove this?
 -
 -  - Show all branches of origin at a given timestamp
 
