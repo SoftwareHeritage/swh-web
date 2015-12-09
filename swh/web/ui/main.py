@@ -7,7 +7,6 @@ import logging
 import os
 
 from flask.ext.api import FlaskAPI
-
 from swh.core import config
 
 from swh.web.ui.renderers import RENDERERS
@@ -51,6 +50,7 @@ def read_config(config_file):
 def load_controllers():
     """Load the controllers for the application"""
     from swh.web.ui import api, errorhandler, views, apidoc  # flake8: noqa
+    api.install_browsable_api_endpoints()
 
 
 def rules():

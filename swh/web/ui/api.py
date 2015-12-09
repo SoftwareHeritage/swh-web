@@ -11,6 +11,16 @@ from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.main import app
 
 
+def install_browsable_api_endpoints():
+    for doc_url_rule in ['/browse/', '/api/', '/api/1/']:
+        endpoint_name = doc_url_rule.strip('/').replace('/', '_')
+        app.add_url_rule(doc_url_rule,
+                         endpoint=endpoint_name,
+                         view_func=lambda: utils.filter_endpoints(
+                             main.rules(),
+                             doc_url_rule))
+
+
 @app.route('/api/1/stat/counters/')
 def api_stats():
     """Return statistics on SWH storage.
