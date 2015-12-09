@@ -86,7 +86,60 @@ want to see:
 
 ### Context: a specific point in spacetime
 
-TODO: TO BE CONTINUED
+Instead of having to specify a revision by SHA1_GIT, users might want to
+specify a place and a time. In SWH a "place" is an origin, with an optional
+branch name; a "time" is a timestamp at which some place has been observed by
+SWH crawlers.
+
+Wherever a revision context is expected in a path (i.e., a
+"/revision/<SHA1_GIT>/" path fragment) we can put in its stead a path fragment
+of the form /origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>/]. Such a
+fragment is resolved, internally by the SWH archive, to a SHA1_GIT as follows:
+
+- [if <TIMESTAMP> is absent] look for the most recent crawl of origin <ORIG_ID>
+- [if <TIMESTAMP> is given] look for the most recent crawl of origin <ORIG_ID>
+  whose timestamp is <= <TS>
+- [if <BRANCH> is given] look for the branch <BRANCH>
+- [if <BRANCH> is absent] look for branch "master"
+- return the <SHA1_GIT> pointed by the chosen branch
+
+The already mentioned URLs for revision contexts can alternatively be specified
+by users as:
+
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/history/<SHA1_GIT_ROOT>/
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/directory/[<PATH>]
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/history/<SHA1_GIT_ROOT>/directory/[<PATH>]
+
+Typing:
+
+- <ORIG_ID>s are given as integer identifiers, pointing into the origin table.
+  There will be separate mechanisms for finding origins by other means (e.g.,
+  URLs, metadata, etc). Once an origin is found, it can be used by ID into the
+  above URL schemes
+
+- <BRANCH> names are given as per the corresponding VCS (e.g., Git) and might
+  therefore contains characters that are either invalid in URLs, or that might
+  make the above URL schemes ambiguous (e.g., '/'). All those characters will
+  need to be URL-escaped. (e.g., '/' will become '%2F')
+
+- <TIMESTAMP>s are given in a format as liberal as possible, to minimize the
+  principle of least surprise. At the very minimum it should be possible to
+  enter timestamps as:
+
+  - ISO 8601 timestamps (see for instance the output of `date -I`, `date -Is`)
+  - YYYY[MM[DD[HH[MM[SS]]]]] ad-hoc format
+
+  Implementation proposal: use Python dateutil's parser and be done with it
+  https://dateutil.readthedocs.org/en/latest/parser.html . Note: that dateutil
+  does *not* allow to use classical UNIX timestamps expressed as seconds since
+  the epoch (i.e., `date +%s` output). We will need to single case them.
+
+Notes:
+
+- <SHA1_GIT_ROOT> are still specified as SHA1 and cannot be specified a
+  origin/branch/ts triples. This is to preserve some URL sanity, but it does so
+  at the price of losing some uniformity.
 
 
 API URLs
