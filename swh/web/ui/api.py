@@ -8,6 +8,7 @@ from flask import request, url_for, Response
 
 from swh.web.ui import service, utils
 from swh.web.ui.exc import BadInputExc, NotFoundExc
+from swh.web.ui import main
 from swh.web.ui.main import app
 
 
@@ -19,7 +20,7 @@ def api_browse_directory_endpoint():
         GET /browse/directory/8d7dc91d18546a91564606c3e3695a5ab568d179/
 
     """
-    return utils.filter_endpoints(app.url_map, '/browse/directory/')
+    return utils.filter_endpoints(main.rules(), '/browse/directory/')
 
 
 @app.route('/browse/')
@@ -30,7 +31,7 @@ def api_browse_endpoints():
         List of endpoints at /api
 
     """
-    return utils.filter_endpoints(app.url_map, '/browse')
+    return utils.filter_endpoints(main.rules(), '/browse')
 
 
 @app.route('/api/')
@@ -41,7 +42,7 @@ def api_main_endpoints():
         List of endpoints at /api
 
     """
-    return utils.filter_endpoints(app.url_map, '/api')
+    return utils.filter_endpoints(main.rules(), '/api')
 
 
 @app.route('/api/1/')
@@ -52,7 +53,7 @@ def api_main_v1_endpoints():
         List of endpoints at /api/1
 
     """
-    return utils.filter_endpoints(app.url_map, '/api/1')
+    return utils.filter_endpoints(main.rules(), '/api/1')
 
 
 @app.route('/api/1/stat/counters/')

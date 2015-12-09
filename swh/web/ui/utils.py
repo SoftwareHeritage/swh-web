@@ -22,14 +22,14 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
 
     """
     out = {}
-    for r in url_map._rules:
-        rule = r.rule
+    for r in url_map:
+        rule = r['rule']
         if rule == prefix_url_rule or rule in blacklist:
             continue
 
         if rule.startswith(prefix_url_rule):
-            out[r.rule] = {'methods': sorted(map(str, r.methods)),
-                           'endpoint': r.endpoint}
+            out[rule] = {'methods': sorted(map(str, r['methods'])),
+                         'endpoint': r['endpoint']}
     return out
 
 
