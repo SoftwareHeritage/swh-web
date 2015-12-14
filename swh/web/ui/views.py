@@ -113,9 +113,10 @@ The file's path referenced was '%s'.""" % (q,
                                            path)
 
 
+# @app.route('/browse/content/')
 # @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def content_with_origin(q):
+def content_with_origin(q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
     """Show content information.
 
     Args:
@@ -181,9 +182,10 @@ def show_content(q):
     return render_template('display_content.html', **env)
 
 
+@app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_directory(sha1_git):
+def browse_directory(sha1_git='828da2b80e41aa958b2c98526f4a1d2cc7d298b7'):
     """Show directory information.
 
     Args:
