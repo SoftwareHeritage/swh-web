@@ -52,11 +52,13 @@ def create_app(base_url='https://somewhere.org:4321'):
             'upload_allowed_extensions': ['txt'],
             'max_upload_size': 1024}
 
-    main.app.config['TESTING'] = True
     main.app.config.update({'conf': conf})
     main.app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
     main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
-    main.load_controllers()
+
+    if not main.app.config['TESTING']:  # HACK: install controllers only once!
+        main.app.config['TESTING'] = True
+        main.load_controllers()
 
     return main.app.test_client(), main.app.config, storage, main.app
 
