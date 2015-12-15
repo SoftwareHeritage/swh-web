@@ -31,7 +31,7 @@
         <div class="navbar-inner">
             <div class="container-fluid">
                 <span href="/">
-                    {% block branding %}<a class='brand' rel="nofollow" href='http://www.softwareheritage.org'>Software Heritage API v1</span></a>{% endblock %}
+                    {% block branding %}<a class='brand' rel="nofollow" href='{{url_for('homepage')}}'>Software Heritage API v1</span></a>{% endblock %}
                 </span>
                 <ul class="nav pull-right">
                     {% block userlinks %}

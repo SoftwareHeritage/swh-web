@@ -11,41 +11,23 @@ from nose.tools import istest
 from swh.web.ui import utils
 
 
-class Rule(object):
-    rule = ""
-    endpoint = None
-    methods = []
-
-    def __init__(self, rule, methods, endpoint):
-        self.rule = rule
-        self.endpoint = endpoint
-        self.methods = methods
-
-
-class Map(object):
-    _rules = []
-
-    def __init__(self, rules):
-        self._rules = rules
-
-
 class UtilsTestCase(unittest.TestCase):
     def setUp(self):
-        self.url_map = Map([Rule('/other/<slug>',
-                                 methods=set(['GET', 'POST', 'HEAD']),
-                                 endpoint='foo'),
-                            Rule('/some/old/url/<slug>',
-                                 methods=set(['GET', 'POST']),
-                                 endpoint='blablafn'),
-                            Rule('/other/old/url/<int:id>',
-                                 methods=set(['GET', 'HEAD']),
-                                 endpoint='bar'),
-                            Rule('/other',
-                                 methods=set([]),
-                                 endpoint=None),
-                            Rule('/other2',
-                                 methods=set([]),
-                                 endpoint=None)])
+        self.url_map = [dict(rule='/other/<slug>',
+                             methods=set(['GET', 'POST', 'HEAD']),
+                             endpoint='foo'),
+                        dict(rule='/some/old/url/<slug>',
+                             methods=set(['GET', 'POST']),
+                             endpoint='blablafn'),
+                        dict(rule='/other/old/url/<int:id>',
+                             methods=set(['GET', 'HEAD']),
+                             endpoint='bar'),
+                        dict(rule='/other',
+                             methods=set([]),
+                             endpoint=None),
+                        dict(rule='/other2',
+                             methods=set([]),
+                             endpoint=None)]
 
     @istest
     def filter_endpoints_1(self):
@@ -181,3 +163,9 @@ class UtilsTestCase(unittest.TestCase):
                           utils.fmap(lambda x: x*2, {'a': 1, 'b': 2}))
         self.assertEquals(100,
                           utils.fmap(lambda x: x*10, 10))
+
+    @istest
+    def person_to_string(self):
+        self.assertEqual(utils.person_to_string(dict(name='raboof',
+                                                     email='foo@bar')),
+                         'raboof <foo@bar>')
