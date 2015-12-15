@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Origin{% endblock %}
+{% block content %}
+
+{% if message is not none %}
+  {{ message }}
+{% endif %}
+
+{% if origin is not none %}
+<div> Details on origin {{ origin_id }}:
+    {% for key in ['type', 'lister', 'projet', 'url'] %}
+        {% if origin[key] is not none %}
+            <div class="row">
+              <div class="col-md-2">{{ key }}</div>
+              <div class="col-md-2">{{ origin[key] }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

@@ -235,3 +235,25 @@ def browse_directory(sha1_git='828da2b80e41aa958b2c98526f4a1d2cc7d298b7'):
     env['message'] = message
     env['files'] = files
     return render_template('directory.html', **env)
+
+
+@app.route('/browse/origin/')
+@app.route('/browse/origin/<int:origin_id>/')
+@set_renderers(HTMLRenderer)
+def browse_origin(origin_id=1):
+    """Browse origin with id id.
+
+    """
+    env = {'origin_id': origin_id,
+           'origin': None}
+
+    try:
+        ori = service.lookup_origin(origin_id)
+        if ori:
+            env.update({'origin': ori})
+        else:
+            env.update({'message': 'Origin %s not found!' % origin_id})
+    except BadInputExc as e:
+            env.update({'message': str(e)})
+
+    return render_template('origin.html', **env)

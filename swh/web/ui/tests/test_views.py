@@ -431,3 +431,60 @@ class ViewTestCase(test_app.SWHViewTestCase):
             'sha256:some-sha256')
         mock_service.lookup_hash_origin.assert_called_once_with(
             'sha256:some-sha256')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_origin_not_found(self, mock_service):
+        # given
+        mock_service.lookup_origin.return_value = None
+
+        # when
+        rv = self.client.get('/browse/origin/1/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('origin.html')
+        self.assertEqual(self.get_context_variable('origin_id'), 1)
+        self.assertEqual(
+            self.get_context_variable('message'),
+            'Origin 1 not found!')
+
+        mock_service.lookup_origin.assert_called_once_with(1)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_origin_found(self, mock_service):
+        # given
+        mock_origin = {'type': 'git',
+                       'lister': None,
+                       'project': None,
+                       'url': 'rsync://some/url',
+                       'id': 426}
+        mock_service.lookup_origin.return_value = mock_origin
+
+        # when
+        rv = self.client.get('/browse/origin/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('origin.html')
+        self.assertEqual(self.get_context_variable('origin_id'), 426)
+        self.assertEqual(self.get_context_variable('origin'), mock_origin)
+
+        mock_service.lookup_origin.assert_called_once_with(426)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_origin_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_origin.side_effect = BadInputExc('wrong input')
+
+        # when
+        rv = self.client.get('/browse/origin/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('origin.html')
+        self.assertEqual(self.get_context_variable('origin_id'), 426)
+
+        mock_service.lookup_origin.assert_called_once_with(426)
