@@ -488,3 +488,60 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('origin_id'), 426)
 
         mock_service.lookup_origin.assert_called_once_with(426)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_person_not_found(self, mock_service):
+        # given
+        mock_service.lookup_person.return_value = None
+
+        # when
+        rv = self.client.get('/browse/person/1/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('person.html')
+        self.assertEqual(self.get_context_variable('person_id'), 1)
+        self.assertEqual(
+            self.get_context_variable('message'),
+            'Person 1 not found!')
+
+        mock_service.lookup_person.assert_called_once_with(1)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_person_found(self, mock_service):
+        # given
+        mock_person = {'type': 'git',
+                       'lister': None,
+                       'project': None,
+                       'url': 'rsync://some/url',
+                       'id': 426}
+        mock_service.lookup_person.return_value = mock_person
+
+        # when
+        rv = self.client.get('/browse/person/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('person.html')
+        self.assertEqual(self.get_context_variable('person_id'), 426)
+        self.assertEqual(self.get_context_variable('person'), mock_person)
+
+        mock_service.lookup_person.assert_called_once_with(426)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_person_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_person.side_effect = BadInputExc('wrong input')
+
+        # when
+        rv = self.client.get('/browse/person/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('person.html')
+        self.assertEqual(self.get_context_variable('person_id'), 426)
+
+        mock_service.lookup_person.assert_called_once_with(426)

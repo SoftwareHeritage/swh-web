@@ -257,3 +257,25 @@ def browse_origin(origin_id=1):
             env.update({'message': str(e)})
 
     return render_template('origin.html', **env)
+
+
+@app.route('/browse/person/')
+@app.route('/browse/person/<int:person_id>/')
+@set_renderers(HTMLRenderer)
+def browse_person(person_id=1):
+    """Browse person with id id.
+
+    """
+    env = {'person_id': person_id,
+           'person': None}
+
+    try:
+        ori = service.lookup_person(person_id)
+        if ori:
+            env.update({'person': ori})
+        else:
+            env.update({'message': 'Person %s not found!' % person_id})
+    except BadInputExc as e:
+            env.update({'message': str(e)})
+
+    return render_template('person.html', **env)
