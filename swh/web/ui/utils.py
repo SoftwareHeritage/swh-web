@@ -22,14 +22,14 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
 
     """
     out = {}
-    for r in url_map._rules:
-        rule = r.rule
+    for r in url_map:
+        rule = r['rule']
         if rule == prefix_url_rule or rule in blacklist:
             continue
 
         if rule.startswith(prefix_url_rule):
-            out[r.rule] = {'methods': sorted(map(str, r.methods)),
-                           'endpoint': r.endpoint}
+            out[rule] = {'methods': sorted(map(str, r['methods'])),
+                         'endpoint': r['endpoint']}
     return out
 
 
@@ -89,3 +89,10 @@ def fmap(f, data):
     if isinstance(data, dict):
         return {k: f(v) for (k, v) in data.items()}
     return f(data)
+
+
+def person_to_string(person):
+    """Map a person (person, committer, tagger, etc...) to a string.
+
+    """
+    return ''.join([person['name'], ' <', person['email'], '>'])
