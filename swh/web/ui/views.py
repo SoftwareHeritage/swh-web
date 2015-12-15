@@ -80,8 +80,8 @@ def search():
 
         try:
             r = service.lookup_hash(q)
-            messages.append('Content with hash %s%sfound!' %
-                (q,' ' if r.get('found') else ' not '))
+            messages.append('Content with hash %s%sfound!' % (
+                q, ' ' if r.get('found') else ' not '))
         except BadInputExc as e:
             messages.append(str(e))
 
@@ -93,8 +93,8 @@ def search():
             sha1 = uploaded_content['sha1']
             found = uploaded_content['found']
 
-            messages.append('File %s with hash %s%sfound!' %
-                (filename, sha1,' ' if found else ' not '))
+            messages.append('File %s with hash %s%sfound!' % (
+                filename, sha1, ' ' if found else ' not '))
 
             env.update({
                 'filename': filename,

@@ -6,7 +6,7 @@
 from nose.tools import istest
 
 from swh.web.ui.tests import test_app
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from swh.web.ui.exc import BadInputExc
 
 
@@ -151,7 +151,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @patch('swh.web.ui.views.service')
     @patch('swh.web.ui.views.request')
     @istest
-    def search_post_upload_and_hash_bad_input(self, mock_request, mock_service):
+    def search_post_upload_and_hash_bad_input(self, mock_request,
+                                              mock_service):
         # given
         mock_request.data = {}
         mock_request.method = 'POST'
@@ -173,7 +174,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @patch('swh.web.ui.views.service')
     @patch('swh.web.ui.views.request')
     @istest
-    def search_post_upload_and_hash_not_found(self, mock_request, mock_service):
+    def search_post_upload_and_hash_not_found(self, mock_request,
+                                              mock_service):
         # given
         mock_request.data = {}
         mock_request.method = 'POST'
