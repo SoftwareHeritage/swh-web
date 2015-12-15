@@ -12,7 +12,11 @@
        {% if revision[key] is not none %}
             <div class="row">
               <div class="col-md-2">{{ key }}</div>
-              <div class="col-md-6">{{ revision[key] }}</div>
+              {% if key == 'message' %}
+              <div class="col-md-6"><pre>{{ revision[key] }}</pre></div>
+              {% else %}
+              <div class="col-md-6"><p>{{ revision[key] }}</pre></div>
+              {% endif %}
             </div>
         {% endif %}
     {% endfor %}
@@ -20,7 +24,7 @@
     {% if revision['directory'] is not none %}
            <div class="row">
               <div class="col-md-2">directory</div>
-              <div class="col-md-6"><a href="{{ revision['directory'] }}">{{ revision['directory'] }}</a></div>
+              <div class="col-md-6"><p><a href="{{ revision['directory'] }}">{{ revision['directory'] }}</a></p></div>
            </div>
      {% endif %}
 
