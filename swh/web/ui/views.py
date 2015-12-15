@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 
-from flask import render_template, flash, request
+from flask import render_template, flash, request, url_for
 
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
@@ -279,3 +279,46 @@ def browse_person(person_id=1):
             env.update({'message': str(e)})
 
     return render_template('person.html', **env)
+
+
+@app.route('/browse/release/')
+@app.route('/browse/release/<string:sha1_git>/')
+@set_renderers(HTMLRenderer)
+def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
+    """Browse release with sha1_git.
+
+    """
+    env = {'sha1_git': sha1_git,
+           'release': None}
+
+    try:
+        rel = service.lookup_release(sha1_git)
+        if rel:
+            author = rel.get('author')
+            if author:
+                rel['author'] = ''.join([author['name'],
+                                         ' <', author['email'], '>'])
+
+                rel['author'] = utils.person_to_string(author)
+
+            target_type = rel.get('target_type')
+            if target_type == 'revision':
+                rel['target'] = url_for('browse_revision',
+                                        sha1_git=rel['target'])
+
+            env.update({'release': rel,
+                        'keys': ['id', 'name', 'date', 'message', 'author',
+                                 'target', 'target_type']})
+        else:
+            env.update({'message': 'Release %s not found!' % sha1_git})
+    except BadInputExc as e:
+            env.update({'message': str(e)})
+
+    return render_template('release.html', **env)
+
+
+@app.route('/browse/revision/')
+@app.route('/browse/revision/<string:sha1_git>/')
+@set_renderers(HTMLRenderer)
+def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
+    pass

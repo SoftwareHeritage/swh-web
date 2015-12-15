@@ -545,3 +545,84 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('person_id'), 426)
 
         mock_service.lookup_person.assert_called_once_with(426)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_release_not_found(self, mock_service):
+        # given
+        mock_service.lookup_release.return_value = None
+
+        # when
+        rv = self.client.get('/browse/release/1/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('release.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), '1')
+        self.assertEqual(
+            self.get_context_variable('message'),
+            'Release 1 not found!')
+
+        mock_service.lookup_release.assert_called_once_with('1')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_release_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_release.side_effect = BadInputExc('wrong input')
+
+        # when
+        rv = self.client.get('/browse/release/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('release.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), '426')
+
+        mock_service.lookup_release.assert_called_once_with('426')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_release_found(self, mock_service):
+        # given
+        mock_release = {
+            "date": "Sun, 05 Jul 2015 18:02:06 GMT",
+            "id": "1e951912027ea6873da6985b91e50c47f645ae1a",
+            "target": "d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754",
+            "synthetic": False,
+            "target_type": "revision",
+            "author": {
+                "email": "torvalds@linux-foundation.org",
+                "name": "Linus Torvalds"
+            },
+            "message": "Linux 4.2-rc1\n",
+            "name": "v4.2-rc1"
+        }
+        mock_service.lookup_release.return_value = mock_release
+
+        expected_release = {
+            "date": "Sun, 05 Jul 2015 18:02:06 GMT",
+            "id": "1e951912027ea6873da6985b91e50c47f645ae1a",
+            "target": '/browse/revision/d770e558e21961ad6cfdf0ff7df0'
+                      'eb5d7d4f0754/',
+            "synthetic": False,
+            "target_type": "revision",
+            "author": "Linus Torvalds <torvalds@linux-foundation.org>",
+            "message": "Linux 4.2-rc1\n",
+            "name": "v4.2-rc1"
+        }
+
+        # when
+        rv = self.client.get('/browse/release/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('release.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), '426')
+        self.assertEqual(self.get_context_variable('release'),
+                         expected_release)
+        self.assertEqual(self.get_context_variable('keys'), [
+            'id', 'name', 'date', 'message', 'author', 'target',
+            'target_type'])
+
+        mock_service.lookup_release.assert_called_once_with('426')

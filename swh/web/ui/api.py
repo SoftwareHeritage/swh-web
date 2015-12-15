@@ -104,7 +104,7 @@ def api_person(person_id=1):
 
 @app.route('/api/1/release/')
 @app.route('/api/1/release/<string:sha1_git>/')
-def api_release(sha1_git='b307094f00c3641b0c9da808d894f3a325371414'):
+def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
     """Return information about release with id sha1_git.
 
     Args:
