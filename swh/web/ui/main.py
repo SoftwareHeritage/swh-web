@@ -7,7 +7,6 @@ import logging
 import os
 
 from flask.ext.api import FlaskAPI
-
 from swh.core import config
 
 from swh.web.ui.renderers import RENDERERS
@@ -50,7 +49,23 @@ def read_config(config_file):
 
 def load_controllers():
     """Load the controllers for the application"""
-    from swh.web.ui import api, errorhandler, views  # flake8: noqa
+    from swh.web.ui import api, errorhandler, views, apidoc  # flake8: noqa
+    apidoc.install_browsable_api_endpoints()
+
+
+def rules():
+    """Returns rules from the application in dictionary form.
+
+    Beware, must be called after swh.web.ui.main.load_controllers funcall.
+
+    Returns:
+        Generator of application's rules.
+
+    """
+    for rule in app.url_map._rules:
+        yield {'rule': rule.rule,
+               'methods': rule.methods,
+               'endpoint': rule.endpoint}
 
 
 def storage():

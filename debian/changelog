@@ -1,8 +1,15 @@
-swh-web (0.0.12-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.13-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.13
+  * Open /browse/person/ view
+  * Open /browse/origin/ view
+  * Open /browse/release/ view
+  * Open /browse/revision/ view
+  * Deactivate temporarily /browse/content/
+  * Add default sha1
+  * Automatic doc endpoint on base path
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 07 Dec 2015 16:44:43 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 15 Dec 2015 17:01:27 +0100
 
 swh-web (0.0.12-1~swh1) unstable-swh; urgency=medium
 

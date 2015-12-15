@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}Release{% endblock %}
+{% block content %}
+
+{% if message is not none %}
+  {{ message }}
+{% endif %}
+
+{% if release is not none %}
+<div>
+  {% for key in keys %}
+        {% if key == 'target' %}
+           <div class="row">
+              <div class="col-md-2">{{ key }}</div>
+              <div class="col-md-4"><a href="{{ release[key] }}">{{ release[key] }}</a></div>
+
+           </div>
+       {% elif release[key] is not none %}
+            <div class="row">
+              <div class="col-md-2">{{ key }}</div>
+              <div class="col-md-6">{{ release[key] }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

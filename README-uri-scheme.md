@@ -1,8 +1,155 @@
 URI scheme
 ==========
 
-API
----
+
+User URLs
+---------
+
+### Context-independent browsing
+
+Context-independent URLs provide information about SWH objects (e.g.,
+revisions, directories, contents, person, ...), independently of the
+contexts where they have been found (e.g., specific repositories,
+branches, commits, ...).
+
+The following endpoints are the same of the API case (see below), and
+just render the corresponding information for user consumption. Where
+hyperlinks are created, they always point to other context-independent
+user URLs:
+
+* /content/[<HASH_ALGO>:]<HASH>
+* /content/[<HASH_ALGO>:]<HASH>/raw
+* /directory/<SHA1_GIT>
+* /organization/<ORGANIZATION_ID>
+* /origin/<ORIGIN_ID>
+* /person/<PERSON_ID>
+* /project/<PROJECT_ID>
+* /release/<SHA1_GIT>
+* /revision/<SHA1_GIT>
+* /revision/<SHA1_GIT>/log
+
+Currently, the above endpoints are mounted below the top-level /browse/
+namespace.
+
+
+### Context-dependent browsing
+
+Context-dependent URLs provide information about SWH objects, limited to
+specific contexts where the objects have been found. For example, users might
+want to see:
+
+- the commits that descend (i.e., are based on and hence more recent) from a
+  given commit but only in a given repository, ignoring "forks" elsewhere
+
+- the parent directory of a given one, limited to a specific revision
+  and starting root directory (note indeed that in the general case a
+  given directory might be mounted in multiple places, which might
+  vary across revisions)
+
+
+### Context: a specific revision (AKA commit)
+
+* /revision/<SHA1_GIT>/
+
+  Show information about a given revision, pointing to parent
+  revisions only (i.e., no links/info about child revisions as they
+  cannot be limited a priori).  Links to parent revisions maintains a
+  reference to <SHA1_GIT>, using the /history/ URL scheme (see below).
+
+* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/
+
+  Show information about revision SHA1_GIT, limited to the sub-graph
+  rooted at <SHA1_GIT_ROOT>. The obtained page show both parent and
+  child revisions of <SHA1_GIT>, but exclude all revisions that are
+  *not* transitively reachable (going back in time) from
+  <SHA1_GIT_ROOT>.
+
+  Links to all revisions SHA1_GIT' reachable from SHA1_GIT are of the
+  form /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT'>/, where
+  SHA1_GIT_ROOT is the same as before.  In the degenerate case of
+  browsing back to the revision root, we might end up on the URL
+  /revision/<SHA1_GIT_1>/history/<SHA1_GIT_2>/ where SHA1_GIT_1 ==
+  SHA1_GIT_2. That URL is equivalent to /revision/<SHA1_GIT_1>/ and
+  might be simplified redirecting to it.
+
+* /revision/<SHA1_GIT>/directory/[<PATH>]
+* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/directory/[<PATH>]
+
+  Starting from the revision identified as in the previous URLs, navigate the
+  directory associated to that revision.
+
+  When <PATH> is absent, show the content of the root directory for the given
+  revision. When <PATH> is present, treat it as a local path starting at that
+  root directory, resolve it, and show the content of the obtained directory.
+
+  Links to *sub*-directory/files append new parts to <PATH>. Links to parent
+  directories remove trailing parts of <PATH>. Note that this latter operation
+  is well-defined, given that we are looking at a specific revision and
+  navigation starts at the root directory.
+
+
+### Context: a specific point in spacetime
+
+Instead of having to specify a (root) revision by SHA1_GIT, users might want to
+specify a place and a time. In SWH a "place" is an origin, with an optional
+branch name; a "time" is a timestamp at which some place has been observed by
+SWH crawlers.
+
+Wherever a revision context is expected in a path (i.e., a
+"/revision/<SHA1_GIT>/" path fragment) we can put in its stead a path fragment
+of the form /origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>/]. Such a
+fragment is resolved, internally by the SWH archive, to a SHA1_GIT as follows:
+
+- [if <TIMESTAMP> is absent] look for the most recent crawl of origin <ORIG_ID>
+- [if <TIMESTAMP> is given] look for the most recent crawl of origin <ORIG_ID>
+  whose timestamp is <= <TS>
+- [if <BRANCH> is given] look for the branch <BRANCH>
+- [if <BRANCH> is absent] look for branch "master"
+- return the <SHA1_GIT> pointed by the chosen branch
+
+The already mentioned URLs for revision contexts can therefore be alternatively
+specified by users as:
+
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/history/<SHA1>/
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/directory/[<PATH>]
+* /revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/history/<SHA1>/directory/[<PATH>]
+
+Typing:
+
+- <ORIG_ID>s are given as integer identifiers, pointing into the origin table.
+  There will be separate mechanisms for finding origins by other means (e.g.,
+  URLs, metadata, etc). Once an origin is found, it can be used by ID into the
+  above URL schemes
+
+- <BRANCH> names are given as per the corresponding VCS (e.g., Git) and might
+  therefore contains characters that are either invalid in URLs, or that might
+  make the above URL schemes ambiguous (e.g., '/'). All those characters will
+  need to be URL-escaped. (e.g., '/' will become '%2F')
+
+- <TIMESTAMP>s are given in a format as liberal as possible, to uphold the
+  principle of least surprise. At the very minimum it should be possible to
+  enter timestamps as:
+
+  - ISO 8601 timestamps (see for instance the output of `date -I`, `date -Is`)
+  - YYYY[MM[DD[HH[MM[SS]]]]] ad-hoc format
+
+  Implementation proposal: use Python dateutil's parser and be done with it
+  https://dateutil.readthedocs.org/en/latest/parser.html . Note: that dateutil
+  does *not* allow to use classical UNIX timestamps expressed as seconds since
+  the epoch (i.e., `date +%s` output). We will need to single case them.
+
+  The same escaping considerations given for <BRANCH> apply.
+
+Notes:
+
+- Differently from <SHA1_GIT_ROOT>, <SHA1_GIT>s are still specified as SHA1 and
+  cannot be specified a origin/branch/ts triples. This is to preserve some URL
+  sanity.
+
+
+API URLs
+--------
 
 ### Endpoints
 
@@ -173,6 +320,9 @@ Sample:
 
 * /browse/<SHA:HASH>
 
+  TODO: rename this to something more explicit about the fact we want more
+  information about some content
+
 Return content information up to one of its origin if the content is
 found.
 
@@ -186,6 +336,8 @@ found.
     }
 
 * /uploadnsearch/
+
+  TODO: remove this?
 
 Post a file's content to api.
 Api computes the sha1 hash and checks in the storage if such sha1 exists.
@@ -263,25 +415,6 @@ Sample:
   is the sha1_git ID of the directory pointed by path or
   /content/sha1_git:<SHA1_GIT> (for content)
 
-* /directory/path/to/file-or-dir?timestamp=<TIMESTAMP>&origin=<ORIGIN>&branch=<BRANCH>
-
-  - Same as /directory/<SHA1_GIT> but looking up sha1 git using origin
-    and branch at a given timestamp for a specific path
-    /path/to/file-or-dir
-
-
-* /revision/<SHA1_GIT>?timestamp=<TIMESTAMP>&origin=<ORIGIN>
-
-  - Same as /revision/<SHA1_GIT> but looking up sha1 git using origin
-    at a given timestamp.
-
-* /revision/?timestamp=<TIMESTAMP>&origin=<ORIGIN>
-
-Show all branches of origin at a given timestamp.
-
--* /revision/<TIMESTAMP>/<ORIGIN>|
--
--  - Show all branches of origin at a given timestamp
 
 ### Global behavior
 

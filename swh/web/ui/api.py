@@ -6,42 +6,9 @@
 from flask import request, url_for, Response
 
 
-from swh.web.ui import service, utils
+from swh.web.ui import service
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.main import app
-
-
-@app.route('/browse/')
-def api_browse_endpoints():
-    """List the current api endpoints starting with /api or /api/.
-
-    Returns:
-        List of endpoints at /api
-
-    """
-    return utils.filter_endpoints(app.url_map, '/browse')
-
-
-@app.route('/api/')
-def api_main_endpoints():
-    """List the current api endpoints starting with /api or /api/.
-
-    Returns:
-        List of endpoints at /api
-
-    """
-    return utils.filter_endpoints(app.url_map, '/api')
-
-
-@app.route('/api/1/')
-def api_main_v1_endpoints():
-    """List the current api v1 endpoints starting with /api/1 or /api/1/.
-
-    Returns:
-        List of endpoints at /api/1
-
-    """
-    return utils.filter_endpoints(app.url_map, '/api/1')
 
 
 @app.route('/api/1/stat/counters/')
@@ -55,8 +22,9 @@ def api_stats():
     return service.stat_counters()
 
 
+@app.route('/api/1/search/')
 @app.route('/api/1/search/<string:q>/')
-def api_search(q):
+def api_search(q='sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5'):
     """Search a content per hash.
 
     Args:
@@ -68,6 +36,9 @@ def api_search(q):
 
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash
+
+    Example:
+        GET /api/1/search/sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5/
 
     """
     r = service.lookup_hash(q).get('found')
@@ -84,8 +55,9 @@ def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
     return res
 
 
+@app.route('/api/1/origin/')
 @app.route('/api/1/origin/<int:origin_id>/')
-def api_origin(origin_id):
+def api_origin(origin_id=1):
     """Return information about origin with id origin_id.
 
 
@@ -98,14 +70,18 @@ def api_origin(origin_id):
     Raises:
         NotFoundExc if the origin is not found.
 
+    Example:
+        GET /api/1/origin/1/
+
     """
     return _api_lookup(
         origin_id, lookup_fn=service.lookup_origin,
         error_msg_if_not_found='Origin with id %s not found.' % origin_id)
 
 
+@app.route('/api/1/person/')
 @app.route('/api/1/person/<int:person_id>/')
-def api_person(person_id):
+def api_person(person_id=1):
     """Return information about person with identifier person_id.
 
     Args:
@@ -117,14 +93,18 @@ def api_person(person_id):
     Raises:
         NotFoundExc if the person is not found.
 
+    Example:
+        GET /api/1/person/1/
+
     """
     return _api_lookup(
         person_id, lookup_fn=service.lookup_person,
         error_msg_if_not_found='Person with id %s not found.' % person_id)
 
 
+@app.route('/api/1/release/')
 @app.route('/api/1/release/<string:sha1_git>/')
-def api_release(sha1_git):
+def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
     """Return information about release with id sha1_git.
 
     Args:
@@ -137,6 +117,9 @@ def api_release(sha1_git):
         BadInputExc in case of unknown algo_hash or bad hash
         NotFoundExc if the release is not found.
 
+    Example:
+        GET /api/1/release/b307094f00c3641b0c9da808d894f3a325371414
+
     """
     error_msg = 'Release with sha1_git %s not found.' % sha1_git
     return _api_lookup(
@@ -145,8 +128,9 @@ def api_release(sha1_git):
         error_msg_if_not_found=error_msg)
 
 
+@app.route('/api/1/revision/')
 @app.route('/api/1/revision/<string:sha1_git>/')
-def api_revision(sha1_git):
+def api_revision(sha1_git='baf18f9fc50a0b6fef50460a76c33b2ddc57486e'):
     """Return information about revision with id sha1_git.
 
     Args:
@@ -158,6 +142,9 @@ def api_revision(sha1_git):
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash
         NotFoundExc if the revision is not found.
+
+    Example:
+        GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e
 
     """
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
@@ -190,8 +177,9 @@ def api_revision_log(sha1_git):
         error_msg_if_not_found=error_msg)
 
 
+@app.route('/api/1/directory/')
 @app.route('/api/1/directory/<string:sha1_git>/')
-def api_directory(sha1_git):
+def api_directory(sha1_git='8d7dc91d18546a91564606c3e3695a5ab568d179'):
     """Return information about release with id sha1_git.
 
     Args:
@@ -201,6 +189,9 @@ def api_directory(sha1_git):
         BadInputExc in case of unknown algo_hash or bad hash
         NotFoundExc if the content is not found.
 
+    Example:
+        GET /api/1/directory/8d7dc91d18546a91564606c3e3695a5ab568d179
+
     """
     error_msg = 'Directory with sha1_git %s not found.' % sha1_git
     return _api_lookup(
@@ -209,8 +200,10 @@ def api_directory(sha1_git):
         error_msg_if_not_found=error_msg)
 
 
+@app.route('/api/1/browse/')
 @app.route('/api/1/browse/<string:q>/')
-def api_content_checksum_to_origin(q):
+def api_content_checksum_to_origin(q='sha1_git:88b9b366facda0b5ff8d8640ee9279b'
+                                   'ed346f242'):
     """Return content information up to one of its origin if the content
     is found.
 
@@ -224,6 +217,9 @@ def api_content_checksum_to_origin(q):
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash
         NotFoundExc if the content is not found.
+
+    Example:
+        GET /api/1/browse/sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242
 
     """
     found = service.lookup_hash(q)['found']
@@ -260,8 +256,10 @@ def api_content_raw(q):
     return Response(generate(content), mimetype='application/octet-stream')
 
 
+@app.route('/api/1/content/')
 @app.route('/api/1/content/<string:q>/')
-def api_content_with_details(q):
+def api_content_with_details(q='sha256:bc872dd166e4ef82b4b3dbf65f8a974c21e6aa'
+                             '16c99b2c725594a470eeed37c7'):
     """Return content information if content is found.
 
     Args:
@@ -275,6 +273,10 @@ def api_content_with_details(q):
     Raises:
         - BadInputExc in case of unknown algo_hash or bad hash
         - NotFoundExc if the content is not found.
+
+    Example:
+        GET /api/1/content/sha256:bc872dd166e4ef82b4b3dbf65f8a974c21e6aa16c99
+                                  b2c725594a470eeed37c7
 
     """
     content = service.lookup_content(q)

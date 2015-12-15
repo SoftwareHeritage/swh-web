@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Person{% endblock %}
+{% block content %}
+
+{% if message is not none %}
+  {{ message }}
+{% endif %}
+
+{% if person is not none %}
+<div> Details on person {{ person_id }}:
+    {% for key in ['name', 'email'] %}
+        {% if person[key] is not none %}
+            <div class="row">
+              <div class="col-md-2">{{ key }}</div>
+              <div class="col-md-6">{{ person[key] }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

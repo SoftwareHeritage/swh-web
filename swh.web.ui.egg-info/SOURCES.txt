@@ -24,6 +24,7 @@ swh.web.ui.egg-info/requires.txt
 swh.web.ui.egg-info/top_level.txt
 swh/web/ui/__init__.py
 swh/web/ui/api.py
+swh/web/ui/apidoc.py
 swh/web/ui/converters.py
 swh/web/ui/errorhandler.py
 swh/web/ui/exc.py
@@ -42,6 +43,9 @@ swh/web/ui/templates/directory.html
 swh/web/ui/templates/display_content.html
 swh/web/ui/templates/home.html
 swh/web/ui/templates/layout.html
+swh/web/ui/templates/origin.html
+swh/web/ui/templates/person.html
+swh/web/ui/templates/release.html
 swh/web/ui/templates/revision.html
 swh/web/ui/templates/upload_and_search.html
 swh/web/ui/tests/test_api.py
