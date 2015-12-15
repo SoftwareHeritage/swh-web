@@ -29,7 +29,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), '')
-        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('messages'), [])
         self.assertEqual(self.get_context_variable('filename'), None)
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
@@ -45,8 +45,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1:456')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content with hash sha1:456 not found!')
+        self.assertEqual(self.get_context_variable('messages'),
+                         ['Content with hash sha1:456 not found!'])
         self.assertEqual(self.get_context_variable('filename'), None)
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
@@ -64,8 +64,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1_git:789')
-        self.assertEqual(self.get_context_variable('message'),
-                         'error msg')
+        self.assertEqual(self.get_context_variable('messages'),
+                         ['error msg'])
         self.assertEqual(self.get_context_variable('filename'), None)
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
@@ -83,8 +83,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1:123')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content with hash sha1:123 found!')
+        self.assertEqual(self.get_context_variable('messages'),
+                         ['Content with hash sha1:123 found!'])
         self.assertEqual(self.get_context_variable('filename'), None)
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
@@ -102,8 +102,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1:456')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content with hash sha1:456 not found!')
+        self.assertEqual(self.get_context_variable('messages'),
+                         ['Content with hash sha1:456 not found!'])
         self.assertEqual(self.get_context_variable('filename'), None)
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
@@ -121,8 +121,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1_git:987')
-        self.assertEqual(self.get_context_variable('message'),
-                         'error msg!')
+        self.assertEqual(self.get_context_variable('messages'),
+                         ['error msg!'])
         self.assertEqual(self.get_context_variable('filename'), None)
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
@@ -140,8 +140,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1:321')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content with hash sha1:321 found!')
+        self.assertEqual(self.get_context_variable('messages'),
+                         ['Content with hash sha1:321 found!'])
         self.assertEqual(self.get_context_variable('filename'), None)
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
@@ -164,8 +164,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         # then
         self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('message'),
-                         'error bad input')
+        self.assertEqual(self.get_context_variable('messages'),
+                         ['error bad input'])
         self.assert_template_used('upload_and_search.html')
 
         mock_service.upload_and_search.called = True
@@ -187,8 +187,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         # then
         self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('message'),
-                         "\n\nFile foobar with hash blahhash not found!")
+        self.assertEqual(self.get_context_variable('messages'),
+                         ["File foobar with hash blahhash not found!"])
         self.assertEqual(self.get_context_variable('filename'), 'foobar')
         self.assertEqual(self.get_context_variable('sha1'), 'blahhash')
         self.assert_template_used('upload_and_search.html')
@@ -212,8 +212,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         # then
         self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('message'),
-                         "\n\nFile foobar with hash 123456789 found!")
+        self.assertEqual(self.get_context_variable('messages'),
+                         ["File foobar with hash 123456789 found!"])
         self.assertEqual(self.get_context_variable('filename'), 'foobar')
         self.assertEqual(self.get_context_variable('sha1'), '123456789')
         self.assert_template_used('upload_and_search.html')

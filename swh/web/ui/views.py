@@ -57,7 +57,6 @@ def search():
 
     """
     env = {'filename': None,
-           'message': '',
            'q': None,
            'file': None}
     data = None
@@ -74,17 +73,17 @@ def search():
     # or hash and search a file
     file = request.files.get('filename')
 
+    messages = []
+
     if q:
         env['q'] = q
 
         try:
             r = service.lookup_hash(q)
-            env['message'] = 'Content with hash %s%sfound!' % (
-                q,
-                ' ' if r.get('found') else ' not '
-            )
+            messages.append('Content with hash %s%sfound!' %
+                (q,' ' if r.get('found') else ' not '))
         except BadInputExc as e:
-            env['message'] = str(e)
+            messages.append(str(e))
 
     if file:
         env['file'] = file
@@ -94,20 +93,18 @@ def search():
             sha1 = uploaded_content['sha1']
             found = uploaded_content['found']
 
-            message = 'File %s with hash %s%sfound!' % (
-                filename,
-                sha1,
-                ' ' if found else ' not ')
+            messages.append('File %s with hash %s%sfound!' %
+                (filename, sha1,' ' if found else ' not '))
 
             env.update({
                 'filename': filename,
                 'sha1': sha1,
-                'message': '\n\n'.join([env['message'], message])
             })
         except BadInputExc as e:
-            env['message'] = str(e)
+            messages.append(str(e))
 
     env['q'] = q if q else ''
+    env['messages'] = messages
 
     return render_template('upload_and_search.html', **env)
 
