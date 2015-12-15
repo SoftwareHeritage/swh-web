@@ -318,4 +318,42 @@ def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
 @app.route('/browse/revision/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
 def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
-    pass
+    """Browse revision with sha1_git.
+
+    """
+    env = {'sha1_git': sha1_git,
+           'revision': None}
+
+    try:
+        rev = service.lookup_revision(sha1_git)
+        if rev:
+            author = rev.get('author')
+            if author:
+                rev['author'] = utils.person_to_string(author)
+
+            committer = rev.get('committer')
+            if committer:
+                rev['committer'] = utils.person_to_string(committer)
+
+            parent_links = []
+            for parent in rev.get('parents', []):
+                parent_links.append(url_for('browse_revision',
+                                            sha1_git=parent))
+            rev['parents'] = parent_links
+
+            directory = rev.get('directory')
+            if directory:
+                rev['directory'] = url_for('browse_directory',
+                                           sha1_git=rev['directory'])
+
+            env.update({'revision': rev,
+                        'keys': ['id', 'message',
+                                 'date', 'author',
+                                 'committer', 'committer_date',
+                                 'synthetic']})
+        else:
+            env.update({'message': 'Revision %s not found!' % sha1_git})
+    except BadInputExc as e:
+        env.update({'message': str(e)})
+
+    return render_template('revision.html', **env)

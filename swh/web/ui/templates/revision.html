@@ -1,5 +1,40 @@
 {% extends "layout.html" %}
 {% block title %}Revision{% endblock %}
 {% block content %}
-Revision {{ sha1_git }}
+
+{% if message is not none %}
+  {{ message }}
+{% endif %}
+
+{% if revision is not none %}
+<div>
+  {% for key in keys %}
+       {% if revision[key] is not none %}
+            <div class="row">
+              <div class="col-md-2">{{ key }}</div>
+              <div class="col-md-6">{{ revision[key] }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    {% if revision['directory'] is not none %}
+           <div class="row">
+              <div class="col-md-2">directory</div>
+              <div class="col-md-6"><a href="{{ revision['directory'] }}">{{ revision['directory'] }}</a></div>
+           </div>
+     {% endif %}
+
+    {% if revision['parents'] is not none %}
+    <div class="row">
+        <div class="col-md-2">parents</div>
+            {% for parent in revision['parents'] %}
+            <div class="col-md-6"><a href="{{ parent }}">{{ parent }}</a></div>
+            <br />
+            {% endfor %}
+    <br />
+    {% endif %}
+
+</div>
+{% endif %}
+
 {% endblock %}
