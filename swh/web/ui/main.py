@@ -29,6 +29,9 @@ DEFAULT_CONFIG = {
 app = FlaskAPI(__name__)
 
 
+AUTODOC_ENDPOINT_INSTALLED = False
+
+
 def read_config(config_file):
     """Read the configuration file `config_file`, update the app with
        parameters (secret_key, conf) and return the parsed configuration as a
@@ -50,7 +53,10 @@ def read_config(config_file):
 def load_controllers():
     """Load the controllers for the application"""
     from swh.web.ui import api, errorhandler, views, apidoc  # flake8: noqa
-    apidoc.install_browsable_api_endpoints()
+    global AUTODOC_ENDPOINT_INSTALLED
+    if not AUTODOC_ENDPOINT_INSTALLED:
+        apidoc.install_browsable_api_endpoints()
+        AUTODOC_ENDPOINT_INSTALLED = True
 
 
 def rules():
