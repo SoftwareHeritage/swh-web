@@ -296,9 +296,6 @@ def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
         if rel:
             author = rel.get('author')
             if author:
-                rel['author'] = ''.join([author['name'],
-                                         ' <', author['email'], '>'])
-
                 rel['author'] = utils.person_to_string(author)
 
             target_type = rel.get('target_type')

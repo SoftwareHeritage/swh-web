@@ -163,3 +163,9 @@ class UtilsTestCase(unittest.TestCase):
                           utils.fmap(lambda x: x*2, {'a': 1, 'b': 2}))
         self.assertEquals(100,
                           utils.fmap(lambda x: x*10, 10))
+
+    @istest
+    def person_to_string(self):
+        self.assertEqual(utils.person_to_string(dict(name='raboof',
+                                                     email='foo@bar')),
+                         'raboof <foo@bar>')

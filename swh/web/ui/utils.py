@@ -89,3 +89,10 @@ def fmap(f, data):
     if isinstance(data, dict):
         return {k: f(v) for (k, v) in data.items()}
     return f(data)
+
+
+def person_to_string(person):
+    """Map a person (person, committer, tagger, etc...) to a string.
+
+    """
+    return ''.join([person['name'], ' <', person['email'], '>'])
