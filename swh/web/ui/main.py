@@ -10,6 +10,7 @@ from flask.ext.api import FlaskAPI
 from swh.core import config
 
 from swh.web.ui.renderers import RENDERERS
+from swh.storage import get_storage
 
 
 DEFAULT_CONFIG = {
@@ -39,13 +40,7 @@ def read_config(config_file):
 
     conf = config.read(config_file, DEFAULT_CONFIG)
     config.prepare_folders(conf, 'log_dir', 'upload_folder')
-
-    if conf['storage_class'] == 'remote_storage':
-        from swh.storage.api.client import RemoteStorage as Storage
-    else:
-        from swh.storage import Storage
-
-    conf['storage'] = Storage(*conf['storage_args'])
+    conf['storage'] = get_storage(conf['storage_class'], conf['storage_args'])
 
     return conf
 
