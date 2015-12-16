@@ -130,7 +130,7 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
 
 @app.route('/api/1/revision/')
 @app.route('/api/1/revision/<string:sha1_git>/')
-def api_revision(sha1_git='baf18f9fc50a0b6fef50460a76c33b2ddc57486e'):
+def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
     """Return information about revision with id sha1_git.
 
     Args:
@@ -179,7 +179,7 @@ def api_revision_log(sha1_git):
 
 @app.route('/api/1/directory/')
 @app.route('/api/1/directory/<string:sha1_git>/')
-def api_directory(sha1_git='8d7dc91d18546a91564606c3e3695a5ab568d179'):
+def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
     """Return information about release with id sha1_git.
 
     Args:
@@ -202,8 +202,8 @@ def api_directory(sha1_git='8d7dc91d18546a91564606c3e3695a5ab568d179'):
 
 @app.route('/api/1/browse/')
 @app.route('/api/1/browse/<string:q>/')
-def api_content_checksum_to_origin(q='sha1_git:88b9b366facda0b5ff8d8640ee9279b'
-                                   'ed346f242'):
+def api_content_checksum_to_origin(q='sha1_git:26ac0281bc74e9bd8a4a4aab1c7c7a'
+                                   '0c19d4436c'):
     """Return content information up to one of its origin if the content
     is found.
 
@@ -258,8 +258,8 @@ def api_content_raw(q):
 
 @app.route('/api/1/content/')
 @app.route('/api/1/content/<string:q>/')
-def api_content_with_details(q='sha256:bc872dd166e4ef82b4b3dbf65f8a974c21e6aa'
-                             '16c99b2c725594a470eeed37c7'):
+def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
+                               '523015738ec6d4d540c7fe65232b'):
     """Return content information if content is found.
 
     Args:
@@ -275,8 +275,8 @@ def api_content_with_details(q='sha256:bc872dd166e4ef82b4b3dbf65f8a974c21e6aa'
         - NotFoundExc if the content is not found.
 
     Example:
-        GET /api/1/content/sha256:bc872dd166e4ef82b4b3dbf65f8a974c21e6aa16c99
-                                  b2c725594a470eeed37c7
+        GET /api/1/content/sha256:e2c76e40866bb6b28916387bdfc8649beceb
+                                  523015738ec6d4d540c7fe65232b
 
     """
     content = service.lookup_content(q)
