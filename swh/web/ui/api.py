@@ -106,6 +106,19 @@ def api_person(person_id=1):
         error_msg_if_not_found='Person with id %s not found.' % person_id)
 
 
+def enrich_release(release):
+    """Enrich a release with link to the 'target' of 'type' revision.
+
+    """
+    if 'target' in release and \
+       'target_type' in release and \
+       release['target_type'] == 'revision':
+            release['target'] = url_for('api_revision',
+                                        sha1_git=release['target'])
+
+    return release
+
+
 @app.route('/api/1/release/')
 @app.route('/api/1/release/<string:sha1_git>/')
 def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
@@ -129,7 +142,8 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
     return _api_lookup(
         sha1_git,
         lookup_fn=service.lookup_release,
-        error_msg_if_not_found=error_msg)
+        error_msg_if_not_found=error_msg,
+        enrich_fn=enrich_release)
 
 
 def enrich_revision(revision):

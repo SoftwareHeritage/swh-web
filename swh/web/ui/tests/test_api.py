@@ -375,9 +375,26 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # given
         stub_release = {
             'id': 'release-0',
-            'revision': 'revision-sha1',
-            'author_name': 'author release name',
-            'author_email': 'author@email',
+            'target_type': 'revision',
+            'target': 'revision-sha1',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
+        }
+
+        expected_release = {
+            'id': 'release-0',
+            'target_type': 'revision',
+            'target': '/api/1/revision/revision-sha1/',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
         }
 
         mock_service.lookup_release.return_value = stub_release
@@ -390,7 +407,51 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_release)
+        self.assertEquals(response_data, expected_release)
+
+        mock_service.lookup_release.assert_called_once_with('release-0')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_release_target_type_not_a_revision(self, mock_service):
+        # given
+        stub_release = {
+            'id': 'release-0',
+            'target_type': 'other-stuff',
+            'target': 'other-stuff-checksum',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
+        }
+
+        expected_release = {
+            'id': 'release-0',
+            'target_type': 'other-stuff',
+            'target': 'other-stuff-checksum',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
+        }
+
+        mock_service.lookup_release.return_value = stub_release
+
+        # when
+        rv = self.app.get('/api/1/release/release-0/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_release)
+
+        mock_service.lookup_release.assert_called_once_with('release-0')
 
     @patch('swh.web.ui.api.service')
     @istest
