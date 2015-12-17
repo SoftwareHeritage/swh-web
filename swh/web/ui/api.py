@@ -45,14 +45,18 @@ def api_search(q='sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5'):
     return {'found': True if r else False}
 
 
-def _api_lookup(criteria, lookup_fn, error_msg_if_not_found):
+def _api_lookup(criteria, lookup_fn, error_msg_if_not_found,
+                enrich_fn=lambda x: x):
     """Factorize function regarding the api to lookup for data."""
     res = lookup_fn(criteria)
     if not res:
         raise NotFoundExc(error_msg_if_not_found)
-    if isinstance(res, map):
-        return list(res)
-    return res
+    if isinstance(res, (map, list)):
+        enriched_data = []
+        for e in res:
+            enriched_data.append(enrich_fn(e))
+        return enriched_data
+    return enrich_fn(res)
 
 
 @app.route('/api/1/origin/')
@@ -164,12 +168,14 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e
 
     """
-    revision = _api_lookup(
+    return _api_lookup(
         sha1_git,
         lookup_fn=service.lookup_revision,
         error_msg_if_not_found='Revision with sha1_git %s not'
-                               ' found.' % sha1_git)
-    return enrich_revision(revision)
+                               ' found.' % sha1_git,
+        enrich_fn=enrich_revision)
+
+
 
 
 
@@ -191,10 +197,10 @@ def api_revision_log(sha1_git):
 
     """
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-    return _api_lookup(
-        sha1_git,
-        lookup_fn=service.lookup_revision_log,
-        error_msg_if_not_found=error_msg)
+    return _api_lookup(sha1_git,
+                       lookup_fn=service.lookup_revision_log,
+                       error_msg_if_not_found=error_msg,
+                       enrich_fn=enrich_revision)
 
 
 @app.route('/api/1/directory/')

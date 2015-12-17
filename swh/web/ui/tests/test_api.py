@@ -513,11 +513,29 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'message': 'synthetic revision message',
             'date_offset': 0,
             'committer_date_offset': 0,
-            'parents': [],
+            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
             'type': 'tar',
             'synthetic': True,
         }]
         mock_service.lookup_revision_log.return_value = stub_revision
+
+        expected_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory':
+            '/api/1/directory/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': [
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+            ],
+            'type': 'tar',
+            'synthetic': True,
+        }]
 
         # when
         rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42'
@@ -528,7 +546,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_revision)
+        self.assertEquals(response_data, expected_revisions)
 
         mock_service.lookup_revision_log.assert_called_once_with(
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
