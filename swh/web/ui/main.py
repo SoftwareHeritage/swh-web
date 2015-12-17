@@ -46,8 +46,12 @@ def read_config(config_file):
 
 
 def load_controllers():
-    """Load the controllers for the application"""
+    """Load the controllers for the application.
+
+    """
     from swh.web.ui import api, errorhandler, views, apidoc  # flake8: noqa
+
+    # side-effects here (install autodoc endpoints so do it only once!)
     global AUTODOC_ENDPOINT_INSTALLED
     if not AUTODOC_ENDPOINT_INSTALLED:
         apidoc.install_browsable_api_endpoints()
@@ -86,7 +90,11 @@ def setup_app(app, conf):
 
 
 def run_from_webserver(environ, start_response):
-    """Run the WSGI app from the webserver, loading the configuration."""
+    """Run the WSGI app from the webserver, loading the configuration.
+
+    Note: This function is called on a per-request basis so beware the side
+    effects here!
+    """
 
     load_controllers()
 
@@ -107,6 +115,9 @@ def run_from_webserver(environ, start_response):
 
 def run_debug_from(config_path, verbose=False):
     """Run the api's server in dev mode.
+
+    Note: This is called only once (contrast with the production mode
+    in run_from_webserver function)
 
     Args:
         conf is a dictionary of keywords:
