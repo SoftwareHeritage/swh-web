@@ -203,6 +203,23 @@ def api_revision_log(sha1_git):
                        enrich_fn=enrich_revision)
 
 
+def enrich_directory(directory):
+    """Enrich directory with url to content or directory.
+
+    """
+    if 'type' in directory:
+        target_type = directory['type']
+        target = directory['target']
+        if target_type == 'file':
+            directory['target'] = url_for('api_content_with_details',
+                                          q='sha1_git:%s' % target)
+        else:
+            directory['target'] = url_for('api_directory',
+                                          sha1_git=target)
+
+    return directory
+
+
 @app.route('/api/1/directory/')
 @app.route('/api/1/directory/<string:sha1_git>/')
 def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
@@ -223,7 +240,8 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
     return _api_lookup(
         sha1_git,
         lookup_fn=service.lookup_directory,
-        error_msg_if_not_found=error_msg)
+        error_msg_if_not_found=error_msg,
+        enrich_fn=enrich_directory)
 
 
 @app.route('/api/1/browse/')

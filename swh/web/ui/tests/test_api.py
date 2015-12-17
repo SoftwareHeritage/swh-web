@@ -615,10 +615,33 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_directory(self, mock_service):
         # given
-        stub_directory = [{
-            'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
-        }]
-        mock_service.lookup_directory.return_value = stub_directory
+        stub_directories = [
+            {
+                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'type': 'file',
+                'target': '4568be353ed3480476f032475e7c233eff737123',
+            },
+            {
+                'sha1_git': '1d518d8be353ed3480476f032475e7c233eff737',
+                'type': 'dir',
+                'target': '8be353ed3480476f032475e7c233eff737123456',
+            }]
+
+        expected_directories = [
+            {
+                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'type': 'file',
+                'target': '/api/1/content/'
+                'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
+            },
+            {
+                'sha1_git': '1d518d8be353ed3480476f032475e7c233eff737',
+                'type': 'dir',
+                'target':
+                '/api/1/directory/8be353ed3480476f032475e7c233eff737123456/',
+            }]
+
+        mock_service.lookup_directory.return_value = stub_directories
 
         # when
         rv = self.app.get('/api/1/directory/'
@@ -629,7 +652,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_directory)
+        self.assertEquals(response_data, expected_directories)
+
+        mock_service.lookup_directory.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.ui.api.service')
     @istest
