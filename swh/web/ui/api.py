@@ -300,6 +300,14 @@ def api_content_raw(q):
     return Response(generate(content), mimetype='application/octet-stream')
 
 
+def enrich_content(content):
+    """Enrich content with 'data', a link to its raw content.
+
+    """
+    content['data'] = url_for('api_content_raw', q=content['sha1'])
+    return content
+
+
 @app.route('/api/1/content/')
 @app.route('/api/1/content/<string:q>/')
 def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
@@ -323,12 +331,11 @@ def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
                                   523015738ec6d4d540c7fe65232b
 
     """
-    content = service.lookup_content(q)
-    if not content:
-        raise NotFoundExc('Content with %s not found.' % q)
-
-    content['data'] = url_for('api_content_raw', q=content['sha1'])
-    return content
+    return _api_lookup(
+        q,
+        lookup_fn=service.lookup_content,
+        error_msg_if_not_found='Content with %s not found.' % q,
+        enrich_fn=enrich_content)
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
