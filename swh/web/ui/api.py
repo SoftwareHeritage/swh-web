@@ -128,6 +128,23 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
         error_msg_if_not_found=error_msg)
 
 
+def enrich_revision(revision):
+    """Enrich revision with links where it makes sense (directory, parents).
+
+    """
+    if 'directory' in revision:
+        revision['directory'] = url_for('api_directory',
+                                        sha1_git=revision['directory'])
+
+    if 'parents' in revision:
+        parents = []
+        for parent in revision['parents']:
+            parents.append(url_for('api_revision', sha1_git=parent))
+        revision['parents'] = parents
+
+    return revision
+
+
 @app.route('/api/1/revision/')
 @app.route('/api/1/revision/<string:sha1_git>/')
 def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
@@ -147,11 +164,14 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e
 
     """
-    error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-    return _api_lookup(
+    revision = _api_lookup(
         sha1_git,
         lookup_fn=service.lookup_revision,
-        error_msg_if_not_found=error_msg)
+        error_msg_if_not_found='Revision with sha1_git %s not'
+                               ' found.' % sha1_git)
+    return enrich_revision(revision)
+
+
 
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')
