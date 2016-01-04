@@ -146,7 +146,7 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
         enrich_fn=enrich_release)
 
 
-def enrich_revision(revision):
+def enrich_revision_with_history(revision):
     """Enrich revision with links where it makes sense (directory, parents).
 
     """
@@ -157,7 +157,9 @@ def enrich_revision(revision):
     if 'parents' in revision:
         parents = []
         for parent in revision['parents']:
-            parents.append(url_for('api_revision', sha1_git=parent))
+            parents.append(url_for('api_revision_history',
+                                   sha1_git_root=parent,
+                                   sha1_git=revision['id']))
         revision['parents'] = parents
 
     return revision
@@ -187,7 +189,7 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         lookup_fn=service.lookup_revision,
         error_msg_if_not_found='Revision with sha1_git %s not'
                                ' found.' % sha1_git,
-        enrich_fn=enrich_revision)
+        enrich_fn=enrich_revision_with_history)
 
 
 
@@ -214,7 +216,7 @@ def api_revision_log(sha1_git):
     return _api_lookup(sha1_git,
                        lookup_fn=service.lookup_revision_log,
                        error_msg_if_not_found=error_msg,
-                       enrich_fn=enrich_revision)
+                       enrich_fn=enrich_revision_with_history)
 
 
 def enrich_directory(directory):

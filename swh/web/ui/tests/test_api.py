@@ -513,7 +513,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'date_offset': 0,
             'committer_date_offset': 0,
             'parents': [
-                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'
+                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
+                '/history/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -592,7 +593,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'date_offset': 0,
             'committer_date_offset': 0,
             'parents': [
-                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+                '/history/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
