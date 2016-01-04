@@ -638,6 +638,89 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
+    def api_revision_history(self, mock_service):
+        # for readability purposes, we use:
+        # - sha1 as 3 letters (url are way too long otherwise to respect pep8)
+        # - only keys with modification steps (all other keys are kept as is)
+
+        # given
+        stub_revisions = [
+            {
+                'id': '883',
+                'parents': [],
+                'directory': '278',
+            },  # root_sha1_git is a parent of sha1_git
+            {
+                'id': '777',
+                'parents': ['883'],
+                'directory': '278',
+            },  # child of root_sha1_git
+                # and as parent of sha1_git, it appears here
+            {
+                'id': '888',
+                'parents': ['889'],
+                'directory': '280',
+            },  # another reachable child of root_sha1_git
+                # (though not apparent here, in service, we trust)
+                # as parent of sha1_git, it appears here.
+            {
+                'id': '999',
+                'parents': ['777', '888', '883'],
+                'directory': '278',
+            },  # sha1_git itself
+            {
+                'id': '666',
+                'parents': ['999'],
+                'directory': '278',
+            }  # sha1_git's child
+        ]
+
+        mock_service.lookup_revision_with_context.return_value = stub_revisions
+
+        # then
+        rv = self.app.get('/api/1/revision/883/history/999/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+
+        self.assertEquals(response_data, [
+            {
+                'id': '883',
+                'link': '/api/1/revision/883/',  # root_sha1_git == id
+                'parents': [],
+                'directory': '/api/1/directory/278/',
+            },
+            {
+                'id': '777',
+                'link': '/api/1/revision/883/history/777/',
+                'parents': ['/api/1/revision/883/history/777/'],
+                'directory': '/api/1/directory/278/',
+            },
+            {
+                'id': '888',
+                'link': '/api/1/revision/883/history/888/',
+                'parents': ['/api/1/revision/889/history/888/'],
+                'directory': '/api/1/directory/280/',
+            },
+            {
+                'id': '999',
+                'link': '/api/1/revision/883/history/999/',
+                'parents': ['/api/1/revision/777/history/999/',
+                            '/api/1/revision/888/history/999/',
+                            '/api/1/revision/883/history/999/'],  # current url
+                'directory': '/api/1/directory/278/',
+            },
+            {
+                'id': '666',
+                'link': '/api/1/revision/883/history/666/',
+                'parents': ['/api/1/revision/999/history/666/'],
+                'directory': '/api/1/directory/278/',
+            }
+        ])
+
+    @patch('swh.web.ui.api.service')
+    @istest
     def api_person(self, mock_service):
         # given
         stub_person = {

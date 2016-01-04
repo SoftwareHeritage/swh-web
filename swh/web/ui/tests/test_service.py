@@ -271,6 +271,91 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.storage.release_get.called = False
 
     @istest
+    def lookup_revision_with_context_ko_not_a_sha1_1(self):
+        # given
+        root_sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4' \
+                        'daf51aea892abe'
+        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            self.assertIn('Only sha1_git is supported', cm.exception.args[0])
+
+    @istest
+    def lookup_revision_with_context_ko_not_a_sha1_2(self):
+        # given
+        root_sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f6' \
+                   '2d4daf51aea892abe'
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            self.assertIn('Only sha1_git is supported', cm.exception.args[0])
+
+    @istest
+    def lookup_revision_with_context(self):
+        # given
+        stub_revisions = [{
+            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
+            'committer': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'message': b'fix 75951413',
+            'date': datetime.datetime(2001, 10, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2001, 10, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }]
+        self.storage.revision_get_transitive_from = MagicMock(
+            return_value=stub_revisions)
+
+        # when
+        root_sha1_git = '18d8be353ed3480476f032475e7c233eff7371d5'
+        sha1_git = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
+        actual_revisions = service.lookup_revision_with_context(root_sha1_git,
+                                                                sha1_git)
+
+        # then
+        self.assertEquals(list(actual_revisions), [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'boule & bill',
+                'email': 'boule@bill.org',
+            },
+            'committer': {
+                'name': 'bill & boule',
+                'email': 'bill@boule.org',
+            },
+            'message': 'fix 75951413',
+            'date': datetime.datetime(2001, 10, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2001, 10, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }])
+
+        self.storage.revision_get_transitive_from.assert_called_with(
+            hex_to_hash(root_sha1_git),
+            hex_to_hash(sha1_git))
+
+    @istest
     def lookup_revision(self):
         # given
         self.storage.revision_get = MagicMock(return_value=[{

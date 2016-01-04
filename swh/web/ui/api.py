@@ -192,8 +192,63 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         enrich_fn=enrich_revision_with_history)
 
 
+def enrich_revision_with_same_history(sha1_git_root, revision):
+    """Enrich revision with links where it makes sense (directory, parents).
+
+    """
+    sha1_git = revision['id']
+    if sha1_git == sha1_git_root:
+        revision['link'] = url_for('api_revision', sha1_git=sha1_git)
+    else:
+        revision['link'] = url_for('api_revision_history',
+                                   sha1_git_root=sha1_git_root,
+                                   sha1_git=sha1_git)
+
+    if 'directory' in revision:
+        revision['directory'] = url_for('api_directory',
+                                        sha1_git=revision['directory'])
+
+    if 'parents' in revision:
+        parents = []
+        for parent in revision['parents']:
+            parents.append(url_for('api_revision_history',
+                                   sha1_git_root=parent,
+                                   sha1_git=sha1_git))
+            revision['parents'] = parents
+
+    return revision
 
 
+@app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
+def api_revision_history(sha1_git_root, sha1_git):
+    """Return information about revision SHA1_GIT, limited to the
+    sub-graph rooted at <SHA1_GIT_ROOT>.
+
+    In other words, sha1_git_root is an ancestor of sha1_git.
+
+    Args:
+        sha1_git_root: ancestor of sha1_git
+        sha1_git: the revision's hash in the subgraph deriving from
+        sha1_git_root.
+
+    Returns:
+        Information on the revision if found.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the revision is not found.
+
+    """
+    revisions = service.lookup_revision_with_context(sha1_git_root,
+                                                     sha1_git)
+    if not revisions:
+        raise NotFoundExc(
+            "Possibly sha1_git '%s' is not a descendant of sha1_git_root '%s'"
+            % (sha1_git, sha1_git_root))
+
+    return list(map(lambda r: enrich_revision_with_same_history(sha1_git_root,
+                                                                r),
+                    revisions))
 
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')
