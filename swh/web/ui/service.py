@@ -151,7 +151,7 @@ def lookup_release(release_sha1_git):
     return None
 
 
-def lookup_revision(rev_sha1_git, rev_type='git'):
+def lookup_revision(rev_sha1_git):
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
