@@ -6,11 +6,11 @@
 import datetime
 
 from nose.tools import istest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 
 from swh.core.hashutil import hex_to_hash
 from swh.web.ui import service
-from swh.web.ui.exc import BadInputExc
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.tests import test_app
 
 
@@ -294,66 +294,104 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             service.lookup_revision_with_context(root_sha1_git, sha1_git)
             self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
+    @patch('swh.web.ui.service.lookup_revision')
     @istest
-    def lookup_revision_with_context(self):
+    def lookup_revision_with_context_ko_sha1_git_does_not_exist(self, mock):
         # given
-        stub_revisions = [{
-            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
+        root_sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
+
+        mock.return_value = None
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            self.assertIn('Revision 777777bdf3629f916219feb3dcc7393ded1bc8db'
+                          ' not found', cm.exception.args[0])
+
+        mock.assert_called_once_with(sha1_git)
+
+    @patch('swh.web.ui.service.lookup_revision')
+    @istest
+    def lookup_revision_with_context_ko_root_sha1_git_does_not_exist(self,
+                                                                     mock):
+        # given
+        root_sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
+
+        mock.side_effect = ['foo', None]
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            self.assertIn('Revision 65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+                          ' not found', cm.exception.args[0])
+
+        mock.assert_has_calls([call(sha1_git), call(root_sha1_git)])
+
+    @patch('swh.web.ui.service.lookup_revision')
+    @istest
+    def lookup_revision_with_context(self, mock):
+        # given
+        stub_revisions = [
+            {
+                'id': b'666' + 17 * b'\x00',
+                'parents': [b'999'],
             },
-            'committer': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
+            {
+                'id': b'999',
+                'parents': [b'777', b'883' + 17 * b'\x00', b'888'],
             },
-            'message': b'fix 75951413',
-            'date': datetime.datetime(2001, 10, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2001, 10, 17, 11, 23, 54),
-            'committer_date_offset': 0,
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }]
-        self.storage.revision_get_transitive_from = MagicMock(
+            {
+                'id': b'777',
+                'parents': [b'883' + 17 * b'\x00'],
+            },
+            {
+                'id': b'883' + 17 * b'\x00',
+                'parents': [],
+                'directory': b'278',
+            },
+            {
+                'id': b'888',
+                'parents': [b'889'],
+            },
+            {
+                'id': b'889',
+                'parents': [],
+            },
+        ]
+
+        mock.side_effect = [
+            {
+                'id': '383833' + 17 * '00',
+                'parents': [],
+                'directory': '323738',
+            },
+            {
+                'id': '363636' + 17 * '00',
+                'parents': ['393939'],
+            },
+        ]
+
+        self.storage.revision_log = MagicMock(
             return_value=stub_revisions)
 
         # when
-        root_sha1_git = '18d8be353ed3480476f032475e7c233eff7371d5'
-        sha1_git = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
+        root_sha1_git = '363636' + 17 * '00'  # (ascii code for 666)
+        sha1_git = '383833' + 17 * '00'       # (ascii code for 883)
         actual_revisions = service.lookup_revision_with_context(root_sha1_git,
                                                                 sha1_git)
 
         # then
-        self.assertEquals(list(actual_revisions), [{
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'committer': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'message': 'fix 75951413',
-            'date': datetime.datetime(2001, 10, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2001, 10, 17, 11, 23, 54),
-            'committer_date_offset': 0,
-            'synthetic': False,
-            'type': 'git',
+        self.assertEquals(actual_revisions, {
+            'id': '383833' + 17 * '00',
             'parents': [],
-            'metadata': [],
-        }])
+            'children': ['393939', '373737'],
+            'directory': '323738',
+        })
 
-        self.storage.revision_get_transitive_from.assert_called_with(
-            hex_to_hash(root_sha1_git),
-            hex_to_hash(sha1_git))
+        self.storage.revision_log.assert_called_with(
+            hex_to_hash(root_sha1_git))
 
     @istest
     def lookup_revision(self):

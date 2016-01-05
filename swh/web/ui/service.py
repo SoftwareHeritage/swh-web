@@ -3,10 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from collections import defaultdict
 
 from swh.core import hashutil
 from swh.web.ui import converters, main, query, upload
-from swh.web.ui.exc import BadInputExc
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
 def hash_and_search(filepath):
@@ -197,32 +198,39 @@ def lookup_revision_log(rev_sha1_git):
     return map(converters.from_revision, revision_entries)
 
 
-def lookup_revision_with_context(root_sha1_git, sha1_git):
-    """Return sha1_git revision with direct parents and children transitively
-    reachable from sha1_git_root.
-
-    Args:
-        root_sha1_git: ancestor root sha1
-        sha1_git: sha1_git reachable from root_sha1_git
-
-    Returns:
-        List of sha1 as direct parents of sha1_git, sha1_git and direct
-        children of sha1_git
-
-    Raises:
-        ValueError
-    """
-    algo, hRootBinSha1 = query.parse_hash(root_sha1_git)
+def lookup_revision_with_context(sha1_git_root, sha1_git):
+    algo, hBinRootSha1 = query.parse_hash(sha1_git_root)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    algo, hBinSha1 = query.parse_hash(sha1_git)
-    if algo != 'sha1':
-        raise BadInputExc('Only sha1_git is supported.')
+    revision = lookup_revision(sha1_git)
+    if not revision:
+        raise NotFoundExc('Revision %s not found' % sha1_git)
 
-    revisions = main.storage().revision_get_transitive_from(hRootBinSha1,
-                                                            hBinSha1)
-    return map(converters.from_revision, revisions)
+    revision_root = lookup_revision(sha1_git_root)
+    if not revision_root:
+        raise NotFoundExc('Revision %s not found' % sha1_git_root)
+
+    revision_log = main.storage().revision_log(hBinRootSha1)
+
+    parents = {}
+    children = defaultdict(list)
+
+    for rev in revision_log:
+        rev_id = hashutil.hash_to_hex(rev['id'])
+        parents[rev_id] = []
+        for parent_id in rev['parents']:
+            parent_id = hashutil.hash_to_hex(parent_id)
+            parents[rev_id].append(parent_id)
+            children[parent_id].append(rev_id)
+
+    if revision['id'] not in parents:
+        raise NotFoundExc('Revision %s is not an ancestor of %s' %
+                          (sha1_git, sha1_git_root))
+
+    revision['children'] = children[revision['id']]
+
+    return revision
 
 
 def lookup_content(q):
