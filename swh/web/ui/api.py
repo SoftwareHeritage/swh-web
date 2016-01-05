@@ -150,17 +150,22 @@ def enrich_revision_with_history(revision):
     """Enrich revision with links where it makes sense (directory, parents).
 
     """
+    revision['url'] = url_for('api_revision', sha1_git=revision['id'])
+    revision['history_url'] = url_for('api_revision_log',
+                                      sha1_git=revision['id'])
+
     if 'directory' in revision:
-        revision['directory'] = url_for('api_directory',
-                                        sha1_git=revision['directory'])
+        revision['directory_url'] = url_for('api_directory',
+                                            sha1_git=revision['directory'])
 
     if 'parents' in revision:
         parents = []
         for parent in revision['parents']:
             parents.append(url_for('api_revision_history',
-                                   sha1_git_root=parent,
-                                   sha1_git=revision['id']))
-        revision['parents'] = parents
+                                   sha1_git_root=revision['id'],
+                                   sha1_git=parent))
+
+        revision['parent_urls'] = parents
 
     return revision
 

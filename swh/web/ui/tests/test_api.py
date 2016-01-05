@@ -503,8 +503,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         expected_revision = {
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory':
-            '/api/1/directory/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233e'
+                           'ff7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6'
+                             'a42b7e2a44e6/',
             'author_name': 'Software Heritage',
             'author_email': 'robot@softwareheritage.org',
             'committer_name': 'Software Heritage',
@@ -513,8 +517,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'date_offset': 0,
             'committer_date_offset': 0,
             'parents': [
-                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
-                '/history/18d8be353ed3480476f032475e7c233eff7371d5/'
+                '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
+            ],
+            'parent_urls': [
+                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
+                '/history/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -583,8 +590,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         expected_revisions = [{
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory':
-            '/api/1/directory/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
+                           'f7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a'
+                             '42b7e2a44e6/',
             'author_name': 'Software Heritage',
             'author_email': 'robot@softwareheritage.org',
             'committer_name': 'Software Heritage',
@@ -593,8 +604,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'date_offset': 0,
             'committer_date_offset': 0,
             'parents': [
-                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
-                '/history/18d8be353ed3480476f032475e7c233eff7371d5/'
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+            ],
+            'parent_urls': [
+                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
+                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
             ],
             'type': 'tar',
             'synthetic': True,
