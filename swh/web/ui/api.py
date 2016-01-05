@@ -113,7 +113,7 @@ def enrich_release(release):
     if 'target' in release and \
        'target_type' in release and \
        release['target_type'] == 'revision':
-            release['target'] = url_for('api_revision',
+        release['target_url'] = url_for('api_revision',
                                         sha1_git=release['target'])
 
     return release
@@ -290,11 +290,11 @@ def enrich_directory(directory):
         target_type = directory['type']
         target = directory['target']
         if target_type == 'file':
-            directory['target'] = url_for('api_content_with_details',
-                                          q='sha1_git:%s' % target)
+            directory['target_url'] = url_for('api_content_with_details',
+                                              q='sha1_git:%s' % target)
         else:
-            directory['target'] = url_for('api_directory',
-                                          sha1_git=target)
+            directory['target_url'] = url_for('api_directory',
+                                              sha1_git=target)
 
     return directory
 
@@ -383,7 +383,7 @@ def enrich_content(content):
     """Enrich content with 'data', a link to its raw content.
 
     """
-    content['data'] = url_for('api_content_raw', q=content['sha1'])
+    content['data_url'] = url_for('api_content_raw', q=content['sha1'])
     return content
 
 

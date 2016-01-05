@@ -68,7 +68,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def api_content_with_details(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
-            'data': 'some content data',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560'
@@ -85,8 +84,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'data': '/api/1/content/'
-                    '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
+            'data_url': '/api/1/content/'
+                        '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
@@ -388,7 +387,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         expected_release = {
             'id': 'release-0',
             'target_type': 'revision',
-            'target': '/api/1/revision/revision-sha1/',
+            'target': 'revision-sha1',
+            'target_url': '/api/1/revision/revision-sha1/',
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
             'author': {
@@ -791,13 +791,15 @@ class ApiTestCase(test_app.SWHApiTestCase):
             {
                 'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
                 'type': 'file',
-                'target': '/api/1/content/'
+                'target': '4568be353ed3480476f032475e7c233eff737123',
+                'target_url': '/api/1/content/'
                 'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
             },
             {
                 'sha1_git': '1d518d8be353ed3480476f032475e7c233eff737',
                 'type': 'dir',
-                'target':
+                'target': '8be353ed3480476f032475e7c233eff737123456',
+                'target_url':
                 '/api/1/directory/8be353ed3480476f032475e7c233eff737123456/',
             }]
 
