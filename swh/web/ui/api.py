@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from flask import request, url_for, Response
+from flask import request, url_for, Response, redirect
 
 
 from swh.web.ui import service
@@ -239,6 +239,9 @@ def api_revision_history(sha1_git_root, sha1_git):
         NotFoundExc if the revision is not found.
 
     """
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('api_revision', sha1_git=sha1_git))
+
     revisions = service.lookup_revision_with_context(sha1_git_root,
                                                      sha1_git)
     if not revisions:
