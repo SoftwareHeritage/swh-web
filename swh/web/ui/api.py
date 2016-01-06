@@ -16,7 +16,7 @@ def api_stats():
     """Return statistics on SWH storage.
 
     Returns:
-        SWH storage's statistics
+        SWH storage's statistics.
 
     """
     return service.stat_counters()
@@ -29,13 +29,13 @@ def api_search(q='sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5'):
 
     Args:
         q is of the form algo_hash:hash with algo_hash in
-        (sha1, sha1_git, sha256)
+        (sha1, sha1_git, sha256).
 
     Returns:
         Dictionary with 'found' key and the associated result.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
 
     Example:
         GET /api/1/search/sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5/
@@ -66,7 +66,7 @@ def api_origin(origin_id=1):
 
 
     Args:
-        origin_id: the origin's identifier
+        origin_id: the origin's identifier.
 
     Returns:
         Information on the origin if found.
@@ -89,7 +89,7 @@ def api_person(person_id=1):
     """Return information about person with identifier person_id.
 
     Args:
-        person_id: the person's identifier
+        person_id: the person's identifier.
 
     Returns:
         Information on the person if found.
@@ -125,13 +125,13 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
     """Return information about release with id sha1_git.
 
     Args:
-        sha1_git: the release's hash
+        sha1_git: the release's hash.
 
     Returns:
         Information on the release if found.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the release is not found.
 
     Example:
@@ -188,13 +188,13 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
     """Return information about revision with id sha1_git.
 
     Args:
-        sha1_git: the revision's hash
+        sha1_git: the revision's hash.
 
     Returns:
         Information on the revision if found.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the revision is not found.
 
     Example:
@@ -217,19 +217,21 @@ def api_revision_history(sha1_git_root, sha1_git):
     In other words, sha1_git is an ancestor of sha1_git_root.
 
     Args:
-        sha1_git_root: latest revision of the browsed history
-        sha1_git: one of sha1_git_root's ancestors
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
         limit: optional query parameter to limit the revisions log
-        (default to 100)
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
 
     Returns:
         Information on sha1_git if it is an ancestor of sha1_git_root
-        including children leading to sha1_git_root
+        including children leading to sha1_git_root.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if either revision is not found or if sha1_git is not an
-        ancestor of sha1_git_root
+        ancestor of sha1_git_root.
 
     """
     limit = int(request.args.get('limit', '100'))
@@ -254,15 +256,15 @@ def api_revision_log(sha1_git):
        The first element returned is the given sha1_git.
 
     Args:
-        sha1_git: the revision's hash
+        sha1_git: the revision's hash.
         limit: optional query parameter to limit the revisions log
-        (default to 100)
+        (default to 100).
 
     Returns:
         Information on the revision if found.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the revision is not found.
 
     """
@@ -301,10 +303,10 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
     """Return information about release with id sha1_git.
 
     Args:
-        Directory's sha1_git
+        sha1_git: Directory's sha1_git.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the content is not found.
 
     Example:
@@ -328,13 +330,13 @@ def api_content_checksum_to_origin(q='sha1_git:26ac0281bc74e9bd8a4a4aab1c7c7a'
 
     Args:
         q is of the form algo_hash:hash with algo_hash in
-        (sha1, sha1_git, sha256)
+        (sha1, sha1_git, sha256).
 
     Returns:
         Information on one possible origin for such content.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the content is not found.
 
     Example:
@@ -358,7 +360,7 @@ def api_content_raw(q):
         When algo_hash is not provided, 'hash' is considered sha1.
 
     Returns:
-        Content's raw data in application/octet-stream
+        Content's raw data in application/octet-stream.
 
     Raises:
         - BadInputExc in case of unknown algo_hash or bad hash
@@ -398,7 +400,7 @@ def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
         Content's information.
 
     Raises:
-        - BadInputExc in case of unknown algo_hash or bad hash
+        - BadInputExc in case of unknown algo_hash or bad hash.
         - NotFoundExc if the content is not found.
 
     Example:
