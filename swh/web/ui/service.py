@@ -199,8 +199,8 @@ def lookup_revision_log(rev_sha1_git):
 
 
 def lookup_revision_with_context(sha1_git_root, sha1_git):
-    """Return information about revision SHA1_GIT, limited to the
-    sub-graph of all transitive parents of <SHA1_GIT_ROOT>.
+    """Return information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of sha1_git_root.
 
     In other words, sha1_git is an ancestor of sha1_git_root.
 

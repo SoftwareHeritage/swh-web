@@ -10,6 +10,7 @@ from flask.ext.api import FlaskAPI
 from swh.core import config
 
 from swh.web.ui.renderers import RENDERERS, urlize_api_links
+from swh.web.ui.renderers import safe_docstring_display
 from swh.storage import get_storage
 
 
@@ -30,6 +31,7 @@ DEFAULT_CONFIG = {
 # api's definition
 app = FlaskAPI(__name__)
 app.jinja_env.filters['urlize_api_links'] = urlize_api_links
+app.jinja_env.filters['safe_docstring_display'] = safe_docstring_display
 
 
 AUTODOC_ENDPOINT_INSTALLED = False

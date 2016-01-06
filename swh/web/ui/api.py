@@ -211,8 +211,8 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
 
 @app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
 def api_revision_history(sha1_git_root, sha1_git):
-    """Return information about revision SHA1_GIT, limited to the
-    sub-graph of all transitive parents of <SHA1_GIT_ROOT>.
+    """Return information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of sha1_git_root.
 
     In other words, sha1_git is an ancestor of sha1_git_root.
 

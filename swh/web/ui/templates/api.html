@@ -31,7 +31,7 @@
         <div class="navbar-inner">
             <div class="container-fluid">
                 <span href="/">
-                    {% block branding %}<a class='brand' rel="nofollow" href='{{url_for('homepage')}}'>Software Heritage API v1</span></a>{% endblock %}
+                    {% block branding %}<a class="navbar-brand" rel="nofollow" href='{{url_for('homepage')}}'>Software Heritage API v1</span></a>{% endblock %}
                 </span>
                 <ul class="nav pull-right">
                     {% block userlinks %}
@@ -111,12 +111,16 @@
 
         <div class="content-main">
             <div class="page-header"><h1>{{ view_name }}</h1></div>
-            {% if view_description %}<div style="margin-top: -10px; margin-bottom: 10px">{{ view_description|safe }}</div>{% endif %}
+            {% if view_description %}
+            <div style="margin-top: -10px; margin-bottom: 10px">
+              {{ view_description | safe_docstring_display | safe}}
+            </div>
+            {% endif %}
             <div class="request-info" style="clear: both" >
-                <pre class="prettyprint"><b>{{ request.method }}</b> {{ request.full_path }}</pre>
+                <pre><b>{{ request.method }}</b> {{ request.full_path }}</pre>
             </div>
             <div class="response-info">
-                <pre class="prettyprint"><div class="meta nocode"><b>HTTP {{ status }}</b>{% autoescape off %}
+                <pre><div class="meta nocode"><b>HTTP {{ status }}</b>{% autoescape off %}
 {% for key, val in headers.items() %}<b>{{ key }}:</b> <span class="lit">{{ val|e }}<!--{ val|break_long_headers|urlize_quoted_links }--></span>
 {% endfor %}
 </div>{% if content %}{{ content|urlize_api_links }}{% endif %}<!-- |urlize_quoted_links --></pre>{% endautoescape %}
@@ -181,7 +185,7 @@
     {% endblock %}
 
     {% block script %}
-    <script src="{{url_for('flask-api.static', filename='js/jquery-min.js')}}"></script>
+    <script src="{{url_for('flask-api.static', filename='js/jquery.min.js')}}"></script>
     <script src="{{url_for('flask-api.static', filename='js/bootstrap.min.js')}}"></script>
     <script src="{{url_for('flask-api.static', filename='js/prettify-min.js')}}"></script>
     <script src="{{url_for('flask-api.static', filename='js/default.js')}}"></script>
