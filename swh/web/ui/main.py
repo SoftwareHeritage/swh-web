@@ -9,7 +9,7 @@ import os
 from flask.ext.api import FlaskAPI
 from swh.core import config
 
-from swh.web.ui.renderers import RENDERERS
+from swh.web.ui.renderers import RENDERERS, urlize_api_links
 from swh.storage import get_storage
 
 
@@ -26,8 +26,10 @@ DEFAULT_CONFIG = {
     'upload_allowed_extensions': ('list[str]', [])  # means all are accepted
 }
 
+
 # api's definition
 app = FlaskAPI(__name__)
+app.jinja_env.filters['urlize_api_links'] = urlize_api_links
 
 
 AUTODOC_ENDPOINT_INSTALLED = False
