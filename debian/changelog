@@ -1,3 +1,14 @@
+swh-web (0.0.15-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.15
+  * Improve browsable api rendering style
+  * Fix typo in jquery.min.js link
+  * Fix docstring typos
+  * packaging:
+  * add python3-flask-api as package dependency
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 06 Jan 2016 15:12:04 +0100
+
 swh-web (0.0.14-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.14
