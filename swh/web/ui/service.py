@@ -199,10 +199,25 @@ def lookup_revision_log(rev_sha1_git):
 
 
 def lookup_revision_with_context(sha1_git_root, sha1_git):
-    algo, hBinRootSha1 = query.parse_hash(sha1_git_root)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
+    """Return information about revision SHA1_GIT, limited to the
+    sub-graph of all transitive parents of <SHA1_GIT_ROOT>.
 
+    In other words, sha1_git is an ancestor of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history
+        sha1_git: one of sha1_git_root's ancestors
+
+    Returns:
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root
+
+    """
     revision = lookup_revision(sha1_git)
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
@@ -210,6 +225,8 @@ def lookup_revision_with_context(sha1_git_root, sha1_git):
     revision_root = lookup_revision(sha1_git_root)
     if not revision_root:
         raise NotFoundExc('Revision %s not found' % sha1_git_root)
+
+    hBinRootSha1 = hashutil.hex_to_hash(sha1_git_root)
 
     revision_log = main.storage().revision_log(hBinRootSha1)
 
