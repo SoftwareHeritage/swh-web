@@ -1,3 +1,14 @@
+swh-web (0.0.14-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.14
+  * Open /revision/<sha1_git_root>/history/<sha1_git>/
+  * Add links to api
+  * Improve browsable api rendering -> when api links exists, actual
+    html links will be displayed
+  * Fix production bugs (regarding browsable api)
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 06 Jan 2016 11:42:18 +0100
+
 swh-web (0.0.13-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.13
