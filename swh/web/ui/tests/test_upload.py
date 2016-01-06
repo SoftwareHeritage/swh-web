@@ -114,7 +114,7 @@ class UploadTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.upload.werkzeug')
     @patch('swh.web.ui.upload.tempfile')
     @istest
-    def save_in_upload_folder_OK(self, mock_tempfile, mock_werkzeug):
+    def save_in_upload_folder_ok(self, mock_tempfile, mock_werkzeug):
         # given
         upload_folder = self.app_config['conf']['upload_folder']
 

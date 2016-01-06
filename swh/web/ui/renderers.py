@@ -88,8 +88,8 @@ def urlize_api_links(content):
 def safe_docstring_display(docstring):
     """Utility function to safely decorate docstring in browsable api."""
     print(docstring)
-    src = r'(Args|Raises|Throws|Returns):?.*'
-    dest = r'<strong>\1:</strong><br />&nbsp;&nbsp;'
+    src = r'(Args|Raises|Throws|Returns|Examples?|Samples?):?.*'
+    dest = r'<h4>\1:</h4>&nbsp;&nbsp;'
     return re.sub(src, dest, docstring)
 
 

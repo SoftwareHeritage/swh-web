@@ -505,7 +505,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         }])
 
         self.storage.revision_log.assert_called_with(
-            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'))
+            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'), 100)
 
     @istest
     def lookup_content_raw_not_found(self):

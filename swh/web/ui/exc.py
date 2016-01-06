@@ -5,10 +5,8 @@
 
 
 class BadInputExc(ValueError):
-    def __init__(self, errorMsg):
-        super().__init__(errorMsg)
+    pass
 
 
 class NotFoundExc(Exception):
-    def __init__(self, errorMsg):
-        super().__init__(errorMsg)
+    pass
