@@ -4,7 +4,7 @@
 
 # Runtime dependencies
 Flask
-#Flask-API
+Flask-API
 swh.core
 swh.storage >= 0.0.23
 
