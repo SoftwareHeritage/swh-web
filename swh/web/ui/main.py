@@ -9,7 +9,8 @@ import os
 from flask.ext.api import FlaskAPI
 from swh.core import config
 
-from swh.web.ui.renderers import RENDERERS
+from swh.web.ui.renderers import RENDERERS, urlize_api_links
+from swh.storage import get_storage
 
 
 DEFAULT_CONFIG = {
@@ -25,8 +26,13 @@ DEFAULT_CONFIG = {
     'upload_allowed_extensions': ('list[str]', [])  # means all are accepted
 }
 
+
 # api's definition
 app = FlaskAPI(__name__)
+app.jinja_env.filters['urlize_api_links'] = urlize_api_links
+
+
+AUTODOC_ENDPOINT_INSTALLED = False
 
 
 def read_config(config_file):
@@ -36,21 +42,22 @@ def read_config(config_file):
 
     conf = config.read(config_file, DEFAULT_CONFIG)
     config.prepare_folders(conf, 'log_dir', 'upload_folder')
-
-    if conf['storage_class'] == 'remote_storage':
-        from swh.storage.api.client import RemoteStorage as Storage
-    else:
-        from swh.storage import Storage
-
-    conf['storage'] = Storage(*conf['storage_args'])
+    conf['storage'] = get_storage(conf['storage_class'], conf['storage_args'])
 
     return conf
 
 
 def load_controllers():
-    """Load the controllers for the application"""
+    """Load the controllers for the application.
+
+    """
     from swh.web.ui import api, errorhandler, views, apidoc  # flake8: noqa
-    apidoc.install_browsable_api_endpoints()
+
+    # side-effects here (install autodoc endpoints so do it only once!)
+    global AUTODOC_ENDPOINT_INSTALLED
+    if not AUTODOC_ENDPOINT_INSTALLED:
+        apidoc.install_browsable_api_endpoints()
+        AUTODOC_ENDPOINT_INSTALLED = True
 
 
 def rules():
@@ -75,17 +82,12 @@ def storage():
     return app.config['conf']['storage']
 
 
-def setup_app(app, conf):
-    app.secret_key = conf['secret_key']
-    app.config['conf'] = conf
-    app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
-    app.config['DEFAULT_RENDERERS'] = RENDERERS
-
-    return app
-
-
 def run_from_webserver(environ, start_response):
-    """Run the WSGI app from the webserver, loading the configuration."""
+    """Run the WSGI app from the webserver, loading the configuration.
+
+    Note: This function is called on a per-request basis so beware the side
+    effects here!
+    """
 
     load_controllers()
 
@@ -106,6 +108,9 @@ def run_from_webserver(environ, start_response):
 
 def run_debug_from(config_path, verbose=False):
     """Run the api's server in dev mode.
+
+    Note: This is called only once (contrast with the production mode
+    in run_from_webserver function)
 
     Args:
         conf is a dictionary of keywords:

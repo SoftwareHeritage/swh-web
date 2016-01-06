@@ -68,7 +68,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def api_content_with_details(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
-            'data': 'some content data',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560'
@@ -85,8 +84,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'data': '/api/1/content/'
-                    '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
+            'data_url': '/api/1/content/'
+                        '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
@@ -375,9 +374,27 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # given
         stub_release = {
             'id': 'release-0',
-            'revision': 'revision-sha1',
-            'author_name': 'author release name',
-            'author_email': 'author@email',
+            'target_type': 'revision',
+            'target': 'revision-sha1',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
+        }
+
+        expected_release = {
+            'id': 'release-0',
+            'target_type': 'revision',
+            'target': 'revision-sha1',
+            'target_url': '/api/1/revision/revision-sha1/',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
         }
 
         mock_service.lookup_release.return_value = stub_release
@@ -390,7 +407,51 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_release)
+        self.assertEquals(response_data, expected_release)
+
+        mock_service.lookup_release.assert_called_once_with('release-0')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_release_target_type_not_a_revision(self, mock_service):
+        # given
+        stub_release = {
+            'id': 'release-0',
+            'target_type': 'other-stuff',
+            'target': 'other-stuff-checksum',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
+        }
+
+        expected_release = {
+            'id': 'release-0',
+            'target_type': 'other-stuff',
+            'target': 'other-stuff-checksum',
+            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
+            "synthetic": True,
+            'author': {
+                'name': 'author release name',
+                'email': 'author@email',
+            },
+        }
+
+        mock_service.lookup_release.return_value = stub_release
+
+        # when
+        rv = self.app.get('/api/1/release/release-0/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_release)
+
+        mock_service.lookup_release.assert_called_once_with('release-0')
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -424,7 +485,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'message': 'synthetic revision message',
             'date_offset': 0,
             'committer_date_offset': 0,
-            'parents': [],
+            'parents': ['8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'],
             'type': 'tar',
             'synthetic': True,
             'metadata': {
@@ -440,15 +501,55 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
         mock_service.lookup_revision.return_value = stub_revision
 
+        expected_revision = {
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233e'
+                           'ff7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6'
+                             'a42b7e2a44e6/',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': [
+                '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
+            ],
+            'parent_urls': [
+                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
+                '/history/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'
+            ],
+            'type': 'tar',
+            'synthetic': True,
+            'metadata': {
+                'original_artifact': [{
+                    'archive_type': 'tar',
+                    'name': 'webbase-5.7.0.tar.gz',
+                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
+                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
+                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
+                    '309d36484e7edf7bb912'
+                }]
+            },
+        }
+
         # when
-        rv = self.app.get('/api/1/revision/revision-0/')
+        rv = self.app.get('/api/1/revision/'
+                          '18d8be353ed3480476f032475e7c233eff7371d5/')
 
         # then
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_revision)
+        self.assertEquals(response_data, expected_revision)
+
+        mock_service.lookup_revision.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -481,11 +582,37 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'message': 'synthetic revision message',
             'date_offset': 0,
             'committer_date_offset': 0,
-            'parents': [],
+            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
             'type': 'tar',
             'synthetic': True,
         }]
         mock_service.lookup_revision_log.return_value = stub_revision
+
+        expected_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
+                           'f7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a'
+                             '42b7e2a44e6/',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': [
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+            ],
+            'parent_urls': [
+                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
+                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+            ],
+            'type': 'tar',
+            'synthetic': True,
+        }]
 
         # when
         rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42'
@@ -496,7 +623,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_revision)
+        self.assertEquals(response_data, expected_revisions)
 
         mock_service.lookup_revision_log.assert_called_once_with(
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
@@ -522,6 +649,43 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_revision_log.assert_called_once_with(
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_revision_history(self, mock_service):
+        # for readability purposes, we use:
+        # - sha1 as 3 letters (url are way too long otherwise to respect pep8)
+        # - only keys with modification steps (all other keys are kept as is)
+
+        # given
+        stub_revision = {
+            'id': '883',
+            'children': ['777', '999'],
+            'parents': [],
+            'directory': '272'
+        }
+
+        mock_service.lookup_revision_with_context.return_value = stub_revision
+
+        # then
+        rv = self.app.get('/api/1/revision/666/history/883/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+
+        self.assertEquals(response_data, {
+            'id': '883',
+            'url': '/api/1/revision/883/',
+            'history_url': '/api/1/revision/883/log/',
+            'children': ['777', '999'],
+            'children_urls': ['/api/1/revision/666/history/777/',
+                              '/api/1/revision/666/history/999/'],
+            'parents': [],
+            'parent_urls': [],
+            'directory': '272',
+            'directory_url': '/api/1/directory/272/'
+        })
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -565,10 +729,35 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_directory(self, mock_service):
         # given
-        stub_directory = [{
-            'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
-        }]
-        mock_service.lookup_directory.return_value = stub_directory
+        stub_directories = [
+            {
+                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'type': 'file',
+                'target': '4568be353ed3480476f032475e7c233eff737123',
+            },
+            {
+                'sha1_git': '1d518d8be353ed3480476f032475e7c233eff737',
+                'type': 'dir',
+                'target': '8be353ed3480476f032475e7c233eff737123456',
+            }]
+
+        expected_directories = [
+            {
+                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'type': 'file',
+                'target': '4568be353ed3480476f032475e7c233eff737123',
+                'target_url': '/api/1/content/'
+                'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
+            },
+            {
+                'sha1_git': '1d518d8be353ed3480476f032475e7c233eff737',
+                'type': 'dir',
+                'target': '8be353ed3480476f032475e7c233eff737123456',
+                'target_url':
+                '/api/1/directory/8be353ed3480476f032475e7c233eff737123456/',
+            }]
+
+        mock_service.lookup_directory.return_value = stub_directories
 
         # when
         rv = self.app.get('/api/1/directory/'
@@ -579,7 +768,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_directory)
+        self.assertEquals(response_data, expected_directories)
+
+        mock_service.lookup_directory.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.ui.api.service')
     @istest

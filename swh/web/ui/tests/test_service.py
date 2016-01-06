@@ -6,11 +6,11 @@
 import datetime
 
 from nose.tools import istest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 
 from swh.core.hashutil import hex_to_hash
 from swh.web.ui import service
-from swh.web.ui.exc import BadInputExc
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.tests import test_app
 
 
@@ -269,6 +269,130 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             self.assertIn('sha1_git supported', cm.exception.args[0])
 
         self.storage.release_get.called = False
+
+    @istest
+    def lookup_revision_with_context_ko_not_a_sha1_1(self):
+        # given
+        sha1_git_root = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4' \
+                        'daf51aea892abe'
+        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
+            self.assertIn('Only sha1_git is supported', cm.exception.args[0])
+
+    @istest
+    def lookup_revision_with_context_ko_not_a_sha1_2(self):
+        # given
+        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f6' \
+                   '2d4daf51aea892abe'
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
+            self.assertIn('Only sha1_git is supported', cm.exception.args[0])
+
+    @patch('swh.web.ui.service.lookup_revision')
+    @istest
+    def lookup_revision_with_context_ko_sha1_git_does_not_exist(self, mock):
+        # given
+        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
+
+        mock.return_value = None
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
+            self.assertIn('Revision 777777bdf3629f916219feb3dcc7393ded1bc8db'
+                          ' not found', cm.exception.args[0])
+
+        mock.assert_called_once_with(sha1_git)
+
+    @patch('swh.web.ui.service.lookup_revision')
+    @istest
+    def lookup_revision_with_context_ko_root_sha1_git_does_not_exist(self,
+                                                                     mock):
+        # given
+        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
+
+        mock.side_effect = ['foo', None]
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
+            self.assertIn('Revision 65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+                          ' not found', cm.exception.args[0])
+
+        mock.assert_has_calls([call(sha1_git), call(sha1_git_root)])
+
+    @patch('swh.web.ui.service.lookup_revision')
+    @istest
+    def lookup_revision_with_context(self, mock):
+        # given
+        stub_revisions = [
+            {
+                'id': b'666' + 17 * b'\x00',
+                'parents': [b'999'],
+            },
+            {
+                'id': b'999',
+                'parents': [b'777', b'883' + 17 * b'\x00', b'888'],
+            },
+            {
+                'id': b'777',
+                'parents': [b'883' + 17 * b'\x00'],
+            },
+            {
+                'id': b'883' + 17 * b'\x00',
+                'parents': [],
+                'directory': b'278',
+            },
+            {
+                'id': b'888',
+                'parents': [b'889'],
+            },
+            {
+                'id': b'889',
+                'parents': [],
+            },
+        ]
+
+        # lookup revision first 883, then 666 (both exists)
+        mock.side_effect = [
+            {
+                'id': '383833' + 17 * '00',
+                'parents': [],
+                'directory': '323738',
+            },
+            {
+                'id': '363636' + 17 * '00',
+                'parents': ['393939'],
+            },
+        ]
+
+        self.storage.revision_log = MagicMock(
+            return_value=stub_revisions)
+
+        # when
+        sha1_git_root = '363636' + 17 * '00'  # (ascii code for 666)
+        sha1_git = '383833' + 17 * '00'       # (ascii code for 883)
+        actual_revisions = service.lookup_revision_with_context(sha1_git_root,
+                                                                sha1_git)
+
+        # then
+        self.assertEquals(actual_revisions, {
+            'id': '383833' + 17 * '00',
+            'parents': [],
+            'children': ['393939', '373737'],
+            'directory': '323738',
+        })
+
+        self.storage.revision_log.assert_called_with(
+            hex_to_hash(sha1_git_root))
 
     @istest
     def lookup_revision(self):

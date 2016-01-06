@@ -67,11 +67,11 @@ def search():
         data = request.args
     elif request.method == 'POST':
         data = request.data
+        # or hash and search a file
+        file = request.files.get('filename')
 
     # could either be a query for sha1 hash
     q = data.get('q')
-    # or hash and search a file
-    file = request.files.get('filename')
 
     messages = []
 
@@ -85,7 +85,7 @@ def search():
         except BadInputExc as e:
             messages.append(str(e))
 
-    if file:
+    if file and file.filename:
         env['file'] = file
         try:
             uploaded_content = service.upload_and_search(file)

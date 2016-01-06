@@ -10,6 +10,11 @@ from unittest.mock import patch
 from swh.web.ui.exc import BadInputExc
 
 
+class FileMock():
+    def __init__(self, filename):
+        self.filename = filename
+
+
 class ViewTestCase(test_app.SWHViewTestCase):
     render_template = False
 
@@ -156,7 +161,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # given
         mock_request.data = {}
         mock_request.method = 'POST'
-        mock_request.files = dict(filename='foobar')
+        mock_request.files = dict(filename=FileMock('foobar'))
         mock_service.upload_and_search.side_effect = BadInputExc(
             'error bad input')
 
@@ -179,7 +184,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # given
         mock_request.data = {}
         mock_request.method = 'POST'
-        mock_request.files = dict(filename='foobar')
+        mock_request.files = dict(filename=FileMock('foobar'))
         mock_service.upload_and_search.return_value = {'filename': 'foobar',
                                                        'sha1': 'blahhash',
                                                        'found': False}
@@ -204,7 +209,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # given
         mock_request.data = {}
         mock_request.method = 'POST'
-        mock_request.files = dict(filename='foobar')
+        mock_request.files = dict(filename=FileMock('foobar'))
         mock_service.upload_and_search.return_value = {'filename': 'foobar',
                                                        'sha1': '123456789',
                                                        'found': True}
@@ -349,7 +354,6 @@ class ViewTestCase(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/directory/some-sha1/')
 
         # then
-        print(self.templates)
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('directory.html')
         self.assertEqual(self.get_context_variable('message'),
@@ -712,8 +716,6 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # then
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('revision.html')
-        print(self.get_context_variable('revision'))
-        print(expected_revision)
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(self.get_context_variable('revision'),
                          expected_revision)
