@@ -20,13 +20,12 @@ user URLs:
 * /content/[<HASH_ALGO>:]<HASH>
 * /content/[<HASH_ALGO>:]<HASH>/raw
 * /directory/<SHA1_GIT>
-* /organization/<ORGANIZATION_ID>
 * /origin/<ORIGIN_ID>
 * /person/<PERSON_ID>
-* /project/<PROJECT_ID>
 * /release/<SHA1_GIT>
 * /revision/<SHA1_GIT>
 * /revision/<SHA1_GIT>/log
+* /entity/<entity_uuid>
 
 Currently, the above endpoints are mounted below the top-level /browse/
 namespace.
