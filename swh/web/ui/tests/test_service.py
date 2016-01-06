@@ -273,39 +273,39 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_with_context_ko_not_a_sha1_1(self):
         # given
-        root_sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4' \
+        sha1_git_root = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4' \
                         'daf51aea892abe'
         sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
 
         # when
         with self.assertRaises(BadInputExc) as cm:
-            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
             self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
     @istest
     def lookup_revision_with_context_ko_not_a_sha1_2(self):
         # given
-        root_sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f6' \
                    '2d4daf51aea892abe'
 
         # when
         with self.assertRaises(BadInputExc) as cm:
-            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
             self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
     @patch('swh.web.ui.service.lookup_revision')
     @istest
     def lookup_revision_with_context_ko_sha1_git_does_not_exist(self, mock):
         # given
-        root_sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
 
         mock.return_value = None
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
             self.assertIn('Revision 777777bdf3629f916219feb3dcc7393ded1bc8db'
                           ' not found', cm.exception.args[0])
 
@@ -316,18 +316,18 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     def lookup_revision_with_context_ko_root_sha1_git_does_not_exist(self,
                                                                      mock):
         # given
-        root_sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
 
         mock.side_effect = ['foo', None]
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
             self.assertIn('Revision 65a55bbdf3629f916219feb3dcc7393ded1bc8db'
                           ' not found', cm.exception.args[0])
 
-        mock.assert_has_calls([call(sha1_git), call(root_sha1_git)])
+        mock.assert_has_calls([call(sha1_git), call(sha1_git_root)])
 
     @patch('swh.web.ui.service.lookup_revision')
     @istest
@@ -361,6 +361,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             },
         ]
 
+        # lookup revision first 883, then 666 (both exists)
         mock.side_effect = [
             {
                 'id': '383833' + 17 * '00',
@@ -377,9 +378,9 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             return_value=stub_revisions)
 
         # when
-        root_sha1_git = '363636' + 17 * '00'  # (ascii code for 666)
+        sha1_git_root = '363636' + 17 * '00'  # (ascii code for 666)
         sha1_git = '383833' + 17 * '00'       # (ascii code for 883)
-        actual_revisions = service.lookup_revision_with_context(root_sha1_git,
+        actual_revisions = service.lookup_revision_with_context(sha1_git_root,
                                                                 sha1_git)
 
         # then
@@ -391,7 +392,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         })
 
         self.storage.revision_log.assert_called_with(
-            hex_to_hash(root_sha1_git))
+            hex_to_hash(sha1_git_root))
 
     @istest
     def lookup_revision(self):
