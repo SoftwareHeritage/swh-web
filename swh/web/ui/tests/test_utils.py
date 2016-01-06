@@ -147,13 +147,13 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def filter_field_keys_other(self):
         # given
-        inputSet = {1, 2}
+        input_set = {1, 2}
 
         # when
-        actual_res = utils.filter_field_keys(inputSet, {'a', '1'})
+        actual_res = utils.filter_field_keys(input_set, {'a', '1'})
 
         # then
-        self.assertEqual(actual_res, inputSet)
+        self.assertEqual(actual_res, input_set)
 
     @istest
     def fmap(self):
