@@ -176,11 +176,12 @@ def lookup_revision(rev_sha1_git):
     return None
 
 
-def lookup_revision_log(rev_sha1_git):
+def lookup_revision_log(rev_sha1_git, limit=100):
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
         revision_sha1_git: The revision's sha1 as hexadecimal
+        limit: the maximum number of revisions returned
 
     Returns:
         Revision information as dict.
@@ -189,11 +190,11 @@ def lookup_revision_log(rev_sha1_git):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    algo, hBinSha1 = query.parse_hash(rev_sha1_git)
+    algo, bin_sha1 = query.parse_hash(rev_sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    revision_entries = main.storage().revision_log(hBinSha1)
+    revision_entries = main.storage().revision_log(bin_sha1, limit)
 
     return map(converters.from_revision, revision_entries)
 
@@ -226,9 +227,9 @@ def lookup_revision_with_context(sha1_git_root, sha1_git):
     if not revision_root:
         raise NotFoundExc('Revision %s not found' % sha1_git_root)
 
-    hBinRootSha1 = hashutil.hex_to_hash(sha1_git_root)
+    bin_sha1_root = hashutil.hex_to_hash(sha1_git_root)
 
-    revision_log = main.storage().revision_log(hBinRootSha1)
+    revision_log = main.storage().revision_log(bin_sha1_root)
 
     parents = {}
     children = defaultdict(list)

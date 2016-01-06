@@ -18,16 +18,16 @@ class RendererTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def SWHFilterRenderer_do_nothing(self, mock_request):
+    def swh_filter_renderer_do_nothing(self, mock_request):
         # given
         mock_request.args = {}
 
-        swhFilterRenderer = renderers.SWHFilterEnricher()
+        swh_filter_renderer = renderers.SWHFilterEnricher()
 
         input_data = {'a': 'some-data'}
 
         # when
-        actual_data = swhFilterRenderer.filter_by_fields(input_data)
+        actual_data = swh_filter_renderer.filter_by_fields(input_data)
 
         # then
         self.assertEquals(actual_data, input_data)
@@ -35,18 +35,18 @@ class RendererTestCase(unittest.TestCase):
     @patch('swh.web.ui.renderers.utils')
     @patch('swh.web.ui.renderers.request')
     @istest
-    def SWHFilterRenderer_do_filter(self, mock_request, mock_utils):
+    def swh_filter_renderer_do_filter(self, mock_request, mock_utils):
         # given
         mock_request.args = {'fields': 'a,c'}
         mock_utils.filter_field_keys.return_value = {'a': 'some-data'}
 
-        swhFilterRenderer = renderers.SWHFilterEnricher()
+        swh_filter_renderer = renderers.SWHFilterEnricher()
 
         input_data = {'a': 'some-data',
                       'b': 'some-other-data'}
 
         # when
-        actual_data = swhFilterRenderer.filter_by_fields(input_data)
+        actual_data = swh_filter_renderer.filter_by_fields(input_data)
 
         # then
         self.assertEquals(actual_data, {'a': 'some-data'})
@@ -56,10 +56,10 @@ class RendererTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def yamlRenderer_without_filter(self, mock_request):
+    def yaml_renderer_without_filter(self, mock_request):
         # given
         mock_request.args = {}
-        yamlRenderer = renderers.YAMLRenderer()
+        yaml_renderer = renderers.YAMLRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
@@ -68,17 +68,17 @@ class RendererTestCase(unittest.TestCase):
         expected_data = input_data
 
         # when
-        actual_data = yamlRenderer.render(input_data, 'application/yaml')
+        actual_data = yaml_renderer.render(input_data, 'application/yaml')
 
         # then
         self.assertEqual(yaml.load(actual_data), expected_data)
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def yamlRenderer(self, mock_request):
+    def yaml_renderer(self, mock_request):
         # given
         mock_request.args = {'fields': 'type,target'}
-        yamlRenderer = renderers.YAMLRenderer()
+        yaml_renderer = renderers.YAMLRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
@@ -87,17 +87,17 @@ class RendererTestCase(unittest.TestCase):
         expected_data = {'target': 'sha1-dir', 'type': 'dir'}
 
         # when
-        actual_data = yamlRenderer.render(input_data, 'application/yaml')
+        actual_data = yaml_renderer.render(input_data, 'application/yaml')
 
         # then
         self.assertEqual(yaml.load(actual_data), expected_data)
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def jsonRenderer_basic(self, mock_request):
+    def json_renderer_basic(self, mock_request):
         # given
         mock_request.args = {}
-        jsonRenderer = renderers.SWHJSONRenderer()
+        json_renderer = renderers.SWHJSONRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
@@ -106,7 +106,7 @@ class RendererTestCase(unittest.TestCase):
         expected_data = input_data
 
         # when
-        actual_data = jsonRenderer.render(input_data, MediaType(
+        actual_data = json_renderer.render(input_data, MediaType(
             'application/json'))
 
         # then
@@ -114,10 +114,10 @@ class RendererTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def jsonRenderer_basic_with_filter(self, mock_request):
+    def json_renderer_basic_with_filter(self, mock_request):
         # given
         mock_request.args = {'fields': 'target'}
-        jsonRenderer = renderers.SWHJSONRenderer()
+        json_renderer = renderers.SWHJSONRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
@@ -126,7 +126,7 @@ class RendererTestCase(unittest.TestCase):
         expected_data = {'target': 'sha1-dir'}
 
         # when
-        actual_data = jsonRenderer.render(input_data, MediaType(
+        actual_data = json_renderer.render(input_data, MediaType(
             'application/json'))
 
         # then
@@ -134,18 +134,18 @@ class RendererTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def jsonRenderer_basic_with_filter_and_jsonp(self, mock_request):
+    def json_renderer_basic_with_filter_and_jsonp(self, mock_request):
         # given
         mock_request.args = {'fields': 'target',
                              'callback': 'jsonpfn'}
-        jsonRenderer = renderers.SWHJSONRenderer()
+        json_renderer = renderers.SWHJSONRenderer()
 
         input_data = {'target': 'sha1-dir',
                       'type': 'dir',
                       'dir-id': 'dir-id-sha1-git'}
 
         # when
-        actual_data = jsonRenderer.render(input_data, MediaType(
+        actual_data = json_renderer.render(input_data, MediaType(
             'application/json'))
 
         # then
@@ -153,26 +153,26 @@ class RendererTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def jsonpEnricher_basic_with_filter_and_jsonp(self, mock_request):
+    def jsonp_enricher_basic_with_filter_and_jsonp(self, mock_request):
         # given
         mock_request.args = {'callback': 'jsonpfn'}
-        jsonpEnricher = renderers.JSONPEnricher()
+        jsonp_enricher = renderers.JSONPEnricher()
 
         # when
-        actual_output = jsonpEnricher.enrich_with_jsonp({'output': 'test'})
+        actual_output = jsonp_enricher.enrich_with_jsonp({'output': 'test'})
 
         # then
         self.assertEqual(actual_output, "jsonpfn({'output': 'test'})")
 
     @patch('swh.web.ui.renderers.request')
     @istest
-    def jsonpEnricher_do_nothing(self, mock_request):
+    def jsonp_enricher_do_nothing(self, mock_request):
         # given
         mock_request.args = {}
-        jsonpEnricher = renderers.JSONPEnricher()
+        jsonp_enricher = renderers.JSONPEnricher()
 
         # when
-        actual_output = jsonpEnricher.enrich_with_jsonp({'output': 'test'})
+        actual_output = jsonp_enricher.enrich_with_jsonp({'output': 'test'})
 
         # then
         self.assertEqual(actual_output, {'output': 'test'})
@@ -203,17 +203,21 @@ sha1_git.
     Information on the revision if found.</p>
 <p>Raises:
     BadInputExc in case of unknown algo_hash or bad hash
-    NotFoundExc if the revision is not found.</p>"""
+    NotFoundExc if the revision is not found.</p>
+<p>Example:
+    blah</p>"""
         expected_docstring = """<p>Show all revisions (~git log) starting from
 sha1_git.
    The first element returned is the given sha1_git.</p>
-<p><strong>Args:</strong><br />&nbsp;&nbsp;
+<p><h4>Args:</h4>&nbsp;&nbsp;
     sha1_git: the revision's hash</p>
-<p><strong>Returns:</strong><br />&nbsp;&nbsp;
+<p><h4>Returns:</h4>&nbsp;&nbsp;
     Information on the revision if found.</p>
-<p><strong>Raises:</strong><br />&nbsp;&nbsp;
+<p><h4>Raises:</h4>&nbsp;&nbsp;
     BadInputExc in case of unknown algo_hash or bad hash
-    NotFoundExc if the revision is not found.</p>"""
+    NotFoundExc if the revision is not found.</p>
+<p><h4>Example:</h4>&nbsp;&nbsp;
+    blah</p>"""
 
         self.assertEquals(renderers.safe_docstring_display(docstring),
                           expected_docstring)
