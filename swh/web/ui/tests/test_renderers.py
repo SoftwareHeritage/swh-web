@@ -190,3 +190,30 @@ class RendererTestCase(unittest.TestCase):
         other_content = '{"url": "/something/api/1/other"}'
         self.assertEquals(renderers.urlize_api_links(other_content),
                           other_content)
+
+    @istest
+    def safe_docstring_display(self):
+        # update api link with html links content with links
+        docstring = """<p>Show all revisions (~git log) starting from
+sha1_git.
+   The first element returned is the given sha1_git.</p>
+<p>Args:
+    sha1_git: the revision's hash</p>
+<p>Returns:
+    Information on the revision if found.</p>
+<p>Raises:
+    BadInputExc in case of unknown algo_hash or bad hash
+    NotFoundExc if the revision is not found.</p>"""
+        expected_docstring = """<p>Show all revisions (~git log) starting from
+sha1_git.
+   The first element returned is the given sha1_git.</p>
+<p><strong>Args:</strong><br />&nbsp;&nbsp;
+    sha1_git: the revision's hash</p>
+<p><strong>Returns:</strong><br />&nbsp;&nbsp;
+    Information on the revision if found.</p>
+<p><strong>Raises:</strong><br />&nbsp;&nbsp;
+    BadInputExc in case of unknown algo_hash or bad hash
+    NotFoundExc if the revision is not found.</p>"""
+
+        self.assertEquals(renderers.safe_docstring_display(docstring),
+                          expected_docstring)

@@ -85,6 +85,14 @@ def urlize_api_links(content):
     return re.sub(r'"(/api/.*)"', r'"<a href="\1">\1</a>"', content)
 
 
+def safe_docstring_display(docstring):
+    """Utility function to safely decorate docstring in browsable api."""
+    print(docstring)
+    src = r'(Args|Raises|Throws|Returns):?.*'
+    dest = r'<strong>\1:</strong><br />&nbsp;&nbsp;'
+    return re.sub(src, dest, docstring)
+
+
 class SWHBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     """SWH's browsable api renderer.
 
