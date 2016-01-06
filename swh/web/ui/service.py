@@ -176,11 +176,12 @@ def lookup_revision(rev_sha1_git):
     return None
 
 
-def lookup_revision_log(rev_sha1_git):
+def lookup_revision_log(rev_sha1_git, limit=100):
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
         revision_sha1_git: The revision's sha1 as hexadecimal
+        limit: the maximum number of revisions returned
 
     Returns:
         Revision information as dict.
@@ -193,7 +194,7 @@ def lookup_revision_log(rev_sha1_git):
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    revision_entries = main.storage().revision_log(bin_sha1)
+    revision_entries = main.storage().revision_log(bin_sha1, limit)
 
     return map(converters.from_revision, revision_entries)
 
