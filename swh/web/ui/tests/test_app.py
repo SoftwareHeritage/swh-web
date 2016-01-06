@@ -70,6 +70,7 @@ class SWHApiTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app, cls.app_config, cls.storage, _ = create_app()
+        cls.maxDiff = None
 
 
 class SWHViewTestCase(TestCase):

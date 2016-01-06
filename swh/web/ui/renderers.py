@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import re
 import yaml
 
 from flask import make_response, request
@@ -77,6 +78,11 @@ class SWHJSONRenderer(renderers.JSONRenderer,
         data = self.filter_by_fields(data)
         res = super().render(data, media_type, **options)
         return self.enrich_with_jsonp(res)
+
+
+def urlize_api_links(content):
+    """Utility function for decorating api links in browsable api."""
+    return re.sub(r'"(/api/.*)"', r'"<a href="\1">\1</a>"', content)
 
 
 class SWHBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):

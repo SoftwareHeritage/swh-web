@@ -176,3 +176,17 @@ class RendererTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_output, {'output': 'test'})
+
+    @istest
+    def urlize_api_links(self):
+        # update api link with html links content with links
+        content = '{"url": "/api/1/abc/"}'
+        expected_content = '{"url": "<a href=\"/api/1/abc/\">/api/1/abc/</a>"}'
+
+        self.assertEquals(renderers.urlize_api_links(content),
+                          expected_content)
+
+        # will do nothing since it's not an api url
+        other_content = '{"url": "/something/api/1/other"}'
+        self.assertEquals(renderers.urlize_api_links(other_content),
+                          other_content)
