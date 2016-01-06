@@ -203,17 +203,21 @@ sha1_git.
     Information on the revision if found.</p>
 <p>Raises:
     BadInputExc in case of unknown algo_hash or bad hash
-    NotFoundExc if the revision is not found.</p>"""
+    NotFoundExc if the revision is not found.</p>
+<p>Example:
+    blah</p>"""
         expected_docstring = """<p>Show all revisions (~git log) starting from
 sha1_git.
    The first element returned is the given sha1_git.</p>
-<p><strong>Args:</strong><br />&nbsp;&nbsp;
+<p><h4>Args:</h4>&nbsp;&nbsp;
     sha1_git: the revision's hash</p>
-<p><strong>Returns:</strong><br />&nbsp;&nbsp;
+<p><h4>Returns:</h4>&nbsp;&nbsp;
     Information on the revision if found.</p>
-<p><strong>Raises:</strong><br />&nbsp;&nbsp;
+<p><h4>Raises:</h4>&nbsp;&nbsp;
     BadInputExc in case of unknown algo_hash or bad hash
-    NotFoundExc if the revision is not found.</p>"""
+    NotFoundExc if the revision is not found.</p>
+<p><h4>Example:</h4>&nbsp;&nbsp;
+    blah</p>"""
 
         self.assertEquals(renderers.safe_docstring_display(docstring),
                           expected_docstring)
