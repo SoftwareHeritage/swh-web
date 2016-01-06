@@ -392,7 +392,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         })
 
         self.storage.revision_log.assert_called_with(
-            hex_to_hash(sha1_git_root))
+            hex_to_hash(sha1_git_root), 100)
 
     @istest
     def lookup_revision(self):

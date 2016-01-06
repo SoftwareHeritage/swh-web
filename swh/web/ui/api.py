@@ -219,6 +219,8 @@ def api_revision_history(sha1_git_root, sha1_git):
     Args:
         sha1_git_root: latest revision of the browsed history
         sha1_git: one of sha1_git_root's ancestors
+        limit: optional query parameter to limit the revisions log
+        (default to 100)
 
     Returns:
         Information on sha1_git if it is an ancestor of sha1_git_root
@@ -230,11 +232,14 @@ def api_revision_history(sha1_git_root, sha1_git):
         ancestor of sha1_git_root
 
     """
+    limit = int(request.args.get('limit', '100'))
+
     if sha1_git == sha1_git_root:
         return redirect(url_for('api_revision', sha1_git=sha1_git))
 
     revision = service.lookup_revision_with_context(sha1_git_root,
-                                                    sha1_git)
+                                                    sha1_git,
+                                                    limit)
     if not revision:
         raise NotFoundExc(
             "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
@@ -250,6 +255,8 @@ def api_revision_log(sha1_git):
 
     Args:
         sha1_git: the revision's hash
+        limit: optional query parameter to limit the revisions log
+        (default to 100)
 
     Returns:
         Information on the revision if found.
@@ -259,9 +266,14 @@ def api_revision_log(sha1_git):
         NotFoundExc if the revision is not found.
 
     """
+    limit = int(request.args.get('limit', '100'))
+
+    def lookup_revision_log_with_limit(s, limit=limit):
+        return service.lookup_revision_log(s, limit)
+
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
     return _api_lookup(sha1_git,
-                       lookup_fn=service.lookup_revision_log,
+                       lookup_fn=lookup_revision_log_with_limit,
                        error_msg_if_not_found=error_msg,
                        enrich_fn=enrich_revision_with_urls)
 

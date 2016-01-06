@@ -626,7 +626,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, expected_revisions)
 
         mock_service.lookup_revision_log.assert_called_once_with(
-            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
+            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 100)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -636,7 +636,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42b7'
-                          'e2a44e6/log/')
+                          'e2a44e6/log/?limit=10')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -648,7 +648,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             ' 8834ef7e7c357ce2af928115c6c6a42b7e2a44e6 not found.'})
 
         mock_service.lookup_revision_log.assert_called_once_with(
-            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
+            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 10)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -686,6 +686,24 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'directory': '272',
             'directory_url': '/api/1/directory/272/'
         })
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+            '666', '883', 100)
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_revision_history_not_found(self, mock_service):
+        # given
+        mock_service.lookup_revision_with_context.return_value = None
+
+        # then
+        rv = self.app.get('/api/1/revision/999/history/338/?limit=5')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+                        '999', '338', 5)
 
     @patch('swh.web.ui.api.service')
     @istest

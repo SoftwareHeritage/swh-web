@@ -199,7 +199,7 @@ def lookup_revision_log(rev_sha1_git, limit=100):
     return map(converters.from_revision, revision_entries)
 
 
-def lookup_revision_with_context(sha1_git_root, sha1_git):
+def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     """Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
 
@@ -208,6 +208,7 @@ def lookup_revision_with_context(sha1_git_root, sha1_git):
     Args:
         sha1_git_root: latest revision of the browsed history
         sha1_git: one of sha1_git_root's ancestors
+        limit: limit the lookup to 100 revisions back
 
     Returns:
         Information on sha1_git if it is an ancestor of sha1_git_root
@@ -229,7 +230,7 @@ def lookup_revision_with_context(sha1_git_root, sha1_git):
 
     bin_sha1_root = hashutil.hex_to_hash(sha1_git_root)
 
-    revision_log = main.storage().revision_log(bin_sha1_root)
+    revision_log = main.storage().revision_log(bin_sha1_root, limit)
 
     parents = {}
     children = defaultdict(list)
