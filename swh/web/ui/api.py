@@ -308,6 +308,59 @@ def api_revision_history(sha1_git_root, sha1_git):
     return enrich_revision_with_urls(revision, context=sha1_git_root)
 
 
+@app.route('/api/1/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/api/1/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/<path:dir_path>/')
+def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
+    """Return information about directory pointed to by the revision
+    defined as: revision sha1_git, limited to the sub-graph of all
+    transitive parents of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
+        dir_path: optional directory pointed to by that revision.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on the directory pointed to by that revision.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root or the path referenced does not exist
+
+    """
+    limit = int(request.args.get('limit', '100'))
+
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('api_directory_with_revision',
+                                sha1_git=sha1_git,
+                                dir_path=dir_path))
+
+    revision = service.lookup_revision_with_context(sha1_git_root,
+                                                    sha1_git,
+                                                    limit)
+    if not revision:
+        raise NotFoundExc(
+            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
+            % (sha1_git, sha1_git_root))
+
+    directory_entries = service.lookup_directory_with_revision(revision['id'],
+                                                               dir_path)
+
+    def enrich_directory_local(dir, context=request.path):
+        return enrich_directory(dir, context)
+
+    return list(map(enrich_directory_local, directory_entries))
+
+
 @app.route('/api/1/revision/<string:sha1_git>/log/')
 def api_revision_log(sha1_git):
     """Show all revisions (~git log) starting from sha1_git.
