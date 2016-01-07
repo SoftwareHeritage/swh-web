@@ -256,11 +256,8 @@ def api_directory_with_revision(
     def lookup_directory_with_revision_local(sha1_git, dir_path=dir_path):
         return service.lookup_directory_with_revision(sha1_git, dir_path)
 
-    current_url = '/api/1/revision/%s/directory/%s' % (
-        sha1_git, dir_path+'/' if dir_path else '')
-
-    def enrich_directory_local(dir, context=current_url):
-        return enrich_directory(dir, context)
+    def enrich_directory_local(dir, context_url=request.path):
+        return enrich_directory(dir, context_url)
 
     return _api_lookup(
         sha1_git,
