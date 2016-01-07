@@ -427,6 +427,175 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.revision_log.assert_called_with(
             sha1_git_root_bin, 100)
 
+    @istest
+    def lookup_revision_with_directory_bad_input(self):
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision_with_directory('123', 'some/path')
+            self.assertIn('Only sha1_git is supported', cm.exception.args[0])
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_revision_with_directory_revision_not_found(self,
+                                                          mock_query,
+                                                          mock_backend):
+        # given
+        mock_query.parse_hash.return_value = 'sha1', b'123'
+        mock_backend.revision_get.return_value = None
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_revision_with_directory('123')
+            self.assertIn('Revision 123 not found', cm.exception.args[0])
+
+        mock_query.parse_hash.assert_called_once_with('123')
+        mock_backend.revision_get.assert_called_once_with(b'123')
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_revision_with_directory_revision_without_path(self,
+                                                             mock_query,
+                                                             mock_backend):
+        # given
+        mock_query.parse_hash.return_value = 'sha1', b'123'
+
+        dir_id = b'dir-id-as-sha1'
+        mock_backend.revision_get.return_value = {
+            'directory': dir_id,
+        }
+
+        stub_dir_entries = [{
+            'id': b'123',
+            'type': 'dir'
+        }, {
+            'id': b'456',
+            'type': 'file'
+        }]
+
+        mock_backend.directory_get.return_value = stub_dir_entries
+
+        # when
+        actual_directory_entries = service.lookup_revision_with_directory(
+            '123')
+
+        self.assertEqual(list(actual_directory_entries), stub_dir_entries)
+
+        mock_query.parse_hash.assert_called_once_with(
+            '123')
+        mock_backend.revision_get.assert_called_once_with(b'123')
+        mock_backend.directory_get.assert_called_once_with(dir_id)
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_revision_with_directory_revision_with_path(self,
+                                                          mock_query,
+                                                          mock_backend):
+        # given
+        mock_query.parse_hash.return_value = 'sha1', b'123'
+
+        dir_id = b'dir-id-as-sha1'
+        mock_backend.revision_get.return_value = {
+            'directory': dir_id,
+        }
+
+        stub_dir_ls = [
+            {
+                'type': 'dir',
+                'name': b'some/path',
+                'target': b'456'
+            },
+            {
+                'type': 'file',
+                'name': b'something-else.hs',
+                'target': b'789'
+            }
+        ]
+
+        stub_dir_entries = [{
+            'id': b'12',
+            'type': 'dir'
+        }, {
+            'id': b'34',
+            'type': 'file'
+        }]
+
+        mock_backend.directory_get.side_effect = [
+            stub_dir_ls,
+            stub_dir_entries
+        ]
+
+        # when
+        actual_directory_entries = service.lookup_revision_with_directory(
+            '123',
+            'some/path')
+
+        self.assertEqual(list(actual_directory_entries), stub_dir_entries)
+
+        mock_query.parse_hash.assert_called_once_with(
+            '123')
+        mock_backend.revision_get.assert_called_once_with(b'123')
+        mock_backend.directory_get.assert_has_calls([
+            call(b'dir-id-as-sha1', recursive=True),
+            call(b'456')
+        ])
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_revision_with_directory_revision_with_path_ko_dir_not_found(
+            self,
+            mock_query,
+            mock_backend):
+        # given
+        mock_query.parse_hash.return_value = 'sha1', b'123'
+
+        dir_id = b'dir-id-as-sha1'
+        mock_backend.revision_get.return_value = {
+            'directory': dir_id,
+        }
+
+        stub_dir_ls = [
+            {
+                'type': 'file',
+                'name': b'some/path/but-not-a-dir',
+                'target': b'456'
+            },
+            {
+                'type': 'file',
+                'name': b'something-else.hs',
+                'target': b'789'
+            }
+        ]
+
+        stub_dir_entries = [{
+            'id': b'12',
+            'type': 'dir'
+        }, {
+            'id': b'34',
+            'type': 'file'
+        }]
+
+        mock_backend.directory_get.side_effect = [
+            stub_dir_ls,
+            stub_dir_entries
+        ]
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_revision_with_directory(
+                '123',
+                'some/path-but-not-a-dir')
+            self.assertIn("Directory 'some/path/but-not-a-dir' pointed to by" +
+                          " revision 123 not found", cm.exception.args[0])
+
+        mock_query.parse_hash.assert_called_once_with(
+            '123')
+        mock_backend.revision_get.assert_called_once_with(b'123')
+        mock_backend.directory_get.assert_called_once_with(
+            b'dir-id-as-sha1', recursive=True)
+
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision(self, mock_backend):

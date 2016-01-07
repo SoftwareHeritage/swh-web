@@ -184,7 +184,6 @@ def lookup_revision_log(rev_sha1_git, limit=100):
         raise BadInputExc('Only sha1_git is supported.')
 
     revision_entries = backend.revision_log(bin_sha1, limit)
-
     return map(converters.from_revision, revision_entries)
 
 
@@ -263,30 +262,35 @@ def lookup_revision_with_directory(sha1_git, dir_path=None):
         NotFoundExc either if the revision is not found or the path referenced
         does not exist
     """
-    revision = lookup_revision(sha1_git)
+    algo, sha1_git_bin = query.parse_hash(sha1_git)
+    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
+        raise BadInputExc('Only sha1_git is supported.')
+
+    revision = backend.revision_get(sha1_git_bin)
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
 
-    dir_sha1_git = revision['directory']
+    dir_sha1_git_bin = revision['directory']
 
-    if not dir_path:
-        return lookup_directory(dir_sha1_git)
+    if dir_path:
+        directory_entries = backend.directory_get(dir_sha1_git_bin,
+                                                  recursive=True)
+        dir_id = None
+        for entry_dir in directory_entries:
+            name = entry_dir['name'].decode('utf-8')
+            type = entry_dir['type']
+            if name == dir_path and type == 'dir':
+                dir_id = entry_dir['target']
 
-    dir_sha1_git_bin = hashutil.hex_to_hash(dir_sha1_git)
-    directory_entries = backend.directory_get(dir_sha1_git_bin,
-                                              recursive=True)
-    dir_id = None
-    for entry_dir in directory_entries:
-        name = entry_dir['name'].decode('utf-8')
-        type = entry_dir['type']
-        if name == dir_path and type == 'dir':
-            dir_id = hashutil.hash_to_hex(entry_dir['target'])
+        if not dir_id:
+            raise NotFoundExc(
+                "Directory '%s' pointed to by revision %s not found"
+                % (dir_path, sha1_git))
+    else:
+        dir_id = dir_sha1_git_bin
 
-    if not dir_id:
-        raise NotFoundExc("Directory '%s' pointed to by revision %s not found"
-                          % (dir_path, sha1_git))
-
-    return lookup_directory(dir_id)
+    directory_entries = backend.directory_get(dir_id)
+    return map(converters.from_directory_entry, directory_entries)
 
 
 def lookup_content(q):
