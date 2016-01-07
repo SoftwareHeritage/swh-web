@@ -245,7 +245,7 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     return converters.from_revision(revision)
 
 
-def lookup_revision_with_directory(sha1_git, dir_path=None):
+def lookup_directory_with_revision(sha1_git, dir_path=None):
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
     Otherwise, display the directory pointed by dir_path (if it exists).

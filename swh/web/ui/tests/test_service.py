@@ -428,15 +428,15 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             sha1_git_root_bin, 100)
 
     @istest
-    def lookup_revision_with_directory_bad_input(self):
+    def lookup_directory_with_revision_bad_input(self):
         with self.assertRaises(BadInputExc) as cm:
-            service.lookup_revision_with_directory('123', 'some/path')
+            service.lookup_directory_with_revision('123', 'some/path')
             self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_revision_with_directory_revision_not_found(self,
+    def lookup_directory_with_revision_revision_not_found(self,
                                                           mock_query,
                                                           mock_backend):
         # given
@@ -445,7 +445,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_with_directory('123')
+            service.lookup_directory_with_revision('123')
             self.assertIn('Revision 123 not found', cm.exception.args[0])
 
         mock_query.parse_hash.assert_called_once_with('123')
@@ -454,7 +454,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_revision_with_directory_revision_without_path(self,
+    def lookup_directory_with_revision_revision_without_path(self,
                                                              mock_query,
                                                              mock_backend):
         # given
@@ -476,7 +476,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.directory_get.return_value = stub_dir_entries
 
         # when
-        actual_directory_entries = service.lookup_revision_with_directory(
+        actual_directory_entries = service.lookup_directory_with_revision(
             '123')
 
         self.assertEqual(list(actual_directory_entries), stub_dir_entries)
@@ -489,7 +489,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_revision_with_directory_revision_with_path(self,
+    def lookup_directory_with_revision_revision_with_path(self,
                                                           mock_query,
                                                           mock_backend):
         # given
@@ -527,7 +527,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         ]
 
         # when
-        actual_directory_entries = service.lookup_revision_with_directory(
+        actual_directory_entries = service.lookup_directory_with_revision(
             '123',
             'some/path')
 
@@ -544,7 +544,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_revision_with_directory_revision_with_path_ko_dir_not_found(
+    def lookup_directory_with_revision_revision_with_path_ko_dir_not_found(
             self,
             mock_query,
             mock_backend):
@@ -584,7 +584,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_with_directory(
+            service.lookup_directory_with_revision(
                 '123',
                 'some/path-but-not-a-dir')
             self.assertIn("Directory 'some/path/but-not-a-dir' pointed to by" +

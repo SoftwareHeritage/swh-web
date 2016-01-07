@@ -211,7 +211,7 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>')
-def api_revision_with_directory(
+def api_directory_with_revision(
         sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
         dir_path=None):
     """Return information on directory pointed by revision with sha1_git.
@@ -234,12 +234,12 @@ def api_revision_with_directory(
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/directory/
 
     """
-    def lookup_revision_directory(sha1_git, dir_path=dir_path):
-        return service.lookup_revision_with_directory(sha1_git, dir_path)
+    def lookup_directory_with_revision(sha1_git, dir_path=dir_path):
+        return service.lookup_directory_with_revision(sha1_git, dir_path)
 
     return _api_lookup(
         sha1_git,
-        lookup_fn=lookup_revision_directory,
+        lookup_fn=lookup_directory_with_revision,
         error_msg_if_not_found='Revision with sha1_git %s not'
                                ' found.' % sha1_git,
         enrich_fn=enrich_directory)

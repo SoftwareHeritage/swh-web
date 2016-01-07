@@ -707,9 +707,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_revision_with_directory_not_found(self, mock_service):
+    def api_directory_with_revision_not_found(self, mock_service):
         # given
-        mock_service.lookup_revision_with_directory.return_value = None
+        mock_service.lookup_directory_with_revision.return_value = None
 
         # then
         rv = self.app.get('/api/1/revision/999/directory/some/path/to/dir')
@@ -717,14 +717,14 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
 
-        mock_service.lookup_revision_with_directory.assert_called_once_with(
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
                         '999', 'some/path/to/dir')
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_revision_with_directory_not_found_2(self, mock_service):
+    def api_directory_with_revision_not_found_2(self, mock_service):
         # given
-        mock_service.lookup_revision_with_directory.return_value = None
+        mock_service.lookup_directory_with_revision.return_value = None
 
         # then
         rv = self.app.get('/api/1/revision/123/directory/')
@@ -732,12 +732,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
 
-        mock_service.lookup_revision_with_directory.assert_called_once_with(
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
                         '123', None)
 
     @patch('swh.web.ui.api.service')
-    # @istest
-    def api_revision_with_directory(self, mock_service):
+    @istest
+    def api_directory_with_revision(self, mock_service):
         stub_dir = {
             'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
             'type': 'file',
@@ -753,7 +753,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # given
-        mock_service.lookup_revision_with_directory.return_value = stub_dir
+        mock_service.lookup_directory_with_revision.return_value = stub_dir
 
         # then
         rv = self.app.get('/api/1/revision/999/directory/some/path')
@@ -763,7 +763,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, expected_dir)
 
-        mock_service.lookup_revision_with_directory.assert_called_once_with(
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
             '999', 'some/path')
 
     @patch('swh.web.ui.api.service')
