@@ -185,7 +185,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         # then
         self.assertIsNone(actual_directory)
 
-        self.storage.directory_get.assert_called_with(sha1_bin)
+        self.storage.directory_get.assert_called_with(sha1_bin, False)
 
     @istest
     def directory_get(self):
@@ -210,13 +210,13 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.directory_get = MagicMock(
             return_value=stub_dir_entries)
 
-        actual_directory = backend.directory_get(sha1_bin)
+        actual_directory = backend.directory_get(sha1_bin, recursive=True)
 
         # then
         self.assertIsNotNone(actual_directory)
         self.assertEqual(list(actual_directory), stub_dir_entries)
 
-        self.storage.directory_get.assert_called_with(sha1_bin)
+        self.storage.directory_get.assert_called_with(sha1_bin, True)
 
     @istest
     def release_get_not_found(self):

@@ -6,7 +6,7 @@
 from collections import defaultdict
 
 from swh.core import hashutil
-from swh.web.ui import converters, main, query, upload
+from swh.web.ui import converters, query, upload, backend
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
@@ -23,7 +23,7 @@ def hash_and_search(filepath):
         is present or not.
     """
     h = hashutil.hashfile(filepath)
-    c = main.storage().content_find(h)
+    c = backend.content_find('sha1', h['sha1'])
     if c:
         r = converters.from_content(c)
         r['found'] = True
@@ -59,7 +59,7 @@ def lookup_hash(q):
 
     """
     (algo, hash) = query.parse_hash(q)
-    found = main.storage().content_find({algo: hash})
+    found = backend.content_find(algo, hash)
     return {'found': found,
             'algo': algo}
 
@@ -74,7 +74,7 @@ def lookup_hash_origin(q):
 
     """
     algo, h = query.parse_hash(q)
-    origin = main.storage().content_find_occurrence({algo: h})
+    origin = backend.content_find_occurrence(algo, h)
     return converters.from_origin(origin)
 
 
@@ -88,7 +88,7 @@ def lookup_origin(origin_id):
         origin information as dict.
 
     """
-    return main.storage().origin_get({'id': origin_id})
+    return backend.origin_get(origin_id)
 
 
 def lookup_person(person_id):
@@ -101,10 +101,8 @@ def lookup_person(person_id):
         person information as dict.
 
     """
-    persons = main.storage().person_get([person_id])
-    if not persons:
-        return None
-    return converters.from_person(persons[0])
+    person = backend.person_get(person_id)
+    return converters.from_person(person)
 
 
 def lookup_directory(sha1_git):
@@ -117,14 +115,11 @@ def lookup_directory(sha1_git):
         directory information as dict.
 
     """
-    algo, hBinSha1 = query.parse_hash(sha1_git)
+    algo, sha1_git_bin = query.parse_hash(sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    directory_entries = main.storage().directory_get(hBinSha1)
-    if not directory_entries:
-        return None
-
+    directory_entries = backend.directory_get(sha1_git_bin)
     return map(converters.from_directory_entry, directory_entries)
 
 
@@ -141,15 +136,12 @@ def lookup_release(release_sha1_git):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    algo, hBinSha1 = query.parse_hash(release_sha1_git)
+    algo, sha1_git_bin = query.parse_hash(release_sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    res = main.storage().release_get([hBinSha1])
-
-    if res and len(res) >= 1:
-        return converters.from_release(res[0])
-    return None
+    res = backend.release_get(sha1_git_bin)
+    return converters.from_release(res)
 
 
 def lookup_revision(rev_sha1_git):
@@ -165,15 +157,12 @@ def lookup_revision(rev_sha1_git):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    algo, hBinSha1 = query.parse_hash(rev_sha1_git)
+    algo, sha1_git_bin = query.parse_hash(rev_sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    res = main.storage().revision_get([hBinSha1])
-
-    if res and len(res) >= 1:
-        return converters.from_revision(res[0])
-    return None
+    res = backend.revision_get(sha1_git_bin)
+    return converters.from_revision(res)
 
 
 def lookup_revision_log(rev_sha1_git, limit=100):
@@ -194,7 +183,7 @@ def lookup_revision_log(rev_sha1_git, limit=100):
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
         raise BadInputExc('Only sha1_git is supported.')
 
-    revision_entries = main.storage().revision_log(bin_sha1, limit)
+    revision_entries = backend.revision_log(bin_sha1, limit)
 
     return map(converters.from_revision, revision_entries)
 
@@ -230,7 +219,7 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
 
     bin_sha1_root = hashutil.hex_to_hash(sha1_git_root)
 
-    revision_log = main.storage().revision_log(bin_sha1_root, limit)
+    revision_log = backend.revision_log(bin_sha1_root, limit)
 
     parents = {}
     children = defaultdict(list)
@@ -278,8 +267,8 @@ def lookup_revision_with_directory(sha1_git, dir_path=None):
         return lookup_directory(dir_sha1_git)
 
     dir_sha1_git_bin = hashutil.hex_to_hash(dir_sha1_git)
-    directory_entries = main.storage().directory_get(dir_sha1_git_bin,
-                                                     recursive=True)
+    directory_entries = backend.directory_get(dir_sha1_git_bin,
+                                              recursive=True)
     dir_id = None
     for entry_dir in directory_entries:
         name = entry_dir['name'].decode('utf-8')
@@ -302,10 +291,8 @@ def lookup_content(q):
 
     """
     (algo, hash) = query.parse_hash(q)
-    c = main.storage().content_find({algo: hash})
-    if c:
-        return converters.from_content(c)
-    return None
+    c = backend.content_find(algo, hash)
+    return converters.from_content(c)
 
 
 def lookup_content_raw(q):
@@ -320,15 +307,12 @@ def lookup_content_raw(q):
 
     """
     (algo, hash) = query.parse_hash(q)
-    c = main.storage().content_find({algo: hash})
+    c = backend.content_find(algo, hash)
     if not c:
         return None
 
-    sha1 = c['sha1']
-    contents = main.storage().content_get([sha1])
-    if contents and len(contents) >= 1:
-        return converters.from_content(contents[0])
-    return None
+    content = backend.content_get(c['sha1'])
+    return converters.from_content(content)
 
 
 def stat_counters():
@@ -337,4 +321,4 @@ def stat_counters():
     Returns:
         A dict mapping textual labels to integer values.
     """
-    return main.storage().stat_counters()
+    return backend.stat_counters()

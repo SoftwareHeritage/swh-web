@@ -79,17 +79,18 @@ def person_get(person_id):
     return main.storage().person_get([person_id])
 
 
-def directory_get(sha1_git_bin):
+def directory_get(sha1_git_bin, recursive=False):
     """Return information about the directory with id sha1_git.
 
     Args:
         sha1_git: directory's identifier.
+        recursive: Optional recursive flag default to False
 
     Returns:
         Directory information as dict.
 
     """
-    directory_entries = main.storage().directory_get(sha1_git_bin)
+    directory_entries = main.storage().directory_get(sha1_git_bin, recursive)
     if not directory_entries:
         return None
 
