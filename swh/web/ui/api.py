@@ -209,6 +209,25 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         enrich_fn=enrich_revision_with_urls)
 
 
+def enrich_directory(directory, context_url=None):
+    """Enrich directory with url to content or directory.
+
+    """
+    if 'type' in directory:
+        target_type = directory['type']
+        target = directory['target']
+        if target_type == 'file':
+            directory['target_url'] = url_for('api_content_with_details',
+                                              q='sha1_git:%s' % target)
+        else:
+            directory['target_url'] = url_for('api_directory',
+                                              sha1_git=target)
+            if context_url:
+                directory['dir_url'] = context_url + directory['name'] + '/'
+
+    return directory
+
+
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
 def api_directory_with_revision(
@@ -234,15 +253,21 @@ def api_directory_with_revision(
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/directory/
 
     """
-    def lookup_directory_with_revision(sha1_git, dir_path=dir_path):
+    def lookup_directory_with_revision_local(sha1_git, dir_path=dir_path):
         return service.lookup_directory_with_revision(sha1_git, dir_path)
+
+    current_url = '/api/1/revision/%s/directory/%s' % (
+        sha1_git, dir_path+'/' if dir_path else '')
+
+    def enrich_directory_local(dir, context=current_url):
+        return enrich_directory(dir, context)
 
     return _api_lookup(
         sha1_git,
-        lookup_fn=lookup_directory_with_revision,
+        lookup_fn=lookup_directory_with_revision_local,
         error_msg_if_not_found='Revision with sha1_git %s not'
                                ' found.' % sha1_git,
-        enrich_fn=enrich_directory)
+        enrich_fn=enrich_directory_local)
 
 
 @app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
@@ -314,23 +339,6 @@ def api_revision_log(sha1_git):
                        lookup_fn=lookup_revision_log_with_limit,
                        error_msg_if_not_found=error_msg,
                        enrich_fn=enrich_revision_with_urls)
-
-
-def enrich_directory(directory):
-    """Enrich directory with url to content or directory.
-
-    """
-    if 'type' in directory:
-        target_type = directory['type']
-        target = directory['target']
-        if target_type == 'file':
-            directory['target_url'] = url_for('api_content_with_details',
-                                              q='sha1_git:%s' % target)
-        else:
-            directory['target_url'] = url_for('api_directory',
-                                              sha1_git=target)
-
-    return directory
 
 
 @app.route('/api/1/directory/')

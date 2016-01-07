@@ -738,19 +738,35 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.service')
     @istest
     def api_directory_with_revision(self, mock_service):
-        stub_dir = {
-            'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'type': 'file',
-            'target': '4568be353ed3480476f032475e7c233eff737123',
-        }
+        stub_dir = [
+            {
+                'sha1_git': '789',
+                'type': 'file',
+                'target': '101',
+            },
+            {
+                'sha1_git': '123',
+                'type': 'dir',
+                'target': '456',
+                'name': 'to-subdir',
+            }]
 
-        expected_dir = {
-            'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'type': 'file',
-            'target': '4568be353ed3480476f032475e7c233eff737123',
-            'target_url': '/api/1/content/'
-            'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
-        }
+        expected_dir = [
+            {
+                'sha1_git': '789',
+                'type': 'file',
+                'target': '101',
+                'target_url': '/api/1/content/sha1_git:101/',
+            },
+            {
+                'sha1_git': '123',
+                'type': 'dir',
+                'target': '456',
+                'target_url': '/api/1/directory/456/',
+                'name': 'to-subdir',
+                'dir_url': '/api/1/revision/999/directory/some/path/'
+                'to-subdir/',
+            }]
 
         # given
         mock_service.lookup_directory_with_revision.return_value = stub_dir
