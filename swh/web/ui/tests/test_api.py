@@ -712,7 +712,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_directory_with_revision.return_value = None
 
         # then
-        rv = self.app.get('/api/1/revision/999/directory/some/path/to/dir')
+        rv = self.app.get('/api/1/revision/999/directory/some/path/to/dir/')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -756,7 +756,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_directory_with_revision.return_value = stub_dir
 
         # then
-        rv = self.app.get('/api/1/revision/999/directory/some/path')
+        rv = self.app.get('/api/1/revision/999/directory/some/path/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')

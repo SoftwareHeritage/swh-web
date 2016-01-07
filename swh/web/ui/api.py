@@ -210,7 +210,7 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
 
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
-@app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>')
+@app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
 def api_directory_with_revision(
         sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
         dir_path=None):
