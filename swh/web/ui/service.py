@@ -248,8 +248,50 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
                           (sha1_git, sha1_git_root))
 
     revision['children'] = children[revision['id']]
-
     return revision
+
+
+def lookup_revision_with_directory(sha1_git, dir_path=None):
+    """Return information on directory pointed by revision with sha1_git.
+    If dir_path is not provided, display top level directory.
+    Otherwise, display the directory pointed by dir_path (if it exists).
+
+    Args:
+        sha1_git: revision's hash.
+        dir_path: optional directory pointed to by that revision.
+
+    Returns:
+        Information on the directory pointed to by that revision.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc either if the revision is not found or the path referenced
+        does not exist
+    """
+    revision = lookup_revision(sha1_git)
+    if not revision:
+        raise NotFoundExc('Revision %s not found' % sha1_git)
+
+    dir_sha1_git = revision['directory']
+
+    if not dir_path:
+        return lookup_directory(dir_sha1_git)
+
+    dir_sha1_git_bin = hashutil.hex_to_hash(dir_sha1_git)
+    directory_entries = main.storage().directory_get(dir_sha1_git_bin,
+                                                     recursive=True)
+    dir_id = None
+    for entry_dir in directory_entries:
+        name = entry_dir['name'].decode('utf-8')
+        type = entry_dir['type']
+        if name == dir_path and type == 'dir':
+            dir_id = hashutil.hash_to_hex(entry_dir['target'])
+
+    if not dir_id:
+        raise NotFoundExc("Directory '%s' pointed to by revision %s not found"
+                          % (dir_path, sha1_git))
+
+    return lookup_directory(dir_id)
 
 
 def lookup_content(q):

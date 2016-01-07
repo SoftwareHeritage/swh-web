@@ -652,6 +652,21 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
+    def api_revision_history_not_found(self, mock_service):
+        # given
+        mock_service.lookup_revision_with_context.return_value = None
+
+        # then
+        rv = self.app.get('/api/1/revision/999/history/338/?limit=5')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+                        '999', '338', 5)
+
+    @patch('swh.web.ui.api.service')
+    @istest
     def api_revision_history(self, mock_service):
         # for readability purposes, we use:
         # - sha1 as 3 letters (url are way too long otherwise to respect pep8)
@@ -692,18 +707,64 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_revision_history_not_found(self, mock_service):
+    def api_revision_with_directory_not_found(self, mock_service):
         # given
-        mock_service.lookup_revision_with_context.return_value = None
+        mock_service.lookup_revision_with_directory.return_value = None
 
         # then
-        rv = self.app.get('/api/1/revision/999/history/338/?limit=5')
+        rv = self.app.get('/api/1/revision/999/directory/some/path/to/dir')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
 
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-                        '999', '338', 5)
+        mock_service.lookup_revision_with_directory.assert_called_once_with(
+                        '999', 'some/path/to/dir')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_revision_with_directory_not_found_2(self, mock_service):
+        # given
+        mock_service.lookup_revision_with_directory.return_value = None
+
+        # then
+        rv = self.app.get('/api/1/revision/123/directory/')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        mock_service.lookup_revision_with_directory.assert_called_once_with(
+                        '123', None)
+
+    @patch('swh.web.ui.api.service')
+    # @istest
+    def api_revision_with_directory(self, mock_service):
+        stub_dir = {
+            'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'type': 'file',
+            'target': '4568be353ed3480476f032475e7c233eff737123',
+        }
+
+        expected_dir = {
+            'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'type': 'file',
+            'target': '4568be353ed3480476f032475e7c233eff737123',
+            'target_url': '/api/1/content/'
+            'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
+        }
+
+        # given
+        mock_service.lookup_revision_with_directory.return_value = stub_dir
+
+        # then
+        rv = self.app.get('/api/1/revision/999/directory/some/path')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_dir)
+
+        mock_service.lookup_revision_with_directory.assert_called_once_with(
+            '999', 'some/path')
 
     @patch('swh.web.ui.api.service')
     @istest

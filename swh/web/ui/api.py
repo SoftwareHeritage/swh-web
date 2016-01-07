@@ -209,6 +209,42 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         enrich_fn=enrich_revision_with_urls)
 
 
+@app.route('/api/1/revision/<string:sha1_git>/directory/')
+@app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>')
+def api_revision_with_directory(
+        sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
+        dir_path=None):
+    """Return information on directory pointed by revision with sha1_git.
+    If dir_path is not provided, display top level directory.
+    Otherwise, display the directory pointed by dir_path (if it exists).
+
+    Args:
+        sha1_git: revision's hash.
+        dir_path: optional directory pointed to by that revision.
+
+    Returns:
+        Information on the directory pointed to by that revision.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc either if the revision is not found or the path referenced
+        does not exist
+
+    Example:
+        GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/directory/
+
+    """
+    def lookup_revision_directory(sha1_git, dir_path=dir_path):
+        return service.lookup_revision_with_directory(sha1_git, dir_path)
+
+    return _api_lookup(
+        sha1_git,
+        lookup_fn=lookup_revision_directory,
+        error_msg_if_not_found='Revision with sha1_git %s not'
+                               ' found.' % sha1_git,
+        enrich_fn=enrich_directory)
+
+
 @app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
 def api_revision_history(sha1_git_root, sha1_git):
     """Return information about revision sha1_git, limited to the
