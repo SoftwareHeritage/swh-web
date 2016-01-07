@@ -8,7 +8,7 @@ import datetime
 from nose.tools import istest
 from unittest.mock import MagicMock, patch, call
 
-from swh.core.hashutil import hex_to_hash
+from swh.core.hashutil import hex_to_hash, hash_to_hex
 from swh.web.ui import service
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.tests import test_app
@@ -303,16 +303,18 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
             self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
-    @patch('swh.web.ui.service.lookup_revision')
+    @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_with_context_ko_sha1_git_does_not_exist(
             self,
-            mock_lookup_revision):
+            mock_backend):
         # given
         sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
 
-        mock_lookup_revision.return_value = None
+        sha1_git_bin = hex_to_hash(sha1_git)
+
+        mock_backend.revision_get.return_value = None
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
@@ -320,18 +322,22 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             self.assertIn('Revision 777777bdf3629f916219feb3dcc7393ded1bc8db'
                           ' not found', cm.exception.args[0])
 
-        mock_lookup_revision.assert_called_once_with(sha1_git)
+        mock_backend.revision_get.assert_called_once_with(
+            sha1_git_bin)
 
-    @patch('swh.web.ui.service.lookup_revision')
+    @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
             self,
-            mock_lookup_revision):
+            mock_backend):
         # given
         sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
 
-        mock_lookup_revision.side_effect = ['foo', None]
+        sha1_git_root_bin = hex_to_hash(sha1_git_root)
+        sha1_git_bin = hex_to_hash(sha1_git)
+
+        mock_backend.revision_get.side_effect = ['foo', None]
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
@@ -339,32 +345,41 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             self.assertIn('Revision 65a55bbdf3629f916219feb3dcc7393ded1bc8db'
                           ' not found', cm.exception.args[0])
 
-        mock_lookup_revision.assert_has_calls([call(sha1_git),
-                                               call(sha1_git_root)])
+        mock_backend.revision_get.assert_has_calls([call(sha1_git_bin),
+                                                    call(sha1_git_root_bin)])
 
     @patch('swh.web.ui.service.backend')
-    @patch('swh.web.ui.service.lookup_revision')
+    @patch('swh.web.ui.service.query')
     @istest
-    def lookup_revision_with_context(self, mock_lookup_revision, mock_backend):
+    def lookup_revision_with_context(self, mock_query, mock_backend):
         # given
+        sha1_git_root = '666'
+        sha1_git = '883'
+
+        sha1_git_root_bin = b'666'
+        sha1_git_bin = b'883'
+
+        sha1_git_root_dict = {
+            'id': sha1_git_root_bin,
+            'parents': [b'999'],
+        }
+        sha1_git_dict = {
+            'id': sha1_git_bin,
+            'parents': [],
+            'directory': b'278',
+        }
+
         stub_revisions = [
-            {
-                'id': b'666' + 17 * b'\x00',
-                'parents': [b'999'],
-            },
+            sha1_git_root_dict,
             {
                 'id': b'999',
-                'parents': [b'777', b'883' + 17 * b'\x00', b'888'],
+                'parents': [b'777', b'883', b'888'],
             },
             {
                 'id': b'777',
-                'parents': [b'883' + 17 * b'\x00'],
+                'parents': [b'883'],
             },
-            {
-                'id': b'883' + 17 * b'\x00',
-                'parents': [],
-                'directory': b'278',
-            },
+            sha1_git_dict,
             {
                 'id': b'888',
                 'parents': [b'889'],
@@ -375,38 +390,42 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             },
         ]
 
+        # inputs ok
+        mock_query.parse_hash.side_effect = [
+            ('sha1', sha1_git_bin),
+            ('sha1', sha1_git_root_bin)
+        ]
+
         # lookup revision first 883, then 666 (both exists)
-        mock_lookup_revision.side_effect = [
-            {
-                'id': '383833' + 17 * '00',
-                'parents': [],
-                'directory': '323738',
-            },
-            {
-                'id': '363636' + 17 * '00',
-                'parents': ['393939'],
-            },
+        mock_backend.revision_get.side_effect = [
+            sha1_git_dict,
+            sha1_git_root_dict
         ]
 
         mock_backend.revision_log = MagicMock(
             return_value=stub_revisions)
 
         # when
-        sha1_git_root = '363636' + 17 * '00'  # (ascii code for 666)
-        sha1_git = '383833' + 17 * '00'       # (ascii code for 883)
-        actual_revisions = service.lookup_revision_with_context(sha1_git_root,
-                                                                sha1_git)
+
+        actual_revision = service.lookup_revision_with_context(
+            sha1_git_root,
+            sha1_git)
+
+        print('actual_revision', actual_revision)
 
         # then
-        self.assertEquals(actual_revisions, {
-            'id': '383833' + 17 * '00',
+        self.assertEquals(actual_revision, {
+            'id': hash_to_hex(sha1_git_bin),
             'parents': [],
-            'children': ['393939', '373737'],
-            'directory': '323738',
+            'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
+            'directory': hash_to_hex(b'278'),
         })
 
+        mock_query.parse_hash.assert_has_calls([call(sha1_git),
+                                                call(sha1_git_root)])
+
         mock_backend.revision_log.assert_called_with(
-            hex_to_hash(sha1_git_root), 100)
+            sha1_git_root_bin, 100)
 
     @patch('swh.web.ui.service.backend')
     @istest

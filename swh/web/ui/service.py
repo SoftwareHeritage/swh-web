@@ -209,26 +209,31 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
         ancestor of sha1_git_root
 
     """
-    revision = lookup_revision(sha1_git)
+    algo, sha1_git_bin = query.parse_hash(sha1_git)
+    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
+        raise BadInputExc('Only sha1_git is supported.')
+
+    algo, sha1_git_root_bin = query.parse_hash(sha1_git_root)
+    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
+        raise BadInputExc('Only sha1_git is supported.')
+
+    revision = backend.revision_get(sha1_git_bin)
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
 
-    revision_root = lookup_revision(sha1_git_root)
+    revision_root = backend.revision_get(sha1_git_root_bin)
     if not revision_root:
         raise NotFoundExc('Revision %s not found' % sha1_git_root)
 
-    bin_sha1_root = hashutil.hex_to_hash(sha1_git_root)
-
-    revision_log = backend.revision_log(bin_sha1_root, limit)
+    revision_log = backend.revision_log(sha1_git_root_bin, limit)
 
     parents = {}
     children = defaultdict(list)
 
     for rev in revision_log:
-        rev_id = hashutil.hash_to_hex(rev['id'])
+        rev_id = rev['id']
         parents[rev_id] = []
         for parent_id in rev['parents']:
-            parent_id = hashutil.hash_to_hex(parent_id)
             parents[rev_id].append(parent_id)
             children[parent_id].append(rev_id)
 
@@ -237,7 +242,8 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
                           (sha1_git, sha1_git_root))
 
     revision['children'] = children[revision['id']]
-    return revision
+
+    return converters.from_revision(revision)
 
 
 def lookup_revision_with_directory(sha1_git, dir_path=None):
