@@ -770,19 +770,24 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision(self, mock_service):
-        stub_dir = [
-            {
-                'sha1_git': '789',
-                'type': 'file',
-                'target': '101',
-            },
-            {
-                'sha1_git': '123',
-                'type': 'dir',
-                'target': '456',
-                'name': 'to-subdir',
-            }]
+    def api_directory_with_revision_ok_returns_dir_entries(self, mock_service):
+        stub_dir = {
+            'type': 'dir',
+            'content': [
+                {
+                    'sha1_git': '789',
+                    'type': 'file',
+                    'target': '101',
+                    'name': 'somefile'
+                },
+                {
+                    'sha1_git': '123',
+                    'type': 'dir',
+                    'target': '456',
+                    'name': 'to-subdir',
+                }
+            ]
+        }
 
         expected_dir = [
             {
@@ -790,6 +795,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'type': 'file',
                 'target': '101',
                 'target_url': '/api/1/content/sha1_git:101/',
+                'name': 'somefile',
+                'file_url': '/api/1/revision/999/directory/some/path/somefile/'
             },
             {
                 'sha1_git': '123',
@@ -811,6 +818,37 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, expected_dir)
+
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
+            '999', 'some/path')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_directory_with_revision_ok_returns_content(self, mock_service):
+        stub_content = {
+            'type': 'file',
+            'content': {
+                'sha1_git': '789',
+                'sha1': '101',
+            }
+        }
+
+        expected_content = {
+            'sha1_git': '789',
+            'sha1': '101',
+            'data_url': '/api/1/content/101/raw/',
+        }
+
+        # given
+        mock_service.lookup_directory_with_revision.return_value = stub_content
+
+        # then
+        rv = self.app.get('/api/1/revision/999/directory/some/path/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_content)
 
         mock_service.lookup_directory_with_revision.assert_called_once_with(
             '999', 'some/path')
@@ -857,18 +895,23 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'id': 'rev-id'
         }
 
-        stub_dir = [
-            {
-                'sha1_git': '879',
-                'type': 'file',
-                'target': '110',
-            },
-            {
-                'sha1_git': '213',
-                'type': 'dir',
-                'target': '546',
-                'name': 'subdir',
-            }]
+        stub_dir = {
+            'type': 'dir',
+            'content': [
+                {
+                    'sha1_git': '879',
+                    'type': 'file',
+                    'target': '110',
+                    'name': 'subfile'
+                },
+                {
+                    'sha1_git': '213',
+                    'type': 'dir',
+                    'target': '546',
+                    'name': 'subdir',
+                }
+            ]
+        }
 
         expected_dir = [
             {
@@ -876,6 +919,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'type': 'file',
                 'target': '110',
                 'target_url': '/api/1/content/sha1_git:110/',
+                'name': 'subfile',
+                'file_url': '/api/1/revision/354/history/867/directory/debian/'
+                'subfile/',
             },
             {
                 'sha1_git': '213',

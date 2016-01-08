@@ -219,6 +219,8 @@ def enrich_directory(directory, context_url=None):
         if target_type == 'file':
             directory['target_url'] = url_for('api_content_with_details',
                                               q='sha1_git:%s' % target)
+            if context_url:
+                directory['file_url'] = context_url + directory['name'] + '/'
         else:
             directory['target_url'] = url_for('api_directory',
                                               sha1_git=target)
@@ -253,18 +255,18 @@ def api_directory_with_revision(
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/directory/
 
     """
-    def lookup_directory_with_revision_local(sha1_git, dir_path=dir_path):
-        return service.lookup_directory_with_revision(sha1_git, dir_path)
-
     def enrich_directory_local(dir, context_url=request.path):
         return enrich_directory(dir, context_url)
 
-    return _api_lookup(
-        sha1_git,
-        lookup_fn=lookup_directory_with_revision_local,
-        error_msg_if_not_found='Revision with sha1_git %s not'
-                               ' found.' % sha1_git,
-        enrich_fn=enrich_directory_local)
+    result = service.lookup_directory_with_revision(sha1_git, dir_path)
+    if not result:
+        raise NotFoundExc('Revision with sha1_git %s not'
+                          ' found.' % sha1_git)
+
+    if result['type'] == 'dir':  # dir_entries
+        return list(map(enrich_directory_local, result['content']))
+    else:  # content
+        return enrich_content(result['content'])
 
 
 @app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
@@ -355,13 +357,16 @@ def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
             "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
             % (sha1_git, sha1_git_root))
 
-    directory_entries = service.lookup_directory_with_revision(revision['id'],
-                                                               dir_path)
+    res = service.lookup_directory_with_revision(revision['id'],
+                                                 dir_path)
 
     def enrich_directory_local(dir, context=request.path):
         return enrich_directory(dir, context)
 
-    return list(map(enrich_directory_local, directory_entries))
+    if res['type'] == 'dir':
+        return list(map(enrich_directory_local, res['content']))
+    else:
+        return enrich_content(res['content'])
 
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')

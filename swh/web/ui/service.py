@@ -245,6 +245,16 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     return converters.from_revision(revision)
 
 
+def _lookup_name_in(directory_entries, name):
+    """Given a name and a list of directory entries, return the
+    corresponding entry."""
+    bname = name.encode('utf-8')
+    res = list(filter(lambda e: e['name'] == bname, directory_entries))
+    if not res:
+        return None
+    return res[0]
+
+
 def lookup_directory_with_revision(sha1_git, dir_path=None):
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
@@ -260,7 +270,10 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc either if the revision is not found or the path referenced
-        does not exist
+        does not exist.
+        NotImplementedError in case of dir_path exists but do not reference a
+        type 'dir' or 'file'.
+
     """
     algo, sha1_git_bin = query.parse_hash(sha1_git)
     if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
@@ -275,22 +288,28 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
     if dir_path:
         directory_entries = backend.directory_get(dir_sha1_git_bin,
                                                   recursive=True)
-        dir_id = None
-        for entry_dir in directory_entries:
-            name = entry_dir['name'].decode('utf-8')
-            type = entry_dir['type']
-            if name == dir_path and type == 'dir':
-                dir_id = entry_dir['target']
+        entity = _lookup_name_in(directory_entries, dir_path)
 
-        if not dir_id:
+        if not entity:
             raise NotFoundExc(
-                "Directory '%s' pointed to by revision %s not found"
+                "Directory or File '%s' pointed to by revision %s not found"
                 % (dir_path, sha1_git))
     else:
-        dir_id = dir_sha1_git_bin
+        entity = {'type': 'dir', 'target': dir_sha1_git_bin}
 
-    directory_entries = backend.directory_get(dir_id)
-    return map(converters.from_directory_entry, directory_entries)
+    if entity['type'] == 'dir':
+        directory_entries = backend.directory_get(entity['target'])
+
+        return {'type': 'dir',
+                'content': map(converters.from_directory_entry,
+                               directory_entries)}
+    elif entity['type'] == 'file':  # content
+        content = backend.content_find('sha1_git', entity['target'])
+        return {'type': 'file',
+                'content': converters.from_content(content)}
+    else:
+        raise NotImplementedError('Entity of type %s not implemented.'
+                                  % entity['type'])
 
 
 def lookup_content(q):
