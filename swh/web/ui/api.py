@@ -47,7 +47,15 @@ def api_search(q='sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5'):
 
 def _api_lookup(criteria, lookup_fn, error_msg_if_not_found,
                 enrich_fn=lambda x: x):
-    """Factorize function regarding the api to lookup for data."""
+    """lookup with lookup_fn the criteria criteria.
+    If nothing is found, raise error_msg_if_not_found exception.
+    Otherwise, enrich the result with enrich_fn.
+
+    Otherwise, if the result is a map or a list, each element is
+    enriched through enrich_fn call.
+    Otherwise, return the enriched result (through enrich_fn).
+
+    """
     res = lookup_fn(criteria)
     if not res:
         raise NotFoundExc(error_msg_if_not_found)
