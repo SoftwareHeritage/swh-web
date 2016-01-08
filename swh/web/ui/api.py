@@ -106,7 +106,7 @@ def api_person(person_id=1):
         error_msg_if_not_found='Person with id %s not found.' % person_id)
 
 
-def enrich_release(release):
+def _enrich_release(release):
     """Enrich a release with link to the 'target' of 'type' revision.
 
     """
@@ -143,10 +143,10 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
         sha1_git,
         lookup_fn=service.lookup_release,
         error_msg_if_not_found=error_msg,
-        enrich_fn=enrich_release)
+        enrich_fn=_enrich_release)
 
 
-def enrich_revision_with_urls(revision, context=None):
+def _enrich_revision_with_urls(revision, context=None):
     """Enrich revision with links where it makes sense (directory, parents).
 
     """
@@ -206,10 +206,10 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         lookup_fn=service.lookup_revision,
         error_msg_if_not_found='Revision with sha1_git %s not'
                                ' found.' % sha1_git,
-        enrich_fn=enrich_revision_with_urls)
+        enrich_fn=_enrich_revision_with_urls)
 
 
-def enrich_directory(directory, context_url=None):
+def _enrich_directory(directory, context_url=None):
     """Enrich directory with url to content or directory.
 
     """
@@ -256,7 +256,7 @@ def api_directory_with_revision(
 
     """
     def enrich_directory_local(dir, context_url=request.path):
-        return enrich_directory(dir, context_url)
+        return _enrich_directory(dir, context_url)
 
     result = service.lookup_directory_with_revision(sha1_git, dir_path)
     if not result:
@@ -266,7 +266,7 @@ def api_directory_with_revision(
     if result['type'] == 'dir':  # dir_entries
         return list(map(enrich_directory_local, result['content']))
     else:  # content
-        return enrich_content(result['content'])
+        return _enrich_content(result['content'])
 
 
 @app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
@@ -309,7 +309,7 @@ def api_revision_history(sha1_git_root, sha1_git):
             "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
             % (sha1_git, sha1_git_root))
 
-    return enrich_revision_with_urls(revision, context=sha1_git_root)
+    return _enrich_revision_with_urls(revision, context=sha1_git_root)
 
 
 @app.route('/api/1/revision/<string:sha1_git_root>'
@@ -361,12 +361,12 @@ def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
                                                  dir_path)
 
     def enrich_directory_local(dir, context=request.path):
-        return enrich_directory(dir, context)
+        return _enrich_directory(dir, context)
 
     if res['type'] == 'dir':
         return list(map(enrich_directory_local, res['content']))
     else:
-        return enrich_content(res['content'])
+        return _enrich_content(res['content'])
 
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')
@@ -396,7 +396,7 @@ def api_revision_log(sha1_git):
     return _api_lookup(sha1_git,
                        lookup_fn=lookup_revision_log_with_limit,
                        error_msg_if_not_found=error_msg,
-                       enrich_fn=enrich_revision_with_urls)
+                       enrich_fn=_enrich_revision_with_urls)
 
 
 @app.route('/api/1/directory/')
@@ -420,7 +420,7 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
         sha1_git,
         lookup_fn=service.lookup_directory,
         error_msg_if_not_found=error_msg,
-        enrich_fn=enrich_directory)
+        enrich_fn=_enrich_directory)
 
 
 # @app.route('/api/1/browse/')
@@ -479,7 +479,7 @@ def api_content_raw(q):
     return Response(generate(content), mimetype='application/octet-stream')
 
 
-def enrich_content(content):
+def _enrich_content(content):
     """Enrich content with 'data', a link to its raw content.
 
     """
@@ -514,7 +514,7 @@ def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
         q,
         lookup_fn=service.lookup_content,
         error_msg_if_not_found='Content with %s not found.' % q,
-        enrich_fn=enrich_content)
+        enrich_fn=_enrich_content)
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
