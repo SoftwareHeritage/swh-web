@@ -411,8 +411,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             sha1_git_root,
             sha1_git)
 
-        print('actual_revision', actual_revision)
-
         # then
         self.assertEquals(actual_revision, {
             'id': hash_to_hex(sha1_git_bin),

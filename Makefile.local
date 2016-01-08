@@ -1,5 +1,6 @@
 SWH_WEB_UI=./bin/swh-web-ui-dev
 FLAG=-v
+NOSEFLAGS=-v -s
 
 run-test:
 	$(SWH_WEB_UI) $(FLAG) --config ./resources/test/webapp.ini
