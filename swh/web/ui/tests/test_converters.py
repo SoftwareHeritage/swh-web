@@ -234,6 +234,10 @@ class ConvertersTestCase(unittest.TestCase):
                 hashutil.hex_to_hash(
                     '30d8be353ed3480476f032475e7c244eff7371d5')
             ],
+            'children': [
+                hashutil.hex_to_hash(
+                    '123546353ed3480476f032475e7c244eff7371d5'),
+            ],
             'metadata': {
                 'original_artifact': [{
                     'archive_type': 'tar',
@@ -264,6 +268,9 @@ class ConvertersTestCase(unittest.TestCase):
             'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54,
                                                 tzinfo=None),
             'committer_date_offset': 0,
+            'children': [
+                '123546353ed3480476f032475e7c244eff7371d5'
+            ],
             'parents': [
                 '29d8be353ed3480476f032475e7c244eff7371d5',
                 '30d8be353ed3480476f032475e7c244eff7371d5'
