@@ -295,7 +295,9 @@ def api_revision_history(sha1_git_root, sha1_git):
     limit = int(request.args.get('limit', '100'))
 
     if sha1_git == sha1_git_root:
-        return redirect(url_for('api_revision', sha1_git=sha1_git))
+        return redirect(url_for('api_revision',
+                                sha1_git=sha1_git,
+                                limit=limit))
 
     revision = service.lookup_revision_with_context(sha1_git_root,
                                                     sha1_git,

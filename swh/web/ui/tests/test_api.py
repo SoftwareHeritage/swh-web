@@ -665,6 +665,20 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision_with_context.assert_called_once_with(
                         '999', '338', 5)
 
+    @istest
+    def api_revision_history_sha1_same_so_redirect(self):
+        # when
+        rv = self.app.get('/api/1/revision/123/history/123?limit=10')
+        # then
+        self.assertEquals(rv.status_code, 301)
+        # Ideally we'd like to be able to check the resulting url path
+        # but does not work, this returns the current url
+        # also following the redirect would mean to yet mock again the
+        # destination url... So for now cannot test it
+
+        # self.assertEquals(rv.location,
+        #                   'http://localhost/api/1/revision/123?limit=10')
+
     @patch('swh.web.ui.api.service')
     @istest
     def api_revision_history(self, mock_service):
