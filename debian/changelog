@@ -1,8 +1,16 @@
-swh-web (0.0.16-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.17-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.17
+  * Open /api/1/revision/<string:sha1_git>/directory/'
+  * Open
+    /api/1/revision/<string:sha1_git_root>/history/<sha1_git>/directory/
+    <path:dir_path>/
+  * Enrich directory listing with url to next subdir
+  * Improve testing coverage
+  * Open 'limit' get query parameter to revision_log and
+    revision_history api
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 06 Jan 2016 15:37:21 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 08 Jan 2016 11:36:55 +0100
 
 swh-web (0.0.16-1~swh1) unstable-swh; urgency=medium
 

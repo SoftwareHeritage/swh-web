@@ -25,6 +25,7 @@ swh.web.ui.egg-info/top_level.txt
 swh/web/ui/__init__.py
 swh/web/ui/api.py
 swh/web/ui/apidoc.py
+swh/web/ui/backend.py
 swh/web/ui/converters.py
 swh/web/ui/errorhandler.py
 swh/web/ui/exc.py
@@ -50,6 +51,7 @@ swh/web/ui/templates/revision.html
 swh/web/ui/templates/upload_and_search.html
 swh/web/ui/tests/test_api.py
 swh/web/ui/tests/test_app.py
+swh/web/ui/tests/test_backend.py
 swh/web/ui/tests/test_converters.py
 swh/web/ui/tests/test_query.py
 swh/web/ui/tests/test_renderers.py

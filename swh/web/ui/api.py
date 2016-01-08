@@ -16,7 +16,7 @@ def api_stats():
     """Return statistics on SWH storage.
 
     Returns:
-        SWH storage's statistics
+        SWH storage's statistics.
 
     """
     return service.stat_counters()
@@ -29,13 +29,13 @@ def api_search(q='sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5'):
 
     Args:
         q is of the form algo_hash:hash with algo_hash in
-        (sha1, sha1_git, sha256)
+        (sha1, sha1_git, sha256).
 
     Returns:
         Dictionary with 'found' key and the associated result.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
 
     Example:
         GET /api/1/search/sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5/
@@ -66,7 +66,7 @@ def api_origin(origin_id=1):
 
 
     Args:
-        origin_id: the origin's identifier
+        origin_id: the origin's identifier.
 
     Returns:
         Information on the origin if found.
@@ -89,7 +89,7 @@ def api_person(person_id=1):
     """Return information about person with identifier person_id.
 
     Args:
-        person_id: the person's identifier
+        person_id: the person's identifier.
 
     Returns:
         Information on the person if found.
@@ -125,13 +125,13 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
     """Return information about release with id sha1_git.
 
     Args:
-        sha1_git: the release's hash
+        sha1_git: the release's hash.
 
     Returns:
         Information on the release if found.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the release is not found.
 
     Example:
@@ -188,13 +188,13 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
     """Return information about revision with id sha1_git.
 
     Args:
-        sha1_git: the revision's hash
+        sha1_git: the revision's hash.
 
     Returns:
         Information on the revision if found.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the revision is not found.
 
     Example:
@@ -209,64 +209,7 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         enrich_fn=enrich_revision_with_urls)
 
 
-@app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
-def api_revision_history(sha1_git_root, sha1_git):
-    """Return information about revision sha1_git, limited to the
-    sub-graph of all transitive parents of sha1_git_root.
-
-    In other words, sha1_git is an ancestor of sha1_git_root.
-
-    Args:
-        sha1_git_root: latest revision of the browsed history
-        sha1_git: one of sha1_git_root's ancestors
-
-    Returns:
-        Information on sha1_git if it is an ancestor of sha1_git_root
-        including children leading to sha1_git_root
-
-    Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
-        NotFoundExc if either revision is not found or if sha1_git is not an
-        ancestor of sha1_git_root
-
-    """
-    if sha1_git == sha1_git_root:
-        return redirect(url_for('api_revision', sha1_git=sha1_git))
-
-    revision = service.lookup_revision_with_context(sha1_git_root,
-                                                    sha1_git)
-    if not revision:
-        raise NotFoundExc(
-            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
-            % (sha1_git, sha1_git_root))
-
-    return enrich_revision_with_urls(revision, context=sha1_git_root)
-
-
-@app.route('/api/1/revision/<string:sha1_git>/log/')
-def api_revision_log(sha1_git):
-    """Show all revisions (~git log) starting from sha1_git.
-       The first element returned is the given sha1_git.
-
-    Args:
-        sha1_git: the revision's hash
-
-    Returns:
-        Information on the revision if found.
-
-    Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
-        NotFoundExc if the revision is not found.
-
-    """
-    error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-    return _api_lookup(sha1_git,
-                       lookup_fn=service.lookup_revision_log,
-                       error_msg_if_not_found=error_msg,
-                       enrich_fn=enrich_revision_with_urls)
-
-
-def enrich_directory(directory):
+def enrich_directory(directory, context_url=None):
     """Enrich directory with url to content or directory.
 
     """
@@ -279,8 +222,176 @@ def enrich_directory(directory):
         else:
             directory['target_url'] = url_for('api_directory',
                                               sha1_git=target)
+            if context_url:
+                directory['dir_url'] = context_url + directory['name'] + '/'
 
     return directory
+
+
+@app.route('/api/1/revision/<string:sha1_git>/directory/')
+@app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
+def api_directory_with_revision(
+        sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
+        dir_path=None):
+    """Return information on directory pointed by revision with sha1_git.
+    If dir_path is not provided, display top level directory.
+    Otherwise, display the directory pointed by dir_path (if it exists).
+
+    Args:
+        sha1_git: revision's hash.
+        dir_path: optional directory pointed to by that revision.
+
+    Returns:
+        Information on the directory pointed to by that revision.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc either if the revision is not found or the path referenced
+        does not exist
+
+    Example:
+        GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/directory/
+
+    """
+    def lookup_directory_with_revision_local(sha1_git, dir_path=dir_path):
+        return service.lookup_directory_with_revision(sha1_git, dir_path)
+
+    def enrich_directory_local(dir, context_url=request.path):
+        return enrich_directory(dir, context_url)
+
+    return _api_lookup(
+        sha1_git,
+        lookup_fn=lookup_directory_with_revision_local,
+        error_msg_if_not_found='Revision with sha1_git %s not'
+                               ' found.' % sha1_git,
+        enrich_fn=enrich_directory_local)
+
+
+@app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
+def api_revision_history(sha1_git_root, sha1_git):
+    """Return information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of sha1_git_root.
+
+    In other words, sha1_git is an ancestor of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root.
+
+    """
+    limit = int(request.args.get('limit', '100'))
+
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('api_revision',
+                                sha1_git=sha1_git,
+                                limit=limit))
+
+    revision = service.lookup_revision_with_context(sha1_git_root,
+                                                    sha1_git,
+                                                    limit)
+    if not revision:
+        raise NotFoundExc(
+            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
+            % (sha1_git, sha1_git_root))
+
+    return enrich_revision_with_urls(revision, context=sha1_git_root)
+
+
+@app.route('/api/1/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/api/1/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/<path:dir_path>/')
+def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
+    """Return information about directory pointed to by the revision
+    defined as: revision sha1_git, limited to the sub-graph of all
+    transitive parents of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
+        dir_path: optional directory pointed to by that revision.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on the directory pointed to by that revision.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root or the path referenced does not exist
+
+    """
+    limit = int(request.args.get('limit', '100'))
+
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('api_directory_with_revision',
+                                sha1_git=sha1_git,
+                                dir_path=dir_path),
+                        code=301)
+
+    revision = service.lookup_revision_with_context(sha1_git_root,
+                                                    sha1_git,
+                                                    limit)
+    if not revision:
+        raise NotFoundExc(
+            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
+            % (sha1_git, sha1_git_root))
+
+    directory_entries = service.lookup_directory_with_revision(revision['id'],
+                                                               dir_path)
+
+    def enrich_directory_local(dir, context=request.path):
+        return enrich_directory(dir, context)
+
+    return list(map(enrich_directory_local, directory_entries))
+
+
+@app.route('/api/1/revision/<string:sha1_git>/log/')
+def api_revision_log(sha1_git):
+    """Show all revisions (~git log) starting from sha1_git.
+       The first element returned is the given sha1_git.
+
+    Args:
+        sha1_git: the revision's hash.
+        limit: optional query parameter to limit the revisions log
+        (default to 100).
+
+    Returns:
+        Information on the revision if found.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if the revision is not found.
+
+    """
+    limit = int(request.args.get('limit', '100'))
+
+    def lookup_revision_log_with_limit(s, limit=limit):
+        return service.lookup_revision_log(s, limit)
+
+    error_msg = 'Revision with sha1_git %s not found.' % sha1_git
+    return _api_lookup(sha1_git,
+                       lookup_fn=lookup_revision_log_with_limit,
+                       error_msg_if_not_found=error_msg,
+                       enrich_fn=enrich_revision_with_urls)
 
 
 @app.route('/api/1/directory/')
@@ -289,10 +400,10 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
     """Return information about release with id sha1_git.
 
     Args:
-        Directory's sha1_git
+        sha1_git: Directory's sha1_git.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the content is not found.
 
     Example:
@@ -316,13 +427,13 @@ def api_content_checksum_to_origin(q='sha1_git:26ac0281bc74e9bd8a4a4aab1c7c7a'
 
     Args:
         q is of the form algo_hash:hash with algo_hash in
-        (sha1, sha1_git, sha256)
+        (sha1, sha1_git, sha256).
 
     Returns:
         Information on one possible origin for such content.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
+        BadInputExc in case of unknown algo_hash or bad hash.
         NotFoundExc if the content is not found.
 
     Example:
@@ -346,7 +457,7 @@ def api_content_raw(q):
         When algo_hash is not provided, 'hash' is considered sha1.
 
     Returns:
-        Content's raw data in application/octet-stream
+        Content's raw data in application/octet-stream.
 
     Raises:
         - BadInputExc in case of unknown algo_hash or bad hash
@@ -386,7 +497,7 @@ def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
         Content's information.
 
     Raises:
-        - BadInputExc in case of unknown algo_hash or bad hash
+        - BadInputExc in case of unknown algo_hash or bad hash.
         - NotFoundExc if the content is not found.
 
     Example:
@@ -419,6 +530,6 @@ def api_uploadnsearch():
     """
     file = request.files.get('filename')
     if not file:
-        raise BadInputExc('Bad request, missing \'filename\' entry in form.')
+        raise BadInputExc("Bad request, missing 'filename' entry in form.")
 
     return service.upload_and_search(file)
