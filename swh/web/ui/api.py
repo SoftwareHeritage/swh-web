@@ -423,8 +423,8 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
         enrich_fn=enrich_directory)
 
 
-@app.route('/api/1/browse/')
-@app.route('/api/1/browse/<string:q>/')
+# @app.route('/api/1/browse/')
+# @app.route('/api/1/browse/<string:q>/')
 def api_content_checksum_to_origin(q='sha1_git:26ac0281bc74e9bd8a4a4aab1c7c7a'
                                    '0c19d4436c'):
     """Return content information up to one of its origin if the content
