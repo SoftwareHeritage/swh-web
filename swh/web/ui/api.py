@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from types import GeneratorType
+
 from flask import request, url_for, Response, redirect
 
 
@@ -45,21 +47,39 @@ def api_search(q='sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5'):
     return {'found': True if r else False}
 
 
-def _api_lookup(criteria, lookup_fn, error_msg_if_not_found,
-                enrich_fn=lambda x: x):
-    """lookup with lookup_fn the criteria criteria.
-    If nothing is found, raise error_msg_if_not_found exception.
-    Otherwise, enrich the result with enrich_fn.
+def _api_lookup(criteria,
+                lookup_fn,
+                error_msg_if_not_found,
+                enrich_fn=lambda x: x,
+                *args):
+    """Capture a redundant behavior of:
+    - looking up the backend with a criteria (be it an identifier or checksum)
+    passed to the function lookup_fn
+    - if nothing is found, raise an NotFoundExc exception with error
+    message error_msg_if_not_found.
+    - Otherwise if something is returned:
+        - either as list, map or generator, map the enrich_fn function to it
+        and return the resulting data structure as list.
+        - either as dict and pass to enrich_fn and return the dict enriched.
 
-    Otherwise, if the result is a map or a list, each element is
-    enriched through enrich_fn call.
-    Otherwise, return the enriched result (through enrich_fn).
+    Args:
+        - criteria: discriminating criteria to lookup
+        - lookup_fn: function expects one criteria and optional supplementary
+        *args.
+        - error_msg_if_not_found: if nothing matching the criteria is found,
+        raise NotFoundExc with this error message.
+        - enrich_fn: Function to use to enrich the result returned by
+        lookup_fn. Default to the identity function if not provided.
+        - *args: supplementary arguments to pass to lookup_fn.
+
+    Raises:
+        NotFoundExp or whatever `lookup_fn` raises.
 
     """
-    res = lookup_fn(criteria)
+    res = lookup_fn(criteria, *args)
     if not res:
         raise NotFoundExc(error_msg_if_not_found)
-    if isinstance(res, (map, list)):
+    if isinstance(res, (map, list, GeneratorType)):
         enriched_data = []
         for e in res:
             enriched_data.append(enrich_fn(e))
@@ -224,9 +244,22 @@ def api_revision_with_origin(origin_id=1, branch_name="master", ts=None):
         NotFoundExc if the revision is not found.
 
     """
-    return {'origin_id': origin_id,
-            'branch': branch_name,
-            'ts': ts}
+
+    def lookup_revision_by(origin_id, branch_name="master", ts=None):
+        return {'origin_id': origin_id,
+                'branch': branch_name,
+                'ts': ts}
+
+    return _api_lookup(
+        origin_id,
+        lookup_revision_by,
+        'Revision with (origin_id: %s, branch_name: %s'
+        ', ts: %s) not found.' % (origin_id,
+                                  branch_name,
+                                  ts),
+        lambda x: x,
+        branch_name,
+        ts)
 
 
 @app.route('/api/1/revision/')

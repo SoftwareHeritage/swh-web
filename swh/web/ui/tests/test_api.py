@@ -12,9 +12,98 @@ from unittest.mock import patch, MagicMock
 
 from swh.web.ui.tests import test_app
 from swh.web.ui import api, exc
+from swh.web.ui.exc import NotFoundExc
 
 
 class ApiTestCase(test_app.SWHApiTestCase):
+    @istest
+    def generic_api_lookup_Nothing_is_found(self):
+        # given
+        def test_generic_lookup_fn(sha1, another_unused_arg):
+            assert another_unused_arg == 'unused arg'
+            assert sha1 == 'sha1'
+            return None
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            api._api_lookup('sha1', test_generic_lookup_fn,
+                            'This will be raised because None is returned.',
+                            lambda x: x,
+                            'unused arg')
+            self.assertIn('This will be raised because None is returned.',
+                          cm.exception.args[0])
+
+    @istest
+    def generic_api_map_are_enriched_and_transformed_to_list(self):
+        # given
+        def test_generic_lookup_fn_1(criteria0, param0, param1):
+            assert criteria0 == 'something'
+            return map(lambda x: x + 1, [1, 2, 3])
+
+        # when
+        actual_result = api._api_lookup(
+            'something',
+            test_generic_lookup_fn_1,
+            'This is not the error message you are looking for. Move along.',
+            lambda x: x * 2,
+            'some param 0',
+            'some param 1')
+
+        self.assertEqual(actual_result, [4, 6, 8])
+
+    @istest
+    def generic_api_list_are_enriched_too(self):
+        # given
+        def test_generic_lookup_fn_2(crit):
+            assert crit == 'something'
+            return ['a', 'b', 'c']
+
+        # when
+        actual_result = api._api_lookup(
+            'something',
+            test_generic_lookup_fn_2,
+            'Not the error message you are looking for, it is. '
+            'Along, you move!',
+            lambda x: ''. join(['=', x, '=']))
+
+        self.assertEqual(actual_result, ['=a=', '=b=', '=c='])
+
+    @istest
+    def generic_api_generator_are_enriched_and_returned_as_list(self):
+        # given
+        def test_generic_lookup_fn_3(crit):
+            assert crit == 'crit'
+            return (i for i in [4, 5, 6])
+
+        # when
+        actual_result = api._api_lookup(
+            'crit',
+            test_generic_lookup_fn_3,
+            'Move!',
+            lambda x: x - 1)
+
+        self.assertEqual(actual_result, [3, 4, 5])
+
+    @istest
+    def generic_api_simple_data_are_enriched_and_returned_too(self):
+        # given
+        def test_generic_lookup_fn_4(crit):
+            assert crit == '123'
+            return {'a': 10}
+
+        def test_enrich_data(x):
+            x['a'] = x['a'] * 10
+            return x
+
+        # when
+        actual_result = api._api_lookup(
+            '123',
+            test_generic_lookup_fn_4,
+            'Nothing to do',
+            test_enrich_data)
+
+        self.assertEqual(actual_result, {'a': 100})
+
     @patch('swh.web.ui.api.service')
 #    @istest
     def api_content_checksum_to_origin(self, mock_service):
