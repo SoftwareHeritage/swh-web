@@ -529,6 +529,6 @@ def api_uploadnsearch():
     """
     file = request.files.get('filename')
     if not file:
-        raise BadInputExc('Bad request, missing \'filename\' entry in form.')
+        raise BadInputExc("Bad request, missing 'filename' entry in form.")
 
     return service.upload_and_search(file)
