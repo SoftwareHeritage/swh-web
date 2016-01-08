@@ -344,7 +344,8 @@ def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
     if sha1_git == sha1_git_root:
         return redirect(url_for('api_directory_with_revision',
                                 sha1_git=sha1_git,
-                                dir_path=dir_path))
+                                dir_path=dir_path),
+                        code=301)
 
     revision = service.lookup_revision_with_context(sha1_git_root,
                                                     sha1_git,

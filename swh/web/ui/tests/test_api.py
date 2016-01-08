@@ -815,6 +815,97 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_directory_with_revision.assert_called_once_with(
             '999', 'some/path')
 
+    @istest
+    def api_directory_revision_history_sha1_same_so_redirect(self):
+        # when
+        rv = self.app.get(
+            '/api/1/revision/123/history/123/directory/path/to/?limit=1')
+
+        # then
+        self.assertEquals(rv.status_code, 301)
+
+        # self.assertEquals(rv.location,
+        #                   'http://localhost/api/1/revision/123/directory/path/to/')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_directory_revision_history_ko_revision_not_found(self,
+                                                             mock_service):
+        # given
+        mock_service.lookup_revision_with_context.return_value = None
+
+        # then
+        rv = self.app.get('/api/1/revision/456/history/987/directory/path/to/')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': "Possibly sha1_git '987' is not " +
+                     "an ancestor of sha1_git_root '456'"})
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+                        '456', '987', 100)
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_directory_revision_history(self,
+                                       mock_service):
+        # given
+        mock_service.lookup_revision_with_context.return_value = {
+            'id': 'rev-id'
+        }
+
+        stub_dir = [
+            {
+                'sha1_git': '879',
+                'type': 'file',
+                'target': '110',
+            },
+            {
+                'sha1_git': '213',
+                'type': 'dir',
+                'target': '546',
+                'name': 'subdir',
+            }]
+
+        expected_dir = [
+            {
+                'sha1_git': '879',
+                'type': 'file',
+                'target': '110',
+                'target_url': '/api/1/content/sha1_git:110/',
+            },
+            {
+                'sha1_git': '213',
+                'type': 'dir',
+                'target': '546',
+                'target_url': '/api/1/directory/546/',
+                'name': 'subdir',
+                'dir_url':
+                '/api/1/revision/354/history/867/directory/debian/subdir/'
+            }]
+
+        # given
+        mock_service.lookup_directory_with_revision.return_value = stub_dir
+
+        # then
+        rv = self.app.get('/api/1/revision/354'
+                          '/history/867'
+                          '/directory/debian/?limit=4')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_dir)
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+            '354', '867', 4)
+
+        mock_service.lookup_directory_with_revision('rev-id', 'debian')
+
     @patch('swh.web.ui.api.service')
     @istest
     def api_person(self, mock_service):

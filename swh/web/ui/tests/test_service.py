@@ -594,6 +594,19 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.directory_get.assert_called_once_with(
             b'dir-id-as-sha1', recursive=True)
 
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_revision_bad_input(self, mock_query):
+        # given
+        mock_query.parse_hash.return_value = ('sha1_git', 'do not care')
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision('123')
+            self.assertIn('Only sha1_git is supported.', cm.exception.args[0])
+
+        mock_query.parse_hash.assert_called_with('123')
+
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision(self, mock_backend):
@@ -650,6 +663,19 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_backend.revision_get.assert_called_with(
             hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_revision_log_bad_input(self, mock_query):
+        # given
+        mock_query.parse_hash.return_value = ('sha1_git', 'do not care')
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision_log('123')
+            self.assertIn('Only sha1_git is supported.', cm.exception.args[0])
+
+        mock_query.parse_hash.assert_called_with('123')
 
     @patch('swh.web.ui.service.backend')
     @istest
