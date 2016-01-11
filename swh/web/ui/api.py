@@ -253,7 +253,7 @@ def api_revision_with_origin(origin_id=1,
         ', ts: %s) not found.' % (origin_id,
                                   branch_name,
                                   timestamp),
-        lambda x: x,
+        _enrich_revision_with_urls,
         branch_name,
         timestamp)
 
