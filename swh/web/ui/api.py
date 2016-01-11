@@ -244,15 +244,9 @@ def api_revision_with_origin(origin_id=1, branch_name="master", ts=None):
         NotFoundExc if the revision is not found.
 
     """
-
-    def lookup_revision_by(origin_id, branch_name="master", ts=None):
-        return {'origin_id': origin_id,
-                'branch': branch_name,
-                'ts': ts}
-
     return _api_lookup(
         origin_id,
-        lookup_revision_by,
+        service.lookup_revision_by,
         'Revision with (origin_id: %s, branch_name: %s'
         ', ts: %s) not found.' % (origin_id,
                                   branch_name,

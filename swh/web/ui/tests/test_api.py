@@ -678,6 +678,43 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
+    def api_revision_with_origin_not_found(self, mock_service):
+        mock_service.lookup_revision_by.return_value = None
+
+        rv = self.app.get('/api/1/revision/origin/123/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertIn('Revision with (origin_id: 123', response_data['error'])
+        self.assertIn('not found', response_data['error'])
+
+        mock_service.lookup_revision_by.assert_called_once_with(123,
+                                                                'master',
+                                                                None)
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_revision_with_origin(self, mock_service):
+        mock_revision = {'id': 1}
+        mock_service.lookup_revision_by.return_value = mock_revision
+
+        rv = self.app.get('/api/1/revision/origin/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEqual(response_data, mock_revision)
+
+        mock_service.lookup_revision_by.assert_called_once_with(1,
+                                                                'master',
+                                                                None)
+
+    @patch('swh.web.ui.api.service')
+    @istest
     def api_revision_log(self, mock_service):
         # given
         stub_revision = [{

@@ -165,6 +165,23 @@ def lookup_revision(rev_sha1_git):
     return converters.from_revision(res)
 
 
+def lookup_revision_by(origin_id, branch_name="master", ts=None):
+    """Lookup a revision by its origin_id, branch_name and timestamp.
+
+    If:
+    - branch_name is not provided, lookup using 'master' as default.
+    - ts is not provided, use the most recent
+
+    Returns:
+        The revision matching the criteria.
+
+    """
+
+    return {'origin_id': origin_id,
+            'branch': branch_name,
+            'ts': ts}
+
+
 def lookup_revision_log(rev_sha1_git, limit=100):
     """Return information about the revision with sha1 revision_sha1_git.
 
