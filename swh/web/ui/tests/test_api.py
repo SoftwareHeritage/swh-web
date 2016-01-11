@@ -691,9 +691,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertIn('Revision with (origin_id: 123', response_data['error'])
         self.assertIn('not found', response_data['error'])
 
-        mock_service.lookup_revision_by.assert_called_once_with(123,
-                                                                'master',
-                                                                None)
+        mock_service.lookup_revision_by.assert_called_once_with(
+            123,
+            'refs/heads/master',
+            None)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -709,9 +710,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEqual(response_data, mock_revision)
 
-        mock_service.lookup_revision_by.assert_called_once_with(1,
-                                                                'master',
-                                                                None)
+        mock_service.lookup_revision_by.assert_called_once_with(
+            1,
+            'refs/heads/master',
+            None)
 
     @patch('swh.web.ui.api.service')
     @istest

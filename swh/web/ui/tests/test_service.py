@@ -1066,3 +1066,68 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_backend.directory_get.assert_called_with(
             hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by_nothing_found(self, mock_backend):
+        # given
+        mock_backend.revision_get_by.return_value = []
+
+        # when
+        actual_revisions = service.lookup_revision_by(1)
+
+        # then
+        self.assertEquals(list(actual_revisions), [])
+
+        mock_backend.revision_get_by(1, 'master', None)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by(self, mock_backend):
+        # given
+        stub_revs = (r for r in [{
+            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'ynot',
+                'email': b'ynot@blah.org',
+            },
+            'committer': {
+                'name': b'ynot',
+                'email': b'ynot@blah.org',
+            },
+            'message': b'elegant solution 31415',
+            'date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+        }])
+
+        expected_revs = [{
+            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'ynot',
+                'email': 'ynot@blah.org',
+            },
+            'committer': {
+                'name': 'ynot',
+                'email': 'ynot@blah.org',
+            },
+            'message': 'elegant solution 31415',
+            'date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+        }]
+
+        mock_backend.revision_get_by.return_value = stub_revs
+
+        # when
+        actual_revisions = service.lookup_revision_by(10, 'master2', 'some-ts')
+
+        # then
+        self.assertEquals(list(actual_revisions), expected_revs)
+
+        mock_backend.revision_get_by(1, 'master2', 'some-ts')

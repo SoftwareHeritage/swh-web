@@ -224,7 +224,9 @@ def _enrich_revision_with_urls(revision, context=None):
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
            '/ts/<string:ts>/')
-def api_revision_with_origin(origin_id=1, branch_name="master", ts=None):
+def api_revision_with_origin(origin_id=1,
+                             branch_name="refs/heads/master",
+                             timestamp=None):
     """Instead of having to specify a (root) revision by SHA1_GIT, users
     might want to specify a place and a time. In SWH a "place" is an
     origin; a "time" is a timestamp at which some place has been
@@ -234,7 +236,7 @@ def api_revision_with_origin(origin_id=1, branch_name="master", ts=None):
         origin_id: origin's identifier (default to 1).
         branch_name: the optional branch for the given origin (default
         to master).
-        ts: optional timestamp (default to the most recent crawl).
+        timestamp: optional timestamp (default to the most recent crawl).
 
     Returns:
         Information on the revision if found.
@@ -250,10 +252,10 @@ def api_revision_with_origin(origin_id=1, branch_name="master", ts=None):
         'Revision with (origin_id: %s, branch_name: %s'
         ', ts: %s) not found.' % (origin_id,
                                   branch_name,
-                                  ts),
+                                  timestamp),
         lambda x: x,
         branch_name,
-        ts)
+        timestamp)
 
 
 @app.route('/api/1/revision/')

@@ -165,21 +165,21 @@ def lookup_revision(rev_sha1_git):
     return converters.from_revision(res)
 
 
-def lookup_revision_by(origin_id, branch_name="master", ts=None):
-    """Lookup a revision by its origin_id, branch_name and timestamp.
+def lookup_revision_by(origin_id,
+                       branch_name="refs/heads/master",
+                       timestamp=None):
+    """Lookup revisions by origin_id, branch_name and timestamp.
 
     If:
-    - branch_name is not provided, lookup using 'master' as default.
+    - branch_name is not provided, lookup using 'refs/heads/master' as default.
     - ts is not provided, use the most recent
 
-    Returns:
-        The revision matching the criteria.
+    Yields:
+        The revisions matching the criterions.
 
     """
-
-    return {'origin_id': origin_id,
-            'branch': branch_name,
-            'ts': ts}
+    res = backend.revision_get_by(origin_id, branch_name, timestamp)
+    return map(converters.from_revision, res)
 
 
 def lookup_revision_log(rev_sha1_git, limit=100):
