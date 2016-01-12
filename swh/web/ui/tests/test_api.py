@@ -699,8 +699,24 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.service')
     @istest
     def api_revision_with_origin(self, mock_service):
-        mock_revision = {'id': 1}
-        mock_service.lookup_revision_by.return_value = mock_revision
+        mock_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'message': 'synthetic revision message',
+            'type': 'tar',
+        }]
+        expected_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
+                           'f7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a4'
+            '2b7e2a44e6/',
+            'message': 'synthetic revision message',
+            'type': 'tar',
+        }]
+        mock_service.lookup_revision_by.return_value = mock_revisions
 
         rv = self.app.get('/api/1/revision/origin/')
 
@@ -708,7 +724,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEqual(response_data, mock_revision)
+        self.assertEqual(response_data, expected_revisions)
 
         mock_service.lookup_revision_by.assert_called_once_with(
             1,
@@ -717,9 +733,45 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
+    def api_revision_with_origin_and_branch_name(self, mock_service):
+        mock_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'message': 'synthetic revision message',
+            'type': 'tar',
+        }]
+        mock_service.lookup_revision_by.return_value = mock_revisions
+
+        expected_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
+                           'f7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a4'
+            '2b7e2a44e6/',
+            'message': 'synthetic revision message',
+            'type': 'tar',
+        }]
+
+        rv = self.app.get('/api/1/revision/origin/1/branch/refs/origin/dev/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEqual(response_data, expected_revisions)
+
+        mock_service.lookup_revision_by.assert_called_once_with(
+            1,
+            'refs/origin/dev',
+            None)
+
+    @patch('swh.web.ui.api.service')
+    @istest
     def api_revision_log(self, mock_service):
         # given
-        stub_revision = [{
+        stub_revisions = [{
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
             'author_name': 'Software Heritage',
@@ -733,7 +785,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'type': 'tar',
             'synthetic': True,
         }]
-        mock_service.lookup_revision_log.return_value = stub_revision
+        mock_service.lookup_revision_log.return_value = stub_revisions
 
         expected_revisions = [{
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
