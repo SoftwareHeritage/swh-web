@@ -845,6 +845,65 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_utils.parse_timestamp.assert_called_once_with(
             'Today is January 1, 2047 at 8:21:00AM')
 
+    @patch('swh.web.ui.api.utils')
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_directory_with_origin_rev_not_found(self,
+                                                mock_service,
+                                                mock_utils):
+        mock_service.lookup_revision_by.return_value = None
+        mock_utils.parse_timestamp.return_value = '2012-10-20 00:00:00'
+
+        rv = self.app.get('/api/1/revision'
+                          '/origin/10'
+                          '/branch/refs/remote/origin/dev'
+                          '/ts/2012-10-20'
+                          '/directory/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEqual(response_data, {
+            'error': 'Revision with (origin_id: 10, branch_name: '
+            'refs/remote/origin/dev, ts: 2012-10-20 00:00:00) not found.'})
+
+        mock_service.lookup_revision_by.assert_called_once_with(
+            10,
+            'refs/remote/origin/dev',
+            '2012-10-20 00:00:00')
+
+    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.api._revision_directory')
+    @istest
+    def api_directory_with_origin(self, mock_revision_dir, mock_service):
+        mock_revision = {
+            'id': '998',
+        }
+        expected_res = [{
+            'id': '123'
+        }]
+        mock_revision_dir.return_value = expected_res
+
+        mock_service.lookup_revision_by.return_value = mock_revision
+
+        rv = self.app.get('/api/1/revision/origin/3/directory/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEqual(response_data, expected_res)
+
+        mock_service.lookup_revision_by.assert_called_once_with(
+            3,
+            'refs/heads/master',
+            None)
+        mock_revision_dir.assert_called_once_with(
+            '998',
+            None,
+            '/api/1/revision/origin/3/directory/')
+
     @patch('swh.web.ui.api.service')
     @istest
     def api_revision_log(self, mock_service):
