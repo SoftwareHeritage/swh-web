@@ -179,7 +179,7 @@ def lookup_revision_by(origin_id,
 
     """
     res = backend.revision_get_by(origin_id, branch_name, timestamp)
-    return map(converters.from_revision, res)
+    return converters.from_revision(res)
 
 
 def lookup_revision_log(rev_sha1_git, limit=100):

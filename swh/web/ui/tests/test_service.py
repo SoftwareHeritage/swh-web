@@ -1071,13 +1071,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_by_nothing_found(self, mock_backend):
         # given
-        mock_backend.revision_get_by.return_value = []
+        mock_backend.revision_get_by.return_value = None
 
         # when
         actual_revisions = service.lookup_revision_by(1)
 
         # then
-        self.assertEquals(list(actual_revisions), [])
+        self.assertIsNone(actual_revisions)
 
         mock_backend.revision_get_by(1, 'master', None)
 
@@ -1085,7 +1085,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_by(self, mock_backend):
         # given
-        stub_revs = (r for r in [{
+        stub_rev = {
             'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
             'directory': hex_to_hash(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
@@ -1102,9 +1102,9 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'date_offset': 0,
             'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
             'committer_date_offset': 0,
-        }])
+        }
 
-        expected_revs = [{
+        expected_rev = {
             'id': '28d8be353ed3480476f032475e7c233eff7371d5',
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
             'author': {
@@ -1120,14 +1120,14 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'date_offset': 0,
             'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
             'committer_date_offset': 0,
-        }]
+        }
 
-        mock_backend.revision_get_by.return_value = stub_revs
+        mock_backend.revision_get_by.return_value = stub_rev
 
         # when
-        actual_revisions = service.lookup_revision_by(10, 'master2', 'some-ts')
+        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
 
         # then
-        self.assertEquals(list(actual_revisions), expected_revs)
+        self.assertEquals(actual_revision, expected_rev)
 
         mock_backend.revision_get_by(1, 'master2', 'some-ts')

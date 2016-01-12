@@ -7,8 +7,7 @@ from types import GeneratorType
 
 from flask import request, url_for, Response, redirect
 
-
-from swh.web.ui import service
+from swh.web.ui import service, utils
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.main import app
 
@@ -226,7 +225,7 @@ def _enrich_revision_with_urls(revision, context=None):
            '/ts/<string:ts>/')
 def api_revision_with_origin(origin_id=1,
                              branch_name="refs/heads/master",
-                             timestamp=None):
+                             ts=None):
     """Instead of having to specify a (root) revision by SHA1_GIT, users
     might want to specify a place and a time. In SWH a "place" is an
     origin; a "time" is a timestamp at which some place has been
@@ -236,7 +235,8 @@ def api_revision_with_origin(origin_id=1,
         origin_id: origin's identifier (default to 1).
         branch_name: the optional branch for the given origin (default
         to master).
-        timestamp: optional timestamp (default to the most recent crawl).
+        timestamp: optional timestamp (default to the nearest time
+        crawl of timestamp).
 
     Returns:
         Information on the revision if found.
@@ -246,16 +246,19 @@ def api_revision_with_origin(origin_id=1,
         NotFoundExc if the revision is not found.
 
     """
+    if ts:
+        ts = utils.parse_timestamp(ts)
+
     return _api_lookup(
         origin_id,
         service.lookup_revision_by,
         'Revision with (origin_id: %s, branch_name: %s'
         ', ts: %s) not found.' % (origin_id,
                                   branch_name,
-                                  timestamp),
+                                  ts),
         _enrich_revision_with_urls,
         branch_name,
-        timestamp)
+        ts)
 
 
 @app.route('/api/1/revision/')

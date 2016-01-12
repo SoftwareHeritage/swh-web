@@ -259,6 +259,36 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.release_get.assert_called_with([sha1_bin])
 
     @istest
+    def revision_get_by_not_found(self):
+        # given
+        self.storage.revision_get_by = MagicMock(return_value=[])
+
+        # when
+        actual_revision = backend.revision_get_by(10, 'master', 'ts2')
+
+        # then
+        self.assertIsNone(actual_revision)
+
+        self.storage.revision_get_by.assert_called_with(10, 'master',
+                                                        timestamp='ts2',
+                                                        limit=1)
+
+    @istest
+    def revision_get_by(self):
+        # given
+        self.storage.revision_get_by = MagicMock(return_value=[{'id': 1}])
+
+        # when
+        actual_revisions = backend.revision_get_by(100, 'dev', 'ts')
+
+        # then
+        self.assertEquals(actual_revisions, {'id': 1})
+
+        self.storage.revision_get_by.assert_called_with(100, 'dev',
+                                                        timestamp='ts',
+                                                        limit=1)
+
+    @istest
     def revision_get_not_found(self):
         # given
         sha1_bin = hashutil.hex_to_hash(

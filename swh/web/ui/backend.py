@@ -168,6 +168,10 @@ def revision_get_by(origin_id, branch_name, timestamp):
     branch_name, ts.
 
     """
-    return main.storage().revision_get_by(origin_id,
-                                          branch_name,
-                                          timestamp=timestamp)
+    res = main.storage().revision_get_by(origin_id,
+                                         branch_name,
+                                         timestamp=timestamp,
+                                         limit=1)
+    if not res:
+        return None
+    return res[0]
