@@ -8,7 +8,7 @@ Build-Depends: debhelper (>= 9),
                python3-nose,
                python3-setuptools,
                python3-swh.core,
-               python3-swh.storage (>= 0.0.25~),
+               python3-swh.storage (>= 0.0.26~),
                python3-vcversioner
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
