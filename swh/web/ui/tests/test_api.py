@@ -848,9 +848,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_origin_rev_not_found(self,
-                                                mock_service,
-                                                mock_utils):
+    def api_directory_through_revision_with_origin_rev_not_found(self,
+                                                                 mock_service,
+                                                                 mock_utils):
         mock_service.lookup_revision_by.return_value = None
         mock_utils.parse_timestamp.return_value = '2012-10-20 00:00:00'
 
@@ -876,7 +876,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.service')
     @patch('swh.web.ui.api._revision_directory')
     @istest
-    def api_directory_with_origin(self, mock_revision_dir, mock_service):
+    def api_directory_through_revision_with_origin(self,
+                                                   mock_revision_dir,
+                                                   mock_service):
         mock_revision = {
             'id': '998',
         }

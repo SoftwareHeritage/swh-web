@@ -214,7 +214,7 @@ def _enrich_revision_with_urls(revision, context=None):
            '/directory/')
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
-           '/directory/<path:dir_path>/')
+           '/directory/<path:path>/')
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
            '/branch/<path:branch_name>'
@@ -222,7 +222,7 @@ def _enrich_revision_with_urls(revision, context=None):
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
            '/branch/<path:branch_name>'
-           '/directory/<path:dir_path>/')
+           '/directory/<path:path>/')
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
            '/branch/<path:branch_name>'
@@ -232,8 +232,43 @@ def _enrich_revision_with_urls(revision, context=None):
            '/origin/<int:origin_id>'
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
-           '/directory/<path:dir_path>/')
-def api_directory_with_origin(origin_id=1,
+           '/directory/<path:path>/')
+def api_directory_through_revision_with_origin(origin_id=1,
+                                               branch_name="refs/heads/master",
+                                               ts=None,
+                                               path=None):
+    """Display directory or content information through a revision identified
+    by origin/branch/timestamp.
+
+    Args:
+        origin_id: origin's identifier (default to 1).
+        branch_name: the optional branch for the given origin (default
+        to master).
+        timestamp: optional timestamp (default to the nearest time
+        crawl of timestamp).
+        path: Path to directory or file to display.
+
+    Returns:
+        Information on the directory or content pointed to by such revision.
+
+    Raises:
+        NotFoundExc if the revision is not found or the path pointed to
+        is not found.
+
+    """
+    if ts:
+        ts = utils.parse_timestamp(ts)
+
+    revision = service.lookup_revision_by(origin_id, branch_name, ts)
+    if not revision:
+        raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
+                          ', ts: %s) not found.' % (origin_id,
+                                                    branch_name,
+                                                    ts))
+
+    return _revision_directory(revision['id'], path, request.path)
+
+
                               branch_name="refs/heads/master",
                               ts=None,
                               dir_path=None):
