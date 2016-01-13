@@ -1,3 +1,24 @@
+swh-web (0.0.18-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.18
+  * Open
+    /api/1/revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/
+    history/<SHA1>/directory/[<PATH>]
+  * origin/master Open
+    /api/1/revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/
+    history/<SHA1>/
+  * Open
+    /api/1/revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]/
+    directory/[<PATH>]
+  * Open /api/1/revision/origin/<origin-id>/branch/<branch-
+    name>/ts/<ts>/
+  * /directory/ apis can now point to files too.
+  * Bump dependency requirement on latest swh.storage
+  * Deactivate api querying occurrences for now
+  * Improve function documentation
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 13 Jan 2016 12:54:54 +0100
+
 swh-web (0.0.17-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.17
