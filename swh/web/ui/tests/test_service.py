@@ -426,6 +426,43 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             sha1_git_root_bin, 100)
 
     @istest
+    def lookup_name_in(self):
+        file0 = {
+            "type": "file",
+            "sha1": b"8e295bec402303cf2bd21b68f1f1fb0692f9c00a",
+            "dir_id": b"93857db1982141c94d3ca05b16ef6bd41d9da2ef",
+            "name": b"Entries",
+            "perms": 100644,
+            "target": b"55b983eaed0e68f8402c4ef891f0fcbcc80ece74"
+        }
+        dir1 = {
+            "type": "dir",
+            "sha1": b"d4c7a6c81832350d05c3f76f5f193ee62a2e6a16",
+            "dir_id": b"93857db1982141c94d3ca05b16ef6bd41d9da2ef",
+            "name": b"doc",
+            "perms": 40000,
+            "target": b"5d71ad3d16c0aaf5e0c3f4a4241020d7962c0e43"
+        }
+        dir2 = {
+            "type": "dir",
+            "sha1": b"cvbfdrc81832350d05c3f76f5f193ee62a2e6a16",
+            "dir_id": b"789012b1982141c94d3ca05b16ef6bd41d9da2ef",
+            "name": b"generated",
+            "perms": 40000,
+            "target": b"1234563d16c0aaf5e0c3f4a4241020d7962c0e43"
+        }
+
+        dir_entries = [file0, dir1, dir2]
+
+        for e in [file0, dir1, dir2]:
+            actual_entity = service._lookup_name_in(dir_entries,
+                                                    e['name'].decode('utf-8'))
+            self.assertEquals(actual_entity, e)
+
+        actual_entity = service._lookup_name_in(dir_entries, "nothing")
+        self.assertIsNone(actual_entity)
+
+    @istest
     def lookup_directory_with_revision_bad_input(self):
         with self.assertRaises(BadInputExc) as cm:
             service.lookup_directory_with_revision('123', 'some/path')
@@ -477,7 +514,9 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         actual_directory_entries = service.lookup_directory_with_revision(
             '123')
 
-        self.assertEqual(list(actual_directory_entries), stub_dir_entries)
+        self.assertEqual(actual_directory_entries['type'], 'dir')
+        self.assertEqual(list(actual_directory_entries['content']),
+                         stub_dir_entries)
 
         mock_query.parse_hash.assert_called_once_with(
             '123')
@@ -487,9 +526,9 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_revision_with_path(self,
-                                                          mock_query,
-                                                          mock_backend):
+    def lookup_directory_with_revision_revision_with_path_to_dir(self,
+                                                                 mock_query,
+                                                                 mock_backend):
         # given
         mock_query.parse_hash.return_value = 'sha1', b'123'
 
@@ -529,7 +568,9 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             '123',
             'some/path')
 
-        self.assertEqual(list(actual_directory_entries), stub_dir_entries)
+        self.assertEqual(actual_directory_entries['type'], 'dir')
+        self.assertEqual(list(actual_directory_entries['content']),
+                         stub_dir_entries)
 
         mock_query.parse_hash.assert_called_once_with(
             '123')
@@ -542,7 +583,59 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_revision_with_path_ko_dir_not_found(
+    def lookup_directory_with_revision_revision_with_path_to_file(
+            self,
+            mock_query,
+            mock_backend):
+
+        # given
+        mock_query.parse_hash.return_value = 'sha1', b'123'
+
+        dir_id = b'dir-id-as-sha1'
+        mock_backend.revision_get.return_value = {
+            'directory': dir_id,
+        }
+
+        stub_dir_ls = [
+            {
+                'type': 'file',
+                'name': b'some/path/to/file',
+                'target': b'456'
+            },
+            {
+                'type': 'file',
+                'name': b'something-else.hs',
+                'target': b'789'
+            }
+        ]
+        mock_backend.directory_get.return_value = stub_dir_ls
+
+        stub_content = {
+            'status': 'visible',
+        }
+
+        mock_backend.content_find.return_value = stub_content
+
+        # when
+        actual_content = service.lookup_directory_with_revision(
+            '123',
+            'some/path/to/file')
+
+        # then
+        self.assertEqual(actual_content, {'type': 'file',
+                                          'content': stub_content})
+
+        mock_query.parse_hash.assert_called_once_with(
+            '123')
+        mock_backend.revision_get.assert_called_once_with(b'123')
+        mock_backend.directory_get.assert_called_once_with(
+            b'dir-id-as-sha1', recursive=True)
+        mock_backend.content_find.assert_called_once_with('sha1_git', b'456')
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_directory_with_revision_ko_revision_with_path_to_nowhere(
             self,
             mock_query,
             mock_backend):
@@ -557,7 +650,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         stub_dir_ls = [
             {
                 'type': 'file',
-                'name': b'some/path/but-not-a-dir',
+                'name': b'some/path/to/dir',
                 'target': b'456'
             },
             {
@@ -567,27 +660,68 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             }
         ]
 
-        stub_dir_entries = [{
-            'id': b'12',
-            'type': 'dir'
-        }, {
-            'id': b'34',
-            'type': 'file'
-        }]
-
-        mock_backend.directory_get.side_effect = [
-            stub_dir_ls,
-            stub_dir_entries
-        ]
+        mock_backend.directory_get.return_value = stub_dir_ls
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_directory_with_revision(
                 '123',
-                'some/path-but-not-a-dir')
-            self.assertIn("Directory 'some/path/but-not-a-dir' pointed to by" +
-                          " revision 123 not found", cm.exception.args[0])
+                'path/to/something/unknown')
+            self.assertIn("Directory/File 'path/to/something/unknown' " +
+                          "pointed to by revision 123 not found",
+                          cm.exception.args[0])
 
+        mock_query.parse_hash.assert_called_once_with('123')
+        mock_backend.revision_get.assert_called_once_with(b'123')
+        mock_backend.directory_get.assert_called_once_with(
+            b'dir-id-as-sha1', recursive=True)
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_directory_with_revision_ok_type_not_implemented(
+            self,
+            mock_query,
+            mock_backend):
+
+        # given
+        mock_query.parse_hash.return_value = 'sha1', b'123'
+
+        dir_id = b'dir-id-as-sha1'
+        mock_backend.revision_get.return_value = {
+            'directory': dir_id,
+        }
+
+        stub_dir_ls = [
+            {
+                'type': 'rev',
+                'name': b'some/path/to/rev',
+                'target': b'456'
+            },
+            {
+                'type': 'file',
+                'name': b'something-else.hs',
+                'target': b'789'
+            }
+        ]
+        mock_backend.directory_get.return_value = stub_dir_ls
+
+        stub_content = {
+            'id': b'12',
+            'type': 'file'
+        }
+
+        mock_backend.content_get.return_value = stub_content
+
+        # when
+        with self.assertRaises(NotImplementedError) as cm:
+            service.lookup_directory_with_revision(
+                '123',
+                'some/path/to/rev')
+            self.assertIn("Entity of type 'rev' not implemented.",
+                          cm.exception.args[0])
+
+        # then
         mock_query.parse_hash.assert_called_once_with(
             '123')
         mock_backend.revision_get.assert_called_once_with(b'123')
@@ -932,3 +1066,68 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_backend.directory_get.assert_called_with(
             hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by_nothing_found(self, mock_backend):
+        # given
+        mock_backend.revision_get_by.return_value = None
+
+        # when
+        actual_revisions = service.lookup_revision_by(1)
+
+        # then
+        self.assertIsNone(actual_revisions)
+
+        mock_backend.revision_get_by(1, 'master', None)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by(self, mock_backend):
+        # given
+        stub_rev = {
+            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'ynot',
+                'email': b'ynot@blah.org',
+            },
+            'committer': {
+                'name': b'ynot',
+                'email': b'ynot@blah.org',
+            },
+            'message': b'elegant solution 31415',
+            'date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+        }
+
+        expected_rev = {
+            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'ynot',
+                'email': 'ynot@blah.org',
+            },
+            'committer': {
+                'name': 'ynot',
+                'email': 'ynot@blah.org',
+            },
+            'message': 'elegant solution 31415',
+            'date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+        }
+
+        mock_backend.revision_get_by.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
+
+        # then
+        self.assertEquals(actual_revision, expected_rev)
+
+        mock_backend.revision_get_by(1, 'master2', 'some-ts')

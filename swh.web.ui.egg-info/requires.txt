@@ -1,4 +1,5 @@
 Flask
 Flask-API
+dateutil
 swh.core
-swh.storage>=0.0.25
+swh.storage>=0.0.26

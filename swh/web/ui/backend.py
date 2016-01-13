@@ -161,3 +161,17 @@ def stat_counters():
         A dict mapping textual labels to integer values.
     """
     return main.storage().stat_counters()
+
+
+def revision_get_by(origin_id, branch_name, timestamp):
+    """Return occurrence information matching the criterions origin_id,
+    branch_name, ts.
+
+    """
+    res = main.storage().revision_get_by(origin_id,
+                                         branch_name,
+                                         timestamp=timestamp,
+                                         limit=1)
+    if not res:
+        return None
+    return res[0]
