@@ -269,13 +269,28 @@ def api_directory_through_revision_with_origin(origin_id=1,
     return _revision_directory(revision['id'], path, request.path)
 
 
-                              branch_name="refs/heads/master",
-                              ts=None,
-                              dir_path=None):
-    """Instead of having to specify a (root) revision by SHA1_GIT, users
-    might want to specify a place and a time. In SWH a "place" is an
-    origin; a "time" is a timestamp at which some place has been
-    observed by SWH crawlers.
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/history/<sha1_git>/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/history/<sha1_git>/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>/')
+def api_history_through_revision_with_origin(origin_id=1,
+                                             branch_name="refs/heads/master",
+                                             ts=None,
+                                             sha1_git=None):
+    """
+    Return information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of the revision root identified
+    by (origin_id, branch_name, ts).
+    Given sha1_git_root such root revision's identifier, in other words,
+    sha1_git is an ancestor of sha1_git_root.
 
     Args:
         origin_id: origin's identifier (default to 1).
@@ -283,26 +298,49 @@ def api_directory_through_revision_with_origin(origin_id=1,
         to master).
         timestamp: optional timestamp (default to the nearest time
         crawl of timestamp).
+        sha1_git: one of sha1_git_root's ancestors.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
 
     Returns:
-        Information on the revision if found.
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root.
 
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash.
-        NotFoundExc if the revision is not found.
+        NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root.
 
     """
+    limit = int(request.args.get('limit', '100'))
+
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    revision = service.lookup_revision_by(origin_id, branch_name, ts)
-    if not revision:
+    revision_root = service.lookup_revision_by(origin_id, branch_name, ts)
+    if not revision_root:
         raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
                           ', ts: %s) not found.' % (origin_id,
                                                     branch_name,
                                                     ts))
 
-    return _revision_directory(revision['id'], dir_path, request.path)
+    sha1_git_root = revision_root['id']
+    revision = service.lookup_revision_with_context(sha1_git_root,
+                                                    sha1_git,
+                                                    limit)
+    if not revision:
+        raise NotFoundExc(
+            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
+            "sha1_git_root being the revision's identifier pointed to by "
+            "(origin_id: %s, branch_name: %s, ts: %s)." % (sha1_git,
+                                                           sha1_git_root,
+                                                           origin_id,
+                                                           branch_name,
+                                                           ts))
+
+    return _enrich_revision_with_urls(revision, context=sha1_git_root)
 
 
 @app.route('/api/1/revision'
