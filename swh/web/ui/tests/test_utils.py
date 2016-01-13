@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
+import dateutil
 import unittest
 
 from unittest.mock import patch
@@ -169,3 +171,23 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.person_to_string(dict(name='raboof',
                                                      email='foo@bar')),
                          'raboof <foo@bar>')
+
+    @istest
+    def parse_timestamp(self):
+        input_timestamps = [
+            '2016-01-12',
+            '2016-01-12T09:19:12+0100',
+            'Today is January 1, 2047 at 8:21:00AM',
+            '1452591542',
+        ]
+
+        output_dates = [
+            datetime.datetime(2016, 1, 12, 0, 0),
+            datetime.datetime(2016, 1, 12, 9, 19, 12,
+                              tzinfo=dateutil.tz.tzoffset(None, 3600)),
+            datetime.datetime(2047, 1, 1, 8, 21),
+            datetime.datetime(2016, 1, 12, 10, 39, 2),
+        ]
+
+        for ts, exp_date in zip(input_timestamps, output_dates):
+            self.assertEquals(utils.parse_timestamp(ts), exp_date)

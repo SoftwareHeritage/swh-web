@@ -3,7 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
 import flask
+
+from dateutil import parser
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
@@ -96,3 +99,22 @@ def person_to_string(person):
 
     """
     return ''.join([person['name'], ' <', person['email'], '>'])
+
+
+def parse_timestamp(timestamp):
+    """Given a time or timestamp (as string), parse the result as datetime.
+
+    Returns:
+        datetime result of parsing values.
+
+    Samples:
+        - 2016-01-12
+        - 2016-01-12T09:19:12+0100
+        - Today is January 1, 2047 at 8:21:00AM
+        - 1452591542
+    """
+    try:
+        res = parser.parse(timestamp, ignoretz=False, fuzzy=True)
+    except:
+        res = datetime.datetime.fromtimestamp(float(timestamp))
+    return res
