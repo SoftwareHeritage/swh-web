@@ -7,7 +7,7 @@ from collections import defaultdict
 
 from swh.core import hashutil
 from swh.web.ui import converters, query, upload, backend
-from swh.web.ui.exc import BadInputExc, NotFoundExc
+from swh.web.ui.exc import NotFoundExc
 
 
 def hash_and_search(filepath):
@@ -58,7 +58,7 @@ def lookup_hash(q):
         whether the checksum is present or not
 
     """
-    (algo, hash) = query.parse_hash(q)
+    algo, hash = query.parse_hash(q)
     found = backend.content_find(algo, hash)
     return {'found': found,
             'algo': algo}
@@ -73,8 +73,8 @@ def lookup_hash_origin(q):
         origin as dictionary if found for the given content.
 
     """
-    algo, h = query.parse_hash(q)
-    origin = backend.content_find_occurrence(algo, h)
+    algo, hash = query.parse_hash(q)
+    origin = backend.content_find_occurrence(algo, hash)
     return converters.from_origin(origin)
 
 
@@ -115,9 +115,10 @@ def lookup_directory(sha1_git):
         directory information as dict.
 
     """
-    algo, sha1_git_bin = query.parse_hash(sha1_git)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        sha1_git,
+        ['sha1'],  # HACK: sha1_git really
+        'Only sha1_git is supported.')
 
     directory_entries = backend.directory_get(sha1_git_bin)
     return map(converters.from_directory_entry, directory_entries)
@@ -136,10 +137,10 @@ def lookup_release(release_sha1_git):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    algo, sha1_git_bin = query.parse_hash(release_sha1_git)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
-
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        release_sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
     res = backend.release_get(sha1_git_bin)
     return converters.from_release(res)
 
@@ -157,9 +158,10 @@ def lookup_revision(rev_sha1_git):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    algo, sha1_git_bin = query.parse_hash(rev_sha1_git)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        rev_sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
 
     res = backend.revision_get(sha1_git_bin)
     return converters.from_revision(res)
@@ -196,11 +198,12 @@ def lookup_revision_log(rev_sha1_git, limit=100):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    algo, bin_sha1 = query.parse_hash(rev_sha1_git)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        rev_sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
 
-    revision_entries = backend.revision_log(bin_sha1, limit)
+    revision_entries = backend.revision_log(sha1_git_bin, limit)
     return map(converters.from_revision, revision_entries)
 
 
@@ -225,13 +228,15 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
         ancestor of sha1_git_root
 
     """
-    algo, sha1_git_bin = query.parse_hash(sha1_git)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
 
-    algo, sha1_git_root_bin = query.parse_hash(sha1_git_root)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
+    _, sha1_git_root_bin = query.parse_hash_with_algorithms_or_throws(
+        sha1_git_root,
+        ['sha1'],
+        'Only sha1_git is supported.')
 
     revision = backend.revision_get(sha1_git_bin)
     if not revision:
@@ -292,9 +297,10 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
         type 'dir' or 'file'.
 
     """
-    algo, sha1_git_bin = query.parse_hash(sha1_git)
-    if algo != 'sha1':  # HACK: sha1_git really but they are both sha1...
-        raise BadInputExc('Only sha1_git is supported.')
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
 
     revision = backend.revision_get(sha1_git_bin)
     if not revision:
@@ -336,7 +342,7 @@ def lookup_content(q):
         q: The release's sha1 as hexadecimal
 
     """
-    (algo, hash) = query.parse_hash(q)
+    algo, hash = query.parse_hash(q)
     c = backend.content_find(algo, hash)
     return converters.from_content(c)
 
@@ -352,7 +358,7 @@ def lookup_content_raw(q):
         data representing its raw data decoded.
 
     """
-    (algo, hash) = query.parse_hash(q)
+    algo, hash = query.parse_hash(q)
     c = backend.content_find(algo, hash)
     if not c:
         return None

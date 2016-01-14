@@ -5,6 +5,7 @@
 
 import unittest
 
+from unittest.mock import patch
 from nose.tools import istest
 
 from swh.core import hashutil
@@ -73,3 +74,52 @@ class QueryTestCase(unittest.TestCase):
     def parse_hash_check_algo_unknown_one(self):
         with self.assertRaises(BadInputExc):
             query.parse_hash('sha2:1234567890987654')
+
+    @patch('swh.web.ui.query.parse_hash')
+    @istest
+    def parse_hash_with_algorithms_or_throws_bad_query(self, mock_hash):
+        # given
+        mock_hash.side_effect = BadInputExc('Error input')
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            query.parse_hash_with_algorithms_or_throws(
+                'sha1:blah',
+                ['sha1'],
+                'useless error message for this use case')
+            self.assertIn('Error input', cm.exception.args[0])
+
+        mock_hash.assert_called_once_with('sha1:blah')
+
+    @patch('swh.web.ui.query.parse_hash')
+    @istest
+    def parse_hash_with_algorithms_or_throws_bad_algo(self, mock_hash):
+        # given
+        mock_hash.return_value = 'sha1', '123'
+
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            query.parse_hash_with_algorithms_or_throws(
+                'sha1:431',
+                ['sha1_git'],
+                'Only sha1_git!')
+            self.assertIn('Only sha1_git!', cm.exception.args[0])
+
+        mock_hash.assert_called_once_with('sha1:431')
+
+    @patch('swh.web.ui.query.parse_hash')
+    @istest
+    def parse_hash_with_algorithms(self, mock_hash):
+        # given
+        mock_hash.return_value = ('sha256', b'123')
+
+        # when
+        algo, sha = query.parse_hash_with_algorithms_or_throws(
+            'sha256:123',
+            ['sha256', 'sha1_git'],
+            'useless error message for this use case')
+
+        self.assertEquals(algo, 'sha256')
+        self.assertEquals(sha, b'123')
+
+        mock_hash.assert_called_once_with('sha256:123')
