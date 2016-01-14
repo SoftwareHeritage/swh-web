@@ -176,6 +176,11 @@ def lookup_revision_by(origin_id,
     - branch_name is not provided, lookup using 'refs/heads/master' as default.
     - ts is not provided, use the most recent
 
+    Args:
+        - origin_id: origin of the revision.
+        - branch_name: revision's branch.
+        - timestamp: revision's time frame.
+
     Yields:
         The revisions matching the criterions.
 
@@ -207,6 +212,44 @@ def lookup_revision_log(rev_sha1_git, limit=100):
     return map(converters.from_revision, revision_entries)
 
 
+def lookup_revision_with_context_by(origin_id, branch_name, ts, sha1_git,
+                                    limit=100):
+    """Return information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of sha1_git_root.
+    sha1_git_root being resolved through the lookup of a revision by origin_id,
+    branch_name and ts.
+
+    In other words, sha1_git is an ancestor of sha1_git_root.
+
+    Args:
+        - origin_id: origin of the revision.
+        - branch_name: revision's branch.
+        - timestamp: revision's time frame.
+        - sha1_git: one of sha1_git_root's ancestors.
+        - limit: limit the lookup to 100 revisions back.
+
+    Returns:
+        Pair of (root_revision, revision).
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root
+
+    Raises:
+        - BadInputExc in case of unknown algo_hash or bad hash.
+        - NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root.
+
+    """
+    rev_root = backend.revision_get_by(origin_id, branch_name, ts)
+    if not rev_root:
+        raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
+                          ', ts: %s) not found.' % (origin_id,
+                                                    branch_name,
+                                                    ts))
+
+    return (converters.from_revision(rev_root),
+            lookup_revision_with_context(rev_root, sha1_git, limit))
+
+
 def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     """Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
@@ -214,7 +257,8 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     In other words, sha1_git is an ancestor of sha1_git_root.
 
     Args:
-        sha1_git_root: latest revision of the browsed history
+        sha1_git_root: latest revision. The type is either a sha1 (as an hex
+        string) or a non converted dict.
         sha1_git: one of sha1_git_root's ancestors
         limit: limit the lookup to 100 revisions back
 
@@ -233,18 +277,21 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    _, sha1_git_root_bin = query.parse_hash_with_algorithms_or_throws(
-        sha1_git_root,
-        ['sha1'],
-        'Only sha1_git is supported.')
-
     revision = backend.revision_get(sha1_git_bin)
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
 
-    revision_root = backend.revision_get(sha1_git_root_bin)
-    if not revision_root:
-        raise NotFoundExc('Revision %s not found' % sha1_git_root)
+    if isinstance(sha1_git_root, str):
+        _, sha1_git_root_bin = query.parse_hash_with_algorithms_or_throws(
+            sha1_git_root,
+            ['sha1'],
+            'Only sha1_git is supported.')
+
+        revision_root = backend.revision_get(sha1_git_root_bin)
+        if not revision_root:
+            raise NotFoundExc('Revision %s not found' % sha1_git_root)
+    else:
+        sha1_git_root_bin = sha1_git_root
 
     revision_log = backend.revision_log(sha1_git_root_bin, limit)
 

@@ -1108,3 +1108,54 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEquals(actual_revision, expected_rev)
 
         mock_backend.revision_get_by(1, 'master2', 'some-ts')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_with_context_by_ko(self, mock_backend):
+        # given
+        mock_backend.revision_get_by.return_value = None
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            origin_id = 1
+            branch_name = 'master3'
+            ts = None
+            service.lookup_revision_with_context_by(origin_id, branch_name, ts,
+                                                    'sha1')
+            # then
+            self.assertIn(
+                'Revision with (origin_id: %s, branch_name: %s'
+                ', ts: %s) not found.' % (origin_id,
+                                          branch_name,
+                                          ts), cm.exception.args[0])
+
+            mock_backend.revision_get_by.assert_called_once_with(
+                origin_id, branch_name, ts)
+
+    @patch('swh.web.ui.service.lookup_revision_with_context')
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_with_context_by(self, mock_backend,
+                                        mock_lookup_revision_with_context):
+        # given
+        stub_root_rev = {'id': 'root-rev-id'}
+        mock_backend.revision_get_by.return_value = {'id': 'root-rev-id'}
+        stub_rev = {'id': 'rev-found'}
+        mock_lookup_revision_with_context.return_value = stub_rev
+
+        # when
+        origin_id = 1
+        branch_name = 'master3'
+        ts = None
+        sha1_git = 'sha1'
+        actual_root_rev, actual_rev = service.lookup_revision_with_context_by(
+            origin_id, branch_name, ts, sha1_git)
+
+        # then
+        self.assertEquals(actual_root_rev, stub_root_rev)
+        self.assertEquals(actual_rev, stub_rev)
+
+        mock_backend.revision_get_by.assert_called_once_with(
+            origin_id, branch_name, ts)
+        mock_lookup_revision_with_context.assert_called_once_with(
+            stub_root_rev, sha1_git, 100)
