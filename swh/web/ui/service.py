@@ -356,9 +356,8 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
     dir_sha1_git_bin = revision['directory']
 
     if dir_path:
-        directory_entries = backend.directory_get(dir_sha1_git_bin,
-                                                  recursive=True)
-        entity = _lookup_name_in(directory_entries, dir_path)
+        entity = backend.directory_entry_get_by_path(dir_sha1_git_bin,
+                                                     dir_path)
 
         if not entity:
             raise NotFoundExc(

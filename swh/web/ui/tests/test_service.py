@@ -536,19 +536,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'directory': dir_id,
         }
 
-        stub_dir_ls = [
-            {
-                'type': 'dir',
-                'name': b'some/path',
-                'target': b'456'
-            },
-            {
-                'type': 'file',
-                'name': b'something-else.hs',
-                'target': b'789'
-            }
-        ]
-
         stub_dir_entries = [{
             'id': b'12',
             'type': 'dir'
@@ -557,10 +544,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'file'
         }]
 
-        mock_backend.directory_get.side_effect = [
-            stub_dir_ls,
-            stub_dir_entries
-        ]
+        mock_backend.directory_entry_get_by_path.return_value = {
+            'type': 'dir',
+            'name': b'some/path',
+            'target': b'456'
+        }
+        mock_backend.directory_get.return_value = stub_dir_entries
 
         # when
         actual_directory_entries = service.lookup_directory_with_revision(
@@ -574,10 +563,10 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
         ('123', ['sha1'], 'Only sha1_git is supported.')
         mock_backend.revision_get.assert_called_once_with(b'123')
-        mock_backend.directory_get.assert_has_calls([
-            call(b'dir-id-as-sha1', recursive=True),
-            call(b'456')
-        ])
+        mock_backend.directory_entry_get_by_path.assert_called_once_with(
+            dir_id,
+            'some/path')
+        mock_backend.directory_get.assert_called_once_with(b'456')
 
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
@@ -596,19 +585,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'directory': dir_id,
         }
 
-        stub_dir_ls = [
-            {
+        mock_backend.directory_entry_get_by_path.return_value = {
                 'type': 'file',
                 'name': b'some/path/to/file',
-                'target': b'456'
-            },
-            {
-                'type': 'file',
-                'name': b'something-else.hs',
                 'target': b'789'
             }
-        ]
-        mock_backend.directory_get.return_value = stub_dir_ls
 
         stub_content = {
             'status': 'visible',
@@ -628,9 +609,9 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
         ('123', ['sha1'], 'Only sha1_git is supported.')
         mock_backend.revision_get.assert_called_once_with(b'123')
-        mock_backend.directory_get.assert_called_once_with(
-            b'dir-id-as-sha1', recursive=True)
-        mock_backend.content_find.assert_called_once_with('sha1_git', b'456')
+        mock_backend.directory_entry_get_by_path.assert_called_once_with(
+            b'dir-id-as-sha1', 'some/path/to/file')
+        mock_backend.content_find.assert_called_once_with('sha1_git', b'789')
 
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
@@ -648,20 +629,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'directory': dir_id,
         }
 
-        stub_dir_ls = [
-            {
-                'type': 'file',
-                'name': b'some/path/to/dir',
-                'target': b'456'
-            },
-            {
-                'type': 'file',
-                'name': b'something-else.hs',
-                'target': b'789'
-            }
-        ]
-
-        mock_backend.directory_get.return_value = stub_dir_ls
+        mock_backend.directory_entry_get_by_path.return_value = None
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
@@ -675,8 +643,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
         ('123', ['sha1'], 'Only sha1_git is supported.')
         mock_backend.revision_get.assert_called_once_with(b'123')
-        mock_backend.directory_get.assert_called_once_with(
-            b'dir-id-as-sha1', recursive=True)
+        mock_backend.directory_entry_get_by_path.assert_called_once_with(
+            b'dir-id-as-sha1', 'path/to/something/unknown')
 
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
@@ -695,19 +663,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'directory': dir_id,
         }
 
-        stub_dir_ls = [
-            {
-                'type': 'rev',
-                'name': b'some/path/to/rev',
-                'target': b'456'
-            },
-            {
-                'type': 'file',
-                'name': b'something-else.hs',
-                'target': b'789'
-            }
-        ]
-        mock_backend.directory_get.return_value = stub_dir_ls
+        mock_backend.directory_entry_get_by_path.return_value = {
+            'type': 'rev',
+            'name': b'some/path/to/rev',
+            'target': b'456'
+        }
 
         stub_content = {
             'id': b'12',
@@ -728,8 +688,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
         ('123', ['sha1'], 'Only sha1_git is supported.')
         mock_backend.revision_get.assert_called_once_with(b'123')
-        mock_backend.directory_get.assert_called_once_with(
-            b'dir-id-as-sha1', recursive=True)
+        mock_backend.directory_entry_get_by_path.assert_called_once_with(
+            b'dir-id-as-sha1', 'some/path/to/rev')
 
     @patch('swh.web.ui.service.backend')
     @istest

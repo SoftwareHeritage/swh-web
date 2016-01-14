@@ -175,3 +175,10 @@ def revision_get_by(origin_id, branch_name, timestamp):
     if not res:
         return None
     return res[0]
+
+
+def directory_entry_get_by_path(directory, path):
+    """Return a directory entry by its path.
+
+    """
+    return main.storage().directory_entry_get_by_path(directory, path)
