@@ -426,43 +426,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.revision_log.assert_called_with(
             sha1_git_root_bin, 100)
 
-    @istest
-    def lookup_name_in(self):
-        file0 = {
-            "type": "file",
-            "sha1": b"8e295bec402303cf2bd21b68f1f1fb0692f9c00a",
-            "dir_id": b"93857db1982141c94d3ca05b16ef6bd41d9da2ef",
-            "name": b"Entries",
-            "perms": 100644,
-            "target": b"55b983eaed0e68f8402c4ef891f0fcbcc80ece74"
-        }
-        dir1 = {
-            "type": "dir",
-            "sha1": b"d4c7a6c81832350d05c3f76f5f193ee62a2e6a16",
-            "dir_id": b"93857db1982141c94d3ca05b16ef6bd41d9da2ef",
-            "name": b"doc",
-            "perms": 40000,
-            "target": b"5d71ad3d16c0aaf5e0c3f4a4241020d7962c0e43"
-        }
-        dir2 = {
-            "type": "dir",
-            "sha1": b"cvbfdrc81832350d05c3f76f5f193ee62a2e6a16",
-            "dir_id": b"789012b1982141c94d3ca05b16ef6bd41d9da2ef",
-            "name": b"generated",
-            "perms": 40000,
-            "target": b"1234563d16c0aaf5e0c3f4a4241020d7962c0e43"
-        }
-
-        dir_entries = [file0, dir1, dir2]
-
-        for e in [file0, dir1, dir2]:
-            actual_entity = service._lookup_name_in(dir_entries,
-                                                    e['name'].decode('utf-8'))
-            self.assertEquals(actual_entity, e)
-
-        actual_entity = service._lookup_name_in(dir_entries, "nothing")
-        self.assertIsNone(actual_entity)
-
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest

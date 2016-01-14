@@ -314,16 +314,6 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     return converters.from_revision(revision)
 
 
-def _lookup_name_in(directory_entries, name):
-    """Given a name and a list of directory entries, return the
-    corresponding entry."""
-    bname = name.encode('utf-8')
-    res = list(filter(lambda e: e['name'] == bname, directory_entries))
-    if not res:
-        return None
-    return res[0]
-
-
 def lookup_directory_with_revision(sha1_git, dir_path=None):
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
