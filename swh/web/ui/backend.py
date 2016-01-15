@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import os
 
 from swh.web.ui import main
 
@@ -175,3 +176,13 @@ def revision_get_by(origin_id, branch_name, timestamp):
     if not res:
         return None
     return res[0]
+
+
+def directory_entry_get_by_path(directory, path):
+    """Return a directory entry by its path.
+
+    """
+    paths = path.strip(os.path.sep).split(os.path.sep)
+    return main.storage().directory_entry_get_by_path(
+        directory,
+        list(map(lambda p: p.encode('utf-8'), paths)))

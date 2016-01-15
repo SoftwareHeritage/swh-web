@@ -56,3 +56,32 @@ def parse_hash(q):
         raise BadInputExc('Unknown hash algorithm %s' % algo)
 
     return (algo, hex_to_hash(parts[1]))
+
+
+def parse_hash_with_algorithms_or_throws(q, accepted_algo, error_msg):
+    """Parse a query but only accepts accepted_algo.
+    Otherwise, raise the exception with message error_msg.
+
+    Args:
+        - q: query string with the following format: "[HASH_TYPE:]HEX_CHECKSUM"
+        where HASH_TYPE is optional, defaults to "sha1", and can be one of
+        swh.core.hashutil.ALGORITHMS.
+        - accepted_algo: array of strings representing the names of accepted
+        algorithms.
+        - error_msg: error message to raise as BadInputExc if the algo of
+        the query does not match.
+
+    Returns:
+        A pair (hash_algorithm, byte hash value)
+
+    Raises:
+        BadInputExc when the inputs is invalid or does not
+        validate the accepted algorithms.
+
+    """
+    algo, hash = parse_hash(q)
+
+    if algo not in accepted_algo:
+        raise BadInputExc(error_msg)
+
+    return (algo, hash)

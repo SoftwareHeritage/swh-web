@@ -319,28 +319,20 @@ def api_history_through_revision_with_origin(origin_id=1,
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    revision_root = service.lookup_revision_by(origin_id, branch_name, ts)
-    if not revision_root:
-        raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
-                          ', ts: %s) not found.' % (origin_id,
-                                                    branch_name,
-                                                    ts))
+    rev_root, revision = service.lookup_revision_with_context_by(
+        origin_id, branch_name, ts, sha1_git, limit)
 
-    sha1_git_root = revision_root['id']
-    revision = service.lookup_revision_with_context(sha1_git_root,
-                                                    sha1_git,
-                                                    limit)
     if not revision:
         raise NotFoundExc(
             "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s' "
             "sha1_git_root being the revision's identifier pointed to by "
             "(origin_id: %s, branch_name: %s, ts: %s)." % (sha1_git,
-                                                           sha1_git_root,
+                                                           rev_root['id'],
                                                            origin_id,
                                                            branch_name,
                                                            ts))
 
-    return _enrich_revision_with_urls(revision, context=sha1_git_root)
+    return _enrich_revision_with_urls(revision, context=rev_root['id'])
 
 
 @app.route('/api/1/revision'
@@ -411,23 +403,17 @@ def api_directory_through_revision_with_origin_history(
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    revision_root = service.lookup_revision_by(origin_id, branch_name, ts)
-    if not revision_root:
-        raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
-                          ', ts: %s) not found.' % (origin_id,
-                                                    branch_name,
-                                                    ts))
-
-    sha1_git_root = revision_root['id']
-    revision = service.lookup_revision_with_context(sha1_git_root,
-                                                    sha1_git,
-                                                    limit)
+    rev_root, revision = service.lookup_revision_with_context_by(origin_id,
+                                                                 branch_name,
+                                                                 ts,
+                                                                 sha1_git,
+                                                                 limit)
     if not revision:
         raise NotFoundExc(
             "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s' "
             "sha1_git_root being the revision's identifier pointed to by "
             "(origin_id: %s, branch_name: %s, ts: %s)." % (sha1_git,
-                                                           sha1_git_root,
+                                                           rev_root['id'],
                                                            origin_id,
                                                            branch_name,
                                                            ts))
