@@ -409,3 +409,21 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_stats, expected_stats)
 
         self.storage.stat_counters.assert_called_with()
+
+    @istest
+    def directory_entry_get_by_path(self):
+        # given
+        stub_dir_entry = {'id': b'dir-id',
+                          'type': 'dir',
+                          'name': b'some/path/foo'}
+        self.storage.directory_entry_get_by_path = MagicMock(
+            return_value=stub_dir_entry)
+
+        # when
+        actual_dir_entry = backend.directory_entry_get_by_path(b'dir-sha1',
+                                                               'some/path/foo')
+
+        self.assertEquals(actual_dir_entry, stub_dir_entry)
+        self.storage.directory_entry_get_by_path.assert_called_once_with(
+            b'dir-sha1',
+            [b'some', b'path', b'foo'])

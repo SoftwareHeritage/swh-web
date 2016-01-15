@@ -1,8 +1,11 @@
-swh-web (0.0.18-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.19-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.19
+  * Improve directory_get_by_path integration with storage
+  * Refactor - Only lookup sha1_git_root if needed + factorize service
+    behavior
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 13 Jan 2016 12:54:54 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 15 Jan 2016 12:47:39 +0100
 
 swh-web (0.0.18-1~swh1) unstable-swh; urgency=medium
 
