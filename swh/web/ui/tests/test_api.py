@@ -847,7 +847,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_through_revision_with_origin_history_with_origin_root_rev_not_found_0(  # noqa
+    def api_directory_through_rev_with_origin_history_with_rev_not_found_0(
             self, mock_service):
         # test both endpoint (path is useless here, still the endpoint
         # must be tested)
@@ -860,7 +860,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                     '/history/4563'
                     '/directory/some-path/']:
             # given
-            mock_service.lookup_revision_by.return_value = None
+            mock_service.lookup_revision_with_context_by.return_value = {
+                'id': 'root-rev-id'}, None
 
             # when
             rv = self.app.get(url)
@@ -871,20 +872,25 @@ class ApiTestCase(test_app.SWHApiTestCase):
             response_data = json.loads(rv.data.decode('utf-8'))
 
             self.assertEqual(response_data, {
-                'error': 'Revision with (origin_id: 1, branch_name: '
-                'refs/heads/master, ts: None) not found.'})
+                'error':
+                "Possibly sha1_git '%s' is not an ancestor of sha1_git_root "
+                "'%s' sha1_git_root being the revision's identifier pointed to"
+                " by (origin_id: %s, branch_name: %s, ts: %s)." % (
+                    '4563',
+                    'root-rev-id',
+                    1,
+                    'refs/heads/master',
+                    None)})
 
-            mock_service.lookup_revision_by.assert_called_once_with(
-                1,
-                'refs/heads/master',
-                None)
+            mock_service.lookup_revision_with_context_by.assert_called(
+                1, 'refs/heads/master', None, '4563', 100)
 
             # reset_mock
             mock_service.reset_mock()
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_through_revision_with_origin_history_with_origin_root_rev_not_found_1(  # noqa
+    def api_directory_through_rev_with_origin_history_rev_not_found_1(  # noqa
             self, mock_service):
         # test both endpoint (path is useless here, still the endpoint
         # must be tested)
@@ -899,7 +905,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                     '/history/213'
                     '/directory/some/path/']:
             # given
-            mock_service.lookup_revision_by.return_value = None
+            mock_service.lookup_revision_with_context_by.return_value = {
+                'id': 'root-rev-id'}, None
 
             # when
             rv = self.app.get(url)
@@ -910,12 +917,18 @@ class ApiTestCase(test_app.SWHApiTestCase):
             response_data = json.loads(rv.data.decode('utf-8'))
 
             self.assertEqual(response_data, {
-                'error': 'Revision with (origin_id: 10, branch_name: '
-                'origin/dev, ts: None) not found.'})
-            mock_service.lookup_revision_by.assert_called_once_with(
-                10,
-                'origin/dev',
-                None)
+                'error':
+                "Possibly sha1_git '%s' is not an ancestor of sha1_git_root "
+                "'%s' sha1_git_root being the revision's identifier pointed to"
+                " by (origin_id: %s, branch_name: %s, ts: %s)." % (
+                    '213',
+                    'root-rev-id',
+                    10,
+                    'origin/dev',
+                    None)})
+
+            mock_service.lookup_revision_with_context_by.assert_called(
+                10, 'origin/dev', None, '213', 100)
 
             # for next turn
             mock_service.reset_mock()
@@ -923,7 +936,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_through_revision_with_origin_history_with_origin_rev_root_found_2(  # noqa
+    def api_directory_through_rev_with_origin_history_rev_found_2(
             self, mock_service, mock_utils):
         # test both endpoint (path is useless here, still the endpoint
         # must be tested)
@@ -940,7 +953,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                     '/history/876'
                     '/directory/some-path/']:
             # given
-            mock_service.lookup_revision_by.return_value = None
+            mock_service.lookup_revision_with_context_by.return_value = {
+                'id': 'root-rev-id'}, None
             mock_utils.parse_timestamp.return_value = '2012-11-23 00:00:00'
 
             # when
@@ -952,13 +966,19 @@ class ApiTestCase(test_app.SWHApiTestCase):
             response_data = json.loads(rv.data.decode('utf-8'))
 
             self.assertEqual(response_data, {
-                'error': 'Revision with (origin_id: 100, branch_name: '
-                'master, ts: 2012-11-23 00:00:00) not found.'})
+                'error':
+                "Possibly sha1_git '%s' is not an ancestor of sha1_git_root "
+                "'%s' sha1_git_root being the revision's identifier pointed to"
+                " by (origin_id: %s, branch_name: %s, ts: %s)." % (
+                    '876',
+                    'root-rev-id',
+                    100,
+                    'master',
+                    '2012-11-23 00:00:00')})
 
-            mock_service.lookup_revision_by.assert_called_once_with(
-                100,
-                'master',
-                '2012-11-23 00:00:00')
+            mock_service.lookup_revision_with_context_by.assert_called(
+                100, 'master', '2012-11-23 00:00:00', '876', 100)
+
             mock_utils.parse_timestamp.assert_called_once_with('2012-11-23')
 
             # rest
@@ -968,7 +988,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_through_revision_with_origin_history_with_origin_root_rev_ok_but_sha1_rev_not(  # noqa
+    def api_directory_through_rev_with_origin_history_rev_ok_but_sha1_rev_not(
             self, mock_service, mock_utils):
         # test both endpoint (path is useless here, still the endpoint
         # must be tested)
@@ -985,11 +1005,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                     '/history/123-sha1-git'
                     '/directory/some/path/?limit=1000']:
             # given
-            mock_service.lookup_revision_by.return_value = {
-                'id': '456-sha1-git-root'
-            }
-
-            mock_service.lookup_revision_with_context.return_value = None
+            mock_service.lookup_revision_with_context_by.return_value = {
+                'id': 'root-rev-id'}, None
 
             mock_utils.parse_timestamp.return_value = '2016-11-23 00:00:00'
 
@@ -1007,21 +1024,16 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 "'%s' sha1_git_root being the revision's identifier pointed to"
                 " by (origin_id: %s, branch_name: %s, ts: %s)."
                 % ('123-sha1-git',
-                   '456-sha1-git-root',
+                   'root-rev-id',
                    666,
                    'refs/master',
                    '2016-11-23 00:00:00')})
 
-            mock_service.lookup_revision_by.assert_called_once_with(
-                666,
-                'refs/master',
-                '2016-11-23 00:00:00')
+            mock_service.lookup_revision_with_context_by.assert_called(
+                666, 'refs/master', '2016-11-23 00:00:00',
+                '123-sha1-git', 1000)
 
             mock_utils.parse_timestamp.assert_called_once_with('2016-11-23')
-
-            mock_service.lookup_revision_with_context('456-sha1-git-root',
-                                                      '123-sha1-git',
-                                                      1000)
 
             # reset_mock
             mock_service.reset_mock()
@@ -1034,15 +1046,15 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def api_directory_through_revision_with_origin_history(
             self, mock_service, mock_utils, mock_revision_directory):
         # given
-        mock_service.lookup_revision_by.return_value = {
+        stub_root_rev = {
             'id': '45-sha1-git-root'
         }
-
         stub_revision = {
             'id': 'revision-id',
         }
-        mock_service.lookup_revision_with_context.return_value = stub_revision
-
+        mock_service.lookup_revision_with_context_by.return_value = (
+            stub_root_rev,
+            stub_revision)
         stub_dir_content = [
             {
                 'type': 'dir'
@@ -1071,16 +1083,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         self.assertEqual(response_data, stub_dir_content)
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            999,
-            'refs/dev',
-            '2016-11-24 00:00:00')
-
         mock_utils.parse_timestamp.assert_called_once_with('2016-11-24')
 
-        mock_service.lookup_revision_with_context('45-sha1-git-root',
-                                                  '12-sha1-git',
-                                                  100)
+        mock_service.lookup_revision_with_context_by(999,
+                                                     'refs/dev',
+                                                     '2016-11-24 00:00:00'
+                                                     '12-sha1-git',
+                                                     100)
 
         mock_revision_directory.assert_called_once_with('revision-id',
                                                         'some/content',
@@ -1088,9 +1097,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_root_rev_not_found_0(
+    def api_history_through_revision_with_origin_rev_not_found_0(
             self, mock_service):
-        mock_service.lookup_revision_by.return_value = None
+        mock_service.lookup_revision_with_context_by.return_value = {
+            'id': 'root-rev-id'}, None
 
         # when
         rv = self.app.get('/api/1/revision'
@@ -1103,20 +1113,26 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
 
         self.assertEqual(response_data, {
-            'error': 'Revision with (origin_id: 1, branch_name: '
-            'refs/heads/master, ts: None) not found.'})
+            'error':
+            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
+            " sha1_git_root being the revision's identifier pointed to by "
+            "(origin_id: %s, branch_name: %s, ts: %s)."
+            % ('4563',
+               'root-rev-id',
+               1,
+               'refs/heads/master',
+               None)})
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            1,
-            'refs/heads/master',
-            None)
+        mock_service.lookup_revision_with_context_by.assert_called_once_with(
+            1, 'refs/heads/master', None, '4563', 100)
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_root_rev_not_found_1(
+    def api_history_through_revision_with_origin_rev_not_found_1(
             self, mock_service):
         # given
-        mock_service.lookup_revision_by.return_value = None
+        mock_service.lookup_revision_with_context_by.return_value = {
+            'id': 'root-rev-id'}, None
 
         # when
         rv = self.app.get('/api/1/revision'
@@ -1130,20 +1146,27 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
 
         self.assertEqual(response_data, {
-            'error': 'Revision with (origin_id: 10, branch_name: '
-            'origin/dev, ts: None) not found.'})
-        mock_service.lookup_revision_by.assert_called_once_with(
-            10,
-            'origin/dev',
-            None)
+            'error':
+            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
+            " sha1_git_root being the revision's identifier pointed to by "
+            "(origin_id: %s, branch_name: %s, ts: %s)."
+            % ('213',
+               'root-rev-id',
+               10,
+               'origin/dev',
+               None)})
+
+        mock_service.lookup_revision_with_context_by.assert_called_once_with(
+            10, 'origin/dev', None, '213', 100)
 
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_root_found_2(
+    def api_history_through_revision_with_origin_rev_not_found_2(
             self, mock_service, mock_utils):
         # given
-        mock_service.lookup_revision_by.return_value = None
+        mock_service.lookup_revision_with_context_by.return_value = {
+            'id': 'root-rev-id'}, None
         mock_utils.parse_timestamp.return_value = '2012-11-23 00:00:00'
 
         # when
@@ -1159,24 +1182,29 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
 
         self.assertEqual(response_data, {
-            'error': 'Revision with (origin_id: 100, branch_name: '
-            'master, ts: 2012-11-23 00:00:00) not found.'})
+            'error':
+            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
+            " sha1_git_root being the revision's identifier pointed to by "
+            "(origin_id: %s, branch_name: %s, ts: %s)."
+            % ('876',
+               'root-rev-id',
+               100,
+               'master',
+               '2012-11-23 00:00:00')})
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            100,
-            'master',
-            '2012-11-23 00:00:00')
+        mock_service.lookup_revision_with_context_by.assert_called_once_with(
+            100, 'master', '2012-11-23 00:00:00', '876', 100)
+
         mock_utils.parse_timestamp.assert_called_once_with('2012-11-23')
 
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_root_rev_ok_but_sha1_rev_not(
+    def api_history_through_revision_with_origin_rev_not_found_3(
             self, mock_service, mock_utils):
         # given
-        mock_service.lookup_revision_by.return_value = {
-            'id': '456-sha1-git-root'
-        }
+        mock_service.lookup_revision_with_context_by.return_value = {
+            'id': 'root-rev-id'}, None
 
         mock_service.lookup_revision_with_context.return_value = None
 
@@ -1200,15 +1228,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
             " sha1_git_root being the revision's identifier pointed to by "
             "(origin_id: %s, branch_name: %s, ts: %s)."
             % ('123-sha1-git',
-               '456-sha1-git-root',
+               'root-rev-id',
                666,
                'refs/master',
                '2016-11-23 00:00:00')})
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            666,
-            'refs/master',
-            '2016-11-23 00:00:00')
+        mock_service.lookup_revision_with_context_by.assert_called_once_with(
+            666, 'refs/master', '2016-11-23 00:00:00', '123-sha1-git', 1000)
 
         mock_utils.parse_timestamp.assert_called_once_with('2016-11-23')
 
@@ -1223,14 +1249,16 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def api_history_through_revision(
             self, mock_service, mock_utils, mock_enrich):
         # given
-        mock_service.lookup_revision_by.return_value = {
+        stub_root_rev = {
             'id': '45-sha1-git-root'
         }
 
         stub_revision = {
             'children': [],
         }
-        mock_service.lookup_revision_with_context.return_value = stub_revision
+        mock_service.lookup_revision_with_context_by.return_value = (
+            stub_root_rev,
+            stub_revision)
 
         mock_enrich.return_value = 'some-enriched-result'
 
@@ -1250,16 +1278,14 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         self.assertEqual(response_data, 'some-enriched-result')
 
-        mock_service.lookup_revision_by.assert_called_once_with(
+        mock_service.lookup_revision_with_context_by.assert_called_once_with(
             999,
             'refs/dev',
-            '2016-11-24 00:00:00')
+            '2016-11-24 00:00:00',
+            '12-sha1-git',
+            100)
 
         mock_utils.parse_timestamp.assert_called_once_with('2016-11-24')
-
-        mock_service.lookup_revision_with_context('45-sha1-git-root',
-                                                  '12-sha1-git',
-                                                  100)
 
         mock_enrich.assert_called_once_with(stub_revision,
                                             context='45-sha1-git-root')
