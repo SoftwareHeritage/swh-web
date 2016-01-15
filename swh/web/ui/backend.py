@@ -186,3 +186,10 @@ def directory_entry_get_by_path(directory, path):
     return main.storage().directory_entry_get_by_path(
         directory,
         list(map(lambda p: p.encode('utf-8'), paths)))
+
+
+def entity_get(uuid):
+    """Retrieve the entity per its uuid.
+
+    """
+    return main.storage().entity_get(uuid)
