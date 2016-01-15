@@ -410,3 +410,17 @@ def stat_counters():
         A dict mapping textual labels to integer values.
     """
     return backend.stat_counters()
+
+
+def lookup_entity_by_uuid(uuid):
+    """Return the entity's hierarchy from its uuid.
+
+    Args:
+        uuid: entity's identifier.
+
+    Returns:
+        List of hierarchy entities from the entity with uuid.
+
+    """
+    uuid = query.parse_uuid4(uuid)
+    return backend.entity_get(uuid)

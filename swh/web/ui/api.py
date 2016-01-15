@@ -806,6 +806,46 @@ def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
         enrich_fn=_enrich_content)
 
 
+def _enrich_entity(entity):
+    """Enrich entity with
+
+    """
+    entity['uuid_url'] = url_for('api_entity_by_uuid',
+                                 uuid=entity['uuid'])
+    if 'parent' in entity and entity['parent']:
+        entity['parent_url'] = url_for('api_entity_by_uuid',
+                                       uuid=entity['parent'])
+    return entity
+
+
+@app.route('/api/1/entity/')
+@app.route('/api/1/entity/<string:uuid>/')
+def api_entity_by_uuid(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
+    """Return content information if content is found.
+
+    Args:
+        q is of the form (algo_hash:)hash with algo_hash in
+        (sha1, sha1_git, sha256).
+        When algo_hash is not provided, 'hash' is considered sha1.
+
+    Returns:
+        Content's information.
+
+    Raises:
+        - BadInputExc in case of unknown algo_hash or bad hash.
+        - NotFoundExc if the content is not found.
+
+    Example:
+        GET /api/1/entity/7c33636b-8f11-4bda-89d9-ba8b76a42cec/
+
+    """
+    return _api_lookup(
+        uuid,
+        lookup_fn=service.lookup_entity_by_uuid,
+        error_msg_if_not_found="Entity with uuid '%s' not found." % uuid,
+        enrich_fn=_enrich_entity)
+
+
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
 def api_uploadnsearch():
     """Upload the file's content in the post body request.

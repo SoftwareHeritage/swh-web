@@ -1082,3 +1082,23 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             origin_id, branch_name, ts)
         mock_lookup_revision_with_context.assert_called_once_with(
             stub_root_rev, sha1_git, 100)
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_entity_by_uuid(self, mock_query, mock_backend):
+        # given
+        uuid_test = 'correct-uuid'
+        mock_query.parse_uuid4.return_value = uuid_test
+        stub_entities = [{'uuid': uuid_test}]
+
+        mock_backend.entity_get.return_value = stub_entities
+
+        # when
+        actual_entities = service.lookup_entity_by_uuid(uuid_test)
+
+        # then
+        self.assertEquals(actual_entities, stub_entities)
+
+        mock_query.parse_uuid4.assert_called_once_with(uuid_test)
+        mock_backend.entity_get.assert_called_once_with(uuid_test)
