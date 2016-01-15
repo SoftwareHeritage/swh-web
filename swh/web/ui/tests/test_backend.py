@@ -415,7 +415,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         # given
         stub_dir_entry = {'id': b'dir-id',
                           'type': 'dir',
-                          'name': b'foo'}
+                          'name': b'some/path/foo'}
         self.storage.directory_entry_get_by_path = MagicMock(
             return_value=stub_dir_entry)
 
@@ -426,4 +426,4 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.assertEquals(actual_dir_entry, stub_dir_entry)
         self.storage.directory_entry_get_by_path.assert_called_once_with(
             b'dir-sha1',
-            'some/path/foo')
+            [b'some', b'path', b'foo'])
