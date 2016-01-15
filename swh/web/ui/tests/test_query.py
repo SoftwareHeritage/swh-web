@@ -123,3 +123,19 @@ class QueryTestCase(unittest.TestCase):
         self.assertEquals(sha, b'123')
 
         mock_hash.assert_called_once_with('sha256:123')
+
+    @istest
+    def parse_uuid4(self):
+        # when
+        actual_uuid = query.parse_uuid4('7c33636b-8f11-4bda-89d9-ba8b76a42cec')
+
+        # then
+        self.assertEquals(actual_uuid, '7c33636b-8f11-4bda-89d9-ba8b76a42cec')
+
+    @istest
+    def parse_uuid4_ko(self):
+        # when
+        with self.assertRaises(BadInputExc) as cm:
+            query.parse_uuid4('7c33636b-8f11-4bda-89d9-ba8b76a42')
+            self.assertIn('badly formed hexadecimal UUID string',
+                          cm.exception.args[0])

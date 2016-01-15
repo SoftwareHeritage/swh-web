@@ -427,3 +427,22 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.directory_entry_get_by_path.assert_called_once_with(
             b'dir-sha1',
             [b'some', b'path', b'foo'])
+
+    @istest
+    def entity_get(self):
+        # given
+        stub_entities = [{'uuid': 'e8c3fc2e-a932-4fd7-8f8e-c40645eb35a7',
+                          'parent': 'aee991a0-f8d7-4295-a201-d1ce2efc9fb2'},
+                         {'uuid': 'aee991a0-f8d7-4295-a201-d1ce2efc9fb2',
+                          'parent': None}]
+        self.storage.entity_get = MagicMock(return_value=stub_entities)
+
+        # when
+        actual_entities = backend.entity_get(
+            'e8c3fc2e-a932-4fd7-8f8e-c40645eb35a7')
+
+        # then
+        self.assertEquals(actual_entities, stub_entities)
+
+        self.storage.entity_get.assert_called_once_with(
+            'e8c3fc2e-a932-4fd7-8f8e-c40645eb35a7')
