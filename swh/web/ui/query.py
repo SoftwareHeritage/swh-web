@@ -6,6 +6,8 @@
 
 import re
 
+from uuid import UUID
+
 from swh.core.hashutil import ALGORITHMS, hex_to_hash
 from swh.web.ui.exc import BadInputExc
 
@@ -85,3 +87,25 @@ def parse_hash_with_algorithms_or_throws(q, accepted_algo, error_msg):
         raise BadInputExc(error_msg)
 
     return (algo, hash)
+
+
+def parse_uuid4(uuid):
+    """Parse an uuid 4 from a string.
+
+    Args:
+        uuid: String representing an uuid.
+
+    Returns:
+        The uuid as is if everything is ok.
+
+    Raises:
+        BadInputExc: if the uuid is invalid.
+
+    """
+    try:
+        UUID(uuid, version=4)
+    except ValueError as e:
+        # not a valid hex code for a UUID
+        raise BadInputExc(str(e))
+
+    return uuid
