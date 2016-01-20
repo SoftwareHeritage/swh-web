@@ -13,7 +13,7 @@ from unittest.mock import patch, MagicMock
 from swh.web.ui.tests import test_app
 from swh.web.ui import api, exc
 from swh.web.ui.exc import NotFoundExc, BadInputExc
-from swh.storage.exc import StorageBackendError
+from swh.storage.exc import StorageDBError, StorageAPIError
 
 
 class ApiTestCase(test_app.SWHApiTestCase):
@@ -357,9 +357,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_1_stat_counters_raise_swh_storage_error(self, mock_service):
+    def api_1_stat_counters_raise_swh_storage_error_db(self, mock_service):
         # given
-        mock_service.stat_counters.side_effect = StorageBackendError(
+        mock_service.stat_counters.side_effect = StorageDBError(
             'SWH Storage exploded! Will be back online shortly!')
         # when
         rv = self.app.get('/api/1/stat/counters/')
@@ -371,6 +371,25 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error':
             'An unexpected error occurred in the backend: '
             'SWH Storage exploded! Will be back online shortly!'})
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_1_stat_counters_raise_swh_storage_error_api(self, mock_service):
+        # given
+        mock_service.stat_counters.side_effect = StorageAPIError(
+            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+        )
+        # when
+        rv = self.app.get('/api/1/stat/counters/')
+        # then
+        self.assertEquals(rv.status_code, 503)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error':
+            'An unexpected error occurred in the api backend: '
+            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+        })
 
     @patch('swh.web.ui.api.service')
     @istest
