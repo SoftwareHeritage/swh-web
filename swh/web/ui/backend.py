@@ -80,7 +80,7 @@ def person_get(person_id):
     return main.storage().person_get([person_id])
 
 
-def directory_get(sha1_git_bin, recursive=False):
+def directory_ls(sha1_git_bin, recursive=False):
     """Return information about the directory with id sha1_git.
 
     Args:
@@ -91,7 +91,7 @@ def directory_get(sha1_git_bin, recursive=False):
         Directory information as dict.
 
     """
-    directory_entries = main.storage().directory_get(sha1_git_bin, recursive)
+    directory_entries = main.storage().directory_ls(sha1_git_bin, recursive)
     if not directory_entries:
         return None
 
@@ -152,7 +152,7 @@ def revision_log(sha1_git_bin, limit=100):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    return main.storage().revision_log(sha1_git_bin, limit)
+    return main.storage().revision_log([sha1_git_bin], limit)
 
 
 def stat_counters():

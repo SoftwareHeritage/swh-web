@@ -469,7 +469,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'file'
         }]
 
-        mock_backend.directory_get.return_value = stub_dir_entries
+        mock_backend.directory_ls.return_value = stub_dir_entries
 
         # when
         actual_directory_entries = service.lookup_directory_with_revision(
@@ -482,7 +482,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
         ('123', ['sha1'], 'Only sha1_git is supported.')
         mock_backend.revision_get.assert_called_once_with(b'123')
-        mock_backend.directory_get.assert_called_once_with(dir_id)
+        mock_backend.directory_ls.assert_called_once_with(dir_id)
 
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
@@ -512,7 +512,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'name': b'some/path',
             'target': b'456'
         }
-        mock_backend.directory_get.return_value = stub_dir_entries
+        mock_backend.directory_ls.return_value = stub_dir_entries
 
         # when
         actual_directory_entries = service.lookup_directory_with_revision(
@@ -529,7 +529,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.directory_entry_get_by_path.assert_called_once_with(
             dir_id,
             'some/path')
-        mock_backend.directory_get.assert_called_once_with(b'456')
+        mock_backend.directory_ls.assert_called_once_with(b'456')
 
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
@@ -915,14 +915,14 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_directory_bad_checksum(self, mock_backend):
         # given
-        mock_backend.directory_get = MagicMock()
+        mock_backend.directory_ls = MagicMock()
 
         # when
         with self.assertRaises(BadInputExc):
             service.lookup_directory('directory_id')
 
         # then
-        mock_backend.directory_get.called = False
+        mock_backend.directory_ls.called = False
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -954,7 +954,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 10,
         }]
 
-        mock_backend.directory_get = MagicMock(
+        mock_backend.directory_ls = MagicMock(
             return_value=stub_dir_entries)
 
         # when
@@ -964,7 +964,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(list(actual_directory), expected_dir_entries)
 
-        mock_backend.directory_get.assert_called_with(
+        mock_backend.directory_ls.assert_called_with(
             hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'))
 
     @patch('swh.web.ui.service.backend')
