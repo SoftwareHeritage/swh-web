@@ -159,9 +159,9 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def person_get(self):
         # given
-        self.storage.person_get = MagicMock(return_value={
+        self.storage.person_get = MagicMock(return_value=[{
             'id': 'person-id',
-            'name': 'blah'})
+            'name': 'blah'}])
 
         # when
         actual_person = backend.person_get('person-id')

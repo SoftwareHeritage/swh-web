@@ -77,7 +77,9 @@ def person_get(person_id):
         Person information as dict.
 
     """
-    return main.storage().person_get([person_id])
+    res = main.storage().person_get([person_id])
+    if res and len(res) >= 1:
+        return res[0]
 
 
 def directory_ls(sha1_git_bin, recursive=False):
