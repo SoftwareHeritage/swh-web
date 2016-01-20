@@ -377,7 +377,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(list(actual_revision), stub_revision_log)
 
-        self.storage.revision_log.assert_called_with(sha1_bin, 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 100)
 
     @istest
     def stat_counters(self):

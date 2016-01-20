@@ -152,7 +152,7 @@ def revision_log(sha1_git_bin, limit=100):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    return main.storage().revision_log(sha1_git_bin, limit)
+    return main.storage().revision_log([sha1_git_bin], limit)
 
 
 def stat_counters():
