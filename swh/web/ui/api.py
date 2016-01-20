@@ -836,7 +836,8 @@ def api_entity_by_uuid(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
         - NotFoundExc if the content is not found.
 
     Example:
-        GET /api/1/entity/7c33636b-8f11-4bda-89d9-ba8b76a42cec/
+        - GET /api/1/entity/7c33636b-8f11-4bda-89d9-ba8b76a42cec/
+        - GET /api/1/entity/5f4d4c51-498a-4e28-88b3-b3e4e8396cba/
 
     """
     return _api_lookup(

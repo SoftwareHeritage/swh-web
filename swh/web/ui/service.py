@@ -120,7 +120,7 @@ def lookup_directory(sha1_git):
         ['sha1'],  # HACK: sha1_git really
         'Only sha1_git is supported.')
 
-    directory_entries = backend.directory_get(sha1_git_bin)
+    directory_entries = backend.directory_ls(sha1_git_bin)
     return map(converters.from_directory_entry, directory_entries)
 
 
@@ -357,7 +357,7 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
         entity = {'type': 'dir', 'target': dir_sha1_git_bin}
 
     if entity['type'] == 'dir':
-        directory_entries = backend.directory_get(entity['target'])
+        directory_entries = backend.directory_ls(entity['target'])
 
         return {'type': 'dir',
                 'content': map(converters.from_directory_entry,

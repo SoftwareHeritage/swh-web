@@ -173,22 +173,22 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.person_get.assert_called_with(['person-id'])
 
     @istest
-    def directory_get_not_found(self):
+    def directory_ls_not_found(self):
         # given
         sha1_bin = hashutil.hex_to_hash(
             '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-        self.storage.directory_get = MagicMock(return_value=[])
+        self.storage.directory_ls = MagicMock(return_value=[])
 
         # when
-        actual_directory = backend.directory_get(sha1_bin)
+        actual_directory = backend.directory_ls(sha1_bin)
 
         # then
         self.assertIsNone(actual_directory)
 
-        self.storage.directory_get.assert_called_with(sha1_bin, False)
+        self.storage.directory_ls.assert_called_with(sha1_bin, False)
 
     @istest
-    def directory_get(self):
+    def directory_ls(self):
         # given
         sha1_bin = hashutil.hex_to_hash(
             '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
@@ -207,16 +207,16 @@ class BackendTestCase(test_app.SWHApiTestCase):
             'type': 10,
         }]
 
-        self.storage.directory_get = MagicMock(
+        self.storage.directory_ls = MagicMock(
             return_value=stub_dir_entries)
 
-        actual_directory = backend.directory_get(sha1_bin, recursive=True)
+        actual_directory = backend.directory_ls(sha1_bin, recursive=True)
 
         # then
         self.assertIsNotNone(actual_directory)
         self.assertEqual(list(actual_directory), stub_dir_entries)
 
-        self.storage.directory_get.assert_called_with(sha1_bin, True)
+        self.storage.directory_ls.assert_called_with(sha1_bin, True)
 
     @istest
     def release_get_not_found(self):
@@ -377,7 +377,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(list(actual_revision), stub_revision_log)
 
-        self.storage.revision_log.assert_called_with(sha1_bin, 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 100)
 
     @istest
     def stat_counters(self):
