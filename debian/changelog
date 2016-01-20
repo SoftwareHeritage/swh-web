@@ -1,8 +1,10 @@
-swh-web (0.0.20-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.21-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.21
+  * Deal nicely with communication downtime with storage
+  * Update to latest swh.storage api
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 15 Jan 2016 16:40:56 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 20 Jan 2016 16:31:34 +0100
 
 swh-web (0.0.20-1~swh1) unstable-swh; urgency=medium
 
