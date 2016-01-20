@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from swh.storage.exc import StorageBackendError
 from swh.web.ui import renderers
 from swh.web.ui.exc import NotFoundExc
 from swh.web.ui.main import app
@@ -22,3 +23,13 @@ def value_not_found(error):
 
     """
     return renderers.error_response('Not found', 404, error)
+
+
+@app.errorhandler(StorageBackendError)
+def backend_problem(error):
+    """Compute a not found and add body as payload.
+
+    """
+    return renderers.error_response('Unexpected problem in SWH Storage.',
+                                    503,
+                                    error)
