@@ -95,7 +95,7 @@ def directory_ls(sha1_git_bin, recursive=False):
     """
     directory_entries = main.storage().directory_ls(sha1_git_bin, recursive)
     if not directory_entries:
-        return None
+        return []
 
     return directory_entries
 

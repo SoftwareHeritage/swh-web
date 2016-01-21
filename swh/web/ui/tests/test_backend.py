@@ -183,7 +183,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         actual_directory = backend.directory_ls(sha1_bin)
 
         # then
-        self.assertIsNone(actual_directory)
+        self.assertEquals(actual_directory, [])
 
         self.storage.directory_ls.assert_called_with(sha1_bin, False)
 
