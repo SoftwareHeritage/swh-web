@@ -228,8 +228,67 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.upload_and_search.called = True
 
     @patch('swh.web.ui.views.service')
-#    @istest
-    def show_content(self, mock_service):
+    @istest
+    def content_detail_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content.return_value = None
+
+        # when
+        rv = self.client.get('/browse/content/sha1:sha1-hash/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertEqual(self.get_context_variable('message'),
+                         'Content with sha1:sha1-hash not found.')
+        self.assertEqual(self.get_context_variable('content'),
+                         None)
+
+        mock_service.lookup_content.assert_called_once_with(
+            'sha1:sha1-hash')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def content_detail_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_content.side_effect = BadInputExc('Bad input!')
+
+        # when
+        rv = self.client.get('/browse/content/sha1:sha1-hash/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertEqual(self.get_context_variable('message'),
+                         'Bad input!')
+        self.assertIsNone(self.get_context_variable('content'))
+
+        mock_service.lookup_content.assert_called_once_with(
+            'sha1:sha1-hash')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def content_detail(self, mock_service):
+        # given
+        stub_content = {'sha1': 'sha1_hash'}
+        mock_service.lookup_content.return_value = stub_content
+
+        # when
+        rv = self.client.get('/browse/content/sha1:sha1-hash/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertIsNone(self.get_context_variable('message'))
+        self.assertEqual(self.get_context_variable('content'),
+                         {'sha1': 'sha1_hash'})
+
+        mock_service.lookup_content.assert_called_once_with(
+            'sha1:sha1-hash')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def content_data(self, mock_service):
         # given
         stub_content_raw = {
             'sha1': 'sha1-hash',
@@ -241,7 +300,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha1:sha1-hash/raw/')
 
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('display_content.html')
+        self.assert_template_used('content-data.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Content sha1-hash')
         self.assertEqual(self.get_context_variable('content'),
@@ -251,8 +310,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
             'sha1:sha1-hash')
 
     @patch('swh.web.ui.views.service')
-#    @istest
-    def show_content_not_found(self, mock_service):
+    @istest
+    def content_data_not_found(self, mock_service):
         # given
         mock_service.lookup_content_raw.return_value = None
 
@@ -260,7 +319,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha1:sha1-unknown/raw/')
 
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('display_content.html')
+        self.assert_template_used('content-data.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Content with sha1:sha1-unknown not found.')
         self.assertEqual(self.get_context_variable('content'), None)
@@ -268,8 +327,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
             'sha1:sha1-unknown')
 
     @patch('swh.web.ui.views.service')
-#    @istest
-    def show_content_invalid_hash(self, mock_service):
+    @istest
+    def content_data_invalid_hash(self, mock_service):
         # given
         mock_service.lookup_content_raw.side_effect = BadInputExc(
             'Invalid hash')
@@ -278,7 +337,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha2:sha1-invalid/raw/')
 
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('display_content.html')
+        self.assert_template_used('content-data.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Invalid hash')
         self.assertEqual(self.get_context_variable('content'), None)
@@ -373,11 +432,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_hash.return_value = {'found': False}
 
         # when
-        rv = self.client.get('/browse/content/sha256:some-sha256/')
+        rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
 
         # then
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content.html')
+        self.assert_template_used('content-with-origin.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Hash sha256:some-sha256 was not found.')
 
@@ -392,11 +451,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_hash.side_effect = BadInputExc('Invalid hash')
 
         # when
-        rv = self.client.get('/browse/content/sha256:some-sha256/')
+        rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
 
         # then
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content.html')
+        self.assert_template_used('content-with-origin.html')
         self.assertEqual(
             self.get_context_variable('message'), 'Invalid hash')
 
@@ -418,11 +477,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         }
 
         # when
-        rv = self.client.get('/browse/content/sha256:some-sha256/')
+        rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
 
         # then
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content.html')
+        self.assert_template_used('content-with-origin.html')
         self.assertEqual(
             self.get_context_variable('message'),
             "The content with hash sha256:some-sha256 has been seen on " +

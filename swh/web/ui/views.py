@@ -137,43 +137,41 @@ The file's path referenced was '%s'.""" % (q,
                                            path)
 
 
-# @app.route('/browse/content/')
-# @app.route('/browse/content/<string:q>/')
+@app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def content_with_origin(q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
-    """Show content information.
+def content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+    """Given a hash and a checksum, display the content's meta-data.
 
     Args:
-        - q: query string of the form <algo_hash:hash> with
-        `algo_hash` in sha1, sha1_git, sha256.
-
-        This means that several different URLs (at least one per
-        HASH_ALGO) will point to the same content sha: the sha with
-        'hash' format
+        q is of the form algo_hash:hash with algo_hash in
+        (sha1, sha1_git, sha256)
 
     Returns:
-        The content's information at for a given checksum.
+        Information on one possible origin for such content.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the content is not found.
 
     """
-    env = {'q': q}
-
+    env = {}
+    message = None
     try:
-        content = service.lookup_hash(q)
-        if not content.get('found'):
-            message = "Hash %s was not found." % q
-        else:
-            origin = service.lookup_hash_origin(q)
-            message = _origin_seen(q, origin)
-    except BadInputExc as e:  # do not like it but do not duplicate code
+        content = service.lookup_content(q)
+        if not content:
+            message = 'Content with %s not found.' % q
+    except BadInputExc as e:
         message = str(e)
+        content = None
 
     env['message'] = message
+    env['content'] = content
     return render_template('content.html', **env)
 
 
 @app.route('/browse/content/<string:q>/raw/')
 @set_renderers(HTMLRenderer)
-def show_content(q):
+def content_data(q):
     """Given a hash and a checksum, display the content's raw data.
 
     Args:
@@ -203,7 +201,40 @@ def show_content(q):
 
     env['message'] = message
     env['content'] = content
-    return render_template('display_content.html', **env)
+    return render_template('content-data.html', **env)
+
+
+# @app.route('/browse/content/<string:q>/origin/')
+@set_renderers(HTMLRenderer)
+def content_with_origin(q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
+    """Show content information.
+
+    Args:
+        - q: query string of the form <algo_hash:hash> with
+        `algo_hash` in sha1, sha1_git, sha256.
+
+        This means that several different URLs (at least one per
+        HASH_ALGO) will point to the same content sha: the sha with
+        'hash' format
+
+    Returns:
+        The content's information at for a given checksum.
+
+    """
+    env = {'q': q}
+
+    try:
+        content = service.lookup_hash(q)
+        if not content.get('found'):
+            message = "Hash %s was not found." % q
+        else:
+            origin = service.lookup_hash_origin(q)
+            message = _origin_seen(q, origin)
+    except BadInputExc as e:  # do not like it but do not duplicate code
+        message = str(e)
+
+    env['message'] = message
+    return render_template('content-with-origin.html', **env)
 
 
 @app.route('/browse/directory/')

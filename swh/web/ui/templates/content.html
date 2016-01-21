@@ -1,9 +1,14 @@
 {% extends "layout.html" %}
-{% block title %}Browse{% endblock %}
+{% block title %}Content information{% endblock %}
 {% block content %}
-<p>
-{% if message is not none %}
-<div id="message">{{ message | safe }}</div>
-{% endif %}
-</p>
+  {% if message is not none %}
+    <p>{{ message | safe }}</p>
+  {% endif %}
+  {% if content is not none %}
+  <table>
+    {% for key in ['sha1', 'sha256', 'sha1_git', 'status', 'length', 'ctime'] %}
+      <tr><td>{{ key }}&nbsp;</td><td>{{ content[key] }}</td>
+    {% endfor %}
+  </table>
+  {% endif %}
 {% endblock %}
