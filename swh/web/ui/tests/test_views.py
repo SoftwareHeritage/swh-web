@@ -646,7 +646,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def browse_release_found(self, mock_service):
+    def browse_release(self, mock_service):
         # given
         mock_release = {
             "date": "Sun, 05 Jul 2015 18:02:06 GMT",

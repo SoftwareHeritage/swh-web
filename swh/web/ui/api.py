@@ -148,7 +148,7 @@ def _enrich_release(release):
 
 @app.route('/api/1/release/')
 @app.route('/api/1/release/<string:sha1_git>/')
-def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
+def api_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
     """Return information about release with id sha1_git.
 
     Args:
