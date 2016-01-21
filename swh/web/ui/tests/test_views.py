@@ -229,7 +229,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def content_detail_not_found(self, mock_service):
+    def browse_content_detail_not_found(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
 
@@ -249,7 +249,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def content_detail_bad_input(self, mock_service):
+    def browse_content_detail_bad_input(self, mock_service):
         # given
         mock_service.lookup_content.side_effect = BadInputExc('Bad input!')
 
@@ -268,7 +268,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def content_detail(self, mock_service):
+    def browse_content_detail(self, mock_service):
         # given
         stub_content = {'sha1': 'sha1_hash'}
         mock_service.lookup_content.return_value = stub_content
@@ -288,7 +288,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def content_data(self, mock_service):
+    def browse_content_data(self, mock_service):
         # given
         stub_content_raw = {
             'sha1': 'sha1-hash',
@@ -311,7 +311,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def content_data_not_found(self, mock_service):
+    def browse_content_data_not_found(self, mock_service):
         # given
         mock_service.lookup_content_raw.return_value = None
 
@@ -328,7 +328,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def content_data_invalid_hash(self, mock_service):
+    def browse_content_data_invalid_hash(self, mock_service):
         # given
         mock_service.lookup_content_raw.side_effect = BadInputExc(
             'Invalid hash')
@@ -427,7 +427,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
 #    @istest
-    def content_with_origin_content_not_found(self, mock_service):
+    def browse_content_with_origin_content_not_found(self, mock_service):
         # given
         mock_service.lookup_hash.return_value = {'found': False}
 
@@ -446,7 +446,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
 #    @istest
-    def content_with_origin_bad_input(self, mock_service):
+    def browse_content_with_origin_bad_input(self, mock_service):
         # given
         mock_service.lookup_hash.side_effect = BadInputExc('Invalid hash')
 
@@ -465,7 +465,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
 #    @istest
-    def content_with_origin(self, mock_service):
+    def browse_content_with_origin(self, mock_service):
         # given
         mock_service.lookup_hash.return_value = {'found': True}
         mock_service.lookup_hash_origin.return_value = {

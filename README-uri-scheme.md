@@ -17,15 +17,16 @@ just render the corresponding information for user consumption. Where
 hyperlinks are created, they always point to other context-independent
 user URLs:
 
-* /content/[<HASH_ALGO>:]<HASH>
-* /content/[<HASH_ALGO>:]<HASH>/raw
-* /directory/<SHA1_GIT>
-* /origin/<ORIGIN_ID>
-* /person/<PERSON_ID>
-* /release/<SHA1_GIT>
-* /revision/<SHA1_GIT>
-* /revision/<SHA1_GIT>/log
-* /entity/<entity_uuid>
+* /content/[<HASH_ALGO>:]<HASH>/        Information on content
+* /content/[<HASH_ALGO>:]<HASH>/raw/    Display the content data
+* /content/[<HASH_ALGO>:]<HASH>/origin/ Display information on content with its origin information (Deactivated)
+* /directory/<SHA1_GIT>/                Information on directory
+* /origin/<ORIGIN_ID>/                  Information on origin
+* /person/<PERSON_ID>/                  Information on person
+* /release/<SHA1_GIT>/                  Information on release
+* /revision/<SHA1_GIT>/                 Information on revision
+* /revision/<SHA1_GIT>/log/             Revision log from <SHA1_GIT>
+* /entity/<entity_uuid>/                Information on Entity with hierarchy
 
 Currently, the above endpoints are mounted below the top-level /browse/
 namespace.

@@ -7,7 +7,7 @@ import datetime
 import dateutil
 import unittest
 
-from unittest.mock import patch
+from unittest.mock import patch, call
 from nose.tools import istest
 
 from swh.web.ui import utils
@@ -103,6 +103,12 @@ class UtilsTestCase(unittest.TestCase):
 
         # then
         self.assertEquals(actual_outputs, expected_output)
+
+        mock_flask.url_for.assert_has_calls([
+            call('browse_directory', sha1_git='123'),
+            call('browse_content_data', q='654'),
+            call('browse_directory', sha1_git='987'),
+        ])
 
     @istest
     def filter_field_keys_dict_unknown_keys(self):

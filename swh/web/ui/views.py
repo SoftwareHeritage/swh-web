@@ -139,7 +139,7 @@ The file's path referenced was '%s'.""" % (q,
 
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+def browse_content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
     """Given a hash and a checksum, display the content's meta-data.
 
     Args:
@@ -171,7 +171,7 @@ def content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
 
 @app.route('/browse/content/<string:q>/raw/')
 @set_renderers(HTMLRenderer)
-def content_data(q):
+def browse_content_data(q):
     """Given a hash and a checksum, display the content's raw data.
 
     Args:
@@ -206,7 +206,8 @@ def content_data(q):
 
 # @app.route('/browse/content/<string:q>/origin/')
 @set_renderers(HTMLRenderer)
-def content_with_origin(q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
+def browse_content_with_origin(
+        q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
     """Show content information.
 
     Args:
