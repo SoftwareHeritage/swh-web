@@ -209,7 +209,7 @@ def show_content(q):
 @app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_directory(sha1_git='828da2b80e41aa958b2c98526f4a1d2cc7d298b7'):
+def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
     """Show directory information.
 
     Args:
