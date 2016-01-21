@@ -20,13 +20,13 @@ user URLs:
 * /content/[<HASH_ALGO>:]<HASH>/        Information on content
 * /content/[<HASH_ALGO>:]<HASH>/raw/    Display the content data
 * /content/[<HASH_ALGO>:]<HASH>/origin/ Display information on content with its origin information (Deactivated)
-* /directory/<SHA1_GIT>/                Information on directory
+* /directory/<SHA1_GIT>/                Browse directory's files
 * /origin/<ORIGIN_ID>/                  Information on origin
 * /person/<PERSON_ID>/                  Information on person
 * /release/<SHA1_GIT>/                  Information on release
-* /revision/<SHA1_GIT>/                 Information on revision
-* /revision/<SHA1_GIT>/log/             Revision log from <SHA1_GIT>
 * /entity/<entity_uuid>/                Information on Entity with hierarchy
+* /revision/<SHA1_GIT>/                 Browse revision
+* /revision/<SHA1_GIT>/log/             Revision log from <SHA1_GIT>
 
 Currently, the above endpoints are mounted below the top-level /browse/
 namespace.

@@ -390,3 +390,22 @@ def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
         env.update({'message': str(e)})
 
     return render_template('revision.html', **env)
+
+
+@app.route('/browse/entity/')
+@app.route('/browse/entity/<string:uuid>/')
+@set_renderers(HTMLRenderer)
+def browse_entity(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
+    env = {'entities': [],
+           'message': None}
+    entities = env['entities']
+
+    try:
+        entities = service.lookup_entity_by_uuid(uuid)
+        if not entities:
+            env['message'] = "Entity '%s' not found!" % uuid
+    except BadInputExc as e:
+        env.update({'message': str(e)})
+
+    env['entities'] = entities
+    return render_template('entity.html', **env)

@@ -785,3 +785,62 @@ class ViewTestCase(test_app.SWHViewTestCase):
                           'synthetic'])
 
         mock_service.lookup_revision.assert_called_once_with('426')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_entity_not_found(self, mock_service):
+        # given
+        mock_service.lookup_entity_by_uuid.return_value = []
+
+        # when
+        rv = self.client.get('/browse/entity/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('entity.html')
+        self.assertEqual(self.get_context_variable('entities'), [])
+        self.assertEqual(
+            self.get_context_variable('message'),
+            "Entity '5f4d4c51-498a-4e28-88b3-b3e4e8396cba' not found!")
+
+        mock_service.lookup_entity_by_uuid.assert_called_once_with(
+            '5f4d4c51-498a-4e28-88b3-b3e4e8396cba')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_entity_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_entity_by_uuid.side_effect = BadInputExc(
+            'wrong input')
+
+        # when
+        rv = self.client.get('/browse/entity/blah-blah-uuid/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('entity.html')
+        self.assertEqual(self.get_context_variable('entities'), [])
+
+        mock_service.lookup_entity_by_uuid.assert_called_once_with(
+            'blah-blah-uuid')
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_entity(self, mock_service):
+        # given
+        stub_entities = [
+            {'id': '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba'}]
+        mock_service.lookup_entity_by_uuid.return_value = stub_entities
+
+        # when
+        rv = self.client.get('/browse/entity/'
+                             '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('entity.html')
+        self.assertEqual(self.get_context_variable('entities'), stub_entities)
+        self.assertIsNone(self.get_context_variable('message'))
+
+        mock_service.lookup_entity_by_uuid.assert_called_once_with(
+            '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba')
