@@ -173,7 +173,42 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.person_get.assert_called_with(['person-id'])
 
     @istest
-    def directory_ls_not_found(self):
+    def directory_get_not_found(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        self.storage.directory_get = MagicMock(return_value=None)
+
+        # when
+        actual_directory = backend.directory_get(sha1_bin)
+
+        # then
+        self.assertEquals(actual_directory, None)
+
+        self.storage.directory_get.assert_called_with([sha1_bin])
+
+    @istest
+    def directory_get(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '51f71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        sha1_bin2 = hashutil.hex_to_hash(
+            '62071b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        stub_dir = {'id': sha1_bin, 'revision': b'sha1-blah'}
+        stub_dir2 = {'id': sha1_bin2, 'revision': b'sha1-foobar'}
+        self.storage.directory_get = MagicMock(return_value=[stub_dir,
+                                                             stub_dir2])
+
+        # when
+        actual_directory = backend.directory_get(sha1_bin)
+
+        # then
+        self.assertEquals(actual_directory, stub_dir)
+
+        self.storage.directory_get.assert_called_with([sha1_bin])
+
+    @istest
+    def directory_ls_empty_result(self):
         # given
         sha1_bin = hashutil.hex_to_hash(
             '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')

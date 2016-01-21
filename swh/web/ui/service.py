@@ -120,6 +120,10 @@ def lookup_directory(sha1_git):
         ['sha1'],  # HACK: sha1_git really
         'Only sha1_git is supported.')
 
+    dir = backend.directory_get(sha1_git_bin)
+    if not dir:
+        return None
+
     directory_entries = backend.directory_ls(sha1_git_bin)
     return map(converters.from_directory_entry, directory_entries)
 
