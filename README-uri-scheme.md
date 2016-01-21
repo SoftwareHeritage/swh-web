@@ -463,7 +463,8 @@ Ex:
 
 When an error is raised, the error code response is used:
 - 400: user's input is not correct regarding the API
-- 404: user's input is ok but we did not found what (s)he was looking forbidden
+- 404: user's input is ok but we did not found what (s)he was looking for
+- 503: temporary internal server error (backend is down for example)
 
 And the body of the response should be a dictionary with some more information on the error.
 

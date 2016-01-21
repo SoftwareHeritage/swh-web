@@ -18,6 +18,23 @@ class FileMock():
 class ViewTestCase(test_app.SWHViewTestCase):
     render_template = False
 
+    @patch('swh.web.ui.views.flask')
+    @istest
+    def homepage(self, mock_flask):
+        # given
+        mock_flask.flash.return_value = 'something'
+
+        # when
+        rv = self.client.get('/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('home.html')
+
+        mock_flask.flash.assert_called_once_with(
+            'This Web app is still work in progress, use at your own risk',
+            'warning')
+
     @istest
     def info(self):
         # when

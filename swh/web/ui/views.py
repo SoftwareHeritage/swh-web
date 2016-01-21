@@ -3,8 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import flask
 
-from flask import render_template, flash, request, url_for
+from flask import render_template, request, url_for
 
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
@@ -24,9 +25,8 @@ def homepage():
     """Home page
 
     """
-    flash('This Web app is still work in progress, use at your own risk',
-          'warning')
-    # return redirect(url_for('about'))
+    flask.flash('This Web app is still work in progress, use at your own risk',
+                'warning')
     return render_template('home.html')
 
 
