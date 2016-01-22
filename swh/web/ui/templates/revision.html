@@ -8,8 +8,8 @@
 
 {% if revision is not none %}
 <div>
-  {% for key in keys %}
-       {% if revision[key] is not none %}
+    {% for key in keys %}
+        {% if revision[key] is not none %}
             <div class="row">
               <div class="col-md-2">{{ key }}</div>
               {% if key == 'message' %}
@@ -28,15 +28,16 @@
            </div>
      {% endif %}
 
-    {% if revision['parents'] is not none %}
-    <div class="row">
-        <div class="col-md-2">parents</div>
-            {% for parent in revision['parents'] %}
-            <div class="col-md-6"><a href="{{ parent }}">{{ parent }}</a></div>
-            <br />
+    {% for key in ['parents', 'children'] %}
+        {% if revision[key] is not none %}
+         <div class="row">
+            <div class="col-md-2">{{ key }}</div>
+            {% for link in revision[key] %}
+            <div class="col-md-6"><a href="{{ link }}">{{ link }}</a></div>
             {% endfor %}
-    <br />
-    {% endif %}
+         </div>
+        {% endif %}
+    {% endfor %}
 
 </div>
 {% endif %}

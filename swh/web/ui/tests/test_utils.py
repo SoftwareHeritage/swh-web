@@ -110,6 +110,74 @@ class UtilsTestCase(unittest.TestCase):
             call('browse_directory', sha1_git='987'),
         ])
 
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def prepare_revision_view(self, mock_flask):
+        # given
+        def mock_url_for(url_key, **kwds):
+            if url_key == 'browse_directory':
+                return '/browse/directory/' + kwds['sha1_git']
+            elif url_key == 'browse_revision':
+                return '/browse/revision/' + kwds['sha1_git']
+
+        mock_flask.url_for.side_effect = mock_url_for
+
+        rev_input = {
+            'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
+            'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+            'committer': {
+                'email': 'torvalds@linux-foundation.org',
+                'name': 'Linus Torvalds'
+            },
+            'type': 'git',
+            'author': {
+                'email': 'torvalds@linux-foundation.org',
+                'name': 'Linus Torvalds'
+            },
+            'message': 'Linux 4.2-rc1\n',
+            'synthetic': False,
+            'directory': '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b',
+            'parents': [
+                'a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'
+            ],
+            'children': [
+                'b696e2b738bfa26326b3f1f40f0f1eda0c067ccf'
+            ],
+        }
+
+        expected_rev = {
+            'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
+            'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+            'committer': 'Linus Torvalds <torvalds@linux-foundation.org>',
+            'type': 'git',
+            'author': 'Linus Torvalds <torvalds@linux-foundation.org>',
+            'message': 'Linux 4.2-rc1\n',
+            'synthetic': False,
+            'directory': '/browse/directory/'
+            '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b',
+            'parents': [
+                '/browse/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'
+            ],
+            'children': [
+                '/browse/revision/b696e2b738bfa26326b3f1f40f0f1eda0c067ccf'
+            ],
+        }
+
+        # when
+        actual_rev = utils.prepare_revision_view(rev_input)
+
+        # then
+        self.assertEquals(actual_rev, expected_rev)
+
+        mock_flask.url_for.assert_has_calls([
+            call('browse_revision',
+                 sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'),
+            call('browse_revision',
+                 sha1_git='b696e2b738bfa26326b3f1f40f0f1eda0c067ccf'),
+            call('browse_directory',
+                 sha1_git='2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b'),
+        ])
+
     @istest
     def filter_field_keys_dict_unknown_keys(self):
         # when

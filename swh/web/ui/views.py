@@ -5,14 +5,14 @@
 
 import flask
 
-from flask import render_template, request, url_for
+from flask import render_template, request, url_for, redirect
 
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
 from swh.web.ui import service, utils
-from swh.web.ui.exc import BadInputExc
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.main import app
 
 
@@ -157,13 +157,13 @@ def browse_content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
     """
     env = {}
     message = None
+    content = None
     try:
         content = service.lookup_content(q)
         if not content:
             message = 'Content with %s not found.' % q
     except BadInputExc as e:
         message = str(e)
-        content = None
 
     env['message'] = message
     env['content'] = content
@@ -188,6 +188,7 @@ def browse_content_data(q):
 
     """
     env = {}
+    content = None
     try:
         content = service.lookup_content_raw(q)
         if content:
@@ -198,7 +199,6 @@ def browse_content_data(q):
             message = 'Content with %s not found.' % q
     except BadInputExc as e:
         message = str(e)
-        content = None
 
     env['message'] = message
     env['content'] = content
@@ -252,6 +252,7 @@ def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
         The content's information at sha1_git
     """
     env = {'sha1_git': sha1_git}
+    files = []
 
     try:
         directory_files = service.lookup_directory(sha1_git)
@@ -260,10 +261,8 @@ def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
             files = utils.prepare_directory_listing(directory_files)
         else:
             message = "Directory %s not found." % sha1_git
-            files = []
     except BadInputExc as e:  # do not like it but do not duplicate code
         message = str(e)
-        files = []
 
     env['message'] = message
     env['files'] = files
@@ -309,7 +308,7 @@ def browse_person(person_id=1):
         else:
             env.update({'message': 'Person %s not found!' % person_id})
     except BadInputExc as e:
-            env.update({'message': str(e)})
+        env.update({'message': str(e)})
 
     return render_template('person.html', **env)
 
@@ -342,7 +341,7 @@ def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
         else:
             env.update({'message': 'Release %s not found!' % sha1_git})
     except BadInputExc as e:
-            env.update({'message': str(e)})
+        env.update({'message': str(e)})
 
     return render_template('release.html', **env)
 
@@ -355,39 +354,78 @@ def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
 
     """
     env = {'sha1_git': sha1_git,
+           'keys': [],
            'revision': None}
 
     try:
         rev = service.lookup_revision(sha1_git)
         if rev:
-            author = rev.get('author')
-            if author:
-                rev['author'] = utils.person_to_string(author)
-
-            committer = rev.get('committer')
-            if committer:
-                rev['committer'] = utils.person_to_string(committer)
-
-            parent_links = []
-            for parent in rev.get('parents', []):
-                parent_links.append(url_for('browse_revision',
-                                            sha1_git=parent))
-            rev['parents'] = parent_links
-
-            directory = rev.get('directory')
-            if directory:
-                rev['directory'] = url_for('browse_directory',
-                                           sha1_git=rev['directory'])
-
-            env.update({'revision': rev,
-                        'keys': ['id', 'message',
-                                 'date', 'author',
-                                 'committer', 'committer_date',
-                                 'synthetic']})
+            rev = utils.prepare_revision_view(rev)
+            env.update({
+                'revision': rev,
+                'keys': set(rev.keys()) - set(['directory', 'parents',
+                                               'children'])
+            })
         else:
             env.update({'message': 'Revision %s not found!' % sha1_git})
     except BadInputExc as e:
         env.update({'message': str(e)})
+
+    return render_template('revision.html', **env)
+
+
+@app.route('/browse/revision/<string:sha1_git_root>/history/<sha1_git>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_history(sha1_git_root, sha1_git):
+    """Display information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of sha1_git_root.
+
+    In other words, sha1_git is an ancestor of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root.
+
+    """
+    limit = int(request.args.get('limit', '100'))
+
+    env = {'sha1_git_root': sha1_git_root,
+           'sha1_git': sha1_git,
+           'message': None,
+           'keys': [],
+           'revision': None}
+
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('browse_revision',
+                                sha1_git=sha1_git,
+                                limit=limit))
+
+    try:
+        revision = service.lookup_revision_with_context(sha1_git_root,
+                                                        sha1_git,
+                                                        limit)
+        if revision:
+            revision = utils.prepare_revision_view(revision)
+            env.update({
+                'revision': revision,
+                'keys': set(revision.keys()) - set(['directory', 'parents',
+                                                    'children'])
+            })
+        else:
+            env['message'] = "Possibly sha1_git '%s' is not an ancestor " \
+                             "of sha1_git_root '%s'" % (sha1_git,
+                                                        sha1_git_root)
+
+    except (BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
 
     return render_template('revision.html', **env)
 

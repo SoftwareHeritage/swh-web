@@ -7,7 +7,7 @@ from nose.tools import istest
 
 from swh.web.ui.tests import test_app
 from unittest.mock import patch
-from swh.web.ui.exc import BadInputExc
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
 class FileMock():
@@ -796,12 +796,114 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('revision'),
                          expected_revision)
         self.assertEqual(self.get_context_variable('keys'),
-                         ['id', 'message',
-                          'date', 'author',
-                          'committer', 'committer_date',
-                          'synthetic'])
+                         set(expected_revision.keys()) - set(['directory',
+                                                              'parents',
+                                                              'children']))
 
         mock_service.lookup_revision.assert_called_once_with('426')
+
+    @istest
+    def browse_revision_history_same_sha1(self):
+        # when
+        rv = self.client.get('/browse/revision/10/history/10/')
+
+        # then
+        self.assertEquals(rv.status_code, 302)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_history_not_found(self, mock_service):
+        # given
+        mock_service.lookup_revision_with_context.return_value = None
+
+        # when
+        rv = self.client.get('/browse/revision/1/history/2/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertEqual(self.get_context_variable('sha1_git_root'), '1')
+        self.assertEqual(self.get_context_variable('sha1_git'), '2')
+        self.assertEqual(
+            self.get_context_variable('message'),
+            "Possibly sha1_git '2' is not an ancestor of sha1_git_root '1'")
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+            '1', '2', 100)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_history_root_not_found(self, mock_service):
+        # given
+        mock_service.lookup_revision_with_context.side_effect = NotFoundExc(
+            'Revision root 123 not found')
+
+        # when
+        rv = self.client.get('/browse/revision/123/history/456/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertEqual(self.get_context_variable('sha1_git_root'), '123')
+        self.assertEqual(self.get_context_variable('sha1_git'), '456')
+        self.assertEqual(
+            self.get_context_variable('message'),
+            "Revision root 123 not found")
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+            '123', '456', 100)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_history_root_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_revision_with_context.side_effect = NotFoundExc(
+            'Input incorrect')
+
+        # when
+        rv = self.client.get('/browse/revision/321/history/654/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertEqual(self.get_context_variable('sha1_git_root'), '321')
+        self.assertEqual(self.get_context_variable('sha1_git'), '654')
+        self.assertEqual(
+            self.get_context_variable('message'),
+            "Input incorrect")
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+            '321', '654', 100)
+
+    @patch('swh.web.ui.views.utils')
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_history(self, mock_service, mock_utils):
+        # given
+        stub_revision = {'id': 'some-rev'}
+        mock_service.lookup_revision_with_context.return_value = stub_revision
+
+        expected_revision = {'id': 'some-rev-id'}
+        mock_utils.prepare_revision_view.return_value = expected_revision
+
+        # when
+        rv = self.client.get('/browse/revision/426/history/789/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertEqual(self.get_context_variable('sha1_git_root'), '426')
+        self.assertEqual(self.get_context_variable('sha1_git'), '789')
+        self.assertEqual(self.get_context_variable('revision'),
+                         expected_revision)
+        self.assertEqual(self.get_context_variable('keys'),
+                         set(expected_revision.keys()) - set(['directory',
+                                                              'parents',
+                                                              'children']))
+
+        mock_service.lookup_revision_with_context.assert_called_once_with(
+            '426', '789', 100)
+        mock_utils.prepare_revision_view.assert_called_once_with(stub_revision)
 
     @patch('swh.web.ui.views.service')
     @istest

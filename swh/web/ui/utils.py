@@ -55,6 +55,36 @@ def prepare_directory_listing(files):
     return ls
 
 
+def prepare_revision_view(revision):
+    """Prepare revision for display.
+
+    """
+    author = revision.get('author')
+    if author:
+        revision['author'] = person_to_string(author)
+
+    committer = revision.get('committer')
+    if committer:
+        revision['committer'] = person_to_string(committer)
+
+    revision['parents'] = list(map(lambda p: flask.url_for('browse_revision',
+                                                           sha1_git=p),
+                                   revision.get('parents', [])))
+
+    if 'children' in revision:
+        revision['children'] = list(map(lambda child: flask.url_for(
+            'browse_revision',
+            sha1_git=child),
+                                        revision['children']))
+
+    directory = revision.get('directory')
+    if directory:
+        revision['directory'] = flask.url_for('browse_directory',
+                                              sha1_git=revision['directory'])
+
+    return revision
+
+
 def filter_field_keys(obj, field_keys):
     """Given an object instance (directory or list), and a csv field keys
     to filter on.
