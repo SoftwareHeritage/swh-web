@@ -516,8 +516,6 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
             'sha1_git': sha1_git
         }, path, limit)
 
-        print(rev_id, result)
-
         if result['type'] == 'dir':  # dir_entries
             result['content'] = utils.prepare_directory_listing_with_revision_history(  # noqa
                 sha1_git_root,
@@ -531,6 +529,73 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
         env['message'] = str(e)
 
     return render_template('revision-directory.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_with_origin(origin_id=1,
+                                branch_name="refs/heads/master",
+                                ts=None):
+    """Instead of having to specify a (root) revision by SHA1_GIT, users
+    might want to specify a place and a time. In SWH a "place" is an
+    origin; a "time" is a timestamp at which some place has been
+    observed by SWH crawlers.
+
+    Args:
+        origin_id: origin's identifier (default to 1).
+        branch_name: the optional branch for the given origin (default
+        to master).
+        timestamp: optional timestamp (default to the nearest time
+        crawl of timestamp).
+
+    Returns:
+        Information on the revision if found.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if the revision is not found.
+
+    """
+    env = {'message': None,
+           'origin_id': origin_id,
+           'branch_name': branch_name,
+           'ts': ts,
+           'revision': None}
+
+    try:
+        if ts:
+            ts = utils.parse_timestamp(ts)
+
+        revision = service.lookup_revision_by(origin_id, branch_name, ts)
+        if not revision:
+            env['message'] = 'No revision at (origin_id: %s, ' \
+                             'branch_name: %s, ts: %s).' % (
+                                 origin_id, branch_name, ts)
+        else:
+            revision = utils.prepare_revision_view(revision)
+            env.update({
+                'sha1_git': revision['id'],
+                'revision': revision,
+                'keys': set(revision.keys()) - set(['directory', 'parents',
+                                                    'children'])
+            })
+    except (ValueError, NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision.html', **env)
 
 
 @app.route('/browse/entity/')
