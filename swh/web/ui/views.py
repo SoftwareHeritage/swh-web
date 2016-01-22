@@ -286,7 +286,7 @@ def browse_origin(origin_id=1):
         else:
             env.update({'message': 'Origin %s not found!' % origin_id})
     except BadInputExc as e:
-            env.update({'message': str(e)})
+        env.update({'message': str(e)})
 
     return render_template('origin.html', **env)
 
