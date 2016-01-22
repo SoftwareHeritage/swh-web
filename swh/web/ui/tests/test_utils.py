@@ -112,6 +112,60 @@ class UtilsTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.utils.flask')
     @istest
+    def prepare_directory_listing_with_revision(self, mock_flask):
+        # given
+        def mock_url_for(url_key, **kwds):
+            if url_key == 'browse_revision_directory':
+                sha1_git = kwds['sha1_git']
+                path = kwds['path']
+                return '/browse/revision/' + sha1_git + '/directory/' + path
+
+        mock_flask.url_for.side_effect = mock_url_for
+
+        inputs = [{'type': 'dir',
+                   'target': '123',
+                   'name': 'some-dir-name'},
+                  {'type': 'file',
+                   'sha1': '654',
+                   'name': 'some-filename'},
+                  {'type': 'dir',
+                   'target': '987',
+                   'name': 'some-other-dirname'}]
+
+        expected_output = [{'link': '/browse/revision/revsha1/directory/'
+                                    'some/path/some-dir-name',
+                            'name': 'some-dir-name',
+                            'type': 'dir'},
+                           {'link': '/browse/revision/revsha1/directory/'
+                                    'some/path/some-filename',
+                            'name': 'some-filename',
+                            'type': 'file'},
+                           {'link': '/browse/revision/revsha1/directory/'
+                                    'some/path/some-other-dirname',
+                            'name': 'some-other-dirname',
+                            'type': 'dir'}]
+
+        # when
+        actual_outputs = utils.prepare_directory_listing_with_revision(
+            'revsha1', 'some/path', inputs)
+
+        # then
+        self.assertEquals(actual_outputs, expected_output)
+
+        mock_flask.url_for.assert_has_calls([
+            call('browse_revision_directory',
+                 sha1_git='revsha1',
+                 path='some/path/some-dir-name'),
+            call('browse_revision_directory',
+                 sha1_git='revsha1',
+                 path='some/path/some-filename'),
+            call('browse_revision_directory',
+                 sha1_git='revsha1',
+                 path='some/path/some-other-dirname'),
+        ])
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
     def prepare_revision_view(self, mock_flask):
         # given
         def mock_url_for(url_key, **kwds):

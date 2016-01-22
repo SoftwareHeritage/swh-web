@@ -11,6 +11,7 @@ from swh.web.ui.exc import BadInputExc, NotFoundExc
 
 
 class FileMock():
+
     def __init__(self, filename):
         self.filename = filename
 
@@ -904,6 +905,110 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_revision_with_context.assert_called_once_with(
             '426', '789', 100)
         mock_utils.prepare_revision_view.assert_called_once_with(stub_revision)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_directory_not_found(self, mock_service):
+        # given
+        mock_service.lookup_directory_with_revision.side_effect = NotFoundExc(
+            'Not found!')
+
+        # when
+        rv = self.client.get('/browse/revision/1/directory/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision-directory.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), '1')
+        self.assertEqual(self.get_context_variable('path'), '.')
+        self.assertIsNone(self.get_context_variable('result'))
+        self.assertEqual(
+            self.get_context_variable('message'),
+            "Not found!")
+
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
+            '1', None)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_directory_bad_input(self, mock_service):
+        # given
+        mock_service.lookup_directory_with_revision.side_effect = BadInputExc(
+            'Bad input!')
+
+        # when
+        rv = self.client.get('/browse/revision/10/directory/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision-directory.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), '10')
+        self.assertEqual(self.get_context_variable('path'), '.')
+        self.assertIsNone(self.get_context_variable('result'))
+        self.assertEqual(
+            self.get_context_variable('message'),
+            "Bad input!")
+
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
+            '10', None)
+
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_directory_not_implemented(self, mock_service):
+        # given
+        mock_service.lookup_directory_with_revision.side_effect = NotImplementedError(  # noqa
+            'Oops! Not implemented!')
+
+        # when
+        rv = self.client.get('/browse/revision/10/directory/path/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision-directory.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), '10')
+        self.assertEqual(self.get_context_variable('path'), 'path')
+        self.assertIsNone(self.get_context_variable('result'))
+        self.assertEqual(
+            self.get_context_variable('message'),
+            'Oops! Not implemented!')
+
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
+            '10', 'path')
+
+    from nose.plugins.attrib import attr
+
+    @attr('one')
+    @patch('swh.web.ui.views.service')
+    @istest
+    def browse_revision_directory(self, mock_service):
+        # given
+        stub_result0 = {'type': 'dir',
+                        'content': [{'id': 'some-result',
+                                     'type': 'file',
+                                     'name': 'blah'}]}
+        mock_service.lookup_directory_with_revision.return_value = stub_result0
+        stub_result1 = {
+            'type': 'dir',
+            'content': [
+                {'type': 'file',
+                 'name': 'blah',
+                 'link': '/browse/revision/100/directory/some/path/blah/'}
+            ]
+        }
+
+        # when
+        rv = self.client.get('/browse/revision/100/directory/some/path/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision-directory.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), '100')
+        self.assertEqual(self.get_context_variable('path'), 'some/path')
+        self.assertIsNone(self.get_context_variable('message'))
+        self.assertEqual(self.get_context_variable('result'), stub_result1)
+
+        mock_service.lookup_directory_with_revision.assert_called_once_with(
+            '100', 'some/path')
 
     @patch('swh.web.ui.views.service')
     @istest

@@ -430,6 +430,34 @@ def browse_revision_history(sha1_git_root, sha1_git):
     return render_template('revision.html', **env)
 
 
+@app.route('/browse/revision/<string:sha1_git>/directory/')
+@app.route('/browse/revision/<string:sha1_git>/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_directory(sha1_git, path=None):
+    """Browse directory from revision with sha1_git.
+
+    """
+    env = {
+        'sha1_git': sha1_git,
+        'path': '.' if not path else path,
+        'message': None,
+        'result': None
+    }
+
+    try:
+        result = service.lookup_directory_with_revision(sha1_git, path)
+        if result['type'] == 'dir':  # dir_entries
+            result['content'] = utils.prepare_directory_listing_with_revision(
+                sha1_git,
+                path,
+                result['content'])
+        env['result'] = result
+    except (BadInputExc, NotFoundExc, NotImplementedError) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
+
+
 @app.route('/browse/entity/')
 @app.route('/browse/entity/<string:uuid>/')
 @set_renderers(HTMLRenderer)

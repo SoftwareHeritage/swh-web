@@ -37,7 +37,13 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
 
 
 def prepare_directory_listing(files):
-    """Given a list of dictionary files, return a view ready dictionary.
+    """Given a list of dictionary files, return a dictionary ready for view.
+
+    Args:
+        files: List of files to enrich
+
+    Returns:
+        List of enriched files with urls to other resources
 
     """
     ls = []
@@ -55,8 +61,37 @@ def prepare_directory_listing(files):
     return ls
 
 
+def prepare_directory_listing_with_revision(rev_sha1_git, prefix_path, files):
+    """Given a list of dictionary files, return a dictionary ready for view.
+
+    Args:
+        rev_sha1_git: The revision identifier
+        prefix_path: the path to append (could be None)
+        files: List of files to enrich
+
+    Returns:
+        List of enriched files with urls to other resources
+
+    """
+    ls = []
+    for entry in files:
+        new_entry = {'name': entry['name'],
+                     'type': entry['type']}
+        new_path = ''.join([
+            '' if not prefix_path
+            else (prefix_path + '/'),
+            entry['name']])
+
+        new_entry['link'] = flask.url_for('browse_revision_directory',
+                                          sha1_git=rev_sha1_git,
+                                          path=new_path)
+        ls.append(new_entry)
+
+    return ls
+
+
 def prepare_revision_view(revision):
-    """Prepare revision for display.
+    """Given a revision, return a dictionary ready view.
 
     """
     author = revision.get('author')
