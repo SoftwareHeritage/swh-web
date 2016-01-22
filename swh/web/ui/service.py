@@ -375,6 +375,63 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
                                   % entity['type'])
 
 
+def lookup_revision_through(revision, limit=100):
+    """Retrieve a revision from the criterion stored in revision dictionary.
+
+    Args:
+        revision: Dictionary of criterion to lookup the revision with.
+        Here are the supported combination of possible values:
+        - origin_id, branch_name, ts, sha1_git
+        - origin_id, branch_name, ts
+        - sha1_git_root, sha1_git
+        - sha1_git
+
+    Returns:
+        None if the revision is not found or the actual revision.
+
+    """
+    rev = None
+    if 'origin_id' in revision and \
+       'branch_name' in revision and \
+       'ts' in revision and \
+       'sha1_git' in revision:
+        rev = lookup_revision_with_context_by(revision['origin_id'],
+                                              revision['branch_name'],
+                                              revision['ts'],
+                                              revision['sha1_git'],
+                                              limit)
+    elif 'origin_id' in revision and \
+         'branch_name' in revision and \
+         'ts' in revision:
+        rev = lookup_revision_by(revision['origin_id'],
+                                 revision['branch_name'],
+                                 revision['ts'])
+    elif 'sha1_git_root' in revision and \
+         'sha1_git' in revision:
+        rev = lookup_revision_with_context(revision['sha1_git_root'],
+                                           revision['sha1_git'],
+                                           limit)
+    elif 'sha1_git' in revision:
+        rev = lookup_revision(revision['sha1_git'])
+    else:
+        # this should not happen
+        raise NotImplementedError('Should not happen!')
+
+    return rev
+
+
+def lookup_directory_through_revision(revision, path=None, limit=100):
+    """Retrieve the directory information from the revision.
+
+    """
+    rev = lookup_revision_through(revision, limit)
+
+    if rev:
+        return rev['id'], lookup_directory_with_revision(rev['id'], path)
+    else:
+        return None, None
+
+
 def lookup_content(q):
     """Lookup the content designed by q.
 

@@ -415,6 +415,7 @@ def browse_revision_history(sha1_git_root, sha1_git):
         if revision:
             revision = utils.prepare_revision_view(revision)
             env.update({
+                'sha1_git': revision['id'],
                 'revision': revision,
                 'keys': set(revision.keys()) - set(['directory', 'parents',
                                                     'children'])
@@ -445,12 +446,86 @@ def browse_revision_directory(sha1_git, path=None):
     }
 
     try:
-        result = service.lookup_directory_with_revision(sha1_git, path)
+        rev_id, result = service.lookup_directory_through_revision({
+            'sha1_git': sha1_git
+        }, path)
+
         if result['type'] == 'dir':  # dir_entries
             result['content'] = utils.prepare_directory_listing_with_revision(
                 sha1_git,
                 path,
                 result['content'])
+
+        env['sha1_git'] = rev_id
+        env['result'] = result
+    except (BadInputExc, NotFoundExc, NotImplementedError) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
+
+
+@app.route('/browse/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
+    """Return information about directory pointed to by the revision
+    defined as: revision sha1_git, limited to the sub-graph of all
+    transitive parents of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
+        path: optional directory pointed to by that revision.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on the directory pointed to by that revision.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root or the path referenced does not exist
+
+    """
+    limit = int(request.args.get('limit', '100'))
+
+    env = {
+        'sha1_git_root': sha1_git_root,
+        'sha1_git': sha1_git,
+        'path': '.' if not path else path,
+        'message': None,
+        'result': None
+    }
+
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('browse_revision_directory',
+                                sha1_git=sha1_git,
+                                path=path),
+                        code=301)
+
+    try:
+        rev_id, result = service.lookup_directory_through_revision({
+            'sha1_git_root': sha1_git_root,
+            'sha1_git': sha1_git
+        }, path, limit)
+
+        print(rev_id, result)
+
+        if result['type'] == 'dir':  # dir_entries
+            result['content'] = utils.prepare_directory_listing_with_revision_history(  # noqa
+                sha1_git_root,
+                sha1_git,
+                path,
+                result['content'])
+
+        env['sha1_git'] = rev_id
         env['result'] = result
     except (BadInputExc, NotFoundExc, NotImplementedError) as e:
         env['message'] = str(e)
