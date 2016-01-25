@@ -295,7 +295,7 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
         if not revision_root:
             raise NotFoundExc('Revision root %s not found' % sha1_git_root)
     else:
-        sha1_git_root_bin = sha1_git_root
+        sha1_git_root_bin = sha1_git_root['id']
 
     revision_log = backend.revision_log(sha1_git_root_bin, limit)
 
