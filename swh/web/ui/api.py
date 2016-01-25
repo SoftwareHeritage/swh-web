@@ -355,6 +355,16 @@ def api_revision_history_through_origin(origin_id=1,
            '/directory/<path:path>/')
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/history/<sha1_git>'

@@ -1480,3 +1480,75 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_directory_through_origin.assert_called_once_with(
             2, 'dev', '2013-20-20 10:02', 'some/file')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_directory_through_revision_with_origin_history_KO_not_found(
+            self, mock_api):
+        mock_api.api_directory_through_revision_with_origin_history.side_effect = NotFoundExc(  # noqa
+            'Not found!')
+
+        # when
+        rv = self.client.get('/browse/revision/origin/987'
+                             '/history/sha1git'
+                             '/directory/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision-directory.html')
+        self.assertIsNone(self.get_context_variable('result'))
+        self.assertEqual(self.get_context_variable('message'), 'Not found!')
+        self.assertEqual(self.get_context_variable('path'), '.')
+
+        mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
+            987, 'refs/heads/master', None, 'sha1git', None)
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_directory_through_revision_with_origin_history_KO_bad_input(
+            self, mock_api):
+        mock_api.api_directory_through_revision_with_origin_history.side_effect = BadInputExc(  # noqa
+            'Bad input! Bleh!')
+
+        # when
+        rv = self.client.get('/browse/revision/origin/798'
+                             '/branch/refs/heads/dev'
+                             '/ts/2012-11-11'
+                             '/history/1234'
+                             '/directory/some/path/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision-directory.html')
+        self.assertIsNone(self.get_context_variable('result'))
+        self.assertEqual(self.get_context_variable('message'),
+                         'Bad input! Bleh!')
+        self.assertEqual(self.get_context_variable('path'), 'some/path')
+
+        mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
+            798, 'refs/heads/dev', '2012-11-11', '1234', 'some/path')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_directory_through_revision_with_origin_history(
+            self, mock_api):
+        stub_dir = {'type': 'dir',
+                    'content': [],
+                    'revision': 'specific-rev-id'}
+        mock_api.api_directory_through_revision_with_origin_history.return_value = stub_dir  # noqa
+
+        # when
+        rv = self.client.get('/browse/revision/origin/101010'
+                             '/ts/1955-11-12'
+                             '/history/54628'
+                             '/directory/emacs-24.5/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision-directory.html')
+        self.assertEquals(self.get_context_variable('result'), stub_dir)
+        self.assertIsNone(self.get_context_variable('message'))
+        self.assertEqual(self.get_context_variable('path'), 'emacs-24.5')
+
+        mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
+            101010, 'refs/heads/master', '1955-11-12', '54628', 'emacs-24.5')

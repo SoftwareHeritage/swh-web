@@ -509,6 +509,75 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
 
 
 @app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_directory_through_revision_with_origin_history(
+        origin_id=1,
+        branch_name="refs/heads/master",
+        ts=None,
+        sha1_git=None,
+        path=None):
+    env = {
+        'origin_id': origin_id,
+        'branch_name': branch_name,
+        'ts': ts,
+        'sha1_git': sha1_git,
+        'path': '.' if not path else path,
+        'message': None,
+        'result': None
+    }
+
+    try:
+        result = api.api_directory_through_revision_with_origin_history(
+            origin_id, branch_name, ts, sha1_git, path)
+        env['revision'] = result['revision']
+        env['content'] = utils.prepare_data_for_view(result['content'])
+        env['result'] = result
+    except (BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
+
+
+@app.route('/browse/revision'
            '/origin/')
 @app.route('/browse/revision'
            '/origin/<int:origin_id>/')
