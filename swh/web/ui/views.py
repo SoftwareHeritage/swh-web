@@ -494,7 +494,7 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
                         code=301)
 
     try:
-        result = api.api_directory_revision_history(sha1_git_root,
+        result = api.api_revision_history_directory(sha1_git_root,
                                                     sha1_git,
                                                     path)
         env['revision'] = result['revision']

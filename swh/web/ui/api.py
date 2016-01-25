@@ -624,7 +624,7 @@ def api_revision_history(sha1_git_root, sha1_git):
 @app.route('/api/1/revision/<string:sha1_git_root>'
            '/history/<sha1_git>'
            '/directory/<path:dir_path>/')
-def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
+def api_revision_history_directory(sha1_git_root, sha1_git, dir_path=None):
     """Return information about directory pointed to by the revision
     defined as: revision sha1_git, limited to the sub-graph of all
     transitive parents of sha1_git_root.

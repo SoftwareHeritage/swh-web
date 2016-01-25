@@ -1664,7 +1664,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '999', 'some/path')
 
     @istest
-    def api_directory_revision_history_sha1_same_so_redirect(self):
+    def api_revision_history_directory_sha1_same_so_redirect(self):
         # when
         rv = self.app.get(
             '/api/1/revision/123/history/123/directory/path/to/?limit=1')
@@ -1677,7 +1677,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_revision_history_ko_revision_not_found(self,
+    def api_revision_history_directory_ko_revision_not_found(self,
                                                              mock_service):
         # given
         mock_service.lookup_revision_with_context.return_value = None
@@ -1698,7 +1698,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_revision_history(self,
+    def api_revision_history_directory(self,
                                        mock_service):
         # given
         mock_service.lookup_revision_with_context.return_value = {

@@ -1004,7 +1004,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @istest
     def browse_revision_history_directory_KO_not_found(self, mock_api):
         # given
-        mock_api.api_directory_revision_history.side_effect = NotFoundExc(
+        mock_api.api_revision_history_directory.side_effect = NotFoundExc(
             'not found')
 
         # when
@@ -1019,14 +1019,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'), 'not found')
         self.assertIsNone(self.get_context_variable('result'))
 
-        mock_api.api_directory_revision_history.assert_called_once_with(
+        mock_api.api_revision_history_directory.assert_called_once_with(
             '123', '456', 'a/b')
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_history_directory_KO_bad_input(self, mock_api):
         # given
-        mock_api.api_directory_revision_history.side_effect = BadInputExc(
+        mock_api.api_revision_history_directory.side_effect = BadInputExc(
             'bad input')
 
         # when
@@ -1041,7 +1041,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'), 'bad input')
         self.assertIsNone(self.get_context_variable('result'))
 
-        mock_api.api_directory_revision_history.assert_called_once_with(
+        mock_api.api_revision_history_directory.assert_called_once_with(
             '123', '456', 'a/c')
 
     @patch('swh.web.ui.views.service')
@@ -1078,7 +1078,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             }]
         }
 
-        mock_api.api_directory_revision_history.return_value = stub_result0
+        mock_api.api_revision_history_directory.return_value = stub_result0
 
         stub_result1 = {
             'type': 'dir',
@@ -1104,7 +1104,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('message'))
         self.assertEqual(self.get_context_variable('result'), stub_result1)
 
-        mock_api.api_directory_revision_history.assert_called_once_with(
+        mock_api.api_revision_history_directory.assert_called_once_with(
             '100', '999', 'path/to')
 
     @patch('swh.web.ui.views.service')
