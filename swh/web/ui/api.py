@@ -549,9 +549,8 @@ def _revision_directory(rev_sha1_git, dir_path, request_path):
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
-def api_directory_with_revision(
-        sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
-        dir_path=None):
+def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
+                           dir_path=None):
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
     Otherwise, display the directory pointed by dir_path (if it exists).
@@ -650,7 +649,7 @@ def api_revision_history_directory(sha1_git_root, sha1_git, dir_path=None):
     limit = int(request.args.get('limit', '100'))
 
     if sha1_git == sha1_git_root:
-        return redirect(url_for('api_directory_with_revision',
+        return redirect(url_for('api_revision_directory',
                                 sha1_git=sha1_git,
                                 dir_path=dir_path),
                         code=301)

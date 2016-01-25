@@ -439,7 +439,7 @@ def browse_revision_directory(sha1_git, path=None):
     }
 
     try:
-        result = api.api_directory_with_revision(sha1_git, path)
+        result = api.api_revision_directory(sha1_git, path)
         result['content'] = utils.prepare_data_for_view(result['content'])
         env['revision'] = result['revision']
         env['result'] = result

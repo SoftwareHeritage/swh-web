@@ -1541,7 +1541,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_not_found(self, mock_service):
+    def api_revision_directory_not_found(self, mock_service):
         # given
         mock_service.lookup_directory_with_revision.return_value = None
 
@@ -1556,7 +1556,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_not_found_2(self, mock_service):
+    def api_revision_directory_not_found_2(self, mock_service):
         # given
         mock_service.lookup_directory_with_revision.return_value = None
 
@@ -1571,7 +1571,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_ok_returns_dir_entries(self, mock_service):
+    def api_revision_directory_ok_returns_dir_entries(self, mock_service):
         stub_dir = {
             'type': 'dir',
             'content': [
@@ -1630,7 +1630,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_ok_returns_content(self, mock_service):
+    def api_revision_directory_ok_returns_content(self, mock_service):
         stub_content = {
             'type': 'file',
             'content': {

@@ -902,8 +902,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @istest
     def browse_revision_directory_KO_not_found(self, mock_api):
         # given
-        mock_api.api_directory_with_revision.side_effect = NotFoundExc(
-            'Not found!')
+        mock_api.api_revision_directory.side_effect = NotFoundExc('Not found!')
 
         # when
         rv = self.client.get('/browse/revision/1/directory/')
@@ -918,15 +917,13 @@ class ViewTestCase(test_app.SWHViewTestCase):
             self.get_context_variable('message'),
             "Not found!")
 
-        mock_api.api_directory_with_revision.assert_called_once_with(
-            '1', None)
+        mock_api.api_revision_directory.assert_called_once_with('1', None)
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_directory_KO_bad_input(self, mock_api):
         # given
-        mock_api.api_directory_with_revision.side_effect = BadInputExc(  # noqa
-            'Bad input!')
+        mock_api.api_revision_directory.side_effect = BadInputExc('Bad input!')
 
         # when
         rv = self.client.get('/browse/revision/10/directory/')
@@ -941,8 +938,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             self.get_context_variable('message'),
             "Bad input!")
 
-        mock_api.api_directory_with_revision.assert_called_once_with(
-            '10', None)
+        mock_api.api_revision_directory.assert_called_once_with('10', None)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -965,7 +961,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             ]
         }
 
-        mock_api.api_directory_with_revision.return_value = stub_result0
+        mock_api.api_revision_directory.return_value = stub_result0
 
         stub_result1 = {
             'type': 'dir',
@@ -997,8 +993,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('message'))
         self.assertEqual(self.get_context_variable('result'), stub_result1)
 
-        mock_api.api_directory_with_revision.assert_called_once_with(
-            '100', 'some/path')
+        mock_api.api_revision_directory.assert_called_once_with('100',
+                                                                'some/path')
 
     @patch('swh.web.ui.views.api')
     @istest
