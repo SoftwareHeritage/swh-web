@@ -796,10 +796,6 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(self.get_context_variable('revision'),
                          expected_revision)
-        self.assertEqual(self.get_context_variable('keys'),
-                         set(expected_revision.keys()) - set(['directory',
-                                                              'parents',
-                                                              'children']))
 
         mock_service.lookup_revision.assert_called_once_with('426')
 
@@ -897,10 +893,6 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), 'some-rev-id')
         self.assertEqual(self.get_context_variable('revision'),
                          expected_revision)
-        self.assertEqual(self.get_context_variable('keys'),
-                         set(expected_revision.keys()) - set(['directory',
-                                                              'parents',
-                                                              'children']))
 
         mock_service.lookup_revision_with_context.assert_called_once_with(
             '426', '789', 100)
@@ -1262,3 +1254,77 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_history_through_revision_with_origin.assert_called_once_with(  # noqa
             99, 'refs/heads/master', None, '123')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_with_origin_KO_not_found(self, mock_api):
+        # given
+        mock_api.api_revision_with_origin.side_effect = NotFoundExc(
+            'Not found')
+
+        # when
+        rv = self.client.get('/browse/revision/origin/1/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertIsNone(self.get_context_variable('revision'))
+        self.assertEqual(self.get_context_variable('message'), 'Not found')
+
+        mock_api.api_revision_with_origin.assert_called_once_with(
+            1, 'refs/heads/master', None)
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_with_origin_KO_bad_input(self, mock_api):
+        # given
+        mock_api.api_revision_with_origin.side_effect = BadInputExc(
+            'Bad Input')
+
+        # when
+        rv = self.client.get('/browse/revision/origin/1000/branch/dev/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertIsNone(self.get_context_variable('revision'))
+        self.assertEqual(self.get_context_variable('message'), 'Bad Input')
+
+        mock_api.api_revision_with_origin.assert_called_once_with(
+            1000, 'dev', None)
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_with_origin_KO_other(self, mock_api):
+        # given
+        mock_api.api_revision_with_origin.side_effect = ValueError(
+            'Other')
+
+        # when
+        rv = self.client.get('/browse/revision/origin/1999'
+                             '/branch/scratch/master'
+                             '/ts/1990-01-10/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertIsNone(self.get_context_variable('revision'))
+        self.assertEqual(self.get_context_variable('message'), 'Other')
+
+        mock_api.api_revision_with_origin.assert_called_once_with(
+            1999, 'scratch/master', '1990-01-10')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_with_origin(self, mock_api):
+        # given
+        stub_rev = {'id': 'some-id'}
+        mock_api.api_revision_with_origin.return_value = stub_rev
+
+        # when
+        rv = self.client.get('/browse/revision/origin/1/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertEqual(self.get_context_variable('revision'), stub_rev)
+        self.assertIsNone(self.get_context_variable('message'))
+
+        mock_api.api_revision_with_origin.assert_called_once_with(
+            1, 'refs/heads/master', None)

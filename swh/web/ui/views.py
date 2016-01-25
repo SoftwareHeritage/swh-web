@@ -360,14 +360,9 @@ def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
     try:
         rev = service.lookup_revision(sha1_git)
         if rev:
-            rev = utils.prepare_revision_view(rev)
-            env.update({
-                'revision': rev,
-                'keys': set(rev.keys()) - set(['directory', 'parents',
-                                               'children'])
-            })
+            env['revision'] = utils.prepare_revision_view(rev)
         else:
-            env.update({'message': 'Revision %s not found!' % sha1_git})
+            env['message'] = 'Revision %s not found!' % sha1_git
     except BadInputExc as e:
         env.update({'message': str(e)})
 
@@ -417,8 +412,6 @@ def browse_revision_history(sha1_git_root, sha1_git):
             env.update({
                 'sha1_git': revision['id'],
                 'revision': revision,
-                'keys': set(revision.keys()) - set(['directory', 'parents',
-                                                    'children'])
             })
         else:
             env['message'] = "Possibly sha1_git '%s' is not an ancestor " \
@@ -570,28 +563,11 @@ def browse_revision_with_origin(origin_id=1,
 
     """
     env = {'message': None,
-           'origin_id': origin_id,
-           'branch_name': branch_name,
-           'ts': ts,
            'revision': None}
-
     try:
-        if ts:
-            ts = utils.parse_timestamp(ts)
-
-        revision = service.lookup_revision_by(origin_id, branch_name, ts)
-        if not revision:
-            env['message'] = 'No revision at (origin_id: %s, ' \
-                             'branch_name: %s, ts: %s).' % (
-                                 origin_id, branch_name, ts)
-        else:
-            revision = utils.prepare_revision_view(revision)
-            env.update({
-                'sha1_git': revision['id'],
-                'revision': revision,
-                'keys': set(revision.keys()) - set(['directory', 'parents',
-                                                    'children'])
-            })
+        env['revision'] = api.api_revision_with_origin(origin_id,
+                                                       branch_name,
+                                                       ts)
     except (ValueError, NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 

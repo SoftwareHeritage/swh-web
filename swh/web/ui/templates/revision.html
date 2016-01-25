@@ -8,8 +8,8 @@
 
 {% if revision is not none %}
 <div>
-    {% for key in keys %}
-        {% if revision[key] is not none %}
+    {% for key in revision.keys() %}
+        {% if key != 'directory' and key != 'parents' and key != 'children' and revision[key] is not none %}
             <div class="row">
               <div class="col-md-2">{{ key }}</div>
               {% if key == 'message' %}
