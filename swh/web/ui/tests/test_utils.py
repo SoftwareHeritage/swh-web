@@ -295,6 +295,34 @@ class UtilsTestCase(unittest.TestCase):
         ])
 
     @istest
+    def prepare_data_for_view(self):
+        # given
+        inputs = [
+            {
+                'data': 1,
+                'data_url': '/api/1/some/api/call',
+            },
+            {
+                'blah': 'foobar',
+                'blah_url': '/some/non/changed/api/call'
+            }]
+
+        # when
+        actual_result = utils.prepare_data_for_view(inputs)
+
+        # then
+        self.assertEquals(actual_result, [
+            {
+                'data': 1,
+                'data_url': '/browse/some/api/call',
+            },
+            {
+                'blah': 'foobar',
+                'blah_url': '/some/non/changed/api/call'
+            }
+        ])
+
+    @istest
     def filter_field_keys_dict_unknown_keys(self):
         # when
         actual_res = utils.filter_field_keys(
@@ -351,10 +379,15 @@ class UtilsTestCase(unittest.TestCase):
     def fmap(self):
         self.assertEquals([2, 3, 4],
                           utils.fmap(lambda x: x+1, [1, 2, 3]))
+        self.assertEquals([11, 12, 13],
+                          list(utils.fmap(lambda x: x+10,
+                                          map(lambda x: x, [1, 2, 3]))))
         self.assertEquals({'a': 2, 'b': 4},
                           utils.fmap(lambda x: x*2, {'a': 1, 'b': 2}))
         self.assertEquals(100,
                           utils.fmap(lambda x: x*10, 10))
+        self.assertEquals({'a': [2, 6], 'b': 4},
+                          utils.fmap(lambda x: x*2, {'a': [1, 3], 'b': 2}))
 
     @istest
     def person_to_string(self):

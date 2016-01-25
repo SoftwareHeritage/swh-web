@@ -439,19 +439,11 @@ def browse_revision_directory(sha1_git, path=None):
     }
 
     try:
-        rev_id, result = service.lookup_directory_through_revision({
-            'sha1_git': sha1_git
-        }, path)
-
-        if result['type'] == 'dir':  # dir_entries
-            result['content'] = utils.prepare_directory_listing_with_revision(
-                sha1_git,
-                path,
-                result['content'])
-
-        env['sha1_git'] = rev_id
+        result = api.api_directory_with_revision(sha1_git, path)
+        result['content'] = utils.prepare_data_for_view(result['content'])
+        env['revision'] = result['revision']
         env['result'] = result
-    except (BadInputExc, NotFoundExc, NotImplementedError) as e:
+    except (BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
 
     return render_template('revision-directory.html', **env)
@@ -487,8 +479,6 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
         ancestor of sha1_git_root or the path referenced does not exist
 
     """
-    limit = int(request.args.get('limit', '100'))
-
     env = {
         'sha1_git_root': sha1_git_root,
         'sha1_git': sha1_git,
@@ -504,21 +494,13 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
                         code=301)
 
     try:
-        rev_id, result = service.lookup_directory_through_revision({
-            'sha1_git_root': sha1_git_root,
-            'sha1_git': sha1_git
-        }, path, limit)
-
-        if result['type'] == 'dir':  # dir_entries
-            result['content'] = utils.prepare_directory_listing_with_revision_history(  # noqa
-                sha1_git_root,
-                sha1_git,
-                path,
-                result['content'])
-
-        env['sha1_git'] = rev_id
+        result = api.api_directory_revision_history(sha1_git_root,
+                                                    sha1_git,
+                                                    path)
+        env['revision'] = result['revision']
+        env['content'] = utils.prepare_data_for_view(result['content'])
         env['result'] = result
-    except (BadInputExc, NotFoundExc, NotImplementedError) as e:
+    except (BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
 
     return render_template('revision-directory.html', **env)
@@ -626,6 +608,57 @@ def browse_revision_history_through_origin(origin_id,
         env['message'] = str(e)
 
     return render_template('revision.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/directory/<path:path>')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_directory_through_origin(origin_id,
+                                             branch_name='refs/heads/master',
+                                             ts=None,
+                                             path=None):
+
+    env = {'message': None,
+           'origin_id': origin_id,
+           'ts': ts,
+           'path': '.' if not path else path,
+           'result': None}
+    try:
+        result = api.api_directory_through_revision_with_origin(
+            origin_id,
+            branch_name,
+            ts,
+            path)
+
+        result['content'] = utils.prepare_data_for_view(result['content'])
+        env['revision'] = result['revision']
+        env['result'] = result
+    except (ValueError, BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
 
 
 @app.route('/browse/entity/')

@@ -1590,24 +1590,29 @@ class ApiTestCase(test_app.SWHApiTestCase):
             ]
         }
 
-        expected_dir = [
-            {
-                'sha1_git': '789',
-                'type': 'file',
-                'target': '101',
-                'target_url': '/api/1/content/sha1_git:101/',
-                'name': 'somefile',
-                'file_url': '/api/1/revision/999/directory/some/path/somefile/'
-            },
-            {
-                'sha1_git': '123',
-                'type': 'dir',
-                'target': '456',
-                'target_url': '/api/1/directory/456/',
-                'name': 'to-subdir',
-                'dir_url': '/api/1/revision/999/directory/some/path/'
-                'to-subdir/',
-            }]
+        expected_dir = {
+            'type': 'dir',
+            'revision': '999',
+            'content': [
+                {
+                    'sha1_git': '789',
+                    'type': 'file',
+                    'target': '101',
+                    'target_url': '/api/1/content/sha1_git:101/',
+                    'name': 'somefile',
+                    'file_url': '/api/1/revision/999/directory/some/path/'
+                    'somefile/'
+                },
+                {
+                    'sha1_git': '123',
+                    'type': 'dir',
+                    'target': '456',
+                    'target_url': '/api/1/directory/456/',
+                    'name': 'to-subdir',
+                    'dir_url': '/api/1/revision/999/directory/some/path/'
+                    'to-subdir/',
+                }]
+        }
 
         # given
         mock_service.lookup_directory_with_revision.return_value = stub_dir
@@ -1635,9 +1640,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         expected_content = {
-            'sha1_git': '789',
-            'sha1': '101',
-            'data_url': '/api/1/content/101/raw/',
+            'type': 'file',
+            'revision': '999',
+            'content': {
+                'sha1_git': '789',
+                'sha1': '101',
+                'data_url': '/api/1/content/101/raw/',
+            }
         }
 
         # given
@@ -1714,25 +1723,30 @@ class ApiTestCase(test_app.SWHApiTestCase):
             ]
         }
 
-        expected_dir = [
-            {
-                'sha1_git': '879',
-                'type': 'file',
-                'target': '110',
-                'target_url': '/api/1/content/sha1_git:110/',
-                'name': 'subfile',
-                'file_url': '/api/1/revision/354/history/867/directory/debian/'
-                'subfile/',
-            },
-            {
-                'sha1_git': '213',
-                'type': 'dir',
-                'target': '546',
-                'target_url': '/api/1/directory/546/',
-                'name': 'subdir',
-                'dir_url':
-                '/api/1/revision/354/history/867/directory/debian/subdir/'
-            }]
+        expected_dir = {
+            'type': 'dir',
+            'revision': 'rev-id',
+            'content': [
+                {
+                    'sha1_git': '879',
+                    'type': 'file',
+                    'target': '110',
+                    'target_url': '/api/1/content/sha1_git:110/',
+                    'name': 'subfile',
+                    'file_url': '/api/1/revision/354/history/867/directory/'
+                    'debian/'
+                    'subfile/',
+                },
+                {
+                    'sha1_git': '213',
+                    'type': 'dir',
+                    'target': '546',
+                    'target_url': '/api/1/directory/546/',
+                    'name': 'subdir',
+                    'dir_url':
+                    '/api/1/revision/354/history/867/directory/debian/subdir/'
+                }]
+        }
 
         # given
         mock_service.lookup_directory_with_revision.return_value = stub_dir

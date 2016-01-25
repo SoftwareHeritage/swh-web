@@ -7,12 +7,16 @@
 {% endif %}
 
 {% if result is not none %}
-    <p>Browse revision '{{ sha1_git }}' with {{ result['type'] }}path '{{ path }}':</p>
+    <p>Browse revision '{{ revision }}' with {{ result['type'] }}path '{{ path }}':</p>
 
     {% if result['type'] == 'dir' %}
         {% if result['content'] is not none %}
             {% for e in result['content'] %}
-              <div><p><a class="link{{e.type}}" href="{{e.link}}">{{ e.name }}</a></p></div>
+              {% if e.type == 'dir' %}
+              <div><p><a class="link{{e.type}}" href="{{e.dir_url}}">{{ e.name }}</a></p></div>
+              {% else %}
+              <div><p><a class="link{{e.type}}" href="{{e.file_url}}">{{ e.name }}</a></p></div>
+              {% endif %}
             {% endfor %}
         {% endif %}
     {% else %}

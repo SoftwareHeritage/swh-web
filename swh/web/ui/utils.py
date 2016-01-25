@@ -5,6 +5,7 @@
 
 import datetime
 import flask
+import re
 
 from dateutil import parser
 
@@ -153,6 +154,35 @@ def prepare_revision_view(revision):
     return revision
 
 
+def fmap(f, data):
+    """Map f to data.
+    Keep the initial data structure as original but map function f to each
+    level.
+
+    Args:
+        f: function that expects one argument.
+        data: data to traverse to apply the f function. list, map, dict or bare
+        value.
+
+    Returns:
+        The same data-structure with modified values by the f function.
+    """
+    if isinstance(data, (list, map)):
+        return [fmap(f, x) for x in data]
+    if isinstance(data, dict):
+        return {k: fmap(f, v) for (k, v) in data.items()}
+    return f(data)
+
+
+def prepare_data_for_view(data):
+    def replace_api_url(s):
+        if isinstance(s, str):
+            return re.sub(r'/api/1/', r'/browse/', s)
+        return s
+
+    return fmap(replace_api_url, data)
+
+
 def filter_field_keys(obj, field_keys):
     """Given an object instance (directory or list), and a csv field keys
     to filter on.
@@ -182,14 +212,6 @@ def filter_field_keys(obj, field_keys):
             filt_list.append(filter_field_keys(e, field_keys))
         return filt_list
     return obj
-
-
-def fmap(f, data):
-    if isinstance(data, list):
-        return [f(x) for x in data]
-    if isinstance(data, dict):
-        return {k: f(v) for (k, v) in data.items()}
-    return f(data)
 
 
 def person_to_string(person):

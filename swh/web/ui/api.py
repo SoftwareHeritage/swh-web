@@ -534,9 +534,17 @@ def _revision_directory(rev_sha1_git, dir_path, request_path):
                           ' found.' % rev_sha1_git)
 
     if result['type'] == 'dir':  # dir_entries
-        return list(map(enrich_directory_local, result['content']))
+        return {
+            'type': 'dir',
+            'revision': rev_sha1_git,
+            'content': list(map(enrich_directory_local, result['content']))
+        }
     else:  # content
-        return _enrich_content(result['content'])
+        return {
+            'type': 'file',
+            'revision': rev_sha1_git,
+            'content': _enrich_content(result['content'])
+        }
 
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
