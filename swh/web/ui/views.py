@@ -354,17 +354,14 @@ def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
 
     """
     env = {'sha1_git': sha1_git,
-           'keys': [],
+           'message': None,
            'revision': None}
 
     try:
-        rev = service.lookup_revision(sha1_git)
-        if rev:
-            env['revision'] = utils.prepare_revision_view(rev)
-        else:
-            env['message'] = 'Revision %s not found!' % sha1_git
-    except BadInputExc as e:
-        env.update({'message': str(e)})
+        rev = api.api_revision(sha1_git)
+        env['revision'] = utils.prepare_data_for_view(rev)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('revision.html', **env)
 
@@ -390,8 +387,6 @@ def browse_revision_history(sha1_git_root, sha1_git):
         including children leading to sha1_git_root.
 
     """
-    limit = int(request.args.get('limit', '100'))
-
     env = {'sha1_git_root': sha1_git_root,
            'sha1_git': sha1_git,
            'message': None,
@@ -400,24 +395,12 @@ def browse_revision_history(sha1_git_root, sha1_git):
 
     if sha1_git == sha1_git_root:
         return redirect(url_for('browse_revision',
-                                sha1_git=sha1_git,
-                                limit=limit))
+                                sha1_git=sha1_git))
 
     try:
-        revision = service.lookup_revision_with_context(sha1_git_root,
-                                                        sha1_git,
-                                                        limit)
-        if revision:
-            revision = utils.prepare_revision_view(revision)
-            env.update({
-                'sha1_git': revision['id'],
-                'revision': revision,
-            })
-        else:
-            env['message'] = "Possibly sha1_git '%s' is not an ancestor " \
-                             "of sha1_git_root '%s'" % (sha1_git,
-                                                        sha1_git_root)
-
+        revision = api.api_revision_history(sha1_git_root,
+                                            sha1_git)
+        env['revision'] = utils.prepare_data_for_view(revision)
     except (BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
 
@@ -547,9 +530,10 @@ def browse_revision_with_origin(origin_id=1,
     env = {'message': None,
            'revision': None}
     try:
-        env['revision'] = api.api_revision_with_origin(origin_id,
-                                                       branch_name,
-                                                       ts)
+        revision = api.api_revision_with_origin(origin_id,
+                                                branch_name,
+                                                ts)
+        env['revision'] = utils.prepare_data_for_view(revision)
     except (ValueError, NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
@@ -599,11 +583,12 @@ def browse_revision_history_through_origin(origin_id,
     env = {'message': None,
            'revision': None}
     try:
-        env['revision'] = api.api_revision_history_through_origin(
+        revision = api.api_revision_history_through_origin(
             origin_id,
             branch_name,
             ts,
             sha1_git)
+        env['revision'] = utils.prepare_data_for_view(revision)
     except (ValueError, BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
 
@@ -667,14 +652,11 @@ def browse_revision_directory_through_origin(origin_id,
 def browse_entity(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
     env = {'entities': [],
            'message': None}
-    entities = env['entities']
 
     try:
-        entities = service.lookup_entity_by_uuid(uuid)
-        if not entities:
-            env['message'] = "Entity '%s' not found!" % uuid
-    except BadInputExc as e:
-        env.update({'message': str(e)})
+        entities = api.api_entity_by_uuid(uuid)
+        env['entities'] = entities
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
-    env['entities'] = entities
     return render_template('entity.html', **env)

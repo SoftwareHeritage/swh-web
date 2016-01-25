@@ -8,27 +8,66 @@
 
 {% if revision is not none %}
 <div>
-    {% for key in revision.keys() %}
-        {% if key != 'directory' and key != 'parents' and key != 'children' and revision[key] is not none %}
-            <div class="row">
-              <div class="col-md-2">{{ key }}</div>
-              {% if key == 'message' %}
-              <div class="col-md-6"><pre>{{ revision[key] }}</pre></div>
-              {% else %}
-              <div class="col-md-6"><p>{{ revision[key] }}</pre></div>
-              {% endif %}
-            </div>
-        {% endif %}
-    {% endfor %}
+    {% if revision['url'] is not none %}
+    <div class="row">
+       <div class="col-md-2">Revision</div>
+       <div class="col-md-6"><p><a href="{{ revision['url'] }}">{{ revision['url'] }}</a></p></div>
+    </div>
+    {% endif %}
 
-    {% if revision['directory'] is not none %}
+    {% if revision['history_url'] is not none %}
+    <div class="row">
+       <div class="col-md-2">Revision Log</div>
+       <div class="col-md-6"><p><a href="{{ revision['history_url'] }}">{{ revision['history_url'] }}</a></p></div>
+    </div>
+    {% endif %}
+
+    {% if revision['directory_url'] is not none %}
            <div class="row">
               <div class="col-md-2">directory</div>
-              <div class="col-md-6"><p><a href="{{ revision['directory'] }}">{{ revision['directory'] }}</a></p></div>
+              <div class="col-md-6"><p><a href="{{ revision['directory_url'] }}">{{ revision['directory_url'] }}</a></p></div>
            </div>
      {% endif %}
 
-    {% for key in ['parents', 'children'] %}
+    {% if revision['author'] is not none %}
+           <div class="row">
+              <div class="col-md-2">Author</div>
+              <div class="col-md-6"><p>{{ revision['author']['name'] }} - {{ revision['author']['email'] }}</p></div>
+           </div>
+           <div class="row">
+              <div class="col-md-2">Date</div>
+              <div class="col-md-6"><p>{{ revision['date'] }}</p></div>
+           </div>
+    {% endif %}
+
+    {% if revision['committer'] is not none %}
+           <div class="row">
+              <div class="col-md-2">Committer</div>
+              <div class="col-md-6"><p>{{ revision['committer']['name'] }} - {{ revision['committer']['email'] }}</p></div>
+           </div>
+           <div class="row">
+              <div class="col-md-2">Committer Date</div>
+              <div class="col-md-6"><p>{{ revision['committer_date'] }}</p></div>
+           </div>
+    {% endif %}
+
+    {% if revision['message'] is not none %}
+            <div class="row">
+              <div class="col-md-2">Message</div>
+              <div class="col-md-6"><pre>{{ revision['message'] }}</pre></div>
+            </div>
+    {% endif %}
+
+    {% for key in revision.keys() %}
+           {% if key in ['type', 'synthetic'] and revision[key] is not none %}
+            <div class="row">
+              <div class="col-md-2">{{ key }}</div>
+              <div class="col-md-6"><p>{{ revision[key] }}</pre></div>
+            </div>
+           {% endif %}
+    {% endfor %}
+
+    {% for key in ['parent_urls', 'children_urls'] %}
         {% if revision[key] is not none %}
          <div class="row">
             <div class="col-md-2">{{ key }}</div>

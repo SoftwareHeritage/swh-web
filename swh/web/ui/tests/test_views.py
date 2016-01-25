@@ -708,11 +708,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_release.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_not_found(self, mock_service):
+    def browse_revision_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_revision.return_value = None
+        mock_api.api_revision.side_effect = NotFoundExc('Not found!')
 
         # when
         rv = self.client.get('/browse/revision/1/')
@@ -723,15 +723,16 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '1')
         self.assertEqual(
             self.get_context_variable('message'),
-            'Revision 1 not found!')
+            'Not found!')
+        self.assertIsNone(self.get_context_variable('revision'))
 
-        mock_service.lookup_revision.assert_called_once_with('1')
+        mock_api.api_revision.assert_called_once_with('1')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_bad_input(self, mock_service):
+    def browse_revision_KO_bad_input(self, mock_api):
         # given
-        mock_service.lookup_revision.side_effect = BadInputExc('wrong input')
+        mock_api.api_revision.side_effect = BadInputExc('wrong input!')
 
         # when
         rv = self.client.get('/browse/revision/426/')
@@ -740,14 +741,18 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
+        self.assertEqual(
+            self.get_context_variable('message'),
+            'wrong input!')
+        self.assertIsNone(self.get_context_variable('revision'))
 
-        mock_service.lookup_revision.assert_called_once_with('426')
+        mock_api.api_revision.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_found(self, mock_service):
+    def browse_revision(self, mock_api):
         # given
-        mock_revision = {
+        stub_revision = {
             'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
             'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
             'committer': {
@@ -755,7 +760,6 @@ class ViewTestCase(test_app.SWHViewTestCase):
                 'name': 'Linus Torvalds'
             },
             'committer_date': 'Sun, 05 Jul 2015 18:01:52 GMT',
-            'metadata': None,
             'type': 'git',
             'author': {
                 'email': 'torvalds@linux-foundation.org',
@@ -763,27 +767,33 @@ class ViewTestCase(test_app.SWHViewTestCase):
             },
             'message': 'Linux 4.2-rc1\n',
             'synthetic': False,
-            'directory': '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b',
-            'parents': [
-                'a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'
+            'directory_url': '/api/1/directory/'
+            '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b/',
+            'parent_url': [
+                '/api/1/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf/'
             ],
         }
-        mock_service.lookup_revision.return_value = mock_revision
+        mock_api.api_revision.return_value = stub_revision
 
         expected_revision = {
             'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
             'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
-            'committer': 'Linus Torvalds <torvalds@linux-foundation.org>',
+            'committer': {
+                'email': 'torvalds@linux-foundation.org',
+                'name': 'Linus Torvalds'
+            },
             'committer_date': 'Sun, 05 Jul 2015 18:01:52 GMT',
             'type': 'git',
-            'author': 'Linus Torvalds <torvalds@linux-foundation.org>',
+            'author': {
+                'email': 'torvalds@linux-foundation.org',
+                'name': 'Linus Torvalds'
+            },
             'message': 'Linux 4.2-rc1\n',
             'synthetic': False,
-            'metadata': None,
-            'parents': [
+            'parent_url': [
                 '/browse/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf/'
             ],
-            'directory': '/browse/directory/2a1dbabeed4dcf1f4a4c441993b2f'
+            'directory_url': '/browse/directory/2a1dbabeed4dcf1f4a4c441993b2f'
             'fc9d972780b/',
         }
 
@@ -796,22 +806,16 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(self.get_context_variable('revision'),
                          expected_revision)
+        self.assertIsNone(self.get_context_variable('message'))
 
-        mock_service.lookup_revision.assert_called_once_with('426')
+        mock_api.api_revision.assert_called_once_with('426')
 
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_same_sha1(self):
-        # when
-        rv = self.client.get('/browse/revision/10/history/10/')
-
-        # then
-        self.assertEquals(rv.status_code, 302)
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_revision_history_not_found(self, mock_service):
+    def browse_revision_history_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_revision_with_context.return_value = None
+        mock_api.api_revision_history.side_effect = NotFoundExc(
+            'Not found')
 
         # when
         rv = self.client.get('/browse/revision/1/history/2/')
@@ -823,38 +827,16 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '2')
         self.assertEqual(
             self.get_context_variable('message'),
-            "Possibly sha1_git '2' is not an ancestor of sha1_git_root '1'")
+            'Not found')
 
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-            '1', '2', 100)
+        mock_api.api_revision_history.assert_called_once_with(
+            '1', '2')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_root_not_found(self, mock_service):
+    def browse_revision_history_KO_bad_input(self, mock_api):
         # given
-        mock_service.lookup_revision_with_context.side_effect = NotFoundExc(
-            'Revision root 123 not found')
-
-        # when
-        rv = self.client.get('/browse/revision/123/history/456/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('revision.html')
-        self.assertEqual(self.get_context_variable('sha1_git_root'), '123')
-        self.assertEqual(self.get_context_variable('sha1_git'), '456')
-        self.assertEqual(
-            self.get_context_variable('message'),
-            "Revision root 123 not found")
-
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-            '123', '456', 100)
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_revision_history_root_bad_input(self, mock_service):
-        # given
-        mock_service.lookup_revision_with_context.side_effect = NotFoundExc(
+        mock_api.api_revision_history.side_effect = BadInputExc(
             'Input incorrect')
 
         # when
@@ -867,21 +849,33 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '654')
         self.assertEqual(
             self.get_context_variable('message'),
-            "Input incorrect")
+            'Input incorrect')
 
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-            '321', '654', 100)
+        mock_api.api_revision_history.assert_called_once_with(
+            '321', '654')
+
+    @istest
+    def browse_revision_history_OK_same_sha1(self):
+        # when
+        rv = self.client.get('/browse/revision/10/history/10/')
+
+        # then
+        self.assertEquals(rv.status_code, 302)
 
     @patch('swh.web.ui.views.utils')
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history(self, mock_service, mock_utils):
+    def browse_revision_history(self, mock_api, mock_utils):
         # given
         stub_revision = {'id': 'some-rev'}
-        mock_service.lookup_revision_with_context.return_value = stub_revision
+        mock_api.api_revision_history.return_value = stub_revision
 
-        expected_revision = {'id': 'some-rev-id'}
-        mock_utils.prepare_revision_view.return_value = expected_revision
+        expected_revision = {
+            'id': 'some-rev-id',
+            'author': {'name': 'foo', 'email': 'bar'},
+            'committer': {'name': 'foo', 'email': 'bar'}
+        }
+        mock_utils.prepare_data_for_view.return_value = expected_revision
 
         # when
         rv = self.client.get('/browse/revision/426/history/789/')
@@ -890,13 +884,13 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git_root'), '426')
-        self.assertEqual(self.get_context_variable('sha1_git'), 'some-rev-id')
+        self.assertEqual(self.get_context_variable('sha1_git'), '789')
         self.assertEqual(self.get_context_variable('revision'),
                          expected_revision)
 
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-            '426', '789', 100)
-        mock_utils.prepare_revision_view.assert_called_once_with(stub_revision)
+        mock_api.api_revision_history.assert_called_once_with(
+            '426', '789')
+        mock_utils.prepare_data_for_view.assert_called_once_with(stub_revision)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1103,11 +1097,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_directory.assert_called_once_with(
             '100', '999', 'path/to')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_entity_not_found(self, mock_service):
+    def browse_entity_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_entity_by_uuid.return_value = []
+        mock_api.api_entity_by_uuid.side_effect = NotFoundExc('Not found!')
 
         # when
         rv = self.client.get('/browse/entity/')
@@ -1116,19 +1110,16 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('entity.html')
         self.assertEqual(self.get_context_variable('entities'), [])
-        self.assertEqual(
-            self.get_context_variable('message'),
-            "Entity '5f4d4c51-498a-4e28-88b3-b3e4e8396cba' not found!")
+        self.assertEqual(self.get_context_variable('message'), 'Not found!')
 
-        mock_service.lookup_entity_by_uuid.assert_called_once_with(
+        mock_api.api_entity_by_uuid.assert_called_once_with(
             '5f4d4c51-498a-4e28-88b3-b3e4e8396cba')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_entity_bad_input(self, mock_service):
+    def browse_entity_KO_bad_input(self, mock_api):
         # given
-        mock_service.lookup_entity_by_uuid.side_effect = BadInputExc(
-            'wrong input')
+        mock_api.api_entity_by_uuid.side_effect = BadInputExc('wrong input!')
 
         # when
         rv = self.client.get('/browse/entity/blah-blah-uuid/')
@@ -1137,17 +1128,18 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('entity.html')
         self.assertEqual(self.get_context_variable('entities'), [])
+        self.assertEqual(self.get_context_variable('message'), 'wrong input!')
 
-        mock_service.lookup_entity_by_uuid.assert_called_once_with(
+        mock_api.api_entity_by_uuid.assert_called_once_with(
             'blah-blah-uuid')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_entity(self, mock_service):
+    def browse_entity(self, mock_api):
         # given
         stub_entities = [
             {'id': '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba'}]
-        mock_service.lookup_entity_by_uuid.return_value = stub_entities
+        mock_api.api_entity_by_uuid.return_value = stub_entities
 
         # when
         rv = self.client.get('/browse/entity/'
@@ -1159,14 +1151,15 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('entities'), stub_entities)
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_service.lookup_entity_by_uuid.assert_called_once_with(
+        mock_api.api_entity_by_uuid.assert_called_once_with(
             '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba')
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_history_through_origin_KO_bad_input(self, mock_api):
         # given
-        mock_api.api_revision_history_through_origin.side_effect = BadInputExc('Problem input.')  # noqa
+        mock_api.api_revision_history_through_origin.side_effect = BadInputExc(
+            'Problem input.')  # noqa
 
         # when
         rv = self.client.get('/browse/revision/origin/99'
@@ -1179,14 +1172,15 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'Problem input.')
 
-        mock_api.api_revision_history_through_origin.assert_called_once_with(  # noqa
+        mock_api.api_revision_history_through_origin.assert_called_once_with(
             99, 'refs/heads/master', None, '123')
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_history_through_origin_KO_not_found(self, mock_api):
         # given
-        mock_api.api_revision_history_through_origin.side_effect = NotFoundExc('Not found.')  # noqa
+        mock_api.api_revision_history_through_origin.side_effect = NotFoundExc(
+            'Not found.')
 
         # when
         rv = self.client.get('/browse/revision/origin/999/'
@@ -1199,14 +1193,15 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'Not found.')
 
-        mock_api.api_revision_history_through_origin.assert_called_once_with(  # noqa
+        mock_api.api_revision_history_through_origin.assert_called_once_with(
             999, 'dev', None, '123')
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_history_through_origin_KO_other_error(self, mock_api):
         # given
-        mock_api.api_revision_history_through_origin.side_effect = ValueError('Other Error.')  # noqa
+        mock_api.api_revision_history_through_origin.side_effect = ValueError(
+            'Other Error.')
 
         # when
         rv = self.client.get('/browse/revision/origin/438'
@@ -1221,15 +1216,19 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'Other Error.')
 
-        mock_api.api_revision_history_through_origin.assert_called_once_with(  # noqa
+        mock_api.api_revision_history_through_origin.assert_called_once_with(
             438, 'scratch', '2016', '789')
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_history_through_origin(self, mock_api):
         # given
-        stub_rev = {'id': 'some-id'}
-        mock_api.api_revision_history_through_origin.return_value = stub_rev  # noqa
+        stub_rev = {
+            'id': 'some-id',
+            'author': {},
+            'committer': {}
+        }
+        mock_api.api_revision_history_through_origin.return_value = stub_rev
 
         # when
         rv = self.client.get('/browse/revision/origin/99/history/123/')
@@ -1240,7 +1239,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('revision'), stub_rev)
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_api.api_revision_history_through_origin.assert_called_once_with(  # noqa
+        mock_api.api_revision_history_through_origin.assert_called_once_with(
             99, 'refs/heads/master', None, '123')
 
     @patch('swh.web.ui.views.api')
@@ -1303,7 +1302,9 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @istest
     def browse_revision_with_origin(self, mock_api):
         # given
-        stub_rev = {'id': 'some-id'}
+        stub_rev = {'id': 'some-id',
+                    'author': {},
+                    'committer': {}}
         mock_api.api_revision_with_origin.return_value = stub_rev
 
         # when
