@@ -1181,3 +1181,84 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_entity_by_uuid.assert_called_once_with(
             '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_history_through_origin_KO_bad_input(self, mock_api):
+        # given
+        mock_api.api_history_through_revision_with_origin.side_effect = BadInputExc('Problem input.')  # noqa
+
+        # when
+        rv = self.client.get('/browse/revision/origin/99'
+                             '/history/123/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertIsNone(self.get_context_variable('revision'))
+        self.assertEqual(self.get_context_variable('message'),
+                         'Problem input.')
+
+        mock_api.api_history_through_revision_with_origin.assert_called_once_with(  # noqa
+            99, 'refs/heads/master', None, '123')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_history_through_origin_KO_not_found(self, mock_api):
+        # given
+        mock_api.api_history_through_revision_with_origin.side_effect = NotFoundExc('Not found.')  # noqa
+
+        # when
+        rv = self.client.get('/browse/revision/origin/999/'
+                             'branch/dev/history/123/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertIsNone(self.get_context_variable('revision'))
+        self.assertEqual(self.get_context_variable('message'),
+                         'Not found.')
+
+        mock_api.api_history_through_revision_with_origin.assert_called_once_with(  # noqa
+            999, 'dev', None, '123')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_history_through_origin_KO_other_error(self, mock_api):
+        # given
+        mock_api.api_history_through_revision_with_origin.side_effect = ValueError('Other Error.')  # noqa
+
+        # when
+        rv = self.client.get('/browse/revision/origin/438'
+                             '/branch/scratch'
+                             '/ts/2016'
+                             '/history/789/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertIsNone(self.get_context_variable('revision'))
+        self.assertEqual(self.get_context_variable('message'),
+                         'Other Error.')
+
+        mock_api.api_history_through_revision_with_origin.assert_called_once_with(  # noqa
+            438, 'scratch', '2016', '789')
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_revision_history_through_origin(self, mock_api):
+        # given
+        stub_rev = {'id': 'some-id'}
+        mock_api.api_history_through_revision_with_origin.return_value = stub_rev  # noqa
+
+        # when
+        rv = self.client.get('/browse/revision/origin/99/history/123/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('revision.html')
+        self.assertEqual(self.get_context_variable('revision'), stub_rev)
+        self.assertIsNone(self.get_context_variable('message'))
+
+        mock_api.api_history_through_revision_with_origin.assert_called_once_with(  # noqa
+            99, 'refs/heads/master', None, '123')

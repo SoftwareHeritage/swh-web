@@ -11,7 +11,7 @@ from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
-from swh.web.ui import service, utils
+from swh.web.ui import service, utils, api
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.main import app
 
@@ -593,6 +593,60 @@ def browse_revision_with_origin(origin_id=1,
                                                     'children'])
             })
     except (ValueError, NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/history/<sha1_git>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/history/<sha1_git>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_history_through_origin(origin_id,
+                                           branch_name='refs/heads/master',
+                                           ts=None,
+                                           sha1_git=None):
+    """Return information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of the revision root identified
+    by (origin_id, branch_name, ts).
+    Given sha1_git_root such root revision's identifier, in other words,
+    sha1_git is an ancestor of sha1_git_root.
+
+    Args:
+        origin_id: origin's identifier (default to 1).
+        branch_name: the optional branch for the given origin (default
+        to master).
+        timestamp: optional timestamp (default to the nearest time
+        crawl of timestamp).
+        sha1_git: one of sha1_git_root's ancestors.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root.
+
+    """
+    env = {'message': None,
+           'revision': None}
+    try:
+        env['revision'] = api.api_history_through_revision_with_origin(
+            origin_id,
+            branch_name,
+            ts,
+            sha1_git)
+    except (ValueError, BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
 
     return render_template('revision.html', **env)
