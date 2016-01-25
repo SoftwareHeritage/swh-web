@@ -646,7 +646,7 @@ def browse_revision_directory_through_origin(origin_id,
            'path': '.' if not path else path,
            'result': None}
     try:
-        result = api.api_directory_through_revision_with_origin(
+        result = api.api_directory_through_origin(
             origin_id,
             branch_name,
             ts,

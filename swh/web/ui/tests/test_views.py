@@ -1321,7 +1321,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @istest
     def browse_revision_directory_through_origin_KO_not_found(self, mock_api):
         # given
-        mock_api.api_directory_through_revision_with_origin.side_effect = BadInputExc(  # noqa
+        mock_api.api_directory_through_origin.side_effect = BadInputExc(
             'this is not the robot you are looking for')
 
         # when
@@ -1334,14 +1334,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'this is not the robot you are looking for')
 
-        mock_api.api_directory_through_revision_with_origin.assert_called_once_with(  # noqa
+        mock_api.api_directory_through_origin.assert_called_once_with(  # noqa
             2, 'refs/heads/master', None, None)
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_directory_through_origin_KO_bad_input(self, mock_api):
         # given
-        mock_api.api_directory_through_revision_with_origin.side_effect = BadInputExc(  # noqa
+        mock_api.api_directory_through_origin.side_effect = BadInputExc(
             'Bad Robot')
 
         # when
@@ -1353,14 +1353,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('result'))
         self.assertEqual(self.get_context_variable('message'), 'Bad Robot')
 
-        mock_api.api_directory_through_revision_with_origin.assert_called_once_with(  # noqa
+        mock_api.api_directory_through_origin.assert_called_once_with(
             2, 'refs/heads/master', None, None)
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_directory_through_origin_KO_other(self, mock_api):
         # given
-        mock_api.api_directory_through_revision_with_origin.side_effect = ValueError(  # noqa
+        mock_api.api_directory_through_origin.side_effect = ValueError(
             'Other bad stuff')
 
         # when
@@ -1373,7 +1373,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'Other bad stuff')
 
-        mock_api.api_directory_through_revision_with_origin.assert_called_once_with(  # noqa
+        mock_api.api_directory_through_origin.assert_called_once_with(
             2, 'refs/heads/master', None, None)
 
     @patch('swh.web.ui.views.api')
@@ -1384,7 +1384,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
                     'revision': 'some-rev-id',
                     'type': 'dir',
                     'content': 'some-content'}
-        mock_api.api_directory_through_revision_with_origin.return_value = stub_res  # noqa
+        mock_api.api_directory_through_origin.return_value = stub_res
 
         # when
         rv = self.client.get('/browse/revision/origin/2'
@@ -1397,5 +1397,5 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('result'), stub_res)
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_api.api_directory_through_revision_with_origin.assert_called_once_with(  # noqa
+        mock_api.api_directory_through_origin.assert_called_once_with(
             2, 'dev', '2013-20-20 10:02', 'some/file')

@@ -233,10 +233,10 @@ def _enrich_revision_with_urls(revision, context=None):
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/directory/<path:path>/')
-def api_directory_through_revision_with_origin(origin_id=1,
-                                               branch_name="refs/heads/master",
-                                               ts=None,
-                                               path=None):
+def api_directory_through_origin(origin_id=1,
+                                 branch_name="refs/heads/master",
+                                 ts=None,
+                                 path=None):
     """Display directory or content information through a revision identified
     by origin/branch/timestamp.
 

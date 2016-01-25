@@ -1358,9 +1358,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.service')
     @patch('swh.web.ui.api._revision_directory')
     @istest
-    def api_directory_through_revision_with_origin(self,
-                                                   mock_revision_dir,
-                                                   mock_service):
+    def api_directory_through_origin(self,
+                                     mock_revision_dir,
+                                     mock_service):
         mock_revision = {
             'id': '998',
         }
