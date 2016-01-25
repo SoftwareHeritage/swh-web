@@ -1134,7 +1134,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_0(
+    def api_revision_history_through_origin_rev_not_found_0(
             self, mock_service):
         mock_service.lookup_revision_with_context_by.return_value = {
             'id': 'root-rev-id'}, None
@@ -1165,7 +1165,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_1(
+    def api_revision_history_through_origin_rev_not_found_1(
             self, mock_service):
         # given
         mock_service.lookup_revision_with_context_by.return_value = {
@@ -1199,7 +1199,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_2(
+    def api_revision_history_through_origin_rev_not_found_2(
             self, mock_service, mock_utils):
         # given
         mock_service.lookup_revision_with_context_by.return_value = {
@@ -1237,7 +1237,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_3(
+    def api_revision_history_through_origin_rev_not_found_3(
             self, mock_service, mock_utils):
         # given
         mock_service.lookup_revision_with_context_by.return_value = {

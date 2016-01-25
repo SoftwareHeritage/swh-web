@@ -599,7 +599,7 @@ def browse_revision_history_through_origin(origin_id,
     env = {'message': None,
            'revision': None}
     try:
-        env['revision'] = api.api_history_through_revision_with_origin(
+        env['revision'] = api.api_revision_history_through_origin(
             origin_id,
             branch_name,
             ts,

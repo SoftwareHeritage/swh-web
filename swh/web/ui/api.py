@@ -281,10 +281,10 @@ def api_directory_through_revision_with_origin(origin_id=1,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/history/<sha1_git>/')
-def api_history_through_revision_with_origin(origin_id=1,
-                                             branch_name="refs/heads/master",
-                                             ts=None,
-                                             sha1_git=None):
+def api_revision_history_through_origin(origin_id=1,
+                                        branch_name="refs/heads/master",
+                                        ts=None,
+                                        sha1_git=None):
     """
     Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of the revision root identified
