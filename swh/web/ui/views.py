@@ -366,6 +366,25 @@ def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
     return render_template('revision.html', **env)
 
 
+@app.route('/browse/revision/<string:sha1_git>/log/')
+@set_renderers(HTMLRenderer)
+def browse_revision_log(sha1_git):
+    """Browse revision with sha1_git.
+
+    """
+    env = {'sha1_git': sha1_git,
+           'message': None,
+           'revisions': []}
+
+    try:
+        revisions = api.api_revision_log(sha1_git)
+        env['revisions'] = map(utils.prepare_data_for_view, revisions)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-log.html', **env)
+
+
 @app.route('/browse/revision/<string:sha1_git_root>/history/<sha1_git>/')
 @set_renderers(HTMLRenderer)
 def browse_revision_history(sha1_git_root, sha1_git):
