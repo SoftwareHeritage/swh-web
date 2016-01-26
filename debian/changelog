@@ -1,3 +1,34 @@
+swh-web (0.0.22-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.22
+  * Open
+    /browse/revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]
+    /history/<SHA1>/ view
+  * Open
+    /browse/revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]
+    / view
+  * Open
+    /browse/revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/directory/[<PATH
+    >] view
+  * Open
+    /browse/revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]
+    /history/<SHA1>/directory/[<PATH>] view
+  * Open
+    /browse/revision/origin/<ORIG_ID>[/branch/<BRANCH>][/ts/<TIMESTAMP>]
+    /directory/[<PATH>] view
+  * Open /browse/revision/<sha1_git_root>/directory/<path>/ view
+  * Open /browse/revision/<sha1_git_root>/history/<sha1_git>/ view
+  * Open /browse/revision/<sha1_git>/log/ view
+  * Open /browse/entity/<uuid>/ view
+  * Release can point to other objects than revision
+  * Fix misbehavior when retrieving git log
+  * Fix another edge case when listing a directory that does not exist
+  * Fix edge case when listing is empty
+  * Fix person_get call
+  * Update documentation about possible error codes
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 26 Jan 2016 15:14:35 +0100
+
 swh-web (0.0.21-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.21
