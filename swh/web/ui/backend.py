@@ -54,6 +54,21 @@ def content_find_occurrence(algo, hash_bin):
     return main.storage().content_find_occurrence({algo: hash_bin})
 
 
+def directory_get(sha1_bin):
+    """Retrieve information on one directory.
+
+    Args:
+        sha1_bin: Directory's identifier
+
+    Returns:
+        The directory's information.
+
+    """
+    res = main.storage().directory_get([sha1_bin])
+    if res and len(res) >= 1:
+        return res[0]
+
+
 def origin_get(origin_id):
     """Return information about the origin with id origin_id.
 
@@ -77,7 +92,9 @@ def person_get(person_id):
         Person information as dict.
 
     """
-    return main.storage().person_get([person_id])
+    res = main.storage().person_get([person_id])
+    if res and len(res) >= 1:
+        return res[0]
 
 
 def directory_ls(sha1_git_bin, recursive=False):
@@ -93,7 +110,7 @@ def directory_ls(sha1_git_bin, recursive=False):
     """
     directory_entries = main.storage().directory_ls(sha1_git_bin, recursive)
     if not directory_entries:
-        return None
+        return []
 
     return directory_entries
 

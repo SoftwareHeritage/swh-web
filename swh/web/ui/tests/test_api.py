@@ -155,7 +155,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_content_with_details(self, mock_service):
+    def api_content_metadata(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
@@ -825,6 +825,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         mock_utils.parse_timestamp.return_value = 'parsed-date'
+        mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.app.get('/api/1/revision'
                           '/origin/1'
@@ -842,6 +843,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'refs/origin/dev',
             'parsed-date')
         mock_utils.parse_timestamp.assert_called_once_with('1452591542')
+        mock_utils.enrich_revision.assert_called_once_with(
+            mock_revision)
 
     @patch('swh.web.ui.api.service')
     @patch('swh.web.ui.api.utils')
@@ -850,18 +853,19 @@ class ApiTestCase(test_app.SWHApiTestCase):
             self,
             mock_utils,
             mock_service):
-        mock_revisions = [{
+        mock_revision = {
             'id': '999',
-        }]
-        mock_service.lookup_revision_by.return_value = mock_revisions
+        }
+        mock_service.lookup_revision_by.return_value = mock_revision
 
-        expected_revisions = [{
+        expected_revision = {
             'id': '999',
             'url': '/api/1/revision/999/',
             'history_url': '/api/1/revision/999/log/',
-        }]
+        }
 
         mock_utils.parse_timestamp.return_value = 'parsed-date'
+        mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.app.get('/api/1/revision'
                           '/origin/1'
@@ -873,7 +877,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEqual(response_data, expected_revisions)
+        self.assertEqual(response_data, expected_revision)
 
         mock_service.lookup_revision_by.assert_called_once_with(
             1,
@@ -881,6 +885,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'parsed-date')
         mock_utils.parse_timestamp.assert_called_once_with(
             'Today is January 1, 2047 at 8:21:00AM')
+        mock_utils.enrich_revision.assert_called_once_with(
+            mock_revision)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -1134,7 +1140,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_0(
+    def api_revision_history_through_origin_rev_not_found_0(
             self, mock_service):
         mock_service.lookup_revision_with_context_by.return_value = {
             'id': 'root-rev-id'}, None
@@ -1165,7 +1171,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_1(
+    def api_revision_history_through_origin_rev_not_found_1(
             self, mock_service):
         # given
         mock_service.lookup_revision_with_context_by.return_value = {
@@ -1199,7 +1205,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_2(
+    def api_revision_history_through_origin_rev_not_found_2(
             self, mock_service, mock_utils):
         # given
         mock_service.lookup_revision_with_context_by.return_value = {
@@ -1237,7 +1243,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision_with_origin_rev_not_found_3(
+    def api_revision_history_through_origin_rev_not_found_3(
             self, mock_service, mock_utils):
         # given
         mock_service.lookup_revision_with_context_by.return_value = {
@@ -1279,12 +1285,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
                                                   '123-sha1-git',
                                                   1000)
 
-    @patch('swh.web.ui.api._enrich_revision_with_urls')
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision(
-            self, mock_service, mock_utils, mock_enrich):
+    def api_history_through_revision(self, mock_service, mock_utils):
         # given
         stub_root_rev = {
             'id': '45-sha1-git-root'
@@ -1297,7 +1301,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             stub_root_rev,
             stub_revision)
 
-        mock_enrich.return_value = 'some-enriched-result'
+        mock_utils.enrich_revision.return_value = 'some-result'
 
         mock_utils.parse_timestamp.return_value = '2016-11-24 00:00:00'
 
@@ -1313,7 +1317,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
 
-        self.assertEqual(response_data, 'some-enriched-result')
+        self.assertEqual(response_data, 'some-result')
 
         mock_service.lookup_revision_with_context_by.assert_called_once_with(
             999,
@@ -1324,8 +1328,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_utils.parse_timestamp.assert_called_once_with('2016-11-24')
 
-        mock_enrich.assert_called_once_with(stub_revision,
-                                            context='45-sha1-git-root')
+        mock_utils.enrich_revision.assert_called_once_with(
+            stub_revision,
+            context='45-sha1-git-root')
 
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
@@ -1358,9 +1363,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.service')
     @patch('swh.web.ui.api._revision_directory')
     @istest
-    def api_directory_through_revision_with_origin(self,
-                                                   mock_revision_dir,
-                                                   mock_service):
+    def api_directory_through_origin(self,
+                                     mock_revision_dir,
+                                     mock_service):
         mock_revision = {
             'id': '998',
         }
@@ -1541,7 +1546,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_not_found(self, mock_service):
+    def api_revision_directory_not_found(self, mock_service):
         # given
         mock_service.lookup_directory_with_revision.return_value = None
 
@@ -1556,7 +1561,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_not_found_2(self, mock_service):
+    def api_revision_directory_not_found_2(self, mock_service):
         # given
         mock_service.lookup_directory_with_revision.return_value = None
 
@@ -1571,7 +1576,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_ok_returns_dir_entries(self, mock_service):
+    def api_revision_directory_ok_returns_dir_entries(self, mock_service):
         stub_dir = {
             'type': 'dir',
             'content': [
@@ -1590,24 +1595,29 @@ class ApiTestCase(test_app.SWHApiTestCase):
             ]
         }
 
-        expected_dir = [
-            {
-                'sha1_git': '789',
-                'type': 'file',
-                'target': '101',
-                'target_url': '/api/1/content/sha1_git:101/',
-                'name': 'somefile',
-                'file_url': '/api/1/revision/999/directory/some/path/somefile/'
-            },
-            {
-                'sha1_git': '123',
-                'type': 'dir',
-                'target': '456',
-                'target_url': '/api/1/directory/456/',
-                'name': 'to-subdir',
-                'dir_url': '/api/1/revision/999/directory/some/path/'
-                'to-subdir/',
-            }]
+        expected_dir = {
+            'type': 'dir',
+            'revision': '999',
+            'content': [
+                {
+                    'sha1_git': '789',
+                    'type': 'file',
+                    'target': '101',
+                    'target_url': '/api/1/content/sha1_git:101/',
+                    'name': 'somefile',
+                    'file_url': '/api/1/revision/999/directory/some/path/'
+                    'somefile/'
+                },
+                {
+                    'sha1_git': '123',
+                    'type': 'dir',
+                    'target': '456',
+                    'target_url': '/api/1/directory/456/',
+                    'name': 'to-subdir',
+                    'dir_url': '/api/1/revision/999/directory/some/path/'
+                    'to-subdir/',
+                }]
+        }
 
         # given
         mock_service.lookup_directory_with_revision.return_value = stub_dir
@@ -1625,7 +1635,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_with_revision_ok_returns_content(self, mock_service):
+    def api_revision_directory_ok_returns_content(self, mock_service):
         stub_content = {
             'type': 'file',
             'content': {
@@ -1635,9 +1645,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         expected_content = {
-            'sha1_git': '789',
-            'sha1': '101',
-            'data_url': '/api/1/content/101/raw/',
+            'type': 'file',
+            'revision': '999',
+            'content': {
+                'sha1_git': '789',
+                'sha1': '101',
+                'data_url': '/api/1/content/101/raw/',
+            }
         }
 
         # given
@@ -1655,7 +1669,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '999', 'some/path')
 
     @istest
-    def api_directory_revision_history_sha1_same_so_redirect(self):
+    def api_revision_history_directory_sha1_same_so_redirect(self):
         # when
         rv = self.app.get(
             '/api/1/revision/123/history/123/directory/path/to/?limit=1')
@@ -1668,7 +1682,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_revision_history_ko_revision_not_found(self,
+    def api_revision_history_directory_ko_revision_not_found(self,
                                                              mock_service):
         # given
         mock_service.lookup_revision_with_context.return_value = None
@@ -1689,7 +1703,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_directory_revision_history(self,
+    def api_revision_history_directory(self,
                                        mock_service):
         # given
         mock_service.lookup_revision_with_context.return_value = {
@@ -1714,25 +1728,30 @@ class ApiTestCase(test_app.SWHApiTestCase):
             ]
         }
 
-        expected_dir = [
-            {
-                'sha1_git': '879',
-                'type': 'file',
-                'target': '110',
-                'target_url': '/api/1/content/sha1_git:110/',
-                'name': 'subfile',
-                'file_url': '/api/1/revision/354/history/867/directory/debian/'
-                'subfile/',
-            },
-            {
-                'sha1_git': '213',
-                'type': 'dir',
-                'target': '546',
-                'target_url': '/api/1/directory/546/',
-                'name': 'subdir',
-                'dir_url':
-                '/api/1/revision/354/history/867/directory/debian/subdir/'
-            }]
+        expected_dir = {
+            'type': 'dir',
+            'revision': 'rev-id',
+            'content': [
+                {
+                    'sha1_git': '879',
+                    'type': 'file',
+                    'target': '110',
+                    'target_url': '/api/1/content/sha1_git:110/',
+                    'name': 'subfile',
+                    'file_url': '/api/1/revision/354/history/867/directory/'
+                    'debian/'
+                    'subfile/',
+                },
+                {
+                    'sha1_git': '213',
+                    'type': 'dir',
+                    'target': '546',
+                    'target_url': '/api/1/directory/546/',
+                    'name': 'subdir',
+                    'dir_url':
+                    '/api/1/revision/354/history/867/directory/debian/subdir/'
+                }]
+        }
 
         # given
         mock_service.lookup_directory_with_revision.return_value = stub_dir

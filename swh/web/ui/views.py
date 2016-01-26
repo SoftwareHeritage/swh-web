@@ -3,15 +3,16 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import flask
 
-from flask import render_template, flash, request, url_for
+from flask import render_template, request, url_for, redirect
 
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
-from swh.web.ui import service, utils
-from swh.web.ui.exc import BadInputExc
+from swh.web.ui import service, utils, api
+from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.main import app
 
 
@@ -24,9 +25,8 @@ def homepage():
     """Home page
 
     """
-    flash('This Web app is still work in progress, use at your own risk',
-          'warning')
-    # return redirect(url_for('about'))
+    flask.flash('This Web app is still work in progress, use at your own risk',
+                'warning')
     return render_template('home.html')
 
 
@@ -109,6 +109,75 @@ def search():
     return render_template('upload_and_search.html', **env)
 
 
+@app.route('/browse/content/')
+@app.route('/browse/content/<string:q>/')
+@set_renderers(HTMLRenderer)
+def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+    """Given a hash and a checksum, display the content's meta-data.
+
+    Args:
+        q is of the form algo_hash:hash with algo_hash in
+        (sha1, sha1_git, sha256)
+
+    Returns:
+        Information on one possible origin for such content.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the content is not found.
+
+    """
+    env = {'q': q,
+           'message': None,
+           'content': None}
+    try:
+        content = api.api_content_metadata(q)
+        content_raw = service.lookup_content_raw(q)
+        if content_raw:
+            content_raw = content_raw['data'].decode('utf-8')
+            content['data'] = content_raw
+        env['content'] = content
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('content.html', **env)
+
+
+@app.route('/browse/content/<string:q>/raw/')
+@set_renderers(HTMLRenderer)
+def browse_content_raw(q):
+    """Given a hash and a checksum, display the content's raw data.
+
+    Args:
+        q is of the form algo_hash:hash with algo_hash in
+        (sha1, sha1_git, sha256)
+
+    Returns:
+        Information on one possible origin for such content.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash
+        NotFoundExc if the content is not found.
+
+    """
+    env = {}
+    content = None
+    try:
+        content = service.lookup_content_raw(q)
+        if content:
+            # FIXME: will break if not utf-8
+            content['data'] = content['data'].decode('utf-8')
+            message = 'Content %s' % content['sha1']
+        else:
+            message = 'Content with %s not found.' % q
+    except BadInputExc as e:
+        message = str(e)
+
+    env['message'] = message
+    env['content'] = content
+    return render_template('content-data.html', **env)
+
+
 def _origin_seen(q, data):
     """Given an origin, compute a message string with the right information.
 
@@ -137,10 +206,10 @@ The file's path referenced was '%s'.""" % (q,
                                            path)
 
 
-# @app.route('/browse/content/')
-# @app.route('/browse/content/<string:q>/')
+# @app.route('/browse/content/<string:q>/origin/')
 @set_renderers(HTMLRenderer)
-def content_with_origin(q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
+def browse_content_with_origin(
+        q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
     """Show content information.
 
     Args:
@@ -158,58 +227,19 @@ def content_with_origin(q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
     env = {'q': q}
 
     try:
-        content = service.lookup_hash(q)
-        if not content.get('found'):
-            message = "Hash %s was not found." % q
-        else:
-            origin = service.lookup_hash_origin(q)
-            message = _origin_seen(q, origin)
-    except BadInputExc as e:  # do not like it but do not duplicate code
+        origin = api.api_content_checksum_to_origin(q)
+        message = _origin_seen(q, origin)
+    except (NotFoundExc, BadInputExc) as e:
         message = str(e)
 
     env['message'] = message
-    return render_template('content.html', **env)
-
-
-@app.route('/browse/content/<string:q>/raw/')
-@set_renderers(HTMLRenderer)
-def show_content(q):
-    """Given a hash and a checksum, display the content's raw data.
-
-    Args:
-        q is of the form algo_hash:hash with algo_hash in
-        (sha1, sha1_git, sha256)
-
-    Returns:
-        Information on one possible origin for such content.
-
-    Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
-        NotFoundExc if the content is not found.
-
-    """
-    env = {}
-    try:
-        content = service.lookup_content_raw(q)
-        if content:
-            # FIXME: will break if not utf-8
-            content['data'] = content['data'].decode('utf-8')
-            message = 'Content %s' % content['sha1']
-        else:
-            message = 'Content with %s not found.' % q
-    except BadInputExc as e:
-        message = str(e)
-        content = None
-
-    env['message'] = message
-    env['content'] = content
-    return render_template('display_content.html', **env)
+    return render_template('content-with-origin.html', **env)
 
 
 @app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_directory(sha1_git='828da2b80e41aa958b2c98526f4a1d2cc7d298b7'):
+def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
     """Show directory information.
 
     Args:
@@ -218,22 +248,16 @@ def browse_directory(sha1_git='828da2b80e41aa958b2c98526f4a1d2cc7d298b7'):
     Returns:
         The content's information at sha1_git
     """
-    env = {'sha1_git': sha1_git}
+    env = {'sha1_git': sha1_git,
+           'files': []}
 
     try:
-        directory_files = service.lookup_directory(sha1_git)
-        if directory_files:
-            message = "Listing for directory %s:" % sha1_git
-            files = utils.prepare_directory_listing(directory_files)
-        else:
-            message = "Directory %s not found." % sha1_git
-            files = []
-    except BadInputExc as e:  # do not like it but do not duplicate code
-        message = str(e)
-        files = []
+        directory_files = api.api_directory(sha1_git)
+        env['message'] = "Listing for directory %s:" % sha1_git
+        env['files'] = utils.prepare_data_for_view(directory_files)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
-    env['message'] = message
-    env['files'] = files
     return render_template('directory.html', **env)
 
 
@@ -248,13 +272,9 @@ def browse_origin(origin_id=1):
            'origin': None}
 
     try:
-        ori = service.lookup_origin(origin_id)
-        if ori:
-            env.update({'origin': ori})
-        else:
-            env.update({'message': 'Origin %s not found!' % origin_id})
-    except BadInputExc as e:
-            env.update({'message': str(e)})
+        env['origin'] = api.api_origin(origin_id)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('origin.html', **env)
 
@@ -267,16 +287,13 @@ def browse_person(person_id=1):
 
     """
     env = {'person_id': person_id,
-           'person': None}
+           'person': None,
+           'message': None}
 
     try:
-        ori = service.lookup_person(person_id)
-        if ori:
-            env.update({'person': ori})
-        else:
-            env.update({'message': 'Person %s not found!' % person_id})
-    except BadInputExc as e:
-            env.update({'message': str(e)})
+        env['person'] = api.api_person(person_id)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('person.html', **env)
 
@@ -289,27 +306,14 @@ def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
 
     """
     env = {'sha1_git': sha1_git,
+           'message': None,
            'release': None}
 
     try:
-        rel = service.lookup_release(sha1_git)
-        if rel:
-            author = rel.get('author')
-            if author:
-                rel['author'] = utils.person_to_string(author)
-
-            target_type = rel.get('target_type')
-            if target_type == 'revision':
-                rel['target'] = url_for('browse_revision',
-                                        sha1_git=rel['target'])
-
-            env.update({'release': rel,
-                        'keys': ['id', 'name', 'date', 'message', 'author',
-                                 'target', 'target_type']})
-        else:
-            env.update({'message': 'Release %s not found!' % sha1_git})
-    except BadInputExc as e:
-            env.update({'message': str(e)})
+        rel = api.api_release(sha1_git)
+        env['release'] = utils.prepare_data_for_view(rel)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('release.html', **env)
 
@@ -322,38 +326,397 @@ def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
 
     """
     env = {'sha1_git': sha1_git,
+           'message': None,
            'revision': None}
 
     try:
-        rev = service.lookup_revision(sha1_git)
-        if rev:
-            author = rev.get('author')
-            if author:
-                rev['author'] = utils.person_to_string(author)
-
-            committer = rev.get('committer')
-            if committer:
-                rev['committer'] = utils.person_to_string(committer)
-
-            parent_links = []
-            for parent in rev.get('parents', []):
-                parent_links.append(url_for('browse_revision',
-                                            sha1_git=parent))
-            rev['parents'] = parent_links
-
-            directory = rev.get('directory')
-            if directory:
-                rev['directory'] = url_for('browse_directory',
-                                           sha1_git=rev['directory'])
-
-            env.update({'revision': rev,
-                        'keys': ['id', 'message',
-                                 'date', 'author',
-                                 'committer', 'committer_date',
-                                 'synthetic']})
-        else:
-            env.update({'message': 'Revision %s not found!' % sha1_git})
-    except BadInputExc as e:
-        env.update({'message': str(e)})
+        rev = api.api_revision(sha1_git)
+        env['revision'] = utils.prepare_data_for_view(rev)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('revision.html', **env)
+
+
+@app.route('/browse/revision/<string:sha1_git>/log/')
+@set_renderers(HTMLRenderer)
+def browse_revision_log(sha1_git):
+    """Browse revision with sha1_git.
+
+    """
+    env = {'sha1_git': sha1_git,
+           'message': None,
+           'revisions': []}
+
+    try:
+        revisions = api.api_revision_log(sha1_git)
+        env['revisions'] = map(utils.prepare_data_for_view, revisions)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-log.html', **env)
+
+
+@app.route('/browse/revision/<string:sha1_git_root>/history/<sha1_git>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_history(sha1_git_root, sha1_git):
+    """Display information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of sha1_git_root.
+
+    In other words, sha1_git is an ancestor of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root.
+
+    """
+    env = {'sha1_git_root': sha1_git_root,
+           'sha1_git': sha1_git,
+           'message': None,
+           'keys': [],
+           'revision': None}
+
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('browse_revision',
+                                sha1_git=sha1_git))
+
+    try:
+        revision = api.api_revision_history(sha1_git_root,
+                                            sha1_git)
+        env['revision'] = utils.prepare_data_for_view(revision)
+    except (BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision.html', **env)
+
+
+@app.route('/browse/revision/<string:sha1_git>/directory/')
+@app.route('/browse/revision/<string:sha1_git>/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_directory(sha1_git, path=None):
+    """Browse directory from revision with sha1_git.
+
+    """
+    env = {
+        'sha1_git': sha1_git,
+        'path': '.' if not path else path,
+        'message': None,
+        'result': None
+    }
+
+    try:
+        result = api.api_revision_directory(sha1_git, path)
+        result['content'] = utils.prepare_data_for_view(result['content'])
+        env['revision'] = result['revision']
+        env['result'] = result
+    except (BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
+
+
+@app.route('/browse/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision/<string:sha1_git_root>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
+    """Return information about directory pointed to by the revision
+    defined as: revision sha1_git, limited to the sub-graph of all
+    transitive parents of sha1_git_root.
+
+    Args:
+        sha1_git_root: latest revision of the browsed history.
+        sha1_git: one of sha1_git_root's ancestors.
+        path: optional directory pointed to by that revision.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on the directory pointed to by that revision.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if either revision is not found or if sha1_git is not an
+        ancestor of sha1_git_root or the path referenced does not exist
+
+    """
+    env = {
+        'sha1_git_root': sha1_git_root,
+        'sha1_git': sha1_git,
+        'path': '.' if not path else path,
+        'message': None,
+        'result': None
+    }
+
+    if sha1_git == sha1_git_root:
+        return redirect(url_for('browse_revision_directory',
+                                sha1_git=sha1_git,
+                                path=path),
+                        code=301)
+
+    try:
+        result = api.api_revision_history_directory(sha1_git_root,
+                                                    sha1_git,
+                                                    path)
+        env['revision'] = result['revision']
+        env['content'] = utils.prepare_data_for_view(result['content'])
+        env['result'] = result
+    except (BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_directory_through_revision_with_origin_history(
+        origin_id=1,
+        branch_name="refs/heads/master",
+        ts=None,
+        sha1_git=None,
+        path=None):
+    env = {
+        'origin_id': origin_id,
+        'branch_name': branch_name,
+        'ts': ts,
+        'sha1_git': sha1_git,
+        'path': '.' if not path else path,
+        'message': None,
+        'result': None
+    }
+
+    try:
+        result = api.api_directory_through_revision_with_origin_history(
+            origin_id, branch_name, ts, sha1_git, path)
+        env['revision'] = result['revision']
+        env['content'] = utils.prepare_data_for_view(result['content'])
+        env['result'] = result
+    except (BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_with_origin(origin_id=1,
+                                branch_name="refs/heads/master",
+                                ts=None):
+    """Instead of having to specify a (root) revision by SHA1_GIT, users
+    might want to specify a place and a time. In SWH a "place" is an
+    origin; a "time" is a timestamp at which some place has been
+    observed by SWH crawlers.
+
+    Args:
+        origin_id: origin's identifier (default to 1).
+        branch_name: the optional branch for the given origin (default
+        to master).
+        timestamp: optional timestamp (default to the nearest time
+        crawl of timestamp).
+
+    Returns:
+        Information on the revision if found.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if the revision is not found.
+
+    """
+    env = {'message': None,
+           'revision': None}
+    try:
+        revision = api.api_revision_with_origin(origin_id,
+                                                branch_name,
+                                                ts)
+        env['revision'] = utils.prepare_data_for_view(revision)
+    except (ValueError, NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/history/<sha1_git>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/history/<sha1_git>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_history_through_origin(origin_id,
+                                           branch_name='refs/heads/master',
+                                           ts=None,
+                                           sha1_git=None):
+    """Return information about revision sha1_git, limited to the
+    sub-graph of all transitive parents of the revision root identified
+    by (origin_id, branch_name, ts).
+    Given sha1_git_root such root revision's identifier, in other words,
+    sha1_git is an ancestor of sha1_git_root.
+
+    Args:
+        origin_id: origin's identifier (default to 1).
+        branch_name: the optional branch for the given origin (default
+        to master).
+        timestamp: optional timestamp (default to the nearest time
+        crawl of timestamp).
+        sha1_git: one of sha1_git_root's ancestors.
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        sha1_git_root (even if it is).
+
+    Returns:
+        Information on sha1_git if it is an ancestor of sha1_git_root
+        including children leading to sha1_git_root.
+
+    """
+    env = {'message': None,
+           'revision': None}
+    try:
+        revision = api.api_revision_history_through_origin(
+            origin_id,
+            branch_name,
+            ts,
+            sha1_git)
+        env['revision'] = utils.prepare_data_for_view(revision)
+    except (ValueError, BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/directory/<path:path>')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/directory/<path:path>/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/directory/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>'
+           '/directory/<path:path>/')
+@set_renderers(HTMLRenderer)
+def browse_revision_directory_through_origin(origin_id,
+                                             branch_name='refs/heads/master',
+                                             ts=None,
+                                             path=None):
+
+    env = {'message': None,
+           'origin_id': origin_id,
+           'ts': ts,
+           'path': '.' if not path else path,
+           'result': None}
+    try:
+        result = api.api_directory_through_origin(
+            origin_id,
+            branch_name,
+            ts,
+            path)
+
+        result['content'] = utils.prepare_data_for_view(result['content'])
+        env['revision'] = result['revision']
+        env['result'] = result
+    except (ValueError, BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-directory.html', **env)
+
+
+@app.route('/browse/entity/')
+@app.route('/browse/entity/<string:uuid>/')
+@set_renderers(HTMLRenderer)
+def browse_entity(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
+    env = {'entities': [],
+           'message': None}
+
+    try:
+        entities = api.api_entity_by_uuid(uuid)
+        env['entities'] = entities
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('entity.html', **env)

@@ -17,15 +17,16 @@ just render the corresponding information for user consumption. Where
 hyperlinks are created, they always point to other context-independent
 user URLs:
 
-* /content/[<HASH_ALGO>:]<HASH>
-* /content/[<HASH_ALGO>:]<HASH>/raw
-* /directory/<SHA1_GIT>
-* /origin/<ORIGIN_ID>
-* /person/<PERSON_ID>
-* /release/<SHA1_GIT>
-* /revision/<SHA1_GIT>
-* /revision/<SHA1_GIT>/log
-* /entity/<entity_uuid>
+* /content/[<HASH_ALGO>:]<HASH>/        Information on content
+* /content/[<HASH_ALGO>:]<HASH>/raw/    Display the content data
+* /content/[<HASH_ALGO>:]<HASH>/origin/ Display information on content with its origin information (Deactivated)
+* /directory/<SHA1_GIT>/                Browse directory's files
+* /origin/<ORIGIN_ID>/                  Information on origin
+* /person/<PERSON_ID>/                  Information on person
+* /release/<SHA1_GIT>/                  Information on release
+* /entity/<entity_uuid>/                Information on Entity with hierarchy
+* /revision/<SHA1_GIT>/                 Browse revision
+* /revision/<SHA1_GIT>/log/             Revision log from <SHA1_GIT>
 
 Currently, the above endpoints are mounted below the top-level /browse/
 namespace.
@@ -462,7 +463,8 @@ Ex:
 
 When an error is raised, the error code response is used:
 - 400: user's input is not correct regarding the API
-- 404: user's input is ok but we did not found what (s)he was looking forbidden
+- 404: user's input is ok but we did not found what (s)he was looking for
+- 503: temporary internal server error (backend is down for example)
 
 And the body of the response should be a dictionary with some more information on the error.
 

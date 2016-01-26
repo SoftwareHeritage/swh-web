@@ -82,7 +82,7 @@ class SWHJSONRenderer(renderers.JSONRenderer,
 
 def urlize_api_links(content):
     """Utility function for decorating api links in browsable api."""
-    return re.sub(r'"(/api/.*)"', r'"<a href="\1">\1</a>"', content)
+    return re.sub(r'"(/api/.*|/browse/.*)"', r'"<a href="\1">\1</a>"', content)
 
 
 def safe_docstring_display(docstring):
