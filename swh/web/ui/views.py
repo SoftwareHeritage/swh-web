@@ -243,21 +243,16 @@ def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
     Returns:
         The content's information at sha1_git
     """
-    env = {'sha1_git': sha1_git}
-    files = []
+    env = {'sha1_git': sha1_git,
+           'files': []}
 
     try:
-        directory_files = service.lookup_directory(sha1_git)
-        if directory_files:
-            message = "Listing for directory %s:" % sha1_git
-            files = utils.prepare_directory_listing(directory_files)
-        else:
-            message = "Directory %s not found." % sha1_git
-    except BadInputExc as e:  # do not like it but do not duplicate code
-        message = str(e)
+        directory_files = api.api_directory(sha1_git)
+        env['message'] = "Listing for directory %s:" % sha1_git
+        env['files'] = utils.prepare_data_for_view(directory_files)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
-    env['message'] = message
-    env['files'] = files
     return render_template('directory.html', **env)
 
 

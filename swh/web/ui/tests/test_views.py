@@ -363,12 +363,12 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha2:sha1-invalid')
 
-    @patch('swh.web.ui.views.service')
-    @patch('swh.web.ui.utils')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_directory_bad_input(self, mock_utils, mock_service):
+    def browse_directory_KO_bad_input(self, mock_api):
         # given
-        mock_service.lookup_directory.side_effect = BadInputExc('Invalid hash')
+        mock_api.api_directory.side_effect = BadInputExc(
+            'Invalid hash')
 
         # when
         rv = self.client.get('/browse/directory/sha2-invalid/')
@@ -379,15 +379,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'Invalid hash')
         self.assertEqual(self.get_context_variable('files'), [])
-        mock_service.lookup_directory.assert_called_once_with(
+        mock_api.api_directory.assert_called_once_with(
             'sha2-invalid')
 
-    @patch('swh.web.ui.views.service')
-    @patch('swh.web.ui.utils')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_directory_empty_result(self, mock_utils, mock_service):
+    def browse_directory_empty_result(self, mock_api):
         # given
-        mock_service.lookup_directory.return_value = None
+        mock_api.api_directory.return_value = []
 
         # when
         rv = self.client.get('/browse/directory/some-sha1/')
@@ -396,15 +395,15 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('directory.html')
         self.assertEqual(self.get_context_variable('message'),
-                         'Directory some-sha1 not found.')
+                         'Listing for directory some-sha1:')
         self.assertEqual(self.get_context_variable('files'), [])
-        mock_service.lookup_directory.assert_called_once_with(
+        mock_api.api_directory.assert_called_once_with(
             'some-sha1')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @patch('swh.web.ui.views.utils')
     @istest
-    def browse_directory(self, mock_utils, mock_service):
+    def browse_directory(self, mock_utils, mock_api):
         # given
         stub_directory_ls = [
             {'type': 'dir',
@@ -417,7 +416,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
              'target': '987',
              'name': 'some-other-dirname'}
         ]
-        mock_service.lookup_directory.return_value = stub_directory_ls
+        mock_api.api_directory.return_value = stub_directory_ls
         stub_directory_map = [
             {'link': '/path/to/url/dir/123',
              'name': 'some-dir-name'},
@@ -426,7 +425,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             {'link': '/path/to/url/dir/987',
              'name': 'some-other-dirname'}
         ]
-        mock_utils.prepare_directory_listing.return_value = stub_directory_map
+        mock_utils.prepare_data_for_view.return_value = stub_directory_map
 
         # when
         rv = self.client.get('/browse/directory/some-sha1/')
@@ -439,9 +438,9 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('files'),
                          stub_directory_map)
 
-        mock_service.lookup_directory.assert_called_once_with(
+        mock_api.api_directory.assert_called_once_with(
             'some-sha1')
-        mock_utils.prepare_directory_listing.assert_called_once_with(
+        mock_utils.prepare_data_for_view.assert_called_once_with(
             stub_directory_ls)
 
     @patch('swh.web.ui.views.api')
