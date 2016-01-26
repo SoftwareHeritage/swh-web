@@ -186,3 +186,40 @@ def enrich_entity(entity):
         entity['parent_url'] = flask.url_for('api_entity_by_uuid',
                                              uuid=entity['parent'])
     return entity
+
+
+def enrich_revision(revision, context=None):
+    """Enrich revision with links where it makes sense (directory, parents).
+
+    """
+    if not context:
+        context = revision['id']
+
+    revision['url'] = flask.url_for('api_revision', sha1_git=revision['id'])
+    revision['history_url'] = flask.url_for('api_revision_log',
+                                            sha1_git=revision['id'])
+
+    if 'directory' in revision:
+        revision['directory_url'] = flask.url_for(
+            'api_directory',
+            sha1_git=revision['directory'])
+
+    if 'parents' in revision:
+        parents = []
+        for parent in revision['parents']:
+            parents.append(flask.url_for('api_revision_history',
+                                         sha1_git_root=context,
+                                         sha1_git=parent))
+
+        revision['parent_urls'] = parents
+
+    if 'children' in revision:
+        children = []
+        for child in revision['children']:
+            children.append(flask.url_for('api_revision_history',
+                                          sha1_git_root=context,
+                                          sha1_git=child))
+
+        revision['children_urls'] = children
+
+    return revision

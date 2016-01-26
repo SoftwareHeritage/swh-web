@@ -825,6 +825,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         mock_utils.parse_timestamp.return_value = 'parsed-date'
+        mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.app.get('/api/1/revision'
                           '/origin/1'
@@ -842,6 +843,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'refs/origin/dev',
             'parsed-date')
         mock_utils.parse_timestamp.assert_called_once_with('1452591542')
+        mock_utils.enrich_revision.assert_called_once_with(
+            mock_revision)
 
     @patch('swh.web.ui.api.service')
     @patch('swh.web.ui.api.utils')
@@ -850,18 +853,19 @@ class ApiTestCase(test_app.SWHApiTestCase):
             self,
             mock_utils,
             mock_service):
-        mock_revisions = [{
+        mock_revision = {
             'id': '999',
-        }]
-        mock_service.lookup_revision_by.return_value = mock_revisions
+        }
+        mock_service.lookup_revision_by.return_value = mock_revision
 
-        expected_revisions = [{
+        expected_revision = {
             'id': '999',
             'url': '/api/1/revision/999/',
             'history_url': '/api/1/revision/999/log/',
-        }]
+        }
 
         mock_utils.parse_timestamp.return_value = 'parsed-date'
+        mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.app.get('/api/1/revision'
                           '/origin/1'
@@ -873,7 +877,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEqual(response_data, expected_revisions)
+        self.assertEqual(response_data, expected_revision)
 
         mock_service.lookup_revision_by.assert_called_once_with(
             1,
@@ -881,6 +885,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'parsed-date')
         mock_utils.parse_timestamp.assert_called_once_with(
             'Today is January 1, 2047 at 8:21:00AM')
+        mock_utils.enrich_revision.assert_called_once_with(
+            mock_revision)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -1279,12 +1285,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
                                                   '123-sha1-git',
                                                   1000)
 
-    @patch('swh.web.ui.api._enrich_revision_with_urls')
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
     @istest
-    def api_history_through_revision(
-            self, mock_service, mock_utils, mock_enrich):
+    def api_history_through_revision(self, mock_service, mock_utils):
         # given
         stub_root_rev = {
             'id': '45-sha1-git-root'
@@ -1297,7 +1301,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             stub_root_rev,
             stub_revision)
 
-        mock_enrich.return_value = 'some-enriched-result'
+        mock_utils.enrich_revision.return_value = 'some-result'
 
         mock_utils.parse_timestamp.return_value = '2016-11-24 00:00:00'
 
@@ -1313,7 +1317,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
 
-        self.assertEqual(response_data, 'some-enriched-result')
+        self.assertEqual(response_data, 'some-result')
 
         mock_service.lookup_revision_with_context_by.assert_called_once_with(
             999,
@@ -1324,8 +1328,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_utils.parse_timestamp.assert_called_once_with('2016-11-24')
 
-        mock_enrich.assert_called_once_with(stub_revision,
-                                            context='45-sha1-git-root')
+        mock_utils.enrich_revision.assert_called_once_with(
+            stub_revision,
+            context='45-sha1-git-root')
 
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api.service')
