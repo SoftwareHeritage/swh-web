@@ -429,6 +429,79 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
+    def lookup_revision_with_context_sha1_git_root_already_retrieved_as_dict(
+            self, mock_query, mock_backend):
+        # given
+        sha1_git = '883'
+
+        sha1_git_root_bin = b'666'
+        sha1_git_bin = b'883'
+
+        sha1_git_root_dict = {
+            'id': sha1_git_root_bin,
+            'parents': [b'999'],
+        }
+
+        sha1_git_dict = {
+            'id': sha1_git_bin,
+            'parents': [],
+            'directory': b'278',
+        }
+
+        stub_revisions = [
+            sha1_git_root_dict,
+            {
+                'id': b'999',
+                'parents': [b'777', b'883', b'888'],
+            },
+            {
+                'id': b'777',
+                'parents': [b'883'],
+            },
+            sha1_git_dict,
+            {
+                'id': b'888',
+                'parents': [b'889'],
+            },
+            {
+                'id': b'889',
+                'parents': [],
+            },
+        ]
+
+        # inputs ok
+        mock_query.parse_hash_with_algorithms_or_throws.return_value = (
+            'sha1', sha1_git_bin)
+
+        # lookup only on sha1
+        mock_backend.revision_get.return_value = sha1_git_dict
+
+        mock_backend.revision_log.return_value = stub_revisions
+
+        # when
+        actual_revision = service.lookup_revision_with_context(
+            {'id': sha1_git_root_bin},
+            sha1_git)
+
+        # then
+        self.assertEquals(actual_revision, {
+            'id': hash_to_hex(sha1_git_bin),
+            'parents': [],
+            'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
+            'directory': hash_to_hex(b'278'),
+        })
+
+        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with(  # noqa
+            sha1_git, ['sha1'], 'Only sha1_git is supported.')
+
+        mock_backend.revision_get.assert_called_once_with(sha1_git_bin)
+
+        mock_backend.revision_log.assert_called_with(
+            sha1_git_root_bin, 100)
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
     def lookup_directory_with_revision_revision_not_found(self,
                                                           mock_query,
                                                           mock_backend):
@@ -925,8 +998,37 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.directory_ls.called = False
 
     @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory(self, mock_backend):
+    def lookup_directory_not_found(self, mock_query, mock_backend):
+        # given
+        mock_query.parse_hash_with_algorithms_or_throws.return_value = (
+            'sha1',
+            'directory-id-bin')
+        mock_backend.directory_get.return_value = None
+
+        # when
+        actual_dir = service.lookup_directory('directory_id')
+
+        # then
+        self.assertIsNone(actual_dir)
+
+        mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
+            'directory_id', ['sha1'], 'Only sha1_git is supported.')
+        mock_backend.directory_get.assert_called_with('directory-id-bin')
+        mock_backend.directory_ls.called = False
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_directory(self, mock_query, mock_backend):
+        mock_query.parse_hash_with_algorithms_or_throws.return_value = (
+            'sha1',
+            'directory-sha1-bin')
+
+        # something that exists is all that matters here
+        mock_backend.directory_get.return_value = {'id': b'directory-sha1-bin'}
+
         # given
         stub_dir_entries = [{
             'sha1': hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
@@ -954,18 +1056,19 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 10,
         }]
 
-        mock_backend.directory_ls = MagicMock(
-            return_value=stub_dir_entries)
+        mock_backend.directory_ls.return_value = stub_dir_entries
 
         # when
-        actual_directory = service.lookup_directory(
-            '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        actual_directory_ls = list(service.lookup_directory(
+            'directory-sha1'))
 
         # then
-        self.assertEqual(list(actual_directory), expected_dir_entries)
+        self.assertEqual(actual_directory_ls, expected_dir_entries)
 
+        mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
+            'directory-sha1', ['sha1'], 'Only sha1_git is supported.')
         mock_backend.directory_ls.assert_called_with(
-            hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'))
+            'directory-sha1-bin')
 
     @patch('swh.web.ui.service.backend')
     @istest

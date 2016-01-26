@@ -1,13 +1,15 @@
 {% extends "layout.html" %}
-{% block title %}Revision{% endblock %}
+{% block title %}Revision Log{% endblock %}
 {% block content %}
 
 {% if message is not none %}
   {{ message }}
 {% endif %}
 
-{% if revision is not none %}
-<div>
+{% if revisions is not none %}
+  {% for revision in revisions %}
+
+  <div>
     {% if revision['url'] is not none %}
     <div class="row">
        <div class="col-md-2">Revision</div>
@@ -77,8 +79,10 @@
          </div>
         {% endif %}
     {% endfor %}
+  </div>
+  <hr />
+  {% endfor %}
 
-</div>
 {% endif %}
 
 {% endblock %}

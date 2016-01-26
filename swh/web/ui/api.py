@@ -133,22 +133,9 @@ def api_person(person_id=1):
         error_msg_if_not_found='Person with id %s not found.' % person_id)
 
 
-def _enrich_release(release):
-    """Enrich a release with link to the 'target' of 'type' revision.
-
-    """
-    if 'target' in release and \
-       'target_type' in release and \
-       release['target_type'] == 'revision':
-        release['target_url'] = url_for('api_revision',
-                                        sha1_git=release['target'])
-
-    return release
-
-
 @app.route('/api/1/release/')
 @app.route('/api/1/release/<string:sha1_git>/')
-def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
+def api_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
     """Return information about release with id sha1_git.
 
     Args:
@@ -170,43 +157,7 @@ def api_release(sha1_git='3c31de6fdc47031857fda10cfa4caf7044cadefb'):
         sha1_git,
         lookup_fn=service.lookup_release,
         error_msg_if_not_found=error_msg,
-        enrich_fn=_enrich_release)
-
-
-def _enrich_revision_with_urls(revision, context=None):
-    """Enrich revision with links where it makes sense (directory, parents).
-
-    """
-    if not context:
-        context = revision['id']
-
-    revision['url'] = url_for('api_revision', sha1_git=revision['id'])
-    revision['history_url'] = url_for('api_revision_log',
-                                      sha1_git=revision['id'])
-
-    if 'directory' in revision:
-        revision['directory_url'] = url_for('api_directory',
-                                            sha1_git=revision['directory'])
-
-    if 'parents' in revision:
-        parents = []
-        for parent in revision['parents']:
-            parents.append(url_for('api_revision_history',
-                                   sha1_git_root=context,
-                                   sha1_git=parent))
-
-        revision['parent_urls'] = parents
-
-    if 'children' in revision:
-        children = []
-        for child in revision['children']:
-            children.append(url_for('api_revision_history',
-                                    sha1_git_root=context,
-                                    sha1_git=child))
-
-        revision['children_urls'] = children
-
-    return revision
+        enrich_fn=utils.enrich_release)
 
 
 @app.route('/api/1/revision'
@@ -233,10 +184,10 @@ def _enrich_revision_with_urls(revision, context=None):
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/directory/<path:path>/')
-def api_directory_through_revision_with_origin(origin_id=1,
-                                               branch_name="refs/heads/master",
-                                               ts=None,
-                                               path=None):
+def api_directory_through_origin(origin_id=1,
+                                 branch_name="refs/heads/master",
+                                 ts=None,
+                                 path=None):
     """Display directory or content information through a revision identified
     by origin/branch/timestamp.
 
@@ -281,10 +232,10 @@ def api_directory_through_revision_with_origin(origin_id=1,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/history/<sha1_git>/')
-def api_history_through_revision_with_origin(origin_id=1,
-                                             branch_name="refs/heads/master",
-                                             ts=None,
-                                             sha1_git=None):
+def api_revision_history_through_origin(origin_id=1,
+                                        branch_name="refs/heads/master",
+                                        ts=None,
+                                        sha1_git=None):
     """
     Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of the revision root identified
@@ -332,7 +283,7 @@ def api_history_through_revision_with_origin(origin_id=1,
                                                            branch_name,
                                                            ts))
 
-    return _enrich_revision_with_urls(revision, context=rev_root['id'])
+    return utils.enrich_revision(revision, context=rev_root['id'])
 
 
 @app.route('/api/1/revision'
@@ -351,6 +302,16 @@ def api_history_through_revision_with_origin(origin_id=1,
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
            '/branch/<path:branch_name>'
+           '/history/<sha1_git>'
+           '/directory/<path:path>/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
+           '/history/<sha1_git>'
+           '/directory/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>'
            '/history/<sha1_git>'
            '/directory/<path:path>/')
 @app.route('/api/1/revision'
@@ -468,7 +429,7 @@ def api_revision_with_origin(origin_id=1,
         ', ts: %s) not found.' % (origin_id,
                                   branch_name,
                                   ts),
-        _enrich_revision_with_urls,
+        utils.enrich_revision,
         branch_name,
         ts)
 
@@ -497,28 +458,7 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         lookup_fn=service.lookup_revision,
         error_msg_if_not_found='Revision with sha1_git %s not'
                                ' found.' % sha1_git,
-        enrich_fn=_enrich_revision_with_urls)
-
-
-def _enrich_directory(directory, context_url=None):
-    """Enrich directory with url to content or directory.
-
-    """
-    if 'type' in directory:
-        target_type = directory['type']
-        target = directory['target']
-        if target_type == 'file':
-            directory['target_url'] = url_for('api_content_with_details',
-                                              q='sha1_git:%s' % target)
-            if context_url:
-                directory['file_url'] = context_url + directory['name'] + '/'
-        else:
-            directory['target_url'] = url_for('api_directory',
-                                              sha1_git=target)
-            if context_url:
-                directory['dir_url'] = context_url + directory['name'] + '/'
-
-    return directory
+        enrich_fn=utils.enrich_revision)
 
 
 def _revision_directory(rev_sha1_git, dir_path, request_path):
@@ -526,7 +466,7 @@ def _revision_directory(rev_sha1_git, dir_path, request_path):
 
     """
     def enrich_directory_local(dir, context_url=request_path):
-        return _enrich_directory(dir, context_url)
+        return utils.enrich_directory(dir, context_url)
 
     result = service.lookup_directory_with_revision(rev_sha1_git, dir_path)
     if not result:
@@ -534,16 +474,23 @@ def _revision_directory(rev_sha1_git, dir_path, request_path):
                           ' found.' % rev_sha1_git)
 
     if result['type'] == 'dir':  # dir_entries
-        return list(map(enrich_directory_local, result['content']))
+        return {
+            'type': 'dir',
+            'revision': rev_sha1_git,
+            'content': list(map(enrich_directory_local, result['content']))
+        }
     else:  # content
-        return _enrich_content(result['content'])
+        return {
+            'type': 'file',
+            'revision': rev_sha1_git,
+            'content': utils.enrich_content(result['content'])
+        }
 
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
-def api_directory_with_revision(
-        sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
-        dir_path=None):
+def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
+                           dir_path=None):
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
     Otherwise, display the directory pointed by dir_path (if it exists).
@@ -607,7 +554,7 @@ def api_revision_history(sha1_git_root, sha1_git):
             "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
             % (sha1_git, sha1_git_root))
 
-    return _enrich_revision_with_urls(revision, context=sha1_git_root)
+    return utils.enrich_revision(revision, context=sha1_git_root)
 
 
 @app.route('/api/1/revision/<string:sha1_git_root>'
@@ -616,7 +563,7 @@ def api_revision_history(sha1_git_root, sha1_git):
 @app.route('/api/1/revision/<string:sha1_git_root>'
            '/history/<sha1_git>'
            '/directory/<path:dir_path>/')
-def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
+def api_revision_history_directory(sha1_git_root, sha1_git, dir_path=None):
     """Return information about directory pointed to by the revision
     defined as: revision sha1_git, limited to the sub-graph of all
     transitive parents of sha1_git_root.
@@ -642,7 +589,7 @@ def api_directory_revision_history(sha1_git_root, sha1_git, dir_path=None):
     limit = int(request.args.get('limit', '100'))
 
     if sha1_git == sha1_git_root:
-        return redirect(url_for('api_directory_with_revision',
+        return redirect(url_for('api_revision_directory',
                                 sha1_git=sha1_git,
                                 dir_path=dir_path),
                         code=301)
@@ -685,7 +632,7 @@ def api_revision_log(sha1_git):
     return _api_lookup(sha1_git,
                        lookup_fn=lookup_revision_log_with_limit,
                        error_msg_if_not_found=error_msg,
-                       enrich_fn=_enrich_revision_with_urls)
+                       enrich_fn=utils.enrich_revision)
 
 
 @app.route('/api/1/directory/')
@@ -709,7 +656,7 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
         sha1_git,
         lookup_fn=service.lookup_directory,
         error_msg_if_not_found=error_msg,
-        enrich_fn=_enrich_directory)
+        enrich_fn=utils.enrich_directory)
 
 
 # @app.route('/api/1/browse/')
@@ -768,18 +715,10 @@ def api_content_raw(q):
     return Response(generate(content), mimetype='application/octet-stream')
 
 
-def _enrich_content(content):
-    """Enrich content with 'data', a link to its raw content.
-
-    """
-    content['data_url'] = url_for('api_content_raw', q=content['sha1'])
-    return content
-
-
 @app.route('/api/1/content/')
 @app.route('/api/1/content/<string:q>/')
-def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
-                               '523015738ec6d4d540c7fe65232b'):
+def api_content_metadata(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
+                         '523015738ec6d4d540c7fe65232b'):
     """Return content information if content is found.
 
     Args:
@@ -803,19 +742,7 @@ def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
         q,
         lookup_fn=service.lookup_content,
         error_msg_if_not_found='Content with %s not found.' % q,
-        enrich_fn=_enrich_content)
-
-
-def _enrich_entity(entity):
-    """Enrich entity with
-
-    """
-    entity['uuid_url'] = url_for('api_entity_by_uuid',
-                                 uuid=entity['uuid'])
-    if 'parent' in entity and entity['parent']:
-        entity['parent_url'] = url_for('api_entity_by_uuid',
-                                       uuid=entity['parent'])
-    return entity
+        enrich_fn=utils.enrich_content)
 
 
 @app.route('/api/1/entity/')
@@ -836,15 +763,15 @@ def api_entity_by_uuid(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
         - NotFoundExc if the content is not found.
 
     Example:
-        - GET /api/1/entity/7c33636b-8f11-4bda-89d9-ba8b76a42cec/
         - GET /api/1/entity/5f4d4c51-498a-4e28-88b3-b3e4e8396cba/
+        - GET /api/1/entity/7c33636b-8f11-4bda-89d9-ba8b76a42cec/
 
     """
     return _api_lookup(
         uuid,
         lookup_fn=service.lookup_entity_by_uuid,
         error_msg_if_not_found="Entity with uuid '%s' not found." % uuid,
-        enrich_fn=_enrich_entity)
+        enrich_fn=utils.enrich_entity)
 
 
 @app.route('/api/1/uploadnsearch/', methods=['POST'])
