@@ -50,7 +50,9 @@ def fmap(f, data):
     Returns:
         The same data-structure with modified values by the f function.
     """
-    if isinstance(data, (list, map)):
+    if isinstance(data, map):
+        return (fmap(f, x) for x in data)
+    if isinstance(data, list):
         return [fmap(f, x) for x in data]
     if isinstance(data, dict):
         return {k: fmap(f, v) for (k, v) in data.items()}
@@ -66,7 +68,7 @@ def prepare_data_for_view(data):
     return fmap(replace_api_url, data)
 
 
-def filter_field_keys(obj, field_keys):
+def filter_field_keys(data, field_keys):
     """Given an object instance (directory or list), and a csv field keys
     to filter on.
 
@@ -76,25 +78,20 @@ def filter_field_keys(obj, field_keys):
     list)
 
     Args:
-        - obj: one object (dictionary, list...) to filter.
+        - data: one object (dictionary, list...) to filter.
         - field_keys: csv or set of keys to filter the object on
 
     Returns:
         obj filtered on field_keys
 
     """
-    if isinstance(obj, dict):
-        filt_dict = {}
-        for key, value in obj.items():
-            if key in field_keys:
-                filt_dict[key] = value
-        return filt_dict
-    elif isinstance(obj, list):
-        filt_list = []
-        for e in obj:
-            filt_list.append(filter_field_keys(e, field_keys))
-        return filt_list
-    return obj
+    if isinstance(data, map):
+        return (filter_field_keys(x, field_keys) for x in data)
+    if isinstance(data, list):
+        return [filter_field_keys(x, field_keys) for x in data]
+    if isinstance(data, dict):
+        return {k: v for (k, v) in data.items() if k in field_keys}
+    return data
 
 
 def person_to_string(person):
