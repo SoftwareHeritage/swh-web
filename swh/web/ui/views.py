@@ -109,34 +109,6 @@ def search():
     return render_template('upload_and_search.html', **env)
 
 
-def _origin_seen(q, data):
-    """Given an origin, compute a message string with the right information.
-
-    Args:
-        origin: a dictionary with keys:
-          - origin: a dictionary with type and url keys
-          - occurrence: a dictionary with a validity range
-
-    Returns:
-        Message as a string
-
-    """
-    origin_type = data['origin_type']
-    origin_url = data['origin_url']
-    revision = data['revision']
-    branch = data['branch']
-    path = data['path']
-
-    return """The content with hash %s has been seen on origin with type '%s'
-at url '%s'. The revision was identified at '%s' on branch '%s'.
-The file's path referenced was '%s'.""" % (q,
-                                           origin_type,
-                                           origin_url,
-                                           revision,
-                                           branch,
-                                           path)
-
-
 @app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
@@ -205,6 +177,34 @@ def browse_content_data(q):
     return render_template('content-data.html', **env)
 
 
+def _origin_seen(q, data):
+    """Given an origin, compute a message string with the right information.
+
+    Args:
+        origin: a dictionary with keys:
+          - origin: a dictionary with type and url keys
+          - occurrence: a dictionary with a validity range
+
+    Returns:
+        Message as a string
+
+    """
+    origin_type = data['origin_type']
+    origin_url = data['origin_url']
+    revision = data['revision']
+    branch = data['branch']
+    path = data['path']
+
+    return """The content with hash %s has been seen on origin with type '%s'
+at url '%s'. The revision was identified at '%s' on branch '%s'.
+The file's path referenced was '%s'.""" % (q,
+                                           origin_type,
+                                           origin_url,
+                                           revision,
+                                           branch,
+                                           path)
+
+
 # @app.route('/browse/content/<string:q>/origin/')
 @set_renderers(HTMLRenderer)
 def browse_content_with_origin(
@@ -226,13 +226,9 @@ def browse_content_with_origin(
     env = {'q': q}
 
     try:
-        content = service.lookup_hash(q)
-        if not content.get('found'):
-            message = "Hash %s was not found." % q
-        else:
-            origin = service.lookup_hash_origin(q)
-            message = _origin_seen(q, origin)
-    except BadInputExc as e:  # do not like it but do not duplicate code
+        origin = api.api_content_checksum_to_origin(q)
+        message = _origin_seen(q, origin)
+    except (NotFoundExc, BadInputExc) as e:
         message = str(e)
 
     env['message'] = message

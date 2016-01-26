@@ -443,11 +443,12 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_utils.prepare_directory_listing.assert_called_once_with(
             stub_directory_ls)
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
 #    @istest
-    def browse_content_with_origin_content_not_found(self, mock_service):
+    def browse_content_with_origin_content_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_hash.return_value = {'found': False}
+        mock_api.api_content_checksum_to_origin.side_effect = NotFoundExc(
+            'Not found!')
 
         # when
         rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
@@ -456,17 +457,17 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('content-with-origin.html')
         self.assertEqual(self.get_context_variable('message'),
-                         'Hash sha256:some-sha256 was not found.')
+                         'Not found!')
 
-        mock_service.lookup_hash.assert_called_once_with(
+        mock_api.api_content_checksum_to_origin.assert_called_once_with(
             'sha256:some-sha256')
-        mock_service.lookup_hash_origin.called = False
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
 #    @istest
-    def browse_content_with_origin_bad_input(self, mock_service):
+    def browse_content_with_origin_KO_bad_input(self, mock_api):
         # given
-        mock_service.lookup_hash.side_effect = BadInputExc('Invalid hash')
+        mock_api.api_content_checksum_to_origin.side_effect = BadInputExc(
+            'Invalid hash')
 
         # when
         rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
@@ -477,16 +478,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(
             self.get_context_variable('message'), 'Invalid hash')
 
-        mock_service.lookup_hash.assert_called_once_with(
+        mock_api.api_content_checksum_to_origin.assert_called_once_with(
             'sha256:some-sha256')
-        mock_service.lookup_hash_origin.called = False
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
 #    @istest
-    def browse_content_with_origin(self, mock_service):
+    def browse_content_with_origin(self, mock_api):
         # given
-        mock_service.lookup_hash.return_value = {'found': True}
-        mock_service.lookup_hash_origin.return_value = {
+        mock_api.api_content_checksum_to_origin.return_value = {
             'origin_type': 'ftp',
             'origin_url': '/some/url',
             'revision': 'revision-hash',
@@ -508,9 +507,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             "'revision-hash' on branch 'master'.\n" +
             "The file's path referenced was '/path/to'.")
 
-        mock_service.lookup_hash.assert_called_once_with(
-            'sha256:some-sha256')
-        mock_service.lookup_hash_origin.assert_called_once_with(
+        mock_api.api_content_checksum_to_origin.assert_called_once_with(
             'sha256:some-sha256')
 
     @patch('swh.web.ui.views.service')
