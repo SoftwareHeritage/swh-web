@@ -245,11 +245,12 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.upload_and_search.called = True
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_detail_not_found(self, mock_service):
+    def browse_content_detail_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_content.return_value = None
+        mock_api.api_content_with_details.side_effect = NotFoundExc(
+            'Not found!')
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
@@ -258,18 +259,18 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assert_template_used('content.html')
         self.assertEqual(self.get_context_variable('message'),
-                         'Content with sha1:sha1-hash not found.')
-        self.assertEqual(self.get_context_variable('content'),
-                         None)
+                         'Not found!')
+        self.assertIsNone(self.get_context_variable('content'))
 
-        mock_service.lookup_content.assert_called_once_with(
+        mock_api.api_content_with_details.assert_called_once_with(
             'sha1:sha1-hash')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_detail_bad_input(self, mock_service):
+    def browse_content_detail_KO_bad_input(self, mock_api):
         # given
-        mock_service.lookup_content.side_effect = BadInputExc('Bad input!')
+        mock_api.api_content_with_details.side_effect = BadInputExc(
+            'Bad input!')
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
@@ -281,15 +282,15 @@ class ViewTestCase(test_app.SWHViewTestCase):
                          'Bad input!')
         self.assertIsNone(self.get_context_variable('content'))
 
-        mock_service.lookup_content.assert_called_once_with(
+        mock_api.api_content_with_details.assert_called_once_with(
             'sha1:sha1-hash')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_detail(self, mock_service):
+    def browse_content_detail(self, mock_api):
         # given
         stub_content = {'sha1': 'sha1_hash'}
-        mock_service.lookup_content.return_value = stub_content
+        mock_api.api_content_with_details.return_value = stub_content
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
@@ -299,9 +300,9 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assert_template_used('content.html')
         self.assertIsNone(self.get_context_variable('message'))
         self.assertEqual(self.get_context_variable('content'),
-                         {'sha1': 'sha1_hash'})
+                         stub_content)
 
-        mock_service.lookup_content.assert_called_once_with(
+        mock_api.api_content_with_details.assert_called_once_with(
             'sha1:sha1-hash')
 
     @patch('swh.web.ui.views.service')

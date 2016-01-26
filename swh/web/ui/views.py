@@ -127,18 +127,14 @@ def browse_content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
         NotFoundExc if the content is not found.
 
     """
-    env = {}
-    message = None
-    content = None
+    env = {'q': q,
+           'message': None,
+           'content': None}
     try:
-        content = service.lookup_content(q)
-        if not content:
-            message = 'Content with %s not found.' % q
-    except BadInputExc as e:
-        message = str(e)
+        env['content'] = api.api_content_with_details(q)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
-    env['message'] = message
-    env['content'] = content
     return render_template('content.html', **env)
 
 
