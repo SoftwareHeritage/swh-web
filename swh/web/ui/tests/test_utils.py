@@ -358,3 +358,24 @@ class UtilsTestCase(unittest.TestCase):
 
         mock_flask.url_for.assert_called_once_with('api_directory',
                                                    sha1_git='456')
+
+    @istest
+    def enrich_content_without_sha1(self):
+        # when/then
+        self.assertEqual(utils.enrich_content({'id': '123'}),
+                         {'id': '123'})
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_content_with_sha1(self, mock_flask):
+        # given
+        mock_flask.url_for.return_value = '/api/content/sha1:123/raw/'
+
+        # when/then
+        self.assertEqual(utils.enrich_content(
+            {'id': '123', 'sha1': 'blahblah'}),
+                         {'id': '123', 'sha1': 'blahblah',
+                          'data_url': '/api/content/sha1:123/raw/'})
+
+        mock_flask.url_for.assert_called_once_with('api_content_raw',
+                                                   q='blahblah')

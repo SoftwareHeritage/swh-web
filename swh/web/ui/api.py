@@ -519,7 +519,7 @@ def _revision_directory(rev_sha1_git, dir_path, request_path):
         return {
             'type': 'file',
             'revision': rev_sha1_git,
-            'content': _enrich_content(result['content'])
+            'content': utils.enrich_content(result['content'])
         }
 
 
@@ -751,14 +751,6 @@ def api_content_raw(q):
     return Response(generate(content), mimetype='application/octet-stream')
 
 
-def _enrich_content(content):
-    """Enrich content with 'data', a link to its raw content.
-
-    """
-    content['data_url'] = url_for('api_content_raw', q=content['sha1'])
-    return content
-
-
 @app.route('/api/1/content/')
 @app.route('/api/1/content/<string:q>/')
 def api_content_metadata(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
@@ -786,7 +778,7 @@ def api_content_metadata(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
         q,
         lookup_fn=service.lookup_content,
         error_msg_if_not_found='Content with %s not found.' % q,
-        enrich_fn=_enrich_content)
+        enrich_fn=utils.enrich_content)
 
 
 def _enrich_entity(entity):

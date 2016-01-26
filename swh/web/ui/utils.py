@@ -162,3 +162,13 @@ def enrich_directory(directory, context_url=None):
                 directory['dir_url'] = context_url + directory['name'] + '/'
 
     return directory
+
+
+def enrich_content(content):
+    """Enrich content with 'data', a link to its raw content.
+
+    """
+    if 'sha1' in content:
+        content['data_url'] = flask.url_for('api_content_raw',
+                                            q=content['sha1'])
+    return content
