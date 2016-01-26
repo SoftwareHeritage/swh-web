@@ -55,7 +55,7 @@ def prepare_directory_listing(files):
             new_entry['link'] = flask.url_for('browse_directory',
                                               sha1_git=entry['target'])
         else:
-            new_entry['link'] = flask.url_for('browse_content_data',
+            new_entry['link'] = flask.url_for('browse_content_raw',
                                               q=entry['sha1'])
         ls.append(new_entry)
 

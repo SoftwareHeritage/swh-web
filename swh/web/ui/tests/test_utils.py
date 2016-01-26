@@ -106,7 +106,7 @@ class UtilsTestCase(unittest.TestCase):
 
         mock_flask.url_for.assert_has_calls([
             call('browse_directory', sha1_git='123'),
-            call('browse_content_data', q='654'),
+            call('browse_content_raw', q='654'),
             call('browse_directory', sha1_git='987'),
         ])
 

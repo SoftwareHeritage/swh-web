@@ -285,12 +285,17 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
+    @patch('swh.web.ui.views.service')
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_metadata(self, mock_api):
+    def browse_content_metadata(self, mock_api, mock_service):
         # given
         stub_content = {'sha1': 'sha1_hash'}
         mock_api.api_content_metadata.return_value = stub_content
+        mock_service.lookup_content_raw.return_value = {'data': b'blah'}
+
+        expected_content = {'sha1': 'sha1_hash',
+                            'data': 'blah'}
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
@@ -300,14 +305,16 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assert_template_used('content.html')
         self.assertIsNone(self.get_context_variable('message'))
         self.assertEqual(self.get_context_variable('content'),
-                         stub_content)
+                         expected_content)
 
+        mock_service.lookup_content_raw.assert_called_once_with(
+            'sha1:sha1-hash')
         mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
     @patch('swh.web.ui.views.service')
     @istest
-    def browse_content_data(self, mock_service):
+    def browse_content_raw(self, mock_service):
         # given
         stub_content_raw = {
             'sha1': 'sha1-hash',
@@ -330,7 +337,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def browse_content_data_not_found(self, mock_service):
+    def browse_content_raw_not_found(self, mock_service):
         # given
         mock_service.lookup_content_raw.return_value = None
 
@@ -347,7 +354,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def browse_content_data_invalid_hash(self, mock_service):
+    def browse_content_raw_invalid_hash(self, mock_service):
         # given
         mock_service.lookup_content_raw.side_effect = BadInputExc(
             'Invalid hash')

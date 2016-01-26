@@ -131,7 +131,12 @@ def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
            'message': None,
            'content': None}
     try:
-        env['content'] = api.api_content_metadata(q)
+        content = api.api_content_metadata(q)
+        content_raw = service.lookup_content_raw(q)
+        if content_raw:
+            content_raw = content_raw['data'].decode('utf-8')
+            content['data'] = content_raw
+        env['content'] = content
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
@@ -140,7 +145,7 @@ def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
 
 @app.route('/browse/content/<string:q>/raw/')
 @set_renderers(HTMLRenderer)
-def browse_content_data(q):
+def browse_content_raw(q):
     """Given a hash and a checksum, display the content's raw data.
 
     Args:
