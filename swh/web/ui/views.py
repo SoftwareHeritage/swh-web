@@ -272,13 +272,9 @@ def browse_origin(origin_id=1):
            'origin': None}
 
     try:
-        ori = service.lookup_origin(origin_id)
-        if ori:
-            env.update({'origin': ori})
-        else:
-            env.update({'message': 'Origin %s not found!' % origin_id})
-    except BadInputExc as e:
-        env.update({'message': str(e)})
+        env['origin'] = api.api_origin(origin_id)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('origin.html', **env)
 

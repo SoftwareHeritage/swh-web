@@ -517,11 +517,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_checksum_to_origin.assert_called_once_with(
             'sha256:some-sha256')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_origin_not_found(self, mock_service):
+    def browse_origin_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_origin.return_value = None
+        mock_api.api_origin.side_effect = NotFoundExc('Not found!')
 
         # when
         rv = self.client.get('/browse/origin/1/')
@@ -532,20 +532,36 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('origin_id'), 1)
         self.assertEqual(
             self.get_context_variable('message'),
-            'Origin 1 not found!')
+            'Not found!')
 
-        mock_service.lookup_origin.assert_called_once_with(1)
+        mock_api.api_origin.assert_called_once_with(1)
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_origin_found(self, mock_service):
+    def browse_origin_KO_bad_input(self, mock_api):
+        # given
+        mock_api.api_origin.side_effect = BadInputExc('wrong input')
+
+        # when
+        rv = self.client.get('/browse/origin/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('origin.html')
+        self.assertEqual(self.get_context_variable('origin_id'), 426)
+
+        mock_api.api_origin.assert_called_once_with(426)
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_origin_found(self, mock_api):
         # given
         mock_origin = {'type': 'git',
                        'lister': None,
                        'project': None,
                        'url': 'rsync://some/url',
                        'id': 426}
-        mock_service.lookup_origin.return_value = mock_origin
+        mock_api.api_origin.return_value = mock_origin
 
         # when
         rv = self.client.get('/browse/origin/426/')
@@ -556,23 +572,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('origin_id'), 426)
         self.assertEqual(self.get_context_variable('origin'), mock_origin)
 
-        mock_service.lookup_origin.assert_called_once_with(426)
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_origin_bad_input(self, mock_service):
-        # given
-        mock_service.lookup_origin.side_effect = BadInputExc('wrong input')
-
-        # when
-        rv = self.client.get('/browse/origin/426/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('origin.html')
-        self.assertEqual(self.get_context_variable('origin_id'), 426)
-
-        mock_service.lookup_origin.assert_called_once_with(426)
+        mock_api.api_origin.assert_called_once_with(426)
 
     @patch('swh.web.ui.views.service')
     @istest
