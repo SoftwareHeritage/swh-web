@@ -247,9 +247,9 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_detail_KO_not_found(self, mock_api):
+    def browse_content_metadata_KO_not_found(self, mock_api):
         # given
-        mock_api.api_content_with_details.side_effect = NotFoundExc(
+        mock_api.api_content_metadata.side_effect = NotFoundExc(
             'Not found!')
 
         # when
@@ -262,14 +262,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
                          'Not found!')
         self.assertIsNone(self.get_context_variable('content'))
 
-        mock_api.api_content_with_details.assert_called_once_with(
+        mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_detail_KO_bad_input(self, mock_api):
+    def browse_content_metadata_KO_bad_input(self, mock_api):
         # given
-        mock_api.api_content_with_details.side_effect = BadInputExc(
+        mock_api.api_content_metadata.side_effect = BadInputExc(
             'Bad input!')
 
         # when
@@ -282,15 +282,15 @@ class ViewTestCase(test_app.SWHViewTestCase):
                          'Bad input!')
         self.assertIsNone(self.get_context_variable('content'))
 
-        mock_api.api_content_with_details.assert_called_once_with(
+        mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_detail(self, mock_api):
+    def browse_content_metadata(self, mock_api):
         # given
         stub_content = {'sha1': 'sha1_hash'}
-        mock_api.api_content_with_details.return_value = stub_content
+        mock_api.api_content_metadata.return_value = stub_content
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
@@ -302,7 +302,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('content'),
                          stub_content)
 
-        mock_api.api_content_with_details.assert_called_once_with(
+        mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
     @patch('swh.web.ui.views.service')

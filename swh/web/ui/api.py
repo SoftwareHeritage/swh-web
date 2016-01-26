@@ -518,7 +518,7 @@ def _enrich_directory(directory, context_url=None):
         target_type = directory['type']
         target = directory['target']
         if target_type == 'file':
-            directory['target_url'] = url_for('api_content_with_details',
+            directory['target_url'] = url_for('api_content_metadata',
                                               q='sha1_git:%s' % target)
             if context_url:
                 directory['file_url'] = context_url + directory['name'] + '/'
@@ -795,8 +795,8 @@ def _enrich_content(content):
 
 @app.route('/api/1/content/')
 @app.route('/api/1/content/<string:q>/')
-def api_content_with_details(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
-                               '523015738ec6d4d540c7fe65232b'):
+def api_content_metadata(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
+                         '523015738ec6d4d540c7fe65232b'):
     """Return content information if content is found.
 
     Args:

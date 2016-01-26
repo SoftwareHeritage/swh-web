@@ -155,7 +155,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_content_with_details(self, mock_service):
+    def api_content_metadata(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',

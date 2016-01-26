@@ -112,7 +112,7 @@ def search():
 @app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def browse_content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
     """Given a hash and a checksum, display the content's meta-data.
 
     Args:
@@ -131,7 +131,7 @@ def browse_content_detail(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
            'message': None,
            'content': None}
     try:
-        env['content'] = api.api_content_with_details(q)
+        env['content'] = api.api_content_metadata(q)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
