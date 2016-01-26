@@ -287,16 +287,13 @@ def browse_person(person_id=1):
 
     """
     env = {'person_id': person_id,
-           'person': None}
+           'person': None,
+           'message': None}
 
     try:
-        ori = service.lookup_person(person_id)
-        if ori:
-            env.update({'person': ori})
-        else:
-            env.update({'message': 'Person %s not found!' % person_id})
-    except BadInputExc as e:
-        env.update({'message': str(e)})
+        env['person'] = api.api_person(person_id)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('person.html', **env)
 

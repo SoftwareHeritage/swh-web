@@ -574,11 +574,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_origin.assert_called_once_with(426)
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_person_not_found(self, mock_service):
+    def browse_person_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_person.return_value = None
+        mock_api.api_person.side_effect = NotFoundExc('not found')
 
         # when
         rv = self.client.get('/browse/person/1/')
@@ -589,20 +589,36 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('person_id'), 1)
         self.assertEqual(
             self.get_context_variable('message'),
-            'Person 1 not found!')
+            'not found')
 
-        mock_service.lookup_person.assert_called_once_with(1)
+        mock_api.api_person.assert_called_once_with(1)
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_person_found(self, mock_service):
+    def browse_person_KO_bad_input(self, mock_api):
+        # given
+        mock_api.api_person.side_effect = BadInputExc('wrong input')
+
+        # when
+        rv = self.client.get('/browse/person/426/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('person.html')
+        self.assertEqual(self.get_context_variable('person_id'), 426)
+
+        mock_api.api_person.assert_called_once_with(426)
+
+    @patch('swh.web.ui.views.api')
+    @istest
+    def browse_person(self, mock_api):
         # given
         mock_person = {'type': 'git',
                        'lister': None,
                        'project': None,
                        'url': 'rsync://some/url',
                        'id': 426}
-        mock_service.lookup_person.return_value = mock_person
+        mock_api.api_person.return_value = mock_person
 
         # when
         rv = self.client.get('/browse/person/426/')
@@ -613,23 +629,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('person_id'), 426)
         self.assertEqual(self.get_context_variable('person'), mock_person)
 
-        mock_service.lookup_person.assert_called_once_with(426)
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_person_bad_input(self, mock_service):
-        # given
-        mock_service.lookup_person.side_effect = BadInputExc('wrong input')
-
-        # when
-        rv = self.client.get('/browse/person/426/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('person.html')
-        self.assertEqual(self.get_context_variable('person_id'), 426)
-
-        mock_service.lookup_person.assert_called_once_with(426)
+        mock_api.api_person.assert_called_once_with(426)
 
     @patch('swh.web.ui.views.service')
     @istest
