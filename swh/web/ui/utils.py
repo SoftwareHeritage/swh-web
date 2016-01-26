@@ -172,3 +172,17 @@ def enrich_content(content):
         content['data_url'] = flask.url_for('api_content_raw',
                                             q=content['sha1'])
     return content
+
+
+def enrich_entity(entity):
+    """Enrich entity with
+
+    """
+    if 'uuid' in entity:
+        entity['uuid_url'] = flask.url_for('api_entity_by_uuid',
+                                           uuid=entity['uuid'])
+
+    if 'parent' in entity and entity['parent']:
+        entity['parent_url'] = flask.url_for('api_entity_by_uuid',
+                                             uuid=entity['parent'])
+    return entity

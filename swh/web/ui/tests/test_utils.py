@@ -7,7 +7,7 @@ import datetime
 import dateutil
 import unittest
 
-from unittest.mock import patch
+from unittest.mock import patch, call
 from nose.tools import istest
 
 from swh.web.ui import utils
@@ -379,3 +379,39 @@ class UtilsTestCase(unittest.TestCase):
 
         mock_flask.url_for.assert_called_once_with('api_content_raw',
                                                    q='blahblah')
+
+    @istest
+    def enrich_entity_identity(self):
+        # when/then
+        self.assertEqual(utils.enrich_content({'id': '123'}),
+                         {'id': '123'})
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_entity_with_sha1(self, mock_flask):
+        # given
+        def url_for_test(fn, **entity):
+            return '/api/entity/' + entity['uuid'] + '/'
+
+        mock_flask.url_for.side_effect = url_for_test
+
+        # when
+        actual_entity = utils.enrich_entity({
+            'uuid': 'uuid-1',
+            'parent': 'uuid-parent',
+            'name': 'something'
+        })
+
+        # then
+        self.assertEqual(actual_entity, {
+            'uuid': 'uuid-1',
+            'uuid_url': '/api/entity/uuid-1/',
+            'parent': 'uuid-parent',
+            'parent_url': '/api/entity/uuid-parent/',
+            'name': 'something',
+            })
+
+        mock_flask.url_for.assert_has_calls([call('api_entity_by_uuid',
+                                                  uuid='uuid-1'),
+                                             call('api_entity_by_uuid',
+                                                  uuid='uuid-parent')])
