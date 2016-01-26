@@ -141,3 +141,24 @@ def enrich_release(release):
                                                   q=release['target'])
 
     return release
+
+
+def enrich_directory(directory, context_url=None):
+    """Enrich directory with url to content or directory.
+
+    """
+    if 'type' in directory:
+        target_type = directory['type']
+        target = directory['target']
+        if target_type == 'file':
+            directory['target_url'] = flask.url_for('api_content_metadata',
+                                                    q='sha1_git:%s' % target)
+            if context_url:
+                directory['file_url'] = context_url + directory['name'] + '/'
+        else:
+            directory['target_url'] = flask.url_for('api_directory',
+                                                    sha1_git=target)
+            if context_url:
+                directory['dir_url'] = context_url + directory['name'] + '/'
+
+    return directory

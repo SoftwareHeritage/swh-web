@@ -272,3 +272,89 @@ class UtilsTestCase(unittest.TestCase):
 
         mock_flask.url_for.assert_called_once_with('api_release',
                                                    sha1_git='4')
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_directory_no_type(self, mock_flask):
+        # when/then
+        self.assertEqual(utils.enrich_directory({'id': 'dir-id'}),
+                         {'id': 'dir-id'})
+
+        # given
+        mock_flask.url_for.return_value = '/api/content/sha1_git:123/'
+
+        # when
+        actual_directory = utils.enrich_directory({
+            'id': 'dir-id',
+            'type': 'file',
+            'target': '123',
+        })
+
+        # then
+        self.assertEqual(actual_directory, {
+            'id': 'dir-id',
+            'type': 'file',
+            'target': '123',
+            'target_url': '/api/content/sha1_git:123/',
+        })
+
+        mock_flask.url_for.assert_called_once_with('api_content_metadata',
+                                                   q='sha1_git:123')
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_directory_with_context_and_type_file(self, mock_flask):
+        # given
+        mock_flask.url_for.return_value = '/api/content/sha1_git:123/'
+
+        # when
+        actual_directory = utils.enrich_directory({
+            'id': 'dir-id',
+            'type': 'file',
+            'name': 'hy',
+            'target': '789',
+        }, context_url='/api/revision/revsha1/directory/prefix/path/')
+
+        # then
+        self.assertEqual(actual_directory, {
+            'id': 'dir-id',
+            'type': 'file',
+            'name': 'hy',
+            'target': '789',
+            'target_url': '/api/content/sha1_git:123/',
+            'file_url': '/api/revision/revsha1/directory'
+                        '/prefix/path/hy/'
+        })
+
+        mock_flask.url_for.assert_called_once_with('api_content_metadata',
+                                                   q='sha1_git:789')
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_directory_with_context_and_type_dir(self, mock_flask):
+        # given
+        mock_flask.url_for.return_value = '/api/directory/456/'
+
+        # when
+        actual_directory = utils.enrich_directory({
+            'id': 'dir-id',
+            'type': 'dir',
+            'name': 'emacs-42',
+            'target_type': 'file',
+            'target': '456',
+        }, context_url='/api/revision/origin/2/directory/some/prefix/path/')
+
+        # then
+        self.assertEqual(actual_directory, {
+            'id': 'dir-id',
+            'type': 'dir',
+            'target_type': 'file',
+            'name': 'emacs-42',
+            'target': '456',
+            'target_url': '/api/directory/456/',
+            'dir_url': '/api/revision/origin/2/directory'
+            '/some/prefix/path/emacs-42/'
+        })
+
+        mock_flask.url_for.assert_called_once_with('api_directory',
+                                                   sha1_git='456')
