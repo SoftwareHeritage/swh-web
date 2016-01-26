@@ -37,61 +37,6 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
     return out
 
 
-def prepare_directory_listing(files):
-    """Given a list of dictionary files, return a dictionary ready for view.
-
-    Args:
-        files: List of files to enrich
-
-    Returns:
-        List of enriched files with urls to other resources
-
-    """
-    ls = []
-    for entry in files:
-        new_entry = {'name': entry['name'],
-                     'type': entry['type']}
-        if entry['type'] == 'dir':
-            new_entry['link'] = flask.url_for('browse_directory',
-                                              sha1_git=entry['target'])
-        else:
-            new_entry['link'] = flask.url_for('browse_content_raw',
-                                              q=entry['sha1'])
-        ls.append(new_entry)
-
-    return ls
-
-
-def prepare_revision_view(revision):
-    """Given a revision, return a dictionary ready view.
-
-    """
-    author = revision.get('author')
-    if author:
-        revision['author'] = person_to_string(author)
-
-    committer = revision.get('committer')
-    if committer:
-        revision['committer'] = person_to_string(committer)
-
-    revision['parents'] = list(map(lambda p: flask.url_for('browse_revision',
-                                                           sha1_git=p),
-                                   revision.get('parents', [])))
-
-    if 'children' in revision:
-        revision['children'] = list(map(lambda child: flask.url_for(
-            'browse_revision',
-            sha1_git=child),
-                                        revision['children']))
-
-    directory = revision.get('directory')
-    if directory:
-        revision['directory'] = flask.url_for('browse_directory',
-                                              sha1_git=revision['directory'])
-
-    return revision
-
-
 def fmap(f, data):
     """Map f to data.
     Keep the initial data structure as original but map function f to each
