@@ -5,6 +5,7 @@
 
 import datetime
 import flask
+import re
 
 from dateutil import parser
 
@@ -36,26 +37,38 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
     return out
 
 
-def prepare_directory_listing(files):
-    """Given a list of dictionary files, return a view ready dictionary.
+def fmap(f, data):
+    """Map f to data.
+    Keep the initial data structure as original but map function f to each
+    level.
 
+    Args:
+        f: function that expects one argument.
+        data: data to traverse to apply the f function. list, map, dict or bare
+        value.
+
+    Returns:
+        The same data-structure with modified values by the f function.
     """
-    ls = []
-    for entry in files:
-        new_entry = {'name': entry['name'],
-                     'type': entry['type']}
-        if entry['type'] == 'dir':
-            new_entry['link'] = flask.url_for('browse_directory',
-                                              sha1_git=entry['target'])
-        else:
-            new_entry['link'] = flask.url_for('show_content',
-                                              q=entry['sha1'])
-        ls.append(new_entry)
-
-    return ls
+    if isinstance(data, map):
+        return (fmap(f, x) for x in data)
+    if isinstance(data, list):
+        return [fmap(f, x) for x in data]
+    if isinstance(data, dict):
+        return {k: fmap(f, v) for (k, v) in data.items()}
+    return f(data)
 
 
-def filter_field_keys(obj, field_keys):
+def prepare_data_for_view(data):
+    def replace_api_url(s):
+        if isinstance(s, str):
+            return re.sub(r'/api/1/', r'/browse/', s)
+        return s
+
+    return fmap(replace_api_url, data)
+
+
+def filter_field_keys(data, field_keys):
     """Given an object instance (directory or list), and a csv field keys
     to filter on.
 
@@ -65,33 +78,20 @@ def filter_field_keys(obj, field_keys):
     list)
 
     Args:
-        - obj: one object (dictionary, list...) to filter.
+        - data: one object (dictionary, list...) to filter.
         - field_keys: csv or set of keys to filter the object on
 
     Returns:
         obj filtered on field_keys
 
     """
-    if isinstance(obj, dict):
-        filt_dict = {}
-        for key, value in obj.items():
-            if key in field_keys:
-                filt_dict[key] = value
-        return filt_dict
-    elif isinstance(obj, list):
-        filt_list = []
-        for e in obj:
-            filt_list.append(filter_field_keys(e, field_keys))
-        return filt_list
-    return obj
-
-
-def fmap(f, data):
+    if isinstance(data, map):
+        return (filter_field_keys(x, field_keys) for x in data)
     if isinstance(data, list):
-        return [f(x) for x in data]
+        return [filter_field_keys(x, field_keys) for x in data]
     if isinstance(data, dict):
-        return {k: f(v) for (k, v) in data.items()}
-    return f(data)
+        return {k: v for (k, v) in data.items() if k in field_keys}
+    return data
 
 
 def person_to_string(person):
@@ -118,3 +118,108 @@ def parse_timestamp(timestamp):
     except:
         res = datetime.datetime.fromtimestamp(float(timestamp))
     return res
+
+
+def enrich_release(release):
+    """Enrich a release with link to the 'target' of 'type' revision.
+
+    """
+    if 'target' in release and 'target_type' in release:
+        if release['target_type'] == 'revision':
+            release['target_url'] = flask.url_for('api_revision',
+                                                  sha1_git=release['target'])
+        elif release['target_type'] == 'release':
+            release['target_url'] = flask.url_for('api_release',
+                                                  sha1_git=release['target'])
+        elif release['target_type'] == 'content':
+            release['target_url'] = flask.url_for(
+                'api_content_metadata',
+                q='sha1_git:' + release['target'])
+
+        elif release['target_type'] == 'directory':
+            release['target_url'] = flask.url_for('api_directory',
+                                                  q=release['target'])
+
+    return release
+
+
+def enrich_directory(directory, context_url=None):
+    """Enrich directory with url to content or directory.
+
+    """
+    if 'type' in directory:
+        target_type = directory['type']
+        target = directory['target']
+        if target_type == 'file':
+            directory['target_url'] = flask.url_for('api_content_metadata',
+                                                    q='sha1_git:%s' % target)
+            if context_url:
+                directory['file_url'] = context_url + directory['name'] + '/'
+        else:
+            directory['target_url'] = flask.url_for('api_directory',
+                                                    sha1_git=target)
+            if context_url:
+                directory['dir_url'] = context_url + directory['name'] + '/'
+
+    return directory
+
+
+def enrich_content(content):
+    """Enrich content with 'data', a link to its raw content.
+
+    """
+    if 'sha1' in content:
+        content['data_url'] = flask.url_for('api_content_raw',
+                                            q=content['sha1'])
+    return content
+
+
+def enrich_entity(entity):
+    """Enrich entity with
+
+    """
+    if 'uuid' in entity:
+        entity['uuid_url'] = flask.url_for('api_entity_by_uuid',
+                                           uuid=entity['uuid'])
+
+    if 'parent' in entity and entity['parent']:
+        entity['parent_url'] = flask.url_for('api_entity_by_uuid',
+                                             uuid=entity['parent'])
+    return entity
+
+
+def enrich_revision(revision, context=None):
+    """Enrich revision with links where it makes sense (directory, parents).
+
+    """
+    if not context:
+        context = revision['id']
+
+    revision['url'] = flask.url_for('api_revision', sha1_git=revision['id'])
+    revision['history_url'] = flask.url_for('api_revision_log',
+                                            sha1_git=revision['id'])
+
+    if 'directory' in revision:
+        revision['directory_url'] = flask.url_for(
+            'api_directory',
+            sha1_git=revision['directory'])
+
+    if 'parents' in revision:
+        parents = []
+        for parent in revision['parents']:
+            parents.append(flask.url_for('api_revision_history',
+                                         sha1_git_root=context,
+                                         sha1_git=parent))
+
+        revision['parent_urls'] = parents
+
+    if 'children' in revision:
+        children = []
+        for child in revision['children']:
+            children.append(flask.url_for('api_revision_history',
+                                          sha1_git_root=context,
+                                          sha1_git=child))
+
+        revision['children_urls'] = children
+
+    return revision

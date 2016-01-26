@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Browse{% endblock %}
+{% block content %}
+<p>
+{% if message is not none %}
+<div id="message">{{ message | safe }}</div>
+{% endif %}
+</p>
+{% endblock %}

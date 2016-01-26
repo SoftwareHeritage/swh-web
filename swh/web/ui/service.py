@@ -120,6 +120,10 @@ def lookup_directory(sha1_git):
         ['sha1'],  # HACK: sha1_git really
         'Only sha1_git is supported.')
 
+    dir = backend.directory_get(sha1_git_bin)
+    if not dir:
+        return None
+
     directory_entries = backend.directory_ls(sha1_git_bin)
     return map(converters.from_directory_entry, directory_entries)
 
@@ -289,9 +293,9 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
 
         revision_root = backend.revision_get(sha1_git_root_bin)
         if not revision_root:
-            raise NotFoundExc('Revision %s not found' % sha1_git_root)
+            raise NotFoundExc('Revision root %s not found' % sha1_git_root)
     else:
-        sha1_git_root_bin = sha1_git_root
+        sha1_git_root_bin = sha1_git_root['id']
 
     revision_log = backend.revision_log(sha1_git_root_bin, limit)
 
