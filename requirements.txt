@@ -6,7 +6,7 @@
 Flask
 Flask-API
 swh.core
-swh.storage >= 0.0.29
+swh.storage >= 0.0.30
 dateutil
 
 # Test dependencies
