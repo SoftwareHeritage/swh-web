@@ -306,27 +306,14 @@ def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
 
     """
     env = {'sha1_git': sha1_git,
+           'message': None,
            'release': None}
 
     try:
-        rel = service.lookup_release(sha1_git)
-        if rel:
-            author = rel.get('author')
-            if author:
-                rel['author'] = utils.person_to_string(author)
-
-            target_type = rel.get('target_type')
-            if target_type == 'revision':
-                rel['target'] = url_for('browse_revision',
-                                        sha1_git=rel['target'])
-
-            env.update({'release': rel,
-                        'keys': ['id', 'name', 'date', 'message', 'author',
-                                 'target', 'target_type']})
-        else:
-            env.update({'message': 'Release %s not found!' % sha1_git})
-    except BadInputExc as e:
-        env.update({'message': str(e)})
+        rel = api.api_release(sha1_git)
+        env['release'] = utils.prepare_data_for_view(rel)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
 
     return render_template('release.html', **env)
 

@@ -176,3 +176,26 @@ def parse_timestamp(timestamp):
     except:
         res = datetime.datetime.fromtimestamp(float(timestamp))
     return res
+
+
+def enrich_release(release):
+    """Enrich a release with link to the 'target' of 'type' revision.
+
+    """
+    if 'target' in release and 'target_type' in release:
+        if release['target_type'] == 'revision':
+            release['target_url'] = flask.url_for('api_revision',
+                                                  sha1_git=release['target'])
+        elif release['target_type'] == 'release':
+            release['target_url'] = flask.url_for('api_release',
+                                                  sha1_git=release['target'])
+        elif release['target_type'] == 'content':
+            release['target_url'] = flask.url_for(
+                'api_content_metadata',
+                q='sha1_git:' + release['target'])
+
+        elif release['target_type'] == 'directory':
+            release['target_url'] = flask.url_for('api_directory',
+                                                  q=release['target'])
+
+    return release

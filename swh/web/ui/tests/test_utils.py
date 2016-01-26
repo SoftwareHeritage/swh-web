@@ -298,3 +298,91 @@ class UtilsTestCase(unittest.TestCase):
 
         for ts, exp_date in zip(input_timestamps, output_dates):
             self.assertEquals(utils.parse_timestamp(ts), exp_date)
+
+    @istest
+    def enrich_release_0(self):
+        # when
+        actual_release = utils.enrich_release({})
+
+        # then
+        self.assertEqual(actual_release, {})
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_release_1(self, mock_flask):
+        # given
+        mock_flask.url_for.return_value = '/api/1/content/sha1_git:123/'
+
+        # when
+        actual_release = utils.enrich_release({'target': '123',
+                                               'target_type': 'content'})
+
+        # then
+        self.assertEqual(actual_release, {
+            'target': '123',
+            'target_type': 'content',
+            'target_url': '/api/1/content/sha1_git:123/'
+        })
+
+        mock_flask.url_for.assert_called_once_with('api_content_metadata',
+                                                   q='sha1_git:123')
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_release_2(self, mock_flask):
+        # given
+        mock_flask.url_for.return_value = '/api/1/dir/23/'
+
+        # when
+        actual_release = utils.enrich_release({'target': '23',
+                                               'target_type': 'directory'})
+
+        # then
+        self.assertEqual(actual_release, {
+            'target': '23',
+            'target_type': 'directory',
+            'target_url': '/api/1/dir/23/'
+        })
+
+        mock_flask.url_for.assert_called_once_with('api_directory',
+                                                   q='23')
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_release_3(self, mock_flask):
+        # given
+        mock_flask.url_for.return_value = '/api/1/rev/3/'
+
+        # when
+        actual_release = utils.enrich_release({'target': '3',
+                                               'target_type': 'revision'})
+
+        # then
+        self.assertEqual(actual_release, {
+            'target': '3',
+            'target_type': 'revision',
+            'target_url': '/api/1/rev/3/'
+        })
+
+        mock_flask.url_for.assert_called_once_with('api_revision',
+                                                   sha1_git='3')
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_release_4(self, mock_flask):
+        # given
+        mock_flask.url_for.return_value = '/api/1/rev/4/'
+
+        # when
+        actual_release = utils.enrich_release({'target': '4',
+                                               'target_type': 'release'})
+
+        # then
+        self.assertEqual(actual_release, {
+            'target': '4',
+            'target_type': 'release',
+            'target_url': '/api/1/rev/4/'
+        })
+
+        mock_flask.url_for.assert_called_once_with('api_release',
+                                                   sha1_git='4')

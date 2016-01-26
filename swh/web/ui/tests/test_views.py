@@ -631,11 +631,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_person.assert_called_once_with(426)
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_release_not_found(self, mock_service):
+    def browse_release_KO_not_found(self, mock_api):
         # given
-        mock_service.lookup_release.return_value = None
+        mock_api.api_release.side_effect = NotFoundExc('not found!')
 
         # when
         rv = self.client.get('/browse/release/1/')
@@ -646,15 +646,15 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '1')
         self.assertEqual(
             self.get_context_variable('message'),
-            'Release 1 not found!')
+            'not found!')
 
-        mock_service.lookup_release.assert_called_once_with('1')
+        mock_api.api_release.assert_called_once_with('1')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_release_bad_input(self, mock_service):
+    def browse_release_KO_bad_input(self, mock_api):
         # given
-        mock_service.lookup_release.side_effect = BadInputExc('wrong input')
+        mock_api.api_release.side_effect = BadInputExc('wrong input')
 
         # when
         rv = self.client.get('/browse/release/426/')
@@ -664,16 +664,19 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assert_template_used('release.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
 
-        mock_service.lookup_release.assert_called_once_with('426')
+        mock_api.api_release.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.api')
     @istest
-    def browse_release(self, mock_service):
+    def browse_release(self, mock_api):
         # given
+        self.maxDiff = None
         mock_release = {
             "date": "Sun, 05 Jul 2015 18:02:06 GMT",
             "id": "1e951912027ea6873da6985b91e50c47f645ae1a",
             "target": "d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754",
+            "target_url": '/browse/revision/d770e558e21961ad6cfdf0ff7df0'
+                          'eb5d7d4f0754/',
             "synthetic": False,
             "target_type": "revision",
             "author": {
@@ -683,16 +686,20 @@ class ViewTestCase(test_app.SWHViewTestCase):
             "message": "Linux 4.2-rc1\n",
             "name": "v4.2-rc1"
         }
-        mock_service.lookup_release.return_value = mock_release
+        mock_api.api_release.return_value = mock_release
 
         expected_release = {
             "date": "Sun, 05 Jul 2015 18:02:06 GMT",
             "id": "1e951912027ea6873da6985b91e50c47f645ae1a",
-            "target": '/browse/revision/d770e558e21961ad6cfdf0ff7df0'
-                      'eb5d7d4f0754/',
+            "target_url": '/browse/revision/d770e558e21961ad6cfdf0ff7df0'
+                          'eb5d7d4f0754/',
+            "target": 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
             "synthetic": False,
             "target_type": "revision",
-            "author": "Linus Torvalds <torvalds@linux-foundation.org>",
+            "author": {
+                "email": "torvalds@linux-foundation.org",
+                "name": "Linus Torvalds"
+            },
             "message": "Linux 4.2-rc1\n",
             "name": "v4.2-rc1"
         }
@@ -706,11 +713,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(self.get_context_variable('release'),
                          expected_release)
-        self.assertEqual(self.get_context_variable('keys'), [
-            'id', 'name', 'date', 'message', 'author', 'target',
-            'target_type'])
 
-        mock_service.lookup_release.assert_called_once_with('426')
+        mock_api.api_release.assert_called_once_with('426')
 
     @patch('swh.web.ui.views.api')
     @istest
