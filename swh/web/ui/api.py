@@ -160,6 +160,35 @@ def api_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
         enrich_fn=utils.enrich_release)
 
 
+def _revision_directory_by(revision, path, request_path, limit=100):
+    """Compute the revision matching criterion's directory or content data.
+
+    Args:
+        revision: dictionary of criterions
+        path: directory's path to lookup
+        request_path: request path which holds the original context to
+
+    """
+    def enrich_directory_local(dir, context_url=request_path):
+        return utils.enrich_directory(dir, context_url)
+
+    rev_id, result = service.lookup_directory_through_revision(
+        revision, path, limit)
+
+    if result['type'] == 'dir':  # dir_entries
+        return {
+            'type': 'dir',
+            'revision': rev_id,
+            'content': list(map(enrich_directory_local, result['content']))
+        }
+    else:  # content
+        return {
+            'type': 'file',
+            'revision': rev_id,
+            'content': utils.enrich_content(result['content'])
+        }
+
+
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
            '/directory/')
@@ -184,10 +213,10 @@ def api_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/directory/<path:path>/')
-def api_directory_through_origin(origin_id=1,
-                                 branch_name="refs/heads/master",
-                                 ts=None,
-                                 path=None):
+def api_directory_through_revision_origin(origin_id=1,
+                                          branch_name="refs/heads/master",
+                                          ts=None,
+                                          path=None):
     """Display directory or content information through a revision identified
     by origin/branch/timestamp.
 
@@ -210,14 +239,10 @@ def api_directory_through_origin(origin_id=1,
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    revision = service.lookup_revision_by(origin_id, branch_name, ts)
-    if not revision:
-        raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
-                          ', ts: %s) not found.' % (origin_id,
-                                                    branch_name,
-                                                    ts))
-
-    return _revision_directory(revision['id'], path, request.path)
+    return _revision_directory_by({
+        'origin_id': origin_id,
+        'branch_name': branch_name,
+        'ts': ts}, path, request.path)
 
 
 @app.route('/api/1/revision'
@@ -364,22 +389,11 @@ def api_directory_through_revision_with_origin_history(
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    rev_root, revision = service.lookup_revision_with_context_by(origin_id,
-                                                                 branch_name,
-                                                                 ts,
-                                                                 sha1_git,
-                                                                 limit)
-    if not revision:
-        raise NotFoundExc(
-            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s' "
-            "sha1_git_root being the revision's identifier pointed to by "
-            "(origin_id: %s, branch_name: %s, ts: %s)." % (sha1_git,
-                                                           rev_root['id'],
-                                                           origin_id,
-                                                           branch_name,
-                                                           ts))
-
-    return _revision_directory(revision['id'], path, request.path)
+    return _revision_directory_by({
+        'origin_id': origin_id,
+        'branch_name': branch_name,
+        'ts': ts,
+        'sha1_git': sha1_git}, path, request.path, limit)
 
 
 @app.route('/api/1/revision'
@@ -461,32 +475,6 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
         enrich_fn=utils.enrich_revision)
 
 
-def _revision_directory(rev_sha1_git, dir_path, request_path):
-    """Compute the revision rev_sha1_git's directory or content data.
-
-    """
-    def enrich_directory_local(dir, context_url=request_path):
-        return utils.enrich_directory(dir, context_url)
-
-    result = service.lookup_directory_with_revision(rev_sha1_git, dir_path)
-    if not result:
-        raise NotFoundExc('Revision with sha1_git %s not'
-                          ' found.' % rev_sha1_git)
-
-    if result['type'] == 'dir':  # dir_entries
-        return {
-            'type': 'dir',
-            'revision': rev_sha1_git,
-            'content': list(map(enrich_directory_local, result['content']))
-        }
-    else:  # content
-        return {
-            'type': 'file',
-            'revision': rev_sha1_git,
-            'content': utils.enrich_content(result['content'])
-        }
-
-
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
 def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
@@ -511,7 +499,8 @@ def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/directory/
 
     """
-    return _revision_directory(sha1_git, dir_path, request.path)
+    return _revision_directory_by({
+        'sha1_git': sha1_git}, dir_path, request.path)
 
 
 @app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
@@ -594,15 +583,9 @@ def api_revision_history_directory(sha1_git_root, sha1_git, dir_path=None):
                                 dir_path=dir_path),
                         code=301)
 
-    revision = service.lookup_revision_with_context(sha1_git_root,
-                                                    sha1_git,
-                                                    limit)
-    if not revision:
-        raise NotFoundExc(
-            "Possibly sha1_git '%s' is not an ancestor of sha1_git_root '%s'"
-            % (sha1_git, sha1_git_root))
-
-    return _revision_directory(revision['id'], dir_path, request.path)
+    return _revision_directory_by({
+        'sha1_git_root': sha1_git_root,
+        'sha1_git': sha1_git}, dir_path, request.path, limit)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')

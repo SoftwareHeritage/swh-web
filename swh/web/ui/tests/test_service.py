@@ -1205,3 +1205,124 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_query.parse_uuid4.assert_called_once_with(uuid_test)
         mock_backend.entity_get.assert_called_once_with(uuid_test)
+
+    @istest
+    def lookup_revision_through_KO_not_implemented(self):
+        # then
+        with self.assertRaises(NotImplementedError):
+            service.lookup_revision_through({
+                'something-unknown': 10,
+            })
+
+    @patch('swh.web.ui.service.lookup_revision_with_context_by')
+    @istest
+    def lookup_revision_through_with_context_by(self, mock_lookup):
+        # given
+        stub_rev = {'id': 'rev'}
+        mock_lookup.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_through({
+            'origin_id': 1,
+            'branch_name': 'master',
+            'ts': None,
+            'sha1_git': 'sha1-git'
+        }, limit=1000)
+
+        # then
+        self.assertEquals(actual_revision, stub_rev)
+
+        mock_lookup.assert_called_once_with(
+            1, 'master', None, 'sha1-git', 1000)
+
+    @patch('swh.web.ui.service.lookup_revision_by')
+    @istest
+    def lookup_revision_through_with_revision_by(self, mock_lookup):
+        # given
+        stub_rev = {'id': 'rev'}
+        mock_lookup.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_through({
+            'origin_id': 2,
+            'branch_name': 'master2',
+            'ts': 'some-ts',
+        }, limit=10)
+
+        # then
+        self.assertEquals(actual_revision, stub_rev)
+
+        mock_lookup.assert_called_once_with(
+            2, 'master2', 'some-ts')
+
+    @patch('swh.web.ui.service.lookup_revision_with_context')
+    @istest
+    def lookup_revision_through_with_context(self, mock_lookup):
+        # given
+        stub_rev = {'id': 'rev'}
+        mock_lookup.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_through({
+            'sha1_git_root': 'some-sha1-root',
+            'sha1_git': 'some-sha1',
+        })
+
+        # then
+        self.assertEquals(actual_revision, stub_rev)
+
+        mock_lookup.assert_called_once_with(
+            'some-sha1-root', 'some-sha1', 100)
+
+    @patch('swh.web.ui.service.lookup_revision')
+    @istest
+    def lookup_revision_through_with_revision(self, mock_lookup):
+        # given
+        stub_rev = {'id': 'rev'}
+        mock_lookup.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_through({
+            'sha1_git': 'some-sha1',
+        })
+
+        # then
+        self.assertEquals(actual_revision, stub_rev)
+
+        mock_lookup.assert_called_once_with(
+            'some-sha1')
+
+    @patch('swh.web.ui.service.lookup_revision_through')
+    @istest
+    def lookup_directory_through_revision_KO_not_found(
+            self, mock_lookup_rev):
+        # given
+        mock_lookup_rev.return_value = None
+
+        # when
+        with self.assertRaises(NotFoundExc):
+            service.lookup_directory_through_revision(
+                {'id': 'rev'}, 'some/path', 100)
+
+        mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
+
+    @patch('swh.web.ui.service.lookup_revision_through')
+    @patch('swh.web.ui.service.lookup_directory_with_revision')
+    @istest
+    def lookup_directory_through_revision(
+            self, mock_lookup_dir, mock_lookup_rev):
+        # given
+        mock_lookup_rev.return_value = {'id': 'rev-id'}
+        mock_lookup_dir.return_value = {'type': 'dir',
+                                        'content': []}
+
+        # when
+        rev_id, dir_content = service.lookup_directory_through_revision(
+            {'id': 'rev'}, 'some/path', 100)
+        # then
+        self.assertEquals(rev_id, 'rev-id')
+        self.assertEquals(dir_content, {'type': 'dir',
+                                        'content': []})
+
+        mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
+        mock_lookup_dir.assert_called_once_with('rev-id', 'some/path')

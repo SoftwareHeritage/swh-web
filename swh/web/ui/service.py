@@ -428,3 +428,56 @@ def lookup_entity_by_uuid(uuid):
     """
     uuid = query.parse_uuid4(uuid)
     return backend.entity_get(uuid)
+
+
+def lookup_revision_through(revision, limit=100):
+    """Retrieve a revision from the criterion stored in revision dictionary.
+
+    Args:
+        revision: Dictionary of criterion to lookup the revision with.
+        Here are the supported combination of possible values:
+        - origin_id, branch_name, ts, sha1_git
+        - origin_id, branch_name, ts
+        - sha1_git_root, sha1_git
+        - sha1_git
+
+    Returns:
+        None if the revision is not found or the actual revision.
+
+    """
+    if 'origin_id' in revision and \
+       'branch_name' in revision and \
+       'ts' in revision and \
+       'sha1_git' in revision:
+        return lookup_revision_with_context_by(revision['origin_id'],
+                                               revision['branch_name'],
+                                               revision['ts'],
+                                               revision['sha1_git'],
+                                               limit)
+    if 'origin_id' in revision and \
+       'branch_name' in revision and \
+       'ts' in revision:
+        return lookup_revision_by(revision['origin_id'],
+                                  revision['branch_name'],
+                                  revision['ts'])
+    if 'sha1_git_root' in revision and \
+       'sha1_git' in revision:
+        return lookup_revision_with_context(revision['sha1_git_root'],
+                                            revision['sha1_git'],
+                                            limit)
+    if 'sha1_git' in revision:
+        return lookup_revision(revision['sha1_git'])
+
+    # this should not happen
+    raise NotImplementedError('Should not happen!')
+
+
+def lookup_directory_through_revision(revision, path=None, limit=100):
+    """Retrieve the directory information from the revision.
+
+    """
+    rev = lookup_revision_through(revision, limit)
+
+    if not rev:
+        raise NotFoundExc('Revision with criterion %s not found!' % revision)
+    return rev['id'], lookup_directory_with_revision(rev['id'], path)
