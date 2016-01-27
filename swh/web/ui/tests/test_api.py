@@ -910,7 +910,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error':
             'not found'})
 
-        mock_rev_dir.assert_called_once(
+        mock_rev_dir.assert_called_once_with(
             {
                 'origin_id': 1,
                 'branch_name': 'refs/heads/master',
