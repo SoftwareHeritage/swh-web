@@ -247,7 +247,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_metadata_KO_not_found(self, mock_api):
+    def browse_content_KO_not_found(self, mock_api):
         # given
         mock_api.api_content_metadata.side_effect = NotFoundExc(
             'Not found!')
@@ -267,7 +267,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_metadata_KO_bad_input(self, mock_api):
+    def browse_content_KO_bad_input(self, mock_api):
         # given
         mock_api.api_content_metadata.side_effect = BadInputExc(
             'Bad input!')
@@ -288,7 +288,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @patch('swh.web.ui.views.service')
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_metadata(self, mock_api, mock_service):
+    def browse_content(self, mock_api, mock_service):
         # given
         stub_content = {'sha1': 'sha1_hash'}
         mock_api.api_content_metadata.return_value = stub_content

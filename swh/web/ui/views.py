@@ -112,7 +112,7 @@ def search():
 @app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+def browse_content(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
     """Given a hash and a checksum, display the content's meta-data.
 
     Args:
