@@ -136,7 +136,7 @@ def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
         if content_raw:
             content_raw = content_raw['data'].decode('utf-8')
             content['data'] = content_raw
-        env['content'] = content
+        env['content'] = utils.prepare_data_for_view(content)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
