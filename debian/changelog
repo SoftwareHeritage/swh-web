@@ -1,3 +1,17 @@
+swh-web (0.0.23-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.23
+  * Bump dependency requirements to latest swh.storage
+  * Returns person's identifier on api + Hide person's emails in views
+    endpoint
+  * Try to decode the content's raw data and fail gracefully
+  * Unify /directory api to Display content's raw data when path
+    resolves to a file
+  * Expose unconditionally the link to download the content's raw data
+  * Download link data redirects to the api ones
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 29 Jan 2016 17:50:31 +0100
+
 swh-web (0.0.22-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.22
