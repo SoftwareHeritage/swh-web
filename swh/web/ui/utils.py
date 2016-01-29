@@ -59,13 +59,22 @@ def fmap(f, data):
     return f(data)
 
 
-def prepare_data_for_view(data):
-    def replace_api_url(s):
+def prepare_data_for_view(data, encoding='utf-8'):
+    def prepare_data(s):
+        # Note: can only be 'data' key with bytes of raw content
+        if isinstance(s, bytes):
+            try:
+                return s.decode(encoding)
+            except:
+                return "Cannot decode the data bytes, try and set another" \
+                       " encoding in the url or download directly the" \
+                       " content's raw data."
         if isinstance(s, str):
             return re.sub(r'/api/1/', r'/browse/', s)
+
         return s
 
-    return fmap(replace_api_url, data)
+    return fmap(prepare_data, data)
 
 
 def filter_field_keys(data, field_keys):

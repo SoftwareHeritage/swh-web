@@ -922,7 +922,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '/origin/1'
             '/history/4563'
             '/directory/some-path/',
-            100)
+            limit=100, with_data=False)
 
     @patch('swh.web.ui.api._revision_directory_by')
     @patch('swh.web.ui.api.utils')
@@ -960,12 +960,16 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_utils.parse_timestamp.assert_called_once_with('2016-11-24')
 
-        mock_rev_dir.assert_called_once_with({
-            'origin_id': 999,
-            'branch_name': 'refs/dev',
-            'ts': '2016-11-24 00:00:00',
-            'sha1_git': '12-sha1-git'
-        }, 'some/content', url, 666)
+        mock_rev_dir.assert_called_once_with(
+            {
+                'origin_id': 999,
+                'branch_name': 'refs/dev',
+                'ts': '2016-11-24 00:00:00',
+                'sha1_git': '12-sha1-git'
+            },
+            'some/content',
+            url,
+            limit=666, with_data=False)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -1177,7 +1181,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # then
         mock_service.lookup_directory_through_revision.assert_called_once_with(
             {'sha1_git': 'id'},
-            None, 100)
+            None, limit=100, with_data=False)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -1203,7 +1207,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_directory_through_revision.assert_called_once_with(
             {'sha1_git': 'blah-id'},
-            'some/path', 100)
+            'some/path', limit=100, with_data=False)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -1220,7 +1224,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             {'sha1_git': 'sha1'},
             'some/path',
             '/api/1/revision/origin/2/directory/',
-            1000)
+            limit=1000, with_data=True)
 
         # then
         self.assertEquals(actual_dir_content, {
@@ -1231,14 +1235,14 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_directory_through_revision.assert_called_once_with(
             {'sha1_git': 'sha1'},
-            'some/path', 1000)
+            'some/path', limit=1000, with_data=True)
 
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api._revision_directory_by')
     @istest
-    def api_directory_through_revision_origin_not_found(self,
-                                                        mock_rev_dir,
-                                                        mock_utils):
+    def api_directory_through_revision_origin_KO_not_found(self,
+                                                           mock_rev_dir,
+                                                           mock_utils):
         mock_rev_dir.side_effect = NotFoundExc('not found')
         mock_utils.parse_timestamp.return_value = '2012-10-20 00:00:00'
 
@@ -1263,7 +1267,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '/origin/10'
             '/branch/refs/remote/origin/dev'
             '/ts/2012-10-20'
-            '/directory/')
+            '/directory/',
+            with_data=False)
 
     @patch('swh.web.ui.api._revision_directory_by')
     @istest
@@ -1285,7 +1290,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_revision_dir.assert_called_once_with({
             'origin_id': 3,
             'branch_name': 'refs/heads/master',
-            'ts': None}, None, '/api/1/revision/origin/3/directory/')
+            'ts': None}, None, '/api/1/revision/origin/3/directory/',
+                                                  with_data=False)
 
     @patch('swh.web.ui.api.service')
     @istest
@@ -1456,7 +1462,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_rev_dir.assert_called_once_with(
             {'sha1_git': '999'},
             'some/path/to/dir',
-            '/api/1/revision/999/directory/some/path/to/dir/')
+            '/api/1/revision/999/directory/some/path/to/dir/',
+            with_data=False)
 
     @patch('swh.web.ui.api._revision_directory_by')
     @istest
@@ -1499,7 +1506,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_rev_dir.assert_called_once_with(
             {'sha1_git': '999'},
             'some/path',
-            '/api/1/revision/999/directory/some/path/')
+            '/api/1/revision/999/directory/some/path/',
+            with_data=False)
 
     @patch('swh.web.ui.api._revision_directory_by')
     @istest
@@ -1527,7 +1535,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, stub_content)
 
         mock_rev_dir.assert_called_once_with(
-            {'sha1_git': '666'}, 'some/other/path', url)
+            {'sha1_git': '666'}, 'some/other/path', url, with_data=False)
 
     @istest
     def api_revision_history_directory_sha1_same_so_redirect(self):
@@ -1560,7 +1568,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'not found'})
 
         mock_rev_dir.assert_called_once_with(
-            {'sha1_git_root': '456', 'sha1_git': '987'}, 'path/to', url, 10)
+            {'sha1_git_root': '456', 'sha1_git': '987'}, 'path/to', url,
+            limit=10, with_data=False)
 
     @patch('swh.web.ui.api._revision_directory_by')
     @istest
@@ -1612,7 +1621,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
              'sha1_git': '867'},
             'debian',
             url,
-            4)
+            limit=4, with_data=False)
 
     @patch('swh.web.ui.api.service')
     @istest

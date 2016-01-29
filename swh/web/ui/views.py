@@ -134,8 +134,7 @@ def browse_content(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
         content = api.api_content_metadata(q)
         content_raw = service.lookup_content_raw(q)
         if content_raw:
-            content_raw = content_raw['data'].decode('utf-8')
-            content['data'] = content_raw
+            content['data'] = content_raw['data']
         env['content'] = utils.prepare_data_for_view(content)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
@@ -397,7 +396,7 @@ def browse_revision_directory(sha1_git, path=None):
     }
 
     try:
-        result = api.api_revision_directory(sha1_git, path)
+        result = api.api_revision_directory(sha1_git, path, with_data=True)
         result['content'] = utils.prepare_data_for_view(result['content'])
         env['revision'] = result['revision']
         env['result'] = result
@@ -454,7 +453,8 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
     try:
         result = api.api_revision_history_directory(sha1_git_root,
                                                     sha1_git,
-                                                    path)
+                                                    path,
+                                                    with_data=True)
         env['revision'] = result['revision']
         env['content'] = utils.prepare_data_for_view(result['content'])
         env['result'] = result
@@ -523,7 +523,7 @@ def browse_directory_through_revision_with_origin_history(
 
     try:
         result = api.api_directory_through_revision_with_origin_history(
-            origin_id, branch_name, ts, sha1_git, path)
+            origin_id, branch_name, ts, sha1_git, path, with_data=True)
         env['revision'] = result['revision']
         env['content'] = utils.prepare_data_for_view(result['content'])
         env['result'] = result
@@ -679,7 +679,8 @@ def browse_revision_directory_through_origin(origin_id,
             origin_id,
             branch_name,
             ts,
-            path)
+            path,
+            with_data=True)
 
         result['content'] = utils.prepare_data_for_view(result['content'])
         env['revision'] = result['revision']

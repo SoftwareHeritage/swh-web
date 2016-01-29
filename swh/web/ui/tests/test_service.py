@@ -607,7 +607,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_revision_with_path_to_file(
+    def lookup_directory_with_revision_revision_with_path_to_file_without_data(
             self,
             mock_query,
             mock_backend):
@@ -648,6 +648,64 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.directory_entry_get_by_path.assert_called_once_with(
             b'dir-id-as-sha1', 'some/path/to/file')
         mock_backend.content_find.assert_called_once_with('sha1_git', b'789')
+
+    @patch('swh.web.ui.service.backend')
+    @patch('swh.web.ui.service.query')
+    @istest
+    def lookup_directory_with_revision_revision_with_path_to_file_with_data(
+            self,
+            mock_query,
+            mock_backend):
+
+        # given
+        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
+                                                                        b'123')
+
+        dir_id = b'dir-id-as-sha1'
+        mock_backend.revision_get.return_value = {
+            'directory': dir_id,
+        }
+
+        mock_backend.directory_entry_get_by_path.return_value = {
+                'type': 'file',
+                'name': b'some/path/to/file',
+                'target': b'789'
+            }
+
+        stub_content = {
+            'status': 'visible',
+            'sha1': b'content-sha1'
+        }
+
+        mock_backend.content_find.return_value = stub_content
+        mock_backend.content_get.return_value = {
+            'sha1': b'content-sha1',
+            'data': b'some raw data'
+        }
+
+        expected_content = {
+            'status': 'visible',
+            'sha1': hash_to_hex(b'content-sha1'),
+            'data': b'some raw data'
+        }
+
+        # when
+        actual_content = service.lookup_directory_with_revision(
+            '123',
+            'some/path/to/file',
+            with_data=True)
+
+        # then
+        self.assertEqual(actual_content, {'type': 'file',
+                                          'content': expected_content})
+
+        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
+        ('123', ['sha1'], 'Only sha1_git is supported.')
+        mock_backend.revision_get.assert_called_once_with(b'123')
+        mock_backend.directory_entry_get_by_path.assert_called_once_with(
+            b'dir-id-as-sha1', 'some/path/to/file')
+        mock_backend.content_find.assert_called_once_with('sha1_git', b'789')
+        mock_backend.content_get.assert_called_once_with(b'content-sha1')
 
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
@@ -1309,7 +1367,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.lookup_revision_through')
     @patch('swh.web.ui.service.lookup_directory_with_revision')
     @istest
-    def lookup_directory_through_revision(
+    def lookup_directory_through_revision_OK_with_data(
             self, mock_lookup_dir, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = {'id': 'rev-id'}
@@ -1317,12 +1375,35 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                                         'content': []}
 
         # when
-        rev_id, dir_content = service.lookup_directory_through_revision(
+        rev_id, dir_result = service.lookup_directory_through_revision(
             {'id': 'rev'}, 'some/path', 100)
         # then
         self.assertEquals(rev_id, 'rev-id')
-        self.assertEquals(dir_content, {'type': 'dir',
-                                        'content': []})
+        self.assertEquals(dir_result, {'type': 'dir',
+                                       'content': []})
 
         mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
-        mock_lookup_dir.assert_called_once_with('rev-id', 'some/path')
+        mock_lookup_dir.assert_called_once_with('rev-id', 'some/path', False)
+
+    @patch('swh.web.ui.service.lookup_revision_through')
+    @patch('swh.web.ui.service.lookup_directory_with_revision')
+    @istest
+    def lookup_directory_through_revision_OK_with_content(
+            self, mock_lookup_dir, mock_lookup_rev):
+        # given
+        mock_lookup_rev.return_value = {'id': 'rev-id'}
+        stub_result = {'type': 'file',
+                       'revision': 'rev-id',
+                       'content': {'data': b'blah',
+                                   'sha1': 'sha1'}}
+        mock_lookup_dir.return_value = stub_result
+
+        # when
+        rev_id, dir_result = service.lookup_directory_through_revision(
+            {'id': 'rev'}, 'some/path', 10, with_data=True)
+        # then
+        self.assertEquals(rev_id, 'rev-id')
+        self.assertEquals(dir_result, stub_result)
+
+        mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 10)
+        mock_lookup_dir.assert_called_once_with('rev-id', 'some/path', True)

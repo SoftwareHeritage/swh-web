@@ -318,7 +318,7 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     return converters.from_revision(revision)
 
 
-def lookup_directory_with_revision(sha1_git, dir_path=None):
+def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
     Otherwise, display the directory pointed by dir_path (if it exists).
@@ -326,6 +326,8 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
     Args:
         sha1_git: revision's hash.
         dir_path: optional directory pointed to by that revision.
+        with_data: boolean that indicates to retrieve the raw data if the path
+        resolves to a content. Default to False (for the api)
 
     Returns:
         Information on the directory pointed to by that revision.
@@ -368,6 +370,9 @@ def lookup_directory_with_revision(sha1_git, dir_path=None):
                                directory_entries)}
     elif entity['type'] == 'file':  # content
         content = backend.content_find('sha1_git', entity['target'])
+        if with_data:
+            content['data'] = backend.content_get(content['sha1'])['data']
+
         return {'type': 'file',
                 'content': converters.from_content(content)}
     else:
@@ -388,7 +393,7 @@ def lookup_content(q):
 
 
 def lookup_content_raw(q):
-    """Lookup the content designed by q.
+    """Lookup the content defined by q.
 
     Args:
         q: query string of the form <hash_algo:hash>
@@ -472,12 +477,26 @@ def lookup_revision_through(revision, limit=100):
     raise NotImplementedError('Should not happen!')
 
 
-def lookup_directory_through_revision(revision, path=None, limit=100):
+def lookup_directory_through_revision(revision, path=None,
+                                      limit=100, with_data=False):
     """Retrieve the directory information from the revision.
+
+    Args:
+        revision: dictionary of criterion representing a revision to lookup
+        path: directory's path to lookup.
+        limit: optional query parameter to limit the revisions log.
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of.
+        with_data: indicate to retrieve the content's raw data if path resolves
+        to a content.
+
+    Returns:
+        The directory pointing to by the revision criterions at path.
 
     """
     rev = lookup_revision_through(revision, limit)
 
     if not rev:
         raise NotFoundExc('Revision with criterion %s not found!' % revision)
-    return rev['id'], lookup_directory_with_revision(rev['id'], path)
+    return (rev['id'],
+            lookup_directory_with_revision(rev['id'], path, with_data))

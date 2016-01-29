@@ -160,20 +160,26 @@ def api_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
         enrich_fn=utils.enrich_release)
 
 
-def _revision_directory_by(revision, path, request_path, limit=100):
+def _revision_directory_by(revision, path, request_path,
+                           limit=100, with_data=False):
     """Compute the revision matching criterion's directory or content data.
 
     Args:
-        revision: dictionary of criterions
+        revision: dictionary of criterions representing a revision to lookup
         path: directory's path to lookup
         request_path: request path which holds the original context to
+        limit: optional query parameter to limit the revisions log
+        (default to 100). For now, note that this limit could impede the
+        transitivity conclusion about sha1_git not being an ancestor of
+        with_data: indicate to retrieve the content's raw data if path resolves
+        to a content.
 
     """
     def enrich_directory_local(dir, context_url=request_path):
         return utils.enrich_directory(dir, context_url)
 
     rev_id, result = service.lookup_directory_through_revision(
-        revision, path, limit)
+        revision, path, limit=limit, with_data=with_data)
 
     if result['type'] == 'dir':  # dir_entries
         return {
@@ -216,7 +222,8 @@ def _revision_directory_by(revision, path, request_path, limit=100):
 def api_directory_through_revision_origin(origin_id=1,
                                           branch_name="refs/heads/master",
                                           ts=None,
-                                          path=None):
+                                          path=None,
+                                          with_data=False):
     """Display directory or content information through a revision identified
     by origin/branch/timestamp.
 
@@ -227,6 +234,8 @@ def api_directory_through_revision_origin(origin_id=1,
         timestamp: optional timestamp (default to the nearest time
         crawl of timestamp).
         path: Path to directory or file to display.
+        with_data: indicate to retrieve the content's raw data if path resolves
+        to a content.
 
     Returns:
         Information on the directory or content pointed to by such revision.
@@ -239,10 +248,15 @@ def api_directory_through_revision_origin(origin_id=1,
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    return _revision_directory_by({
-        'origin_id': origin_id,
-        'branch_name': branch_name,
-        'ts': ts}, path, request.path)
+    return _revision_directory_by(
+        {
+            'origin_id': origin_id,
+            'branch_name': branch_name,
+            'ts': ts
+        },
+        path,
+        request.path,
+        with_data=with_data)
 
 
 @app.route('/api/1/revision'
@@ -356,7 +370,8 @@ def api_directory_through_revision_with_origin_history(
         branch_name="refs/heads/master",
         ts=None,
         sha1_git=None,
-        path=None):
+        path=None,
+        with_data=False):
     """Return information about directory or content pointed to by the
     revision defined as: revision sha1_git, limited to the sub-graph
     of all transitive parents of sha1_git_root (being the identified
@@ -374,6 +389,8 @@ def api_directory_through_revision_with_origin_history(
         (default to 100). For now, note that this limit could impede the
         transitivity conclusion about sha1_git not being an ancestor of
         sha1_git_root (even if it is).
+        with_data: indicate to retrieve the content's raw data if path resolves
+        to a content.
 
     Returns:
         Information on the directory pointed to by that revision.
@@ -389,11 +406,16 @@ def api_directory_through_revision_with_origin_history(
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    return _revision_directory_by({
-        'origin_id': origin_id,
-        'branch_name': branch_name,
-        'ts': ts,
-        'sha1_git': sha1_git}, path, request.path, limit)
+    return _revision_directory_by(
+        {
+            'origin_id': origin_id,
+            'branch_name': branch_name,
+            'ts': ts,
+            'sha1_git': sha1_git
+        },
+        path,
+        request.path,
+        limit=limit, with_data=with_data)
 
 
 @app.route('/api/1/revision'
@@ -478,7 +500,8 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
 def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
-                           dir_path=None):
+                           dir_path=None,
+                           with_data=False):
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
     Otherwise, display the directory pointed by dir_path (if it exists).
@@ -486,6 +509,8 @@ def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
     Args:
         sha1_git: revision's hash.
         dir_path: optional directory pointed to by that revision.
+        with_data: indicate to retrieve the content's raw data if path resolves
+        to a content
 
     Returns:
         Information on the directory pointed to by that revision.
@@ -499,8 +524,13 @@ def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/directory/
 
     """
-    return _revision_directory_by({
-        'sha1_git': sha1_git}, dir_path, request.path)
+    return _revision_directory_by(
+        {
+            'sha1_git': sha1_git
+        },
+        dir_path,
+        request.path,
+        with_data=with_data)
 
 
 @app.route('/api/1/revision/<string:sha1_git_root>/history/<sha1_git>/')
@@ -552,7 +582,8 @@ def api_revision_history(sha1_git_root, sha1_git):
 @app.route('/api/1/revision/<string:sha1_git_root>'
            '/history/<sha1_git>'
            '/directory/<path:dir_path>/')
-def api_revision_history_directory(sha1_git_root, sha1_git, dir_path=None):
+def api_revision_history_directory(sha1_git_root, sha1_git,
+                                   dir_path=None, with_data=False):
     """Return information about directory pointed to by the revision
     defined as: revision sha1_git, limited to the sub-graph of all
     transitive parents of sha1_git_root.
@@ -565,6 +596,8 @@ def api_revision_history_directory(sha1_git_root, sha1_git, dir_path=None):
         (default to 100). For now, note that this limit could impede the
         transitivity conclusion about sha1_git not being an ancestor of
         sha1_git_root (even if it is).
+        with_data: indicate to retrieve the content's raw data if path resolves
+        to a content.
 
     Returns:
         Information on the directory pointed to by that revision.
@@ -583,9 +616,14 @@ def api_revision_history_directory(sha1_git_root, sha1_git, dir_path=None):
                                 dir_path=dir_path),
                         code=301)
 
-    return _revision_directory_by({
-        'sha1_git_root': sha1_git_root,
-        'sha1_git': sha1_git}, dir_path, request.path, limit)
+    return _revision_directory_by(
+        {
+            'sha1_git_root': sha1_git_root,
+            'sha1_git': sha1_git
+        },
+        dir_path,
+        request.path,
+        limit=limit, with_data=with_data)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')

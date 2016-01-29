@@ -65,9 +65,13 @@ class UtilsTestCase(unittest.TestCase):
         })
 
     @istest
-    def prepare_data_for_view(self):
+    def prepare_data_for_view_default_encoding(self):
+        self.maxDiff = None
         # given
         inputs = [
+            {
+                'data': b'some blah data'
+            },
             {
                 'data': 1,
                 'data_url': '/api/1/some/api/call',
@@ -83,6 +87,9 @@ class UtilsTestCase(unittest.TestCase):
         # then
         self.assertEquals(actual_result, [
             {
+                'data': 'some blah data',
+            },
+            {
                 'data': 1,
                 'data_url': '/browse/some/api/call',
             },
@@ -91,6 +98,58 @@ class UtilsTestCase(unittest.TestCase):
                 'blah_url': '/some/non/changed/api/call'
             }
         ])
+
+    @istest
+    def prepare_data_for_view(self):
+        self.maxDiff = None
+        # given
+        inputs = [
+            {
+                'data': b'some blah data'
+            },
+            {
+                'data': 1,
+                'data_url': '/api/1/some/api/call',
+            },
+            {
+                'blah': 'foobar',
+                'blah_url': '/some/non/changed/api/call'
+            }]
+
+        # when
+        actual_result = utils.prepare_data_for_view(inputs, encoding='ascii')
+
+        # then
+        self.assertEquals(actual_result, [
+            {
+                'data': 'some blah data',
+            },
+            {
+                'data': 1,
+                'data_url': '/browse/some/api/call',
+            },
+            {
+                'blah': 'foobar',
+                'blah_url': '/some/non/changed/api/call'
+            }
+        ])
+
+    @istest
+    def prepare_data_for_view_KO_cannot_decode(self):
+        self.maxDiff = None
+        # given
+        inputs = {
+            'data': 'hé dude!'.encode('utf-8'),
+        }
+
+        actual_result = utils.prepare_data_for_view(inputs, encoding='ascii')
+
+        # then
+        self.assertEquals(actual_result, {
+                'data': "Cannot decode the data bytes, try and set another"
+                        " encoding in the url or download directly the "
+                        "content's raw data.",
+            })
 
     @istest
     def filter_field_keys_dict_unknown_keys(self):
