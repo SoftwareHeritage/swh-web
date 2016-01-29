@@ -1191,6 +1191,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'rev-id',
             {
                 'type': 'dir',
+                'revision': 'rev-id',
+                'path': 'some/path',
                 'content': []
             })
         # when
@@ -1202,6 +1204,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(actual_dir_content, {
             'type': 'dir',
             'revision': 'rev-id',
+            'path': 'some/path',
             'content': []
         })
 
@@ -1217,6 +1220,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'rev-id',
             {
                 'type': 'file',
+                'revision': 'rev-id',
+                'path': 'some/path',
                 'content': {'blah': 'blah'}
             })
         # when
@@ -1230,6 +1235,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(actual_dir_content, {
                 'type': 'file',
                 'revision': 'rev-id',
+                'path': 'some/path',
                 'content': {'blah': 'blah'}
             })
 

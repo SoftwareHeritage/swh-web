@@ -181,18 +181,13 @@ def _revision_directory_by(revision, path, request_path,
     rev_id, result = service.lookup_directory_through_revision(
         revision, path, limit=limit, with_data=with_data)
 
+    content = result['content']
     if result['type'] == 'dir':  # dir_entries
-        return {
-            'type': 'dir',
-            'revision': rev_id,
-            'content': list(map(enrich_directory_local, result['content']))
-        }
+        result['content'] = list(map(enrich_directory_local, content))
     else:  # content
-        return {
-            'type': 'file',
-            'revision': rev_id,
-            'content': utils.enrich_content(result['content'])
-        }
+        result['content'] = utils.enrich_content(content)
+
+    return result
 
 
 @app.route('/api/1/revision'

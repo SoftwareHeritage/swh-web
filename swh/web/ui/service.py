@@ -366,6 +366,8 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         directory_entries = backend.directory_ls(entity['target'])
 
         return {'type': 'dir',
+                'path': '.' if not dir_path else dir_path,
+                'revision': sha1_git,
                 'content': map(converters.from_directory_entry,
                                directory_entries)}
     elif entity['type'] == 'file':  # content
@@ -374,6 +376,8 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
             content['data'] = backend.content_get(content['sha1'])['data']
 
         return {'type': 'file',
+                'path': '.' if not dir_path else dir_path,
+                'revision': sha1_git,
                 'content': converters.from_content(content)}
     else:
         raise NotImplementedError('Entity of type %s not implemented.'
