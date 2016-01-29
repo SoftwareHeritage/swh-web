@@ -488,13 +488,17 @@ class UtilsTestCase(unittest.TestCase):
                 return '/api/revision/' + data['sha1_git'] + '/log/'
             elif fn == 'api_directory':
                 return '/api/directory/' + data['sha1_git'] + '/'
+            elif fn == 'api_person':
+                return '/api/person/' + data['person_id'] + '/'
 
         mock_flask.url_for.side_effect = url_for_test
 
         # when
         actual_revision = utils.enrich_revision({
             'id': 'rev-id',
-            'directory': '123'
+            'directory': '123',
+            'author': {'id': '1'},
+            'committer': {'id': '2'},
         })
 
         # then
@@ -503,13 +507,21 @@ class UtilsTestCase(unittest.TestCase):
             'directory': '123',
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
-            'directory_url': '/api/directory/123/'
+            'directory_url': '/api/directory/123/',
+            'author': {'id': '1'},
+            'author_url': '/api/person/1/',
+            'committer': {'id': '2'},
+            'committer_url': '/api/person/2/'
         })
 
         mock_flask.url_for.assert_has_calls([call('api_revision',
                                                   sha1_git='rev-id'),
                                              call('api_revision_log',
                                                   sha1_git='rev-id'),
+                                             call('api_person',
+                                                  person_id='1'),
+                                             call('api_person',
+                                                  person_id='2'),
                                              call('api_directory',
                                                   sha1_git='123')])
 

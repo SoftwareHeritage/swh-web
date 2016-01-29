@@ -209,6 +209,16 @@ def enrich_revision(revision, context=None):
     revision['history_url'] = flask.url_for('api_revision_log',
                                             sha1_git=revision['id'])
 
+    if 'author' in revision:
+        author = revision['author']
+        revision['author_url'] = flask.url_for('api_person',
+                                               person_id=author['id'])
+
+    if 'committer' in revision:
+        committer = revision['committer']
+        revision['committer_url'] = flask.url_for('api_person',
+                                                  person_id=committer['id'])
+
     if 'directory' in revision:
         revision['directory_url'] = flask.url_for(
             'api_directory',
