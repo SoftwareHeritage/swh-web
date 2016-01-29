@@ -144,7 +144,6 @@ def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
 
 
 @app.route('/browse/content/<string:q>/raw/')
-@set_renderers(HTMLRenderer)
 def browse_content_raw(q):
     """Given a hash and a checksum, display the content's raw data.
 
@@ -160,22 +159,7 @@ def browse_content_raw(q):
         NotFoundExc if the content is not found.
 
     """
-    env = {}
-    content = None
-    try:
-        content = service.lookup_content_raw(q)
-        if content:
-            # FIXME: will break if not utf-8
-            content['data'] = content['data'].decode('utf-8')
-            message = 'Content %s' % content['sha1']
-        else:
-            message = 'Content with %s not found.' % q
-    except BadInputExc as e:
-        message = str(e)
-
-    env['message'] = message
-    env['content'] = content
-    return render_template('content-data.html', **env)
+    return redirect(url_for('api_content_raw', q=q))
 
 
 def _origin_seen(q, data):

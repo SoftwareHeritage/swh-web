@@ -312,63 +312,25 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.redirect')
+    @patch('swh.web.ui.views.url_for')
     @istest
-    def browse_content_raw(self, mock_service):
+    def browse_content_raw(self, mock_urlfor, mock_redirect):
         # given
-        stub_content_raw = {
-            'sha1': 'sha1-hash',
-            'data': b'some-data'
-        }
-        mock_service.lookup_content_raw.return_value = stub_content_raw
+        stub_content_raw = b'some-data'
+        mock_urlfor.return_value = '/api/content/sha1:sha1-hash/raw/'
+        mock_redirect.return_value = stub_content_raw
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/raw/')
 
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content-data.html')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content sha1-hash')
-        self.assertEqual(self.get_context_variable('content'),
-                         stub_content_raw)
+        self.assertEquals(rv.data, stub_content_raw)
 
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:sha1-hash')
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_content_raw_not_found(self, mock_service):
-        # given
-        mock_service.lookup_content_raw.return_value = None
-
-        # when
-        rv = self.client.get('/browse/content/sha1:sha1-unknown/raw/')
-
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content-data.html')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content with sha1:sha1-unknown not found.')
-        self.assertEqual(self.get_context_variable('content'), None)
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:sha1-unknown')
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_content_raw_invalid_hash(self, mock_service):
-        # given
-        mock_service.lookup_content_raw.side_effect = BadInputExc(
-            'Invalid hash')
-
-        # when
-        rv = self.client.get('/browse/content/sha2:sha1-invalid/raw/')
-
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content-data.html')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Invalid hash')
-        self.assertEqual(self.get_context_variable('content'), None)
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha2:sha1-invalid')
+        mock_urlfor.assert_called_once_with('api_content_raw',
+                                            q='sha1:sha1-hash')
+        mock_redirect.assert_called_once_with(
+            '/api/content/sha1:sha1-hash/raw/')
 
     @patch('swh.web.ui.views.api')
     @istest

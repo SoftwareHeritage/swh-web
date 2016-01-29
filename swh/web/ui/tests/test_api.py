@@ -241,28 +241,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_content_raw(self, mock_service):
-        # given
-        stub_content = {'data': b'some content data'}
-        mock_service.lookup_content_raw.return_value = stub_content
-
-        # when
-        rv = self.app.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-            '/raw/',
-            headers={'Content-type': 'application/octet-stream',
-                     'Content-disposition': 'attachment'})
-
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.mimetype, 'application/octet-stream')
-        self.assertEquals(rv.data, stub_content['data'])
-
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-
-    @patch('swh.web.ui.api.service')
-    @istest
-    def api_content_raw_not_found(self, mock_service):
+    def api_content_raw_KO_not_found(self, mock_service):
         # given
         mock_service.lookup_content_raw.return_value = None
 
@@ -278,6 +257,27 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 not found.'
         })
+
+        mock_service.lookup_content_raw.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.api.service')
+    @istest
+    def api_content_raw(self, mock_service):
+        # given
+        stub_content = {'data': b'some content data'}
+        mock_service.lookup_content_raw.return_value = stub_content
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/raw/',
+            headers={'Content-type': 'application/octet-stream',
+                     'Content-disposition': 'attachment'})
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/octet-stream')
+        self.assertEquals(rv.data, stub_content['data'])
 
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
