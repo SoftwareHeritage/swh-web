@@ -28,6 +28,18 @@
               </div>
             {% endfor %}
         {% endif %}
+        {% if result['content']['data_url'] is not none %}
+        <div class="row">
+           <div class="col-md-2">data_url</div>
+           <div class="col-md-10"><a href="{{ result['content']['data_url'] }}">Download data</a></pre></div>
+        </div>
+        {% endif %}
+        {% if result['content']['data'] is not none %}
+        <div class="row">
+           <div class="col-md-2">data</div>
+           <div class="col-md-10"><pre>{{ result['content']['data'] }}</pre></div>
+        </div>
+        {% endif %}
     {% endif %}
 {% endif %}
 {% endblock %}
