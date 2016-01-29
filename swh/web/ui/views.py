@@ -5,6 +5,7 @@
 
 import flask
 
+from encodings.aliases import aliases
 from flask import render_template, request, url_for, redirect
 
 from flask.ext.api.decorators import set_renderers
@@ -112,7 +113,7 @@ def search():
 @app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+def browse_content(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
     """Given a hash and a checksum, display the content's meta-data.
 
     Args:
@@ -130,13 +131,21 @@ def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
     env = {'q': q,
            'message': None,
            'content': None}
+
+    encoding = request.args.get('encoding', 'utf8')
+    if encoding not in aliases:
+        env['message'] = 'Encoding %s not supported.' \
+                         'Supported Encodings: %s' % (
+                             encoding, list(aliases.keys()))
+        return render_template('content.html', **env)
+
     try:
         content = api.api_content_metadata(q)
         content_raw = service.lookup_content_raw(q)
         if content_raw:
-            content_raw = content_raw['data'].decode('utf-8')
-            content['data'] = content_raw
-        env['content'] = content
+            content['data'] = content_raw['data']
+        env['content'] = utils.prepare_data_for_view(content,
+                                                     encoding=encoding)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
@@ -144,7 +153,6 @@ def browse_content_metadata(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
 
 
 @app.route('/browse/content/<string:q>/raw/')
-@set_renderers(HTMLRenderer)
 def browse_content_raw(q):
     """Given a hash and a checksum, display the content's raw data.
 
@@ -160,22 +168,7 @@ def browse_content_raw(q):
         NotFoundExc if the content is not found.
 
     """
-    env = {}
-    content = None
-    try:
-        content = service.lookup_content_raw(q)
-        if content:
-            # FIXME: will break if not utf-8
-            content['data'] = content['data'].decode('utf-8')
-            message = 'Content %s' % content['sha1']
-        else:
-            message = 'Content with %s not found.' % q
-    except BadInputExc as e:
-        message = str(e)
-
-    env['message'] = message
-    env['content'] = content
-    return render_template('content-data.html', **env)
+    return redirect(url_for('api_content_raw', q=q))
 
 
 def _origin_seen(q, data):
@@ -412,9 +405,17 @@ def browse_revision_directory(sha1_git, path=None):
         'result': None
     }
 
+    encoding = request.args.get('encoding', 'utf8')
+    if encoding not in aliases:
+        env['message'] = 'Encoding %s not supported.' \
+                         'Supported Encodings: %s' % (
+                             encoding, list(aliases.keys()))
+        return render_template('revision-directory.html', **env)
+
     try:
-        result = api.api_revision_directory(sha1_git, path)
-        result['content'] = utils.prepare_data_for_view(result['content'])
+        result = api.api_revision_directory(sha1_git, path, with_data=True)
+        result['content'] = utils.prepare_data_for_view(result['content'],
+                                                        encoding=encoding)
         env['revision'] = result['revision']
         env['result'] = result
     except (BadInputExc, NotFoundExc) as e:
@@ -461,18 +462,28 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
         'result': None
     }
 
+    encoding = request.args.get('encoding', 'utf8')
+    if encoding not in aliases:
+        env['message'] = 'Encoding %s not supported.' \
+                         'Supported Encodings: %s' % (
+                             encoding, list(aliases.keys()))
+        return render_template('revision-directory.html', **env)
+
     if sha1_git == sha1_git_root:
         return redirect(url_for('browse_revision_directory',
                                 sha1_git=sha1_git,
-                                path=path),
+                                path=path,
+                                encoding=encoding),
                         code=301)
 
     try:
         result = api.api_revision_history_directory(sha1_git_root,
                                                     sha1_git,
-                                                    path)
+                                                    path,
+                                                    with_data=True)
         env['revision'] = result['revision']
-        env['content'] = utils.prepare_data_for_view(result['content'])
+        env['content'] = utils.prepare_data_for_view(result['content'],
+                                                     encoding=encoding)
         env['result'] = result
     except (BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
@@ -537,11 +548,19 @@ def browse_directory_through_revision_with_origin_history(
         'result': None
     }
 
+    encoding = request.args.get('encoding', 'utf8')
+    if encoding not in aliases:
+        env['message'] = 'Encoding %s not supported.' \
+                         'Supported Encodings: %s' % (
+                             encoding, list(aliases.keys()))
+        return render_template('revision-directory.html', **env)
+
     try:
         result = api.api_directory_through_revision_with_origin_history(
-            origin_id, branch_name, ts, sha1_git, path)
+            origin_id, branch_name, ts, sha1_git, path, with_data=True)
         env['revision'] = result['revision']
-        env['content'] = utils.prepare_data_for_view(result['content'])
+        env['content'] = utils.prepare_data_for_view(result['content'],
+                                                     encoding=encoding)
         env['result'] = result
     except (BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
@@ -690,14 +709,24 @@ def browse_revision_directory_through_origin(origin_id,
            'ts': ts,
            'path': '.' if not path else path,
            'result': None}
+
+    encoding = request.args.get('encoding', 'utf8')
+    if encoding not in aliases:
+        env['message'] = 'Encoding %s not supported.' \
+                         'Supported Encodings: %s' % (
+                             encoding, list(aliases.keys()))
+        return render_template('revision-directory.html', **env)
+
     try:
-        result = api.api_directory_through_origin(
+        result = api.api_directory_through_revision_origin(
             origin_id,
             branch_name,
             ts,
-            path)
+            path,
+            with_data=True)
 
-        result['content'] = utils.prepare_data_for_view(result['content'])
+        result['content'] = utils.prepare_data_for_view(result['content'],
+                                                        encoding=encoding)
         env['revision'] = result['revision']
         env['result'] = result
     except (ValueError, BadInputExc, NotFoundExc) as e:

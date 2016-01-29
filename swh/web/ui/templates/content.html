@@ -1,8 +1,9 @@
 {% extends "layout.html" %}
 {% block title %}Content information{% endblock %}
+
 {% block content %}
   {% if message is not none %}
-    <p>{{ message | safe }}</p>
+    <p>{{ message }}</p>
   {% endif %}
   {% if content is not none %}
     {% for key in ['sha1', 'sha256', 'sha1_git', 'status', 'length', 'ctime'] %}
@@ -11,6 +12,12 @@
        <div class="col-md-6">{{ content[key] }}</div>
     </div>
     {% endfor %}
+    {% if content['data_url'] is not none %}
+    <div class="row">
+       <div class="col-md-2">data_url</div>
+       <div class="col-md-10"><a href="{{ content['data_url'] }}">Download data</a></pre></div>
+    </div>
+    {% endif %}
     {% if content['data'] is not none %}
     <div class="row">
        <div class="col-md-2">data</div>
