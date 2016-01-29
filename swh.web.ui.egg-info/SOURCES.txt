@@ -39,7 +39,6 @@ swh/web/ui/views.py
 swh/web/ui/static/style.css
 swh/web/ui/templates/about.html
 swh/web/ui/templates/api.html
-swh/web/ui/templates/content-data.html
 swh/web/ui/templates/content-with-origin.html
 swh/web/ui/templates/content.html
 swh/web/ui/templates/directory.html

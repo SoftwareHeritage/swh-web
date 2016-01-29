@@ -247,7 +247,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_metadata_KO_not_found(self, mock_api):
+    def browse_content_KO_not_found(self, mock_api):
         # given
         mock_api.api_content_metadata.side_effect = NotFoundExc(
             'Not found!')
@@ -267,7 +267,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_metadata_KO_bad_input(self, mock_api):
+    def browse_content_KO_bad_input(self, mock_api):
         # given
         mock_api.api_content_metadata.side_effect = BadInputExc(
             'Bad input!')
@@ -288,7 +288,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @patch('swh.web.ui.views.service')
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_metadata(self, mock_api, mock_service):
+    def browse_content(self, mock_api, mock_service):
         # given
         stub_content = {'sha1': 'sha1_hash'}
         mock_api.api_content_metadata.return_value = stub_content
@@ -312,63 +312,25 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.redirect')
+    @patch('swh.web.ui.views.url_for')
     @istest
-    def browse_content_raw(self, mock_service):
+    def browse_content_raw(self, mock_urlfor, mock_redirect):
         # given
-        stub_content_raw = {
-            'sha1': 'sha1-hash',
-            'data': b'some-data'
-        }
-        mock_service.lookup_content_raw.return_value = stub_content_raw
+        stub_content_raw = b'some-data'
+        mock_urlfor.return_value = '/api/content/sha1:sha1-hash/raw/'
+        mock_redirect.return_value = stub_content_raw
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/raw/')
 
         self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content-data.html')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content sha1-hash')
-        self.assertEqual(self.get_context_variable('content'),
-                         stub_content_raw)
+        self.assertEquals(rv.data, stub_content_raw)
 
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:sha1-hash')
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_content_raw_not_found(self, mock_service):
-        # given
-        mock_service.lookup_content_raw.return_value = None
-
-        # when
-        rv = self.client.get('/browse/content/sha1:sha1-unknown/raw/')
-
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content-data.html')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Content with sha1:sha1-unknown not found.')
-        self.assertEqual(self.get_context_variable('content'), None)
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:sha1-unknown')
-
-    @patch('swh.web.ui.views.service')
-    @istest
-    def browse_content_raw_invalid_hash(self, mock_service):
-        # given
-        mock_service.lookup_content_raw.side_effect = BadInputExc(
-            'Invalid hash')
-
-        # when
-        rv = self.client.get('/browse/content/sha2:sha1-invalid/raw/')
-
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('content-data.html')
-        self.assertEqual(self.get_context_variable('message'),
-                         'Invalid hash')
-        self.assertEqual(self.get_context_variable('content'), None)
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha2:sha1-invalid')
+        mock_urlfor.assert_called_once_with('api_content_raw',
+                                            q='sha1:sha1-hash')
+        mock_redirect.assert_called_once_with(
+            '/api/content/sha1:sha1-hash/raw/')
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -999,7 +961,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
             self.get_context_variable('message'),
             "Not found!")
 
-        mock_api.api_revision_directory.assert_called_once_with('1', None)
+        mock_api.api_revision_directory.assert_called_once_with(
+            '1', None, with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1020,7 +983,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
             self.get_context_variable('message'),
             "Bad input!")
 
-        mock_api.api_revision_directory.assert_called_once_with('10', None)
+        mock_api.api_revision_directory.assert_called_once_with(
+            '10', None, with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1075,8 +1039,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('message'))
         self.assertEqual(self.get_context_variable('result'), stub_result1)
 
-        mock_api.api_revision_directory.assert_called_once_with('100',
-                                                                'some/path')
+        mock_api.api_revision_directory.assert_called_once_with(
+            '100', 'some/path', with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1098,7 +1062,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('result'))
 
         mock_api.api_revision_history_directory.assert_called_once_with(
-            '123', '456', 'a/b')
+            '123', '456', 'a/b', with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1120,7 +1084,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('result'))
 
         mock_api.api_revision_history_directory.assert_called_once_with(
-            '123', '456', 'a/c')
+            '123', '456', 'a/c', with_data=True)
 
     @patch('swh.web.ui.views.service')
     @istest
@@ -1183,7 +1147,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('result'), stub_result1)
 
         mock_api.api_revision_history_directory.assert_called_once_with(
-            '100', '999', 'path/to')
+            '100', '999', 'path/to', with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1410,7 +1374,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
     @istest
     def browse_revision_directory_through_origin_KO_not_found(self, mock_api):
         # given
-        mock_api.api_directory_through_origin.side_effect = BadInputExc(
+        mock_api.api_directory_through_revision_origin.side_effect = BadInputExc(  # noqa
             'this is not the robot you are looking for')
 
         # when
@@ -1423,14 +1387,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'this is not the robot you are looking for')
 
-        mock_api.api_directory_through_origin.assert_called_once_with(  # noqa
-            2, 'refs/heads/master', None, None)
+        mock_api.api_directory_through_revision_origin.assert_called_once_with(  # noqa
+            2, 'refs/heads/master', None, None, with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_directory_through_origin_KO_bad_input(self, mock_api):
         # given
-        mock_api.api_directory_through_origin.side_effect = BadInputExc(
+        mock_api.api_directory_through_revision_origin.side_effect = BadInputExc(  # noqa
             'Bad Robot')
 
         # when
@@ -1442,14 +1406,14 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('result'))
         self.assertEqual(self.get_context_variable('message'), 'Bad Robot')
 
-        mock_api.api_directory_through_origin.assert_called_once_with(
-            2, 'refs/heads/master', None, None)
+        mock_api.api_directory_through_revision_origin.assert_called_once_with(
+            2, 'refs/heads/master', None, None, with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
     def browse_revision_directory_through_origin_KO_other(self, mock_api):
         # given
-        mock_api.api_directory_through_origin.side_effect = ValueError(
+        mock_api.api_directory_through_revision_origin.side_effect = ValueError(  # noqa
             'Other bad stuff')
 
         # when
@@ -1462,8 +1426,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('message'),
                          'Other bad stuff')
 
-        mock_api.api_directory_through_origin.assert_called_once_with(
-            2, 'refs/heads/master', None, None)
+        mock_api.api_directory_through_revision_origin.assert_called_once_with(
+            2, 'refs/heads/master', None, None, with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1473,7 +1437,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
                     'revision': 'some-rev-id',
                     'type': 'dir',
                     'content': 'some-content'}
-        mock_api.api_directory_through_origin.return_value = stub_res
+        mock_api.api_directory_through_revision_origin.return_value = stub_res
 
         # when
         rv = self.client.get('/browse/revision/origin/2'
@@ -1486,8 +1450,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('result'), stub_res)
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_api.api_directory_through_origin.assert_called_once_with(
-            2, 'dev', '2013-20-20 10:02', 'some/file')
+        mock_api.api_directory_through_revision_origin.assert_called_once_with(
+            2, 'dev', '2013-20-20 10:02', 'some/file', with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1509,7 +1473,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('path'), '.')
 
         mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
-            987, 'refs/heads/master', None, 'sha1git', None)
+            987, 'refs/heads/master', None, 'sha1git', None, with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1534,7 +1498,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('path'), 'some/path')
 
         mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
-            798, 'refs/heads/dev', '2012-11-11', '1234', 'some/path')
+            798, 'refs/heads/dev', '2012-11-11', '1234', 'some/path',
+            with_data=True)
 
     @patch('swh.web.ui.views.api')
     @istest
@@ -1559,4 +1524,5 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('path'), 'emacs-24.5')
 
         mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
-            101010, 'refs/heads/master', '1955-11-12', '54628', 'emacs-24.5')
+            101010, 'refs/heads/master', '1955-11-12', '54628', 'emacs-24.5',
+            with_data=True)

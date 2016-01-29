@@ -65,9 +65,13 @@ class UtilsTestCase(unittest.TestCase):
         })
 
     @istest
-    def prepare_data_for_view(self):
+    def prepare_data_for_view_default_encoding(self):
+        self.maxDiff = None
         # given
         inputs = [
+            {
+                'data': b'some blah data'
+            },
             {
                 'data': 1,
                 'data_url': '/api/1/some/api/call',
@@ -83,6 +87,9 @@ class UtilsTestCase(unittest.TestCase):
         # then
         self.assertEquals(actual_result, [
             {
+                'data': 'some blah data',
+            },
+            {
                 'data': 1,
                 'data_url': '/browse/some/api/call',
             },
@@ -91,6 +98,59 @@ class UtilsTestCase(unittest.TestCase):
                 'blah_url': '/some/non/changed/api/call'
             }
         ])
+
+    @istest
+    def prepare_data_for_view(self):
+        self.maxDiff = None
+        # given
+        inputs = [
+            {
+                'data': b'some blah data'
+            },
+            {
+                'data': 1,
+                'data_url': '/api/1/some/api/call',
+            },
+            {
+                'blah': 'foobar',
+                'blah_url': '/some/non/changed/api/call'
+            }]
+
+        # when
+        actual_result = utils.prepare_data_for_view(inputs, encoding='ascii')
+
+        # then
+        self.assertEquals(actual_result, [
+            {
+                'data': 'some blah data',
+            },
+            {
+                'data': 1,
+                'data_url': '/browse/some/api/call',
+            },
+            {
+                'blah': 'foobar',
+                'blah_url': '/some/non/changed/api/call'
+            }
+        ])
+
+    @istest
+    def prepare_data_for_view_KO_cannot_decode(self):
+        self.maxDiff = None
+        # given
+        inputs = {
+            'data': 'hé dude!'.encode('utf8'),
+        }
+
+        actual_result = utils.prepare_data_for_view(inputs, encoding='ascii')
+
+        # then
+        self.assertEquals(actual_result, {
+                'data': "Cannot decode the data bytes, try and set another "
+                        "encoding in the url (e.g. ?encoding=utf8) or "
+                        "download directly the "
+                        "content's raw data.",
+            })
 
     @istest
     def filter_field_keys_dict_unknown_keys(self):
@@ -428,13 +488,17 @@ class UtilsTestCase(unittest.TestCase):
                 return '/api/revision/' + data['sha1_git'] + '/log/'
             elif fn == 'api_directory':
                 return '/api/directory/' + data['sha1_git'] + '/'
+            elif fn == 'api_person':
+                return '/api/person/' + data['person_id'] + '/'
 
         mock_flask.url_for.side_effect = url_for_test
 
         # when
         actual_revision = utils.enrich_revision({
             'id': 'rev-id',
-            'directory': '123'
+            'directory': '123',
+            'author': {'id': '1'},
+            'committer': {'id': '2'},
         })
 
         # then
@@ -443,13 +507,21 @@ class UtilsTestCase(unittest.TestCase):
             'directory': '123',
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
-            'directory_url': '/api/directory/123/'
+            'directory_url': '/api/directory/123/',
+            'author': {'id': '1'},
+            'author_url': '/api/person/1/',
+            'committer': {'id': '2'},
+            'committer_url': '/api/person/2/'
         })
 
         mock_flask.url_for.assert_has_calls([call('api_revision',
                                                   sha1_git='rev-id'),
                                              call('api_revision_log',
                                                   sha1_git='rev-id'),
+                                             call('api_person',
+                                                  person_id='1'),
+                                             call('api_person',
+                                                  person_id='2'),
                                              call('api_directory',
                                                   sha1_git='123')])
 

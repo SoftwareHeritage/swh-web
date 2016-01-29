@@ -32,7 +32,7 @@
     {% if revision['author'] is not none %}
            <div class="row">
               <div class="col-md-2">Author</div>
-              <div class="col-md-6"><p>{{ revision['author']['name'] }} - {{ revision['author']['email'] }}</p></div>
+              <div class="col-md-6"><p><a href="{{ revision['author_url'] }}">{{ revision['author']['name'] }}</a></p></div>
            </div>
            <div class="row">
               <div class="col-md-2">Date</div>
@@ -43,7 +43,7 @@
     {% if revision['committer'] is not none %}
            <div class="row">
               <div class="col-md-2">Committer</div>
-              <div class="col-md-6"><p>{{ revision['committer']['name'] }} - {{ revision['committer']['email'] }}</p></div>
+              <div class="col-md-6"><p><a href="{{ revision['committer_url'] }}">{{ revision['committer']['name'] }}</a></p></div>
            </div>
            <div class="row">
               <div class="col-md-2">Committer Date</div>
