@@ -139,15 +139,16 @@ class UtilsTestCase(unittest.TestCase):
         self.maxDiff = None
         # given
         inputs = {
-            'data': 'hé dude!'.encode('utf-8'),
+            'data': 'hé dude!'.encode('utf8'),
         }
 
         actual_result = utils.prepare_data_for_view(inputs, encoding='ascii')
 
         # then
         self.assertEquals(actual_result, {
-                'data': "Cannot decode the data bytes, try and set another"
-                        " encoding in the url or download directly the "
+                'data': "Cannot decode the data bytes, try and set another "
+                        "encoding in the url (e.g. ?encoding=utf8) or "
+                        "download directly the "
                         "content's raw data.",
             })
 

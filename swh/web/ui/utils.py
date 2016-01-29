@@ -66,9 +66,10 @@ def prepare_data_for_view(data, encoding='utf-8'):
             try:
                 return s.decode(encoding)
             except:
-                return "Cannot decode the data bytes, try and set another" \
-                       " encoding in the url or download directly the" \
-                       " content's raw data."
+                return "Cannot decode the data bytes, try and set another " \
+                       "encoding in the url (e.g. ?encoding=utf8) or " \
+                       "download directly the " \
+                       "content's raw data."
         if isinstance(s, str):
             return re.sub(r'/api/1/', r'/browse/', s)
 

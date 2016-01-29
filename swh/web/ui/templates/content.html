@@ -1,8 +1,9 @@
 {% extends "layout.html" %}
 {% block title %}Content information{% endblock %}
+
 {% block content %}
   {% if message is not none %}
-    <p>{{ message | safe }}</p>
+    <p>{{ message }}</p>
   {% endif %}
   {% if content is not none %}
     {% for key in ['sha1', 'sha256', 'sha1_git', 'status', 'length', 'ctime'] %}
