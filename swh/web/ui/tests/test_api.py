@@ -18,7 +18,7 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 
 class ApiTestCase(test_app.SWHApiTestCase):
     @istest
-    def generic_api_lookup_Nothing_is_found(self):
+    def generic_api_lookup_nothing_is_found(self):
         # given
         def test_generic_lookup_fn(sha1, another_unused_arg):
             assert another_unused_arg == 'unused arg'
@@ -241,7 +241,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def api_content_raw_KO_not_found(self, mock_service):
+    def api_content_raw_ko_not_found(self, mock_service):
         # given
         mock_service.lookup_content_raw.return_value = None
 
@@ -1167,7 +1167,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api.service')
     @istest
-    def revision_directory_by_KO_raise(self, mock_service):
+    def revision_directory_by_ko_raise(self, mock_service):
         # given
         mock_service.lookup_directory_through_revision.side_effect = NotFoundExc('not')  # noqa
 
@@ -1246,7 +1246,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.api.utils')
     @patch('swh.web.ui.api._revision_directory_by')
     @istest
-    def api_directory_through_revision_origin_KO_not_found(self,
+    def api_directory_through_revision_origin_ko_not_found(self,
                                                            mock_rev_dir,
                                                            mock_utils):
         mock_rev_dir.side_effect = NotFoundExc('not found')
@@ -1452,7 +1452,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.api._revision_directory_by')
     @istest
-    def api_revision_directory_KO_not_found(self, mock_rev_dir):
+    def api_revision_directory_ko_not_found(self, mock_rev_dir):
         # given
         mock_rev_dir.side_effect = NotFoundExc('Not found')
 

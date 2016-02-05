@@ -502,7 +502,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_KO_revision_not_found(self,
+    def lookup_directory_with_revision_ko_revision_not_found(self,
                                                              mock_query,
                                                              mock_backend):
         # given
@@ -522,7 +522,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_KO_revision_with_path_to_nowhere(
+    def lookup_directory_with_revision_ko_revision_with_path_to_nowhere(
             self,
             mock_query,
             mock_backend):
@@ -555,7 +555,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_KO_type_not_implemented(
+    def lookup_directory_with_revision_ko_type_not_implemented(
             self,
             mock_query,
             mock_backend):
@@ -1271,7 +1271,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.entity_get.assert_called_once_with(uuid_test)
 
     @istest
-    def lookup_revision_through_KO_not_implemented(self):
+    def lookup_revision_through_ko_not_implemented(self):
         # then
         with self.assertRaises(NotImplementedError):
             service.lookup_revision_through({
@@ -1358,7 +1358,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.lookup_revision_through')
     @istest
-    def lookup_directory_through_revision_KO_not_found(
+    def lookup_directory_through_revision_ko_not_found(
             self, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = None
@@ -1373,7 +1373,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.lookup_revision_through')
     @patch('swh.web.ui.service.lookup_directory_with_revision')
     @istest
-    def lookup_directory_through_revision_OK_with_data(
+    def lookup_directory_through_revision_ok_with_data(
             self, mock_lookup_dir, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = {'id': 'rev-id'}
@@ -1394,7 +1394,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.lookup_revision_through')
     @patch('swh.web.ui.service.lookup_directory_with_revision')
     @istest
-    def lookup_directory_through_revision_OK_with_content(
+    def lookup_directory_through_revision_ok_with_content(
             self, mock_lookup_dir, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = {'id': 'rev-id'}
