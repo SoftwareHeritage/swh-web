@@ -37,6 +37,11 @@ class ConvertersTestCase(unittest.TestCase):
             'q': 'intact',
             'r': {'p': 'also intact',
                   'q': 'bar'},
+            's': {
+                'timestamp': 42,
+                'offset': -420,
+                'negative_utc': None,
+            }
         }
 
         expected_output = {
@@ -56,6 +61,7 @@ class ConvertersTestCase(unittest.TestCase):
             'q': 'intact',
             'r': {'p': 'also intact',
                   'q': 'foo'},
+            's': '1969-12-31T17:00:42-07:00',
         }
 
         def test_convert_fn(v):
@@ -64,6 +70,7 @@ class ConvertersTestCase(unittest.TestCase):
         actual_output = converters.from_swh(some_input,
                                             hashess={'d', 'o'},
                                             bytess={'c', 'e', 'g', 'l'},
+                                            dates={'s'},
                                             blacklist={'h', 'm', 'n', 'o'},
                                             convert={'p', 'q'},
                                             convert_fn=test_convert_fn)
@@ -135,8 +142,13 @@ class ConvertersTestCase(unittest.TestCase):
             'target': hashutil.hex_to_hash(
                 '5e46d564378afc44b31bb89f99d5675195fbdf67'),
             'target_type': 'revision',
-            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
-                                      tzinfo=datetime.timezone.utc),
+            'date': {
+                'timestamp': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
             'author': {
                 'name': b'author name',
                 'email': b'author@email',
@@ -150,8 +162,7 @@ class ConvertersTestCase(unittest.TestCase):
             'id': 'aad23fa492a0c5fed0708a6703be875448c86884',
             'target': '5e46d564378afc44b31bb89f99d5675195fbdf67',
             'target_type': 'revision',
-            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
-                                      tzinfo=datetime.timezone.utc),
+            'date': '2015-01-01T22:00:00+00:00',
             'author': {
                 'name': 'author name',
                 'email': 'author@email',
@@ -174,8 +185,14 @@ class ConvertersTestCase(unittest.TestCase):
             'id': hashutil.hex_to_hash(
                 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e'),
             'target': None,
-            'date': datetime.datetime(2016, 3, 2, 10, 0, 0,
-                                      tzinfo=datetime.timezone.utc),
+            'date': {
+                'timestamp': datetime.datetime(
+                    2016, 3, 2, 10, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 0,
+                'negative_utc': True,
+
+            },
             'name': b'v0.1.1',
             'message': b'comment on release',
             'synthetic': False,
@@ -188,8 +205,7 @@ class ConvertersTestCase(unittest.TestCase):
         expected_release = {
             'id': 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e',
             'target': None,
-            'date': datetime.datetime(2016, 3, 2, 10, 0, 0,
-                                      tzinfo=datetime.timezone.utc),
+            'date': '2016-03-02T10:00:00-00:00',
             'name': 'v0.1.1',
             'message': 'comment on release',
             'synthetic': False,
@@ -221,11 +237,20 @@ class ConvertersTestCase(unittest.TestCase):
                 'email': b'robot@softwareheritage.org',
             },
             'message': b'synthetic revision message',
-            'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54,
-                                                tzinfo=None),
-            'committer_date_offset': 0,
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
             'synthetic': True,
             'type': 'tar',
             'parents': [
@@ -263,11 +288,8 @@ class ConvertersTestCase(unittest.TestCase):
                 'email': 'robot@softwareheritage.org',
             },
             'message': 'synthetic revision message',
-            'date': datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=None),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54,
-                                                tzinfo=None),
-            'committer_date_offset': 0,
+            'date': "2000-01-17T11:23:54+00:00",
+            'committer_date': "2000-01-17T11:23:54+00:00",
             'children': [
                 '123546353ed3480476f032475e7c244eff7371d5'
             ],

@@ -247,7 +247,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_KO_not_found(self, mock_api):
+    def browse_content_ko_not_found(self, mock_api):
         # given
         mock_api.api_content_metadata.side_effect = NotFoundExc(
             'Not found!')
@@ -267,7 +267,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_content_KO_bad_input(self, mock_api):
+    def browse_content_ko_bad_input(self, mock_api):
         # given
         mock_api.api_content_metadata.side_effect = BadInputExc(
             'Bad input!')
@@ -334,7 +334,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_directory_KO_bad_input(self, mock_api):
+    def browse_directory_ko_bad_input(self, mock_api):
         # given
         mock_api.api_directory.side_effect = BadInputExc(
             'Invalid hash')
@@ -414,7 +414,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
 #    @istest
-    def browse_content_with_origin_content_KO_not_found(self, mock_api):
+    def browse_content_with_origin_content_ko_not_found(self, mock_api):
         # given
         mock_api.api_content_checksum_to_origin.side_effect = NotFoundExc(
             'Not found!')
@@ -433,7 +433,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
 #    @istest
-    def browse_content_with_origin_KO_bad_input(self, mock_api):
+    def browse_content_with_origin_ko_bad_input(self, mock_api):
         # given
         mock_api.api_content_checksum_to_origin.side_effect = BadInputExc(
             'Invalid hash')
@@ -481,7 +481,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_origin_KO_not_found(self, mock_api):
+    def browse_origin_ko_not_found(self, mock_api):
         # given
         mock_api.api_origin.side_effect = NotFoundExc('Not found!')
 
@@ -500,7 +500,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_origin_KO_bad_input(self, mock_api):
+    def browse_origin_ko_bad_input(self, mock_api):
         # given
         mock_api.api_origin.side_effect = BadInputExc('wrong input')
 
@@ -538,7 +538,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_person_KO_not_found(self, mock_api):
+    def browse_person_ko_not_found(self, mock_api):
         # given
         mock_api.api_person.side_effect = NotFoundExc('not found')
 
@@ -557,7 +557,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_person_KO_bad_input(self, mock_api):
+    def browse_person_ko_bad_input(self, mock_api):
         # given
         mock_api.api_person.side_effect = BadInputExc('wrong input')
 
@@ -595,7 +595,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_release_KO_not_found(self, mock_api):
+    def browse_release_ko_not_found(self, mock_api):
         # given
         mock_api.api_release.side_effect = NotFoundExc('not found!')
 
@@ -614,7 +614,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_release_KO_bad_input(self, mock_api):
+    def browse_release_ko_bad_input(self, mock_api):
         # given
         mock_api.api_release.side_effect = BadInputExc('wrong input')
 
@@ -680,7 +680,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_KO_not_found(self, mock_api):
+    def browse_revision_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision.side_effect = NotFoundExc('Not found!')
 
@@ -700,7 +700,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_KO_bad_input(self, mock_api):
+    def browse_revision_ko_bad_input(self, mock_api):
         # given
         mock_api.api_revision.side_effect = BadInputExc('wrong input!')
 
@@ -782,7 +782,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_log_KO_not_found(self, mock_api):
+    def browse_revision_log_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_log.side_effect = NotFoundExc('Not found!')
 
@@ -802,7 +802,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_log_KO_bad_input(self, mock_api):
+    def browse_revision_log_ko_bad_input(self, mock_api):
         # given
         mock_api.api_revision_log.side_effect = BadInputExc('wrong input!')
 
@@ -862,7 +862,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_KO_not_found(self, mock_api):
+    def browse_revision_history_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_history.side_effect = NotFoundExc(
             'Not found')
@@ -884,7 +884,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_KO_bad_input(self, mock_api):
+    def browse_revision_history_ko_bad_input(self, mock_api):
         # given
         mock_api.api_revision_history.side_effect = BadInputExc(
             'Input incorrect')
@@ -905,7 +905,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             '321', '654')
 
     @istest
-    def browse_revision_history_OK_same_sha1(self):
+    def browse_revision_history_ok_same_sha1(self):
         # when
         rv = self.client.get('/browse/revision/10/history/10/')
 
@@ -944,7 +944,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_directory_KO_not_found(self, mock_api):
+    def browse_revision_directory_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_directory.side_effect = NotFoundExc('Not found!')
 
@@ -966,7 +966,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_directory_KO_bad_input(self, mock_api):
+    def browse_revision_directory_ko_bad_input(self, mock_api):
         # given
         mock_api.api_revision_directory.side_effect = BadInputExc('Bad input!')
 
@@ -1044,7 +1044,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_directory_KO_not_found(self, mock_api):
+    def browse_revision_history_directory_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_history_directory.side_effect = NotFoundExc(
             'not found')
@@ -1066,7 +1066,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_directory_KO_bad_input(self, mock_api):
+    def browse_revision_history_directory_ko_bad_input(self, mock_api):
         # given
         mock_api.api_revision_history_directory.side_effect = BadInputExc(
             'bad input')
@@ -1088,7 +1088,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def browse_revision_history_directory_OK_no_trailing_slash_so_redirect(
+    def browse_revision_history_directory_ok_no_trailing_slash_so_redirect(
             self, mock_service):
         # when
         rv = self.client.get('/browse/revision/1/history/2/directory/path/to')
@@ -1098,7 +1098,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.service')
     @istest
-    def browse_revision_history_directory_OK_same_sha1_redirects(
+    def browse_revision_history_directory_ok_same_sha1_redirects(
             self, mock_service):
         # when
         rv = self.client.get('/browse/revision/1/history/1/directory/path/to')
@@ -1151,7 +1151,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_entity_KO_not_found(self, mock_api):
+    def browse_entity_ko_not_found(self, mock_api):
         # given
         mock_api.api_entity_by_uuid.side_effect = NotFoundExc('Not found!')
 
@@ -1169,7 +1169,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_entity_KO_bad_input(self, mock_api):
+    def browse_entity_ko_bad_input(self, mock_api):
         # given
         mock_api.api_entity_by_uuid.side_effect = BadInputExc('wrong input!')
 
@@ -1208,7 +1208,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_through_origin_KO_bad_input(self, mock_api):
+    def browse_revision_history_through_origin_ko_bad_input(self, mock_api):
         # given
         mock_api.api_revision_history_through_origin.side_effect = BadInputExc(
             'Problem input.')  # noqa
@@ -1229,7 +1229,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_through_origin_KO_not_found(self, mock_api):
+    def browse_revision_history_through_origin_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_history_through_origin.side_effect = NotFoundExc(
             'Not found.')
@@ -1250,7 +1250,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_history_through_origin_KO_other_error(self, mock_api):
+    def browse_revision_history_through_origin_ko_other_error(self, mock_api):
         # given
         mock_api.api_revision_history_through_origin.side_effect = ValueError(
             'Other Error.')
@@ -1296,7 +1296,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_with_origin_KO_not_found(self, mock_api):
+    def browse_revision_with_origin_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_with_origin.side_effect = NotFoundExc(
             'Not found')
@@ -1314,7 +1314,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_with_origin_KO_bad_input(self, mock_api):
+    def browse_revision_with_origin_ko_bad_input(self, mock_api):
         # given
         mock_api.api_revision_with_origin.side_effect = BadInputExc(
             'Bad Input')
@@ -1332,7 +1332,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_with_origin_KO_other(self, mock_api):
+    def browse_revision_with_origin_ko_other(self, mock_api):
         # given
         mock_api.api_revision_with_origin.side_effect = ValueError(
             'Other')
@@ -1372,7 +1372,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_directory_through_origin_KO_not_found(self, mock_api):
+    def browse_revision_directory_through_origin_ko_not_found(self, mock_api):
         # given
         mock_api.api_directory_through_revision_origin.side_effect = BadInputExc(  # noqa
             'this is not the robot you are looking for')
@@ -1392,7 +1392,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_directory_through_origin_KO_bad_input(self, mock_api):
+    def browse_revision_directory_through_origin_ko_bad_input(self, mock_api):
         # given
         mock_api.api_directory_through_revision_origin.side_effect = BadInputExc(  # noqa
             'Bad Robot')
@@ -1411,7 +1411,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_revision_directory_through_origin_KO_other(self, mock_api):
+    def browse_revision_directory_through_origin_ko_other(self, mock_api):
         # given
         mock_api.api_directory_through_revision_origin.side_effect = ValueError(  # noqa
             'Other bad stuff')
@@ -1455,7 +1455,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_directory_through_revision_with_origin_history_KO_not_found(
+    def browse_directory_through_revision_with_origin_history_ko_not_found(
             self, mock_api):
         mock_api.api_directory_through_revision_with_origin_history.side_effect = NotFoundExc(  # noqa
             'Not found!')
@@ -1477,7 +1477,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.api')
     @istest
-    def browse_directory_through_revision_with_origin_history_KO_bad_input(
+    def browse_directory_through_revision_with_origin_history_ko_bad_input(
             self, mock_api):
         mock_api.api_directory_through_revision_with_origin_history.side_effect = BadInputExc(  # noqa
             'Bad input! Bleh!')

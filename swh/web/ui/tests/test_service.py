@@ -254,8 +254,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.release_get = MagicMock(return_value={
             'id': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
             'target': None,
-            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
-                                      tzinfo=datetime.timezone.utc),
+            'date': {
+                'timestamp': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 0,
+                'negative_utc': True,
+            },
             'name': b'v0.0.1',
             'message': b'synthetic release',
             'synthetic': True,
@@ -269,8 +274,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_release, {
             'id': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
             'target': None,
-            'date': datetime.datetime(2015, 1, 1, 22, 0, 0,
-                                      tzinfo=datetime.timezone.utc),
+            'date': '2015-01-01T22:00:00-00:00',
             'name': 'v0.0.1',
             'message': 'synthetic release',
             'synthetic': True,
@@ -502,7 +506,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_KO_revision_not_found(self,
+    def lookup_directory_with_revision_ko_revision_not_found(self,
                                                              mock_query,
                                                              mock_backend):
         # given
@@ -522,7 +526,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_KO_revision_with_path_to_nowhere(
+    def lookup_directory_with_revision_ko_revision_with_path_to_nowhere(
             self,
             mock_query,
             mock_backend):
@@ -555,7 +559,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.query')
     @istest
-    def lookup_directory_with_revision_KO_type_not_implemented(
+    def lookup_directory_with_revision_ko_type_not_implemented(
             self,
             mock_query,
             mock_backend):
@@ -808,10 +812,22 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'email': b'boule@bill.org',
             },
             'message': b'elegant fix for bug 31415957',
-            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'committer_date_offset': 0,
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -835,10 +851,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'email': 'boule@bill.org',
             },
             'message': 'elegant fix for bug 31415957',
-            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'committer_date_offset': 0,
+            'date': "2000-01-17T11:23:54+00:00",
+            'committer_date': "2000-01-17T11:23:54+00:00",
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -865,10 +879,22 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'email': b'boule@bill.org',
             },
             'message': b'elegant fix for bug 31415957',
-            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'committer_date_offset': 0,
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -893,10 +919,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'email': 'boule@bill.org',
             },
             'message': 'elegant fix for bug 31415957',
-            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
-            'committer_date_offset': 0,
+            'date': "2000-01-17T11:23:54+00:00",
+            'committer_date': "2000-01-17T11:23:54+00:00",
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1165,10 +1189,20 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'email': b'ynot@blah.org',
             },
             'message': b'elegant solution 31415',
-            'date': datetime.datetime(2016, 1, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
-            'committer_date_offset': 0,
+            'date': {
+                'timestamp': datetime.datetime(
+                    2016, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 420,
+                'negative_utc': None,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2016, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 420,
+                'negative_utc': None,
+            },
         }
 
         expected_rev = {
@@ -1183,10 +1217,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'email': 'ynot@blah.org',
             },
             'message': 'elegant solution 31415',
-            'date': datetime.datetime(2016, 1, 17, 11, 23, 54),
-            'date_offset': 0,
-            'committer_date': datetime.datetime(2016, 1, 17, 11, 23, 54),
-            'committer_date_offset': 0,
+            'date': '2016-01-17T18:23:54+07:00',
+            'committer_date': '2016-01-17T18:23:54+07:00',
         }
 
         mock_backend.revision_get_by.return_value = stub_rev
@@ -1271,7 +1303,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.entity_get.assert_called_once_with(uuid_test)
 
     @istest
-    def lookup_revision_through_KO_not_implemented(self):
+    def lookup_revision_through_ko_not_implemented(self):
         # then
         with self.assertRaises(NotImplementedError):
             service.lookup_revision_through({
@@ -1358,7 +1390,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.lookup_revision_through')
     @istest
-    def lookup_directory_through_revision_KO_not_found(
+    def lookup_directory_through_revision_ko_not_found(
             self, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = None
@@ -1373,7 +1405,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.lookup_revision_through')
     @patch('swh.web.ui.service.lookup_directory_with_revision')
     @istest
-    def lookup_directory_through_revision_OK_with_data(
+    def lookup_directory_through_revision_ok_with_data(
             self, mock_lookup_dir, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = {'id': 'rev-id'}
@@ -1394,7 +1426,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.service.lookup_revision_through')
     @patch('swh.web.ui.service.lookup_directory_with_revision')
     @istest
-    def lookup_directory_through_revision_OK_with_content(
+    def lookup_directory_through_revision_ok_with_content(
             self, mock_lookup_dir, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = {'id': 'rev-id'}
