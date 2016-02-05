@@ -3,11 +3,13 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
+
 from swh.core import hashutil
 from swh.web.ui import utils
 
 
-def from_swh(dict_swh, hashess={}, bytess={}, blacklist={},
+def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
              convert={}, convert_fn=lambda x: x):
     """Convert from an swh dictionary to something reasonably json
     serializable.
@@ -50,6 +52,25 @@ def from_swh(dict_swh, hashess={}, bytess={}, blacklist={},
             return v.decode('utf-8')
         return v
 
+    def convert_date(v):
+        """v is a dict with three keys:
+           timestamp
+           offset
+           negative_utc
+
+           We convert it to a human-readable string
+        """
+        tz = datetime.timezone(datetime.timedelta(minutes=v['offset']))
+        date = datetime.datetime.fromtimestamp(v['timestamp'], tz=tz)
+
+        datestr = date.isoformat()
+
+        if v['offset'] == 0 and v['negative_utc']:
+            # remove the rightmost + and replace it with a -
+            return '-'.join(datestr.rsplit('+', 1))
+
+        return datestr
+
     if not dict_swh:
         return dict_swh
 
@@ -57,8 +78,10 @@ def from_swh(dict_swh, hashess={}, bytess={}, blacklist={},
     for key, value in dict_swh.items():
         if key in blacklist:
             continue
+        elif key in dates:
+            new_dict[key] = convert_date(value)
         elif isinstance(value, dict):
-            new_dict[key] = from_swh(value, hashess, bytess, blacklist,
+            new_dict[key] = from_swh(value, hashess, bytess, dates, blacklist,
                                      convert, convert_fn)
         elif key in hashess:
             new_dict[key] = utils.fmap(convert_hashes_bytes, value)
@@ -104,9 +127,12 @@ def from_release(release):
         - synthetic: the synthetic property (boolean)
 
     """
-    return from_swh(release,
-                    hashess=set(['id', 'target']),
-                    bytess=set(['message', 'name', 'email']))
+    return from_swh(
+        release,
+        hashess=set(['id', 'target']),
+        bytess=set(['message', 'name', 'email']),
+        dates={'date'},
+    )
 
 
 def from_revision(revision):
@@ -140,7 +166,8 @@ def from_revision(revision):
                     hashess=set(['id', 'directory', 'parents', 'children']),
                     bytess=set(['name',
                                 'email',
-                                'message']))
+                                'message']),
+                    dates={'date', 'committer_date'})
 
 
 def from_content(content):

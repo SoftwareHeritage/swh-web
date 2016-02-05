@@ -135,7 +135,7 @@ class UtilsTestCase(unittest.TestCase):
         ])
 
     @istest
-    def prepare_data_for_view_KO_cannot_decode(self):
+    def prepare_data_for_view_ko_cannot_decode(self):
         self.maxDiff = None
         # given
         inputs = {
