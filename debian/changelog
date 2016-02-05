@@ -1,3 +1,9 @@
+swh-web (0.0.24-1~swh1~bpo9+1) stretch-swh; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Fri, 05 Feb 2016 12:07:33 +0100
+
 swh-web (0.0.24-1~swh1) unstable-swh; urgency=medium
 
   * Release swh.web.ui v0.0.24
