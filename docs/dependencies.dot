@@ -1,0 +1,41 @@
+digraph {
+        # main modules
+        "backend"[style=filled,fillcolor="#BBEECC"];
+        "service"[style=filled,fillcolor="#BBEECC"];
+        "api"[style=filled,fillcolor="#BBEECC"];
+        "views"[style=filled,fillcolor="#BBEECC"];
+
+        # utilities
+        "utils"[style=filled,fillcolor="#808080"];
+        "converters"[style=filled,fillcolor="#808080"];
+        "renderers"[style=filled,fillcolor="#808080"];
+        "query"[style=filled,fillcolor="#808080"];
+        "exc"[style=filled,fillcolor="#808080"];
+
+        "storage"[style=filled,fillcolor="#CCAACC"];
+
+        subgraph cluster_swh_web_ui {
+                label = "swh.web.ui";
+
+                "views" -> "renderers";
+                "views" -> "exc";
+                "views" -> "api";
+                "views" -> "service";
+                "views" -> "utils";
+                "api" -> "renderers";
+                "api" -> "exc";
+                "api" -> "service";
+                "api" -> "utils";
+                "service" -> "query";
+                "service" -> "converters";
+                "service" -> "backend";
+        }
+
+
+        subgraph cluster_swh_storage {
+                label = "swh.storage";
+
+                "storage";
+                "backend" -> "storage";
+        }
+}

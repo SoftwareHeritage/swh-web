@@ -42,6 +42,6 @@ Folder swh/web/ui/:
 - utils          Utilities used throughout swh-web-ui.
 
 
-## TODO
+## Graphics summary
 
-dot files to generate the dependencies drawing
+    ![Summary dependencies](./docs/dependencies.png)
