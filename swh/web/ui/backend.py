@@ -119,7 +119,7 @@ def release_get(sha1_git_bin):
     """Return information about the release with sha1 sha1_git_bin.
 
     Args:
-        sha1_git_bin: The release's sha1 as hexadecimal.
+        sha1_git_bin: The release's sha1 as bytes.
 
     Returns:
         Release information as dict if found, None otherwise.
@@ -140,7 +140,7 @@ def revision_get(sha1_git_bin):
     """Return information about the revision with sha1 sha1_git_bin.
 
     Args:
-        sha1_git_bin: The revision's sha1 as hexadecimal.
+        sha1_git_bin: The revision's sha1 as bytes.
 
     Returns:
         Revision information as dict if found, None otherwise.
@@ -159,7 +159,7 @@ def revision_log(sha1_git_bin, limit=100):
     """Return information about the revision with sha1 sha1_git_bin.
 
     Args:
-        sha1_git_bin: The revision's sha1 as hexadecimal.
+        sha1_git_bin: The revision's sha1 as bytes.
         limit: the maximum number of revisions returned.
 
     Returns:
