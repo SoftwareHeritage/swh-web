@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import flask
-
 from encodings.aliases import aliases
 from flask import render_template, request, url_for, redirect
 
@@ -12,29 +10,12 @@ from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
-from swh.web.ui import service, utils, api
-from swh.web.ui.exc import BadInputExc, NotFoundExc
-from swh.web.ui.main import app
-
+from .. import service, utils
+from ..exc import BadInputExc, NotFoundExc
+from ..main import app
+from . import api
 
 hash_filter_keys = ALGORITHMS
-
-
-@app.route('/')
-@set_renderers(HTMLRenderer)
-def homepage():
-    """Home page
-
-    """
-    flask.flash('This Web app is still work in progress, use at your own risk',
-                'warning')
-    return render_template('home.html')
-
-
-@app.route('/about/')
-@set_renderers(HTMLRenderer)
-def about():
-    return render_template('about.html')
 
 
 @app.route('/search/', methods=['GET', 'POST'])

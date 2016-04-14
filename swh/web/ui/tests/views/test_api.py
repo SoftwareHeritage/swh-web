@@ -11,7 +11,8 @@ from nose.tools import istest
 from unittest.mock import patch, MagicMock
 
 from swh.web.ui.tests import test_app
-from swh.web.ui import api, exc
+from swh.web.ui import exc
+from swh.web.ui.views import api
 from swh.web.ui.exc import NotFoundExc, BadInputExc
 from swh.storage.exc import StorageDBError, StorageAPIError
 
@@ -105,7 +106,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         self.assertEqual(actual_result, {'a': 100})
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
 #    @istest
     def api_content_checksum_to_origin(self, mock_service):
         mock_service.lookup_hash.return_value = {'found': True}
@@ -133,7 +134,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_hash_origin.assert_called_once_with(
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
 #    @istest
     def api_content_checksum_to_origin_sha_not_found(self, mock_service):
         # given
@@ -153,7 +154,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_hash.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_metadata(self, mock_service):
         # given
@@ -187,7 +188,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_content.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_not_found_as_json(self, mock_service):
         # given
@@ -212,7 +213,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'be4735637006560c')
         mock_service.lookup_hash_origin.called = False
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_not_found_as_yaml(self, mock_service):
         # given
@@ -239,7 +240,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'be4735637006560c')
         mock_service.lookup_hash_origin.called = False
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_raw_ko_not_found(self, mock_service):
         # given
@@ -261,7 +262,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_raw(self, mock_service):
         # given
@@ -282,7 +283,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_search(self, mock_service):
         # given
@@ -302,7 +303,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:blah')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_as_yaml(self, mock_service):
         # given
@@ -324,7 +325,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:halb')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_not_found(self, mock_service):
         # given
@@ -340,7 +341,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:halb')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_1_stat_counters_raise_error(self, mock_service):
         # given
@@ -355,7 +356,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, {
             'error': 'voluntary error to check the bad request middleware.'})
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_1_stat_counters_raise_swh_storage_error_db(self, mock_service):
         # given
@@ -372,7 +373,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'An unexpected error occurred in the backend: '
             'SWH Storage exploded! Will be back online shortly!'})
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_1_stat_counters_raise_swh_storage_error_api(self, mock_service):
         # given
@@ -391,7 +392,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
         })
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_1_stat_counters(self, mock_service):
         # given
@@ -424,8 +425,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.stat_counters.assert_called_once_with()
 
-    @patch('swh.web.ui.api.service')
-    @patch('swh.web.ui.api.request')
+    @patch('swh.web.ui.views.api.service')
+    @patch('swh.web.ui.views.api.request')
     @istest
     def api_uploadnsearch_bad_input(self, mock_request, mock_service):
         # given
@@ -443,8 +444,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.upload_and_search.called = False
 
-    @patch('swh.web.ui.api.service')
-    @patch('swh.web.ui.api.request')
+    @patch('swh.web.ui.views.api.service')
+    @patch('swh.web.ui.views.api.request')
     @istest
     def api_uploadnsearch(self, mock_request, mock_service):
         # given
@@ -469,7 +470,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.upload_and_search.assert_called_once_with(
             'simple-filename')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_origin(self, mock_service):
         # given
@@ -494,7 +495,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_origin.assert_called_with(1234)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_origin_not_found(self, mock_service):
         # given
@@ -513,7 +514,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_origin.assert_called_with(4321)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_release(self, mock_service):
         # given
@@ -556,7 +557,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_release.assert_called_once_with('release-0')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_release_target_type_not_a_revision(self, mock_service):
         # given
@@ -598,7 +599,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_release.assert_called_once_with('release-0')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_release_not_found(self, mock_service):
         # given
@@ -616,7 +617,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'Release with sha1_git release-0 not found.'
         })
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision(self, mock_service):
         # given
@@ -696,7 +697,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_not_found(self, mock_service):
         # given
@@ -713,7 +714,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, {
             'error': 'Revision with sha1_git revision-0 not found.'})
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_with_origin_not_found(self, mock_service):
         mock_service.lookup_revision_by.return_value = None
@@ -733,7 +734,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'refs/heads/master',
             None)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_with_origin(self, mock_service):
         mock_revision = {
@@ -766,7 +767,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'refs/heads/master',
             None)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_with_origin_and_branch_name(self, mock_service):
         mock_revision = {
@@ -800,8 +801,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'refs/origin/dev',
             None)
 
-    @patch('swh.web.ui.api.service')
-    @patch('swh.web.ui.api.utils')
+    @patch('swh.web.ui.views.api.service')
+    @patch('swh.web.ui.views.api.utils')
     @istest
     def api_revision_with_origin_and_branch_name_and_timestamp(self,
                                                                mock_utils,
@@ -846,8 +847,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_utils.enrich_revision.assert_called_once_with(
             mock_revision)
 
-    @patch('swh.web.ui.api.service')
-    @patch('swh.web.ui.api.utils')
+    @patch('swh.web.ui.views.api.service')
+    @patch('swh.web.ui.views.api.utils')
     @istest
     def api_revision_with_origin_and_branch_name_and_timestamp_with_escapes(
             self,
@@ -888,7 +889,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_utils.enrich_revision.assert_called_once_with(
             mock_revision)
 
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_directory_through_rev_with_origin_history_with_rev_not_found_0(
             self, mock_rev_dir):
@@ -924,8 +925,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '/directory/some-path/',
             limit=100, with_data=False)
 
-    @patch('swh.web.ui.api._revision_directory_by')
-    @patch('swh.web.ui.api.utils')
+    @patch('swh.web.ui.views.api._revision_directory_by')
+    @patch('swh.web.ui.views.api.utils')
     @istest
     def api_directory_through_revision_with_origin_history(
             self, mock_utils, mock_rev_dir):
@@ -971,7 +972,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             url,
             limit=666, with_data=False)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_history_through_origin_rev_not_found_0(
             self, mock_service):
@@ -1002,7 +1003,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision_with_context_by.assert_called_once_with(
             1, 'refs/heads/master', None, '4563', 100)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_history_through_origin_rev_not_found_1(
             self, mock_service):
@@ -1035,8 +1036,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision_with_context_by.assert_called_once_with(
             10, 'origin/dev', None, '213', 100)
 
-    @patch('swh.web.ui.api.utils')
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.utils')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_history_through_origin_rev_not_found_2(
             self, mock_service, mock_utils):
@@ -1073,8 +1074,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_utils.parse_timestamp.assert_called_once_with('2012-11-23')
 
-    @patch('swh.web.ui.api.utils')
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.utils')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_history_through_origin_rev_not_found_3(
             self, mock_service, mock_utils):
@@ -1118,8 +1119,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                                                   '123-sha1-git',
                                                   1000)
 
-    @patch('swh.web.ui.api.utils')
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.utils')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_history_through_revision(self, mock_service, mock_utils):
         # given
@@ -1165,7 +1166,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             stub_revision,
             context='45-sha1-git-root')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def revision_directory_by_ko_raise(self, mock_service):
         # given
@@ -1183,7 +1184,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             {'sha1_git': 'id'},
             None, limit=100, with_data=False)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def revision_directory_by_type_dir(self, mock_service):
         # given
@@ -1212,7 +1213,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             {'sha1_git': 'blah-id'},
             'some/path', limit=100, with_data=False)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def revision_directory_by_type_file(self, mock_service):
         # given
@@ -1243,8 +1244,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             {'sha1_git': 'sha1'},
             'some/path', limit=1000, with_data=True)
 
-    @patch('swh.web.ui.api.utils')
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api.utils')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_directory_through_revision_origin_ko_not_found(self,
                                                            mock_rev_dir,
@@ -1276,7 +1277,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '/directory/',
             with_data=False)
 
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_directory_through_revision_origin(self,
                                               mock_revision_dir):
@@ -1299,7 +1300,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'ts': None}, None, '/api/1/revision/origin/3/directory/',
                                                   with_data=False)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_log(self, mock_service):
         # given
@@ -1359,7 +1360,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision_log.assert_called_once_with(
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 100)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_log_not_found(self, mock_service):
         # given
@@ -1381,7 +1382,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision_log.assert_called_once_with(
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 10)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_history_not_found(self, mock_service):
         # given
@@ -1410,7 +1411,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # self.assertEquals(rv.location,
         #                   'http://localhost/api/1/revision/123?limit=10')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_history(self, mock_service):
         # for readability purposes, we use:
@@ -1450,7 +1451,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision_with_context.assert_called_once_with(
             '666', '883', 100)
 
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_revision_directory_ko_not_found(self, mock_rev_dir):
         # given
@@ -1471,7 +1472,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '/api/1/revision/999/directory/some/path/to/dir/',
             with_data=False)
 
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_revision_directory_ok_returns_dir_entries(self, mock_rev_dir):
         stub_dir = {
@@ -1515,7 +1516,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '/api/1/revision/999/directory/some/path/',
             with_data=False)
 
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_revision_directory_ok_returns_content(self, mock_rev_dir):
         stub_content = {
@@ -1555,7 +1556,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # self.assertEquals(rv.location,
         #                   'http://localhost/api/1/revision/123/directory/path/to/')
 
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_revision_history_directory_ko_revision_not_found(self,
                                                              mock_rev_dir):
@@ -1577,7 +1578,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             {'sha1_git_root': '456', 'sha1_git': '987'}, 'path/to', url,
             limit=10, with_data=False)
 
-    @patch('swh.web.ui.api._revision_directory_by')
+    @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
     def api_revision_history_directory(self,
                                        mock_rev_dir):
@@ -1629,7 +1630,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             url,
             limit=4, with_data=False)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_person(self, mock_service):
         # given
@@ -1650,7 +1651,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, stub_person)
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_person_not_found(self, mock_service):
         # given
@@ -1667,7 +1668,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, {
             'error': 'Person with id 666 not found.'})
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_directory(self, mock_service):
         # given
@@ -1715,7 +1716,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_directory.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_directory_not_found(self, mock_service):
         # given
@@ -1734,7 +1735,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'Directory with sha1_git '
             '66618d8be353ed3480476f032475e7c233eff737 not found.'})
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_lookup_entity_by_uuid_not_found(self, mock_service):
         # when
@@ -1755,7 +1756,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_entity_by_uuid.assert_called_once_with(
             '5f4d4c51-498a-4e28-88b3-b3e4e8396cba')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_lookup_entity_by_uuid_bad_request(self, mock_service):
         # when
@@ -1774,7 +1775,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_entity_by_uuid.assert_called_once_with(
             'uuid malformed')
 
-    @patch('swh.web.ui.api.service')
+    @patch('swh.web.ui.views.api.service')
     @istest
     def api_lookup_entity_by_uuid(self, mock_service):
         # when

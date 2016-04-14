@@ -4,9 +4,10 @@
 # See top-level LICENSE file for more information
 
 from swh.storage.exc import StorageDBError, StorageAPIError
-from swh.web.ui import renderers
-from swh.web.ui.exc import NotFoundExc
-from swh.web.ui.main import app
+
+from .. import renderers
+from ..exc import NotFoundExc
+from ..main import app
 
 
 @app.errorhandler(ValueError)

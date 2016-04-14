@@ -5,9 +5,10 @@
 
 from nose.tools import istest
 
-from swh.web.ui.tests import test_app
 from unittest.mock import patch
+
 from swh.web.ui.exc import BadInputExc, NotFoundExc
+from .. import test_app
 
 
 class FileMock():
@@ -16,34 +17,8 @@ class FileMock():
         self.filename = filename
 
 
-class ViewTestCase(test_app.SWHViewTestCase):
+class SearchView(test_app.SWHViewTestCase):
     render_template = False
-
-    @patch('swh.web.ui.views.flask')
-    @istest
-    def homepage(self, mock_flask):
-        # given
-        mock_flask.flash.return_value = 'something'
-
-        # when
-        rv = self.client.get('/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('home.html')
-
-        mock_flask.flash.assert_called_once_with(
-            'This Web app is still work in progress, use at your own risk',
-            'warning')
-
-    @istest
-    def info(self):
-        # when
-        rv = self.client.get('/about/')
-
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('about.html')
-        self.assertIn(b'About', rv.data)
 
     @istest
     def search_default(self):
@@ -57,7 +32,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('file'), None)
         self.assert_template_used('upload_and_search.html')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def search_get_query_hash_not_found(self, mock_service):
         # given
@@ -76,7 +51,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:456')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def search_get_query_hash_bad_input(self, mock_service):
         # given
@@ -95,7 +70,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1_git:789')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def search_get_query_hash_found(self, mock_service):
         # given
@@ -114,7 +89,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:123')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def search_post_query_hash_not_found(self, mock_service):
         # given
@@ -133,7 +108,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:456')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def search_post_query_hash_bad_input(self, mock_service):
         # given
@@ -152,7 +127,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1_git:987')
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def search_post_query_hash_found(self, mock_service):
         # given
@@ -171,8 +146,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.lookup_hash.assert_called_once_with('sha1:321')
 
-    @patch('swh.web.ui.views.service')
-    @patch('swh.web.ui.views.request')
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.request')
     @istest
     def search_post_upload_and_hash_bad_input(self, mock_request,
                                               mock_service):
@@ -194,8 +169,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.upload_and_search.called = True
 
-    @patch('swh.web.ui.views.service')
-    @patch('swh.web.ui.views.request')
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.request')
     @istest
     def search_post_upload_and_hash_not_found(self, mock_request,
                                               mock_service):
@@ -220,8 +195,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.upload_and_search.called = True
 
-    @patch('swh.web.ui.views.service')
-    @patch('swh.web.ui.views.request')
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.request')
     @istest
     def search_post_upload_and_hash_found(self, mock_request, mock_service):
         # given
@@ -245,7 +220,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_service.upload_and_search.called = True
 
-    @patch('swh.web.ui.views.api')
+
+class ContentView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_content_ko_not_found(self, mock_api):
         # given
@@ -265,7 +244,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_content_ko_bad_input(self, mock_api):
         # given
@@ -285,8 +264,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
-    @patch('swh.web.ui.views.service')
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_content(self, mock_api, mock_service):
         # given
@@ -312,8 +291,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_metadata.assert_called_once_with(
             'sha1:sha1-hash')
 
-    @patch('swh.web.ui.views.redirect')
-    @patch('swh.web.ui.views.url_for')
+    @patch('swh.web.ui.views.browse.redirect')
+    @patch('swh.web.ui.views.browse.url_for')
     @istest
     def browse_content_raw(self, mock_urlfor, mock_redirect):
         # given
@@ -332,7 +311,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_redirect.assert_called_once_with(
             '/api/content/sha1:sha1-hash/raw/')
 
-    @patch('swh.web.ui.views.api')
+
+class DirectoryView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_directory_ko_bad_input(self, mock_api):
         # given
@@ -351,7 +334,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory.assert_called_once_with(
             'sha2-invalid')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_directory_empty_result(self, mock_api):
         # given
@@ -369,8 +352,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory.assert_called_once_with(
             'some-sha1')
 
-    @patch('swh.web.ui.views.api')
-    @patch('swh.web.ui.views.utils')
+    @patch('swh.web.ui.views.browse.api')
+    @patch('swh.web.ui.views.browse.utils')
     @istest
     def browse_directory(self, mock_utils, mock_api):
         # given
@@ -412,7 +395,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_utils.prepare_data_for_view.assert_called_once_with(
             stub_directory_ls)
 
-    @patch('swh.web.ui.views.api')
+
+class ContentWithOriginView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
 #    @istest
     def browse_content_with_origin_content_ko_not_found(self, mock_api):
         # given
@@ -431,7 +418,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_checksum_to_origin.assert_called_once_with(
             'sha256:some-sha256')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
 #    @istest
     def browse_content_with_origin_ko_bad_input(self, mock_api):
         # given
@@ -450,7 +437,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_checksum_to_origin.assert_called_once_with(
             'sha256:some-sha256')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
 #    @istest
     def browse_content_with_origin(self, mock_api):
         # given
@@ -479,7 +466,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_content_checksum_to_origin.assert_called_once_with(
             'sha256:some-sha256')
 
-    @patch('swh.web.ui.views.api')
+
+class OriginView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_origin_ko_not_found(self, mock_api):
         # given
@@ -498,7 +489,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_origin.assert_called_once_with(1)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_origin_ko_bad_input(self, mock_api):
         # given
@@ -514,7 +505,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_origin.assert_called_once_with(426)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_origin_found(self, mock_api):
         # given
@@ -536,7 +527,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_origin.assert_called_once_with(426)
 
-    @patch('swh.web.ui.views.api')
+
+class PersonView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_person_ko_not_found(self, mock_api):
         # given
@@ -555,7 +550,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_person.assert_called_once_with(1)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_person_ko_bad_input(self, mock_api):
         # given
@@ -571,7 +566,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_person.assert_called_once_with(426)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_person(self, mock_api):
         # given
@@ -593,7 +588,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_person.assert_called_once_with(426)
 
-    @patch('swh.web.ui.views.api')
+
+class ReleaseView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_release_ko_not_found(self, mock_api):
         # given
@@ -612,7 +611,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_release.assert_called_once_with('1')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_release_ko_bad_input(self, mock_api):
         # given
@@ -628,7 +627,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_release.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_release(self, mock_api):
         # given
@@ -678,7 +677,11 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_release.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.api')
+
+class RevisionView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_ko_not_found(self, mock_api):
         # given
@@ -698,7 +701,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_revision.assert_called_once_with('1')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_ko_bad_input(self, mock_api):
         # given
@@ -718,7 +721,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_revision.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision(self, mock_api):
         # given
@@ -780,7 +783,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_revision.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_log_ko_not_found(self, mock_api):
         # given
@@ -800,7 +803,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_revision_log.assert_called_once_with('sha1')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_log_ko_bad_input(self, mock_api):
         # given
@@ -820,7 +823,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_revision_log.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_log(self, mock_api):
         # given
@@ -860,7 +863,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
 
         mock_api.api_revision_log.assert_called_once_with('426')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_ko_not_found(self, mock_api):
         # given
@@ -882,7 +885,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history.assert_called_once_with(
             '1', '2')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_ko_bad_input(self, mock_api):
         # given
@@ -912,8 +915,8 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # then
         self.assertEquals(rv.status_code, 302)
 
-    @patch('swh.web.ui.views.utils')
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.utils')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history(self, mock_api, mock_utils):
         # given
@@ -942,7 +945,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             '426', '789')
         mock_utils.prepare_data_for_view.assert_called_once_with(stub_revision)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_directory_ko_not_found(self, mock_api):
         # given
@@ -964,7 +967,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_directory.assert_called_once_with(
             '1', None, with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_directory_ko_bad_input(self, mock_api):
         # given
@@ -986,7 +989,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_directory.assert_called_once_with(
             '10', None, with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_directory(self, mock_api):
         # given
@@ -1042,7 +1045,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_directory.assert_called_once_with(
             '100', 'some/path', with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_directory_ko_not_found(self, mock_api):
         # given
@@ -1064,7 +1067,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_directory.assert_called_once_with(
             '123', '456', 'a/b', with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_directory_ko_bad_input(self, mock_api):
         # given
@@ -1086,7 +1089,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_directory.assert_called_once_with(
             '123', '456', 'a/c', with_data=True)
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def browse_revision_history_directory_ok_no_trailing_slash_so_redirect(
             self, mock_service):
@@ -1096,7 +1099,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # then
         self.assertEquals(rv.status_code, 301)
 
-    @patch('swh.web.ui.views.service')
+    @patch('swh.web.ui.views.browse.service')
     @istest
     def browse_revision_history_directory_ok_same_sha1_redirects(
             self, mock_service):
@@ -1106,7 +1109,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         # then
         self.assertEquals(rv.status_code, 301)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_directory(self, mock_api):
         # given
@@ -1149,64 +1152,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_directory.assert_called_once_with(
             '100', '999', 'path/to', with_data=True)
 
-    @patch('swh.web.ui.views.api')
-    @istest
-    def browse_entity_ko_not_found(self, mock_api):
-        # given
-        mock_api.api_entity_by_uuid.side_effect = NotFoundExc('Not found!')
-
-        # when
-        rv = self.client.get('/browse/entity/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('entity.html')
-        self.assertEqual(self.get_context_variable('entities'), [])
-        self.assertEqual(self.get_context_variable('message'), 'Not found!')
-
-        mock_api.api_entity_by_uuid.assert_called_once_with(
-            '5f4d4c51-498a-4e28-88b3-b3e4e8396cba')
-
-    @patch('swh.web.ui.views.api')
-    @istest
-    def browse_entity_ko_bad_input(self, mock_api):
-        # given
-        mock_api.api_entity_by_uuid.side_effect = BadInputExc('wrong input!')
-
-        # when
-        rv = self.client.get('/browse/entity/blah-blah-uuid/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('entity.html')
-        self.assertEqual(self.get_context_variable('entities'), [])
-        self.assertEqual(self.get_context_variable('message'), 'wrong input!')
-
-        mock_api.api_entity_by_uuid.assert_called_once_with(
-            'blah-blah-uuid')
-
-    @patch('swh.web.ui.views.api')
-    @istest
-    def browse_entity(self, mock_api):
-        # given
-        stub_entities = [
-            {'id': '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba'}]
-        mock_api.api_entity_by_uuid.return_value = stub_entities
-
-        # when
-        rv = self.client.get('/browse/entity/'
-                             '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('entity.html')
-        self.assertEqual(self.get_context_variable('entities'), stub_entities)
-        self.assertIsNone(self.get_context_variable('message'))
-
-        mock_api.api_entity_by_uuid.assert_called_once_with(
-            '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba')
-
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_through_origin_ko_bad_input(self, mock_api):
         # given
@@ -1227,7 +1173,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_through_origin.assert_called_once_with(
             99, 'refs/heads/master', None, '123')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_through_origin_ko_not_found(self, mock_api):
         # given
@@ -1248,7 +1194,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_through_origin.assert_called_once_with(
             999, 'dev', None, '123')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_through_origin_ko_other_error(self, mock_api):
         # given
@@ -1271,7 +1217,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_through_origin.assert_called_once_with(
             438, 'scratch', '2016', '789')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_history_through_origin(self, mock_api):
         # given
@@ -1294,7 +1240,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_history_through_origin.assert_called_once_with(
             99, 'refs/heads/master', None, '123')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_with_origin_ko_not_found(self, mock_api):
         # given
@@ -1312,7 +1258,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_with_origin.assert_called_once_with(
             1, 'refs/heads/master', None)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_with_origin_ko_bad_input(self, mock_api):
         # given
@@ -1330,7 +1276,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_with_origin.assert_called_once_with(
             1000, 'dev', None)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_with_origin_ko_other(self, mock_api):
         # given
@@ -1350,7 +1296,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_with_origin.assert_called_once_with(
             1999, 'scratch/master', '1990-01-10')
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_with_origin(self, mock_api):
         # given
@@ -1370,7 +1316,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_revision_with_origin.assert_called_once_with(
             1, 'refs/heads/master', None)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_directory_through_origin_ko_not_found(self, mock_api):
         # given
@@ -1390,7 +1336,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory_through_revision_origin.assert_called_once_with(  # noqa
             2, 'refs/heads/master', None, None, with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_directory_through_origin_ko_bad_input(self, mock_api):
         # given
@@ -1409,7 +1355,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory_through_revision_origin.assert_called_once_with(
             2, 'refs/heads/master', None, None, with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_directory_through_origin_ko_other(self, mock_api):
         # given
@@ -1429,7 +1375,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory_through_revision_origin.assert_called_once_with(
             2, 'refs/heads/master', None, None, with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_revision_directory_through_origin(self, mock_api):
         # given
@@ -1453,7 +1399,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory_through_revision_origin.assert_called_once_with(
             2, 'dev', '2013-20-20 10:02', 'some/file', with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_directory_through_revision_with_origin_history_ko_not_found(
             self, mock_api):
@@ -1475,7 +1421,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
             987, 'refs/heads/master', None, 'sha1git', None, with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_directory_through_revision_with_origin_history_ko_bad_input(
             self, mock_api):
@@ -1501,7 +1447,7 @@ class ViewTestCase(test_app.SWHViewTestCase):
             798, 'refs/heads/dev', '2012-11-11', '1234', 'some/path',
             with_data=True)
 
-    @patch('swh.web.ui.views.api')
+    @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_directory_through_revision_with_origin_history(
             self, mock_api):
@@ -1526,3 +1472,64 @@ class ViewTestCase(test_app.SWHViewTestCase):
         mock_api.api_directory_through_revision_with_origin_history.assert_called_once_with(  # noqa
             101010, 'refs/heads/master', '1955-11-12', '54628', 'emacs-24.5',
             with_data=True)
+
+
+class EntityView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_entity_ko_not_found(self, mock_api):
+        # given
+        mock_api.api_entity_by_uuid.side_effect = NotFoundExc('Not found!')
+
+        # when
+        rv = self.client.get('/browse/entity/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('entity.html')
+        self.assertEqual(self.get_context_variable('entities'), [])
+        self.assertEqual(self.get_context_variable('message'), 'Not found!')
+
+        mock_api.api_entity_by_uuid.assert_called_once_with(
+            '5f4d4c51-498a-4e28-88b3-b3e4e8396cba')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_entity_ko_bad_input(self, mock_api):
+        # given
+        mock_api.api_entity_by_uuid.side_effect = BadInputExc('wrong input!')
+
+        # when
+        rv = self.client.get('/browse/entity/blah-blah-uuid/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('entity.html')
+        self.assertEqual(self.get_context_variable('entities'), [])
+        self.assertEqual(self.get_context_variable('message'), 'wrong input!')
+
+        mock_api.api_entity_by_uuid.assert_called_once_with(
+            'blah-blah-uuid')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_entity(self, mock_api):
+        # given
+        stub_entities = [
+            {'id': '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba'}]
+        mock_api.api_entity_by_uuid.return_value = stub_entities
+
+        # when
+        rv = self.client.get('/browse/entity/'
+                             '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assert_template_used('entity.html')
+        self.assertEqual(self.get_context_variable('entities'), stub_entities)
+        self.assertIsNone(self.get_context_variable('message'))
+
+        mock_api.api_entity_by_uuid.assert_called_once_with(
+            '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba')
