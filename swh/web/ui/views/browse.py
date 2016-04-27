@@ -25,69 +25,68 @@ def search():
 
     One form to submit either:
     - hash query to look up in swh storage
-    - some file content to upload, compute its hash and look it up in swh
-      storage
+    - file hashes calculated client-side to be queried in swh storage
     - both
 
     Returns:
         dict representing data to look for in swh storage.
         The following keys are returned:
-        - file: File submitted for upload
-        - filename: Filename submitted for upload
-        - q: Query on hash to look for
-        - message: Message detailing if data has been found or not.
-
+        - search_stats: {'nbfiles': X, 'pct': Y} the number of total
+        queried files and percentage of files not in storage respectively
+        - responses: array of {'filename': X, 'sha1': Y, 'found': Z}
+        - messages: General messages.
+    TODO:
+        Batch-process with all checksums, not just sha1
     """
-    env = {'filename': None,
-           'q': None,
-           'file': None}
-    data = None
-    q = env['q']
-    file = env['file']
+    env = {'q': None,
+           'search_stats': None,
+           'responses': None,
+           'messages': []}
 
-    if request.method == 'GET':
-        data = request.args
-    elif request.method == 'POST':
-        data = request.data
-        # or hash and search a file
-        file = request.files.get('filename')
-
-    # could either be a query for sha1 hash
-    q = data.get('q')
-
+    search_stats = None
+    responses = []
     messages = []
 
-    if q:
+    # Get with a single hash request
+    if request.method == 'GET':
+        data = request.args
+        q = data.get('q')
         env['q'] = q
+        if q:
+            try:
+                search_stats = {'nbfiles': 0, 'pct': 0}
+                r = service.lookup_hash(q)
+                responses.append({'filename': 'User submitted hash',
+                                  'sha1': q,
+                                  'found': r.get('found') is not None})
+                search_stats['nbfiles'] = 1
+                search_stats['pct'] = 100 if r.get('found') is not None else 0
+            except BadInputExc as e:
+                messages.append(str(e))
 
-        try:
-            r = service.lookup_hash(q)
-            messages.append('Content with hash %s%sfound!' % (
-                q, ' ' if r.get('found') else ' not '))
-        except BadInputExc as e:
-            messages.append(str(e))
+    # POST form submission with many hash requests
+    elif request.method == 'POST':
+        data = request.form
+        search_stats = {'nbfiles': 0, 'pct': 0}
+        queries = []
+        # Remove potential inputs with no associated value
+        for k, v in data.items():
+            if v is not None and v != '':
+                queries.append({'filename': k, 'sha1': v})
 
-    if file and file.filename:
-        env['file'] = file
-        try:
-            uploaded_content = service.upload_and_search(file)
-            filename = uploaded_content['filename']
-            sha1 = uploaded_content['sha1']
-            found = uploaded_content['found']
+        if len(queries) > 0:
+            try:
+                lookup = service.lookup_multiple_hashes(queries)
+                nbfound = len([x for x in lookup if x['found']])
+                responses = lookup
+                search_stats['nbfiles'] = len(queries)
+                search_stats['pct'] = (nbfound / len(queries))*100
+            except BadInputExc as e:
+                messages.append(str(e))
 
-            messages.append('File %s with hash %s%sfound!' % (
-                filename, sha1, ' ' if found else ' not '))
-
-            env.update({
-                'filename': filename,
-                'sha1': sha1,
-            })
-        except BadInputExc as e:
-            messages.append(str(e))
-
-    env['q'] = q if q else ''
+    env['search_stats'] = search_stats
+    env['responses'] = responses
     env['messages'] = messages
-
     return render_template('upload_and_search.html', **env)
 
 
