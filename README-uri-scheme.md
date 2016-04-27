@@ -56,24 +56,23 @@ want to see:
   cannot be limited a priori).  Links to parent revisions maintains a
   reference to <SHA1_GIT>, using the /history/ URL scheme (see below).
 
-* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/
+* /revision/<SHA1_GIT_CUR>/root/<SHA1_GIT_ROOT>/
 
-  Show information about revision SHA1_GIT, limited to the sub-graph
-  rooted at <SHA1_GIT_ROOT>. The obtained page show both parent and
-  child revisions of <SHA1_GIT>, but exclude all revisions that are
-  *not* transitively reachable (going back in time) from
-  <SHA1_GIT_ROOT>.
+  Show information about revision <SHA1_GIT_CUR>, limited to the sub-graph
+  rooted at <SHA1_GIT_ROOT>. The obtained page show both parent and child
+  revisions of <SHA1_GIT_CUR>, but exclude all revisions that are *not*
+  transitively reachable (going back in time) from <SHA1_GIT_ROOT>.
 
-  Links to all revisions SHA1_GIT' reachable from SHA1_GIT are of the
-  form /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT'>/, where
-  SHA1_GIT_ROOT is the same as before.  In the degenerate case of
-  browsing back to the revision root, we might end up on the URL
-  /revision/<SHA1_GIT_1>/history/<SHA1_GIT_2>/ where SHA1_GIT_1 ==
-  SHA1_GIT_2. That URL is equivalent to /revision/<SHA1_GIT_1>/ and
-  might be simplified redirecting to it.
+  Links to all revisions SHA1_GIT' reachable from <SHA1_GIT_CUR> are of the
+  form /revision/<SHA1_GIT'>/root/<SHA1_GIT_ROOT>, where <SHA1_GIT_ROOT>
+  remains unchanged. In the degenerate case of browsing back to the root
+  revision, we might end up on the URL
+  /revision/<SHA1_GIT_1>/root/<SHA1_GIT_2>/ where SHA1_GIT_1 == SHA1_GIT_2.
+  That URL is equivalent to /revision/<SHA1_GIT_1>/ and might be simplified
+  redirecting to it.
 
 * /revision/<SHA1_GIT>/directory/[<PATH>]
-* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/directory/[<PATH>]
+* /revision/<SHA1_GIT_CUR>/root/<SHA1_GIT_ROOT>/directory/[<PATH>]
 
   Starting from the revision identified as in the previous URLs, navigate the
   directory associated to that revision.
