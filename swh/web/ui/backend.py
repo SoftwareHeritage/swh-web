@@ -54,6 +54,17 @@ def content_find_occurrence(algo, hash_bin):
     return main.storage().content_find_occurrence({algo: hash_bin})
 
 
+def content_missing_per_sha1(sha1list):
+    """List content missing from storage based on sha1
+
+    Args:
+        sha1s: Iterable of sha1 to check for absence
+    Returns:
+        an iterable of sha1s missing from the storage
+    """
+    return main.storage().content_missing_per_sha1(sha1list)
+
+
 def directory_get(sha1_bin):
     """Retrieve information on one directory.
 

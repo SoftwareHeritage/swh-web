@@ -10,6 +10,26 @@ from swh.web.ui import converters, query, upload, backend
 from swh.web.ui.exc import NotFoundExc
 
 
+def lookup_multiple_hashes(hashes):
+    """Lookup the passed hashes in a single DB connection, using batch processing.
+
+    Args:
+        An array of {filename: X, sha1: Y}, string X, hex sha1 string Y.
+    Returns:
+        The same array with elements updated with elem['found'] = true if
+        the hash is present in storage, elem['found'] = false if not.
+    """
+    hashlist = [hashutil.hex_to_hash(elem['sha1']) for elem in hashes]
+    content_missing = backend.content_missing_per_sha1(hashlist)
+    missing = [hashutil.hash_to_hex(x) for x in content_missing]
+    for x in hashes:
+        x.update({'found': True})
+    for h in hashes:
+        if h['sha1'] in missing:
+            h['found'] = False
+    return hashes
+
+
 def hash_and_search(filepath):
     """Hash the filepath's content as sha1, then search in storage if
     it exists.
