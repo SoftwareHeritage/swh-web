@@ -18,6 +18,54 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
+    def lookup_multiple_hashes_ball_missing(self, mock_backend):
+        # given
+        mock_backend.content_missing_per_sha1 = MagicMock(return_value=[])
+
+        # when
+        actual_lookup = service.lookup_multiple_hashes(
+            [{'filename': 'a',
+              'sha1': '456caf10e9535160d90e874b45aa426de762f19f'},
+             {'filename': 'b',
+              'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
+
+        # then
+        self.assertEquals(actual_lookup, [
+            {'filename': 'a',
+             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+             'found': True},
+            {'filename': 'b',
+             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+             'found': True}
+        ])
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_multiple_hashes_some_missing(self, mock_backend):
+        # given
+        mock_backend.content_missing_per_sha1 = MagicMock(return_value=[
+            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        ])
+
+        # when
+        actual_lookup = service.lookup_multiple_hashes(
+            [{'filename': 'a',
+              'sha1': '456caf10e9535160d90e874b45aa426de762f19f'},
+             {'filename': 'b',
+              'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
+
+        # then
+        self.assertEquals(actual_lookup, [
+            {'filename': 'a',
+             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+             'found': False},
+            {'filename': 'b',
+             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+             'found': True}
+        ])
+
+    @patch('swh.web.ui.service.backend')
+    @istest
     def lookup_hash_does_not_exist(self, mock_backend):
         # given
         mock_backend.content_find = MagicMock(return_value=None)

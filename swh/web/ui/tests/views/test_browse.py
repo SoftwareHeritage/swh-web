@@ -25,11 +25,9 @@ class SearchView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/search/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), '')
+        self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('messages'), [])
-        self.assertEqual(self.get_context_variable('filename'), None)
-        self.assertEqual(self.get_context_variable('file'), None)
+        self.assertEqual(self.get_context_variable('responses'), [])
         self.assert_template_used('upload_and_search.html')
 
     @patch('swh.web.ui.views.browse.service')
@@ -41,12 +39,13 @@ class SearchView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/search/?q=sha1:456')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1:456')
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['Content with hash sha1:456 not found!'])
-        self.assertEqual(self.get_context_variable('filename'), None)
-        self.assertEqual(self.get_context_variable('file'), None)
+        self.assertEqual(self.get_context_variable('messages'), [])
+        self.assertEqual(self.get_context_variable('responses'), [
+            {'filename': 'User submitted hash',
+             'sha1': 'sha1:456',
+             'found': False}])
         self.assert_template_used('upload_and_search.html')
 
         mock_service.lookup_hash.assert_called_once_with('sha1:456')
@@ -60,12 +59,10 @@ class SearchView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/search/?q=sha1_git:789')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1_git:789')
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['error msg'])
-        self.assertEqual(self.get_context_variable('filename'), None)
-        self.assertEqual(self.get_context_variable('file'), None)
+        self.assertEqual(self.get_context_variable('messages'), ['error msg'])
+        self.assertEqual(self.get_context_variable('responses'), [])
         self.assert_template_used('upload_and_search.html')
 
         mock_service.lookup_hash.assert_called_once_with('sha1_git:789')
@@ -79,90 +76,37 @@ class SearchView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/search/?q=sha1:123')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('q'), 'sha1:123')
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['Content with hash sha1:123 found!'])
-        self.assertEqual(self.get_context_variable('filename'), None)
-        self.assertEqual(self.get_context_variable('file'), None)
+        self.assertEqual(self.get_context_variable('messages'), [])
+        self.assertEqual(len(self.get_context_variable('responses')), 1)
+        resp = self.get_context_variable('responses')[0]
+        self.assertTrue(resp is not None)
+        self.assertEqual(resp['sha1'], 'sha1:123')
+        self.assertEqual(resp['found'], True)
         self.assert_template_used('upload_and_search.html')
 
         mock_service.lookup_hash.assert_called_once_with('sha1:123')
 
     @patch('swh.web.ui.views.browse.service')
-    @istest
-    def search_post_query_hash_not_found(self, mock_service):
-        # given
-        mock_service.lookup_hash.return_value = {'found': None}
-
-        # when
-        rv = self.client.get('/search/?q=sha1:456')
-
-        self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1:456')
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['Content with hash sha1:456 not found!'])
-        self.assertEqual(self.get_context_variable('filename'), None)
-        self.assertEqual(self.get_context_variable('file'), None)
-        self.assert_template_used('upload_and_search.html')
-
-        mock_service.lookup_hash.assert_called_once_with('sha1:456')
-
-    @patch('swh.web.ui.views.browse.service')
-    @istest
-    def search_post_query_hash_bad_input(self, mock_service):
-        # given
-        mock_service.lookup_hash.side_effect = BadInputExc('error msg!')
-
-        # when
-        rv = self.client.post('/search/', data=dict(q='sha1_git:987'))
-
-        self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1_git:987')
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['error msg!'])
-        self.assertEqual(self.get_context_variable('filename'), None)
-        self.assertEqual(self.get_context_variable('file'), None)
-        self.assert_template_used('upload_and_search.html')
-
-        mock_service.lookup_hash.assert_called_once_with('sha1_git:987')
-
-    @patch('swh.web.ui.views.browse.service')
-    @istest
-    def search_post_query_hash_found(self, mock_service):
-        # given
-        mock_service.lookup_hash.return_value = {'found': True}
-
-        # when
-        rv = self.client.post('/search/', data=dict(q='sha1:321'))
-
-        self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1:321')
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['Content with hash sha1:321 found!'])
-        self.assertEqual(self.get_context_variable('filename'), None)
-        self.assertEqual(self.get_context_variable('file'), None)
-        self.assert_template_used('upload_and_search.html')
-
-        mock_service.lookup_hash.assert_called_once_with('sha1:321')
-
-    @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
     @istest
-    def search_post_upload_and_hash_bad_input(self, mock_request,
-                                              mock_service):
+    def search_post_hashes_bad_input(self, mock_request,
+                                     mock_service):
         # given
         mock_request.data = {}
         mock_request.method = 'POST'
-        mock_request.files = dict(filename=FileMock('foobar'))
-        mock_service.upload_and_search.side_effect = BadInputExc(
+        mock_service.lookup_multiple_hashes.side_effect = BadInputExc(
             'error bad input')
 
         # when (mock_request completes the post request)
         rv = self.client.post('/search/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('search_stats'),
+                         {'nbfiles': 0, 'pct': 0})
+        self.assertEqual(self.get_context_variable('responses'), [])
         self.assertEqual(self.get_context_variable('messages'),
                          ['error bad input'])
         self.assert_template_used('upload_and_search.html')
@@ -172,25 +116,34 @@ class SearchView(test_app.SWHViewTestCase):
     @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
     @istest
-    def search_post_upload_and_hash_not_found(self, mock_request,
-                                              mock_service):
+    def search_post_hashes_none(self, mock_request, mock_service):
         # given
-        mock_request.data = {}
+        mock_request.data = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
+                             'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
-        mock_request.files = dict(filename=FileMock('foobar'))
-        mock_service.upload_and_search.return_value = {'filename': 'foobar',
-                                                       'sha1': 'blahhash',
-                                                       'found': False}
+        mock_service.lookup_multiple_hashes.return_value = [
+            {'filename': 'a',
+             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+             'found': False},
+            {'filename': 'b',
+             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+             'found': False}
+        ]
 
         # when (mock_request completes the post request)
         rv = self.client.post('/search/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('messages'),
-                         ["File foobar with hash blahhash not found!"])
-        self.assertEqual(self.get_context_variable('filename'), 'foobar')
-        self.assertEqual(self.get_context_variable('sha1'), 'blahhash')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(self.get_context_variable('responses')), 2)
+        self.assertTrue(self.get_context_variable('search_stats') is not None)
+        stats = self.get_context_variable('search_stats')
+        self.assertEqual(stats['nbfiles'], 2)
+        self.assertEqual(stats['pct'], 0)
+        a, b = self.get_context_variable('responses')
+        self.assertEqual(a['found'], False)
+        self.assertEqual(b['found'], False)
+        self.assertEqual(self.get_context_variable('messages'), [])
         self.assert_template_used('upload_and_search.html')
 
         mock_service.upload_and_search.called = True
@@ -198,24 +151,34 @@ class SearchView(test_app.SWHViewTestCase):
     @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
     @istest
-    def search_post_upload_and_hash_found(self, mock_request, mock_service):
+    def search_post_hashes_some(self, mock_request, mock_service):
         # given
-        mock_request.data = {}
+        mock_request.data = {'a': '456caf10e9535160d90e874b45aa426de762f19f',
+                             'b': '745bab676c8f3cec8016e0c39ea61cf57e518865'}
         mock_request.method = 'POST'
-        mock_request.files = dict(filename=FileMock('foobar'))
-        mock_service.upload_and_search.return_value = {'filename': 'foobar',
-                                                       'sha1': '123456789',
-                                                       'found': True}
+        mock_service.lookup_multiple_hashes.return_value = [
+            {'filename': 'a',
+             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+             'found': False},
+            {'filename': 'b',
+             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+             'found': True}
+        ]
 
         # when (mock_request completes the post request)
         rv = self.client.post('/search/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('messages'),
-                         ["File foobar with hash 123456789 found!"])
-        self.assertEqual(self.get_context_variable('filename'), 'foobar')
-        self.assertEqual(self.get_context_variable('sha1'), '123456789')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(self.get_context_variable('responses')), 2)
+        self.assertTrue(self.get_context_variable('search_stats') is not None)
+        stats = self.get_context_variable('search_stats')
+        self.assertEqual(stats['nbfiles'], 2)
+        self.assertEqual(stats['pct'], 50)
+        self.assertEqual(self.get_context_variable('messages'), [])
+        a, b = self.get_context_variable('responses')
+        self.assertEqual(a['found'], False)
+        self.assertEqual(b['found'], True)
         self.assert_template_used('upload_and_search.html')
 
         mock_service.upload_and_search.called = True
@@ -235,7 +198,7 @@ class ContentView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('content.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Not found!')
@@ -255,7 +218,7 @@ class ContentView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('content.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Bad input!')
@@ -280,7 +243,7 @@ class ContentView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('content.html')
         self.assertIsNone(self.get_context_variable('message'))
         self.assertEqual(self.get_context_variable('content'),
@@ -303,8 +266,8 @@ class ContentView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/raw/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.data, stub_content_raw)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.data, stub_content_raw)
 
         mock_urlfor.assert_called_once_with('api_content_raw',
                                             q='sha1:sha1-hash')
@@ -326,7 +289,7 @@ class DirectoryView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/directory/sha2-invalid/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('directory.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Invalid hash')
@@ -344,7 +307,7 @@ class DirectoryView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/directory/some-sha1/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('directory.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Listing for directory some-sha1:')
@@ -383,7 +346,7 @@ class DirectoryView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/directory/some-sha1/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('directory.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Listing for directory some-sha1:')
@@ -410,7 +373,7 @@ class ContentWithOriginView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('content-with-origin.html')
         self.assertEqual(self.get_context_variable('message'),
                          'Not found!')
@@ -429,7 +392,7 @@ class ContentWithOriginView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('content-with-origin.html')
         self.assertEqual(
             self.get_context_variable('message'), 'Invalid hash')
@@ -453,7 +416,7 @@ class ContentWithOriginView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/content/sha256:some-sha256/origin/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('content-with-origin.html')
         self.assertEqual(
             self.get_context_variable('message'),
@@ -480,7 +443,7 @@ class OriginView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/origin/1/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
         self.assertEqual(self.get_context_variable('origin_id'), 1)
         self.assertEqual(
@@ -499,7 +462,7 @@ class OriginView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/origin/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
         self.assertEqual(self.get_context_variable('origin_id'), 426)
 
@@ -520,7 +483,7 @@ class OriginView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/origin/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
         self.assertEqual(self.get_context_variable('origin_id'), 426)
         self.assertEqual(self.get_context_variable('origin'), mock_origin)
@@ -541,7 +504,7 @@ class PersonView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/person/1/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('person.html')
         self.assertEqual(self.get_context_variable('person_id'), 1)
         self.assertEqual(
@@ -560,7 +523,7 @@ class PersonView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/person/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('person.html')
         self.assertEqual(self.get_context_variable('person_id'), 426)
 
@@ -581,7 +544,7 @@ class PersonView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/person/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('person.html')
         self.assertEqual(self.get_context_variable('person_id'), 426)
         self.assertEqual(self.get_context_variable('person'), mock_person)
@@ -602,7 +565,7 @@ class ReleaseView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/release/1/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('release.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '1')
         self.assertEqual(
@@ -621,7 +584,7 @@ class ReleaseView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/release/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('release.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
 
@@ -669,7 +632,7 @@ class ReleaseView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/release/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('release.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(self.get_context_variable('release'),
@@ -691,7 +654,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/1/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '1')
         self.assertEqual(
@@ -711,7 +674,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(
@@ -774,7 +737,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/426/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(self.get_context_variable('revision'),
@@ -793,7 +756,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/sha1/log/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-log.html')
         self.assertEqual(self.get_context_variable('sha1_git'), 'sha1')
         self.assertEqual(
@@ -813,7 +776,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/426/log/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-log.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertEqual(
@@ -854,7 +817,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/426/log/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-log.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertTrue(
@@ -874,7 +837,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/1/history/2/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git_root'), '1')
         self.assertEqual(self.get_context_variable('sha1_git'), '2')
@@ -896,7 +859,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/321/history/654/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git_root'), '321')
         self.assertEqual(self.get_context_variable('sha1_git'), '654')
@@ -913,7 +876,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/10/history/10/')
 
         # then
-        self.assertEquals(rv.status_code, 302)
+        self.assertEqual(rv.status_code, 302)
 
     @patch('swh.web.ui.views.browse.utils')
     @patch('swh.web.ui.views.browse.api')
@@ -934,7 +897,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/426/history/789/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('sha1_git_root'), '426')
         self.assertEqual(self.get_context_variable('sha1_git'), '789')
@@ -955,7 +918,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/1/directory/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '1')
         self.assertEqual(self.get_context_variable('path'), '.')
@@ -977,7 +940,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/10/directory/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '10')
         self.assertEqual(self.get_context_variable('path'), '.')
@@ -1034,7 +997,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/100/directory/some/path/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertEqual(self.get_context_variable('sha1_git'), '100')
         self.assertEqual(self.get_context_variable('revision'), '100')
@@ -1056,7 +1019,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/123/history/456/directory/a/b/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertEqual(self.get_context_variable('sha1_git_root'), '123')
         self.assertEqual(self.get_context_variable('sha1_git'), '456')
@@ -1078,7 +1041,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/123/history/456/directory/a/c/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertEqual(self.get_context_variable('sha1_git_root'), '123')
         self.assertEqual(self.get_context_variable('sha1_git'), '456')
@@ -1097,7 +1060,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/1/history/2/directory/path/to')
 
         # then
-        self.assertEquals(rv.status_code, 301)
+        self.assertEqual(rv.status_code, 301)
 
     @patch('swh.web.ui.views.browse.service')
     @istest
@@ -1107,7 +1070,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/1/history/1/directory/path/to')
 
         # then
-        self.assertEquals(rv.status_code, 301)
+        self.assertEqual(rv.status_code, 301)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -1140,7 +1103,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              'path/to/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertEqual(self.get_context_variable('sha1_git_root'), '100')
         self.assertEqual(self.get_context_variable('sha1_git'), '999')
@@ -1164,7 +1127,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              '/history/123/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertIsNone(self.get_context_variable('revision'))
         self.assertEqual(self.get_context_variable('message'),
@@ -1185,7 +1148,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              'branch/dev/history/123/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertIsNone(self.get_context_variable('revision'))
         self.assertEqual(self.get_context_variable('message'),
@@ -1208,7 +1171,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              '/history/789/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertIsNone(self.get_context_variable('revision'))
         self.assertEqual(self.get_context_variable('message'),
@@ -1232,7 +1195,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/origin/99/history/123/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('revision'), stub_rev)
         self.assertIsNone(self.get_context_variable('message'))
@@ -1250,7 +1213,7 @@ class RevisionView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/browse/revision/origin/1/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertIsNone(self.get_context_variable('revision'))
         self.assertEqual(self.get_context_variable('message'), 'Not found')
@@ -1268,7 +1231,7 @@ class RevisionView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/browse/revision/origin/1000/branch/dev/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertIsNone(self.get_context_variable('revision'))
         self.assertEqual(self.get_context_variable('message'), 'Bad Input')
@@ -1288,7 +1251,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              '/branch/scratch/master'
                              '/ts/1990-01-10/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertIsNone(self.get_context_variable('revision'))
         self.assertEqual(self.get_context_variable('message'), 'Other')
@@ -1308,7 +1271,7 @@ class RevisionView(test_app.SWHViewTestCase):
         # when
         rv = self.client.get('/browse/revision/origin/1/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision.html')
         self.assertEqual(self.get_context_variable('revision'), stub_rev)
         self.assertIsNone(self.get_context_variable('message'))
@@ -1327,7 +1290,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/origin/2'
                              '/directory/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertIsNone(self.get_context_variable('result'))
         self.assertEqual(self.get_context_variable('message'),
@@ -1347,7 +1310,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/origin/2'
                              '/directory/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertIsNone(self.get_context_variable('result'))
         self.assertEqual(self.get_context_variable('message'), 'Bad Robot')
@@ -1366,7 +1329,7 @@ class RevisionView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/revision/origin/2'
                              '/directory/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertIsNone(self.get_context_variable('result'))
         self.assertEqual(self.get_context_variable('message'),
@@ -1391,7 +1354,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              '/ts/2013-20-20 10:02'
                              '/directory/some/file/')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertEqual(self.get_context_variable('result'), stub_res)
         self.assertIsNone(self.get_context_variable('message'))
@@ -1412,7 +1375,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              '/directory/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertIsNone(self.get_context_variable('result'))
         self.assertEqual(self.get_context_variable('message'), 'Not found!')
@@ -1436,7 +1399,7 @@ class RevisionView(test_app.SWHViewTestCase):
                              '/directory/some/path/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
         self.assertIsNone(self.get_context_variable('result'))
         self.assertEqual(self.get_context_variable('message'),
@@ -1463,9 +1426,9 @@ class RevisionView(test_app.SWHViewTestCase):
                              '/directory/emacs-24.5/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('revision-directory.html')
-        self.assertEquals(self.get_context_variable('result'), stub_dir)
+        self.assertEqual(self.get_context_variable('result'), stub_dir)
         self.assertIsNone(self.get_context_variable('message'))
         self.assertEqual(self.get_context_variable('path'), 'emacs-24.5')
 
@@ -1487,7 +1450,7 @@ class EntityView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/entity/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('entity.html')
         self.assertEqual(self.get_context_variable('entities'), [])
         self.assertEqual(self.get_context_variable('message'), 'Not found!')
@@ -1505,7 +1468,7 @@ class EntityView(test_app.SWHViewTestCase):
         rv = self.client.get('/browse/entity/blah-blah-uuid/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('entity.html')
         self.assertEqual(self.get_context_variable('entities'), [])
         self.assertEqual(self.get_context_variable('message'), 'wrong input!')
@@ -1526,7 +1489,7 @@ class EntityView(test_app.SWHViewTestCase):
                              '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assert_template_used('entity.html')
         self.assertEqual(self.get_context_variable('entities'), stub_entities)
         self.assertIsNone(self.get_context_variable('message'))
