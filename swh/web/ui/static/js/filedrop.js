@@ -132,11 +132,13 @@ function make_row(name) {
 
 function fileReadDone(buffer, fname, searchForm) {
     var wordArray = CryptoJS.lib.WordArray.create(buffer);
+    var sha1 = CryptoJS.SHA1(wordArray);
+    /**
     var git_hd = "blob " + wordArray.length + "\0";
     var git_Array = CryptoJS.enc.utf8.parse(git_hd).concat(wordArray);
-    var sha1 = CryptoJS.SHA1(wordArray);
     var sha256 = CryptoJS.SHA256(wordArray);
     var sha1_git = CryptoJS.SHA1(wordArray);
+    **/
     searchForm.append($("<input>", {type: "hidden",
                                     name: fname,
                                     value: sha1}
