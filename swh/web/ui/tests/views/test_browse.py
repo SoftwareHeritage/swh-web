@@ -94,7 +94,8 @@ class SearchView(test_app.SWHViewTestCase):
     def search_post_hashes_bad_input(self, mock_request,
                                      mock_service):
         # given
-        mock_request.data = {}
+        mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
+                             'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
         mock_service.lookup_multiple_hashes.side_effect = BadInputExc(
             'error bad input')
@@ -118,7 +119,7 @@ class SearchView(test_app.SWHViewTestCase):
     @istest
     def search_post_hashes_none(self, mock_request, mock_service):
         # given
-        mock_request.data = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
+        mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
                              'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
         mock_service.lookup_multiple_hashes.return_value = [
@@ -153,7 +154,7 @@ class SearchView(test_app.SWHViewTestCase):
     @istest
     def search_post_hashes_some(self, mock_request, mock_service):
         # given
-        mock_request.data = {'a': '456caf10e9535160d90e874b45aa426de762f19f',
+        mock_request.form = {'a': '456caf10e9535160d90e874b45aa426de762f19f',
                              'b': '745bab676c8f3cec8016e0c39ea61cf57e518865'}
         mock_request.method = 'POST'
         mock_service.lookup_multiple_hashes.return_value = [
