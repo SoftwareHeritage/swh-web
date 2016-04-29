@@ -297,6 +297,37 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
+    def lookup_directory_with_path_not_found(self, mock_backend):
+        # given
+        mock_backend.lookup_directory_with_path = MagicMock(return_value=None)
+
+        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+
+        # when
+        actual_directory = mock_backend.lookup_directory_with_path(
+            sha1_git, 'some/path/here')
+
+        self.assertIsNone(actual_directory)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_directory_with_path_found(self, mock_backend):
+        # given
+        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        entry = {'id': 'dir-id',
+                 'type': 'dir',
+                 'name': 'some/path/foo'}
+
+        mock_backend.lookup_directory_with_path = MagicMock(return_value=entry)
+
+        # when
+        actual_directory = mock_backend.lookup_directory_with_path(
+            sha1_git, 'some/path/here')
+
+        self.assertEqual(entry, actual_directory)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
     def lookup_release(self, mock_backend):
         # given
         mock_backend.release_get = MagicMock(return_value={
