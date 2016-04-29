@@ -653,7 +653,9 @@ def api_revision_log(sha1_git):
 
 @app.route('/api/1/directory/')
 @app.route('/api/1/directory/<string:sha1_git>/')
-def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
+@app.route('/api/1/directory/<string:sha1_git>/<path:path>/')
+def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3',
+                  path=None):
     """Return information about release with id sha1_git.
 
     Args:
@@ -667,12 +669,22 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
         GET /api/1/directory/8d7dc91d18546a91564606c3e3695a5ab568d179
 
     """
-    error_msg = 'Directory with sha1_git %s not found.' % sha1_git
-    return _api_lookup(
-        sha1_git,
-        lookup_fn=service.lookup_directory,
-        error_msg_if_not_found=error_msg,
-        enrich_fn=utils.enrich_directory)
+    if path:
+        error_msg_path = ('Entry with path %s relative to directory '
+                          'with sha1_git %s not found.') % (path, sha1_git)
+        return _api_lookup(
+            sha1_git,
+            service.lookup_directory_with_path,
+            error_msg_path,
+            utils.enrich_directory,
+            path)
+    else:
+        error_msg_nopath = 'Directory with sha1_git %s not found.' % sha1_git
+        return _api_lookup(
+            sha1_git,
+            service.lookup_directory,
+            error_msg_nopath,
+            utils.enrich_directory)
 
 
 # @app.route('/api/1/browse/')
