@@ -754,7 +754,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
         mock_service.lookup_revision_by.return_value = mock_revision
 
-        rv = self.app.get('/api/1/revision/origin/')
+        rv = self.app.get('/api/1/revision/origin/1/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -1795,7 +1795,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_entity_by_uuid.return_value = []
 
         # when
-        rv = self.app.get('/api/1/entity/')
+        rv = self.app.get('/api/1/entity/'
+                          '5f4d4c51-498a-4e28-88b3-b3e4e8396cba/')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
