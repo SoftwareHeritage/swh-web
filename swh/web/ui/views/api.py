@@ -659,7 +659,9 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3',
     """Return information about release with id sha1_git.
 
     Args:
-        sha1_git: Directory's sha1_git.
+        sha1_git: Directory's sha1_git. If path exists: starting directory for
+        relative navigation.
+        path: The path to the queried directory
 
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash.
@@ -667,6 +669,7 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3',
 
     Example:
         GET /api/1/directory/8d7dc91d18546a91564606c3e3695a5ab568d179
+        GET /api/1/directory/8d7dc91d18546a91564606c3e3695a5ab568d179/path/dir/
 
     """
     if path:
