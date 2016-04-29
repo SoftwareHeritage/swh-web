@@ -1448,7 +1448,8 @@ class EntityView(test_app.SWHViewTestCase):
         mock_api.api_entity_by_uuid.side_effect = NotFoundExc('Not found!')
 
         # when
-        rv = self.client.get('/browse/entity/')
+        rv = self.client.get('/browse/entity/'
+                             '5f4d4c51-498a-4e28-88b3-b3e4e8396cba/')
 
         # then
         self.assertEqual(rv.status_code, 200)

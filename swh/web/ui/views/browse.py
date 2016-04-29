@@ -93,7 +93,7 @@ def search():
 @app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def browse_content(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+def browse_content(q):
     """Given a hash and a checksum, display the content's meta-data.
 
     Args:
@@ -181,8 +181,7 @@ The file's path referenced was '%s'.""" % (q,
 
 # @app.route('/browse/content/<string:q>/origin/')
 @set_renderers(HTMLRenderer)
-def browse_content_with_origin(
-        q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
+def browse_content_with_origin(q):
     """Show content information.
 
     Args:
@@ -212,7 +211,7 @@ def browse_content_with_origin(
 @app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
+def browse_directory(sha1_git):
     """Show directory information.
 
     Args:
@@ -237,7 +236,7 @@ def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
 @app.route('/browse/origin/')
 @app.route('/browse/origin/<int:origin_id>/')
 @set_renderers(HTMLRenderer)
-def browse_origin(origin_id=1):
+def browse_origin(origin_id):
     """Browse origin with id id.
 
     """
@@ -255,7 +254,7 @@ def browse_origin(origin_id=1):
 @app.route('/browse/person/')
 @app.route('/browse/person/<int:person_id>/')
 @set_renderers(HTMLRenderer)
-def browse_person(person_id=1):
+def browse_person(person_id):
     """Browse person with id id.
 
     """
@@ -274,7 +273,7 @@ def browse_person(person_id=1):
 @app.route('/browse/release/')
 @app.route('/browse/release/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
+def browse_release(sha1_git):
     """Browse release with sha1_git.
 
     """
@@ -294,7 +293,7 @@ def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
 @app.route('/browse/revision/')
 @app.route('/browse/revision/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
+def browse_revision(sha1_git):
     """Browse revision with sha1_git.
 
     """
@@ -513,7 +512,7 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
            '/directory/<path:path>/')
 @set_renderers(HTMLRenderer)
 def browse_directory_through_revision_with_origin_history(
-        origin_id=1,
+        origin_id,
         branch_name="refs/heads/master",
         ts=None,
         sha1_git=None,
@@ -563,7 +562,7 @@ def browse_directory_through_revision_with_origin_history(
            '/origin/<int:origin_id>'
            '/ts/<string:ts>/')
 @set_renderers(HTMLRenderer)
-def browse_revision_with_origin(origin_id=1,
+def browse_revision_with_origin(origin_id,
                                 branch_name="refs/heads/master",
                                 ts=None):
     """Instead of having to specify a (root) revision by SHA1_GIT, users
@@ -718,7 +717,7 @@ def browse_revision_directory_through_origin(origin_id,
 @app.route('/browse/entity/')
 @app.route('/browse/entity/<string:uuid>/')
 @set_renderers(HTMLRenderer)
-def browse_entity(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
+def browse_entity(uuid):
     env = {'entities': [],
            'message': None}
 
