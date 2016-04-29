@@ -1737,6 +1737,59 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_directory_with_path_found(self, mock_service):
+        # given
+        expected_dir = {
+                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'type': 'file',
+                'name': 'bla',
+                'target': '4568be353ed3480476f032475e7c233eff737123',
+                'target_url': '/api/1/content/'
+                'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
+            }
+
+        mock_service.lookup_directory_with_path.return_value = expected_dir
+
+        # when
+        rv = self.app.get('/api/1/directory/'
+                          '18d8be353ed3480476f032475e7c233eff7371d5/bla/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_dir)
+
+        mock_service.lookup_directory_with_path.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5', 'bla')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_directory_with_path_not_found(self, mock_service):
+        # given
+        mock_service.lookup_directory_with_path.return_value = None
+        path = 'some/path/to/dir/'
+
+        # when
+        rv = self.app.get(('/api/1/directory/'
+                          '66618d8be353ed3480476f032475e7c233eff737/%s')
+                          % path)
+        path = path.strip('/')  # Path stripped of lead/trail separators
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': (('Entry with path %s relative to '
+                       'directory with sha1_git '
+                       '66618d8be353ed3480476f032475e7c233eff737 not found.')
+                      % path)})
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_lookup_entity_by_uuid_not_found(self, mock_service):
         # when
         mock_service.lookup_entity_by_uuid.return_value = []
