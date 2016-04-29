@@ -148,6 +148,30 @@ def lookup_directory(sha1_git):
     return map(converters.from_directory_entry, directory_entries)
 
 
+def lookup_directory_with_path(directory_sha1_git, path_string):
+    """Return directory information for entry with path path_string w.r.t.
+    root directory pointed by directory_sha1_git
+
+    Args:
+        - directory_sha1_git: sha1_git corresponding to the directory
+        to which we append paths to (hopefully) find the entry
+        - the relative path to the entry starting from the directory pointed by
+        directory_sha1_git
+    """
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        directory_sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
+
+    queried_dir = backend.directory_entry_get_by_path(
+        sha1_git_bin, path_string)
+
+    if not queried_dir:
+        return None
+
+    return converters.from_directory_entry(queried_dir)
+
+
 def lookup_release(release_sha1_git):
     """Return information about the release with sha1 release_sha1_git.
 
