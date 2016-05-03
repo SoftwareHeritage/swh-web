@@ -56,24 +56,46 @@ want to see:
   cannot be limited a priori).  Links to parent revisions maintains a
   reference to <SHA1_GIT>, using the /history/ URL scheme (see below).
 
-* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/
+* /revision/<SHA1_GIT_CUR>/root/<SHA1_GIT_ROOT>/
 
-  Show information about revision SHA1_GIT, limited to the sub-graph
-  rooted at <SHA1_GIT_ROOT>. The obtained page show both parent and
-  child revisions of <SHA1_GIT>, but exclude all revisions that are
-  *not* transitively reachable (going back in time) from
-  <SHA1_GIT_ROOT>.
+  Show information about revision <SHA1_GIT_CUR>, limited to the sub-graph
+  rooted at <SHA1_GIT_ROOT>. The obtained page show both parent and child
+  revisions of <SHA1_GIT_CUR>, but exclude all revisions that are *not*
+  transitively reachable (going back in time) from <SHA1_GIT_ROOT>.
 
-  Links to all revisions SHA1_GIT' reachable from SHA1_GIT are of the
-  form /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT'>/, where
-  SHA1_GIT_ROOT is the same as before.  In the degenerate case of
-  browsing back to the revision root, we might end up on the URL
-  /revision/<SHA1_GIT_1>/history/<SHA1_GIT_2>/ where SHA1_GIT_1 ==
-  SHA1_GIT_2. That URL is equivalent to /revision/<SHA1_GIT_1>/ and
-  might be simplified redirecting to it.
+  Links to all revisions SHA1_GIT' reachable from <SHA1_GIT_CUR> are of the
+  form /revision/<SHA1_GIT'>/root/<SHA1_GIT_ROOT>, where <SHA1_GIT_ROOT>
+  remains unchanged. In the degenerate case of browsing back to the root
+  revision, we might end up on the URL
+  /revision/<SHA1_GIT_1>/root/<SHA1_GIT_2>/ where SHA1_GIT_1 == SHA1_GIT_2.
+  That URL is equivalent to /revision/<SHA1_GIT_1>/ and might be simplified
+  redirecting to it.
+
+  **Workaround**. Currently, we cannot quickly check whether SHA1_GIT_CUR is
+  reachable from SHA1_GIT_ROOT. Therefore we adopt the following (sub-optimal
+  and incomplete) endpoint instead.
+
+  * /revision/<SHA1_GIT_CUR>/prev/<SHA1_GIT_N>,[...],<SHA1_GIT_1>
+
+    where <SHA1_GIT_1>,[...],<SHA1_GIT_N> is a path in the revision graph
+    leading to <SHA1_GIT_CUR>, i.e., SHA1_GIT_N is a revision pointing directly
+    to SHA1_GIT_CUR, SHA1_GIT_(N-1) points directly to SHA1_GIT_N, etc.
+
+    They path might be empty, complete w.r.t. the user navigation history up to
+    SHA1_GIT_CUR, or incomplete. The UI will show (some of) the most near
+    revisions in the path as previous commits and will allow users to jump to
+    them. When following parent revisions of <SHA1_GIT_CUR> (going back in
+    time), the path is extended, possibly trimming it to a maximum size; when
+    following descendant revisions of <SHA1_GIT_CUR>, choosing from path
+    elements, the path is trimmed to the selected revision.
+
+    Note: it is possible for users to "cheat" and create URLs where the given
+    revision path does not match the reality of our revision graph. Well, too
+    bad for them. They will get pages whose navigation breadcrumbs do not
+    reflect reality.
 
 * /revision/<SHA1_GIT>/directory/[<PATH>]
-* /revision/<SHA1_GIT_ROOT>/history/<SHA1_GIT>/directory/[<PATH>]
+* /revision/<SHA1_GIT_CUR>/root/<SHA1_GIT_ROOT>/directory/[<PATH>]
 
   Starting from the revision identified as in the previous URLs, navigate the
   directory associated to that revision.

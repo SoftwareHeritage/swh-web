@@ -54,6 +54,17 @@ def content_find_occurrence(algo, hash_bin):
     return main.storage().content_find_occurrence({algo: hash_bin})
 
 
+def content_missing_per_sha1(sha1list):
+    """List content missing from storage based on sha1
+
+    Args:
+        sha1s: Iterable of sha1 to check for absence
+    Returns:
+        an iterable of sha1s missing from the storage
+    """
+    return main.storage().content_missing_per_sha1(sha1list)
+
+
 def directory_get(sha1_bin):
     """Retrieve information on one directory.
 
@@ -119,7 +130,7 @@ def release_get(sha1_git_bin):
     """Return information about the release with sha1 sha1_git_bin.
 
     Args:
-        sha1_git_bin: The release's sha1 as hexadecimal.
+        sha1_git_bin: The release's sha1 as bytes.
 
     Returns:
         Release information as dict if found, None otherwise.
@@ -140,7 +151,7 @@ def revision_get(sha1_git_bin):
     """Return information about the revision with sha1 sha1_git_bin.
 
     Args:
-        sha1_git_bin: The revision's sha1 as hexadecimal.
+        sha1_git_bin: The revision's sha1 as bytes.
 
     Returns:
         Revision information as dict if found, None otherwise.
@@ -159,7 +170,7 @@ def revision_log(sha1_git_bin, limit=100):
     """Return information about the revision with sha1 sha1_git_bin.
 
     Args:
-        sha1_git_bin: The revision's sha1 as hexadecimal.
+        sha1_git_bin: The revision's sha1 as bytes.
         limit: the maximum number of revisions returned.
 
     Returns:

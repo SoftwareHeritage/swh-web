@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import flask
-
 from encodings.aliases import aliases
 from flask import render_template, request, url_for, redirect
 
@@ -12,29 +10,12 @@ from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
-from swh.web.ui import service, utils, api
-from swh.web.ui.exc import BadInputExc, NotFoundExc
-from swh.web.ui.main import app
-
+from .. import service, utils
+from ..exc import BadInputExc, NotFoundExc
+from ..main import app
+from . import api
 
 hash_filter_keys = ALGORITHMS
-
-
-@app.route('/')
-@set_renderers(HTMLRenderer)
-def homepage():
-    """Home page
-
-    """
-    flask.flash('This Web app is still work in progress, use at your own risk',
-                'warning')
-    return render_template('home.html')
-
-
-@app.route('/about/')
-@set_renderers(HTMLRenderer)
-def about():
-    return render_template('about.html')
 
 
 @app.route('/search/', methods=['GET', 'POST'])
@@ -44,76 +25,75 @@ def search():
 
     One form to submit either:
     - hash query to look up in swh storage
-    - some file content to upload, compute its hash and look it up in swh
-      storage
+    - file hashes calculated client-side to be queried in swh storage
     - both
 
     Returns:
         dict representing data to look for in swh storage.
         The following keys are returned:
-        - file: File submitted for upload
-        - filename: Filename submitted for upload
-        - q: Query on hash to look for
-        - message: Message detailing if data has been found or not.
-
+        - search_stats: {'nbfiles': X, 'pct': Y} the number of total
+        queried files and percentage of files not in storage respectively
+        - responses: array of {'filename': X, 'sha1': Y, 'found': Z}
+        - messages: General messages.
+    TODO:
+        Batch-process with all checksums, not just sha1
     """
-    env = {'filename': None,
-           'q': None,
-           'file': None}
-    data = None
-    q = env['q']
-    file = env['file']
+    env = {'q': None,
+           'search_stats': None,
+           'responses': None,
+           'messages': []}
 
-    if request.method == 'GET':
-        data = request.args
-    elif request.method == 'POST':
-        data = request.data
-        # or hash and search a file
-        file = request.files.get('filename')
-
-    # could either be a query for sha1 hash
-    q = data.get('q')
-
+    search_stats = None
+    responses = []
     messages = []
 
-    if q:
+    # Get with a single hash request
+    if request.method == 'GET':
+        data = request.args
+        q = data.get('q')
         env['q'] = q
+        if q:
+            try:
+                search_stats = {'nbfiles': 0, 'pct': 0}
+                r = service.lookup_hash(q)
+                responses.append({'filename': 'User submitted hash',
+                                  'sha1': q,
+                                  'found': r.get('found') is not None})
+                search_stats['nbfiles'] = 1
+                search_stats['pct'] = 100 if r.get('found') is not None else 0
+            except BadInputExc as e:
+                messages.append(str(e))
 
-        try:
-            r = service.lookup_hash(q)
-            messages.append('Content with hash %s%sfound!' % (
-                q, ' ' if r.get('found') else ' not '))
-        except BadInputExc as e:
-            messages.append(str(e))
+    # POST form submission with many hash requests
+    elif request.method == 'POST':
+        data = request.form
+        search_stats = {'nbfiles': 0, 'pct': 0}
+        queries = []
+        # Remove potential inputs with no associated value
+        for k, v in data.items():
+            if v is not None and v != '':
+                queries.append({'filename': k, 'sha1': v})
 
-    if file and file.filename:
-        env['file'] = file
-        try:
-            uploaded_content = service.upload_and_search(file)
-            filename = uploaded_content['filename']
-            sha1 = uploaded_content['sha1']
-            found = uploaded_content['found']
+        if len(queries) > 0:
+            try:
+                lookup = service.lookup_multiple_hashes(queries)
+                nbfound = len([x for x in lookup if x['found']])
+                responses = lookup
+                search_stats['nbfiles'] = len(queries)
+                search_stats['pct'] = (nbfound / len(queries))*100
+            except BadInputExc as e:
+                messages.append(str(e))
 
-            messages.append('File %s with hash %s%sfound!' % (
-                filename, sha1, ' ' if found else ' not '))
-
-            env.update({
-                'filename': filename,
-                'sha1': sha1,
-            })
-        except BadInputExc as e:
-            messages.append(str(e))
-
-    env['q'] = q if q else ''
+    env['search_stats'] = search_stats
+    env['responses'] = responses
     env['messages'] = messages
-
     return render_template('upload_and_search.html', **env)
 
 
 @app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
-def browse_content(q='5d448a06f02d9de748b6b0b9620cba1bed8480da'):
+def browse_content(q):
     """Given a hash and a checksum, display the content's meta-data.
 
     Args:
@@ -201,8 +181,7 @@ The file's path referenced was '%s'.""" % (q,
 
 # @app.route('/browse/content/<string:q>/origin/')
 @set_renderers(HTMLRenderer)
-def browse_content_with_origin(
-        q='sha1:4320781056e5a735a39de0b8c229aea224590052'):
+def browse_content_with_origin(q):
     """Show content information.
 
     Args:
@@ -231,22 +210,44 @@ def browse_content_with_origin(
 
 @app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
+@app.route('/browse/directory/<string:sha1_git>/<path:path>/')
 @set_renderers(HTMLRenderer)
-def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
+def browse_directory(sha1_git, path=None):
     """Show directory information.
 
     Args:
-        - sha1_git: the directory's sha1 git identifier.
+        - sha1_git: the directory's sha1 git identifier. If path
+        is set, the base directory for the relative path to the entry
+        - path: the path to the requested entry, relative to
+        the directory pointed by sha1_git
 
     Returns:
-        The content's information at sha1_git
+        The content's information at sha1_git, or at sha1_git/path if
+        path is set.
     """
     env = {'sha1_git': sha1_git,
            'files': []}
-
     try:
-        directory_files = api.api_directory(sha1_git)
-        env['message'] = "Listing for directory %s:" % sha1_git
+        if path:
+            env['message'] = ('Listing for directory with path %s from %s:'
+                              % (path, sha1_git))
+            dir_or_file = service.lookup_directory_with_path(
+                sha1_git, path)
+            if dir_or_file['type'] == 'file':
+                fsha = 'sha256:%s' % dir_or_file['sha256']
+                content = api.api_content_metadata(fsha)
+                content_raw = service.lookup_content_raw(fsha)
+                if content_raw:  # FIXME: currently assuming utf8 encoding
+                    content['data'] = content_raw['data']
+                    env['content'] = utils.prepare_data_for_view(
+                        content, encoding='utf-8')
+                return render_template('content.html', **env)
+            else:
+                directory_files = api.api_directory(dir_or_file['target'])
+                env['files'] = utils.prepare_data_for_view(directory_files)
+        else:
+            env['message'] = "Listing for directory %s:" % sha1_git
+            directory_files = api.api_directory(sha1_git)
         env['files'] = utils.prepare_data_for_view(directory_files)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
@@ -257,7 +258,7 @@ def browse_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
 @app.route('/browse/origin/')
 @app.route('/browse/origin/<int:origin_id>/')
 @set_renderers(HTMLRenderer)
-def browse_origin(origin_id=1):
+def browse_origin(origin_id):
     """Browse origin with id id.
 
     """
@@ -275,7 +276,7 @@ def browse_origin(origin_id=1):
 @app.route('/browse/person/')
 @app.route('/browse/person/<int:person_id>/')
 @set_renderers(HTMLRenderer)
-def browse_person(person_id=1):
+def browse_person(person_id):
     """Browse person with id id.
 
     """
@@ -294,7 +295,7 @@ def browse_person(person_id=1):
 @app.route('/browse/release/')
 @app.route('/browse/release/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
+def browse_release(sha1_git):
     """Browse release with sha1_git.
 
     """
@@ -314,7 +315,7 @@ def browse_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
 @app.route('/browse/revision/')
 @app.route('/browse/revision/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
-def browse_revision(sha1_git='d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'):
+def browse_revision(sha1_git):
     """Browse revision with sha1_git.
 
     """
@@ -533,7 +534,7 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
            '/directory/<path:path>/')
 @set_renderers(HTMLRenderer)
 def browse_directory_through_revision_with_origin_history(
-        origin_id=1,
+        origin_id,
         branch_name="refs/heads/master",
         ts=None,
         sha1_git=None,
@@ -550,9 +551,9 @@ def browse_directory_through_revision_with_origin_history(
 
     encoding = request.args.get('encoding', 'utf8')
     if encoding not in aliases:
-        env['message'] = 'Encoding %s not supported.' \
-                         'Supported Encodings: %s' % (
-                             encoding, list(aliases.keys()))
+        env['message'] = (('Encoding %s not supported.'
+                           'Supported Encodings: %s') % (
+                            encoding, list(aliases.keys())))
         return render_template('revision-directory.html', **env)
 
     try:
@@ -583,7 +584,7 @@ def browse_directory_through_revision_with_origin_history(
            '/origin/<int:origin_id>'
            '/ts/<string:ts>/')
 @set_renderers(HTMLRenderer)
-def browse_revision_with_origin(origin_id=1,
+def browse_revision_with_origin(origin_id,
                                 branch_name="refs/heads/master",
                                 ts=None):
     """Instead of having to specify a (root) revision by SHA1_GIT, users
@@ -738,7 +739,7 @@ def browse_revision_directory_through_origin(origin_id,
 @app.route('/browse/entity/')
 @app.route('/browse/entity/<string:uuid>/')
 @set_renderers(HTMLRenderer)
-def browse_entity(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
+def browse_entity(uuid):
     env = {'entities': [],
            'message': None}
 
