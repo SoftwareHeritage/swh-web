@@ -1,10 +1,12 @@
 *.pyc
 *.sw?
 *~
+\#*
+.\#*
 .coverage
 .eggs/
+resources/test/
 __pycache__
 version.txt
 swh.web.ui.egg-info
 docs/build/
-resources/test/webapp.ini
