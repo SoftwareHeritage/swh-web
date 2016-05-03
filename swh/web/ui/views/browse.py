@@ -210,30 +210,29 @@ def browse_content_with_origin(q):
 
 @app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
-@app.route('/browse/directory/<string:sha1_git>/<path:entrypath>/')
+@app.route('/browse/directory/<string:sha1_git>/<path:path>/')
 @set_renderers(HTMLRenderer)
-def browse_directory(sha1_git, entrypath=None):
+def browse_directory(sha1_git, path=None):
     """Show directory information.
 
     Args:
-        - sha1_git: the directory's sha1 git identifier. If entrypath
+        - sha1_git: the directory's sha1 git identifier. If path
         is set, the base directory for the relative path to the entry
-        - entrypath: the path to the requested entry, relative to
+        - path: the path to the requested entry, relative to
         the directory pointed by sha1_git
 
     Returns:
-        The content's information at sha1_git, or at sha1_git/entrypath if
-        entrypath is set.
+        The content's information at sha1_git, or at sha1_git/path if
+        path is set.
     """
     env = {'sha1_git': sha1_git,
            'files': []}
-    # FIXME: raise the exception in lookup_directory_with_path
     try:
-        if entrypath:
+        if path:
             env['message'] = ('Listing for directory with path %s from %s:'
-                              % (entrypath, sha1_git))
+                              % (path, sha1_git))
             dir_or_file = service.lookup_directory_with_path(
-                sha1_git, entrypath)
+                sha1_git, path)
             if dir_or_file['type'] == 'file':
                 fsha = 'sha256:%s' % dir_or_file['sha256']
                 content = api.api_content_metadata(fsha)
