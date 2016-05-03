@@ -135,6 +135,45 @@ class BackendTestCase(test_app.SWHApiTestCase):
             {'sha1': sha1_bin})
 
     @istest
+    def content_missing_per_sha1_none(self):
+        # given
+        sha1s_bin = [hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f'),
+                     hashutil.hex_to_hash(
+            '745bab676c8f3cec8016e0c39ea61cf57e518865'
+                     )]
+        self.storage.content_missing_per_sha1 = MagicMock(return_value=[])
+
+        # when
+        actual_content = backend.content_missing_per_sha1(sha1s_bin)
+
+        # then
+        self.assertEquals(actual_content, [])
+        self.storage.content_missing_per_sha1.assert_called_with(sha1s_bin)
+
+    @istest
+    def content_missing_per_sha1_some(self):
+        # given
+        sha1s_bin = [hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f'),
+                     hashutil.hex_to_hash(
+            '745bab676c8f3cec8016e0c39ea61cf57e518865'
+                     )]
+        self.storage.content_missing_per_sha1 = MagicMock(return_value=[
+            hashutil.hex_to_hash(
+                '745bab676c8f3cec8016e0c39ea61cf57e518865'
+            )])
+
+        # when
+        actual_content = backend.content_missing_per_sha1(sha1s_bin)
+
+        # then
+        self.assertEquals(actual_content, [hashutil.hex_to_hash(
+            '745bab676c8f3cec8016e0c39ea61cf57e518865'
+            )])
+        self.storage.content_missing_per_sha1.assert_called_with(sha1s_bin)
+
+    @istest
     def origin_get(self):
         # given
         self.storage.origin_get = MagicMock(return_value={

@@ -25,7 +25,7 @@ def api_stats():
 
 @app.route('/api/1/search/')
 @app.route('/api/1/search/<string:q>/')
-def api_search(q='sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5'):
+def api_search(q):
     """Search a content per hash.
 
     Args:
@@ -88,7 +88,7 @@ def _api_lookup(criteria,
 
 @app.route('/api/1/origin/')
 @app.route('/api/1/origin/<int:origin_id>/')
-def api_origin(origin_id=1):
+def api_origin(origin_id):
     """Return information about origin with id origin_id.
 
 
@@ -112,7 +112,7 @@ def api_origin(origin_id=1):
 
 @app.route('/api/1/person/')
 @app.route('/api/1/person/<int:person_id>/')
-def api_person(person_id=1):
+def api_person(person_id):
     """Return information about person with identifier person_id.
 
     Args:
@@ -135,7 +135,7 @@ def api_person(person_id=1):
 
 @app.route('/api/1/release/')
 @app.route('/api/1/release/<string:sha1_git>/')
-def api_release(sha1_git='1e951912027ea6873da6985b91e50c47f645ae1a'):
+def api_release(sha1_git):
     """Return information about release with id sha1_git.
 
     Args:
@@ -214,7 +214,7 @@ def _revision_directory_by(revision, path, request_path,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/directory/<path:path>/')
-def api_directory_through_revision_origin(origin_id=1,
+def api_directory_through_revision_origin(origin_id,
                                           branch_name="refs/heads/master",
                                           ts=None,
                                           path=None,
@@ -266,7 +266,7 @@ def api_directory_through_revision_origin(origin_id=1,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/history/<sha1_git>/')
-def api_revision_history_through_origin(origin_id=1,
+def api_revision_history_through_origin(origin_id,
                                         branch_name="refs/heads/master",
                                         ts=None,
                                         sha1_git=None):
@@ -361,7 +361,7 @@ def api_revision_history_through_origin(origin_id=1,
            '/history/<sha1_git>'
            '/directory/<path:path>/')
 def api_directory_through_revision_with_origin_history(
-        origin_id=1,
+        origin_id,
         branch_name="refs/heads/master",
         ts=None,
         sha1_git=None,
@@ -427,7 +427,7 @@ def api_directory_through_revision_with_origin_history(
 @app.route('/api/1/revision'
            '/origin/<int:origin_id>'
            '/ts/<string:ts>/')
-def api_revision_with_origin(origin_id=1,
+def api_revision_with_origin(origin_id,
                              branch_name="refs/heads/master",
                              ts=None):
     """Instead of having to specify a (root) revision by SHA1_GIT, users
@@ -467,7 +467,7 @@ def api_revision_with_origin(origin_id=1,
 
 @app.route('/api/1/revision/')
 @app.route('/api/1/revision/<string:sha1_git>/')
-def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
+def api_revision(sha1_git):
     """Return information about revision with id sha1_git.
 
     Args:
@@ -494,7 +494,7 @@ def api_revision(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf'):
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
-def api_revision_directory(sha1_git='a585d2b738bfa26326b3f1f40f0f1eda0c067ccf',
+def api_revision_directory(sha1_git,
                            dir_path=None,
                            with_data=False):
     """Return information on directory pointed by revision with sha1_git.
@@ -653,11 +653,15 @@ def api_revision_log(sha1_git):
 
 @app.route('/api/1/directory/')
 @app.route('/api/1/directory/<string:sha1_git>/')
-def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
+@app.route('/api/1/directory/<string:sha1_git>/<path:path>/')
+def api_directory(sha1_git,
+                  path=None):
     """Return information about release with id sha1_git.
 
     Args:
-        sha1_git: Directory's sha1_git.
+        sha1_git: Directory's sha1_git. If path exists: starting directory for
+        relative navigation.
+        path: The path to the queried directory
 
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash.
@@ -665,20 +669,30 @@ def api_directory(sha1_git='dcf3289b576b1c8697f2a2d46909d36104208ba3'):
 
     Example:
         GET /api/1/directory/8d7dc91d18546a91564606c3e3695a5ab568d179
+        GET /api/1/directory/8d7dc91d18546a91564606c3e3695a5ab568d179/path/dir/
 
     """
-    error_msg = 'Directory with sha1_git %s not found.' % sha1_git
-    return _api_lookup(
-        sha1_git,
-        lookup_fn=service.lookup_directory,
-        error_msg_if_not_found=error_msg,
-        enrich_fn=utils.enrich_directory)
+    if path:
+        error_msg_path = ('Entry with path %s relative to directory '
+                          'with sha1_git %s not found.') % (path, sha1_git)
+        return _api_lookup(
+            sha1_git,
+            service.lookup_directory_with_path,
+            error_msg_path,
+            utils.enrich_directory,
+            path)
+    else:
+        error_msg_nopath = 'Directory with sha1_git %s not found.' % sha1_git
+        return _api_lookup(
+            sha1_git,
+            service.lookup_directory,
+            error_msg_nopath,
+            utils.enrich_directory)
 
 
 # @app.route('/api/1/browse/')
 # @app.route('/api/1/browse/<string:q>/')
-def api_content_checksum_to_origin(q='sha1_git:26ac0281bc74e9bd8a4a4aab1c7c7a'
-                                   '0c19d4436c'):
+def api_content_checksum_to_origin(q):
     """Return content information up to one of its origin if the content
     is found.
 
@@ -733,8 +747,7 @@ def api_content_raw(q):
 
 @app.route('/api/1/content/')
 @app.route('/api/1/content/<string:q>/')
-def api_content_metadata(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
-                         '523015738ec6d4d540c7fe65232b'):
+def api_content_metadata(q):
     """Return content information if content is found.
 
     Args:
@@ -763,7 +776,7 @@ def api_content_metadata(q='sha256:e2c76e40866bb6b28916387bdfc8649beceb'
 
 @app.route('/api/1/entity/')
 @app.route('/api/1/entity/<string:uuid>/')
-def api_entity_by_uuid(uuid='5f4d4c51-498a-4e28-88b3-b3e4e8396cba'):
+def api_entity_by_uuid(uuid):
     """Return content information if content is found.
 
     Args:

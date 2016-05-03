@@ -18,6 +18,54 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
+    def lookup_multiple_hashes_ball_missing(self, mock_backend):
+        # given
+        mock_backend.content_missing_per_sha1 = MagicMock(return_value=[])
+
+        # when
+        actual_lookup = service.lookup_multiple_hashes(
+            [{'filename': 'a',
+              'sha1': '456caf10e9535160d90e874b45aa426de762f19f'},
+             {'filename': 'b',
+              'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
+
+        # then
+        self.assertEquals(actual_lookup, [
+            {'filename': 'a',
+             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+             'found': True},
+            {'filename': 'b',
+             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+             'found': True}
+        ])
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_multiple_hashes_some_missing(self, mock_backend):
+        # given
+        mock_backend.content_missing_per_sha1 = MagicMock(return_value=[
+            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        ])
+
+        # when
+        actual_lookup = service.lookup_multiple_hashes(
+            [{'filename': 'a',
+              'sha1': '456caf10e9535160d90e874b45aa426de762f19f'},
+             {'filename': 'b',
+              'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
+
+        # then
+        self.assertEquals(actual_lookup, [
+            {'filename': 'a',
+             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+             'found': False},
+            {'filename': 'b',
+             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+             'found': True}
+        ])
+
+    @patch('swh.web.ui.service.backend')
+    @istest
     def lookup_hash_does_not_exist(self, mock_backend):
         # given
         mock_backend.content_find = MagicMock(return_value=None)
@@ -246,6 +294,37 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             self.assertIn('sha1_git supported', cm.exception.args[0])
 
         mock_backend.release_get.called = False
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_directory_with_path_not_found(self, mock_backend):
+        # given
+        mock_backend.lookup_directory_with_path = MagicMock(return_value=None)
+
+        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+
+        # when
+        actual_directory = mock_backend.lookup_directory_with_path(
+            sha1_git, 'some/path/here')
+
+        self.assertIsNone(actual_directory)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_directory_with_path_found(self, mock_backend):
+        # given
+        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+        entry = {'id': 'dir-id',
+                 'type': 'dir',
+                 'name': 'some/path/foo'}
+
+        mock_backend.lookup_directory_with_path = MagicMock(return_value=entry)
+
+        # when
+        actual_directory = mock_backend.lookup_directory_with_path(
+            sha1_git, 'some/path/here')
+
+        self.assertEqual(entry, actual_directory)
 
     @patch('swh.web.ui.service.backend')
     @istest
