@@ -21,7 +21,7 @@ setup(
     author='Software Heritage developers',
     author_email='swh-devel@inria.fr',
     url='https://forge.softwareheritage.org/diffusion/DWUI/',
-    packages=['swh.web.ui', 'swh.web.ui.tests'],
+    packages=['swh.web.ui', 'swh.web.ui.views', 'swh.web.ui.tests'],
     scripts=[],
     install_requires=parse_requirements(),
     setup_requires=['vcversioner'],
