@@ -340,9 +340,8 @@ class DirectoryView(test_app.SWHViewTestCase):
         mock_service.lookup_content_raw.return_value = {
             'data': 'this is my file'}
 
-        print(mock_api.api_content_metadata.return_value)
         # when
-        rv = self.client.get('/browse/directory/sha1/path/to/dir/')
+        rv = self.client.get('/browse/directory/sha1/path/to/file/')
 
         # then
         self.assertEqual(rv.status_code, 200)
@@ -380,7 +379,7 @@ class DirectoryView(test_app.SWHViewTestCase):
         mock_api.api_directory.return_value = stub_directory_ls
 
         # when
-        rv = self.client.get('/browse/directory/sha1/path/to/file/')
+        rv = self.client.get('/browse/directory/sha1/path/to/dir/')
 
         # then
         self.assertEqual(rv.status_code, 200)
