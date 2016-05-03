@@ -316,6 +316,97 @@ class DirectoryView(test_app.SWHViewTestCase):
         mock_api.api_directory.assert_called_once_with(
             'some-sha1')
 
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_directory_relative_file(self, mock_api, mock_service):
+        # given
+        stub_entry = {
+            'sha256': '240',
+            'type': 'file'
+        }
+        mock_service.lookup_directory_with_path.return_value = stub_entry
+        stub_file = {
+            'sha1_git': '123',
+            'sha1': '456',
+            'status': 'visible',
+            'data_url': '/api/1/content/890',
+            'length': 42,
+            'ctime': 'Thu, 01 Oct 2015 12:13:53 GMT',
+            'target': 'file.txt',
+            'sha256': '148'
+        }
+        mock_api.api_content_metadata.return_value = stub_file
+        mock_service.lookup_content_raw.return_value = {
+            'data': 'this is my file'}
+
+        print(mock_api.api_content_metadata.return_value)
+        # when
+        rv = self.client.get('/browse/directory/sha1/path/to/dir/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertIsNotNone(self.get_context_variable('content'))
+        content = self.get_context_variable('content')
+        # change caused by call to prepare_data_for_view
+        self.assertEqual(content['data_url'], '/browse/content/890')
+        self.assertEqual(content['data'], 'this is my file')
+        mock_api.api_content_metadata.assert_called_once_with('sha256:240')
+        mock_service.lookup_content_raw.assert_called_once_with('sha256:240')
+
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_directory_relative_dir(self, mock_api, mock_service):
+        # given
+        mock_service.lookup_directory_with_path.return_value = {
+            'sha256': '240',
+            'target': 'abcd',
+            'type': 'dir'
+        }
+
+        stub_directory_ls = [
+            {'type': 'dir',
+             'target': '123',
+             'name': 'some-dir-name'},
+            {'type': 'file',
+             'sha1': '654',
+             'name': 'some-filename'},
+            {'type': 'dir',
+             'target': '987',
+             'name': 'some-other-dirname'}
+        ]
+        mock_api.api_directory.return_value = stub_directory_ls
+
+        # when
+        rv = self.client.get('/browse/directory/sha1/path/to/file/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('directory.html')
+        self.assertIsNotNone(self.get_context_variable('files'))
+        self.assertEqual(len(self.get_context_variable('files')),
+                         len(stub_directory_ls))
+        mock_api.api_directory.assert_called_once_with('abcd')
+
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_directory_relative_not_found(self, mock_api, mock_service):
+        # given
+        mock_service.lookup_directory_with_path.side_effect = NotFoundExc(
+            'Directory entry not found.')
+
+        # when
+        rv = self.client.get('/browse/directory/some-sha1/some/path/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('directory.html')
+        self.assertEqual(self.get_context_variable('message'),
+                         'Directory entry not found.')
+
     @patch('swh.web.ui.views.browse.api')
     @patch('swh.web.ui.views.browse.utils')
     @istest

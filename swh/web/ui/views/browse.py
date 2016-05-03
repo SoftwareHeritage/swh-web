@@ -210,22 +210,45 @@ def browse_content_with_origin(q):
 
 @app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
+@app.route('/browse/directory/<string:sha1_git>/<path:entrypath>/')
 @set_renderers(HTMLRenderer)
-def browse_directory(sha1_git):
+def browse_directory(sha1_git, entrypath=None):
     """Show directory information.
 
     Args:
-        - sha1_git: the directory's sha1 git identifier.
+        - sha1_git: the directory's sha1 git identifier. If entrypath
+        is set, the base directory for the relative path to the entry
+        - entrypath: the path to the requested entry, relative to
+        the directory pointed by sha1_git
 
     Returns:
-        The content's information at sha1_git
+        The content's information at sha1_git, or at sha1_git/entrypath if
+        entrypath is set.
     """
     env = {'sha1_git': sha1_git,
            'files': []}
-
+    # FIXME: raise the exception in lookup_directory_with_path
     try:
-        directory_files = api.api_directory(sha1_git)
-        env['message'] = "Listing for directory %s:" % sha1_git
+        if entrypath:
+            env['message'] = ('Listing for directory with path %s from %s:'
+                              % (entrypath, sha1_git))
+            dir_or_file = service.lookup_directory_with_path(
+                sha1_git, entrypath)
+            if dir_or_file['type'] == 'file':
+                fsha = 'sha256:%s' % dir_or_file['sha256']
+                content = api.api_content_metadata(fsha)
+                content_raw = service.lookup_content_raw(fsha)
+                if content_raw:  # FIXME: currently assuming utf8 encoding
+                    content['data'] = content_raw['data']
+                    env['content'] = utils.prepare_data_for_view(
+                        content, encoding='utf-8')
+                return render_template('content.html', **env)
+            else:
+                directory_files = api.api_directory(dir_or_file['target'])
+                env['files'] = utils.prepare_data_for_view(directory_files)
+        else:
+            env['message'] = "Listing for directory %s:" % sha1_git
+            directory_files = api.api_directory(sha1_git)
         env['files'] = utils.prepare_data_for_view(directory_files)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
@@ -529,9 +552,9 @@ def browse_directory_through_revision_with_origin_history(
 
     encoding = request.args.get('encoding', 'utf8')
     if encoding not in aliases:
-        env['message'] = 'Encoding %s not supported.' \
-                         'Supported Encodings: %s' % (
-                             encoding, list(aliases.keys()))
+        env['message'] = (('Encoding %s not supported.'
+                           'Supported Encodings: %s') % (
+                            encoding, list(aliases.keys())))
         return render_template('revision-directory.html', **env)
 
     try:
