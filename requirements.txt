@@ -12,3 +12,6 @@ dateutil
 # Test dependencies
 #Flask-Testing
 #blinker
+
+# Non-Python dependencies
+# libjs-cryptojs

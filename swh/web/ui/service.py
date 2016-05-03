@@ -10,6 +10,26 @@ from swh.web.ui import converters, query, upload, backend
 from swh.web.ui.exc import NotFoundExc
 
 
+def lookup_multiple_hashes(hashes):
+    """Lookup the passed hashes in a single DB connection, using batch processing.
+
+    Args:
+        An array of {filename: X, sha1: Y}, string X, hex sha1 string Y.
+    Returns:
+        The same array with elements updated with elem['found'] = true if
+        the hash is present in storage, elem['found'] = false if not.
+    """
+    hashlist = [hashutil.hex_to_hash(elem['sha1']) for elem in hashes]
+    content_missing = backend.content_missing_per_sha1(hashlist)
+    missing = [hashutil.hash_to_hex(x) for x in content_missing]
+    for x in hashes:
+        x.update({'found': True})
+    for h in hashes:
+        if h['sha1'] in missing:
+            h['found'] = False
+    return hashes
+
+
 def hash_and_search(filepath):
     """Hash the filepath's content as sha1, then search in storage if
     it exists.
@@ -126,6 +146,34 @@ def lookup_directory(sha1_git):
 
     directory_entries = backend.directory_ls(sha1_git_bin)
     return map(converters.from_directory_entry, directory_entries)
+
+
+def lookup_directory_with_path(directory_sha1_git, path_string):
+    """Return directory information for entry with path path_string w.r.t.
+    root directory pointed by directory_sha1_git
+
+    Args:
+        - directory_sha1_git: sha1_git corresponding to the directory
+        to which we append paths to (hopefully) find the entry
+        - the relative path to the entry starting from the directory pointed by
+        directory_sha1_git
+
+    Raises:
+        NotFoundExc if the directory entry is not found
+    """
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        directory_sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
+
+    queried_dir = backend.directory_entry_get_by_path(
+        sha1_git_bin, path_string)
+
+    if not queried_dir:
+        raise NotFoundExc(('Directory entry with path %s from %s not found') %
+                          (path_string, directory_sha1_git))
+
+    return converters.from_directory_entry(queried_dir)
 
 
 def lookup_release(release_sha1_git):

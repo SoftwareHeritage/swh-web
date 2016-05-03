@@ -26,3 +26,6 @@ h2              { font-size: 1.2em; }
                   border: 1px solid #aacbe2; }
 .error          { background: #f0d6d6; padding: 0.5em; }
 
+.file-found     { color: #23BA49; }
+.file-notfound  { color: #FF4747; }
+}

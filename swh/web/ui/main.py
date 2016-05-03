@@ -53,7 +53,7 @@ def load_controllers():
     """Load the controllers for the application.
 
     """
-    from swh.web.ui import api, errorhandler, views, apidoc  # flake8: noqa
+    from swh.web.ui import views, apidoc  # flake8: noqa
 
     # side-effects here (install autodoc endpoints so do it only once!)
     global AUTODOC_ENDPOINT_INSTALLED
