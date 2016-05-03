@@ -157,6 +157,9 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
         to which we append paths to (hopefully) find the entry
         - the relative path to the entry starting from the directory pointed by
         directory_sha1_git
+
+    Raises:
+        NotFoundExc if the directory entry is not found
     """
     _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
         directory_sha1_git,
@@ -167,7 +170,8 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
         sha1_git_bin, path_string)
 
     if not queried_dir:
-        return None
+        raise NotFoundExc(('Directory entry with path %s from %s not found') %
+                          (path_string, directory_sha1_git))
 
     return converters.from_directory_entry(queried_dir)
 
