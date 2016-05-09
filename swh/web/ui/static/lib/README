@@ -1,0 +1,2 @@
+This is included in lib folder to force static/lib/ folder inclusion.
+Apparently, only symlinks is not sufficient.
