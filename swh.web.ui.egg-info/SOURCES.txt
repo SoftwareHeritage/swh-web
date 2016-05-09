@@ -44,6 +44,7 @@ swh/web/ui/utils.py
 swh/web/ui/static/css/bootstrap-responsive.min.css
 swh/web/ui/static/css/style.css
 swh/web/ui/static/js/filedrop.js
+swh/web/ui/static/lib/README
 swh/web/ui/templates/about.html
 swh/web/ui/templates/api.html
 swh/web/ui/templates/content-with-origin.html
