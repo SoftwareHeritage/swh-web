@@ -492,6 +492,36 @@ def api_revision(sha1_git):
         enrich_fn=utils.enrich_revision)
 
 
+@app.route('/api/1/revision/<string:sha1_git>/raw/')
+def api_revision_raw_message(sha1_git):
+    """Return the raw data of the revision's message
+
+    Args:
+        sha1_git: the revision's hash
+
+    Returns:
+        The raw revision message, possibly in an illegible
+        format for humans, decoded in utf-8 by default.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if the revision is not found or the revision has no
+        message
+
+    Example:
+        GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/raw/
+
+    """
+
+    rev = api_revision(sha1_git)
+    if 'message' in rev:
+        return {'message': rev['message']}
+    else:
+        raise NotFoundExc('No message for revision with sha1_git %s.'
+                          % sha1_git)
+    # TODO: can do better than same as api_revision?
+
+
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
 def api_revision_directory(sha1_git,
