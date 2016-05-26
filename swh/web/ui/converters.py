@@ -165,6 +165,7 @@ def from_revision(revision):
     return from_swh(revision,
                     hashess=set(['id', 'directory', 'parents', 'children']),
                     bytess=set(['name',
+                                'fullname',
                                 'email',
                                 'message']),
                     dates={'date', 'committer_date'})
