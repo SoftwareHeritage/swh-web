@@ -944,7 +944,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_msg_ok(self, mock_backend):
         # given
-        mock_backend.revision_get = MagicMock(return_value={
+        mock_backend.revision_get.return_value = {
             'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
             'directory': hex_to_hash(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
@@ -977,7 +977,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'git',
             'parents': [],
             'metadata': [],
-        })
+        }
 
         # when
         rv = service.lookup_revision_message(
@@ -992,7 +992,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_msg_absent(self, mock_backend):
         # given
-        mock_backend.revision_get = MagicMock(return_value={
+        mock_backend.revision_get.return_value = {
             'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
             'directory': hex_to_hash(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
@@ -1024,16 +1024,37 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'git',
             'parents': [],
             'metadata': [],
-        })
+        }
 
         # when
-        with self.assertRaises(NotFoundExc):
+        with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_message(
                 '18d8be353ed3480476f032475e7c233eff7371d5')
 
-        # then
-        mock_backend.revision_get.assert_called_with(
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            # then
+            mock_backend.revision_get.assert_called_with(
+                hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            self.assertEqual(cm.exception.args[0], 'No message for revision '
+                             'with sha1_git '
+                             '18d8be353ed3480476f032475e7c233eff7371d5.')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_msg_norev(self, mock_backend):
+        # given
+        mock_backend.revision_get.return_value = None
+
+        # when
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_revision_message(
+                '18d8be353ed3480476f032475e7c233eff7371d5')
+
+            # then
+            mock_backend.revision_get.assert_called_with(
+                hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            self.assertEqual(cm.exception.args[0], 'Revision with sha1_git '
+                             '18d8be353ed3480476f032475e7c233eff7371d5 '
+                             'not found.')
 
     @patch('swh.web.ui.service.backend')
     @istest

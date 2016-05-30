@@ -741,30 +741,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_revision_raw_ok_no_msg(self, mock_service):
         # given
-        stub_revision = {'message': ''}
-
-        mock_service.lookup_revision_message.return_value = stub_revision
-
-        # when
-        rv = self.app.get('/api/1/revision/'
-                          '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.mimetype, 'application/json')
-
-        response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'message': ''})
-
-        mock_service.lookup_revision_message.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
-
-    @patch('swh.web.ui.views.api.service')
-    @istest
-    def api_revision_raw_ko_no_rev(self, mock_service):
-        # given
         mock_service.lookup_revision_message.side_effect = NotFoundExc(
-            'not found')
+            'No message for revision')
 
         # when
         rv = self.app.get('/api/1/revision/'
@@ -776,7 +754,30 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'not found'})
+            'error': 'No message for revision'})
+
+        self.assertEquals
+        mock_service.lookup_revision_message.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_raw_ko_no_rev(self, mock_service):
+        # given
+        mock_service.lookup_revision_message.side_effect = NotFoundExc(
+            'No message for revision')
+
+        # when
+        rv = self.app.get('/api/1/revision/'
+                          '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No message for revision'})
 
         mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
