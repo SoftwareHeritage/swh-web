@@ -130,7 +130,7 @@ def from_release(release):
     return from_swh(
         release,
         hashess=set(['id', 'target']),
-        bytess=set(['message', 'name', 'email']),
+        bytess=set(['message', 'name', 'fullname', 'email']),
         dates={'date'},
     )
 
@@ -189,7 +189,7 @@ def from_person(person):
     """
     return from_swh(person,
                     hashess=set(),
-                    bytess=set(['name', 'email']))
+                    bytess=set(['name', 'fullname', 'email']))
 
 
 def from_directory_entry(dir_entry):
