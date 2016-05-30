@@ -929,7 +929,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'name': 'boule & bill',
                 'email': 'boule@bill.org',
             },
-            'message': 'elegant fix for bug 31415957',
             'date': "2000-01-17T11:23:54+00:00",
             'committer_date': "2000-01-17T11:23:54+00:00",
             'synthetic': False,
@@ -938,6 +937,101 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'metadata': [],
         })
 
+        mock_backend.revision_get.assert_called_with(
+            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_msg_ok(self, mock_backend):
+        # given
+        mock_backend.revision_get = MagicMock(return_value={
+            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'committer': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
+            'message': b'elegant fix for bug 31415957',
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        })
+
+        # when
+        rv = service.lookup_revision_message(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertEquals(rv, {'message': 'elegant fix for bug 31415957'})
+        mock_backend.revision_get.assert_called_with(
+            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_msg_absent(self, mock_backend):
+        # given
+        mock_backend.revision_get = MagicMock(return_value={
+            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'committer': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        })
+
+        # when
+        with self.assertRaises(NotFoundExc):
+            service.lookup_revision_message(
+                '18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
         mock_backend.revision_get.assert_called_with(
             hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
 

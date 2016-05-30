@@ -718,32 +718,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_revision_raw_ok(self, mock_service):
         # given
-        stub_revision = {
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': ['8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'],
-            'type': 'tar',
-            'synthetic': True,
-            'metadata': {
-                'original_artifact': [{
-                    'archive_type': 'tar',
-                    'name': 'webbase-5.7.0.tar.gz',
-                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
-                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
-                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
-                    '309d36484e7edf7bb912'
-                }]
-            },
-        }
+        stub_revision = {'message': 'synthetic revision message'}
 
-        mock_service.lookup_revision.return_value = stub_revision
+        mock_service.lookup_revision_message.return_value = stub_revision
 
         # when
         rv = self.app.get('/api/1/revision/'
@@ -757,60 +734,37 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data,
                           {'message': 'synthetic revision message'})
 
-        mock_service.lookup_revision.assert_called_once_with(
+        mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_revision_raw_ko_no_msg(self, mock_service):
+    def api_revision_raw_ok_no_msg(self, mock_service):
         # given
-        stub_revision = {
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': ['8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'],
-            'type': 'tar',
-            'synthetic': True,
-            'metadata': {
-                'original_artifact': [{
-                    'archive_type': 'tar',
-                    'name': 'webbase-5.7.0.tar.gz',
-                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
-                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
-                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
-                    '309d36484e7edf7bb912'
-                }]
-            },
-        }
+        stub_revision = {'message': ''}
 
-        mock_service.lookup_revision.return_value = stub_revision
+        mock_service.lookup_revision_message.return_value = stub_revision
 
         # when
         rv = self.app.get('/api/1/revision/'
                           '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {
-            'error': 'No message for revision with sha1_git '
-            '18d8be353ed3480476f032475e7c233eff7371d5.'})
+        self.assertEquals(response_data, {'message': ''})
 
-        mock_service.lookup_revision.assert_called_once_with(
+        mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_revision_raw_ko_no_rev(self, mock_service):
         # given
-        mock_service.lookup_revision.side_effect = NotFoundExc('not found')
+        mock_service.lookup_revision_message.side_effect = NotFoundExc(
+            'not found')
 
         # when
         rv = self.app.get('/api/1/revision/'
@@ -824,7 +778,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, {
             'error': 'not found'})
 
-        mock_service.lookup_revision.assert_called_once_with(
+        mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.ui.views.api.service')
