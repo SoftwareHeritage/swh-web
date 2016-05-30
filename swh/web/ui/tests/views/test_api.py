@@ -765,7 +765,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def api_revision_raw_ko_no_rev(self, mock_service):
         # given
         mock_service.lookup_revision_message.side_effect = NotFoundExc(
-            'No message for revision')
+            'No revision found')
 
         # when
         rv = self.app.get('/api/1/revision/'
@@ -777,7 +777,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No message for revision'})
+            'error': 'No revision found'})
 
         mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
