@@ -216,6 +216,38 @@ def lookup_revision(rev_sha1_git):
         'Only sha1_git is supported.')
 
     res = backend.revision_get(sha1_git_bin)
+    if 'message' in res:
+        del res['message']
+    return converters.from_revision(res)
+
+
+def lookup_revision_message(rev_sha1_git):
+    """Return the raw message of the revision with sha1 revision_sha1_git.
+
+    Args:
+        revision_sha1_git: The revision's sha1 as hexadecimal
+
+    Returns:
+        Decoded revision message as dict {'message': <the_message>}
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+        NotFoundExc if the revision is not found, or if it has no message
+
+    """
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        rev_sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
+
+    revision = backend.revision_get(sha1_git_bin)
+    if not revision:
+        raise NotFoundExc('Revision with sha1_git %s not found.'
+                          % rev_sha1_git)
+    if 'message' not in revision:
+        raise NotFoundExc('No message for revision with sha1_git %s.'
+                          % rev_sha1_git)
+    res = {'message': revision['message']}
     return converters.from_revision(res)
 
 
