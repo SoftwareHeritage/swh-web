@@ -151,6 +151,7 @@ class ConvertersTestCase(unittest.TestCase):
             },
             'author': {
                 'name': b'author name',
+                'fullname': b'Author Name author@email',
                 'email': b'author@email',
             },
             'name': b'v0.0.1',
@@ -165,6 +166,7 @@ class ConvertersTestCase(unittest.TestCase):
             'date': '2015-01-01T22:00:00+00:00',
             'author': {
                 'name': 'author name',
+                'fullname': 'Author Name author@email',
                 'email': 'author@email',
             },
             'name': 'v0.0.1',
@@ -198,6 +200,7 @@ class ConvertersTestCase(unittest.TestCase):
             'synthetic': False,
             'author': {
                 'name': b'bob',
+                'fullname': b'Bob bob@alice.net',
                 'email': b'bob@alice.net',
             },
         }
@@ -211,6 +214,7 @@ class ConvertersTestCase(unittest.TestCase):
             'synthetic': False,
             'author': {
                 'name': 'bob',
+                'fullname': 'Bob bob@alice.net',
                 'email': 'bob@alice.net',
             },
         }
@@ -230,10 +234,12 @@ class ConvertersTestCase(unittest.TestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'Software Heritage',
+                'fullname': b'robot robot@softwareheritage.org',
                 'email': b'robot@softwareheritage.org',
             },
             'committer': {
                 'name': b'Software Heritage',
+                'fullname': b'robot robot@softwareheritage.org',
                 'email': b'robot@softwareheritage.org',
             },
             'message': b'synthetic revision message',
@@ -281,10 +287,12 @@ class ConvertersTestCase(unittest.TestCase):
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
             'author': {
                 'name': 'Software Heritage',
+                'fullname': 'robot robot@softwareheritage.org',
                 'email': 'robot@softwareheritage.org',
             },
             'committer': {
                 'name': 'Software Heritage',
+                'fullname': 'robot robot@softwareheritage.org',
                 'email': 'robot@softwareheritage.org',
             },
             'message': 'synthetic revision message',
@@ -354,6 +362,7 @@ class ConvertersTestCase(unittest.TestCase):
             'id': 10,
             'anything': 'else',
             'name': b'bob',
+            'fullname': b'bob bob@alice.net',
             'email': b'bob@foo.alice',
         }
 
@@ -361,6 +370,7 @@ class ConvertersTestCase(unittest.TestCase):
             'id': 10,
             'anything': 'else',
             'name': 'bob',
+            'fullname': 'bob bob@alice.net',
             'email': 'bob@foo.alice',
         }
 
