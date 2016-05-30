@@ -513,13 +513,11 @@ def api_revision_raw_message(sha1_git):
 
     """
 
-    rev = api_revision(sha1_git)
-    if 'message' in rev:
-        return {'message': rev['message']}
-    else:
-        raise NotFoundExc('No message for revision with sha1_git %s.'
-                          % sha1_git)
-    # TODO: can do better than same as api_revision?
+    return _api_lookup(
+        sha1_git,
+        lookup_fn=service.lookup_revision_message,
+        error_msg_if_not_found='Revision with sha1_git %s not'
+                               ' found' % sha1_git)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
