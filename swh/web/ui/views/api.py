@@ -513,11 +513,7 @@ def api_revision_raw_message(sha1_git):
 
     """
 
-    return _api_lookup(
-        sha1_git,
-        lookup_fn=service.lookup_revision_message,
-        error_msg_if_not_found='Revision with sha1_git %s not'
-                               ' found' % sha1_git)
+    return service.lookup_revision_message(sha1_git)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
