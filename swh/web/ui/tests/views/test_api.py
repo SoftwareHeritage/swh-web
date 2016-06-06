@@ -1452,6 +1452,85 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_revision_log_by(self, mock_service):
+        # given
+        stub_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+        mock_service.lookup_revision_log_by.return_value = stub_revisions
+
+        expected_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
+                           'f7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a'
+                             '42b7e2a44e6/',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': [
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+            ],
+            'parent_urls': [
+                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
+                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+            ],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+
+        # when
+        rv = self.app.get('/api/1/revision/origin/1/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_revisions)
+
+        mock_service.lookup_revision_log_by.assert_called_once_with(
+            1, 'refs/heads/master', None)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_log_by_norev(self, mock_service):
+        # given
+        mock_service.lookup_revision_log_by.side_effect = NotFoundExc(
+            'No revision')
+
+        # when
+        rv = self.app.get('/api/1/revision/origin/1/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'error': 'No revision'})
+
+        mock_service.lookup_revision_log_by.assert_called_once_with(
+            1, 'refs/heads/master', None)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_revision_history_not_found(self, mock_service):
         # given
         mock_service.lookup_revision_with_context.return_value = None

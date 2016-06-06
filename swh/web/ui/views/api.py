@@ -675,6 +675,38 @@ def api_revision_log(sha1_git):
                        enrich_fn=utils.enrich_revision)
 
 
+@app.route('/api/1/revision'
+           '/origin/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>/log/')
+def api_revision_log_by(origin_id,
+                        branch_name='refs/heads/master',
+                        ts=None):
+    if ts:
+        ts = utils.parse_timestamp(ts)
+
+    return _api_lookup(
+        origin_id,
+        service.lookup_revision_log_by,
+        'Revision with (origin_id: %s, branch_name: %s'
+        ', ts: %s) not found.' % (origin_id,
+                                  branch_name,
+                                  ts),
+        utils.enrich_revision,
+        branch_name,
+        ts)
+
+
 @app.route('/api/1/directory/')
 @app.route('/api/1/directory/<string:sha1_git>/')
 @app.route('/api/1/directory/<string:sha1_git>/<path:path>/')
