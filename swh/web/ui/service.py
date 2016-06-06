@@ -295,6 +295,35 @@ def lookup_revision_log(rev_sha1_git, limit=100):
     return map(converters.from_revision, revision_entries)
 
 
+def lookup_revision_log_by(origin_id, branch_name, timestamp):
+    """Return information about the revision with sha1 revision_sha1_git.
+
+    Args:
+        origin_id: origin of the revision
+        branch_name: revision's branch
+        timestamp: revision's time frame
+        limit: the maximum number of revisions returned
+
+    Returns:
+        Revision information as dict.
+
+    Raises:
+        NotFoundExc if no revision corresponds to the criterion
+        NotFoundExc if the corresponding revision has no log
+
+    """
+    revision_entries = backend.revision_log_by(origin_id,
+                                               branch_name,
+                                               timestamp)
+    error_msg = 'No revision matching origin %s ' % origin_id
+    error_msg += ', branch name %s' % branch_name
+    error_msg += (' and time stamp %s.' % timestamp) if timestamp else '.'
+
+    if not revision_entries:
+        raise NotFoundExc(error_msg)
+    return map(converters.from_revision, revision_entries)
+
+
 def lookup_revision_with_context_by(origin_id, branch_name, ts, sha1_git,
                                     limit=100):
     """Return information about revision sha1_git, limited to the

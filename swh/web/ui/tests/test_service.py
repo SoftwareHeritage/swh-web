@@ -1126,6 +1126,91 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
+    def lookup_revision_log_by(self, mock_backend):
+        # given
+        stub_revision_log = [{
+            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'committer': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
+            'message': b'elegant fix for bug 31415957',
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }]
+        mock_backend.revision_log_by = MagicMock(
+            return_value=stub_revision_log)
+
+        # when
+        actual_log = service.lookup_revision_log_by(
+            1, 'refs/heads/master', None)
+        # then
+        self.assertEqual(list(actual_log), [{
+            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'bill & boule',
+                'email': 'bill@boule.org',
+            },
+            'committer': {
+                'name': 'boule & bill',
+                'email': 'boule@bill.org',
+            },
+            'message': 'elegant fix for bug 31415957',
+            'date': "2000-01-17T11:23:54+00:00",
+            'committer_date': "2000-01-17T11:23:54+00:00",
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }])
+
+        mock_backend.revision_log_by.assert_called_with(
+            1, 'refs/heads/master', None)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_log_by_nolog(self, mock_backend):
+        # given
+        mock_backend.revision_log_by = MagicMock(return_value=None)
+
+        with self.assertRaises(NotFoundExc) as nfe:
+            # when
+            service.lookup_revision_log_by(
+                1, 'refs/heads/master', None)
+            # then
+            self.assertEquals('No revision matching origin 1, branch '
+                              'name refs/heads/master.',
+                              nfe.exception.args[0])
+            mock_backend.revision_log_by.assert_called_with(
+                1, 'refs/heads/master', None)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
     def lookup_content_raw_not_found(self, mock_backend):
         # given
         mock_backend.content_find = MagicMock(return_value=None)
