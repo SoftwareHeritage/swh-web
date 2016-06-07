@@ -315,12 +315,8 @@ def lookup_revision_log_by(origin_id, branch_name, timestamp):
     revision_entries = backend.revision_log_by(origin_id,
                                                branch_name,
                                                timestamp)
-    error_msg = 'No revision matching origin %s ' % origin_id
-    error_msg += ', branch name %s' % branch_name
-    error_msg += (' and time stamp %s.' % timestamp) if timestamp else '.'
-
     if not revision_entries:
-        raise NotFoundExc(error_msg)
+        return None
     return map(converters.from_revision, revision_entries)
 
 

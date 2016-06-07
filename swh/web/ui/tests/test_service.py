@@ -1198,16 +1198,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.revision_log_by = MagicMock(return_value=None)
 
-        with self.assertRaises(NotFoundExc) as nfe:
-            # when
-            service.lookup_revision_log_by(
-                1, 'refs/heads/master', None)
-            # then
-            self.assertEquals('No revision matching origin 1, branch '
-                              'name refs/heads/master.',
-                              nfe.exception.args[0])
-            mock_backend.revision_log_by.assert_called_with(
-                1, 'refs/heads/master', None)
+        # when
+        res = service.lookup_revision_log_by(
+            1, 'refs/heads/master', None)
+        # then
+        self.assertEquals(res, None)
+        mock_backend.revision_log_by.assert_called_with(
+            1, 'refs/heads/master', None)
 
     @patch('swh.web.ui.service.backend')
     @istest
