@@ -692,16 +692,34 @@ def api_revision_log(sha1_git):
 def api_revision_log_by(origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
+    """Show all revisions (~git log) starting from the revision
+       described by its origin_id, optional branch name and timestamp.
+       The first element returned is the described revision.
+
+    Args:
+        origin_id: the revision's origin.
+        branch_name: the branch of the revision (optional, defaults to
+        master
+        ts: the requested timeframe near which the revision was created.
+        limit: optional query parameter to limit the revisions log
+        (default to 100).
+
+    Returns:
+        Information on the revision log if found.
+
+    Raises:
+        NotFoundExc if the revision is not found.
+    """
     if ts:
         ts = utils.parse_timestamp(ts)
 
+    error_msg = 'No revision matching origin %s ' % origin_id
+    error_msg += ', branch name %s' % branch_name
+    error_msg += (' and time stamp %s.' % ts) if ts else '.'
     return _api_lookup(
         origin_id,
         service.lookup_revision_log_by,
-        'Revision with (origin_id: %s, branch_name: %s'
-        ', ts: %s) not found.' % (origin_id,
-                                  branch_name,
-                                  ts),
+        error_msg,
         utils.enrich_revision,
         branch_name,
         ts)
