@@ -339,7 +339,7 @@ def browse_revision_log(sha1_git):
 
     """
     env = {'sha1_git': sha1_git,
-           'sha1_url': '/browse/revision/' + sha1_git + '/',
+           'sha1_url': '/browse/revision/%s/' % sha1_git,
            'message': None,
            'revisions': []}
 
@@ -384,7 +384,7 @@ def browse_revision_log_by(origin_id,
     """
     env = {'sha1_git': None,
            'origin_id': origin_id,
-           'origin_url': '/browse/origin/' + str(origin_id) + '/',
+           'origin_url': '/browse/origin/%d/' % origin_id,
            'branch_name': branch_name,
            'timestamp': timestamp,
            'message': None,
