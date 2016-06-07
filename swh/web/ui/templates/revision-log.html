@@ -6,10 +6,25 @@
   {{ message }}
 {% endif %}
 
+  <div class="container">
+    <h2>Queried revision:</h2>
+    {% if sha1_git is not none %}
+    <div>Revision with git SHA1 <a href="{{ sha1_url }}">{{ sha1_git }}</a></div>
+    {% else %}
+    <div><a href="{{ origin_url }}">Origin ID {{ origin_id }}</a></div>
+    <div>Branch name {{ branch_name }}</div>
+    {% if timestamp is not none %}
+    <div>Time stamp {{ timestamp }}</div>
+    {% endif %}
+    <div>
+    </div>
+    {% endif %}
+  </div>
+
 {% if revisions is not none %}
   {% for revision in revisions %}
 
-  <div>
+  <div class="container">
     {% if revision['url'] is not none %}
     <div class="row">
        <div class="col-md-2">Revision</div>
