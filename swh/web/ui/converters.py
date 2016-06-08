@@ -159,16 +159,31 @@ def from_revision(revision):
         - sha1s are in hexadecimal strings (id, directory)
         - bytes are decoded in string (author_name, committer_name,
         author_email, committer_email, message)
+        - if message is not utf-8 encoded, message is null and msg_url points
+        to the api endpoint to download the revision message as is
         - remaining keys are left as is
 
     """
-    return from_swh(revision,
-                    hashess=set(['id', 'directory', 'parents', 'children']),
-                    bytess=set(['name',
-                                'fullname',
-                                'email',
-                                'message']),
-                    dates={'date', 'committer_date'})
+    revision = from_swh(revision,
+                        hashess=set(['id',
+                                     'directory',
+                                     'parents',
+                                     'children']),
+                        bytess=set(['name',
+                                    'fullname',
+                                    'email']),
+                        dates={'date', 'committer_date'})
+
+    if revision:
+        if 'message' in revision:
+            try:
+                revision['message'] = revision['message'].decode('utf-8')
+            except UnicodeDecodeError:
+                revision['message'] = None
+                revision['msg_url'] = ('/api/1/revision/''%s/raw/'
+                                       % revision['id'])
+
+    return revision
 
 
 def from_content(content):
