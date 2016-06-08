@@ -216,7 +216,6 @@ def lookup_revision(rev_sha1_git):
         'Only sha1_git is supported.')
 
     res = backend.revision_get(sha1_git_bin)
-    res.pop('message', None)
     return converters.from_revision(res)
 
 
@@ -247,7 +246,7 @@ def lookup_revision_message(rev_sha1_git):
         raise NotFoundExc('No message for revision with sha1_git %s.'
                           % rev_sha1_git)
     res = {'message': revision['message']}
-    return converters.from_revision(res)
+    return res
 
 
 def lookup_revision_by(origin_id,

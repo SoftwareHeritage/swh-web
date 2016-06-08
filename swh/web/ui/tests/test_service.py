@@ -929,6 +929,76 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'name': 'boule & bill',
                 'email': 'boule@bill.org',
             },
+            'message': 'elegant fix for bug 31415957',
+            'date': "2000-01-17T11:23:54+00:00",
+            'committer_date': "2000-01-17T11:23:54+00:00",
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        })
+
+        mock_backend.revision_get.assert_called_with(
+            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_invalid_msg(self, mock_backend):
+        # given
+        stub_rev = {
+            'id': hex_to_hash('123456'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'committer': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
+            'message': b'elegant fix for bug \xff',
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc,
+                ).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }
+        mock_backend.revision_get = MagicMock(return_value=stub_rev)
+
+        # when
+        actual_revision = service.lookup_revision(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+
+        # then
+        self.assertEqual(actual_revision, {
+            'id': '123456',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'bill & boule',
+                'email': 'bill@boule.org',
+            },
+            'committer': {
+                'name': 'boule & bill',
+                'email': 'boule@bill.org',
+            },
+            'message': None,
+            'msg_url': '/api/1/revision/123456/raw/',
             'date': "2000-01-17T11:23:54+00:00",
             'committer_date': "2000-01-17T11:23:54+00:00",
             'synthetic': False,
@@ -984,7 +1054,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
         # then
-        self.assertEquals(rv, {'message': 'elegant fix for bug 31415957'})
+        self.assertEquals(rv, {'message': b'elegant fix for bug 31415957'})
         mock_backend.revision_get.assert_called_with(
             hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
 
