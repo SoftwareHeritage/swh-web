@@ -57,6 +57,13 @@
               <div class="col-md-6"><pre>{{ revision['message'] }}</pre></div>
             </div>
     {% endif %}
+	    
+    {% if revision['msg_url'] is not none %}
+            <div class="row">
+              <div class="col-md-2">Message</div>
+              <div class="col-md-6"><a href="{{ revision['message'] }}">Download raw message</a></div>
+            </div>
+    {% endif %}
 
     {% for key in revision.keys() %}
            {% if key in ['type', 'synthetic'] and revision[key] is not none %}
