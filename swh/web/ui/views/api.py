@@ -512,8 +512,11 @@ def api_revision_raw_message(sha1_git):
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/raw/
 
     """
-
-    return service.lookup_revision_message(sha1_git)
+    raw = service.lookup_revision_message(sha1_git)
+    return Response(raw['message'],
+                    headers={'Content-disposition': 'attachment;'
+                             'filename=rev_%s_raw' % sha1_git},
+                    mimetype='application/octet-stream')
 
 
 @app.route('/api/1/revision/<string:sha1_git>/directory/')

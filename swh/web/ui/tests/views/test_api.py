@@ -723,16 +723,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_revision_message.return_value = stub_revision
 
         # when
-        rv = self.app.get('/api/1/revision/'
-                          '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
-
+        rv = self.app.get('/api/1/revision/18d8be353ed3480476f032475e7c2'
+                          '33eff7371d5/raw/')
         # then
         self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.mimetype, 'application/json')
-
-        response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data,
-                          {'message': 'synthetic revision message'})
+        self.assertEquals(rv.mimetype, 'application/octet-stream')
+        self.assertEquals(rv.data, b'synthetic revision message')
 
         mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
