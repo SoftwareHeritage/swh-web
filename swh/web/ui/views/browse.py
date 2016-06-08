@@ -332,6 +332,14 @@ def browse_revision(sha1_git):
     return render_template('revision.html', **env)
 
 
+@app.route('/browse/revision/<string:sha1_git>/raw/')
+def browse_revision_raw_message(sha1_git):
+    """Given a sha1_git, display the corresponding revision's raw message.
+
+    """
+    return redirect(url_for('api_revision_raw_message', sha1_git=sha1_git))
+
+
 @app.route('/browse/revision/<string:sha1_git>/log/')
 @set_renderers(HTMLRenderer)
 def browse_revision_log(sha1_git):

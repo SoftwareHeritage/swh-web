@@ -839,6 +839,19 @@ class RevisionView(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.browse.api')
     @istest
+    def browse_revision_raw_message(self, mock_api):
+        # given
+        sha1 = 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'
+
+        # when
+        rv = self.client.get('/browse/revision/'
+                             'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754/raw/')
+
+        self.assertRedirects(
+            rv, '/api/1/revision/%s/raw/' % sha1)
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
     def browse_revision_log_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_log.side_effect = NotFoundExc('Not found!')
