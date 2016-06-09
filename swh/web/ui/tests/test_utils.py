@@ -570,7 +570,7 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='456')])
 
     @nottest
-    def url_for_rev_message_test(self, fn, **data):
+    def _url_for_rev_message_test(self, fn, **data):
         if fn == 'api_revision':
             return '/api/revision/' + data['sha1_git'] + '/'
         elif fn == 'api_revision_log':
@@ -584,7 +584,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_revision_with_no_message(self, mock_flask):
         # given
-        mock_flask.url_for.side_effect = self.url_for_rev_message_test
+        mock_flask.url_for.side_effect = self._url_for_rev_message_test
 
         # when
         actual_revision = utils.enrich_revision({
@@ -622,7 +622,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_revision_with_invalid_message(self, mock_flask):
         # given
-        mock_flask.url_for.side_effect = self.url_for_rev_message_test
+        mock_flask.url_for.side_effect = self._url_for_rev_message_test
 
         # when
         actual_revision = utils.enrich_revision({
