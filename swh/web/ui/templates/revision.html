@@ -56,12 +56,15 @@
               <div class="col-md-2">Message</div>
               <div class="col-md-6"><pre>{{ revision['message'] }}</pre></div>
             </div>
-    {% endif %}
-	    
-    {% if revision['message_url'] is not none %}
+    {% elif revision['message_encoding_failed'] %}
+	    <div class="row">
+              <div class="col-md-2">Message</div>
+              <div class="col-md-6"><a href="{{ revision['message_url'] }}">Download raw message</a></div>
+            </div
+    {% else %}
             <div class="row">
               <div class="col-md-2">Message</div>
-              <div class="col-md-6"><a href="{{ revision['message'] }}">Download raw message</a></div>
+              <div class="col-md-6">No message found.</div>
             </div>
     {% endif %}
 
