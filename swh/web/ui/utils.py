@@ -242,4 +242,11 @@ def enrich_revision(revision, context=None):
 
         revision['children_urls'] = children
 
+    if 'message' in revision:
+        if 'message_decoding_failed' in revision:
+            if revision['message_decoding_failed']:
+                revision['message_url'] = flask.url_for(
+                    'api_revision_raw_message',
+                    sha1_git=revision['id'])
+
     return revision

@@ -570,3 +570,104 @@ class UtilsTestCase(unittest.TestCase):
              call('api_revision_history',
                   sha1_git_root='sha1_git_root',
                   sha1_git='456')])
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_revision_with_no_message(self, mock_flask):
+        # given
+        def url_for_test(fn, **data):
+            print(fn, data)
+            if fn == 'api_revision':
+                return '/api/revision/' + data['sha1_git'] + '/'
+            elif fn == 'api_revision_log':
+                return '/api/revision/' + data['sha1_git'] + '/log/'
+            elif fn == 'api_revision_raw_message':
+                return '/api/revision/' + data['sha1_git'] + '/raw/'
+            else:
+                return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
+
+        mock_flask.url_for.side_effect = url_for_test
+
+        # when
+        actual_revision = utils.enrich_revision({
+            'id': 'rev-id',
+            'message': None,
+            'parents': ['123'],
+            'children': ['456'],
+        }, context='sha1_git_root')
+
+        # then
+        self.assertEqual(actual_revision, {
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'message': None,
+            'history_url': '/api/revision/rev-id/log/',
+            'parents': ['123'],
+            'parent_urls': ['/api/revision/sha1_git_root/history/123/'],
+            'children': ['456'],
+            'children_urls': ['/api/revision/sha1_git_root/history/456/'],
+        })
+
+        mock_flask.url_for.assert_has_calls(
+            [call('api_revision',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id'),
+             call('api_revision_history',
+                  sha1_git_root='sha1_git_root',
+                  sha1_git='123'),
+             call('api_revision_history',
+                  sha1_git_root='sha1_git_root',
+                  sha1_git='456')])
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_revision_with_invalid_message(self, mock_flask):
+        # given
+        def url_for_test(fn, **data):
+            print(fn, data)
+            if fn == 'api_revision':
+                return '/api/revision/' + data['sha1_git'] + '/'
+            elif fn == 'api_revision_log':
+                return '/api/revision/' + data['sha1_git'] + '/log/'
+            elif fn == 'api_revision_raw_message':
+                return '/api/revision/' + data['sha1_git'] + '/raw/'
+            else:
+                return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
+
+        mock_flask.url_for.side_effect = url_for_test
+
+        # when
+        actual_revision = utils.enrich_revision({
+            'id': 'rev-id',
+            'message': None,
+            'message_decoding_failed': True,
+            'parents': ['123'],
+            'children': ['456'],
+        }, context='sha1_git_root')
+
+        # then
+        self.assertEqual(actual_revision, {
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'message': None,
+            'message_decoding_failed': True,
+            'message_url': '/api/revision/rev-id/raw/',
+            'history_url': '/api/revision/rev-id/log/',
+            'parents': ['123'],
+            'parent_urls': ['/api/revision/sha1_git_root/history/123/'],
+            'children': ['456'],
+            'children_urls': ['/api/revision/sha1_git_root/history/456/'],
+        })
+
+        mock_flask.url_for.assert_has_calls(
+            [call('api_revision',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id'),
+             call('api_revision_history',
+                  sha1_git_root='sha1_git_root',
+                  sha1_git='123'),
+             call('api_revision_history',
+                  sha1_git_root='sha1_git_root',
+                  sha1_git='456')])
