@@ -396,8 +396,7 @@ class ConvertersTestCase(unittest.TestCase):
                 'email': 'robot@softwareheritage.org',
             },
             'message': None,
-            'message_url': '/api/1/revision/'
-            '18d8be353ed3480476f032475e7c233eff7371d5/raw/',
+            'message_decoding_failed': True,
             'date': "2000-01-17T11:23:54+00:00",
             'committer_date': "2000-01-17T11:23:54+00:00",
             'children': [

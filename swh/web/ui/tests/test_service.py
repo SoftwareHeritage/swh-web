@@ -998,7 +998,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'email': 'boule@bill.org',
             },
             'message': None,
-            'message_url': '/api/1/revision/123456/raw/',
+            'message_decoding_failed': True,
             'date': "2000-01-17T11:23:54+00:00",
             'committer_date': "2000-01-17T11:23:54+00:00",
             'synthetic': False,

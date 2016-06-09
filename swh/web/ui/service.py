@@ -215,8 +215,8 @@ def lookup_revision(rev_sha1_git):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    res = backend.revision_get(sha1_git_bin)
-    return converters.from_revision(res)
+    revision = backend.revision_get(sha1_git_bin)
+    return converters.from_revision(revision)
 
 
 def lookup_revision_message(rev_sha1_git):
