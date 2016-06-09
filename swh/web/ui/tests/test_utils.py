@@ -8,7 +8,7 @@ import dateutil
 import unittest
 
 from unittest.mock import patch, call
-from nose.tools import istest
+from nose.tools import istest, nottest
 
 from swh.web.ui import utils
 
@@ -481,7 +481,6 @@ class UtilsTestCase(unittest.TestCase):
     def enrich_revision_without_children_or_parent(self, mock_flask):
         # given
         def url_for_test(fn, **data):
-            print(fn, data)
             if fn == 'api_revision':
                 return '/api/revision/' + data['sha1_git'] + '/'
             elif fn == 'api_revision_log':
@@ -531,7 +530,6 @@ class UtilsTestCase(unittest.TestCase):
                                                         mock_flask):
         # given
         def url_for_test(fn, **data):
-            print(fn, data)
             if fn == 'api_revision':
                 return '/api/revision/' + data['sha1_git'] + '/'
             elif fn == 'api_revision_log':
@@ -571,22 +569,22 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git_root='sha1_git_root',
                   sha1_git='456')])
 
+    @nottest
+    def url_for_rev_message_test(self, fn, **data):
+        if fn == 'api_revision':
+            return '/api/revision/' + data['sha1_git'] + '/'
+        elif fn == 'api_revision_log':
+            return '/api/revision/' + data['sha1_git'] + '/log/'
+        elif fn == 'api_revision_raw_message':
+            return '/api/revision/' + data['sha1_git'] + '/raw/'
+        else:
+            return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
+
     @patch('swh.web.ui.utils.flask')
     @istest
     def enrich_revision_with_no_message(self, mock_flask):
         # given
-        def url_for_test(fn, **data):
-            print(fn, data)
-            if fn == 'api_revision':
-                return '/api/revision/' + data['sha1_git'] + '/'
-            elif fn == 'api_revision_log':
-                return '/api/revision/' + data['sha1_git'] + '/log/'
-            elif fn == 'api_revision_raw_message':
-                return '/api/revision/' + data['sha1_git'] + '/raw/'
-            else:
-                return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
-
-        mock_flask.url_for.side_effect = url_for_test
+        mock_flask.url_for.side_effect = self.url_for_rev_message_test
 
         # when
         actual_revision = utils.enrich_revision({
@@ -624,18 +622,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_revision_with_invalid_message(self, mock_flask):
         # given
-        def url_for_test(fn, **data):
-            print(fn, data)
-            if fn == 'api_revision':
-                return '/api/revision/' + data['sha1_git'] + '/'
-            elif fn == 'api_revision_log':
-                return '/api/revision/' + data['sha1_git'] + '/log/'
-            elif fn == 'api_revision_raw_message':
-                return '/api/revision/' + data['sha1_git'] + '/raw/'
-            else:
-                return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
-
-        mock_flask.url_for.side_effect = url_for_test
+        mock_flask.url_for.side_effect = self.url_for_rev_message_test
 
         # when
         actual_revision = utils.enrich_revision({
