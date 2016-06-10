@@ -49,7 +49,12 @@
     {% if revision['author'] is not none %}
            <div class="row">
               <div class="col-md-2">Author</div>
-              <div class="col-md-6"><p><a href="{{ revision['author_url'] }}">{{ revision['author']['name'] }}</a></p></div>
+              <div class="col-md-6">
+		<p>
+		  <a href="{{ revision['author_url'] }}">{{ revision['author']['name'] }}</a>
+		  {% if 'decoding_failures' in revision['author'] %}(some decoding errors){% endif %}
+		</p>
+	      </div>
            </div>
            <div class="row">
               <div class="col-md-2">Date</div>
@@ -60,7 +65,12 @@
     {% if revision['committer'] is not none %}
            <div class="row">
               <div class="col-md-2">Committer</div>
-              <div class="col-md-6"><p><a href="{{ revision['committer_url'] }}">{{ revision['committer']['name'] }}</a></p></div>
+              <div class="col-md-6">
+		<p>
+		  <a href="{{ revision['committer_url'] }}">{{ revision['committer']['name'] }}</a>
+		  {% if 'decoding_failures' in revision['committer'] %}(some decoding errors){% endif %}
+		</p>
+	      </div>
            </div>
            <div class="row">
               <div class="col-md-2">Committer Date</div>
@@ -86,14 +96,13 @@
     {% endif %}	    
 	    
     {% for key in revision.keys() %}
-           {% if key in ['type', 'synthetic'] and revision[key] is not none %}
+           {% if key in ['type', 'synthetic'] and key not in ['decoding_failures'] and revision[key] is not none %}
             <div class="row">
               <div class="col-md-2">{{ key }}</div>
               <div class="col-md-6"><p>{{ revision[key] }}</pre></div>
             </div>
            {% endif %}
     {% endfor %}
-
     {% for key in ['parent_urls', 'children_urls'] %}
         {% if revision[key] is not none %}
          <div class="row">
@@ -104,6 +113,12 @@
          </div>
         {% endif %}
     {% endfor %}
+	 {% if 'decoding_failures' in revision %}
+	 <div class="row">
+	   <div class="col-md-10">(some decoding errors occurred)</div>
+	 </div>
+	 {% endif %}
+
   </div>
   <hr />
   {% endfor %}

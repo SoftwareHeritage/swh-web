@@ -24,5 +24,10 @@
        <div class="col-md-10"><pre>{{ content['data'] }}</pre></div>
     </div>
     {% endif %}
+    {% if 'decoding_failures' in content %}
+    <div class="row">
+      <div class="col-md-10">(some decoding errors)</div>
+    </div>
+    {% endif %}
   {% endif %}
 {% endblock %}

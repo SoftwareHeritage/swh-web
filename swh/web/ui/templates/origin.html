@@ -16,6 +16,11 @@
             </div>
         {% endif %}
     {% endfor %}
+	{% if 'decoding_failures' in content %}
+	    <div class="row">
+	      <div class="col-md-10">(some decoding errors)</div>
+	    </div>
+	{% endif %}    
 </div>
 {% endif %}
 
