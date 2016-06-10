@@ -5,6 +5,7 @@
 
 import datetime
 
+from swh.core.utils import decode_with_escape
 from swh.core import hashutil
 from swh.web.ui import utils
 
@@ -86,7 +87,10 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         elif key in hashess:
             new_dict[key] = utils.fmap(convert_hashes_bytes, value)
         elif key in bytess:
-            new_dict[key] = utils.fmap(convert_bytes, value)
+            try:
+                new_dict[key] = utils.fmap(convert_bytes, value)
+            except UnicodeDecodeError:
+                new_dict[key] = utils.fmap(decode_with_escape, value)
         elif key in convert:
             new_dict[key] = convert_fn(value)
         else:

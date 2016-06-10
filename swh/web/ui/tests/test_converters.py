@@ -100,6 +100,28 @@ class ConvertersTestCase(unittest.TestCase):
         self.assertEquals(expected_output, actual_output)
 
     @istest
+    def from_swh_edge_cases_convert_invalid_utf8_bytes(self):
+        some_input = {
+            'a': 'something',
+            'b': 'someone',
+            'c': b'a name \xff',
+            'd': b'an email \xff',
+        }
+
+        expected_output = {
+            'a': 'something',
+            'b': 'someone',
+            'c': 'a name \\xff',
+            'd': 'an email \\xff',
+        }
+
+        actual_output = converters.from_swh(some_input,
+                                            hashess={'a', 'b'},
+                                            bytess={'c', 'd'})
+
+        self.assertEquals(expected_output, actual_output)
+
+    @istest
     def from_swh_empty(self):
         # when
         self.assertEquals({}, converters.from_swh({}))
