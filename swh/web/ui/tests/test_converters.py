@@ -113,13 +113,18 @@ class ConvertersTestCase(unittest.TestCase):
             'b': 'someone',
             'c': 'a name \\xff',
             'd': 'an email \\xff',
+            'decoding_failures': ['c', 'd']
         }
 
         actual_output = converters.from_swh(some_input,
                                             hashess={'a', 'b'},
                                             bytess={'c', 'd'})
-
-        self.assertEquals(expected_output, actual_output)
+        for v in ['a', 'b', 'c', 'd']:
+            self.assertEqual(expected_output[v], actual_output[v])
+        self.assertEqual(len(expected_output['decoding_failures']),
+                         len(actual_output['decoding_failures']))
+        for v in expected_output['decoding_failures']:
+            self.assertTrue(v in actual_output['decoding_failures'])
 
     @istest
     def from_swh_empty(self):
