@@ -107,6 +107,45 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
+    def search_hash_does_not_exist(self, mock_backend):
+        # given
+        mock_backend.content_find = MagicMock(return_value=None)
+
+        # when
+        actual_lookup = service.search_hash(
+            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertEquals({'found': False}, actual_lookup)
+
+        # check the function has been called with parameters
+        mock_backend.content_find.assert_called_with(
+            'sha1_git',
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def search_hash_exist(self, mock_backend):
+        # given
+        stub_content = {
+                'sha1': hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+            }
+        mock_backend.content_find = MagicMock(return_value=stub_content)
+
+        # when
+        actual_lookup = service.search_hash(
+            'sha1:456caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertEquals({'found': True}, actual_lookup)
+
+        mock_backend.content_find.assert_called_with(
+            'sha1',
+            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'),
+        )
+
+    @patch('swh.web.ui.service.backend')
+    @istest
     def lookup_hash_origin(self, mock_backend):
         # given
         mock_backend.content_find_occurrence = MagicMock(return_value={

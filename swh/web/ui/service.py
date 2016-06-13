@@ -74,14 +74,28 @@ def lookup_hash(q):
 
     Args: query string of the form <hash_algo:hash>
 
-    Returns: Dict with key found to True or False, according to
-        whether the checksum is present or not
+    Returns: Dict with key found containing the hash info if the
+    hash is present, None if not.
 
     """
     algo, hash = query.parse_hash(q)
     found = backend.content_find(algo, hash)
     return {'found': found,
             'algo': algo}
+
+
+def search_hash(q):
+    """Checks if the storage contains a given content checksum
+
+    Args: query string of the form <hash_algo:hash>
+
+    Returns: Dict with key found to True or False, according to
+        whether the checksum is present or not
+
+    """
+    algo, hash = query.parse_hash(q)
+    found = backend.content_find(algo, hash)
+    return {'found': found is not None}
 
 
 def lookup_hash_origin(q):
