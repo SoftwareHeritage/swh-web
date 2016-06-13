@@ -18,6 +18,7 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 
 
 class ApiTestCase(test_app.SWHApiTestCase):
+
     @istest
     def generic_api_lookup_nothing_is_found(self):
         # given
@@ -287,10 +288,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_search(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {
-            'found': {
-                'sha1': 'or something'
-            }
+        mock_service.search_hash.return_value = {'found': True}
+
+        expected_result = {
+            'search_stats': {'nbfiles': 1, 'pct': 100},
+            'search_res': [{'filename': None,
+                            'sha1': 'sha1:blah',
+                            'found': True}]
         }
 
         # when
@@ -298,20 +302,17 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
+
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'found': True})
+        self.assertEquals(response_data, expected_result)
+        mock_service.search_hash.assert_called_once_with('sha1:blah')
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:blah')
-
+    """
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_as_yaml(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {
-            'found': {
-                'sha1': 'sha1 hash'
-            }
-        }
+        mock_service.search_hash.return_value = {'found': True}
 
         # when
         rv = self.app.get('/api/1/search/sha1:halb/',
@@ -323,13 +324,22 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = yaml.load(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {'found': True})
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:halb')
+        mock_service.search_hash.assert_called_once_with('sha1:halb')
+    """
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_not_found(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {}
+        mock_service.search_hash.return_value = {'found': False,
+                                                 'algo': 'sha1'}
+
+        expected_result = {
+            'search_stats': {'nbfiles': 1, 'pct': 0},
+            'search_res': [{'filename': None,
+                            'sha1': 'sha1:halb',
+                            'found': False}]
+        }
 
         # when
         rv = self.app.get('/api/1/search/sha1:halb/')
@@ -337,9 +347,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'found': False})
+        self.assertEquals(response_data, expected_result)
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:halb')
+        mock_service.search_hash.assert_called_once_with('sha1:halb')
 
     @patch('swh.web.ui.views.api.service')
     @istest
