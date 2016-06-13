@@ -26,78 +26,74 @@ class SearchView(test_app.SWHViewTestCase):
         rv = self.client.get('/search/')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('messages'), [])
-        self.assertEqual(self.get_context_variable('responses'), [])
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('search_res'), None)
         self.assert_template_used('upload_and_search.html')
 
     @patch('swh.web.ui.views.browse.service')
     @istest
     def search_get_query_hash_not_found(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {'found': None}
+        mock_service.search_hash.return_value = {'found': False}
 
         # when
         rv = self.client.get('/search/?q=sha1:456')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1:456')
-        self.assertEqual(self.get_context_variable('messages'), [])
-        self.assertEqual(self.get_context_variable('responses'), [
-            {'filename': 'User submitted hash',
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('search_res'), [
+            {'filename': None,
              'sha1': 'sha1:456',
              'found': False}])
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:456')
+        mock_service.search_hash.assert_called_once_with('sha1:456')
 
     @patch('swh.web.ui.views.browse.service')
     @istest
     def search_get_query_hash_bad_input(self, mock_service):
         # given
-        mock_service.lookup_hash.side_effect = BadInputExc('error msg')
+        mock_service.search_hash.side_effect = BadInputExc('error msg')
 
         # when
         rv = self.client.get('/search/?q=sha1_git:789')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1_git:789')
-        self.assertEqual(self.get_context_variable('messages'), ['error msg'])
-        self.assertEqual(self.get_context_variable('responses'), [])
+        self.assertEqual(self.get_context_variable('message'), 'error msg')
+        self.assertEqual(self.get_context_variable('search_res'), None)
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.lookup_hash.assert_called_once_with('sha1_git:789')
+        mock_service.search_hash.assert_called_once_with('sha1_git:789')
 
     @patch('swh.web.ui.views.browse.service')
     @istest
     def search_get_query_hash_found(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {'found': True}
+        mock_service.search_hash.return_value = {'found': True}
 
         # when
         rv = self.client.get('/search/?q=sha1:123')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1:123')
-        self.assertEqual(self.get_context_variable('messages'), [])
-        self.assertEqual(len(self.get_context_variable('responses')), 1)
-        resp = self.get_context_variable('responses')[0]
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(len(self.get_context_variable('search_res')), 1)
+        resp = self.get_context_variable('search_res')[0]
         self.assertTrue(resp is not None)
         self.assertEqual(resp['sha1'], 'sha1:123')
         self.assertEqual(resp['found'], True)
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:123')
+        mock_service.search_hash.assert_called_once_with('sha1:123')
 
-    @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_post_hashes_bad_input(self, mock_request,
-                                     mock_service):
+    def search_post_hashes_bad_input(self, mock_api, mock_request):
         # given
         mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
                              'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
-        mock_service.lookup_multiple_hashes.side_effect = BadInputExc(
+        mock_api.api_search.side_effect = BadInputExc(
             'error bad input')
 
         # when (mock_request completes the post request)
@@ -107,82 +103,83 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('search_stats'),
                          {'nbfiles': 0, 'pct': 0})
-        self.assertEqual(self.get_context_variable('responses'), [])
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['error bad input'])
+        self.assertEqual(self.get_context_variable('search_res'), None)
+        self.assertEqual(self.get_context_variable('message'),
+                         'error bad input')
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.upload_and_search.called = True
-
-    @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_post_hashes_none(self, mock_request, mock_service):
+    def search_post_hashes_none(self, mock_api, mock_request):
         # given
         mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
                              'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
-        mock_service.lookup_multiple_hashes.return_value = [
-            {'filename': 'a',
-             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-             'found': False},
-            {'filename': 'b',
-             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
-             'found': False}
-        ]
+        mock_api.api_search.return_value = {
+            'search_stats': {'nbfiles': 2, 'pct': 0},
+            'search_res': [{'filename': 'a',
+                            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+                            'found': False},
+                           {'filename': 'b',
+                            'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+                            'found': False}]}
 
         # when (mock_request completes the post request)
         rv = self.client.post('/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(len(self.get_context_variable('responses')), 2)
+        self.assertIsNotNone(self.get_context_variable('search_res'))
         self.assertTrue(self.get_context_variable('search_stats') is not None)
+        self.assertEqual(len(self.get_context_variable('search_res')), 2)
+
         stats = self.get_context_variable('search_stats')
         self.assertEqual(stats['nbfiles'], 2)
         self.assertEqual(stats['pct'], 0)
-        a, b = self.get_context_variable('responses')
+
+        a, b = self.get_context_variable('search_res')
         self.assertEqual(a['found'], False)
         self.assertEqual(b['found'], False)
-        self.assertEqual(self.get_context_variable('messages'), [])
+        self.assertEqual(self.get_context_variable('message'), '')
+
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.upload_and_search.called = True
-
-    @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_post_hashes_some(self, mock_request, mock_service):
+    def search_post_hashes_some(self, mock_api, mock_request):
         # given
         mock_request.form = {'a': '456caf10e9535160d90e874b45aa426de762f19f',
                              'b': '745bab676c8f3cec8016e0c39ea61cf57e518865'}
         mock_request.method = 'POST'
-        mock_service.lookup_multiple_hashes.return_value = [
-            {'filename': 'a',
-             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-             'found': False},
-            {'filename': 'b',
-             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
-             'found': True}
-        ]
+        mock_api.api_search.return_value = {
+            'search_stats': {'nbfiles': 2, 'pct': 50},
+            'search_res': [{'filename': 'a',
+                            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+                            'found': False},
+                           {'filename': 'b',
+                            'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+                            'found': True}]}
 
         # when (mock_request completes the post request)
         rv = self.client.post('/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(len(self.get_context_variable('responses')), 2)
+        self.assertIsNotNone(self.get_context_variable('search_res'))
+        self.assertEqual(len(self.get_context_variable('search_res')), 2)
         self.assertTrue(self.get_context_variable('search_stats') is not None)
+
         stats = self.get_context_variable('search_stats')
         self.assertEqual(stats['nbfiles'], 2)
         self.assertEqual(stats['pct'], 50)
-        self.assertEqual(self.get_context_variable('messages'), [])
-        a, b = self.get_context_variable('responses')
+        self.assertEqual(self.get_context_variable('message'), '')
+
+        a, b = self.get_context_variable('search_res')
         self.assertEqual(a['found'], False)
         self.assertEqual(b['found'], True)
         self.assert_template_used('upload_and_search.html')
-
-        mock_service.upload_and_search.called = True
 
 
 class ContentView(test_app.SWHViewTestCase):

@@ -38,55 +38,42 @@ def search():
     TODO:
         Batch-process with all checksums, not just sha1
     """
-    env = {'q': None,
-           'search_stats': None,
-           'responses': None,
-           'messages': []}
 
-    search_stats = None
-    responses = []
-    messages = []
+    env = {'search_res': None,
+           'search_stats': None,
+           'message': []}
+
+    search_stats = {'nbfiles': 0, 'pct': 0}
+    search_res = None
+    message = ''
 
     # Get with a single hash request
     if request.method == 'GET':
         data = request.args
         q = data.get('q')
-        env['q'] = q
         if q:
             try:
-                search_stats = {'nbfiles': 0, 'pct': 0}
-                r = service.lookup_hash(q)
-                responses.append({'filename': 'User submitted hash',
-                                  'sha1': q,
-                                  'found': r.get('found') is not None})
+                r = service.search_hash(q)
+                search_res = [{'filename': None,
+                               'sha1': q,
+                               'found': r['found']}]
                 search_stats['nbfiles'] = 1
-                search_stats['pct'] = 100 if r.get('found') is not None else 0
+                search_stats['pct'] = 100 if r['found'] else 0
             except BadInputExc as e:
-                messages.append(str(e))
+                message = str(e)
 
-    # POST form submission with many hash requests
+    # Post form submission with many hash requests
     elif request.method == 'POST':
-        data = request.form
-        search_stats = {'nbfiles': 0, 'pct': 0}
-        queries = []
-        # Remove potential inputs with no associated value
-        for k, v in data.items():
-            if v is not None and v != '':
-                queries.append({'filename': k, 'sha1': v})
-
-        if len(queries) > 0:
-            try:
-                lookup = service.lookup_multiple_hashes(queries)
-                nbfound = len([x for x in lookup if x['found']])
-                responses = lookup
-                search_stats['nbfiles'] = len(queries)
-                search_stats['pct'] = (nbfound / len(queries))*100
-            except BadInputExc as e:
-                messages.append(str(e))
+        try:
+            search = api.api_search(None)
+            search_res = search['search_res']
+            search_stats = search['search_stats']
+        except BadInputExc as e:
+            message = str(e)
 
     env['search_stats'] = search_stats
-    env['responses'] = responses
-    env['messages'] = messages
+    env['search_res'] = search_res
+    env['message'] = message
     return render_template('upload_and_search.html', **env)
 
 
