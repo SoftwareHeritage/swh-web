@@ -53,12 +53,9 @@ def search():
         q = data.get('q')
         if q:
             try:
-                r = service.search_hash(q)
-                search_res = [{'filename': None,
-                               'sha1': q,
-                               'found': r['found']}]
-                search_stats['nbfiles'] = 1
-                search_stats['pct'] = 100 if r['found'] else 0
+                search = api.api_search(q)
+                search_res = search['search_res']
+                search_stats = search['search_stats']
             except BadInputExc as e:
                 message = str(e)
 

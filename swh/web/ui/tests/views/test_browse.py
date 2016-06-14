@@ -30,11 +30,16 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('search_res'), None)
         self.assert_template_used('upload_and_search.html')
 
-    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_get_query_hash_not_found(self, mock_service):
+    def search_get_query_hash_not_found(self, mock_api):
         # given
-        mock_service.search_hash.return_value = {'found': False}
+        mock_api.api_search.return_value = {
+            'search_res': [{
+                'filename': None,
+                'sha1': 'sha1:456',
+                'found': False}],
+            'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
         rv = self.client.get('/search/?q=sha1:456')
@@ -47,13 +52,13 @@ class SearchView(test_app.SWHViewTestCase):
              'found': False}])
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.search_hash.assert_called_once_with('sha1:456')
+        mock_api.api_search.assert_called_once_with('sha1:456')
 
-    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_get_query_hash_bad_input(self, mock_service):
+    def search_get_query_hash_bad_input(self, mock_api):
         # given
-        mock_service.search_hash.side_effect = BadInputExc('error msg')
+        mock_api.api_search.side_effect = BadInputExc('error msg')
 
         # when
         rv = self.client.get('/search/?q=sha1_git:789')
@@ -63,13 +68,18 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('search_res'), None)
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.search_hash.assert_called_once_with('sha1_git:789')
+        mock_api.api_search.assert_called_once_with('sha1_git:789')
 
-    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_get_query_hash_found(self, mock_service):
+    def search_get_query_hash_found(self, mock_api):
         # given
-        mock_service.search_hash.return_value = {'found': True}
+        mock_api.api_search.return_value = {
+            'search_res': [{
+                'filename': None,
+                'sha1': 'sha1:123',
+                'found': True}],
+            'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
         rv = self.client.get('/search/?q=sha1:123')
@@ -83,7 +93,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(resp['found'], True)
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.search_hash.assert_called_once_with('sha1:123')
+        mock_api.api_search.assert_called_once_with('sha1:123')
 
     @patch('swh.web.ui.views.browse.request')
     @patch('swh.web.ui.views.browse.api')
