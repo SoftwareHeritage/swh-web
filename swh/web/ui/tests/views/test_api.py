@@ -307,12 +307,17 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, expected_result)
         mock_service.search_hash.assert_called_once_with('sha1:blah')
 
-    """
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_as_yaml(self, mock_service):
         # given
         mock_service.search_hash.return_value = {'found': True}
+        expected_result = {
+            'search_stats': {'nbfiles': 1, 'pct': 100},
+            'search_res': [{'filename': None,
+                            'sha1': 'sha1:halb',
+                            'found': True}]
+        }
 
         # when
         rv = self.app.get('/api/1/search/sha1:halb/',
@@ -322,10 +327,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/yaml')
 
         response_data = yaml.load(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'found': True})
+        self.assertEquals(response_data, expected_result)
 
         mock_service.search_hash.assert_called_once_with('sha1:halb')
-    """
 
     @patch('swh.web.ui.views.api.service')
     @istest
