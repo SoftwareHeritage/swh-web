@@ -74,14 +74,28 @@ def lookup_hash(q):
 
     Args: query string of the form <hash_algo:hash>
 
-    Returns: Dict with key found to True or False, according to
-        whether the checksum is present or not
+    Returns: Dict with key found containing the hash info if the
+    hash is present, None if not.
 
     """
     algo, hash = query.parse_hash(q)
     found = backend.content_find(algo, hash)
     return {'found': found,
             'algo': algo}
+
+
+def search_hash(q):
+    """Checks if the storage contains a given content checksum
+
+    Args: query string of the form <hash_algo:hash>
+
+    Returns: Dict with key found to True or False, according to
+        whether the checksum is present or not
+
+    """
+    algo, hash = query.parse_hash(q)
+    found = backend.content_find(algo, hash)
+    return {'found': found is not None}
 
 
 def lookup_hash_origin(q):
@@ -215,8 +229,38 @@ def lookup_revision(rev_sha1_git):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    res = backend.revision_get(sha1_git_bin)
-    return converters.from_revision(res)
+    revision = backend.revision_get(sha1_git_bin)
+    return converters.from_revision(revision)
+
+
+def lookup_revision_message(rev_sha1_git):
+    """Return the raw message of the revision with sha1 revision_sha1_git.
+
+    Args:
+        revision_sha1_git: The revision's sha1 as hexadecimal
+
+    Returns:
+        Decoded revision message as dict {'message': <the_message>}
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+        NotFoundExc if the revision is not found, or if it has no message
+
+    """
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        rev_sha1_git,
+        ['sha1'],
+        'Only sha1_git is supported.')
+
+    revision = backend.revision_get(sha1_git_bin)
+    if not revision:
+        raise NotFoundExc('Revision with sha1_git %s not found.'
+                          % rev_sha1_git)
+    if 'message' not in revision:
+        raise NotFoundExc('No message for revision with sha1_git %s.'
+                          % rev_sha1_git)
+    res = {'message': revision['message']}
+    return res
 
 
 def lookup_revision_by(origin_id,
@@ -261,6 +305,31 @@ def lookup_revision_log(rev_sha1_git, limit=100):
         'Only sha1_git is supported.')
 
     revision_entries = backend.revision_log(sha1_git_bin, limit)
+    return map(converters.from_revision, revision_entries)
+
+
+def lookup_revision_log_by(origin_id, branch_name, timestamp):
+    """Return information about the revision with sha1 revision_sha1_git.
+
+    Args:
+        origin_id: origin of the revision
+        branch_name: revision's branch
+        timestamp: revision's time frame
+        limit: the maximum number of revisions returned
+
+    Returns:
+        Revision information as dict.
+
+    Raises:
+        NotFoundExc if no revision corresponds to the criterion
+        NotFoundExc if the corresponding revision has no log
+
+    """
+    revision_entries = backend.revision_log_by(origin_id,
+                                               branch_name,
+                                               timestamp)
+    if not revision_entries:
+        return None
     return map(converters.from_revision, revision_entries)
 
 

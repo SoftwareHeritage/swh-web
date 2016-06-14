@@ -4,7 +4,12 @@
 {{ message }}
 {% if ls is not none %}
   {% for e in files %}
-    <div><p><a class="link{{e.type}}" href="{{e.target_url}}">{{ e.name }}</a></p></div>
+<div>
+  <p>
+    <a class="link{{e.type}}" href="{{e.target_url}}">{{ e.name }}</a>
+    {% if 'decoding_failures' in e %}(some decoding errors){% endif %}
+  </p>
+</div>
   {% endfor %}
 {% endif %}
 {% endblock %}

@@ -115,7 +115,8 @@ def parse_timestamp(timestamp):
     """Given a time or timestamp (as string), parse the result as datetime.
 
     Returns:
-        datetime result of parsing values.
+        a timezone-aware datetime representing the parsed value. If the parsed
+        value doesn't specify a timezone, UTC is assumed.
 
     Samples:
         - 2016-01-12
@@ -123,10 +124,14 @@ def parse_timestamp(timestamp):
         - Today is January 1, 2047 at 8:21:00AM
         - 1452591542
     """
+    default_timestamp = datetime.datetime.utcfromtimestamp(0).replace(
+        tzinfo=datetime.timezone.utc)
     try:
-        res = parser.parse(timestamp, ignoretz=False, fuzzy=True)
+        res = parser.parse(timestamp, ignoretz=False, fuzzy=True,
+                           default=default_timestamp)
     except:
-        res = datetime.datetime.fromtimestamp(float(timestamp))
+        res = datetime.datetime.utcfromtimestamp(float(timestamp)).replace(
+            tzinfo=datetime.timezone.utc)
     return res
 
 
@@ -241,5 +246,10 @@ def enrich_revision(revision, context=None):
                                           sha1_git=child))
 
         revision['children_urls'] = children
+
+    if 'message_decoding_failed' in revision:
+        revision['message_url'] = flask.url_for(
+            'api_revision_raw_message',
+            sha1_git=revision['id'])
 
     return revision

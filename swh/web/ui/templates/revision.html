@@ -32,7 +32,12 @@
     {% if revision['author'] is not none %}
            <div class="row">
               <div class="col-md-2">Author</div>
-              <div class="col-md-6"><p><a href="{{ revision['author_url'] }}">{{ revision['author']['name'] }}</a></p></div>
+              <div class="col-md-6">
+		<p>
+		  <a href="{{ revision['author_url'] }}">{{ revision['author']['name'] }}</a>
+		  {% if 'decoding_failures' in revision['author'] %}(some decoding failed){% endif %}
+		</p>
+	      </div>
            </div>
            <div class="row">
               <div class="col-md-2">Date</div>
@@ -43,7 +48,12 @@
     {% if revision['committer'] is not none %}
            <div class="row">
               <div class="col-md-2">Committer</div>
-              <div class="col-md-6"><p><a href="{{ revision['committer_url'] }}">{{ revision['committer']['name'] }}</a></p></div>
+              <div class="col-md-6">
+		<p>
+		  <a href="{{ revision['committer_url'] }}">{{ revision['committer']['name'] }}</a>
+		  {% if 'decoding_failures' in revision['committer'] %}(some decoding failed){% endif %}
+		</p>
+	      </div>
            </div>
            <div class="row">
               <div class="col-md-2">Committer Date</div>
@@ -55,6 +65,16 @@
             <div class="row">
               <div class="col-md-2">Message</div>
               <div class="col-md-6"><pre>{{ revision['message'] }}</pre></div>
+            </div>
+    {% elif revision['message_encoding_failed'] %}
+	    <div class="row">
+              <div class="col-md-2">Message</div>
+              <div class="col-md-6"><a href="{{ revision['message_url'] }}">Download raw message</a></div>
+            </div
+    {% else %}
+            <div class="row">
+              <div class="col-md-2">Message</div>
+              <div class="col-md-6">No message found.</div>
             </div>
     {% endif %}
 
@@ -77,6 +97,11 @@
          </div>
         {% endif %}
     {% endfor %}
+    {% if 'decoding_failures' in revision %}
+    <div class="row">
+      <div class="col-md-10">(some decoding failed)</div>
+    </div>
+    {% endif %}
 
 </div>
 {% endif %}

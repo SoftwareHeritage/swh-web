@@ -100,6 +100,33 @@ class ConvertersTestCase(unittest.TestCase):
         self.assertEquals(expected_output, actual_output)
 
     @istest
+    def from_swh_edge_cases_convert_invalid_utf8_bytes(self):
+        some_input = {
+            'a': 'something',
+            'b': 'someone',
+            'c': b'a name \xff',
+            'd': b'an email \xff',
+        }
+
+        expected_output = {
+            'a': 'something',
+            'b': 'someone',
+            'c': 'a name \\xff',
+            'd': 'an email \\xff',
+            'decoding_failures': ['c', 'd']
+        }
+
+        actual_output = converters.from_swh(some_input,
+                                            hashess={'a', 'b'},
+                                            bytess={'c', 'd'})
+        for v in ['a', 'b', 'c', 'd']:
+            self.assertEqual(expected_output[v], actual_output[v])
+        self.assertEqual(len(expected_output['decoding_failures']),
+                         len(actual_output['decoding_failures']))
+        for v in expected_output['decoding_failures']:
+            self.assertTrue(v in actual_output['decoding_failures'])
+
+    @istest
     def from_swh_empty(self):
         # when
         self.assertEquals({}, converters.from_swh({}))
@@ -151,6 +178,7 @@ class ConvertersTestCase(unittest.TestCase):
             },
             'author': {
                 'name': b'author name',
+                'fullname': b'Author Name author@email',
                 'email': b'author@email',
             },
             'name': b'v0.0.1',
@@ -165,6 +193,7 @@ class ConvertersTestCase(unittest.TestCase):
             'date': '2015-01-01T22:00:00+00:00',
             'author': {
                 'name': 'author name',
+                'fullname': 'Author Name author@email',
                 'email': 'author@email',
             },
             'name': 'v0.0.1',
@@ -198,6 +227,7 @@ class ConvertersTestCase(unittest.TestCase):
             'synthetic': False,
             'author': {
                 'name': b'bob',
+                'fullname': b'Bob bob@alice.net',
                 'email': b'bob@alice.net',
             },
         }
@@ -211,6 +241,7 @@ class ConvertersTestCase(unittest.TestCase):
             'synthetic': False,
             'author': {
                 'name': 'bob',
+                'fullname': 'Bob bob@alice.net',
                 'email': 'bob@alice.net',
             },
         }
@@ -230,10 +261,12 @@ class ConvertersTestCase(unittest.TestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'Software Heritage',
+                'fullname': b'robot robot@softwareheritage.org',
                 'email': b'robot@softwareheritage.org',
             },
             'committer': {
                 'name': b'Software Heritage',
+                'fullname': b'robot robot@softwareheritage.org',
                 'email': b'robot@softwareheritage.org',
             },
             'message': b'synthetic revision message',
@@ -281,13 +314,116 @@ class ConvertersTestCase(unittest.TestCase):
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
             'author': {
                 'name': 'Software Heritage',
+                'fullname': 'robot robot@softwareheritage.org',
                 'email': 'robot@softwareheritage.org',
             },
             'committer': {
                 'name': 'Software Heritage',
+                'fullname': 'robot robot@softwareheritage.org',
                 'email': 'robot@softwareheritage.org',
             },
             'message': 'synthetic revision message',
+            'date': "2000-01-17T11:23:54+00:00",
+            'committer_date': "2000-01-17T11:23:54+00:00",
+            'children': [
+                '123546353ed3480476f032475e7c244eff7371d5'
+            ],
+            'parents': [
+                '29d8be353ed3480476f032475e7c244eff7371d5',
+                '30d8be353ed3480476f032475e7c244eff7371d5'
+            ],
+            'type': 'tar',
+            'synthetic': True,
+            'metadata': {
+                'original_artifact': [{
+                    'archive_type': 'tar',
+                    'name': 'webbase-5.7.0.tar.gz',
+                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
+                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
+                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
+                    '309d36484e7edf7bb912'
+                }]
+            },
+        }
+
+        # when
+        actual_revision = converters.from_revision(revision_input)
+
+        # then
+        self.assertEqual(actual_revision, expected_revision)
+
+    @istest
+    def from_revision_invalid(self):
+        revision_input = {
+            'id': hashutil.hex_to_hash(
+                '18d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hashutil.hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'Software Heritage',
+                'fullname': b'robot robot@softwareheritage.org',
+                'email': b'robot@softwareheritage.org',
+            },
+            'committer': {
+                'name': b'Software Heritage',
+                'fullname': b'robot robot@softwareheritage.org',
+                'email': b'robot@softwareheritage.org',
+            },
+            'message': b'invalid message \xff',
+            'date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'committer_date': {
+                'timestamp': datetime.datetime(
+                    2000, 1, 17, 11, 23, 54,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'offset': 0,
+                'negative_utc': False,
+            },
+            'synthetic': True,
+            'type': 'tar',
+            'parents': [
+                hashutil.hex_to_hash(
+                    '29d8be353ed3480476f032475e7c244eff7371d5'),
+                hashutil.hex_to_hash(
+                    '30d8be353ed3480476f032475e7c244eff7371d5')
+            ],
+            'children': [
+                hashutil.hex_to_hash(
+                    '123546353ed3480476f032475e7c244eff7371d5'),
+            ],
+            'metadata': {
+                'original_artifact': [{
+                    'archive_type': 'tar',
+                    'name': 'webbase-5.7.0.tar.gz',
+                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
+                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
+                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
+                    '309d36484e7edf7bb912',
+
+                }]
+            },
+        }
+
+        expected_revision = {
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'Software Heritage',
+                'fullname': 'robot robot@softwareheritage.org',
+                'email': 'robot@softwareheritage.org',
+            },
+            'committer': {
+                'name': 'Software Heritage',
+                'fullname': 'robot robot@softwareheritage.org',
+                'email': 'robot@softwareheritage.org',
+            },
+            'message': None,
+            'message_decoding_failed': True,
             'date': "2000-01-17T11:23:54+00:00",
             'committer_date': "2000-01-17T11:23:54+00:00",
             'children': [
@@ -354,6 +490,7 @@ class ConvertersTestCase(unittest.TestCase):
             'id': 10,
             'anything': 'else',
             'name': b'bob',
+            'fullname': b'bob bob@alice.net',
             'email': b'bob@foo.alice',
         }
 
@@ -361,6 +498,7 @@ class ConvertersTestCase(unittest.TestCase):
             'id': 10,
             'anything': 'else',
             'name': 'bob',
+            'fullname': 'bob bob@alice.net',
             'email': 'bob@foo.alice',
         }
 
