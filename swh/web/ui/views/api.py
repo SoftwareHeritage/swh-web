@@ -25,7 +25,7 @@ def api_stats():
 
 @app.route('/api/1/search/', methods=['POST'])
 @app.route('/api/1/search/<string:q>/')
-def api_search(q):
+def api_search(q=None):
     """Search a content per hash.
 
     Args:
@@ -59,17 +59,20 @@ def api_search(q):
 
     # Post form submission with many hash requests
     elif request.method == 'POST':
+        import pprint
+        pprint.pprint(request.form)
         data = request.form
         queries = []
         # Remove potential inputs with no associated value
         for k, v in data.items():
             if v is not None:
-                if k == 'q':
+                if k == 'q' and len(v) > 0:
                     queries.append({'filename': None, 'sha1': v})
                 elif v != '':
                     queries.append({'filename': k, 'sha1': v})
 
         if len(queries) > 0:
+            pprint.pprint(queries)
             lookup = service.lookup_multiple_hashes(queries)
             result = []
             for el in lookup:
