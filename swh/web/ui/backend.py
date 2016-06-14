@@ -183,6 +183,36 @@ def revision_log(sha1_git_bin, limit=100):
     return main.storage().revision_log([sha1_git_bin], limit)
 
 
+def revision_log_by(origin_id, branch_name, ts, limit=100):
+    """Return information about the revision matching the timestamp
+    ts, from origin origin_id, in branch branch_name.
+
+    Args:
+        origin_id: origin of the revision
+        - branch_name: revision's branch.
+        - timestamp: revision's time frame.
+
+    Returns:
+        Information for the revision matching the criterions.
+
+    """
+    # Disable pending RemoteStorage opening revision_log_by
+    """
+    if not ts and branch_name == 'refs/heads/master':
+        return main.storage().revision_log_by(origin_id)
+    """
+
+    rev = main.storage().revision_get_by(origin_id,
+                                         branch_name,
+                                         timestamp=ts,
+                                         limit=1)
+    if not rev:
+        return None
+
+    rev_sha1s_bin = [revision['id'] for revision in rev]
+    return main.storage().revision_log(rev_sha1s_bin, limit)
+
+
 def stat_counters():
     """Return the stat counters for Software Heritage
 

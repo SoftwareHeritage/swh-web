@@ -454,6 +454,62 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.revision_log.assert_called_with([sha1_bin], 100)
 
     @istest
+    def revision_log_by(self):
+        # given
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '28d8be353ed3480476f032475e7c233eff7371d5')
+        stub_revision_log = [{
+            'id': sha1_bin,
+            'directory': hashutil.hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'bill & boule',
+                'email': b'bill@boule.org',
+            },
+            'committer': {
+                'name': b'boule & bill',
+                'email': b'boule@bill.org',
+            },
+            'message': b'elegant fix for bug 31415957',
+            'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'date_offset': 0,
+            'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+            'committer_date_offset': 0,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }]
+
+        self.storage.revision_get_by = MagicMock(return_value=[
+            {'id': sha1_bin}])
+        self.storage.revision_log = MagicMock(return_value=stub_revision_log)
+
+        # when
+        actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
+
+        # then
+        self.assertEqual(actual_log, stub_revision_log)
+        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+
+    @istest
+    def revision_log_by_norev(self):
+        # given
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '28d8be353ed3480476f032475e7c233eff7371d5')
+
+        self.storage.revision_get_by = MagicMock(return_value=None)
+
+        # when
+        actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
+
+        # then
+        self.assertEqual(actual_log, None)
+        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+
+    @istest
     def stat_counters(self):
         # given
         input_stats = {

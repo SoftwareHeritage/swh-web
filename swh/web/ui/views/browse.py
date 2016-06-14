@@ -38,55 +38,39 @@ def search():
     TODO:
         Batch-process with all checksums, not just sha1
     """
-    env = {'q': None,
-           'search_stats': None,
-           'responses': None,
-           'messages': []}
 
-    search_stats = None
-    responses = []
-    messages = []
+    env = {'search_res': None,
+           'search_stats': None,
+           'message': []}
+
+    search_stats = {'nbfiles': 0, 'pct': 0}
+    search_res = None
+    message = ''
 
     # Get with a single hash request
     if request.method == 'GET':
         data = request.args
         q = data.get('q')
-        env['q'] = q
         if q:
             try:
-                search_stats = {'nbfiles': 0, 'pct': 0}
-                r = service.lookup_hash(q)
-                responses.append({'filename': 'User submitted hash',
-                                  'sha1': q,
-                                  'found': r.get('found') is not None})
-                search_stats['nbfiles'] = 1
-                search_stats['pct'] = 100 if r.get('found') is not None else 0
+                search = api.api_search(q)
+                search_res = search['search_res']
+                search_stats = search['search_stats']
             except BadInputExc as e:
-                messages.append(str(e))
+                message = str(e)
 
-    # POST form submission with many hash requests
+    # Post form submission with many hash requests
     elif request.method == 'POST':
-        data = request.form
-        search_stats = {'nbfiles': 0, 'pct': 0}
-        queries = []
-        # Remove potential inputs with no associated value
-        for k, v in data.items():
-            if v is not None and v != '':
-                queries.append({'filename': k, 'sha1': v})
-
-        if len(queries) > 0:
-            try:
-                lookup = service.lookup_multiple_hashes(queries)
-                nbfound = len([x for x in lookup if x['found']])
-                responses = lookup
-                search_stats['nbfiles'] = len(queries)
-                search_stats['pct'] = (nbfound / len(queries))*100
-            except BadInputExc as e:
-                messages.append(str(e))
+        try:
+            search = api.api_search(None)
+            search_res = search['search_res']
+            search_stats = search['search_stats']
+        except BadInputExc as e:
+            message = str(e)
 
     env['search_stats'] = search_stats
-    env['responses'] = responses
-    env['messages'] = messages
+    env['search_res'] = search_res
+    env['message'] = message
     return render_template('upload_and_search.html', **env)
 
 
@@ -332,18 +316,75 @@ def browse_revision(sha1_git):
     return render_template('revision.html', **env)
 
 
+@app.route('/browse/revision/<string:sha1_git>/raw/')
+def browse_revision_raw_message(sha1_git):
+    """Given a sha1_git, display the corresponding revision's raw message.
+
+    """
+    return redirect(url_for('api_revision_raw_message', sha1_git=sha1_git))
+
+
 @app.route('/browse/revision/<string:sha1_git>/log/')
 @set_renderers(HTMLRenderer)
 def browse_revision_log(sha1_git):
-    """Browse revision with sha1_git.
+    """Browse revision with sha1_git's log.
 
     """
     env = {'sha1_git': sha1_git,
+           'sha1_url': '/browse/revision/%s/' % sha1_git,
            'message': None,
            'revisions': []}
 
     try:
         revisions = api.api_revision_log(sha1_git)
+        env['revisions'] = map(utils.prepare_data_for_view, revisions)
+    except (NotFoundExc, BadInputExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision-log.html', **env)
+
+
+@app.route('/browse/revision'
+           '/origin/log/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>/log/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>/log/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>/log/')
+@app.route('/browse/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>/log/')
+@set_renderers(HTMLRenderer)
+def browse_revision_log_by(origin_id,
+                           branch_name='refs/heads/master',
+                           timestamp=None):
+    """Browse the revision described by origin, branch name and timestamp's
+    log
+
+    Args:
+        origin_id: the revision's origin
+        branch_name: the revision's branch
+        timestamp: the requested timeframe for the revision
+
+    Returns:
+        The revision log of the described revision as a list of revisions
+        if it is found.
+    """
+    env = {'sha1_git': None,
+           'origin_id': origin_id,
+           'origin_url': '/browse/origin/%d/' % origin_id,
+           'branch_name': branch_name,
+           'timestamp': timestamp,
+           'message': None,
+           'revisions': []}
+
+    try:
+        revisions = api.api_revision_log_by(
+            origin_id, branch_name, timestamp)
         env['revisions'] = map(utils.prepare_data_for_view, revisions)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)

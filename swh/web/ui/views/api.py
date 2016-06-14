@@ -23,9 +23,9 @@ def api_stats():
     return service.stat_counters()
 
 
-@app.route('/api/1/search/')
+@app.route('/api/1/search/', methods=['POST'])
 @app.route('/api/1/search/<string:q>/')
-def api_search(q):
+def api_search(q=None):
     """Search a content per hash.
 
     Args:
@@ -42,8 +42,48 @@ def api_search(q):
         GET /api/1/search/sha1:bd819b5b28fcde3bf114d16a44ac46250da94ee5/
 
     """
-    r = service.lookup_hash(q).get('found')
-    return {'found': True if r else False}
+
+    response = {'search_res': None,
+                'search_stats': None}
+    search_stats = {'nbfiles': 0, 'pct': 0}
+    search_res = None
+
+    # Single hash request route
+    if q:
+        r = service.search_hash(q)
+        search_res = [{'filename': None,
+                       'sha1': q,
+                       'found': r['found']}]
+        search_stats['nbfiles'] = 1
+        search_stats['pct'] = 100 if r['found'] else 0
+
+    # Post form submission with many hash requests
+    elif request.method == 'POST':
+        data = request.form
+        queries = []
+        # Remove potential inputs with no associated value
+        for k, v in data.items():
+            if v is not None:
+                if k == 'q' and len(v) > 0:
+                    queries.append({'filename': None, 'sha1': v})
+                elif v != '':
+                    queries.append({'filename': k, 'sha1': v})
+
+        if len(queries) > 0:
+            lookup = service.lookup_multiple_hashes(queries)
+            result = []
+            for el in lookup:
+                result.append({'filename': el['filename'],
+                               'sha1': el['sha1'],
+                               'found': el['found']})
+            search_res = result
+            nbfound = len([x for x in lookup if x['found']])
+            search_stats['nbfiles'] = len(queries)
+            search_stats['pct'] = (nbfound / len(queries))*100
+
+    response['search_res'] = search_res
+    response['search_stats'] = search_stats
+    return response
 
 
 def _api_lookup(criteria,
@@ -492,6 +532,33 @@ def api_revision(sha1_git):
         enrich_fn=utils.enrich_revision)
 
 
+@app.route('/api/1/revision/<string:sha1_git>/raw/')
+def api_revision_raw_message(sha1_git):
+    """Return the raw data of the revision's message
+
+    Args:
+        sha1_git: the revision's hash
+
+    Returns:
+        The raw revision message, possibly in an illegible
+        format for humans, decoded in utf-8 by default.
+
+    Raises:
+        BadInputExc in case of unknown algo_hash or bad hash.
+        NotFoundExc if the revision is not found or the revision has no
+        message
+
+    Example:
+        GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e/raw/
+
+    """
+    raw = service.lookup_revision_message(sha1_git)
+    return Response(raw['message'],
+                    headers={'Content-disposition': 'attachment;'
+                             'filename=rev_%s_raw' % sha1_git},
+                    mimetype='application/octet-stream')
+
+
 @app.route('/api/1/revision/<string:sha1_git>/directory/')
 @app.route('/api/1/revision/<string:sha1_git>/directory/<path:dir_path>/')
 def api_revision_directory(sha1_git,
@@ -649,6 +716,56 @@ def api_revision_log(sha1_git):
                        lookup_fn=lookup_revision_log_with_limit,
                        error_msg_if_not_found=error_msg,
                        enrich_fn=utils.enrich_revision)
+
+
+@app.route('/api/1/revision'
+           '/origin/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/branch/<path:branch_name>'
+           '/ts/<string:ts>/log/')
+@app.route('/api/1/revision'
+           '/origin/<int:origin_id>'
+           '/ts/<string:ts>/log/')
+def api_revision_log_by(origin_id,
+                        branch_name='refs/heads/master',
+                        ts=None):
+    """Show all revisions (~git log) starting from the revision
+       described by its origin_id, optional branch name and timestamp.
+       The first element returned is the described revision.
+
+    Args:
+        origin_id: the revision's origin.
+        branch_name: the branch of the revision (optional, defaults to
+        master
+        ts: the requested timeframe near which the revision was created.
+        limit: optional query parameter to limit the revisions log
+        (default to 100).
+
+    Returns:
+        Information on the revision log if found.
+
+    Raises:
+        NotFoundExc if the revision is not found.
+    """
+    if ts:
+        ts = utils.parse_timestamp(ts)
+
+    error_msg = 'No revision matching origin %s ' % origin_id
+    error_msg += ', branch name %s' % branch_name
+    error_msg += (' and time stamp %s.' % ts) if ts else '.'
+    return _api_lookup(
+        origin_id,
+        service.lookup_revision_log_by,
+        error_msg,
+        utils.enrich_revision,
+        branch_name,
+        ts)
 
 
 @app.route('/api/1/directory/')

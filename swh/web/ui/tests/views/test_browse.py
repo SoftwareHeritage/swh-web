@@ -26,78 +26,84 @@ class SearchView(test_app.SWHViewTestCase):
         rv = self.client.get('/search/')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('messages'), [])
-        self.assertEqual(self.get_context_variable('responses'), [])
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('search_res'), None)
         self.assert_template_used('upload_and_search.html')
 
-    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_get_query_hash_not_found(self, mock_service):
+    def search_get_query_hash_not_found(self, mock_api):
         # given
-        mock_service.lookup_hash.return_value = {'found': None}
+        mock_api.api_search.return_value = {
+            'search_res': [{
+                'filename': None,
+                'sha1': 'sha1:456',
+                'found': False}],
+            'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
         rv = self.client.get('/search/?q=sha1:456')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1:456')
-        self.assertEqual(self.get_context_variable('messages'), [])
-        self.assertEqual(self.get_context_variable('responses'), [
-            {'filename': 'User submitted hash',
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('search_res'), [
+            {'filename': None,
              'sha1': 'sha1:456',
              'found': False}])
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:456')
+        mock_api.api_search.assert_called_once_with('sha1:456')
 
-    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_get_query_hash_bad_input(self, mock_service):
+    def search_get_query_hash_bad_input(self, mock_api):
         # given
-        mock_service.lookup_hash.side_effect = BadInputExc('error msg')
+        mock_api.api_search.side_effect = BadInputExc('error msg')
 
         # when
         rv = self.client.get('/search/?q=sha1_git:789')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1_git:789')
-        self.assertEqual(self.get_context_variable('messages'), ['error msg'])
-        self.assertEqual(self.get_context_variable('responses'), [])
+        self.assertEqual(self.get_context_variable('message'), 'error msg')
+        self.assertEqual(self.get_context_variable('search_res'), None)
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.lookup_hash.assert_called_once_with('sha1_git:789')
+        mock_api.api_search.assert_called_once_with('sha1_git:789')
 
-    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_get_query_hash_found(self, mock_service):
+    def search_get_query_hash_found(self, mock_api):
         # given
-        mock_service.lookup_hash.return_value = {'found': True}
+        mock_api.api_search.return_value = {
+            'search_res': [{
+                'filename': None,
+                'sha1': 'sha1:123',
+                'found': True}],
+            'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
         rv = self.client.get('/search/?q=sha1:123')
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('q'), 'sha1:123')
-        self.assertEqual(self.get_context_variable('messages'), [])
-        self.assertEqual(len(self.get_context_variable('responses')), 1)
-        resp = self.get_context_variable('responses')[0]
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(len(self.get_context_variable('search_res')), 1)
+        resp = self.get_context_variable('search_res')[0]
         self.assertTrue(resp is not None)
         self.assertEqual(resp['sha1'], 'sha1:123')
         self.assertEqual(resp['found'], True)
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:123')
+        mock_api.api_search.assert_called_once_with('sha1:123')
 
-    @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_post_hashes_bad_input(self, mock_request,
-                                     mock_service):
+    def search_post_hashes_bad_input(self, mock_api, mock_request):
         # given
         mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
                              'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
-        mock_service.lookup_multiple_hashes.side_effect = BadInputExc(
+        mock_api.api_search.side_effect = BadInputExc(
             'error bad input')
 
         # when (mock_request completes the post request)
@@ -107,82 +113,83 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('search_stats'),
                          {'nbfiles': 0, 'pct': 0})
-        self.assertEqual(self.get_context_variable('responses'), [])
-        self.assertEqual(self.get_context_variable('messages'),
-                         ['error bad input'])
+        self.assertEqual(self.get_context_variable('search_res'), None)
+        self.assertEqual(self.get_context_variable('message'),
+                         'error bad input')
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.upload_and_search.called = True
-
-    @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_post_hashes_none(self, mock_request, mock_service):
+    def search_post_hashes_none(self, mock_api, mock_request):
         # given
         mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
                              'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
-        mock_service.lookup_multiple_hashes.return_value = [
-            {'filename': 'a',
-             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-             'found': False},
-            {'filename': 'b',
-             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
-             'found': False}
-        ]
+        mock_api.api_search.return_value = {
+            'search_stats': {'nbfiles': 2, 'pct': 0},
+            'search_res': [{'filename': 'a',
+                            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+                            'found': False},
+                           {'filename': 'b',
+                            'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+                            'found': False}]}
 
         # when (mock_request completes the post request)
         rv = self.client.post('/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(len(self.get_context_variable('responses')), 2)
+        self.assertIsNotNone(self.get_context_variable('search_res'))
         self.assertTrue(self.get_context_variable('search_stats') is not None)
+        self.assertEqual(len(self.get_context_variable('search_res')), 2)
+
         stats = self.get_context_variable('search_stats')
         self.assertEqual(stats['nbfiles'], 2)
         self.assertEqual(stats['pct'], 0)
-        a, b = self.get_context_variable('responses')
+
+        a, b = self.get_context_variable('search_res')
         self.assertEqual(a['found'], False)
         self.assertEqual(b['found'], False)
-        self.assertEqual(self.get_context_variable('messages'), [])
+        self.assertEqual(self.get_context_variable('message'), '')
+
         self.assert_template_used('upload_and_search.html')
 
-        mock_service.upload_and_search.called = True
-
-    @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.request')
+    @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_post_hashes_some(self, mock_request, mock_service):
+    def search_post_hashes_some(self, mock_api, mock_request):
         # given
         mock_request.form = {'a': '456caf10e9535160d90e874b45aa426de762f19f',
                              'b': '745bab676c8f3cec8016e0c39ea61cf57e518865'}
         mock_request.method = 'POST'
-        mock_service.lookup_multiple_hashes.return_value = [
-            {'filename': 'a',
-             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-             'found': False},
-            {'filename': 'b',
-             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
-             'found': True}
-        ]
+        mock_api.api_search.return_value = {
+            'search_stats': {'nbfiles': 2, 'pct': 50},
+            'search_res': [{'filename': 'a',
+                            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
+                            'found': False},
+                           {'filename': 'b',
+                            'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
+                            'found': True}]}
 
         # when (mock_request completes the post request)
         rv = self.client.post('/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(len(self.get_context_variable('responses')), 2)
+        self.assertIsNotNone(self.get_context_variable('search_res'))
+        self.assertEqual(len(self.get_context_variable('search_res')), 2)
         self.assertTrue(self.get_context_variable('search_stats') is not None)
+
         stats = self.get_context_variable('search_stats')
         self.assertEqual(stats['nbfiles'], 2)
         self.assertEqual(stats['pct'], 50)
-        self.assertEqual(self.get_context_variable('messages'), [])
-        a, b = self.get_context_variable('responses')
+        self.assertEqual(self.get_context_variable('message'), '')
+
+        a, b = self.get_context_variable('search_res')
         self.assertEqual(a['found'], False)
         self.assertEqual(b['found'], True)
         self.assert_template_used('upload_and_search.html')
-
-        mock_service.upload_and_search.called = True
 
 
 class ContentView(test_app.SWHViewTestCase):
@@ -839,6 +846,19 @@ class RevisionView(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.browse.api')
     @istest
+    def browse_revision_raw_message(self, mock_api):
+        # given
+        sha1 = 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754'
+
+        # when
+        rv = self.client.get('/browse/revision/'
+                             'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754/raw/')
+
+        self.assertRedirects(
+            rv, '/api/1/revision/%s/raw/' % sha1)
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
     def browse_revision_log_ko_not_found(self, mock_api):
         # given
         mock_api.api_revision_log.side_effect = NotFoundExc('Not found!')
@@ -916,6 +936,88 @@ class RevisionView(test_app.SWHViewTestCase):
         self.assertIsNone(self.get_context_variable('message'))
 
         mock_api.api_revision_log.assert_called_once_with('426')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_revision_log_by_ko_not_found(self, mock_api):
+        # given
+        mock_api.api_revision_log_by.side_effect = NotFoundExc('Not found!')
+
+        # when
+        rv = self.client.get('/browse/revision/origin/9/log/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('revision-log.html')
+        self.assertEqual(self.get_context_variable('origin_id'), 9)
+        self.assertEqual(
+            self.get_context_variable('message'),
+            'Not found!')
+        self.assertEqual(self.get_context_variable('revisions'), [])
+
+        mock_api.api_revision_log_by.assert_called_once_with(
+            9, 'refs/heads/master', None)
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_revision_log_by_ko_bad_input(self, mock_api):
+        # given
+        mock_api.api_revision_log.side_effect = BadInputExc('wrong input!')
+
+        # when
+        rv = self.client.get('/browse/revision/abcd/log/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('revision-log.html')
+        self.assertEqual(self.get_context_variable('sha1_git'), 'abcd')
+        self.assertEqual(
+            self.get_context_variable('message'),
+            'wrong input!')
+        self.assertEqual(self.get_context_variable('revisions'), [])
+
+        mock_api.api_revision_log.assert_called_once_with('abcd')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_revision_log_by(self, mock_api):
+        # given
+        stub_revisions = [{
+            'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
+            'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+            'committer': {
+                'email': 'torvalds@linux-foundation.org',
+                'name': 'Linus Torvalds'
+            },
+            'committer_date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+            'type': 'git',
+            'author': {
+                'email': 'torvalds@linux-foundation.org',
+                'name': 'Linus Torvalds'
+            },
+            'message': 'Linux 4.2-rc1\n',
+            'synthetic': False,
+            'directory_url': '/api/1/directory/'
+            '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b/',
+            'parent_url': [
+                '/api/1/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf/'
+            ],
+        }]
+        mock_api.api_revision_log_by.return_value = stub_revisions
+
+        # when
+        rv = self.client.get('/browse/revision/origin/2/log/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('revision-log.html')
+        self.assertEqual(self.get_context_variable('origin_id'), 2)
+        self.assertTrue(
+            isinstance(self.get_context_variable('revisions'), map))
+        self.assertIsNone(self.get_context_variable('message'))
+
+        mock_api.api_revision_log_by.assert_called_once_with(
+            2, 'refs/heads/master', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest

@@ -18,6 +18,11 @@
          </div>
          {% endif %}
        {% endfor %}
+         {% if 'decoding_failures' in entity %}
+	 <div class="row">
+	   <div class="col-md-10">(some decoding errors)</div>
+	 </div>
+	 {% endif %}
     {% endfor %}
   {% endif %}
 {% endblock %}

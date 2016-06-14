@@ -13,10 +13,20 @@
         {% if result['content'] is not none %}
             {% for e in result['content'] %}
               {% if e.type == 'dir' %}
-              <div><p><a class="link{{e.type}}" href="{{e.dir_url}}">{{ e.name }}</a></p></div>
+		<div>
+		  <p>
+		    <a class="link{{e.type}}" href="{{e.dir_url}}">{{ e.name }}</a>
+		    {% if 'decoding_failures' in e %}(some decoding errors){% endif %}
+		  </p>
+		</div>
               {% else %}
-              <div><p><a class="link{{e.type}}" href="{{e.file_url}}">{{ e.name }}</a></p></div>
-              {% endif %}
+		<div>
+		  <p>
+		    <a class="link{{e.type}}" href="{{e.file_url}}">{{ e.name }}</a>
+    		    {% if 'decoding_failures' in e %}(some decoding errors){% endif %}
+		  </p>
+		</div>
+            {% endif %}
             {% endfor %}
         {% endif %}
     {% else %}
@@ -39,7 +49,12 @@
            <div class="col-md-2">data</div>
            <div class="col-md-10"><pre>{{ result['content']['data'] }}</pre></div>
         </div>
-        {% endif %}
+      {% endif %}
+      {% if 'decoding_failures' in result %}
+	<div class="row">
+	  <div class="col-md-10">(some decoding errors)</div>
+	</div>
+      {% endif %}
     {% endif %}
 {% endif %}
 {% endblock %}

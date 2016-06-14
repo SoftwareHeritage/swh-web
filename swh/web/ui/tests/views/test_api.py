@@ -18,6 +18,7 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 
 
 class ApiTestCase(test_app.SWHApiTestCase):
+
     @istest
     def generic_api_lookup_nothing_is_found(self):
         # given
@@ -287,10 +288,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_search(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {
-            'found': {
-                'sha1': 'or something'
-            }
+        mock_service.search_hash.return_value = {'found': True}
+
+        expected_result = {
+            'search_stats': {'nbfiles': 1, 'pct': 100},
+            'search_res': [{'filename': None,
+                            'sha1': 'sha1:blah',
+                            'found': True}]
         }
 
         # when
@@ -298,19 +302,21 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
-        response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'found': True})
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:blah')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_result)
+        mock_service.search_hash.assert_called_once_with('sha1:blah')
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_as_yaml(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {
-            'found': {
-                'sha1': 'sha1 hash'
-            }
+        mock_service.search_hash.return_value = {'found': True}
+        expected_result = {
+            'search_stats': {'nbfiles': 1, 'pct': 100},
+            'search_res': [{'filename': None,
+                            'sha1': 'sha1:halb',
+                            'found': True}]
         }
 
         # when
@@ -321,15 +327,22 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/yaml')
 
         response_data = yaml.load(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'found': True})
+        self.assertEquals(response_data, expected_result)
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:halb')
+        mock_service.search_hash.assert_called_once_with('sha1:halb')
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_not_found(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {}
+        mock_service.search_hash.return_value = {'found': False}
+
+        expected_result = {
+            'search_stats': {'nbfiles': 1, 'pct': 0},
+            'search_res': [{'filename': None,
+                            'sha1': 'sha1:halb',
+                            'found': False}]
+        }
 
         # when
         rv = self.app.get('/api/1/search/sha1:halb/')
@@ -337,9 +350,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'found': False})
+        self.assertEquals(response_data, expected_result)
 
-        mock_service.lookup_hash.assert_called_once_with('sha1:halb')
+        mock_service.search_hash.assert_called_once_with('sha1:halb')
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -713,6 +726,70 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
             'error': 'Revision with sha1_git revision-0 not found.'})
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_raw_ok(self, mock_service):
+        # given
+        stub_revision = {'message': 'synthetic revision message'}
+
+        mock_service.lookup_revision_message.return_value = stub_revision
+
+        # when
+        rv = self.app.get('/api/1/revision/18d8be353ed3480476f032475e7c2'
+                          '33eff7371d5/raw/')
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/octet-stream')
+        self.assertEquals(rv.data, b'synthetic revision message')
+
+        mock_service.lookup_revision_message.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_raw_ok_no_msg(self, mock_service):
+        # given
+        mock_service.lookup_revision_message.side_effect = NotFoundExc(
+            'No message for revision')
+
+        # when
+        rv = self.app.get('/api/1/revision/'
+                          '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No message for revision'})
+
+        self.assertEquals
+        mock_service.lookup_revision_message.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_raw_ko_no_rev(self, mock_service):
+        # given
+        mock_service.lookup_revision_message.side_effect = NotFoundExc(
+            'No revision found')
+
+        # when
+        rv = self.app.get('/api/1/revision/'
+                          '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No revision found'})
+
+        mock_service.lookup_revision_message.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -1381,6 +1458,85 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         mock_service.lookup_revision_log.assert_called_once_with(
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 10)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_log_by(self, mock_service):
+        # given
+        stub_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+        mock_service.lookup_revision_log_by.return_value = stub_revisions
+
+        expected_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
+            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
+                           'f7371d5/log/',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a'
+                             '42b7e2a44e6/',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': [
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+            ],
+            'parent_urls': [
+                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
+                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+            ],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+
+        # when
+        rv = self.app.get('/api/1/revision/origin/1/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_revisions)
+
+        mock_service.lookup_revision_log_by.assert_called_once_with(
+            1, 'refs/heads/master', None)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_log_by_norev(self, mock_service):
+        # given
+        mock_service.lookup_revision_log_by.side_effect = NotFoundExc(
+            'No revision')
+
+        # when
+        rv = self.app.get('/api/1/revision/origin/1/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {'error': 'No revision'})
+
+        mock_service.lookup_revision_log_by.assert_called_once_with(
+            1, 'refs/heads/master', None)
 
     @patch('swh.web.ui.views.api.service')
     @istest
