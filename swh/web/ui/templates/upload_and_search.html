@@ -55,21 +55,25 @@
     {{ search_stats['nbfiles'] }} files.
   </label>
   {% endif %}
-  {% if responses is not none and responses %}
+  {% if search_res is not none %}
   <table id="results" class="table table-striped">
     <thead class="thead-default">
       <th>File name</th>
       <th>SHA1 checksum</th>
       <th>Result</th>
     </thead>
-    {% for resp in responses %}
+    {% for res in search_res %}
     <tr>
-      <td>{{ resp['filename'] }}</td>
-      {% if resp['found'] %}
-      <td><a href="{{ url_for('browse_content') }}sha1:{{ resp['sha1'] }}">{{ resp['sha1'] }}</a></td>
+      {% if res['filename'] is not none %}
+      <td>{{ res['filename'] }}</td>
+      {% else %}
+      <td>From text input</td>
+      {% endif %}
+      {% if res['found'] %}
+      <td><a href="{{ url_for('browse_content') }}sha1:{{ res['sha1'] }}">{{ res['sha1'] }}</a></td>
       <td><span class="glyphicon glyphicon-ok file-found"></span></td>
       {% else %}
-      <td>{{ resp['sha1'] }}</td>
+      <td>{{ res['sha1'] }}</td>
       <td><span class="glyphicon glyphicon-remove file-notfound"></span></td>
       {% endif %}
     </tr>
@@ -91,8 +95,8 @@
     $("#fileinput").inputclick($("#fileElem"));
     // Make the dropbox available for drag & drop
     $("#fileElem").filedialog($("#filelist"), $("#searchForm"));
-    $("#fileinput").filedrop($("#filelist"), $("#searchForm"));
     // Make the submission button receptive to files
+    $("#fileinput").filedrop($("#filelist"), $("#searchForm"));
   </script>
 </div>
 {% endblock %}

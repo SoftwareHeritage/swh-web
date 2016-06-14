@@ -6,6 +6,7 @@
 import datetime
 
 from swh.core import hashutil
+from swh.core.utils import decode_with_escape
 from swh.web.ui import utils
 
 
@@ -86,7 +87,14 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         elif key in hashess:
             new_dict[key] = utils.fmap(convert_hashes_bytes, value)
         elif key in bytess:
-            new_dict[key] = utils.fmap(convert_bytes, value)
+            try:
+                new_dict[key] = utils.fmap(convert_bytes, value)
+            except UnicodeDecodeError:
+                if 'decoding_failures' not in new_dict:
+                    new_dict['decoding_failures'] = [key]
+                else:
+                    new_dict['decoding_failures'].append(key)
+                new_dict[key] = utils.fmap(decode_with_escape, value)
         elif key in convert:
             new_dict[key] = convert_fn(value)
         else:
@@ -130,7 +138,7 @@ def from_release(release):
     return from_swh(
         release,
         hashess=set(['id', 'target']),
-        bytess=set(['message', 'name', 'email']),
+        bytess=set(['message', 'name', 'fullname', 'email']),
         dates={'date'},
     )
 
@@ -158,16 +166,29 @@ def from_revision(revision):
         Revision dictionary with the same keys as inputs, only:
         - sha1s are in hexadecimal strings (id, directory)
         - bytes are decoded in string (author_name, committer_name,
-        author_email, committer_email, message)
+        author_email, committer_email)
         - remaining keys are left as is
 
     """
-    return from_swh(revision,
-                    hashess=set(['id', 'directory', 'parents', 'children']),
-                    bytess=set(['name',
-                                'email',
-                                'message']),
-                    dates={'date', 'committer_date'})
+    revision = from_swh(revision,
+                        hashess=set(['id',
+                                     'directory',
+                                     'parents',
+                                     'children']),
+                        bytess=set(['name',
+                                    'fullname',
+                                    'email']),
+                        dates={'date', 'committer_date'})
+
+    if revision:
+        if 'message' in revision:
+            try:
+                revision['message'] = revision['message'].decode('utf-8')
+            except UnicodeDecodeError:
+                revision['message_decoding_failed'] = True
+                revision['message'] = None
+
+    return revision
 
 
 def from_content(content):
@@ -188,7 +209,7 @@ def from_person(person):
     """
     return from_swh(person,
                     hashess=set(),
-                    bytess=set(['name', 'email']))
+                    bytess=set(['name', 'fullname', 'email']))
 
 
 def from_directory_entry(dir_entry):
