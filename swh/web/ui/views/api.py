@@ -59,8 +59,6 @@ def api_search(q=None):
 
     # Post form submission with many hash requests
     elif request.method == 'POST':
-        import pprint
-        pprint.pprint(request.form)
         data = request.form
         queries = []
         # Remove potential inputs with no associated value
@@ -72,7 +70,6 @@ def api_search(q=None):
                     queries.append({'filename': k, 'sha1': v})
 
         if len(queries) > 0:
-            pprint.pprint(queries)
             lookup = service.lookup_multiple_hashes(queries)
             result = []
             for el in lookup:
