@@ -235,11 +235,12 @@ class UtilsTestCase(unittest.TestCase):
         ]
 
         output_dates = [
-            datetime.datetime(2016, 1, 12, 0, 0),
+            datetime.datetime(2016, 1, 12, 0, 0, tzinfo=datetime.timezone.utc),
             datetime.datetime(2016, 1, 12, 9, 19, 12,
                               tzinfo=dateutil.tz.tzoffset(None, 3600)),
-            datetime.datetime(2047, 1, 1, 8, 21),
-            datetime.datetime(2016, 1, 12, 10, 39, 2),
+            datetime.datetime(2047, 1, 1, 8, 21, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2016, 1, 12, 9, 39, 2,
+                              tzinfo=datetime.timezone.utc),
         ]
 
         for ts, exp_date in zip(input_timestamps, output_dates):
