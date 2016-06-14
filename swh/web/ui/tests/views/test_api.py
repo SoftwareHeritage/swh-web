@@ -335,8 +335,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_search_not_found(self, mock_service):
         # given
-        mock_service.search_hash.return_value = {'found': False,
-                                                 'algo': 'sha1'}
+        mock_service.search_hash.return_value = {'found': False}
 
         expected_result = {
             'search_stats': {'nbfiles': 1, 'pct': 0},
