@@ -456,7 +456,6 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_log_by(self):
         # given
-        # given
         sha1_bin = hashutil.hex_to_hash(
             '28d8be353ed3480476f032475e7c233eff7371d5')
         stub_revision_log = [{
@@ -482,9 +481,8 @@ class BackendTestCase(test_app.SWHApiTestCase):
             'metadata': [],
         }]
 
-        self.storage.revision_get_by = MagicMock(return_value=[
-            {'id': sha1_bin}])
-        self.storage.revision_log = MagicMock(return_value=stub_revision_log)
+        self.storage.revision_log_by = MagicMock(
+            return_value=stub_revision_log)
 
         # when
         actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
@@ -496,11 +494,10 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_log_by_norev(self):
         # given
-        # given
         sha1_bin = hashutil.hex_to_hash(
             '28d8be353ed3480476f032475e7c233eff7371d5')
 
-        self.storage.revision_get_by = MagicMock(return_value=None)
+        self.storage.revision_log_by = MagicMock(return_value=None)
 
         # when
         actual_log = backend.revision_log_by(1, 'refs/heads/master', None)

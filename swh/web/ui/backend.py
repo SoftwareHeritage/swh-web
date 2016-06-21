@@ -196,21 +196,10 @@ def revision_log_by(origin_id, branch_name, ts, limit=100):
         Information for the revision matching the criterions.
 
     """
-    # Disable pending RemoteStorage opening revision_log_by
-    """
-    if not ts and branch_name == 'refs/heads/master':
-        return main.storage().revision_log_by(origin_id)
-    """
 
-    rev = main.storage().revision_get_by(origin_id,
-                                         branch_name,
-                                         timestamp=ts,
-                                         limit=1)
-    if not rev:
-        return None
-
-    rev_sha1s_bin = [revision['id'] for revision in rev]
-    return main.storage().revision_log(rev_sha1s_bin, limit)
+    return main.storage().revision_log_by(origin_id,
+                                          branch_name,
+                                          ts)
 
 
 def stat_counters():
