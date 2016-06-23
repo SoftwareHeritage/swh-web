@@ -233,6 +233,31 @@ def lookup_revision(rev_sha1_git):
     return converters.from_revision(revision)
 
 
+def lookup_revision_multiple(sha1_git_list):
+    """Return information about the revision with sha1 revision_sha1_git.
+
+    Args:
+        revision_sha1_git: The revision's sha1 as hexadecimal
+
+    Returns:
+        Revision information as dict.
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+
+    """
+    sha1_bin_list = []
+    for sha1_git in sha1_git_list:
+        _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+            sha1_git,
+            ['sha1'],
+            'Only sha1_git is supported.')
+        sha1_bin_list.append(sha1_git_bin)
+    revisions = backend.revision_get_multiple(sha1_bin_list)
+    revisions = [converters.from_revision(x) for x in revisions]
+    return revisions
+
+
 def lookup_revision_message(rev_sha1_git):
     """Return the raw message of the revision with sha1 revision_sha1_git.
 
