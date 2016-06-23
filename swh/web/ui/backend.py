@@ -166,6 +166,25 @@ def revision_get(sha1_git_bin):
     return None
 
 
+def revision_get_multiple(sha1_git_bin_list):
+    """Return information about the revisions in sha1_git_bin_list
+
+    Args:
+        sha1_git_bin_list: The revisions' sha1s as a list of bytes.
+
+    Returns:
+        Revisions' information as an iterable of dicts if any found,
+        an empty list otherwise
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+    """
+    res = main.storage().revision_get(sha1_git_bin_list)
+    if res and len(res) >= 1:
+        return res
+    return []
+
+
 def revision_log(sha1_git_bin, limit=100):
     """Return information about the revision with sha1 sha1_git_bin.
 
