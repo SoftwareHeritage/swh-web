@@ -1461,6 +1461,104 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_revision_log_context(self, mock_service):
+        # given
+        stub_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+
+        mock_service.lookup_revision_log.return_value = stub_revisions
+        mock_service.lookup_revision_multiple.return_value = [{
+            'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'author_name': 'Name Surname',
+            'author_email': 'name@surname.com',
+            'committer_name': 'Name Surname',
+            'committer_email': 'name@surname.com',
+            'message': 'amazing revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+
+        # when
+        rv = self.app.get('/api/1/revision/18d8be353ed3480476f0'
+                          '32475e7c233eff7371d5/prev/prev-rev/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, [
+            {
+                'url': '/api/1/revision/'
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
+                'history_url': '/api/1/revision/'
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/log/',
+                'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+                'directory': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'directory_url': '/api/1/directory/'
+                '18d8be353ed3480476f032475e7c233eff7371d5/',
+                'author_name': 'Name Surname',
+                'author_email': 'name@surname.com',
+                'committer_name': 'Name Surname',
+                'committer_email': 'name@surname.com',
+                'message': 'amazing revision message',
+                'date_offset': 0,
+                'committer_date_offset': 0,
+                'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
+                'parent_urls': [
+                    '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
+                    '/history/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc/'
+                ],
+                'type': 'tar',
+                'synthetic': True,
+            },
+            {
+                'url': '/api/1/revision/'
+                '18d8be353ed3480476f032475e7c233eff7371d5/',
+                'history_url': '/api/1/revision/'
+                '18d8be353ed3480476f032475e7c233eff7371d5/log/',
+                'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+                'directory_url': '/api/1/directory/'
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
+                'author_name': 'Software Heritage',
+                'author_email': 'robot@softwareheritage.org',
+                'committer_name': 'Software Heritage',
+                'committer_email': 'robot@softwareheritage.org',
+                'message': 'synthetic revision message',
+                'date_offset': 0,
+                'committer_date_offset': 0,
+                'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
+                'parent_urls': [
+                    '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
+                    '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+                ],
+                'type': 'tar',
+                'synthetic': True,
+            }])
+
+        mock_service.lookup_revision_log.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5', 100)
+        mock_service.lookup_revision_multiple.assert_called_once_with(
+            ['prev-rev'])
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_revision_log_by(self, mock_service):
         # given
         stub_revisions = [{

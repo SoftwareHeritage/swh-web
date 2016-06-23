@@ -689,17 +689,20 @@ def api_revision_history_directory(sha1_git_root, sha1_git,
 
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')
-def api_revision_log(sha1_git):
+@app.route('/api/1/revision/<string:sha1_git>/prev/<path:prev_sha1s>/log/')
+def api_revision_log(sha1_git, prev_sha1s=None):
     """Show all revisions (~git log) starting from sha1_git.
        The first element returned is the given sha1_git.
 
     Args:
         sha1_git: the revision's hash.
+        prev_sha1s: the navigation breadcrumb
         limit: optional query parameter to limit the revisions log
         (default to 100).
 
     Returns:
-        Information on the revision if found.
+        Information on the revision if found, complemented with the path
+        children if we have navigation breadcrumbs.
 
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash.
@@ -712,10 +715,20 @@ def api_revision_log(sha1_git):
         return service.lookup_revision_log(s, limit)
 
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-    return _api_lookup(sha1_git,
-                       lookup_fn=lookup_revision_log_with_limit,
-                       error_msg_if_not_found=error_msg,
-                       enrich_fn=utils.enrich_revision)
+    rev_backward = _api_lookup(sha1_git,
+                               lookup_fn=lookup_revision_log_with_limit,
+                               error_msg_if_not_found=error_msg,
+                               enrich_fn=utils.enrich_revision)
+
+    if prev_sha1s is None:
+        return rev_backward
+    else:  # We have breadcrumbs forward that we can add to the log
+        rev_forward_ids = prev_sha1s.split('/')
+        rev_forward = _api_lookup(rev_forward_ids,
+                                  lookup_fn=service.lookup_revision_multiple,
+                                  error_msg_if_not_found=error_msg,
+                                  enrich_fn=utils.enrich_revision)
+        return rev_forward + rev_backward
 
 
 @app.route('/api/1/revision'
