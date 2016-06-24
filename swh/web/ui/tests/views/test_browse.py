@@ -760,7 +760,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'Not found!')
         self.assertIsNone(self.get_context_variable('revision'))
 
-        mock_api.api_revision.assert_called_once_with('1')
+        mock_api.api_revision.assert_called_once_with('1', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -780,7 +780,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'wrong input!')
         self.assertIsNone(self.get_context_variable('revision'))
 
-        mock_api.api_revision.assert_called_once_with('426')
+        mock_api.api_revision.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -842,7 +842,7 @@ class RevisionView(test_app.SWHViewTestCase):
                          expected_revision)
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_api.api_revision.assert_called_once_with('426')
+        mock_api.api_revision.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -875,7 +875,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'Not found!')
         self.assertEqual(self.get_context_variable('revisions'), [])
 
-        mock_api.api_revision_log.assert_called_once_with('sha1')
+        mock_api.api_revision_log.assert_called_once_with('sha1', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -895,7 +895,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'wrong input!')
         self.assertEqual(self.get_context_variable('revisions'), [])
 
-        mock_api.api_revision_log.assert_called_once_with('426')
+        mock_api.api_revision_log.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -935,7 +935,7 @@ class RevisionView(test_app.SWHViewTestCase):
             isinstance(self.get_context_variable('revisions'), map))
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_api.api_revision_log.assert_called_once_with('426')
+        mock_api.api_revision_log.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -976,7 +976,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'wrong input!')
         self.assertEqual(self.get_context_variable('revisions'), [])
 
-        mock_api.api_revision_log.assert_called_once_with('abcd')
+        mock_api.api_revision_log.assert_called_once_with('abcd', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
