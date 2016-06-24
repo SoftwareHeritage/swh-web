@@ -253,9 +253,9 @@ def lookup_revision_multiple(sha1_git_list):
             'Only sha1_git is supported.')
         return sha1_git_bin
 
-    sha1_bin_list = map(to_sha1_bin, sha1_git_list)
+    sha1_bin_list = (to_sha1_bin(x) for x in sha1_git_list)
     revisions = backend.revision_get_multiple(sha1_bin_list)
-    return map(converters.from_revision, revisions)
+    return (converters.from_revision(x) for x in revisions)
 
 
 def lookup_revision_message(rev_sha1_git):
