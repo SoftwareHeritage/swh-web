@@ -200,14 +200,45 @@ def enrich_entity(entity):
 
 def enrich_revision(revision, context=None):
     """Enrich revision with links where it makes sense (directory, parents).
+    Keep track of the navigation breadcrumbs if they are specified.
 
+    Args:
+        revision: the revision as a dict
+        context: the navigation breadcrumbs as a /-separated string of revision
+        sha1_git
     """
+
+    context_for_parents = None
+    context_for_children = None
+    url_imm_child = None
+
     if not context:
-        context = revision['id']
+        context_for_parents = revision['id']
+    else:
+        context_for_parents = '%s/%s' % (context, revision['id'])
+        prev_for_children = context.split('/')[:-1]
+        if len(prev_for_children) > 0:
+            context_for_children = '/'.join(prev_for_children)
+        # This commit is not the first commit in the path
+        if context_for_children:
+            url_imm_child = flask.url_for(
+                'api_revision',
+                sha1_git=context.split('/')[-1],
+                context=context_for_children)
+        # This commit is the first commit in the path
+        else:
+            url_imm_child = flask.url_for(
+                'api_revision',
+                sha1_git=context.split('/')[-1])
 
     revision['url'] = flask.url_for('api_revision', sha1_git=revision['id'])
     revision['history_url'] = flask.url_for('api_revision_log',
                                             sha1_git=revision['id'])
+    if context is not None:
+        revision['history_context_url'] = flask.url_for(
+            'api_revision_log',
+            sha1_git=revision['id'],
+            prev_sha1s=context)
 
     if 'author' in revision:
         author = revision['author']
@@ -227,20 +258,29 @@ def enrich_revision(revision, context=None):
     if 'parents' in revision:
         parents = []
         for parent in revision['parents']:
-            parents.append(flask.url_for('api_revision_history',
-                                         sha1_git_root=context,
-                                         sha1_git=parent))
-
+            parents.append(flask.url_for('api_revision',
+                                         sha1_git=parent,
+                                         context=context_for_parents))
         revision['parent_urls'] = parents
 
     if 'children' in revision:
         children = []
         for child in revision['children']:
-            children.append(flask.url_for('api_revision_history',
-                                          sha1_git_root=context,
-                                          sha1_git=child))
+            # child not the breadcrumb-indicated child > new breadcrumb start
+            if context:
+                if child != context.split('/')[-1]:
+                    children.append(flask.url_for('api_revision',
+                                                  sha1_git=child))
+            else:
+                children.append(flask.url_for('api_revision', sha1_git=child))
 
+        if url_imm_child:
+            children.append(url_imm_child)
         revision['children_urls'] = children
+
+    else:
+        if url_imm_child:
+            revision['children_urls'] = [url_imm_child]
 
     if 'message_decoding_failed' in revision:
         revision['message_url'] = flask.url_for(
