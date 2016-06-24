@@ -507,7 +507,8 @@ def api_revision_with_origin(origin_id,
 
 @app.route('/api/1/revision/')
 @app.route('/api/1/revision/<string:sha1_git>/')
-def api_revision(sha1_git):
+@app.route('/api/1/revision/<string:sha1_git>/prev/<path:context>/')
+def api_revision(sha1_git, context=None):
     """Return information about revision with id sha1_git.
 
     Args:
@@ -522,14 +523,13 @@ def api_revision(sha1_git):
 
     Example:
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e
-
     """
-    return _api_lookup(
-        sha1_git,
-        lookup_fn=service.lookup_revision,
-        error_msg_if_not_found='Revision with sha1_git %s not'
-                               ' found.' % sha1_git,
-        enrich_fn=utils.enrich_revision)
+
+    revision = service.lookup_revision(sha1_git)
+    if not revision:
+        error_msg = 'Revision with sha1_git %s not found.' % sha1_git
+        raise NotFoundExc(error_msg)
+    return utils.enrich_revision(revision, context=context)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/raw/')

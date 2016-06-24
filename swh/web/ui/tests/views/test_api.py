@@ -679,8 +679,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
             ],
             'parent_urls': [
-                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
-                '/history/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'
+                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
+                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1416,8 +1416,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
             ],
             'parent_urls': [
-                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
-                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1521,8 +1521,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'committer_date_offset': 0,
                 'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
                 'parent_urls': [
-                    '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
-                    '/history/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc/'
+                    '/api/1/revision/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
+                    '/prev/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/'
                 ],
                 'type': 'tar',
                 'synthetic': True,
@@ -1545,8 +1545,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'committer_date_offset': 0,
                 'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
                 'parent_urls': [
-                    '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
-                    '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+                    '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+                    '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
                 ],
                 'type': 'tar',
                 'synthetic': True,
@@ -1596,8 +1596,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
             ],
             'parent_urls': [
-                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
-                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1680,10 +1680,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'directory': '272'
         }
 
-        mock_service.lookup_revision_with_context.return_value = stub_revision
+        mock_service.lookup_revision.return_value = stub_revision
 
         # then
-        rv = self.app.get('/api/1/revision/666/history/883/')
+        rv = self.app.get('/api/1/revision/883/prev/999/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -1693,17 +1693,17 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'id': '883',
             'url': '/api/1/revision/883/',
             'history_url': '/api/1/revision/883/log/',
+            'history_context_url': '/api/1/revision/883/prev/999/log/',
             'children': ['777', '999'],
-            'children_urls': ['/api/1/revision/666/history/777/',
-                              '/api/1/revision/666/history/999/'],
+            'children_urls': ['/api/1/revision/777/',
+                              '/api/1/revision/999/'],
             'parents': [],
             'parent_urls': [],
             'directory': '272',
             'directory_url': '/api/1/directory/272/'
         })
 
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-            '666', '883', 100)
+        mock_service.lookup_revision.assert_called_once_with('883')
 
     @patch('swh.web.ui.views.api._revision_directory_by')
     @istest
