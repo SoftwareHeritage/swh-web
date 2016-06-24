@@ -1249,7 +1249,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             [sha1_bin, sha1_other])
 
         # then
-        self.assertEqual(actual_revisions, [
+        self.assertEqual(list(actual_revisions), [
             {
                 'id': sha1_bin,
                 'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
@@ -1294,9 +1294,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             }
         ])
 
-        mock_backend.revision_get_multiple.assert_called_with([
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
+        self.assertEqual(
+            list(mock_backend.revision_get_multiple.call_args[0][0]),
+            [hex_to_hash(
+                '18d8be353ed3480476f032475e7c233eff7371d5'),
+             hex_to_hash(
+                 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1311,11 +1314,14 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         actual_revisions = service.lookup_revision_multiple(
             [sha1_bin, sha1_other])
 
-        self.assertEqual(actual_revisions, [])
+        self.assertEqual(list(actual_revisions), [])
 
-        mock_backend.revision_get_multiple.assert_called_with([
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
+        self.assertEqual(
+            list(mock_backend.revision_get_multiple.call_args[0][0]),
+            [hex_to_hash(
+                '18d8be353ed3480476f032475e7c233eff7371d5'),
+             hex_to_hash(
+                 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
 
     @patch('swh.web.ui.service.backend')
     @istest

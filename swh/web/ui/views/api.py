@@ -701,8 +701,8 @@ def api_revision_log(sha1_git, prev_sha1s=None):
         (default to 100).
 
     Returns:
-        Information on the revision if found, complemented with the path
-        children if we have navigation breadcrumbs.
+        Information on the revision if found, complemented with the revision's
+        children if we have navigation breadcrumbs for them.
 
     Raises:
         BadInputExc in case of unknown algo_hash or bad hash.
@@ -720,15 +720,15 @@ def api_revision_log(sha1_git, prev_sha1s=None):
                                error_msg_if_not_found=error_msg,
                                enrich_fn=utils.enrich_revision)
 
-    if prev_sha1s is None:
+    if not prev_sha1s:  # no nav breadcrumbs, so we're done
         return rev_backward
-    else:  # We have breadcrumbs forward that we can add to the log
-        rev_forward_ids = prev_sha1s.split('/')
-        rev_forward = _api_lookup(rev_forward_ids,
-                                  lookup_fn=service.lookup_revision_multiple,
-                                  error_msg_if_not_found=error_msg,
-                                  enrich_fn=utils.enrich_revision)
-        return rev_forward + rev_backward
+
+    rev_forward_ids = prev_sha1s.split('/')
+    rev_forward = _api_lookup(rev_forward_ids,
+                              lookup_fn=service.lookup_revision_multiple,
+                              error_msg_if_not_found=error_msg,
+                              enrich_fn=utils.enrich_revision)
+    return rev_forward + rev_backward
 
 
 @app.route('/api/1/revision'
