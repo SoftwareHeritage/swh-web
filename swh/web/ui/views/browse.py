@@ -343,9 +343,10 @@ def browse_revision_raw_message(sha1_git):
 @app.route('/browse/revision/<string:sha1_git>/prev/<path:prev_sha1s>/log/')
 @set_renderers(HTMLRenderer)
 def browse_revision_log(sha1_git, prev_sha1s=None):
-    """Browse revision with sha1_git's log. If the navigation path throught the
+    """Browse revision with sha1_git's log. If the navigation path through the
     commit tree is specified, we intersect the earliest revision's log with the
-    revisions the user browsed through (ie his path) to the specified revision.
+    revisions the user browsed through - ie the path taken to the specified
+    revision.
 
     Args:
         sha1_git: the current revision's SHA1_git checksum
@@ -431,15 +432,13 @@ def browse_with_rev_context(sha1_git_cur, sha1s):
     Example:
         GET /browse/revision/
     """
-    # in service: change enrichment function to prepare data with context
-
     env = {'sha1_git': sha1_git_cur,
            'message': None,
            'revision': None}
 
     try:
         revision = api.api_revision(
-            sha1_git_cur, '%s' % sha1s)
+            sha1_git_cur, sha1s)
         env['revision'] = utils.prepare_data_for_view(revision)
     except (BadInputExc, NotFoundExc) as e:
         env['message'] = str(e)
