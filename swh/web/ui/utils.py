@@ -198,6 +198,19 @@ def enrich_entity(entity):
     return entity
 
 
+def _get_path_list(path_string):
+    """Helper for enrich_revision: get a list of the sha1 id of the navigation
+    breadcrumbs, ordered from the oldest to the most recent.
+
+    Args:
+        path_string: the path as a '/'-separated string
+
+    Returns:
+        The navigation context as a list of sha1 revision ids
+    """
+    return path_string.split('/')
+
+
 def _get_revision_contexts(rev_id, context):
     """Helper for enrich_revision: retrieve for the revision id and potentially
     the navigation breadcrumbs the context to pass to parents and children of
@@ -216,23 +229,25 @@ def _get_revision_contexts(rev_id, context):
     url_direct_child = None
 
     if not context:
-        context_for_parents = rev_id
+        return (rev_id, None, None)
+
+    path_list = _get_path_list(context)
+    context_for_parents = '%s/%s' % (context, rev_id)
+    prev_for_children = path_list[:-1]
+    if len(prev_for_children) > 0:
+        context_for_children = '/'.join(prev_for_children)
+    child_id = path_list[-1]
+    # This commit is not the first commit in the path
+    if context_for_children:
+        url_direct_child = flask.url_for(
+            'api_revision',
+            sha1_git=child_id,
+            context=context_for_children)
+    # This commit is the first commit in the path
     else:
-        context_for_parents = '%s/%s' % (context, rev_id)
-        prev_for_children = context.split('/')[:-1]
-        if len(prev_for_children) > 0:
-            context_for_children = '/'.join(prev_for_children)
-        # This commit is not the first commit in the path
-        if context_for_children:
-            url_direct_child = flask.url_for(
-                'api_revision',
-                sha1_git=context.split('/')[-1],
-                context=context_for_children)
-        # This commit is the first commit in the path
-        else:
-            url_direct_child = flask.url_for(
-                'api_revision',
-                sha1_git=context.split('/')[-1])
+        url_direct_child = flask.url_for(
+            'api_revision',
+            sha1_git=child_id)
 
     return (context_for_parents, context_for_children, url_direct_child)
 
@@ -251,7 +266,7 @@ def _make_child_url(rev_children, context):
     """
     children = []
     for child in rev_children:
-        if context and child != context.split('/')[-1]:
+        if context and child != _get_path_list(context)[-1]:
             children.append(flask.url_for('api_revision', sha1_git=child))
         elif not context:
             children.append(flask.url_for('api_revision', sha1_git=child))
@@ -308,7 +323,6 @@ def enrich_revision(revision, context=None):
         if url_direct_child:
             children.append(url_direct_child)
         revision['children_urls'] = children
-
     else:
         if url_direct_child:
             revision['children_urls'] = [url_direct_child]
