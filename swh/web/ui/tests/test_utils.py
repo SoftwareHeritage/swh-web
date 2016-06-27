@@ -477,7 +477,7 @@ class UtilsTestCase(unittest.TestCase):
                                                   uuid='uuid-parent')])
 
     @nottest
-    def url_for_context_test(self, fn, **data):
+    def _url_for_context_test(self, fn, **data):
         if fn == 'api_revision':
             if 'context' in data and data['context'] is not None:
                 return '/api/revision/%s/prev/%s/' % (data['sha1_git'], data['context'])  # noqa
@@ -494,8 +494,10 @@ class UtilsTestCase(unittest.TestCase):
     def enrich_revision_without_children_or_parent(self, mock_flask):
         # given
         def url_for_test(fn, **data):
-            if fn == 'api_revision' or fn == 'api_revision_log':
-                return self.url_for_context_test(fn, **data)
+            if fn == 'api_revision':
+                return '/api/revision/' + data['sha1_git'] + '/'
+            elif fn == 'api_revision_log':
+                return '/api/revision/' + data['sha1_git'] + '/log/'
             elif fn == 'api_directory':
                 return '/api/directory/' + data['sha1_git'] + '/'
             elif fn == 'api_person':
@@ -544,10 +546,7 @@ class UtilsTestCase(unittest.TestCase):
                                                         mock_flask):
         # given
         def url_for_test(fn, **data):
-            if fn == 'api_revision' or fn == 'api_revision_log':
-                return self.url_for_context_test(fn, **data)
-            else:
-                return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
+            return self._url_for_context_test(fn, **data)
 
         mock_flask.url_for.side_effect = url_for_test
 
@@ -594,10 +593,7 @@ class UtilsTestCase(unittest.TestCase):
     def enrich_revision_no_context(self, mock_flask):
         # given
         def url_for_test(fn, **data):
-            if fn == 'api_revision' or fn == 'api_revision_log':
-                return self.url_for_context_test(fn, **data)
-            else:
-                return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
+            return self._url_for_context_test(fn, **data)
 
         mock_flask.url_for.side_effect = url_for_test
 
@@ -636,7 +632,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_revision_context_empty_prev_list(self, mock_flask):
         # given
-        mock_flask.url_for.side_effect = self.url_for_context_test
+        mock_flask.url_for.side_effect = self._url_for_context_test
 
         # when
         expected_revision = {
@@ -679,7 +675,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_revision_context_some_prev_list(self, mock_flask):
         # given
-        mock_flask.url_for.side_effect = self.url_for_context_test
+        mock_flask.url_for.side_effect = self._url_for_context_test
 
         # when
         expected_revision = {

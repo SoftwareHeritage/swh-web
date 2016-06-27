@@ -179,7 +179,6 @@ def revision_get_multiple(sha1_git_bin_list):
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
     """
-    print(sha1_git_bin_list)
     res = main.storage().revision_get(sha1_git_bin_list)
     if res and len(res) >= 1:
         return res

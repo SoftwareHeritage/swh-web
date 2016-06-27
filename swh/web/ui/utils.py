@@ -210,7 +210,7 @@ def enrich_revision(revision, context=None):
 
     context_for_parents = None
     context_for_children = None
-    url_imm_child = None
+    url_immediate_child = None
 
     if not context:
         context_for_parents = revision['id']
@@ -221,13 +221,13 @@ def enrich_revision(revision, context=None):
             context_for_children = '/'.join(prev_for_children)
         # This commit is not the first commit in the path
         if context_for_children:
-            url_imm_child = flask.url_for(
+            url_immediate_child = flask.url_for(
                 'api_revision',
                 sha1_git=context.split('/')[-1],
                 context=context_for_children)
         # This commit is the first commit in the path
         else:
-            url_imm_child = flask.url_for(
+            url_immediate_child = flask.url_for(
                 'api_revision',
                 sha1_git=context.split('/')[-1])
 
@@ -274,13 +274,13 @@ def enrich_revision(revision, context=None):
             else:
                 children.append(flask.url_for('api_revision', sha1_git=child))
 
-        if url_imm_child:
-            children.append(url_imm_child)
+        if url_immediate_child:
+            children.append(url_immediate_child)
         revision['children_urls'] = children
 
     else:
-        if url_imm_child:
-            revision['children_urls'] = [url_imm_child]
+        if url_immediate_child:
+            revision['children_urls'] = [url_immediate_child]
 
     if 'message_decoding_failed' in revision:
         revision['message_url'] = flask.url_for(
