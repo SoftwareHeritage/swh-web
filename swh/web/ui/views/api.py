@@ -524,12 +524,14 @@ def api_revision(sha1_git, context=None):
     Example:
         GET /api/1/revision/baf18f9fc50a0b6fef50460a76c33b2ddc57486e
     """
+    def _enrich_revision(revision, context=context):
+        return utils.enrich_revision(revision, context)
 
-    revision = service.lookup_revision(sha1_git)
-    if not revision:
-        error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-        raise NotFoundExc(error_msg)
-    return utils.enrich_revision(revision, context=context)
+    return _api_lookup(
+        sha1_git,
+        service.lookup_revision,
+        'Revision with sha1_git %s not found.' % sha1_git,
+        _enrich_revision)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/raw/')
