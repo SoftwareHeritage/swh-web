@@ -545,10 +545,7 @@ class UtilsTestCase(unittest.TestCase):
     def enrich_revision_with_children_and_parent_no_dir(self,
                                                         mock_flask):
         # given
-        def url_for_test(fn, **data):
-            return self._url_for_context_test(fn, **data)
-
-        mock_flask.url_for.side_effect = url_for_test
+        mock_flask.url_for.side_effect = self._url_for_context_test
 
         # when
         actual_revision = utils.enrich_revision({
@@ -592,10 +589,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_revision_no_context(self, mock_flask):
         # given
-        def url_for_test(fn, **data):
-            return self._url_for_context_test(fn, **data)
-
-        mock_flask.url_for.side_effect = url_for_test
+        mock_flask.url_for.side_effect = self._url_for_context_test
 
         # when
         actual_revision = utils.enrich_revision({
