@@ -49,6 +49,8 @@
          value=""
 	 style="display:none"
          placeholder="File(s) to upload, hash and search for SHA-1 or SHA-256 checksum" />
+  <div id="swh-search-message" class="message">
+  </div>
   {% if search_res is not none %}
       {% if search_stats is not none %}
       <label id="stats">
@@ -87,12 +89,16 @@
   <!-- jQuery setup -->
   <div id="test"></div>
   <script>
+    var form = $('#searchForm');
+    var filelist = $('#filelist');
     // Delegate dropbox click
-    $("#fileinput").inputclick($("#fileElem"));
+    $('#fileinput').inputclick($('#fileElem'));
     // Make the dropbox available for drag & drop
-    $("#fileElem").filedialog($("#filelist"), $("#searchForm"));
+    $('#fileElem').filedialog(filelist, form);
     // Make the submission button receptive to files
-    $("#fileinput").filedrop($("#filelist"), $("#searchForm"));
+    $('#fileinput').filedrop(filelist, form);
+    // Check the text input before submission
+    form.checkSubmission($('#sha1_textinput'), $('#swh-search-message'));
   </script>
 </div>
 {% endblock %}

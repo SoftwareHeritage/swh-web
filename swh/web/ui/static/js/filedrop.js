@@ -2,6 +2,7 @@
  *  Search page management
  */
 
+
 $.fn.extend({
     /**
      *  Call on any HTMLElement to make that element the recipient of files
@@ -53,7 +54,7 @@ $.fn.extend({
                     fileshovering = false;
                 }
             });
-
+	    
             dragwin.on('drop', function(event) {
                 event.stopPropagation();
                 event.preventDefault();
@@ -99,12 +100,43 @@ $.fn.extend({
                 input.click();
             });
         });
-    }    
+    },
+    /**
+     *  Call on a form to intercept its submmission event and 
+     *  check the validity of the text input if present before submitting
+     *  the form.
+     *  Args:
+     *     textInput: the input to validate
+     *     messageElement: the element where the warning will be written
+     *     searchForm: the form that will be submitted
+     */
+    checkSubmission: function(textInput, messageElement) {
+	var CHECKSUM_RE = /^([0-9a-f]{40}|[0-9a-f]{64})$/i;
+	$(this).submit(function(event) {
+	    event.preventDefault();
+	    var q = textInput.val();
+	    if (q && !q.match(CHECKSUM_RE)) {
+		messageElement.empty();
+		messageElement.html('Please enter a valid SHA-1');
+	    } else {
+		searchForm.submit();
+	    }
+	});
+    }
 });
 
 
 var nameList = []; /** Avoid adding the same file twice      **/
 
+/** 
+ *  Start reading the supplied files to hash them and add them to the form,
+ *  and add  their names to the file lister pre-search.
+ *  Args:
+ *     myfiles: the file array
+ *     fileLister: the element that will receive the file names
+ *     searchForm: the form to which we add hidden inputs with the 
+ *     correct values
+ */
 function handleFiles(myfiles, fileLister, searchForm) {
     for (var i = 0; i < myfiles.length; i++) {
         var file = myfiles.item(i);
@@ -118,6 +150,15 @@ function handleFiles(myfiles, fileLister, searchForm) {
     }
 };
 
+/**
+ *  Bind a given FileReader to hash the file contents when the file
+ *  has been read
+ *  Args:
+ *     filereader: the FileReader object
+ *     filename: the name of the file being read by the FileReader
+ *     searchForm: the form the corresponding hidden input will be
+ *     appended to
+ */
 function bind_reader(filereader, filename, searchForm) {
     filereader.onloadend = function(evt) {
         if (evt.target.readyState == FileReader.DONE){
@@ -130,6 +171,14 @@ function make_row(name) {
     return "<div class='span3'>"+name+"</div>";
 }
 
+/**
+ *  Hash the buffer contents with CryptoJS's SHA1 implementation, and
+ *  append the result to the given form for submission.
+ *  Args:
+ *     buffer: the buffer to be hashed
+ *     fname: the file name corresponding to the buffer
+ *     searchForm: the form the inputs should be appended to
+ */
 function fileReadDone(buffer, fname, searchForm) {
     var wordArray = CryptoJS.lib.WordArray.create(buffer);
     var sha1 = CryptoJS.SHA1(wordArray);
