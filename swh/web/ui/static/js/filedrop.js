@@ -54,7 +54,7 @@ $.fn.extend({
                     fileshovering = false;
                 }
             });
-	    
+            
             dragwin.on('drop', function(event) {
                 event.stopPropagation();
                 event.preventDefault();
@@ -102,26 +102,25 @@ $.fn.extend({
         });
     },
     /**
-     *  Call on a form to intercept its submmission event and 
+     *  Call on a form to intercept its submission event and 
      *  check the validity of the text input if present before submitting
      *  the form.
      *  Args:
      *     textInput: the input to validate
      *     messageElement: the element where the warning will be written
-     *     searchForm: the form that will be submitted
      */
     checkSubmission: function(textInput, messageElement) {
-	var CHECKSUM_RE = /^([0-9a-f]{40}|[0-9a-f]{64})$/i;
-	$(this).submit(function(event) {
-	    event.preventDefault();
-	    var q = textInput.val();
-	    if (q && !q.match(CHECKSUM_RE)) {
-		messageElement.empty();
-		messageElement.html('Please enter a valid SHA-1');
-	    } else {
-		searchForm.submit();
-	    }
-	});
+        var CHECKSUM_RE = /^([0-9a-f]{40}|[0-9a-f]{64})$/i;
+        $(this).submit(function(event) {
+            event.preventDefault();
+            var q = textInput.val();
+            if (q && !q.match(CHECKSUM_RE)) {
+                messageElement.empty();
+                messageElement.html('Please enter a valid SHA-1');
+            } else {
+                searchForm.submit();
+            }
+        });
     }
 });
 
