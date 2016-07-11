@@ -230,6 +230,15 @@ def stat_counters():
     return main.storage().stat_counters()
 
 
+def stat_origin_visits(origin_id):
+    """Return the dates at which the given origin was scanned for content.
+
+    Returns:
+       An array of dates
+    """
+    return main.storage().origin_visit_get(origin_id)
+
+
 def revision_get_by(origin_id, branch_name, timestamp):
     """Return occurrence information matching the criterions origin_id,
     branch_name, ts.

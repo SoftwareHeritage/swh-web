@@ -624,6 +624,42 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.stat_counters.assert_called_with()
 
     @istest
+    def stat_origin_visits(self):
+        # given
+        expected_dates = [
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': datetime.datetime(
+                    2013, 7, 1, 20, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 21, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+        self.storage.origin_visit_get = MagicMock(return_value=expected_dates)
+
+        # when
+        actual_dates = backend.stat_origin_visits(5)
+
+        # then
+        self.assertEqual(actual_dates, expected_dates)
+
+        self.storage.origin_visit_get.assert_called_with(5)
+
+    @istest
     def directory_entry_get_by_path(self):
         # given
         stub_dir_entry = {'id': b'dir-id',
