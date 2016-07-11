@@ -439,6 +439,93 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.stat_counters.assert_called_once_with()
 
     @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_stat_origin_visits_raise_error(self, mock_service):
+        # given
+        mock_service.stat_origin_visits.side_effect = ValueError(
+            'voluntary error to check the bad request middleware.')
+        # when
+        rv = self.app.get('/api/1/stat/visits/2/')
+        # then
+        self.assertEquals(rv.status_code, 400)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'voluntary error to check the bad request middleware.'})
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_stat_origin_visits_raise_swh_storage_error_db(
+            self, mock_service):
+        # given
+        mock_service.stat_origin_visits.side_effect = StorageDBError(
+            'SWH Storage exploded! Will be back online shortly!')
+        # when
+        rv = self.app.get('/api/1/stat/visits/2/')
+        # then
+        self.assertEquals(rv.status_code, 503)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error':
+            'An unexpected error occurred in the backend: '
+            'SWH Storage exploded! Will be back online shortly!'})
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_stat_origin_visits_raise_swh_storage_error_api(
+            self, mock_service):
+        # given
+        mock_service.stat_origin_visits.side_effect = StorageAPIError(
+            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+        )
+        # when
+        rv = self.app.get('/api/1/stat/visits/2/')
+        # then
+        self.assertEquals(rv.status_code, 503)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error':
+            'An unexpected error occurred in the api backend: '
+            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+        })
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_stat_origin_visits(self, mock_service):
+        # given
+        stub_stats = [
+            {
+                'date': 1420149600.0,
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': 1104616800.0,
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': 1293919200.0,
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+        expected_stats = [1104616800.0, 1293919200.0, 1420149600.0]
+        mock_service.stat_origin_visits.return_value = stub_stats
+
+        # when
+        rv = self.app.get('/api/1/stat/visits/2/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_stats)
+
+        mock_service.stat_origin_visits.assert_called_once_with(2)
+
+    @patch('swh.web.ui.views.api.service')
     @patch('swh.web.ui.views.api.request')
     @istest
     def api_uploadnsearch_bad_input(self, mock_request, mock_service):

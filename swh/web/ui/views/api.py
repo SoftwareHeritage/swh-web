@@ -23,6 +23,19 @@ def api_stats():
     return service.stat_counters()
 
 
+@app.route('/api/1/stat/visits/<int:origin_id>/')
+def api_origin_visits(origin_id):
+    """Return visit dates for the given revision.
+
+    Returns:
+        A list of SWH visit occurrence timestamps, sorted from oldest to
+        newest.
+
+    """
+    date_gen = (item['date'] for item in service.stat_origin_visits(origin_id))
+    return sorted(date_gen)
+
+
 @app.route('/api/1/search/', methods=['POST'])
 @app.route('/api/1/search/<string:q>/')
 def api_search(q=None):
