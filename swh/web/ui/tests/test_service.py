@@ -208,6 +208,68 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.stat_counters.assert_called_with()
 
     @patch('swh.web.ui.service.backend')
+    @istest
+    def stat_origin_visits(self, mock_backend):
+        # given
+        stub_result = [
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': datetime.datetime(
+                    2013, 7, 1, 20, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 21, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+        mock_backend.stat_origin_visits.return_value = stub_result
+
+        # when
+        expected_dates = [
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': datetime.datetime(
+                    2013, 7, 1, 20, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 21, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+
+        actual_dates = service.stat_origin_visits(6)
+
+        # then
+        self.assertEqual(expected_dates,
+                         list(actual_dates))
+
+        mock_backend.stat_origin_visits.assert_called_once_with(6)
+
+    @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.hashutil')
     @istest
     def hash_and_search(self, mock_hashutil, mock_backend):

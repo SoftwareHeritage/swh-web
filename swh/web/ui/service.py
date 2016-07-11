@@ -567,6 +567,17 @@ def stat_counters():
     return backend.stat_counters()
 
 
+def stat_origin_visits(origin_id):
+    """Return the dates at which the given origin was scanned for content.
+
+    Returns:
+       An array of dates in the datetime format
+    """
+    for visit in backend.stat_origin_visits(origin_id):
+        visit['date'] = visit['date'].timestamp()
+        yield(visit)
+
+
 def lookup_entity_by_uuid(uuid):
     """Return the entity's hierarchy from its uuid.
 
