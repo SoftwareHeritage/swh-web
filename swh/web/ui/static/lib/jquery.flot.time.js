@@ -1,1 +1,1 @@
-/usr/share/javascript/jquery-flot/jquery.flot.time.js
+/usr/share/javascript/jquery-flot/jquery.flot.time.min.js

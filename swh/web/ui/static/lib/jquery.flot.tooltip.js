@@ -1,1 +1,1 @@
-/usr/share/javascript/jquery-flot/jquery.flot.tooltip.js
+/usr/share/javascript/jquery-flot/jquery.flot.tooltip.min.js

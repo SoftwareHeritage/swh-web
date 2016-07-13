@@ -1,1 +1,1 @@
-/usr/share/javascript/jquery-flot/jquery.flot.selection.js
+/usr/share/javascript/jquery-flot/jquery.flot.selection.min.js

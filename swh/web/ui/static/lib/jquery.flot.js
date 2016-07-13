@@ -1,1 +1,1 @@
-/usr/share/javascript/jquery-flot/jquery.flot.js
+/usr/share/javascript/jquery-flot/jquery.flot.min.js
