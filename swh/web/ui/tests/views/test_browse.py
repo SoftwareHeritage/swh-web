@@ -28,7 +28,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
         self.assertEqual(self.get_context_variable('search_res'), None)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -50,7 +50,7 @@ class SearchView(test_app.SWHViewTestCase):
             {'filename': None,
              'sha1': 'sha1:456',
              'found': False}])
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
         mock_api.api_search.assert_called_once_with('sha1:456')
 
@@ -66,7 +66,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), 'error msg')
         self.assertEqual(self.get_context_variable('search_res'), None)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
         mock_api.api_search.assert_called_once_with('sha1_git:789')
 
@@ -91,7 +91,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertTrue(resp is not None)
         self.assertEqual(resp['sha1'], 'sha1:123')
         self.assertEqual(resp['found'], True)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
         mock_api.api_search.assert_called_once_with('sha1:123')
 
@@ -116,7 +116,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('search_res'), None)
         self.assertEqual(self.get_context_variable('message'),
                          'error bad input')
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
     @patch('swh.web.ui.views.browse.request')
     @patch('swh.web.ui.views.browse.api')
@@ -153,7 +153,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(b['found'], False)
         self.assertEqual(self.get_context_variable('message'), '')
 
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
     @patch('swh.web.ui.views.browse.request')
     @patch('swh.web.ui.views.browse.api')
@@ -189,7 +189,7 @@ class SearchView(test_app.SWHViewTestCase):
         a, b = self.get_context_variable('search_res')
         self.assertEqual(a['found'], False)
         self.assertEqual(b['found'], True)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
 
 class ContentView(test_app.SWHViewTestCase):

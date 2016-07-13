@@ -71,7 +71,7 @@ def search():
     env['search_stats'] = search_stats
     env['search_res'] = search_res
     env['message'] = message
-    return render_template('upload_and_search.html', **env)
+    return render_template('search.html', **env)
 
 
 @app.route('/browse/content/')
