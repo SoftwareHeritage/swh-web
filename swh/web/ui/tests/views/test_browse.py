@@ -567,9 +567,17 @@ class OriginView(test_app.SWHViewTestCase):
         mock_api.api_origin.assert_called_once_with(426)
 
     @patch('swh.web.ui.views.browse.api')
+    @patch('swh.web.ui.views.browse.url_for')
     @istest
-    def browse_origin_found(self, mock_api):
+    def browse_origin_found(self, mock_url_for, mock_api):
         # given
+        def url_for_test(fn, **args):
+            if fn == 'browse_revision_with_origin':
+                return '/browse/revision/origin/%s/' % args['origin_id']
+            elif fn == 'api_origin_visits':
+                return '/api/1/stat/visits/%s/' % args['origin_id']
+        mock_url_for.side_effect = url_for_test
+
         mock_origin = {'type': 'git',
                        'lister': None,
                        'project': None,
@@ -585,6 +593,10 @@ class OriginView(test_app.SWHViewTestCase):
         self.assert_template_used('origin.html')
         self.assertEqual(self.get_context_variable('origin_id'), 426)
         self.assertEqual(self.get_context_variable('origin'), mock_origin)
+        self.assertEqual(self.get_context_variable('browse_url'),
+                         '/browse/revision/origin/426/')
+        self.assertEqual(self.get_context_variable('visit_url'),
+                         '/api/1/stat/visits/426/')
 
         mock_api.api_origin.assert_called_once_with(426)
 

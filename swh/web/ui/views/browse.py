@@ -246,7 +246,13 @@ def browse_origin(origin_id):
     """Browse origin with id id.
 
     """
-    env = {'origin_id': origin_id,
+
+    browse_url = url_for('browse_revision_with_origin', origin_id=origin_id)
+    visit_url = url_for('api_origin_visits', origin_id=origin_id)
+
+    env = {'browse_url': browse_url,
+           'visit_url': visit_url,
+           'origin_id': origin_id,
            'origin': None}
 
     try:
