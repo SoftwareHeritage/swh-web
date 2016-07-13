@@ -166,6 +166,25 @@ def revision_get(sha1_git_bin):
     return None
 
 
+def revision_get_multiple(sha1_git_bin_list):
+    """Return information about the revisions in sha1_git_bin_list
+
+    Args:
+        sha1_git_bin_list: The revisions' sha1s as a list of bytes.
+
+    Returns:
+        Revisions' information as an iterable of dicts if any found,
+        an empty list otherwise
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+    """
+    res = main.storage().revision_get(sha1_git_bin_list)
+    if res and len(res) >= 1:
+        return res
+    return []
+
+
 def revision_log(sha1_git_bin, limit=100):
     """Return information about the revision with sha1 sha1_git_bin.
 
@@ -196,21 +215,10 @@ def revision_log_by(origin_id, branch_name, ts, limit=100):
         Information for the revision matching the criterions.
 
     """
-    # Disable pending RemoteStorage opening revision_log_by
-    """
-    if not ts and branch_name == 'refs/heads/master':
-        return main.storage().revision_log_by(origin_id)
-    """
 
-    rev = main.storage().revision_get_by(origin_id,
-                                         branch_name,
-                                         timestamp=ts,
-                                         limit=1)
-    if not rev:
-        return None
-
-    rev_sha1s_bin = [revision['id'] for revision in rev]
-    return main.storage().revision_log(rev_sha1s_bin, limit)
+    return main.storage().revision_log_by(origin_id,
+                                          branch_name,
+                                          ts)
 
 
 def stat_counters():
@@ -220,6 +228,15 @@ def stat_counters():
         A dict mapping textual labels to integer values.
     """
     return main.storage().stat_counters()
+
+
+def stat_origin_visits(origin_id):
+    """Return the dates at which the given origin was scanned for content.
+
+    Returns:
+       An array of dates
+    """
+    return main.storage().origin_visit_get(origin_id)
 
 
 def revision_get_by(origin_id, branch_name, timestamp):

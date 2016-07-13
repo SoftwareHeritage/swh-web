@@ -28,7 +28,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
         self.assertEqual(self.get_context_variable('search_res'), None)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -50,7 +50,7 @@ class SearchView(test_app.SWHViewTestCase):
             {'filename': None,
              'sha1': 'sha1:456',
              'found': False}])
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
         mock_api.api_search.assert_called_once_with('sha1:456')
 
@@ -66,7 +66,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), 'error msg')
         self.assertEqual(self.get_context_variable('search_res'), None)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
         mock_api.api_search.assert_called_once_with('sha1_git:789')
 
@@ -91,7 +91,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertTrue(resp is not None)
         self.assertEqual(resp['sha1'], 'sha1:123')
         self.assertEqual(resp['found'], True)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
         mock_api.api_search.assert_called_once_with('sha1:123')
 
@@ -116,7 +116,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('search_res'), None)
         self.assertEqual(self.get_context_variable('message'),
                          'error bad input')
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
     @patch('swh.web.ui.views.browse.request')
     @patch('swh.web.ui.views.browse.api')
@@ -153,7 +153,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(b['found'], False)
         self.assertEqual(self.get_context_variable('message'), '')
 
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
     @patch('swh.web.ui.views.browse.request')
     @patch('swh.web.ui.views.browse.api')
@@ -189,7 +189,7 @@ class SearchView(test_app.SWHViewTestCase):
         a, b = self.get_context_variable('search_res')
         self.assertEqual(a['found'], False)
         self.assertEqual(b['found'], True)
-        self.assert_template_used('upload_and_search.html')
+        self.assert_template_used('search.html')
 
 
 class ContentView(test_app.SWHViewTestCase):
@@ -567,9 +567,17 @@ class OriginView(test_app.SWHViewTestCase):
         mock_api.api_origin.assert_called_once_with(426)
 
     @patch('swh.web.ui.views.browse.api')
+    @patch('swh.web.ui.views.browse.url_for')
     @istest
-    def browse_origin_found(self, mock_api):
+    def browse_origin_found(self, mock_url_for, mock_api):
         # given
+        def url_for_test(fn, **args):
+            if fn == 'browse_revision_with_origin':
+                return '/browse/revision/origin/%s/' % args['origin_id']
+            elif fn == 'api_origin_visits':
+                return '/api/1/stat/visits/%s/' % args['origin_id']
+        mock_url_for.side_effect = url_for_test
+
         mock_origin = {'type': 'git',
                        'lister': None,
                        'project': None,
@@ -585,6 +593,10 @@ class OriginView(test_app.SWHViewTestCase):
         self.assert_template_used('origin.html')
         self.assertEqual(self.get_context_variable('origin_id'), 426)
         self.assertEqual(self.get_context_variable('origin'), mock_origin)
+        self.assertEqual(self.get_context_variable('browse_url'),
+                         '/browse/revision/origin/426/')
+        self.assertEqual(self.get_context_variable('visit_url'),
+                         '/api/1/stat/visits/426/')
 
         mock_api.api_origin.assert_called_once_with(426)
 
@@ -760,7 +772,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'Not found!')
         self.assertIsNone(self.get_context_variable('revision'))
 
-        mock_api.api_revision.assert_called_once_with('1')
+        mock_api.api_revision.assert_called_once_with('1', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -780,7 +792,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'wrong input!')
         self.assertIsNone(self.get_context_variable('revision'))
 
-        mock_api.api_revision.assert_called_once_with('426')
+        mock_api.api_revision.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -842,7 +854,7 @@ class RevisionView(test_app.SWHViewTestCase):
                          expected_revision)
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_api.api_revision.assert_called_once_with('426')
+        mock_api.api_revision.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -875,7 +887,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'Not found!')
         self.assertEqual(self.get_context_variable('revisions'), [])
 
-        mock_api.api_revision_log.assert_called_once_with('sha1')
+        mock_api.api_revision_log.assert_called_once_with('sha1', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -895,7 +907,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'wrong input!')
         self.assertEqual(self.get_context_variable('revisions'), [])
 
-        mock_api.api_revision_log.assert_called_once_with('426')
+        mock_api.api_revision_log.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -935,7 +947,7 @@ class RevisionView(test_app.SWHViewTestCase):
             isinstance(self.get_context_variable('revisions'), map))
         self.assertIsNone(self.get_context_variable('message'))
 
-        mock_api.api_revision_log.assert_called_once_with('426')
+        mock_api.api_revision_log.assert_called_once_with('426', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -976,7 +988,7 @@ class RevisionView(test_app.SWHViewTestCase):
             'wrong input!')
         self.assertEqual(self.get_context_variable('revisions'), [])
 
-        mock_api.api_revision_log.assert_called_once_with('abcd')
+        mock_api.api_revision_log.assert_called_once_with('abcd', None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest

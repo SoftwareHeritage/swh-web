@@ -235,12 +235,11 @@ class UtilsTestCase(unittest.TestCase):
         ]
 
         output_dates = [
-            datetime.datetime(2016, 1, 12, 0, 0, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2016, 1, 12, 0, 0),
             datetime.datetime(2016, 1, 12, 9, 19, 12,
                               tzinfo=dateutil.tz.tzoffset(None, 3600)),
-            datetime.datetime(2047, 1, 1, 8, 21, tzinfo=datetime.timezone.utc),
-            datetime.datetime(2016, 1, 12, 9, 39, 2,
-                              tzinfo=datetime.timezone.utc),
+            datetime.datetime(2047, 1, 1, 8, 21),
+            datetime.datetime(2016, 1, 12, 10, 39, 2),
         ]
 
         for ts, exp_date in zip(input_timestamps, output_dates):
@@ -477,6 +476,19 @@ class UtilsTestCase(unittest.TestCase):
                                              call('api_entity_by_uuid',
                                                   uuid='uuid-parent')])
 
+    @nottest
+    def _url_for_context_test(self, fn, **data):
+        if fn == 'api_revision':
+            if 'context' in data and data['context'] is not None:
+                return '/api/revision/%s/prev/%s/' % (data['sha1_git'], data['context'])  # noqa
+            else:
+                return '/api/revision/%s/' % data['sha1_git']
+        elif fn == 'api_revision_log':
+            if 'prev_sha1s' in data:
+                return '/api/revision/%s/prev/%s/log/' % (data['sha1_git'], data['prev_sha1s'])  # noqa
+            else:
+                return '/api/revision/%s/log/' % data['sha1_git']
+
     @patch('swh.web.ui.utils.flask')
     @istest
     def enrich_revision_without_children_or_parent(self, mock_flask):
@@ -501,8 +513,7 @@ class UtilsTestCase(unittest.TestCase):
             'committer': {'id': '2'},
         })
 
-        # then
-        self.assertEqual(actual_revision, {
+        expected_revision = {
             'id': 'rev-id',
             'directory': '123',
             'url': '/api/revision/rev-id/',
@@ -512,70 +523,205 @@ class UtilsTestCase(unittest.TestCase):
             'author_url': '/api/person/1/',
             'committer': {'id': '2'},
             'committer_url': '/api/person/2/'
-        })
-
-        mock_flask.url_for.assert_has_calls([call('api_revision',
-                                                  sha1_git='rev-id'),
-                                             call('api_revision_log',
-                                                  sha1_git='rev-id'),
-                                             call('api_person',
-                                                  person_id='1'),
-                                             call('api_person',
-                                                  person_id='2'),
-                                             call('api_directory',
-                                                  sha1_git='123')])
-
-    @patch('swh.web.ui.utils.flask')
-    @istest
-    def enrich_revision_with_children_and_parent_no_dir(self,
-                                                        mock_flask):
-        # given
-        def url_for_test(fn, **data):
-            if fn == 'api_revision':
-                return '/api/revision/' + data['sha1_git'] + '/'
-            elif fn == 'api_revision_log':
-                return '/api/revision/' + data['sha1_git'] + '/log/'
-            else:
-                return '/api/revision/' + data['sha1_git_root'] + '/history/' + data['sha1_git'] + '/'  # noqa
-
-        mock_flask.url_for.side_effect = url_for_test
-
-        # when
-        actual_revision = utils.enrich_revision({
-            'id': 'rev-id',
-            'parents': ['123'],
-            'children': ['456'],
-        }, context='sha1_git_root')
+        }
 
         # then
-        self.assertEqual(actual_revision, {
-            'id': 'rev-id',
-            'url': '/api/revision/rev-id/',
-            'history_url': '/api/revision/rev-id/log/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/sha1_git_root/history/123/'],
-            'children': ['456'],
-            'children_urls': ['/api/revision/sha1_git_root/history/456/'],
-        })
+        self.assertEqual(actual_revision, expected_revision)
 
         mock_flask.url_for.assert_has_calls(
             [call('api_revision',
                   sha1_git='rev-id'),
              call('api_revision_log',
                   sha1_git='rev-id'),
-             call('api_revision_history',
-                  sha1_git_root='sha1_git_root',
-                  sha1_git='123'),
-             call('api_revision_history',
-                  sha1_git_root='sha1_git_root',
+             call('api_person',
+                  person_id='1'),
+             call('api_person',
+                  person_id='2'),
+             call('api_directory',
+                  sha1_git='123')])
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_revision_with_children_and_parent_no_dir(self,
+                                                        mock_flask):
+        # given
+        mock_flask.url_for.side_effect = self._url_for_context_test
+
+        # when
+        actual_revision = utils.enrich_revision({
+            'id': 'rev-id',
+            'parents': ['123'],
+            'children': ['456'],
+        }, context='prev-rev')
+
+        expected_revision = {
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'history_url': '/api/revision/rev-id/log/',
+            'history_context_url': '/api/revision/rev-id/prev/prev-rev/log/',
+            'parents': ['123'],
+            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
+            'children': ['456'],
+            'children_urls': ['/api/revision/456/',
+                              '/api/revision/prev-rev/'],
+        }
+
+        # then
+        self.assertEqual(actual_revision, expected_revision)
+
+        mock_flask.url_for.assert_has_calls(
+            [call('api_revision',
+                  sha1_git='prev-rev'),
+             call('api_revision',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id',
+                  prev_sha1s='prev-rev'),
+             call('api_revision',
+                  sha1_git='123',
+                  context='prev-rev/rev-id'),
+             call('api_revision',
+                  sha1_git='456')])
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_revision_no_context(self, mock_flask):
+        # given
+        mock_flask.url_for.side_effect = self._url_for_context_test
+
+        # when
+        actual_revision = utils.enrich_revision({
+            'id': 'rev-id',
+            'parents': ['123'],
+            'children': ['456'],
+        })
+
+        expected_revision = {
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'history_url': '/api/revision/rev-id/log/',
+            'parents': ['123'],
+            'parent_urls': ['/api/revision/123/prev/rev-id/'],
+            'children': ['456'],
+            'children_urls': ['/api/revision/456/']
+        }
+
+        # then
+        self.assertEqual(actual_revision, expected_revision)
+
+        mock_flask.url_for.assert_has_calls(
+            [call('api_revision',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id'),
+             call('api_revision',
+                  sha1_git='123',
+                  context='rev-id'),
+             call('api_revision',
+                  sha1_git='456')])
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_revision_context_empty_prev_list(self, mock_flask):
+        # given
+        mock_flask.url_for.side_effect = self._url_for_context_test
+
+        # when
+        expected_revision = {
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'history_url': '/api/revision/rev-id/log/',
+            'history_context_url': ('/api/revision/rev-id/'
+                                    'prev/prev-rev/log/'),
+            'parents': ['123'],
+            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
+            'children': ['456'],
+            'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
+        }
+
+        actual_revision = utils.enrich_revision({
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'parents': ['123'],
+            'children': ['456']}, context='prev-rev')
+
+        # then
+        self.assertEqual(actual_revision, expected_revision)
+        mock_flask.url_for.assert_has_calls(
+            [call('api_revision',
+                  sha1_git='prev-rev'),
+             call('api_revision',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id',
+                  prev_sha1s='prev-rev'),
+             call('api_revision',
+                  sha1_git='123',
+                  context='prev-rev/rev-id'),
+             call('api_revision',
+                  sha1_git='456')])
+
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_revision_context_some_prev_list(self, mock_flask):
+        # given
+        mock_flask.url_for.side_effect = self._url_for_context_test
+
+        # when
+        expected_revision = {
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'history_url': '/api/revision/rev-id/log/',
+            'history_context_url': ('/api/revision/rev-id/'
+                                    'prev/prev1-rev/prev0-rev/log/'),
+            'parents': ['123'],
+            'parent_urls': ['/api/revision/123/prev/'
+                            'prev1-rev/prev0-rev/rev-id/'],
+            'children': ['456'],
+            'children_urls': ['/api/revision/456/',
+                              '/api/revision/prev0-rev/prev/prev1-rev/'],
+        }
+
+        actual_revision = utils.enrich_revision({
+            'id': 'rev-id',
+            'parents': ['123'],
+            'children': ['456']}, context='prev1-rev/prev0-rev')
+
+        # then
+        self.assertEqual(actual_revision, expected_revision)
+        mock_flask.url_for.assert_has_calls(
+            [call('api_revision',
+                  sha1_git='prev0-rev',
+                  context='prev1-rev'),
+             call('api_revision',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id'),
+             call('api_revision_log',
+                  sha1_git='rev-id',
+                  prev_sha1s='prev1-rev/prev0-rev'),
+             call('api_revision',
+                  sha1_git='123',
+                  context='prev1-rev/prev0-rev/rev-id'),
+             call('api_revision',
                   sha1_git='456')])
 
     @nottest
     def _url_for_rev_message_test(self, fn, **data):
         if fn == 'api_revision':
-            return '/api/revision/' + data['sha1_git'] + '/'
+            if 'context' in data and data['context'] is not None:
+                return '/api/revision/%s/prev/%s/' % (data['sha1_git'], data['context'])  # noqa
+            else:
+                return '/api/revision/%s/' % data['sha1_git']
         elif fn == 'api_revision_log':
-            return '/api/revision/' + data['sha1_git'] + '/log/'
+            if 'prev_sha1s' in data and data['prev_sha1s'] is not None:
+                return '/api/revision/%s/prev/%s/log/' % (data['sha1_git'], data['prev_sha1s'])  # noqa
+            else:
+                return '/api/revision/%s/log/' % data['sha1_git']
         elif fn == 'api_revision_raw_message':
             return '/api/revision/' + data['sha1_git'] + '/raw/'
         else:
@@ -588,35 +734,43 @@ class UtilsTestCase(unittest.TestCase):
         mock_flask.url_for.side_effect = self._url_for_rev_message_test
 
         # when
+        expected_revision = {
+            'id': 'rev-id',
+            'url': '/api/revision/rev-id/',
+            'history_url': '/api/revision/rev-id/log/',
+            'history_context_url': ('/api/revision/rev-id/'
+                                    'prev/prev-rev/log/'),
+            'message': None,
+            'parents': ['123'],
+            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
+            'children': ['456'],
+            'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
+        }
+
         actual_revision = utils.enrich_revision({
             'id': 'rev-id',
             'message': None,
             'parents': ['123'],
             'children': ['456'],
-        }, context='sha1_git_root')
+        }, context='prev-rev')
 
         # then
-        self.assertEqual(actual_revision, {
-            'id': 'rev-id',
-            'url': '/api/revision/rev-id/',
-            'message': None,
-            'history_url': '/api/revision/rev-id/log/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/sha1_git_root/history/123/'],
-            'children': ['456'],
-            'children_urls': ['/api/revision/sha1_git_root/history/456/'],
-        })
+        self.assertEqual(actual_revision, expected_revision)
 
         mock_flask.url_for.assert_has_calls(
             [call('api_revision',
+                  sha1_git='prev-rev'),
+             call('api_revision',
                   sha1_git='rev-id'),
              call('api_revision_log',
                   sha1_git='rev-id'),
-             call('api_revision_history',
-                  sha1_git_root='sha1_git_root',
-                  sha1_git='123'),
-             call('api_revision_history',
-                  sha1_git_root='sha1_git_root',
+             call('api_revision_log',
+                  sha1_git='rev-id',
+                  prev_sha1s='prev-rev'),
+             call('api_revision',
+                  sha1_git='123',
+                  context='prev-rev/rev-id'),
+             call('api_revision',
                   sha1_git='456')])
 
     @patch('swh.web.ui.utils.flask')
@@ -632,30 +786,38 @@ class UtilsTestCase(unittest.TestCase):
             'message_decoding_failed': True,
             'parents': ['123'],
             'children': ['456'],
-        }, context='sha1_git_root')
+        }, context='prev-rev')
 
-        # then
-        self.assertEqual(actual_revision, {
+        expected_revision = {
             'id': 'rev-id',
             'url': '/api/revision/rev-id/',
+            'history_url': '/api/revision/rev-id/log/',
+            'history_context_url': ('/api/revision/rev-id/'
+                                    'prev/prev-rev/log/'),
             'message': None,
             'message_decoding_failed': True,
             'message_url': '/api/revision/rev-id/raw/',
-            'history_url': '/api/revision/rev-id/log/',
             'parents': ['123'],
-            'parent_urls': ['/api/revision/sha1_git_root/history/123/'],
+            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
             'children': ['456'],
-            'children_urls': ['/api/revision/sha1_git_root/history/456/'],
-        })
+            'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
+        }
+
+        # then
+        self.assertEqual(actual_revision, expected_revision)
 
         mock_flask.url_for.assert_has_calls(
             [call('api_revision',
+                  sha1_git='prev-rev'),
+             call('api_revision',
                   sha1_git='rev-id'),
              call('api_revision_log',
                   sha1_git='rev-id'),
-             call('api_revision_history',
-                  sha1_git_root='sha1_git_root',
-                  sha1_git='123'),
-             call('api_revision_history',
-                  sha1_git_root='sha1_git_root',
+             call('api_revision_log',
+                  sha1_git='rev-id',
+                  prev_sha1s='prev-rev'),
+             call('api_revision',
+                  sha1_git='123',
+                  context='prev-rev/rev-id'),
+             call('api_revision',
                   sha1_git='456')])

@@ -71,7 +71,7 @@ def search():
     env['search_stats'] = search_stats
     env['search_res'] = search_res
     env['message'] = message
-    return render_template('upload_and_search.html', **env)
+    return render_template('search.html', **env)
 
 
 @app.route('/browse/content/')
@@ -246,7 +246,13 @@ def browse_origin(origin_id):
     """Browse origin with id id.
 
     """
-    env = {'origin_id': origin_id,
+
+    browse_url = url_for('browse_revision_with_origin', origin_id=origin_id)
+    visit_url = url_for('api_origin_visits', origin_id=origin_id)
+
+    env = {'browse_url': browse_url,
+           'visit_url': visit_url,
+           'origin_id': origin_id,
            'origin': None}
 
     try:
@@ -298,17 +304,32 @@ def browse_release(sha1_git):
 
 @app.route('/browse/revision/')
 @app.route('/browse/revision/<string:sha1_git>/')
+@app.route('/browse/revision/<string:sha1_git>/prev/<path:prev_sha1s>/')
 @set_renderers(HTMLRenderer)
-def browse_revision(sha1_git):
-    """Browse revision with sha1_git.
+def browse_revision(sha1_git, prev_sha1s=None):
+    """Browse the revision with git SHA1 sha1_git_cur, while optionally keeping
+    the context from which we came as a list of previous (i.e. later)
+    revisions' sha1s.
 
+    Args:
+        sha1_git: the requested revision's sha1_git.
+        prev_sha1s: an optional string of /-separated sha1s representing our
+        context, ordered by descending revision date.
+
+    Returns:
+        Information about revision of git SHA1 sha1_git_cur, with relevant URLS
+        pointing to the context augmented with sha1_git_cur.
+
+    Example:
+        GET /browse/revision/
     """
+
     env = {'sha1_git': sha1_git,
            'message': None,
            'revision': None}
 
     try:
-        rev = api.api_revision(sha1_git)
+        rev = api.api_revision(sha1_git, prev_sha1s)
         env['revision'] = utils.prepare_data_for_view(rev)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
@@ -325,10 +346,17 @@ def browse_revision_raw_message(sha1_git):
 
 
 @app.route('/browse/revision/<string:sha1_git>/log/')
+@app.route('/browse/revision/<string:sha1_git>/prev/<path:prev_sha1s>/log/')
 @set_renderers(HTMLRenderer)
-def browse_revision_log(sha1_git):
-    """Browse revision with sha1_git's log.
+def browse_revision_log(sha1_git, prev_sha1s=None):
+    """Browse revision with sha1_git's log. If the navigation path through the
+    commit tree is specified, we intersect the earliest revision's log with the
+    revisions the user browsed through - ie the path taken to the specified
+    revision.
 
+    Args:
+        sha1_git: the current revision's SHA1_git checksum
+        prev_sha1s: optionally, the path through which we want log information
     """
     env = {'sha1_git': sha1_git,
            'sha1_url': '/browse/revision/%s/' % sha1_git,
@@ -336,7 +364,7 @@ def browse_revision_log(sha1_git):
            'revisions': []}
 
     try:
-        revisions = api.api_revision_log(sha1_git)
+        revisions = api.api_revision_log(sha1_git, prev_sha1s)
         env['revisions'] = map(utils.prepare_data_for_view, revisions)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
@@ -390,6 +418,38 @@ def browse_revision_log_by(origin_id,
         env['message'] = str(e)
 
     return render_template('revision-log.html', **env)
+
+
+@app.route('/browse/revision/<string:sha1_git_cur>/prev/<path:sha1s>/')
+@set_renderers(HTMLRenderer)
+def browse_with_rev_context(sha1_git_cur, sha1s):
+    """Browse the revision with git SHA1 sha1_git_cur, while keeping the context
+    from which we came as a list of previous  (i.e. later) revisions' sha1s.
+
+    Args:
+        sha1_git_cur: the requested revision's sha1_git.
+        sha1s: a string of /-separated sha1s representing our context, ordered
+        by descending revision date.
+
+    Returns:
+        Information about revision of git SHA1 sha1_git_cur, with relevant URLS
+        pointing to the context augmented with sha1_git_cur.
+
+    Example:
+        GET /browse/revision/
+    """
+    env = {'sha1_git': sha1_git_cur,
+           'message': None,
+           'revision': None}
+
+    try:
+        revision = api.api_revision(
+            sha1_git_cur, sha1s)
+        env['revision'] = utils.prepare_data_for_view(revision)
+    except (BadInputExc, NotFoundExc) as e:
+        env['message'] = str(e)
+
+    return render_template('revision.html', **env)
 
 
 @app.route('/browse/revision/<string:sha1_git_root>/history/<sha1_git>/')
