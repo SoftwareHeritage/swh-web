@@ -208,6 +208,68 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.stat_counters.assert_called_with()
 
     @patch('swh.web.ui.service.backend')
+    @istest
+    def stat_origin_visits(self, mock_backend):
+        # given
+        stub_result = [
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': datetime.datetime(
+                    2013, 7, 1, 20, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 21, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+        mock_backend.stat_origin_visits.return_value = stub_result
+
+        # when
+        expected_dates = [
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': datetime.datetime(
+                    2013, 7, 1, 20, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 21, 0, 0,
+                    tzinfo=datetime.timezone.utc).timestamp(),
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+
+        actual_dates = service.stat_origin_visits(6)
+
+        # then
+        self.assertEqual(expected_dates,
+                         list(actual_dates))
+
+        mock_backend.stat_origin_visits.assert_called_once_with(6)
+
+    @patch('swh.web.ui.service.backend')
     @patch('swh.web.ui.service.hashutil')
     @istest
     def hash_and_search(self, mock_hashutil, mock_backend):
@@ -254,33 +316,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_hashutil.hashfile.assert_called_once_with('/some/path')
         self.storage.content_find.assert_called_once_with({'sha1': bhash})
         mock_hashutil.hash_to_hex.assert_called_once_with(bhash)
-
-    @patch('swh.web.ui.service.upload')
-    @istest
-    def test_upload_and_search(self, mock_upload):
-        mock_upload.save_in_upload_folder.return_value = (
-            '/tmp/dir', 'some-filename', '/tmp/dir/path/some-filename')
-
-        service.hash_and_search = MagicMock(side_effect=lambda filepath:
-                                            {'sha1': 'blah',
-                                             'found': True})
-        mock_upload.cleanup.return_value = None
-
-        file = MagicMock(filename='some-filename')
-
-        # when
-        actual_res = service.upload_and_search(file)
-
-        # then
-        self.assertEqual(actual_res, {
-            'filename': 'some-filename',
-            'sha1': 'blah',
-            'found': True})
-
-        mock_upload.save_in_upload_folder.assert_called_with(file)
-        mock_upload.cleanup.assert_called_with('/tmp/dir')
-        service.hash_and_search.assert_called_once_with(
-            '/tmp/dir/path/some-filename')
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1164,6 +1199,164 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             self.assertEqual(cm.exception.args[0], 'Revision with sha1_git '
                              '18d8be353ed3480476f032475e7c233eff7371d5 '
                              'not found.')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_multiple(self, mock_backend):
+        # given
+
+        sha1_bin = '18d8be353ed3480476f032475e7c233eff7371d5'
+        sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
+
+        stub_revisions = [
+            {
+                'id': hex_to_hash(sha1_bin),
+                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+                'author': {
+                    'name': b'bill & boule',
+                    'email': b'bill@boule.org',
+                },
+                'committer': {
+                    'name': b'boule & bill',
+                    'email': b'boule@bill.org',
+                },
+                'message': b'elegant fix for bug 31415957',
+                'date': {
+                    'timestamp': datetime.datetime(
+                        2000, 1, 17, 11, 23, 54,
+                        tzinfo=datetime.timezone.utc).timestamp(),
+                    'offset': 0,
+                    'negative_utc': False
+                    },
+                'date_offset': 0,
+                'committer_date': {
+                    'timestamp': datetime.datetime(
+                        2000, 1, 17, 11, 23, 54,
+                        tzinfo=datetime.timezone.utc).timestamp(),
+                    'offset': 0,
+                    'negative_utc': False
+                    },
+                'committer_date_offset': 0,
+                'synthetic': False,
+                'type': 'git',
+                'parents': [],
+                'metadata': [],
+            },
+            {
+                'id': hex_to_hash(sha1_other),
+                'directory': 'abcdbe353ed3480476f032475e7c233eff7371d5',
+                'author': {
+                    'name': b'name',
+                    'email': b'name@surname.org',
+                },
+                'committer': {
+                    'name': b'name',
+                    'email': b'name@surname.org',
+                },
+                'message': b'ugly fix for bug 42',
+                'date': {
+                    'timestamp': datetime.datetime(
+                        2000, 1, 12, 5, 23, 54,
+                        tzinfo=datetime.timezone.utc).timestamp(),
+                    'offset': 0,
+                    'negative_utc': False
+                    },
+                'date_offset': 0,
+                'committer_date': {
+                    'timestamp': datetime.datetime(
+                        2000, 1, 12, 5, 23, 54,
+                        tzinfo=datetime.timezone.utc).timestamp(),
+                    'offset': 0,
+                    'negative_utc': False
+                    },
+                'committer_date_offset': 0,
+                'synthetic': False,
+                'type': 'git',
+                'parents': [],
+                'metadata': [],
+            }
+        ]
+
+        mock_backend.revision_get_multiple.return_value = stub_revisions
+
+        # when
+        actual_revisions = service.lookup_revision_multiple(
+            [sha1_bin, sha1_other])
+
+        # then
+        self.assertEqual(list(actual_revisions), [
+            {
+                'id': sha1_bin,
+                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+                'author': {
+                    'name': 'bill & boule',
+                    'email': 'bill@boule.org',
+                },
+                'committer': {
+                    'name': 'boule & bill',
+                    'email': 'boule@bill.org',
+                },
+                'message': 'elegant fix for bug 31415957',
+                'date': '2000-01-17T11:23:54+00:00',
+                'date_offset': 0,
+                'committer_date': '2000-01-17T11:23:54+00:00',
+                'committer_date_offset': 0,
+                'synthetic': False,
+                'type': 'git',
+                'parents': [],
+                'metadata': [],
+            },
+            {
+                'id': sha1_other,
+                'directory': 'abcdbe353ed3480476f032475e7c233eff7371d5',
+                'author': {
+                    'name': 'name',
+                    'email': 'name@surname.org',
+                },
+                'committer': {
+                    'name': 'name',
+                    'email': 'name@surname.org',
+                },
+                'message': 'ugly fix for bug 42',
+                'date': '2000-01-12T05:23:54+00:00',
+                'date_offset': 0,
+                'committer_date': '2000-01-12T05:23:54+00:00',
+                'committer_date_offset': 0,
+                'synthetic': False,
+                'type': 'git',
+                'parents': [],
+                'metadata': [],
+            }
+        ])
+
+        self.assertEqual(
+            list(mock_backend.revision_get_multiple.call_args[0][0]),
+            [hex_to_hash(
+                '18d8be353ed3480476f032475e7c233eff7371d5'),
+             hex_to_hash(
+                 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_multiple_none_found(self, mock_backend):
+        # given
+        sha1_bin = '18d8be353ed3480476f032475e7c233eff7371d5'
+        sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
+
+        mock_backend.revision_get_multiple.return_value = []
+
+        # then
+        actual_revisions = service.lookup_revision_multiple(
+            [sha1_bin, sha1_other])
+
+        self.assertEqual(list(actual_revisions), [])
+
+        self.assertEqual(
+            list(mock_backend.revision_get_multiple.call_args[0][0]),
+            [hex_to_hash(
+                '18d8be353ed3480476f032475e7c233eff7371d5'),
+             hex_to_hash(
+                 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
 
     @patch('swh.web.ui.service.backend')
     @istest

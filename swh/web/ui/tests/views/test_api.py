@@ -439,49 +439,91 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.stat_counters.assert_called_once_with()
 
     @patch('swh.web.ui.views.api.service')
-    @patch('swh.web.ui.views.api.request')
     @istest
-    def api_uploadnsearch_bad_input(self, mock_request, mock_service):
+    def api_1_stat_origin_visits_raise_error(self, mock_service):
         # given
-        mock_request.files = {}
-
+        mock_service.stat_origin_visits.side_effect = ValueError(
+            'voluntary error to check the bad request middleware.')
         # when
-        rv = self.app.post('/api/1/uploadnsearch/')
-
+        rv = self.app.get('/api/1/stat/visits/2/')
+        # then
         self.assertEquals(rv.status_code, 400)
         self.assertEquals(rv.mimetype, 'application/json')
-
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': "Bad request, missing 'filename' entry in form."})
-
-        mock_service.upload_and_search.called = False
+            'error': 'voluntary error to check the bad request middleware.'})
 
     @patch('swh.web.ui.views.api.service')
-    @patch('swh.web.ui.views.api.request')
     @istest
-    def api_uploadnsearch(self, mock_request, mock_service):
+    def api_1_stat_origin_visits_raise_swh_storage_error_db(
+            self, mock_service):
         # given
-        mock_request.files = {'filename': 'simple-filename'}
-        mock_service.upload_and_search.return_value = {
-            'filename': 'simple-filename',
-            'sha1': 'some-hex-sha1',
-            'found': False,
-        }
+        mock_service.stat_origin_visits.side_effect = StorageDBError(
+            'SWH Storage exploded! Will be back online shortly!')
+        # when
+        rv = self.app.get('/api/1/stat/visits/2/')
+        # then
+        self.assertEquals(rv.status_code, 503)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error':
+            'An unexpected error occurred in the backend: '
+            'SWH Storage exploded! Will be back online shortly!'})
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_stat_origin_visits_raise_swh_storage_error_api(
+            self, mock_service):
+        # given
+        mock_service.stat_origin_visits.side_effect = StorageAPIError(
+            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+        )
+        # when
+        rv = self.app.get('/api/1/stat/visits/2/')
+        # then
+        self.assertEquals(rv.status_code, 503)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error':
+            'An unexpected error occurred in the api backend: '
+            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+        })
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_stat_origin_visits(self, mock_service):
+        # given
+        stub_stats = [
+            {
+                'date': 1420149600.0,
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': 1104616800.0,
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': 1293919200.0,
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+        expected_stats = [1104616800.0, 1293919200.0, 1420149600.0]
+        mock_service.stat_origin_visits.return_value = stub_stats
 
         # when
-        rv = self.app.post('/api/1/uploadnsearch/')
+        rv = self.app.get('/api/1/stat/visits/2/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
-
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'filename': 'simple-filename',
-                                          'sha1': 'some-hex-sha1',
-                                          'found': False})
+        self.assertEquals(response_data, expected_stats)
 
-        mock_service.upload_and_search.assert_called_once_with(
-            'simple-filename')
+        mock_service.stat_origin_visits.assert_called_once_with(2)
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -679,8 +721,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
             ],
             'parent_urls': [
-                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
-                '/history/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'
+                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
+                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1416,8 +1458,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
             ],
             'parent_urls': [
-                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
-                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1461,6 +1503,104 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_revision_log_context(self, mock_service):
+        # given
+        stub_revisions = [{
+            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author_name': 'Software Heritage',
+            'author_email': 'robot@softwareheritage.org',
+            'committer_name': 'Software Heritage',
+            'committer_email': 'robot@softwareheritage.org',
+            'message': 'synthetic revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+
+        mock_service.lookup_revision_log.return_value = stub_revisions
+        mock_service.lookup_revision_multiple.return_value = [{
+            'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'author_name': 'Name Surname',
+            'author_email': 'name@surname.com',
+            'committer_name': 'Name Surname',
+            'committer_email': 'name@surname.com',
+            'message': 'amazing revision message',
+            'date_offset': 0,
+            'committer_date_offset': 0,
+            'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
+            'type': 'tar',
+            'synthetic': True,
+        }]
+
+        # when
+        rv = self.app.get('/api/1/revision/18d8be353ed3480476f0'
+                          '32475e7c233eff7371d5/prev/prev-rev/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, [
+            {
+                'url': '/api/1/revision/'
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
+                'history_url': '/api/1/revision/'
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/log/',
+                'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+                'directory': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'directory_url': '/api/1/directory/'
+                '18d8be353ed3480476f032475e7c233eff7371d5/',
+                'author_name': 'Name Surname',
+                'author_email': 'name@surname.com',
+                'committer_name': 'Name Surname',
+                'committer_email': 'name@surname.com',
+                'message': 'amazing revision message',
+                'date_offset': 0,
+                'committer_date_offset': 0,
+                'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
+                'parent_urls': [
+                    '/api/1/revision/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
+                    '/prev/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/'
+                ],
+                'type': 'tar',
+                'synthetic': True,
+            },
+            {
+                'url': '/api/1/revision/'
+                '18d8be353ed3480476f032475e7c233eff7371d5/',
+                'history_url': '/api/1/revision/'
+                '18d8be353ed3480476f032475e7c233eff7371d5/log/',
+                'id': '18d8be353ed3480476f032475e7c233eff7371d5',
+                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+                'directory_url': '/api/1/directory/'
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
+                'author_name': 'Software Heritage',
+                'author_email': 'robot@softwareheritage.org',
+                'committer_name': 'Software Heritage',
+                'committer_email': 'robot@softwareheritage.org',
+                'message': 'synthetic revision message',
+                'date_offset': 0,
+                'committer_date_offset': 0,
+                'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
+                'parent_urls': [
+                    '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+                    '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
+                ],
+                'type': 'tar',
+                'synthetic': True,
+            }])
+
+        mock_service.lookup_revision_log.assert_called_once_with(
+            '18d8be353ed3480476f032475e7c233eff7371d5', 100)
+        mock_service.lookup_revision_multiple.assert_called_once_with(
+            ['prev-rev'])
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_revision_log_by(self, mock_service):
         # given
         stub_revisions = [{
@@ -1498,8 +1638,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
             ],
             'parent_urls': [
-                '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5'
-                '/history/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
+                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1582,10 +1722,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'directory': '272'
         }
 
-        mock_service.lookup_revision_with_context.return_value = stub_revision
+        mock_service.lookup_revision.return_value = stub_revision
 
         # then
-        rv = self.app.get('/api/1/revision/666/history/883/')
+        rv = self.app.get('/api/1/revision/883/prev/999/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -1595,17 +1735,17 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'id': '883',
             'url': '/api/1/revision/883/',
             'history_url': '/api/1/revision/883/log/',
+            'history_context_url': '/api/1/revision/883/prev/999/log/',
             'children': ['777', '999'],
-            'children_urls': ['/api/1/revision/666/history/777/',
-                              '/api/1/revision/666/history/999/'],
+            'children_urls': ['/api/1/revision/777/',
+                              '/api/1/revision/999/'],
             'parents': [],
             'parent_urls': [],
             'directory': '272',
             'directory_url': '/api/1/directory/272/'
         })
 
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-            '666', '883', 100)
+        mock_service.lookup_revision.assert_called_once_with('883')
 
     @patch('swh.web.ui.views.api._revision_directory_by')
     @istest

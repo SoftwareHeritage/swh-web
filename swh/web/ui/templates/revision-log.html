@@ -39,6 +39,13 @@
     </div>
     {% endif %}
 
+    {% if revision['history_context_url'] is not none %}
+    <div class="row">
+       <div class="col-md-2">Contextual Revision Log</div>
+       <div class="col-md-6"><p><a href="{{ revision['history_context_url'] }}">{{ revision['history_context_url'] }}</a></p></div>
+    </div>
+    {% endif %}
+    
     {% if revision['directory_url'] is not none %}
            <div class="row">
               <div class="col-md-2">directory</div>

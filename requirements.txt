@@ -14,4 +14,6 @@ dateutil
 #blinker
 
 # Non-Python dependencies
-# libjs-cryptojs
+#libjs-cryptojs
+#libjs-jquery-flot
+#libjs-jquery-flot-tooltip
