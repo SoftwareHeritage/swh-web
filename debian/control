@@ -10,15 +10,14 @@ Build-Depends: debhelper (>= 9),
                python3-swh.core (>= 0.0.20~),
                python3-swh.storage (>= 0.0.33~),
                python3-vcversioner,
-	       libjs-cryptojs
+               libjs-cryptojs,
+               libjs-jquery-flot,
+               libjs-jquery-flot-tooltip
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
 Package: python3-swh.web.ui
 Architecture: all
-Depends: python3-swh.core (>= 0.0.20~),
-         python3-swh.storage (>= 0.0.33~),
-         libjs-cryptojs,
-         ${misc:Depends},
+Depends: ${misc:Depends},
          ${python3:Depends}
 Description: Software Heritage Web UI
