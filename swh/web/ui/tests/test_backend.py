@@ -417,6 +417,92 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.revision_get.assert_called_with([sha1_bin])
 
     @istest
+    def revision_get_multiple(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+        sha1_other = hashutil.hex_to_hash(
+            'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')
+
+        stub_revisions = [
+            {
+                'id': sha1_bin,
+                'directory': hashutil.hex_to_hash(
+                    '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+                'author': {
+                    'name': b'bill & boule',
+                    'email': b'bill@boule.org',
+                },
+                'committer': {
+                    'name': b'boule & bill',
+                    'email': b'boule@bill.org',
+                },
+                'message': b'elegant fix for bug 31415957',
+                'date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+                'date_offset': 0,
+                'committer_date': datetime.datetime(2000, 1, 17, 11, 23, 54),
+                'committer_date_offset': 0,
+                'synthetic': False,
+                'type': 'git',
+                'parents': [],
+                'metadata': [],
+            },
+            {
+                'id': sha1_other,
+                'directory': hashutil.hex_to_hash(
+                    '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+                'author': {
+                    'name': b'name',
+                    'email': b'name@surname.org',
+                },
+                'committer': {
+                    'name': b'name',
+                    'email': b'name@surname.org',
+                },
+                'message': b'ugly fix for bug 42',
+                'date': datetime.datetime(2000, 1, 12, 5, 23, 54),
+                'date_offset': 0,
+                'committer_date': datetime.datetime(2000, 1, 12, 5, 23, 54),
+                'committer_date_offset': 0,
+                'synthetic': False,
+                'type': 'git',
+                'parents': [],
+                'metadata': [],
+            }
+        ]
+        self.storage.revision_get = MagicMock(
+            return_value=stub_revisions)
+
+        # when
+        actual_revision = backend.revision_get_multiple([sha1_bin, sha1_other])
+
+        # then
+        self.assertEqual(actual_revision, stub_revisions)
+
+        self.storage.revision_get.assert_called_with(
+            [sha1_bin, sha1_other])
+
+    @istest
+    def revision_get_multiple_none_found(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '18d8be353ed3480476f032475e7c233eff7371d5')
+        sha1_other = hashutil.hex_to_hash(
+            'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')
+
+        self.storage.revision_get = MagicMock(
+            return_value=[])
+
+        # when
+        actual_revision = backend.revision_get_multiple([sha1_bin, sha1_other])
+
+        # then
+        self.assertEqual(actual_revision, [])
+
+        self.storage.revision_get.assert_called_with(
+            [sha1_bin, sha1_other])
+
+    @istest
     def revision_log(self):
         # given
         sha1_bin = hashutil.hex_to_hash(
@@ -456,7 +542,6 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_log_by(self):
         # given
-        # given
         sha1_bin = hashutil.hex_to_hash(
             '28d8be353ed3480476f032475e7c233eff7371d5')
         stub_revision_log = [{
@@ -482,9 +567,8 @@ class BackendTestCase(test_app.SWHApiTestCase):
             'metadata': [],
         }]
 
-        self.storage.revision_get_by = MagicMock(return_value=[
-            {'id': sha1_bin}])
-        self.storage.revision_log = MagicMock(return_value=stub_revision_log)
+        self.storage.revision_log_by = MagicMock(
+            return_value=stub_revision_log)
 
         # when
         actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
@@ -496,11 +580,10 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_log_by_norev(self):
         # given
-        # given
         sha1_bin = hashutil.hex_to_hash(
             '28d8be353ed3480476f032475e7c233eff7371d5')
 
-        self.storage.revision_get_by = MagicMock(return_value=None)
+        self.storage.revision_log_by = MagicMock(return_value=None)
 
         # when
         actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
@@ -539,6 +622,42 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_stats, expected_stats)
 
         self.storage.stat_counters.assert_called_with()
+
+    @istest
+    def stat_origin_visits(self):
+        # given
+        expected_dates = [
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 1
+            },
+            {
+                'date': datetime.datetime(
+                    2013, 7, 1, 20, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 2
+            },
+            {
+                'date': datetime.datetime(
+                    2015, 1, 1, 21, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 3
+            }
+        ]
+        self.storage.origin_visit_get = MagicMock(return_value=expected_dates)
+
+        # when
+        actual_dates = backend.stat_origin_visits(5)
+
+        # then
+        self.assertEqual(actual_dates, expected_dates)
+
+        self.storage.origin_visit_get.assert_called_with(5)
 
     @istest
     def directory_entry_get_by_path(self):

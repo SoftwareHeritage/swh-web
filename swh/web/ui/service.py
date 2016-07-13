@@ -6,7 +6,7 @@
 from collections import defaultdict
 
 from swh.core import hashutil
-from swh.web.ui import converters, query, upload, backend
+from swh.web.ui import converters, query, backend
 from swh.web.ui.exc import NotFoundExc
 
 
@@ -51,22 +51,6 @@ def hash_and_search(filepath):
     else:
         return {'sha1': hashutil.hash_to_hex(h['sha1']),
                 'found': False}
-
-
-def upload_and_search(file):
-    """Upload a file and compute its hash.
-
-    """
-    tmpdir, filename, filepath = upload.save_in_upload_folder(file)
-    res = {'filename': filename}
-    try:
-        content = hash_and_search(filepath)
-        res.update(content)
-        return res
-    finally:
-        # clean up
-        if tmpdir:
-            upload.cleanup(tmpdir)
 
 
 def lookup_hash(q):
@@ -231,6 +215,31 @@ def lookup_revision(rev_sha1_git):
 
     revision = backend.revision_get(sha1_git_bin)
     return converters.from_revision(revision)
+
+
+def lookup_revision_multiple(sha1_git_list):
+    """Return information about the revision with sha1 revision_sha1_git.
+
+    Args:
+        revision_sha1_git: The revision's sha1 as hexadecimal
+
+    Returns:
+        Revision information as dict.
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+
+    """
+    def to_sha1_bin(sha1_hex):
+        _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+            sha1_hex,
+            ['sha1'],
+            'Only sha1_git is supported.')
+        return sha1_git_bin
+
+    sha1_bin_list = (to_sha1_bin(x) for x in sha1_git_list)
+    revisions = backend.revision_get_multiple(sha1_bin_list)
+    return (converters.from_revision(x) for x in revisions)
 
 
 def lookup_revision_message(rev_sha1_git):
@@ -540,6 +549,17 @@ def stat_counters():
         A dict mapping textual labels to integer values.
     """
     return backend.stat_counters()
+
+
+def stat_origin_visits(origin_id):
+    """Return the dates at which the given origin was scanned for content.
+
+    Returns:
+       An array of dates in the datetime format
+    """
+    for visit in backend.stat_origin_visits(origin_id):
+        visit['date'] = visit['date'].timestamp()
+        yield(visit)
 
 
 def lookup_entity_by_uuid(uuid):

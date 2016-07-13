@@ -115,8 +115,7 @@ def parse_timestamp(timestamp):
     """Given a time or timestamp (as string), parse the result as datetime.
 
     Returns:
-        a timezone-aware datetime representing the parsed value. If the parsed
-        value doesn't specify a timezone, UTC is assumed.
+        datetime result of parsing values.
 
     Samples:
         - 2016-01-12
@@ -124,14 +123,10 @@ def parse_timestamp(timestamp):
         - Today is January 1, 2047 at 8:21:00AM
         - 1452591542
     """
-    default_timestamp = datetime.datetime.utcfromtimestamp(0).replace(
-        tzinfo=datetime.timezone.utc)
     try:
-        res = parser.parse(timestamp, ignoretz=False, fuzzy=True,
-                           default=default_timestamp)
+        res = parser.parse(timestamp, ignoretz=False, fuzzy=True)
     except:
-        res = datetime.datetime.utcfromtimestamp(float(timestamp)).replace(
-            tzinfo=datetime.timezone.utc)
+        res = datetime.datetime.fromtimestamp(float(timestamp))
     return res
 
 
@@ -203,16 +198,102 @@ def enrich_entity(entity):
     return entity
 
 
+def _get_path_list(path_string):
+    """Helper for enrich_revision: get a list of the sha1 id of the navigation
+    breadcrumbs, ordered from the oldest to the most recent.
+
+    Args:
+        path_string: the path as a '/'-separated string
+
+    Returns:
+        The navigation context as a list of sha1 revision ids
+    """
+    return path_string.split('/')
+
+
+def _get_revision_contexts(rev_id, context):
+    """Helper for enrich_revision: retrieve for the revision id and potentially
+    the navigation breadcrumbs the context to pass to parents and children of
+    of the revision.
+
+    Args:
+        rev_id: the revision's sha1 id
+        context: the current navigation context
+
+    Returns:
+        The context for parents, children and the url of the direct child as a
+        tuple in that order.
+    """
+    context_for_parents = None
+    context_for_children = None
+    url_direct_child = None
+
+    if not context:
+        return (rev_id, None, None)
+
+    path_list = _get_path_list(context)
+    context_for_parents = '%s/%s' % (context, rev_id)
+    prev_for_children = path_list[:-1]
+    if len(prev_for_children) > 0:
+        context_for_children = '/'.join(prev_for_children)
+    child_id = path_list[-1]
+    # This commit is not the first commit in the path
+    if context_for_children:
+        url_direct_child = flask.url_for(
+            'api_revision',
+            sha1_git=child_id,
+            context=context_for_children)
+    # This commit is the first commit in the path
+    else:
+        url_direct_child = flask.url_for(
+            'api_revision',
+            sha1_git=child_id)
+
+    return (context_for_parents, context_for_children, url_direct_child)
+
+
+def _make_child_url(rev_children, context):
+    """Helper for enrich_revision: retrieve the list of urls corresponding
+    to the children of the current revision according to the navigation
+    breadcrumbs.
+
+    Args:
+        rev_children: a list of revision id
+        context: the '/'-separated navigation breadcrumbs
+
+    Returns:
+        the list of the children urls according to the context
+    """
+    children = []
+    for child in rev_children:
+        if context and child != _get_path_list(context)[-1]:
+            children.append(flask.url_for('api_revision', sha1_git=child))
+        elif not context:
+            children.append(flask.url_for('api_revision', sha1_git=child))
+    return children
+
+
 def enrich_revision(revision, context=None):
     """Enrich revision with links where it makes sense (directory, parents).
+    Keep track of the navigation breadcrumbs if they are specified.
 
+    Args:
+        revision: the revision as a dict
+        context: the navigation breadcrumbs as a /-separated string of revision
+        sha1_git
     """
-    if not context:
-        context = revision['id']
+
+    ctx_parents, ctx_children, url_direct_child = _get_revision_contexts(
+        revision['id'], context)
 
     revision['url'] = flask.url_for('api_revision', sha1_git=revision['id'])
     revision['history_url'] = flask.url_for('api_revision_log',
                                             sha1_git=revision['id'])
+    if context:
+        revision['history_context_url'] = flask.url_for(
+            'api_revision_log',
+            sha1_git=revision['id'],
+            prev_sha1s=context)
 
     if 'author' in revision:
         author = revision['author']
@@ -232,20 +313,19 @@ def enrich_revision(revision, context=None):
     if 'parents' in revision:
         parents = []
         for parent in revision['parents']:
-            parents.append(flask.url_for('api_revision_history',
-                                         sha1_git_root=context,
-                                         sha1_git=parent))
-
+            parents.append(flask.url_for('api_revision',
+                                         sha1_git=parent,
+                                         context=ctx_parents))
         revision['parent_urls'] = parents
 
     if 'children' in revision:
-        children = []
-        for child in revision['children']:
-            children.append(flask.url_for('api_revision_history',
-                                          sha1_git_root=context,
-                                          sha1_git=child))
-
+        children = _make_child_url(revision['children'], context)
+        if url_direct_child:
+            children.append(url_direct_child)
         revision['children_urls'] = children
+    else:
+        if url_direct_child:
+            revision['children_urls'] = [url_direct_child]
 
     if 'message_decoding_failed' in revision:
         revision['message_url'] = flask.url_for(
