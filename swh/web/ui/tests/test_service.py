@@ -317,33 +317,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.storage.content_find.assert_called_once_with({'sha1': bhash})
         mock_hashutil.hash_to_hex.assert_called_once_with(bhash)
 
-    @patch('swh.web.ui.service.upload')
-    @istest
-    def test_upload_and_search(self, mock_upload):
-        mock_upload.save_in_upload_folder.return_value = (
-            '/tmp/dir', 'some-filename', '/tmp/dir/path/some-filename')
-
-        service.hash_and_search = MagicMock(side_effect=lambda filepath:
-                                            {'sha1': 'blah',
-                                             'found': True})
-        mock_upload.cleanup.return_value = None
-
-        file = MagicMock(filename='some-filename')
-
-        # when
-        actual_res = service.upload_and_search(file)
-
-        # then
-        self.assertEqual(actual_res, {
-            'filename': 'some-filename',
-            'sha1': 'blah',
-            'found': True})
-
-        mock_upload.save_in_upload_folder.assert_called_with(file)
-        mock_upload.cleanup.assert_called_with('/tmp/dir')
-        service.hash_and_search.assert_called_once_with(
-            '/tmp/dir/path/some-filename')
-
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_origin(self, mock_backend):

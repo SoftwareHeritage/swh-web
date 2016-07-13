@@ -6,7 +6,7 @@
 from collections import defaultdict
 
 from swh.core import hashutil
-from swh.web.ui import converters, query, upload, backend
+from swh.web.ui import converters, query, backend
 from swh.web.ui.exc import NotFoundExc
 
 
@@ -51,22 +51,6 @@ def hash_and_search(filepath):
     else:
         return {'sha1': hashutil.hash_to_hex(h['sha1']),
                 'found': False}
-
-
-def upload_and_search(file):
-    """Upload a file and compute its hash.
-
-    """
-    tmpdir, filename, filepath = upload.save_in_upload_folder(file)
-    res = {'filename': filename}
-    try:
-        content = hash_and_search(filepath)
-        res.update(content)
-        return res
-    finally:
-        # clean up
-        if tmpdir:
-            upload.cleanup(tmpdir)
 
 
 def lookup_hash(q):

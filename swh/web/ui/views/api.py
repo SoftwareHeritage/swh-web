@@ -8,7 +8,7 @@ from types import GeneratorType
 from flask import request, url_for, Response, redirect
 
 from swh.web.ui import service, utils
-from swh.web.ui.exc import BadInputExc, NotFoundExc
+from swh.web.ui.exc import NotFoundExc
 from swh.web.ui.main import app
 
 
@@ -946,26 +946,3 @@ def api_entity_by_uuid(uuid):
         lookup_fn=service.lookup_entity_by_uuid,
         error_msg_if_not_found="Entity with uuid '%s' not found." % uuid,
         enrich_fn=utils.enrich_entity)
-
-
-@app.route('/api/1/uploadnsearch/', methods=['POST'])
-def api_uploadnsearch():
-    """Upload the file's content in the post body request.
-       Compute its hash and determine if it exists in the storage.
-
-    Args:
-        request.files filled with the filename's data to upload.
-
-    Returns:
-        Dictionary with 'sha1', 'filename' and 'found' predicate depending
-        on whether we find it or not.
-
-    Raises:
-        BadInputExc in case of the form submitted is incorrect.
-
-    """
-    file = request.files.get('filename')
-    if not file:
-        raise BadInputExc("Bad request, missing 'filename' entry in form.")
-
-    return service.upload_and_search(file)

@@ -526,51 +526,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.stat_origin_visits.assert_called_once_with(2)
 
     @patch('swh.web.ui.views.api.service')
-    @patch('swh.web.ui.views.api.request')
-    @istest
-    def api_uploadnsearch_bad_input(self, mock_request, mock_service):
-        # given
-        mock_request.files = {}
-
-        # when
-        rv = self.app.post('/api/1/uploadnsearch/')
-
-        self.assertEquals(rv.status_code, 400)
-        self.assertEquals(rv.mimetype, 'application/json')
-
-        response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {
-            'error': "Bad request, missing 'filename' entry in form."})
-
-        mock_service.upload_and_search.called = False
-
-    @patch('swh.web.ui.views.api.service')
-    @patch('swh.web.ui.views.api.request')
-    @istest
-    def api_uploadnsearch(self, mock_request, mock_service):
-        # given
-        mock_request.files = {'filename': 'simple-filename'}
-        mock_service.upload_and_search.return_value = {
-            'filename': 'simple-filename',
-            'sha1': 'some-hex-sha1',
-            'found': False,
-        }
-
-        # when
-        rv = self.app.post('/api/1/uploadnsearch/')
-
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.mimetype, 'application/json')
-
-        response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'filename': 'simple-filename',
-                                          'sha1': 'some-hex-sha1',
-                                          'found': False})
-
-        mock_service.upload_and_search.assert_called_once_with(
-            'simple-filename')
-
-    @patch('swh.web.ui.views.api.service')
     @istest
     def api_origin(self, mock_service):
         # given
