@@ -7,12 +7,12 @@
 {% endif %}
 
 {% if origin is not none %}
-<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.js') }}"></script>
 <script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
-<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
-<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
-<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.selection.js') }}"></script>
-<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.tooltip.min.js') }}"></script>
+<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.flot.js') }}"></script>
+<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.flot.time.js') }}"></script>
+<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.flot.selection.js') }}"></script>
+<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.flot.tooltip.min.js') }}"></script>
 <div> Details on origin {{ origin_id }}:
   <div id="swh-calendar" style="height: 200px">
     <div id="cal-zoom-window" style="height: 60%">

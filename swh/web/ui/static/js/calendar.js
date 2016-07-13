@@ -9,20 +9,19 @@
  *     visit_url: the complete relative URL for getting the origin's visit 
  *     stats
  *     origin_id: the origin being browsed
- *     zoomw: the 
- *     of the calendar
+ *     zoomw: the element that should contain the zoomable part of the calendar
  *     staticw: the element that should contain the static part of the calendar
  *     reset: the element that should reset the zoom level on click
  */
 
 var Calendar = function(browse_url, visit_url, origin_id,
-			zoomw, staticw, reset) {
+                        zoomw, staticw, reset) {
 
     /** Constants **/
     this.month_names = ['Jan', 'Feb', 'Mar',
-			'Apr', 'May', 'Jun',
-			'Jul', 'Aug', 'Sep',
-			'Oct', 'Nov', 'Dec'];    
+                        'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep',
+                        'Oct', 'Nov', 'Dec'];    
 
     /** Display **/
     this.desiredPxWidth = 7;
@@ -44,7 +43,11 @@ var Calendar = function(browse_url, visit_url, origin_id,
         group_data: null,
         plot_data: null
     };
-    
+
+    /** 
+     *  Keep a reference to the Calendar object context.
+     *  Otherwise, 'this' changes to represent current function caller scope
+     */
     var self = this;
 
     /** Start AJAX call **/ 
@@ -57,27 +60,16 @@ var Calendar = function(browse_url, visit_url, origin_id,
     });
     
     /**
-     *  Group the plot's base data according to the grouping ratio
+     *  Group the plot's base data according to the grouping ratio and the 
+     *  range required
      *  Args:
      *     groupFactor: the amount the data should be grouped by
+     *     range: 
      *  Returns:
      *     A dictionary containing timestamps divided by the grouping ratio as
      *     keys, a list of the corresponding complete timestamps as values
      */
-    this.dataGrouped = function(groupFactor) {
-        var group_dict = {};
-        for (const date of self.cal_data) {
-            var floor = Math.floor(date / groupFactor);
-            if (group_dict[floor] == undefined)
-                group_dict[floor] = [date];
-            else
-                group_dict[floor].push(date);
-        }
-        return group_dict;
-    };
 
-    /**
-     */
     this.dataGroupedRange = function(groupFactor, range) {
         var group_dict = {};
         var start = range.xaxis.from;
@@ -85,7 +77,8 @@ var Calendar = function(browse_url, visit_url, origin_id,
         var range_data = self.cal_data.filter(function(item, index, arr) {
             return item >= start && item <= end;
         });
-        for (const date of range_data) {
+        for (var date_idx in range_data) {
+	    var date = range_data[date_idx];
             var floor = Math.floor(date / groupFactor);
             if (group_dict[floor] == undefined)
                 group_dict[floor] = [date];
@@ -109,25 +102,25 @@ var Calendar = function(browse_url, visit_url, origin_id,
         var milli_length = range.xaxis.to - range.xaxis.from;
         var px_length = element.width();
         plotprops.group_factor = Math.floor(
-	    self.desiredPxWidth * (milli_length / px_length));
+            self.desiredPxWidth * (milli_length / px_length));
         plotprops.group_data = self.dataGroupedRange(
-	    plotprops.group_factor, range);
+            plotprops.group_factor, range);
     };
 
 
     /** Get plot data from the group data **/
     this.getPlotData = function(grouped_data) {
         var plot_data = [];
-	if (self.cal_data.length == 1) {
-	    plot_data = [[self.cal_data[0] - 3600*1000*24*30, 0],
-			 [self.cal_data[0], 1],
-			 [self.cal_data[0] + 3600*1000*24*30, 0]];
-	}
-	else {
+        if (self.cal_data.length == 1) {
+            plot_data = [[self.cal_data[0] - 3600*1000*24*30, 0],
+                         [self.cal_data[0], 1],
+                         [self.cal_data[0] + 3600*1000*24*30, 0]];
+        }
+        else {
             $.each(grouped_data, function(key, value) {
-		plot_data.push([value[0], value.length]);
+                plot_data.push([value[0], value.length]);
             });
-	}
+        }
         return [{ label: 'Calendar', data: plot_data }];
     };
 
@@ -150,71 +143,60 @@ var Calendar = function(browse_url, visit_url, origin_id,
     this.calendar = function(data) {
         // POSIX timestamps to JS timestamps
         self.cal_data = data.map(function(e)
-				 { return Math.floor(e * 1000); });
+                                 { return Math.floor(e * 1000); });
         /** Bootstrap the group ratio  **/
         var cal_data_range = null;
-	if (self.cal_data.length == 1)
-	    cal_data_range = {xaxis: {from: self.cal_data[0] - 3600*1000*24*30,
-				      to: self.cal_data[0] + 3600*1000*24*30}};
-	else
-	    cal_data_range = {xaxis: {from: self.cal_data[0],
-				      to: self.cal_data[self.cal_data.length -1]
-				     }
-			     };
+        if (self.cal_data.length == 1) {
+            var padding_qty = 3600*1000*24*30;
+            cal_data_range = {xaxis: {from: self.cal_data[0] - padding_qty,
+                                      to: self.cal_data[0] + padding_qty}};
+        }
+        else
+            cal_data_range = {xaxis: {from: self.cal_data[0],
+                                      to: self.cal_data[self.cal_data.length -1]
+                                     }
+                             };
         self.updateGroupFactorAndData(self.zoomw,
-				      self.zoom,
-				      cal_data_range);
+                                      self.zoom,
+                                      cal_data_range);
         self.updateGroupFactorAndData(self.staticw,
-				      self.static,
-				      cal_data_range);
+                                      self.static,
+                                      cal_data_range);
         /** Bootstrap the plot data **/
         self.zoom.plot_data = self.getPlotData(self.zoom.group_data);
-	self.static.plot_data = self.getPlotData(self.zoom.group_data);
-        
-        function date_to_tooltip_zoom(label, x_timestamp, y_hits, item) {
-            var floor_index = Math.floor(
-		item.datapoint[0] / self.zoom.group_factor);
-            var tooltip_text = self.zoom.group_data[floor_index].map(
-                function(elem) {
-                    var date = new Date(elem);
-                    var year = (date.getYear() + 1900).toString();
-                    var month = self.month_names[date.getMonth()];
-                    var day = date.getDate();
-                    var hr = date.getHours();
-                    var min = date.getMinutes();
-                    if (min < 10) min = '0'+min;
-                    return [day,
-			    month,
-			    year + ',',
-			    hr+':'+min,
-			    'UTC'].join(' ');
-                }
-            );
-            return tooltip_text.join('<br/>');
+        self.static.plot_data = self.getPlotData(self.zoom.group_data);
+
+        /**
+         *  Return the flot-required function for displaying tooltips, according to
+         *  the group we want to display the tooltip for
+         *  Args:
+         *     group_options: the group we want to display the tooltip for (self.static
+         *     or self.zoom)
+         */
+        function tooltip_fn(group_options) {
+            return function (label, x_timestamp, y_hits, item) {
+                var floor_index = Math.floor(
+                    item.datapoint[0] / group_options.group_factor);
+                var tooltip_text = group_options.group_data[floor_index].map(
+                    function(elem) {
+                        var date = new Date(elem);
+                        var year = (date.getYear() + 1900).toString();
+                        var month = self.month_names[date.getMonth()];
+                        var day = date.getDate();
+                        var hr = date.getHours();
+                        var min = date.getMinutes();
+                        if (min < 10) min = '0'+min;
+                        return [day,
+                                month,
+                                year + ',',
+                                hr+':'+min,
+                                'UTC'].join(' ');
+                    }
+                );
+                return tooltip_text.join('<br/>');
+            };
         }
-        
-        function date_to_tooltip_static(label, x_timestamp, y_hits, item) {
-            var floor_index = Math.floor(
-		item.datapoint[0] / self.static.group_factor);
-            var tooltip_text = self.static.group_data[floor_index].map(
-                function(elem) {
-                    var date = new Date(elem);
-                    var year = (date.getYear() + 1900).toString();
-                    var month = self.month_names[date.getMonth()];
-                    var day = date.getDate();
-                    var hr = date.getHours();
-                    var min = date.getMinutes();
-                    if (min < 10) min = '0'+min;
-                    return [day,
-			    month,
-			    year + ',',
-			    hr+':'+min,
-			    'UTC'].join(' ');
-                }
-            );
-            return tooltip_text.join('<br/>');
-        }
-        
+
         /** Plot options for both graph windows **/
         var zoom_options = {
             legend: {
@@ -246,7 +228,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
             },
             tooltip: {
                 show: true,
-                content: date_to_tooltip_zoom
+                content: tooltip_fn(self.zoom)
             }
         };
 
@@ -280,7 +262,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
             },
             tooltip: {
                 show: true,
-                content: date_to_tooltip_static
+                content: tooltip_fn(self.static)
             }
         };
 
@@ -297,7 +279,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
         /** draw the windows **/
         var plot = self.plotZoom(addPadding(zoom_options, cal_data_range));
         var overview = self.plotStatic(
-	    addPadding(overview_options, cal_data_range));
+            addPadding(overview_options, cal_data_range));
         
         var current_ranges = $.extend(true, {}, cal_data_range);
 
@@ -308,13 +290,13 @@ var Calendar = function(browse_url, visit_url, origin_id,
          *     plotzone: the jQuery-selected element the zoomed plot should be
          *     in (usually the same as the original 'zoom plot' element)
          *     range: the data range as a dict {xaxis: {from:, to:}, 
-	 *                                      yaxis:{from:, to:}}
+         *                                      yaxis:{from:, to:}}
          */
         function zoom(ranges) {
             current_ranges.xaxis.from = ranges.xaxis.from;
             current_ranges.xaxis.to = ranges.xaxis.to;
             self.updateGroupFactorAndData(
-		self.zoomw, self.zoom, current_ranges);
+                self.zoomw, self.zoom, current_ranges);
             self.zoom.plot_data = self.getPlotData(self.zoom.group_data);
             var zoomedopts = $.extend(true, {}, zoom_options, {
                 xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
@@ -347,15 +329,15 @@ var Calendar = function(browse_url, visit_url, origin_id,
             plot.setSelection(ranges);
         });
 
-	function unbindClick() {
-	    self.zoomw.unbind('plotclick');
+        function unbindClick() {
+            self.zoomw.unbind('plotclick');
             self.staticw.unbind('plotclick');
-	}
+        }
 
-	function bindClick() {
-	    self.zoomw.bind('plotclick', redirect_to_revision);
+        function bindClick() {
+            self.zoomw.bind('plotclick', redirect_to_revision);
             self.staticw.bind('plotclick', redirect_to_revision);
-	}
+        }
         
         function redirect_to_revision(event, pos, item) {
             if (item) {
@@ -381,11 +363,11 @@ var Calendar = function(browse_url, visit_url, origin_id,
             self.static.plot_data = self.getPlotData(self.static.group_data);
             /** Replot **/
             plot = self.plotZoom(
-		addPadding(zoom_options, current_ranges));
+                addPadding(zoom_options, current_ranges));
             overview = self.plotStatic(
-		addPadding(overview_options, cal_data_range));
+                addPadding(overview_options, cal_data_range));
         });
         
-	bindClick();
+        bindClick();
     };
 };
