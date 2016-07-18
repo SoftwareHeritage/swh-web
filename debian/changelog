@@ -1,3 +1,10 @@
+swh-web (0.0.31-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.31
+  * Unify jquery-flot library names with .min
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 18 Jul 2016 11:11:59 +0200
+
 swh-web (0.0.30-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.30
