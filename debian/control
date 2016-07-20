@@ -22,6 +22,8 @@ Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 Package: python3-swh.web.ui
 Architecture: all
 Depends: libjs-cryptojs,
+         libjs-jquery-flot,
+         libjs-jquery-flot-tooltip,
          python3-swh.core (>= 0.0.20~),
          python3-swh.storage (>= 0.0.33~),
          ${misc:Depends},
