@@ -1,8 +1,12 @@
-swh-web (0.0.31-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.32-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.32
+  * Activate tests during debian packaging
+  * Fix issues on debian packaging
+  * Fix useless jquery loading url
+  * Improve date time parsing
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 18 Jul 2016 11:11:59 +0200
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 20 Jul 2016 12:35:09 +0200
 
 swh-web (0.0.31-1~swh1) unstable-swh; urgency=medium
 
