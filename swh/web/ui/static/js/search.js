@@ -41,9 +41,9 @@ var SearchFormController = function(textForm, fileForm, messageElem)
         self.textForm.submit(function(event) {
             var q = textFormInput.val();
             if (!q) {
-		event.preventDefault();
+                event.preventDefault();
                 self.searchMessage("Please enter a SHA-1 or SHA-256 checksum.");
-	    }
+            }
             else if (q && !q.match(self.CHECKSUM_RE)) {
                 event.preventDefault();
                 self.searchMessage("Invalid SHA-1 or SHA-256 checksum");
@@ -60,18 +60,18 @@ var SearchFormController = function(textForm, fileForm, messageElem)
      *    clearButton: the button used to clear currently hashed files
      */
     this.setupFileForm = function(fileDropElem, hashedListerElem, fileFormInput, clearButton) {
-	if (!FileReader || !CryptoJS) {
-	    self.searchMessage("Client-side file hashing is not available for your browser.");
-	    return;
-	}
-	    
-	// Enable clicking on the text element for file picker
-	fileDropElem.click(function(event) {
-	    event.preventDefault();
+        if (!FileReader || !CryptoJS) {
+            self.searchMessage("Client-side file hashing is not available for your browser.");
+            return;
+        }
+        
+        // Enable clicking on the text element for file picker
+        fileDropElem.click(function(event) {
+            event.preventDefault();
             fileFormInput.click();
         });
-	
-	// Enable drag&drop
+        
+        // Enable drag&drop
         var makeDroppable = function(fileReceptionElt) {
             var fileshovering = false;
 
@@ -122,34 +122,34 @@ var SearchFormController = function(textForm, fileForm, messageElem)
                 readAndHash(myfiles);
             });
         };
-	makeDroppable(fileDropElem);
-	
-	// Connect input change and rehash
-	var makeInputChange = function(fileInput) {
-	    return fileInput.each(function() {
-		$(this).on('change', function(){
-		    readAndHash(this.files);
-		});
-	    });
-	};
-	makeInputChange(fileFormInput);
-	
-	// Connect clear button
-	var makeClearButton = function(button) {
-	    return button.each(function() {
-		$(this).click(function(event) {
-		    event.preventDefault();
-		    hashedListerElem.empty();
-		    self.fileForm.children('.search-hidden').remove();
-		    self.hashed_already = {
-			'sha1': {},
-			'sha256': {},
-			'sha1_git': {}
-		    };
-		});
-	    });
-	};
-	makeClearButton(clearButton);
+        makeDroppable(fileDropElem);
+        
+        // Connect input change and rehash
+        var makeInputChange = function(fileInput) {
+            return fileInput.each(function() {
+                $(this).on('change', function(){
+                    readAndHash(this.files);
+                });
+            });
+        };
+        makeInputChange(fileFormInput);
+        
+        // Connect clear button
+        var makeClearButton = function(button) {
+            return button.each(function() {
+                $(this).click(function(event) {
+                    event.preventDefault();
+                    hashedListerElem.empty();
+                    self.fileForm.children('.search-hidden').remove();
+                    self.hashed_already = {
+                        'sha1': {},
+                        'sha256': {},
+                        'sha1_git': {}
+                    };
+                });
+            });
+        };
+        makeClearButton(clearButton);
 
         var readAndHash = function(filelist) {
             for (var file_idx = 0; file_idx < filelist.length; file_idx++) {
@@ -169,14 +169,14 @@ var SearchFormController = function(textForm, fileForm, messageElem)
             };
         };
 
-	/**
-	 *  Hash the buffer with SHA-1, SHA-1_GIT, SHA-256
-	 *  Args:
-	 *     buffer: the buffer to hash
-	 *     fname: the file name corresponding to the buffer
-	 *  Returns:
-	 *     a dict of algo_hash: hash
-	 */
+        /**
+         *  Hash the buffer with SHA-1, SHA-1_GIT, SHA-256
+         *  Args:
+         *     buffer: the buffer to hash
+         *     fname: the file name corresponding to the buffer
+         *  Returns:
+         *     a dict of algo_hash: hash
+         */
         var hashBuffer = function (buffer, fname) {
             function str2ab(header) {
                 var buf = new ArrayBuffer(header.length);
@@ -201,26 +201,26 @@ var SearchFormController = function(textForm, fileForm, messageElem)
             };
         };
 
-	/**
-	 *  Hash the buffer and add it to the form if it is unique
-	 *  If not, display which file has the same content
-	 *  Args:
-	 *     buffer: the buffer to hash
-	 *     fname: the file name corresponding to the buffer
-	 */ 
+        /**
+         *  Hash the buffer and add it to the form if it is unique
+         *  If not, display which file has the same content
+         *  Args:
+         *     buffer: the buffer to hash
+         *     fname: the file name corresponding to the buffer
+         */ 
         var dedupAndAdd = function(buffer, fname) {
             var hashes = hashBuffer(buffer);
             var has_duplicate = false;
-	    for (var algo_s in hashes) {
+            for (var algo_s in hashes) {
                 if (self.hashed_already[algo_s][hashes[algo_s]] != undefined) {
-		    // Duplicate content -- fileLister addition only, as duplicate
+                    // Duplicate content -- fileLister addition only, as duplicate
                     hashedListerElem.append($('<div>')
-                                                .addClass('span3')
-                                                .text(fname + ': duplicate of ' + self.hashed_already[algo_s][hashes[algo_s]]));
+                                            .addClass('span3')
+                                            .text(fname + ': duplicate of ' + self.hashed_already[algo_s][hashes[algo_s]]));
                     has_duplicate = true;
                     break;
                 }
-	    }
+            }
             // First file read with this content -- fileLister and form addition
             if (!has_duplicate) {
                 // Add to hashed list
@@ -231,7 +231,7 @@ var SearchFormController = function(textForm, fileForm, messageElem)
                                         .text(fname));
                 var hashstring = JSON.stringify(hashes).replace('\"', '\'');
                 self.fileForm.append($("<input>", {type: 'hidden',
-						   class: 'search-hidden',
+                                                   class: 'search-hidden',
                                                    name: fname,
                                                    value: hashes['sha1']}// hashstring}
                                       ));
