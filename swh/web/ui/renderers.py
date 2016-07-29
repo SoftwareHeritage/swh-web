@@ -92,6 +92,13 @@ def safe_docstring_display(docstring):
     return re.sub(src, dest, docstring)
 
 
+def revision_id_from_url(url):
+    """Utility function do obtain a revision's ID from its browsing URL."""
+    src = r'/browse/revision/([0-9a-f]{40}|[0-9a-f]{64})/.*'
+    dest = r'\1'
+    return re.sub(src, dest, url)
+
+
 class SWHBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     """SWH's browsable api renderer.
 
