@@ -181,6 +181,8 @@ def from_revision(revision):
                         dates={'date', 'committer_date'})
 
     if revision:
+        if 'parents' in revision:
+            revision['merge'] = len(revision['parents']) > 1
         if 'message' in revision:
             try:
                 revision['message'] = revision['message'].decode('utf-8')

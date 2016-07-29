@@ -574,6 +574,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'parents': [],
             'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
             'directory': hash_to_hex(b'278'),
+            'merge': False
         })
 
         mock_query.parse_hash_with_algorithms_or_throws.assert_has_calls(
@@ -646,6 +647,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'parents': [],
             'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
             'directory': hash_to_hex(b'278'),
+            'merge': False
         })
 
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with(  # noqa
@@ -1010,6 +1012,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'git',
             'parents': [],
             'metadata': [],
+            'merge': False
         })
 
         mock_backend.revision_get.assert_called_with(
@@ -1079,6 +1082,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'git',
             'parents': [],
             'metadata': [],
+            'merge': False
         })
 
         mock_backend.revision_get.assert_called_with(
@@ -1305,6 +1309,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'type': 'git',
                 'parents': [],
                 'metadata': [],
+                'merge': False
             },
             {
                 'id': sha1_other,
@@ -1326,6 +1331,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'type': 'git',
                 'parents': [],
                 'metadata': [],
+                'merge': False
             }
         ])
 
@@ -1421,6 +1427,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'git',
             'parents': [],
             'metadata': [],
+            'merge': False
         }])
 
         mock_backend.revision_log.assert_called_with(
@@ -1489,6 +1496,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'git',
             'parents': [],
             'metadata': [],
+            'merge': False
         }])
 
         mock_backend.revision_log_by.assert_called_with(
@@ -1797,6 +1805,83 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'message': 'elegant solution 31415',
             'date': '2016-01-17T18:23:54+07:00',
             'committer_date': '2016-01-17T18:23:54+07:00',
+        }
+
+        mock_backend.revision_get_by.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
+
+        # then
+        self.assertEquals(actual_revision, expected_rev)
+
+        mock_backend.revision_get_by(1, 'master2', 'some-ts')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by_nomerge(self, mock_backend):
+        # given
+        stub_rev = {
+            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'ynot',
+                'email': b'ynot@blah.org',
+            },
+            'parents': [
+                hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')]
+        }
+
+        expected_rev = {
+            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'ynot',
+                'email': 'ynot@blah.org',
+            },
+            'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
+            'merge': False
+        }
+
+        mock_backend.revision_get_by.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
+
+        # then
+        self.assertEquals(actual_revision, expected_rev)
+
+        mock_backend.revision_get_by(1, 'master2', 'some-ts')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by_merge(self, mock_backend):
+        # given
+        stub_rev = {
+            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
+            'directory': hex_to_hash(
+                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'author': {
+                'name': b'ynot',
+                'email': b'ynot@blah.org',
+            },
+            'parents': [
+                hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'),
+                hex_to_hash('adc83b19e793491b1c6db0fd8b46cd9f32e592fc')
+            ]
+        }
+
+        expected_rev = {
+            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
+            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'author': {
+                'name': 'ynot',
+                'email': 'ynot@blah.org',
+            },
+            'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+                        'adc83b19e793491b1c6db0fd8b46cd9f32e592fc'],
+            'merge': True
         }
 
         mock_backend.revision_get_by.return_value = stub_rev
