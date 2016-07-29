@@ -364,8 +364,12 @@ def browse_revision_log(sha1_git, prev_sha1s=None):
            'revisions': []}
 
     try:
-        revisions = api.api_revision_log(sha1_git, prev_sha1s)
+        revision_data = api.api_revision_log(sha1_git, prev_sha1s)
+        revisions = revision_data['revisions']
+        next_revs_url = revision_data['next_revs_url']
         env['revisions'] = map(utils.prepare_data_for_view, revisions)
+        env['next_revs_url'] = utils.prepare_data_for_view(next_revs_url)
+
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 

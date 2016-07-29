@@ -1443,10 +1443,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
             'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
             'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
-                           'f7371d5/log/',
+            'f7371d5/log/',
             'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
             'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a'
-                             '42b7e2a44e6/',
+            '42b7e2a44e6/',
             'author_name': 'Software Heritage',
             'author_email': 'robot@softwareheritage.org',
             'committer_name': 'Software Heritage',
@@ -1465,6 +1465,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'synthetic': True,
         }]
 
+        expected_response = {
+            'revisions': expected_revisions,
+            'next_revs_url': None
+        }
+
         # when
         rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42'
                           'b7e2a44e6/log/')
@@ -1474,10 +1479,44 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, expected_revisions)
+        self.assertEquals(response_data, expected_response)
 
         mock_service.lookup_revision_log.assert_called_once_with(
-            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 100)
+            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 26)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_log_with_next(self, mock_service):
+        # given
+        stub_revisions = []
+        for i in range(27):
+            stub_revisions.append({'id': i})
+
+        mock_service.lookup_revision_log.return_value = stub_revisions[:26]
+
+        expected_revisions = [x for x in stub_revisions if x['id'] < 25]
+        for e in expected_revisions:
+            e['url'] = '/api/1/revision/%s/' % e['id']
+            e['history_url'] = '/api/1/revision/%s/log/' % e['id']
+
+        expected_response = {
+            'revisions': expected_revisions,
+            'next_revs_url': '/api/1/revision/25/log/'
+        }
+
+        # when
+        rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42'
+                          'b7e2a44e6/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_response)
+
+        mock_service.lookup_revision_log.assert_called_once_with(
+            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 26)
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -1487,7 +1526,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42b7'
-                          'e2a44e6/log/?limit=10')
+                          'e2a44e6/log/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -1499,7 +1538,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             ' 8834ef7e7c357ce2af928115c6c6a42b7e2a44e6 not found.'})
 
         mock_service.lookup_revision_log.assert_called_once_with(
-            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 10)
+            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 26)
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -1536,15 +1575,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'synthetic': True,
         }]
 
-        # when
-        rv = self.app.get('/api/1/revision/18d8be353ed3480476f0'
-                          '32475e7c233eff7371d5/prev/prev-rev/log/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.mimetype, 'application/json')
-        response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, [
+        expected_revisions = [
             {
                 'url': '/api/1/revision/'
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
@@ -1592,10 +1623,25 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 ],
                 'type': 'tar',
                 'synthetic': True,
-            }])
+            }]
+
+        expected_response = {
+            'revisions': expected_revisions,
+            'next_revs_url': None
+        }
+
+        # when
+        rv = self.app.get('/api/1/revision/18d8be353ed3480476f0'
+                          '32475e7c233eff7371d5/prev/prev-rev/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_response)
 
         mock_service.lookup_revision_log.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5', 100)
+            '18d8be353ed3480476f032475e7c233eff7371d5', 26)
         mock_service.lookup_revision_multiple.assert_called_once_with(
             ['prev-rev'])
 

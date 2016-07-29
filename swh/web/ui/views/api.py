@@ -705,7 +705,7 @@ def api_revision_history_directory(sha1_git_root, sha1_git,
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')
 @app.route('/api/1/revision/<string:sha1_git>/prev/<path:prev_sha1s>/log/')
-def api_revision_log(sha1_git, prev_sha1s=None):
+def api_revision_log(sha1_git, prev_sha1s=None, limit=25):
     """Show all revisions (~git log) starting from sha1_git.
        The first element returned is the given sha1_git.
 
@@ -724,26 +724,42 @@ def api_revision_log(sha1_git, prev_sha1s=None):
         NotFoundExc if the revision is not found.
 
     """
-    limit = int(request.args.get('limit', '100'))
 
-    def lookup_revision_log_with_limit(s, limit=limit):
+    response = {'revisions': None, 'next_revs_url': None}
+    revisions = None
+    next_revs_url = None
+
+    def lookup_revision_log_with_limit(s, limit=limit+1):
         return service.lookup_revision_log(s, limit)
 
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-    rev_backward = _api_lookup(sha1_git,
-                               lookup_fn=lookup_revision_log_with_limit,
-                               error_msg_if_not_found=error_msg,
-                               enrich_fn=utils.enrich_revision)
+    rev_get = _api_lookup(sha1_git,
+                          lookup_fn=lookup_revision_log_with_limit,
+                          error_msg_if_not_found=error_msg,
+                          enrich_fn=utils.enrich_revision)
+
+    if len(rev_get) == limit+1:
+        rev_backward = rev_get[:-1]
+        next_revs_url = url_for('api_revision_log',
+                                sha1_git=rev_get[-1]['id'])
+    else:
+        rev_backward = rev_get
 
     if not prev_sha1s:  # no nav breadcrumbs, so we're done
-        return rev_backward
+        revisions = rev_backward
 
-    rev_forward_ids = prev_sha1s.split('/')
-    rev_forward = _api_lookup(rev_forward_ids,
-                              lookup_fn=service.lookup_revision_multiple,
-                              error_msg_if_not_found=error_msg,
-                              enrich_fn=utils.enrich_revision)
-    return rev_forward + rev_backward
+    else:
+        rev_forward_ids = prev_sha1s.split('/')
+        rev_forward = _api_lookup(rev_forward_ids,
+                                  lookup_fn=service.lookup_revision_multiple,
+                                  error_msg_if_not_found=error_msg,
+                                  enrich_fn=utils.enrich_revision)
+        revisions = rev_forward + rev_backward
+
+    response['revisions'] = revisions
+    response['next_revs_url'] = next_revs_url
+
+    return response
 
 
 @app.route('/api/1/revision'

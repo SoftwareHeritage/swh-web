@@ -913,27 +913,30 @@ class RevisionView(test_app.SWHViewTestCase):
     @istest
     def browse_revision_log(self, mock_api):
         # given
-        stub_revisions = [{
-            'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
-            'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
-            'committer': {
-                'email': 'torvalds@linux-foundation.org',
-                'name': 'Linus Torvalds'
-            },
-            'committer_date': 'Sun, 05 Jul 2015 18:01:52 GMT',
-            'type': 'git',
-            'author': {
-                'email': 'torvalds@linux-foundation.org',
-                'name': 'Linus Torvalds'
-            },
-            'message': 'Linux 4.2-rc1\n',
-            'synthetic': False,
-            'directory_url': '/api/1/directory/'
-            '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b/',
-            'parent_url': [
-                '/api/1/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf/'
-            ],
-        }]
+        stub_revisions = {
+            'revisions': [{
+                'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
+                'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+                'committer': {
+                    'email': 'torvalds@linux-foundation.org',
+                    'name': 'Linus Torvalds'
+                },
+                'committer_date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+                'type': 'git',
+                'author': {
+                    'email': 'torvalds@linux-foundation.org',
+                    'name': 'Linus Torvalds'
+                },
+                'message': 'Linux 4.2-rc1\n',
+                'synthetic': False,
+                'directory_url': '/api/1/directory/'
+                '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b/',
+                'parent_url': [
+                    '/api/1/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf/'
+                ],
+            }],
+            'next_revs_url': '/api/1/revision/1234/log/'
+        }
         mock_api.api_revision_log.return_value = stub_revisions
 
         # when
@@ -945,6 +948,9 @@ class RevisionView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertTrue(
             isinstance(self.get_context_variable('revisions'), map))
+        self.assertEqual(
+            self.get_context_variable('next_revs_url'),
+            '/browse/revision/1234/log/')
         self.assertIsNone(self.get_context_variable('message'))
 
         mock_api.api_revision_log.assert_called_once_with('426', None)

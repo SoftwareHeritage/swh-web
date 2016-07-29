@@ -144,6 +144,15 @@
   {% endif %}
   <hr />
   {% endfor %}
+  
+  {% if next_revs_url is not none %}
+  <span class="pull-right">
+    <a href="{{ next_revs_url }}" class="btn btn-primary">
+      Next revisions
+      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+    </a>
+  </span>
+  {% endif %}
   {% endif %}
 </div>
 <hr />
