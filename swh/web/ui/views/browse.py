@@ -38,7 +38,6 @@ def search():
     TODO:
         Batch-process with all checksums, not just sha1
     """
-
     env = {'search_res': None,
            'search_stats': None,
            'message': []}
@@ -74,7 +73,6 @@ def search():
     return render_template('search.html', **env)
 
 
-@app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
 @set_renderers(HTMLRenderer)
 def browse_content(q):
@@ -192,7 +190,6 @@ def browse_content_with_origin(q):
     return render_template('content-with-origin.html', **env)
 
 
-@app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
 @app.route('/browse/directory/<string:sha1_git>/<path:path>/')
 @set_renderers(HTMLRenderer)
@@ -239,7 +236,6 @@ def browse_directory(sha1_git, path=None):
     return render_template('directory.html', **env)
 
 
-@app.route('/browse/origin/')
 @app.route('/browse/origin/<int:origin_id>/')
 @set_renderers(HTMLRenderer)
 def browse_origin(origin_id):
@@ -263,7 +259,6 @@ def browse_origin(origin_id):
     return render_template('origin.html', **env)
 
 
-@app.route('/browse/person/')
 @app.route('/browse/person/<int:person_id>/')
 @set_renderers(HTMLRenderer)
 def browse_person(person_id):
@@ -282,7 +277,6 @@ def browse_person(person_id):
     return render_template('person.html', **env)
 
 
-@app.route('/browse/release/')
 @app.route('/browse/release/<string:sha1_git>/')
 @set_renderers(HTMLRenderer)
 def browse_release(sha1_git):
@@ -302,7 +296,6 @@ def browse_release(sha1_git):
     return render_template('release.html', **env)
 
 
-@app.route('/browse/revision/')
 @app.route('/browse/revision/<string:sha1_git>/')
 @app.route('/browse/revision/<string:sha1_git>/prev/<path:prev_sha1s>/')
 @set_renderers(HTMLRenderer)
@@ -323,7 +316,6 @@ def browse_revision(sha1_git, prev_sha1s=None):
     Example:
         GET /browse/revision/
     """
-
     env = {'sha1_git': sha1_git,
            'message': None,
            'revision': None}
@@ -333,7 +325,6 @@ def browse_revision(sha1_git, prev_sha1s=None):
         env['revision'] = utils.prepare_data_for_view(rev)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
-
     return render_template('revision.html', **env)
 
 
@@ -376,8 +367,6 @@ def browse_revision_log(sha1_git, prev_sha1s=None):
     return render_template('revision-log.html', **env)
 
 
-@app.route('/browse/revision'
-           '/origin/log/')
 @app.route('/browse/revision'
            '/origin/<int:origin_id>/log/')
 @app.route('/browse/revision'

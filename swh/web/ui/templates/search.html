@@ -99,7 +99,7 @@
       <td>From text input</td>
       {% endif %}
       {% if res['found'] %}
-      <td><a href="{{ url_for('browse_content') }}sha1:{{ res['sha1'] }}">{{ res['sha1'] }}</a></td>
+      <td><a href="{{ url_for('browse_content', q=res['sha1']) }}">{{ res['sha1'] }}</a></td>
       <td><span class="glyphicon glyphicon-ok file-found"></span></td>
       {% else %}
       <td>{{ res['sha1'] }}</td>
