@@ -2,11 +2,11 @@
 {% block title %}Revision Log{% endblock %}
 {% block content %}
 
-
 {% if message is not none %}
-{{ message }}
-{% endif %}
+<div class="swh-message">
+  {{ message }}
 </div>
+{% endif %}
 
 <div class="container">
   <h2>Queried revision:</h2>
@@ -20,7 +20,6 @@
   {% endif %}
   {% endif %}
 </div>
-
 
 {% if revisions is not none %}
 <div class="container">
@@ -116,7 +115,6 @@
   {% endif %}
 
   {% for key in revision.keys() %}
-  
   {% if key in ['type', 'synthetic'] and key not in ['decoding_failures'] and revision[key] is not none %}
   <div class="row">
     <div class="col-md-2">{{ key }}</div>
@@ -126,7 +124,6 @@
   {% endfor %}
 
   {% for key in ['children_urls', 'parent_urls'] %}
-
   {% if revision[key] is not none %}
   <div class="row">
     <div class="col-md-2">{{ key }}</div>    

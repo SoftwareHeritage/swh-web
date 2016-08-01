@@ -14,6 +14,39 @@ from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.tests import test_app
 
 
+REVISION_ID_BIN = hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5')
+REVISION_ID = '18d8be353ed3480476f032475e7c233eff7371d5'
+DIRECTORY_ID_BIN = hex_to_hash('7834ef7e7c357ce2af928115c6c6a42b7e2a44e6')
+DIRECTORY_ID = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
+AUTHOR_ID_BIN = {
+    'name': b'bill & boule',
+    'email': b'bill@boule.org',
+}
+AUTHOR_ID = {
+    'name': 'bill & boule',
+    'email': 'bill@boule.org',
+}
+COMMITTER_ID_BIN = {
+    'name': b'boule & bill',
+    'email': b'boule@bill.org',
+}
+COMMITTER_ID = {
+    'name': 'boule & bill',
+    'email': 'boule@bill.org',
+}
+SAMPLE_DATE_RAW = {
+    'timestamp': datetime.datetime(
+        2000, 1, 17, 11, 23, 54,
+        tzinfo=datetime.timezone.utc,
+    ).timestamp(),
+    'offset': 0,
+    'negative_utc': False,
+}
+SAMPLE_DATE = '2000-01-17T11:23:54+00:00'
+SAMPLE_MESSAGE_BIN = b'elegant fix for bug 31415957'
+SAMPLE_MESSAGE = 'elegant fix for bug 31415957'
+
+
 class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
@@ -955,34 +988,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     def lookup_revision(self, mock_backend):
         # given
         mock_backend.revision_get = MagicMock(return_value={
-            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
+            'id': REVISION_ID_BIN,
+            'directory': DIRECTORY_ID_BIN,
+            'author': AUTHOR_ID_BIN,
+            'committer': COMMITTER_ID_BIN,
+            'message': SAMPLE_MESSAGE_BIN,
+            'date': SAMPLE_DATE_RAW,
+            'committer_date': SAMPLE_DATE_RAW,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -991,23 +1003,17 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_revision = service.lookup_revision(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+            REVISION_ID)
 
         # then
         self.assertEqual(actual_revision, {
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'message': 'elegant fix for bug 31415957',
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
+            'id': REVISION_ID,
+            'directory': DIRECTORY_ID,
+            'author': AUTHOR_ID,
+            'committer': COMMITTER_ID,
+            'message': SAMPLE_MESSAGE,
+            'date': SAMPLE_DATE,
+            'committer_date': SAMPLE_DATE,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1016,7 +1022,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         })
 
         mock_backend.revision_get.assert_called_with(
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            REVISION_ID_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1024,33 +1030,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_rev = {
             'id': hex_to_hash('123456'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
+            'directory': DIRECTORY_ID_BIN,
+            'author': AUTHOR_ID_BIN,
+            'committer': COMMITTER_ID_BIN,
             'message': b'elegant fix for bug \xff',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
+            'date': SAMPLE_DATE_RAW,
+            'committer_date': SAMPLE_DATE_RAW,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1060,24 +1045,18 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_revision = service.lookup_revision(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+            REVISION_ID)
 
         # then
         self.assertEqual(actual_revision, {
             'id': '123456',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
+            'directory': DIRECTORY_ID,
+            'author': AUTHOR_ID,
+            'committer': COMMITTER_ID,
             'message': None,
             'message_decoding_failed': True,
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
+            'date': SAMPLE_DATE,
+            'committer_date': SAMPLE_DATE,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1086,41 +1065,20 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         })
 
         mock_backend.revision_get.assert_called_with(
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            REVISION_ID_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_msg_ok(self, mock_backend):
         # given
         mock_backend.revision_get.return_value = {
-            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
+            'id': REVISION_ID_BIN,
+            'directory': DIRECTORY_ID_BIN,
+            'author': AUTHOR_ID_BIN,
+            'committer': COMMITTER_ID_BIN,
+            'message': SAMPLE_MESSAGE_BIN,
+            'date': SAMPLE_DATE_RAW,
+            'committer_date': SAMPLE_DATE_RAW,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1129,45 +1087,24 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = service.lookup_revision_message(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+            REVISION_ID)
 
         # then
-        self.assertEquals(rv, {'message': b'elegant fix for bug 31415957'})
+        self.assertEquals(rv, {'message': SAMPLE_MESSAGE_BIN})
         mock_backend.revision_get.assert_called_with(
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            REVISION_ID_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_msg_absent(self, mock_backend):
         # given
         mock_backend.revision_get.return_value = {
-            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
+            'id': REVISION_ID_BIN,
+            'directory': DIRECTORY_ID_BIN,
+            'author': AUTHOR_ID_BIN,
+            'committer': COMMITTER_ID_BIN,
+            'date': SAMPLE_DATE_RAW,
+            'committer_date': SAMPLE_DATE_RAW,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1177,11 +1114,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_message(
-                '18d8be353ed3480476f032475e7c233eff7371d5')
+                REVISION_ID)
 
             # then
             mock_backend.revision_get.assert_called_with(
-                hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+                REVISION_ID_BIN)
             self.assertEqual(cm.exception.args[0], 'No message for revision '
                              'with sha1_git '
                              '18d8be353ed3480476f032475e7c233eff7371d5.')
@@ -1195,11 +1132,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_message(
-                '18d8be353ed3480476f032475e7c233eff7371d5')
+                REVISION_ID)
 
             # then
             mock_backend.revision_get.assert_called_with(
-                hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+                REVISION_ID_BIN)
             self.assertEqual(cm.exception.args[0], 'Revision with sha1_git '
                              '18d8be353ed3480476f032475e7c233eff7371d5 '
                              'not found.')
@@ -1209,37 +1146,19 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     def lookup_revision_multiple(self, mock_backend):
         # given
 
-        sha1_bin = '18d8be353ed3480476f032475e7c233eff7371d5'
+        sha1_bin = REVISION_ID
         sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
 
         stub_revisions = [
             {
                 'id': hex_to_hash(sha1_bin),
-                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-                'author': {
-                    'name': b'bill & boule',
-                    'email': b'bill@boule.org',
-                },
-                'committer': {
-                    'name': b'boule & bill',
-                    'email': b'boule@bill.org',
-                },
-                'message': b'elegant fix for bug 31415957',
-                'date': {
-                    'timestamp': datetime.datetime(
-                        2000, 1, 17, 11, 23, 54,
-                        tzinfo=datetime.timezone.utc).timestamp(),
-                    'offset': 0,
-                    'negative_utc': False
-                    },
+                'directory': DIRECTORY_ID,
+                'author': AUTHOR_ID_BIN,
+                'committer': COMMITTER_ID_BIN,
+                'message': SAMPLE_MESSAGE_BIN,
+                'date': SAMPLE_DATE_RAW,
                 'date_offset': 0,
-                'committer_date': {
-                    'timestamp': datetime.datetime(
-                        2000, 1, 17, 11, 23, 54,
-                        tzinfo=datetime.timezone.utc).timestamp(),
-                    'offset': 0,
-                    'negative_utc': False
-                    },
+                'committer_date': SAMPLE_DATE_RAW,
                 'committer_date_offset': 0,
                 'synthetic': False,
                 'type': 'git',
@@ -1291,19 +1210,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(list(actual_revisions), [
             {
                 'id': sha1_bin,
-                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-                'author': {
-                    'name': 'bill & boule',
-                    'email': 'bill@boule.org',
-                },
-                'committer': {
-                    'name': 'boule & bill',
-                    'email': 'boule@bill.org',
-                },
-                'message': 'elegant fix for bug 31415957',
-                'date': '2000-01-17T11:23:54+00:00',
+                'directory': DIRECTORY_ID,
+                'author': AUTHOR_ID,
+                'committer': COMMITTER_ID,
+                'message': SAMPLE_MESSAGE,
+                'date': SAMPLE_DATE,
                 'date_offset': 0,
-                'committer_date': '2000-01-17T11:23:54+00:00',
+                'committer_date': SAMPLE_DATE,
                 'committer_date_offset': 0,
                 'synthetic': False,
                 'type': 'git',
@@ -1338,7 +1251,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(
             list(mock_backend.revision_get_multiple.call_args[0][0]),
             [hex_to_hash(
-                '18d8be353ed3480476f032475e7c233eff7371d5'),
+                REVISION_ID),
              hex_to_hash(
                  'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
 
@@ -1346,7 +1259,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_multiple_none_found(self, mock_backend):
         # given
-        sha1_bin = '18d8be353ed3480476f032475e7c233eff7371d5'
+        sha1_bin = REVISION_ID
         sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
 
         mock_backend.revision_get_multiple.return_value = []
@@ -1360,7 +1273,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(
             list(mock_backend.revision_get_multiple.call_args[0][0]),
             [hex_to_hash(
-                '18d8be353ed3480476f032475e7c233eff7371d5'),
+                REVISION_ID),
              hex_to_hash(
                  'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
 
@@ -1370,33 +1283,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_revision_log = [{
             'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
+            'directory': DIRECTORY_ID_BIN,
+            'author': AUTHOR_ID_BIN,
+            'committer': COMMITTER_ID_BIN,
+            'message': SAMPLE_MESSAGE_BIN,
+            'date': SAMPLE_DATE_RAW,
+            'committer_date': SAMPLE_DATE_RAW,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1411,18 +1303,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(list(actual_revision), [{
             'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'message': 'elegant fix for bug 31415957',
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
+            'directory': DIRECTORY_ID,
+            'author': AUTHOR_ID,
+            'committer': COMMITTER_ID,
+            'message': SAMPLE_MESSAGE,
+            'date': SAMPLE_DATE,
+            'committer_date': SAMPLE_DATE,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1439,33 +1325,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_revision_log = [{
             'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
+            'directory': DIRECTORY_ID_BIN,
+            'author': AUTHOR_ID_BIN,
+            'committer': COMMITTER_ID_BIN,
+            'message': SAMPLE_MESSAGE_BIN,
+            'date': SAMPLE_DATE_RAW,
+            'committer_date': SAMPLE_DATE_RAW,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1480,18 +1345,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(list(actual_log), [{
             'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'message': 'elegant fix for bug 31415957',
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
+            'directory': DIRECTORY_ID,
+            'author': AUTHOR_ID,
+            'committer': COMMITTER_ID,
+            'message': SAMPLE_MESSAGE,
+            'date': SAMPLE_DATE,
+            'committer_date': SAMPLE_DATE,
             'synthetic': False,
             'type': 'git',
             'parents': [],
@@ -1764,8 +1623,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_rev = {
             'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'directory': DIRECTORY_ID_BIN,
             'author': {
                 'name': b'ynot',
                 'email': b'ynot@blah.org',
@@ -1793,7 +1651,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         expected_rev = {
             'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory': DIRECTORY_ID,
             'author': {
                 'name': 'ynot',
                 'email': 'ynot@blah.org',
@@ -1823,8 +1681,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_rev = {
             'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'directory': DIRECTORY_ID_BIN,
             'author': {
                 'name': b'ynot',
                 'email': b'ynot@blah.org',
@@ -1835,7 +1692,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         expected_rev = {
             'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory': DIRECTORY_ID,
             'author': {
                 'name': 'ynot',
                 'email': 'ynot@blah.org',
@@ -1860,8 +1717,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_rev = {
             'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
+            'directory': DIRECTORY_ID_BIN,
             'author': {
                 'name': b'ynot',
                 'email': b'ynot@blah.org',
@@ -1874,7 +1730,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         expected_rev = {
             'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
+            'directory': DIRECTORY_ID,
             'author': {
                 'name': 'ynot',
                 'email': 'ynot@blah.org',
