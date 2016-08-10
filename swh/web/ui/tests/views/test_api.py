@@ -1414,6 +1414,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'synthetic': True,
         }]
 
+        expected_result = {
+            'revisions': expected_revisions,
+            'next_revs_url': None
+        }
+
         # when
         rv = self.app.get('/api/1/revision/origin/1/log/')
 
@@ -1422,10 +1427,43 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, expected_revisions)
+        self.assertEquals(response_data, expected_result)
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, 26)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_revision_log_by_with_next(self, mock_service):
+        # given
+        stub_revisions = []
+        for i in range(27):
+            stub_revisions.append({'id': i})
+
+        mock_service.lookup_revision_log_by.return_value = stub_revisions[:26]
+
+        expected_revisions = [x for x in stub_revisions if x['id'] < 25]
+        for e in expected_revisions:
+            e['url'] = '/api/1/revision/%s/' % e['id']
+            e['history_url'] = '/api/1/revision/%s/log/' % e['id']
+
+        expected_response = {
+            'revisions': expected_revisions,
+            'next_revs_url': '/api/1/revision/25/log/'
+        }
+
+        # when
+        rv = self.app.get('/api/1/revision/origin/1/log/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_response)
+
+        mock_service.lookup_revision_log_by.assert_called_once_with(
+            1, 'refs/heads/master', None, 26)
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -1445,23 +1483,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, {'error': 'No revision'})
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
-            1, 'refs/heads/master', None)
-
-    @patch('swh.web.ui.views.api.service')
-    @istest
-    def api_revision_history_not_found(self, mock_service):
-        # given
-        mock_service.lookup_revision_with_context.return_value = None
-
-        # then
-        rv = self.app.get('/api/1/revision/999/history/338/?limit=5')
-
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv.mimetype, 'application/json')
-
-        mock_service.lookup_revision_with_context.assert_called_once_with(
-                        '999', '338', 5)
-
+            1, 'refs/heads/master', None, 26)
 
     @patch('swh.web.ui.views.api.service')
     @istest

@@ -215,10 +215,12 @@ def revision_log_by(origin_id, branch_name, ts, limit=100):
         Information for the revision matching the criterions.
 
     """
-
-    return main.storage().revision_log_by(origin_id,
-                                          branch_name,
-                                          ts)
+    rev_list = main.storage().revision_log_by(origin_id,
+                                              branch_name,
+                                              ts)
+    if rev_list is None:
+        return None
+    return rev_list[:limit]
 
 
 def stat_counters():

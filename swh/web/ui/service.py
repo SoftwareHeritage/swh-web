@@ -271,7 +271,7 @@ def lookup_revision_by(origin_id,
     return converters.from_revision(res)
 
 
-def lookup_revision_log(rev_sha1_git, limit=100):
+def lookup_revision_log(rev_sha1_git, limit=25):
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
@@ -294,7 +294,7 @@ def lookup_revision_log(rev_sha1_git, limit=100):
     return map(converters.from_revision, revision_entries)
 
 
-def lookup_revision_log_by(origin_id, branch_name, timestamp):
+def lookup_revision_log_by(origin_id, branch_name, timestamp, limit=25):
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
@@ -313,7 +313,8 @@ def lookup_revision_log_by(origin_id, branch_name, timestamp):
     """
     revision_entries = backend.revision_log_by(origin_id,
                                                branch_name,
-                                               timestamp)
+                                               timestamp,
+                                               limit)
     if not revision_entries:
         return None
     return map(converters.from_revision, revision_entries)

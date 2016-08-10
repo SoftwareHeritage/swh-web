@@ -23,6 +23,7 @@ DEFAULT_CONFIG = {
     'host': ('string', '127.0.0.1'),
     'port': ('int', 6543),
     'secret_key': ('string', 'development key'),
+    'max_log_revs': ('int', 25),
 }
 
 

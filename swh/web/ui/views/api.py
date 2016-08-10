@@ -451,7 +451,7 @@ def api_revision_directory(sha1_git,
 
 @app.route('/api/1/revision/<string:sha1_git>/log/')
 @app.route('/api/1/revision/<string:sha1_git>/prev/<path:prev_sha1s>/log/')
-def api_revision_log(sha1_git, prev_sha1s=None, limit=25):
+def api_revision_log(sha1_git, prev_sha1s=None):
     """Show all revisions (~git log) starting from sha1_git.
        The first element returned is the given sha1_git.
 
@@ -470,6 +470,7 @@ def api_revision_log(sha1_git, prev_sha1s=None, limit=25):
         NotFoundExc if the revision is not found.
 
     """
+    limit = app.config['conf']['max_log_revs']
 
     response = {'revisions': None, 'next_revs_url': None}
     revisions = None
@@ -543,19 +544,36 @@ def api_revision_log_by(origin_id,
     Raises:
         NotFoundExc if the revision is not found.
     """
+    limit = app.config['conf']['max_log_revs']
+    response = {'revisions': None, 'next_revs_url': None}
+    next_revs_url = None
+
     if ts:
         ts = utils.parse_timestamp(ts)
+
+    def lookup_revision_log_by_with_limit(o_id, br, ts, limit=limit+1):
+        return service.lookup_revision_log_by(o_id, br, ts, limit)
 
     error_msg = 'No revision matching origin %s ' % origin_id
     error_msg += ', branch name %s' % branch_name
     error_msg += (' and time stamp %s.' % ts) if ts else '.'
-    return _api_lookup(
-        origin_id,
-        service.lookup_revision_log_by,
-        error_msg,
-        utils.enrich_revision,
-        branch_name,
-        ts)
+
+    rev_get = _api_lookup(origin_id,
+                          lookup_revision_log_by_with_limit,
+                          error_msg,
+                          utils.enrich_revision,
+                          branch_name,
+                          ts)
+    if len(rev_get) == limit+1:
+        revisions = rev_get[:-1]
+        next_revs_url = url_for('api_revision_log',
+                                sha1_git=rev_get[-1]['id'])
+    else:
+        revisions = rev_get
+    response['revisions'] = revisions
+    response['next_revs_url'] = next_revs_url
+
+    return response
 
 
 @app.route('/api/1/directory/')

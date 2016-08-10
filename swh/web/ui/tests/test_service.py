@@ -1192,7 +1192,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(list(actual_revision), [self.SAMPLE_REVISION])
 
         mock_backend.revision_log.assert_called_with(
-            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'), 100)
+            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'), 25)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1204,12 +1204,12 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_log = service.lookup_revision_log_by(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, limit=100)
         # then
         self.assertEqual(list(actual_log), [self.SAMPLE_REVISION])
 
         mock_backend.revision_log_by.assert_called_with(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, 100)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1219,11 +1219,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         res = service.lookup_revision_log_by(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, limit=100)
         # then
         self.assertEquals(res, None)
         mock_backend.revision_log_by.assert_called_with(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, 100)
 
     @patch('swh.web.ui.service.backend')
     @istest

@@ -48,6 +48,7 @@ def create_app(base_url='https://somewhere.org:4321'):
 
     # inject the mock data
     conf = {'storage': storage,
+            'max_log_revs': 25}
 
     main.app.config.update({'conf': conf})
     main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
