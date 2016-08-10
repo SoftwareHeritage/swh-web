@@ -30,29 +30,6 @@ def lookup_multiple_hashes(hashes):
     return hashes
 
 
-def hash_and_search(filepath):
-    """Hash the filepath's content as sha1, then search in storage if
-    it exists.
-
-    Args:
-        Filepath of the file to hash and search.
-
-    Returns:
-        Tuple (hex sha1, found as True or false).
-        The found boolean, according to whether the sha1 of the file
-        is present or not.
-    """
-    h = hashutil.hashfile(filepath)
-    c = backend.content_find('sha1', h['sha1'])
-    if c:
-        r = converters.from_content(c)
-        r['found'] = True
-        return r
-    else:
-        return {'sha1': hashutil.hash_to_hex(h['sha1']),
-                'found': False}
-
-
 def lookup_hash(q):
     """Checks if the storage contains a given content checksum
 

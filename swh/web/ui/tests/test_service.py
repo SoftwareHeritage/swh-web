@@ -351,54 +351,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.stat_origin_visits.assert_called_once_with(6)
 
     @patch('swh.web.ui.service.backend')
-    @patch('swh.web.ui.service.hashutil')
-    @istest
-    def hash_and_search(self, mock_hashutil, mock_backend):
-        # given
-        bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
-        mock_hashutil.hashfile.return_value = {'sha1': bhash}
-        mock_backend.content_find = MagicMock(return_value={
-            'sha1': bhash,
-            'sha1_git': bhash,
-        })
-
-        # when
-        actual_content = service.hash_and_search('/some/path')
-
-        # then
-        self.assertEqual(actual_content, {
-            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-            'sha1_git': '456caf10e9535160d90e874b45aa426de762f19f',
-            'found': True,
-        })
-
-        mock_hashutil.hashfile.assert_called_once_with('/some/path')
-        mock_backend.content_find.assert_called_once_with('sha1', bhash)
-
-    @patch('swh.web.ui.service.hashutil')
-    @istest
-    def hash_and_search_not_found(self, mock_hashutil):
-        # given
-        bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
-        mock_hashutil.hashfile.return_value = {'sha1': bhash}
-        mock_hashutil.hash_to_hex = MagicMock(
-            return_value='456caf10e9535160d90e874b45aa426de762f19f')
-        self.storage.content_find = MagicMock(return_value=None)
-
-        # when
-        actual_content = service.hash_and_search('/some/path')
-
-        # then
-        self.assertEqual(actual_content, {
-            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-            'found': False,
-        })
-
-        mock_hashutil.hashfile.assert_called_once_with('/some/path')
-        self.storage.content_find.assert_called_once_with({'sha1': bhash})
-        mock_hashutil.hash_to_hex.assert_called_once_with(bhash)
-
-    @patch('swh.web.ui.service.backend')
     @istest
     def lookup_origin(self, mock_backend):
         # given

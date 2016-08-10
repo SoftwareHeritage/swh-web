@@ -48,12 +48,8 @@ def create_app(base_url='https://somewhere.org:4321'):
 
     # inject the mock data
     conf = {'storage': storage,
-            'upload_folder': '/some/upload-dir',
-            'upload_allowed_extensions': ['txt'],
-            'max_upload_size': 1024}
 
     main.app.config.update({'conf': conf})
-    main.app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
     main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
 
     if not main.app.config['TESTING']:  # HACK: install controllers only once!
