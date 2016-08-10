@@ -197,6 +197,8 @@ def from_content(content):
     """Convert swh content to serializable content dictionary.
 
     """
+    if content and 'ctime' in content:
+        del content['ctime']
     return from_swh(content,
                     hashess={'sha1', 'sha1_git', 'sha256'},
                     bytess={},
