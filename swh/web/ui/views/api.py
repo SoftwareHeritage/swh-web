@@ -5,7 +5,7 @@
 
 from types import GeneratorType
 
-from flask import request, url_for, Response, redirect
+from flask import request, url_for, Response
 
 from swh.web.ui import service, utils
 from swh.web.ui.exc import NotFoundExc

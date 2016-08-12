@@ -185,7 +185,7 @@ def revision_get_multiple(sha1_git_bin_list):
     return []
 
 
-def revision_log(sha1_git_bin, limit=100):
+def revision_log(sha1_git_bin, limit):
     """Return information about the revision with sha1 sha1_git_bin.
 
     Args:
@@ -202,7 +202,7 @@ def revision_log(sha1_git_bin, limit=100):
     return main.storage().revision_log([sha1_git_bin], limit)
 
 
-def revision_log_by(origin_id, branch_name, ts, limit=100):
+def revision_log_by(origin_id, branch_name, ts, limit):
     """Return information about the revision matching the timestamp
     ts, from origin origin_id, in branch branch_name.
 
@@ -215,12 +215,10 @@ def revision_log_by(origin_id, branch_name, ts, limit=100):
         Information for the revision matching the criterions.
 
     """
-    rev_list = main.storage().revision_log_by(origin_id,
-                                              branch_name,
-                                              ts)
-    if rev_list is None:
-        return None
-    return rev_list[:limit]
+    return main.storage().revision_log_by(origin_id,
+                                          branch_name,
+                                          ts,
+                                          limit=limit)
 
 
 def stat_counters():

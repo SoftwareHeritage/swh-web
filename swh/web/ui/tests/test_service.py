@@ -1186,7 +1186,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_revision = service.lookup_revision_log(
-            'abcdbe353ed3480476f032475e7c233eff7371d5')
+            'abcdbe353ed3480476f032475e7c233eff7371d5',
+            limit=25)
 
         # then
         self.assertEqual(list(actual_revision), [self.SAMPLE_REVISION])

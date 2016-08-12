@@ -532,12 +532,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.revision_log = MagicMock(return_value=stub_revision_log)
 
         # when
-        actual_revision = backend.revision_log(sha1_bin)
+        actual_revision = backend.revision_log(sha1_bin, limit=1)
 
         # then
         self.assertEqual(list(actual_revision), stub_revision_log)
 
-        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 1)
 
     @istest
     def revision_log_by(self):
@@ -571,11 +571,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
             return_value=stub_revision_log)
 
         # when
-        actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
+        actual_log = backend.revision_log_by(1, 'refs/heads/master',
+                                             None, limit=1)
 
         # then
         self.assertEqual(actual_log, stub_revision_log)
-        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 1)
 
     @istest
     def revision_log_by_norev(self):
@@ -586,11 +587,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.revision_log_by = MagicMock(return_value=None)
 
         # when
-        actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
+        actual_log = backend.revision_log_by(1, 'refs/heads/master',
+                                             None, limit=1)
 
         # then
         self.assertEqual(actual_log, None)
-        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 1)
 
     @istest
     def stat_counters(self):
