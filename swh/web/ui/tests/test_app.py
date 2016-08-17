@@ -60,6 +60,16 @@ def create_app(base_url='https://somewhere.org:4321'):
     return main.app.test_client(), main.app.config, storage, main.app
 
 
+class SWHApidocTestCase(unittest.TestCase):
+    """Testing APIDoc class.
+
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.app, cls.app_config, cls.storage, _ = create_app()
+        cls.maxDiff = None
+
+
 class SWHApiTestCase(unittest.TestCase):
     """Testing API class.
 

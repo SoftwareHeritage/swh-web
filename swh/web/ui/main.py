@@ -5,8 +5,9 @@
 
 import logging
 import os
+import json
 
-from flask.ext.api import FlaskAPI
+from flask import Flask
 from swh.core import config
 
 from swh.web.ui.renderers import RENDERERS, urlize_api_links
@@ -26,14 +27,11 @@ DEFAULT_CONFIG = {
     'max_log_revs': ('int', 25),
 }
 
-
 # api's definition
-app = FlaskAPI(__name__)
+app = Flask(__name__)
 app.jinja_env.filters['urlize_api_links'] = urlize_api_links
 app.jinja_env.filters['safe_docstring_display'] = safe_docstring_display
 app.jinja_env.filters['revision_id_from_url'] = revision_id_from_url
-
-AUTODOC_ENDPOINT_INSTALLED = False
 
 
 def read_config(config_file):
@@ -53,12 +51,6 @@ def load_controllers():
 
     """
     from swh.web.ui import views, apidoc  # flake8: noqa
-
-    # side-effects here (install autodoc endpoints so do it only once!)
-    global AUTODOC_ENDPOINT_INSTALLED
-    if not AUTODOC_ENDPOINT_INSTALLED:
-        apidoc.install_browsable_api_endpoints()
-        AUTODOC_ENDPOINT_INSTALLED = True
 
 
 def rules():
