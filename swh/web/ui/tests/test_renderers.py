@@ -200,6 +200,14 @@ class RendererTestCase(unittest.TestCase):
                           other_content)
 
     @istest
+    def revision_id_from_url(self):
+        url = ('/browse/revision/9ba4bcb645898d562498ea66a0df958ef0e7a68c/'
+               'prev/9ba4bcb645898d562498ea66a0df958ef0e7aaaa/')
+
+        expected_id = '9ba4bcb645898d562498ea66a0df958ef0e7a68c'
+        self.assertEqual(renderers.revision_id_from_url(url), expected_id)
+
+    @istest
     def safe_docstring_display(self):
         # update api link with html links content with links
         docstring = """<p>Show all revisions (~git log) starting from

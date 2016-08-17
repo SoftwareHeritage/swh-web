@@ -20,6 +20,26 @@ class FileMock():
 class SearchView(test_app.SWHViewTestCase):
     render_template = False
 
+    @patch('swh.web.ui.apidoc.APIUrls')
+    @istest
+    def browse_api_doc(self, mock_api_urls):
+        # given
+        endpoints = {
+            '/a/doc/endpoint/': 'relevant documentation',
+            '/some/other/endpoint/': 'more docstrings'}
+        mock_api_urls.apidoc_routes = endpoints
+
+        # when
+        rv = self.client.get('/api/1/doc/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertIsNotNone(
+            self.get_context_variable('doc_routes'),
+            sorted(endpoints.items())
+        )
+        self.assert_template_used('api.html')
+
     @istest
     def search_default(self):
         # when

@@ -10,12 +10,25 @@ from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import HTMLRenderer
 
 from swh.core.hashutil import ALGORITHMS
-from .. import service, utils
+from .. import service, utils, apidoc
 from ..exc import BadInputExc, NotFoundExc
 from ..main import app
 from . import api
 
 hash_filter_keys = ALGORITHMS
+
+
+@app.route('/api/1/doc/')
+@set_renderers(HTMLRenderer)
+def api_doc():
+    """Render the API's documentation.
+    """
+    routes = apidoc.APIUrls.get_app_endpoints()
+    # Return a list of routes with consistent ordering
+    env = {
+        'doc_routes': sorted(routes.items())
+    }
+    return render_template('api.html', **env)
 
 
 @app.route('/search/', methods=['GET', 'POST'])
