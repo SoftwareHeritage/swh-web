@@ -7,14 +7,139 @@ import json
 import unittest
 import yaml
 
+from flask import Response
 from flask_api.mediatypes import MediaType
 from nose.tools import istest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from swh.web.ui import renderers
 
 
 class RendererTestCase(unittest.TestCase):
+
+    @patch('swh.web.ui.renderers.g')
+    @patch('swh.web.ui.renderers.json')
+    @patch('swh.web.ui.renderers.request')
+    @patch('swh.web.ui.renderers.render_template')
+    @patch('swh.web.ui.renderers.SWHMultiResponse.filter_by_fields')
+    @istest
+    def swh_multi_response_mimetype_html(self, mock_filter, mock_render,
+                                         mock_request, mock_json, mock_g):
+        # given
+        data = {'data': [12, 34],
+                'id': 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'}
+        mock_g.get.return_value = {'my_key': 'my_display_value'}
+        mock_filter.return_value = data
+        expected_env = {
+            'my_key': 'my_display_value',
+            'response_data': json.dumps(data),
+            'request': mock_request
+        }
+
+        def mock_mimetypes(key):
+            mimetypes = {
+                'text/html': 10,
+                'application/json': 0.1,
+                'application/yaml': 0.1
+            }
+            return mimetypes[key]
+        accept_mimetypes = MagicMock()
+        accept_mimetypes.__getitem__.side_effect = mock_mimetypes
+        accept_mimetypes.best_match = MagicMock(return_value='text/html')
+        mock_request.accept_mimetypes = accept_mimetypes
+        mock_json.dumps.return_value = json.dumps(data)
+
+        # when
+        rv = renderers.SWHMultiResponse.make_response_from_mimetype(data)
+
+        # then
+        mock_filter.assert_called_once_with(renderers.SWHMultiResponse, data)
+        mock_render.assert_called_with('apidoc.html', **expected_env)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.mimetype, 'text/html')
+
+    @patch('swh.web.ui.renderers.g')
+    @patch('swh.web.ui.renderers.yaml')
+    @patch('swh.web.ui.renderers.request')
+    @patch('swh.web.ui.renderers.SWHMultiResponse.filter_by_fields')
+    @istest
+    def swh_multi_response_mimetype_yaml(self, mock_filter,
+                                         mock_request, mock_yaml, mock_g):
+        # given
+        data = {'data': [12, 34],
+                'id': 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'}
+
+        def mock_mimetypes(key):
+            mimetypes = {
+                'application/yaml': 10,
+                'application/json': 0.1,
+                'text/html': 0.1
+            }
+            return mimetypes[key]
+        accept_mimetypes = MagicMock()
+        accept_mimetypes.__getitem__.side_effect = mock_mimetypes
+        accept_mimetypes.best_match = MagicMock(
+            return_value='application/yaml')
+        mock_request.accept_mimetypes = accept_mimetypes
+        mock_yaml.dump.return_value = yaml.dump(data)
+        mock_filter.return_value = data
+
+        # when
+        rv = renderers.SWHMultiResponse.make_response_from_mimetype(data)
+
+        # then
+        mock_filter.assert_called_once_with(renderers.SWHMultiResponse, data)
+        mock_yaml.dump.assert_called_once_with(data)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.mimetype, 'application/yaml')
+        self.assertEqual(data, yaml.load(rv.data.decode('utf-8')))
+
+    @patch('swh.web.ui.renderers.g')
+    @patch('swh.web.ui.renderers.json')
+    @patch('swh.web.ui.renderers.request')
+    @patch('swh.web.ui.renderers.SWHMultiResponse.filter_by_fields')
+    @istest
+    def swh_multi_response_mimetype_json(self, mock_filter,
+                                         mock_request, mock_json, mock_g):
+        # given
+        data = {'data': [12, 34],
+                'id': 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'}
+
+        def mock_mimetypes(key):
+            mimetypes = {
+                'application/json': 10,
+                'text/html': 0.1,
+                'application/yaml': 0.1
+            }
+            return mimetypes[key]
+        accept_mimetypes = MagicMock()
+        accept_mimetypes.__getitem__.side_effect = mock_mimetypes
+        accept_mimetypes.best_match = MagicMock(
+            return_value='application/json')
+        mock_request.accept_mimetypes = accept_mimetypes
+        mock_json.dumps.return_value = json.dumps(data)
+        mock_filter.return_value = data
+
+        # when
+        rv = renderers.SWHMultiResponse.make_response_from_mimetype(data)
+
+        # then
+        mock_filter.assert_called_once_with(renderers.SWHMultiResponse, data)
+        mock_json.dumps.assert_called_once_with(data)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.mimetype, 'application/json')
+        self.assertEqual(data, json.loads(rv.data.decode('utf-8')))
+
+    @istest
+    def apidoc_make_response_not_list_dict(self):
+        # given
+        incoming = Response()
+
+        # when
+        rv = renderers.SWHMultiResponse.make_response_from_mimetype(incoming)
+
+        # then
+        self.assertEqual(rv, incoming)
 
     @patch('swh.web.ui.renderers.request')
     @istest

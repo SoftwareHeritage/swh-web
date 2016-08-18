@@ -5,8 +5,10 @@
 
 import re
 import yaml
+import json
 
-from flask import make_response, request
+from flask import make_response, request, Response, render_template
+from flask import g
 from flask.ext.api import renderers, parsers
 from flask_api.mediatypes import MediaType
 from swh.web.ui import utils
@@ -78,6 +80,61 @@ class SWHJSONRenderer(renderers.JSONRenderer,
         data = self.filter_by_fields(data)
         res = super().render(data, media_type, **options)
         return self.enrich_with_jsonp(res)
+
+
+class SWHMultiResponse(Response, SWHFilterEnricher):
+    """
+    A Flask Response subclass.
+    Override force_type to transform dict responses into callable Flask
+    response objects whose mimetype matches the request's Accept header: HTML
+    template render, YAML dump or default to a JSON dump.
+    """
+
+    @classmethod
+    def make_response_from_mimetype(cls, rv):
+
+        def wants_html(best_match):
+            return best_match == 'text/html' and \
+                request.accept_mimetypes[best_match] > \
+                request.accept_mimetypes['application/json']
+
+        def wants_yaml(best_match):
+            return best_match == 'application/yaml' and \
+                request.accept_mimetypes[best_match] > \
+                request.accept_mimetypes['application/json']
+
+        if isinstance(rv, dict) or isinstance(rv, list):
+            rv = cls.filter_by_fields(cls, rv)
+            acc_mime = ['application/json', 'application/yaml', 'text/html']
+            best_match = request.accept_mimetypes.best_match(acc_mime)
+            # return a template render
+            if wants_html(best_match):
+                data = json.dumps(rv, sort_keys=True,
+                                  indent=4, separators=(',', ': '))
+                env = g.get('doc_env', {})
+                env['response_data'] = data
+                env['request'] = request
+                rv = Response(render_template('apidoc.html', **env),
+                              content_type='text/html')
+            # return formatted yaml
+            elif wants_yaml(best_match):
+                rv = Response(
+                    yaml.dump(rv),
+                    content_type='application/yaml')
+            # return formatted json
+            else:
+                # jsonify is unhappy with lists in Flask 0.10.1, use json.dumps
+                rv = Response(
+                    json.dumps(rv),
+                    content_type='application/json')
+        return rv
+
+    @classmethod
+    def force_type(cls, rv, environ=None):
+        # Data from apidoc
+        if isinstance(rv, dict) or isinstance(rv, list):
+            rv = cls.make_response_from_mimetype(rv)
+        return super().force_type(rv, environ)
 
 
 def urlize_api_links(content):

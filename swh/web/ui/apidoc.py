@@ -4,12 +4,11 @@
 # See top-level LICENSE file for more information
 
 import re
-import yaml
-import json
 
 from functools import wraps
 
 from flask import request, render_template, url_for
+from flask import g
 
 from swh.web.ui.main import app
 
@@ -180,43 +179,6 @@ class raises(object):
         return exc_fun
 
 
-def make_response_from_mimetype(rv, env):
-
-    def wants_html(best_match):
-        return best_match == 'text/html' and \
-            request.accept_mimetypes[best_match] > \
-            request.accept_mimetypes['application/json']
-
-    def wants_yaml(best_match):
-        return best_match == 'application/yaml' and \
-            request.accept_mimetypes[best_match] > \
-            request.accept_mimetypes['application/json']
-
-    if isinstance(rv, dict) or isinstance(rv, list):
-        acc_mime = ['application/json', 'application/yaml', 'text/html']
-        best_match = request.accept_mimetypes.best_match(acc_mime)
-        # return a template render
-        if wants_html(best_match):
-            data = json.dumps(rv, sort_keys=True,
-                              indent=4, separators=(',', ': '))
-            env['response_data'] = data
-            env['request'] = request
-            rv = app.response_class(render_template('apidoc.html', **env),
-                                    content_type='text/html')
-        # return formatted yaml
-        elif wants_yaml(best_match):
-            rv = app.response_class(
-                yaml.dump(rv),
-                content_type='application/yaml')
-        # return formatted json
-        else:
-            # jsonify is unhappy with lists in Flask 0.10.1, use json.dumps
-            rv = app.response_class(
-                json.dumps(rv),
-                content_type='application/json')
-    return rv
-
-
 class returns(object):
     """
     Decorate an API method to display information about its return value.
@@ -271,6 +233,6 @@ class returns(object):
                     content_type='text/html')
 
             cargs, ckwargs = kwargs['call_args']
-            rv = f(*cargs, **ckwargs)
-            return make_response_from_mimetype(rv, env)
+            g.doc_env = env  # Store for response processing
+            return f(*cargs, **ckwargs)
         return ret_fun
