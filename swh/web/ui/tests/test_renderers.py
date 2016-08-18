@@ -335,30 +335,22 @@ class RendererTestCase(unittest.TestCase):
     @istest
     def safe_docstring_display(self):
         # update api link with html links content with links
-        docstring = """<p>Show all revisions (~git log) starting from
-sha1_git.
-   The first element returned is the given sha1_git.</p>
-<p>Args:
-    sha1_git: the revision's hash</p>
-<p>Returns:
-    Information on the revision if found.</p>
-<p>Raises:
-    BadInputExc in case of unknown algo_hash or bad hash
-    NotFoundExc if the revision is not found.</p>
-<p>Example:
-    blah</p>"""
-        expected_docstring = """<p>Show all revisions (~git log) starting from
-sha1_git.
-   The first element returned is the given sha1_git.</p>
-<p><h4>Args:</h4>&nbsp;&nbsp;
-    sha1_git: the revision's hash</p>
-<p><h4>Returns:</h4>&nbsp;&nbsp;
-    Information on the revision if found.</p>
-<p><h4>Raises:</h4>&nbsp;&nbsp;
-    BadInputExc in case of unknown algo_hash or bad hash
-    NotFoundExc if the revision is not found.</p>
-<p><h4>Example:</h4>&nbsp;&nbsp;
-    blah</p>"""
+        docstring = """This is my list header:
+
+         - Here is item 1, with a continuation
+           line right here
+         - Here is item 2
+
+        Here is something that is not part of the list"""
+
+        expected_docstring = """<p>This is my list header:</p>
+<ul class="docstring">
+<li>Here is item 1, with a continuation
+line right here</li>
+<li>Here is item 2</li>
+</ul>
+<p>Here is something that is not part of the list</p>
+"""
 
         self.assertEquals(renderers.safe_docstring_display(docstring),
                           expected_docstring)

@@ -7,10 +7,14 @@ import re
 import yaml
 import json
 
+from docutils.core import publish_parts
+from docutils.writers.html4css1 import Writer, HTMLTranslator
+
 from flask import make_response, request, Response, render_template
 from flask import g
 from flask.ext.api import renderers, parsers
 from flask_api.mediatypes import MediaType
+
 from swh.web.ui import utils
 
 
@@ -142,11 +146,39 @@ def urlize_api_links(content):
     return re.sub(r'"(/api/.*|/browse/.*)"', r'"<a href="\1">\1</a>"', content)
 
 
+class NoHeaderHTMLTranslator(HTMLTranslator):
+    """
+    Docutils translator subclass to customize the generation of HTML
+    from reST-formatted docstrings
+    """
+    def __init__(self, document):
+        super().__init__(document)
+        self.body_prefix = []
+        self.body_suffix = []
+
+    # disable blockquotes to ignore indentation issue with docstrings
+    def visit_block_quote(self, node):
+        pass
+
+    def depart_block_quote(self, node):
+        pass
+
+    def visit_bullet_list(self, node):
+        self.context.append((self.compact_simple, self.compact_p))
+        self.compact_p = None
+        self.compact_simple = self.is_compactable(node)
+        self.body.append(self.starttag(node, 'ul', CLASS='docstring'))
+
+DOCSTRING_WRITER = Writer()
+DOCSTRING_WRITER.translator_class = NoHeaderHTMLTranslator
+
+
 def safe_docstring_display(docstring):
-    """Utility function to safely decorate docstring in browsable api."""
-    src = r'(Args|Raises?|Throws?|Yields?|Returns?|Examples?|Samples?):.*'
-    dest = r'<h4>\1:</h4>&nbsp;&nbsp;'
-    return re.sub(src, dest, docstring)
+    """
+    Utility function to htmlize reST-formatted documentation in browsable
+    api.
+    """
+    return publish_parts(docstring, writer=DOCSTRING_WRITER)['html_body']
 
 
 def revision_id_from_url(url):

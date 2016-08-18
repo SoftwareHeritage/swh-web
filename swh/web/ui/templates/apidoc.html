@@ -5,7 +5,7 @@
 {% if docstring %}
 <div class="docstring">
   <h2> Overview </h2>
-  {{ docstring | safe }}
+  {% autoescape off %} {{ docstring | safe_docstring_display }} {% endautoescape %}
 </div>
 {% endif %}
 {% if response_data and response_data is not none %}
@@ -46,10 +46,10 @@
   <dl class="doc-argslist dl-horizontal">
     {% for arg in args %}
     <dt> {{ arg['name'] }}: {{ arg['type'] }} </dt>
-    <dd> {{ arg['doc'] }} </dd>
+    <dd> {% autoescape off %} {{ arg['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
     {% endfor %}
   </dl>
-</div>
+ </div>
 {% endif %}
 {% if excs and excs|length > 0 %}
 <div class="doc-excs">
@@ -57,7 +57,7 @@
   <dl class="doc-excslist dl-horizontal">
     {% for exc in excs %}
     <dt> {{ exc['exc'] }} </dt>
-    <dd> {{ exc['doc'] }} </dd>
+    <dd> {% autoescape off %} {{ exc['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
     {% endfor %}
   </dl>
 </div>
@@ -66,8 +66,8 @@
 <div class="doc-return">
   <h2> Returns </h2>
   <dl class="doc-return dl-horizontal">
-    <dt>{{ return['type'] }}</dt>
-    <dd>{{ return['doc'] }}</dd>
+    <dt> {{ return['type'] }} </dt>
+    <dd> {% autoescape off %} {{ return['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
   </dl>
 </div>
 {% endif %}

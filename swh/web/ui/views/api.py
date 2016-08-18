@@ -52,17 +52,21 @@ def api_origin_visits(origin_id):
             doc='Raised if q is not well formed')
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""A dict with keys:
-               * search_res: a list of dicts corresponding to queried content
-                 with key 'found' to True if found, 'False' if not
-               * search_stats: a dict containing number of files searched and
-                 percentage of files found
+
+             - search_res: a list of dicts corresponding to queried content
+               with key 'found' to True if found, 'False' if not
+             - search_stats: a dict containing number of files searched and
+               percentage of files found
              """)
 def api_search(q=None):
     """Search a content per hash.
 
-    This may take the form of a GET request with a single checksum, or a POST
-    request with many hashes, with the request body containing identifiers
-    (typically filenames) as keys and corresponding hashes as values.
+    This may take the form of:
+
+    - a GET request with a single checksum
+    - a POST request with many hashes, with the request body containing
+      identifiers (typically filenames) as keys and corresponding hashes as
+      values.
     """
 
     response = {'search_res': None,
