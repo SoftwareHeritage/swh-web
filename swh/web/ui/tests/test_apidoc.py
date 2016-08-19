@@ -17,10 +17,10 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
         self.arg_dict = {
             'name': 'my_pretty_arg',
             'default': 'some default value',
-            'type': 'str',
+            'type': apidoc.argtypes.sha1,
             'doc': 'this arg does things'
         }
-        self.stub_excs = [{'exc': 'catastrophic_exception',
+        self.stub_excs = [{'exc': apidoc.excs.badinput,
                            'doc': 'My exception documentation'}]
         self.stub_args = [{'name': 'stub_arg',
                            'default': 'some_default'}]
@@ -33,7 +33,7 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
              'methods': {'GET', 'HEAD', 'OPTIONS'}}
         ]
         self.stub_return = {
-            'type': 'some_return_type',
+            'type': apidoc.rettypes.dict.value,
             'doc': 'a dict with amazing properties'
         }
 
@@ -68,10 +68,11 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
         # given
         decorator = apidoc.arg('my_pretty_arg',
                                default='some default value',
-                               argtype='str',
+                               argtype=apidoc.argtypes.sha1,
                                argdoc='this arg does things')
         mock_fun = MagicMock(return_value=123)
         decorated = decorator.__call__(mock_fun)
+        self.arg_dict['type'] = self.arg_dict['type'].value
 
         # when
         decorated(call_args=((), {}), doc_route='some/route/')
@@ -88,7 +89,7 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
         # given
         decorator = apidoc.arg('my_other_arg',
                                default='some other value',
-                               argtype='str',
+                               argtype=apidoc.argtypes.sha1,
                                argdoc='this arg is optional')
         mock_fun = MagicMock(return_value=123)
         decorated = decorator.__call__(mock_fun)
@@ -105,16 +106,17 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
             args=[self.arg_dict,
                   {'name': 'my_other_arg',
                    'default': 'some other value',
-                   'type': 'str',
+                   'type': apidoc.argtypes.sha1.value,
                    'doc': 'this arg is optional'}])
 
     @istest
     def apidoc_raises_noprevious(self):
         # given
-        decorator = apidoc.raises(exc='catastrophic_exception',
+        decorator = apidoc.raises(exc=apidoc.excs.badinput,
                                   doc='My exception documentation')
         mock_fun = MagicMock(return_value=123)
         decorated = decorator.__call__(mock_fun)
+        self.stub_excs[0]['exc'] = self.stub_excs[0]['exc'].value
 
         # when
         decorated(call_args=((), {}), doc_route='some/route/')
@@ -129,13 +131,14 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
     @istest
     def apidoc_raises_previous(self):
         # given
-        decorator = apidoc.raises(exc='cataclysmic_exception',
+        decorator = apidoc.raises(exc=apidoc.excs.notfound,
                                   doc='Another documentation')
         mock_fun = MagicMock(return_value=123)
         decorated = decorator.__call__(mock_fun)
         expected_excs = self.stub_excs + [{
-            'exc': 'cataclysmic_exception',
+            'exc': apidoc.excs.notfound.value,
             'doc': 'Another documentation'}]
+        expected_excs[0]['exc'] = expected_excs[0]['exc'].value
 
         # when
         decorated(call_args=((), {}),
@@ -159,7 +162,7 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
                                 mock_url_for,
                                 mock_render):
         # given
-        decorator = apidoc.returns(rettype='some_return_type',
+        decorator = apidoc.returns(rettype=apidoc.rettypes.dict,
                                    retdoc='a dict with amazing properties')
         mock_fun = MagicMock(return_value=123)
         mock_fun.__name__ = 'some_fname'
@@ -213,7 +216,7 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
                               mock_g):
 
         # given
-        decorator = apidoc.returns(rettype='some_return_type',
+        decorator = apidoc.returns(rettype=apidoc.rettypes.dict,
                                    retdoc='a dict with amazing properties')
         mock_fun = MagicMock(return_value=123)
         mock_fun.__name__ = 'some_fname'
@@ -230,7 +233,7 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
                  'methods': {'GET', 'HEAD', 'OPTIONS'}}],
             'docstring': 'Some documentation',
             'route': 'some/doc/route/',
-            'return': {'type': 'some_return_type',
+            'return': {'type': apidoc.rettypes.dict.value,
                        'doc': 'a dict with amazing properties'}
         }
 
@@ -256,7 +259,7 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
                                     mock_url_for,
                                     mock_g):
         # given
-        decorator = apidoc.returns(rettype='some_return_type',
+        decorator = apidoc.returns(rettype=apidoc.rettypes.dict,
                                    retdoc='a dict with amazing properties')
         mock_fun = MagicMock(return_value=123)
         mock_fun.__name__ = 'some_fname'

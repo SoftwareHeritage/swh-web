@@ -6,6 +6,7 @@
 import re
 
 from functools import wraps
+from enum import Enum
 
 from flask import request, render_template, url_for
 from flask import g
@@ -13,7 +14,7 @@ from flask import g
 from swh.web.ui.main import app
 
 
-class argtypes(object):
+class argtypes(Enum):
     """Class for centralizing argument type descriptions
 
     """
@@ -24,19 +25,19 @@ class argtypes(object):
     sha1 = 'sha1'
     uuid = 'uuid'
     sha1_git = 'sha1_git'
-    octet_stream = 'octet stream'
     algo_and_hash = 'algo_hash:hash'
 
 
-class rettypes(object):
+class rettypes(Enum):
     """Class for centralizing return type descriptions
 
     """
+    octet_stream = 'octet stream'
     list = 'list'
     dict = 'dict'
 
 
-class excs(object):
+class excs(Enum):
     """Class for centralizing exception type descriptions
 
     """
@@ -132,16 +133,25 @@ class arg(object):
         name: the argument's name. MUST match the method argument's name to
         create the example request URL.
         default: the argument's default value
-        argtype: the argument's type (map, dict, list, tuple...)
+        argtype: the argument's type as an Enum value from apidoc.argtypes
         argdoc: the argument's documentation string
     """
     def __init__(self, name, default, argtype, argdoc):
         self.doc_dict = {
             'name': name,
-            'type': argtype,
+            'type': argtype.value,
             'doc': argdoc,
             'default': default
         }
+        self.req_args = ['call_args', 'doc_route']
+
+    def check_args(self, kwargs):
+        missing = [arg for arg in self.req_args if arg not in kwargs]
+        if len(missing) > 0:
+            message = 'Expected keyword args %s, missing %s.' % (
+                ', '.join(self.req_args),
+                ', '.join(missing))
+            raise SWHAPIDocException(message)
 
     def __call__(self, f):
         @wraps(f)
@@ -159,12 +169,12 @@ class raises(object):
     Decorate an API method to display information pertaining to an exception
     that can be raised by this method.
     Args:
-        exc: the exception name
+        exc: the exception name as an Enum value from apidoc.excs
         doc: the exception's documentation string
     """
     def __init__(self, exc, doc):
         self.exc_dict = {
-            'exc': exc,
+            'exc': exc.value,
             'doc': doc
         }
 
@@ -185,12 +195,12 @@ class returns(object):
     Caution: this MUST be the last decorator in the apidoc decorator stack,
     or the decorated endpoint breaks
     Args:
-        rettype: the return value's type (map, dict, list, tuple...)
+        rettype: the return value's type as an Enum value from apidoc.rettypes
         retdoc: the return value's documentation string
     """
     def __init__(self, rettype=None, retdoc=None):
         self.return_dict = {
-            'type': rettype,
+            'type': rettype.value,
             'doc': retdoc
         }
 

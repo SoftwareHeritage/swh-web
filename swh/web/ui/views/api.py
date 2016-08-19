@@ -405,7 +405,7 @@ def api_revision(sha1_git, context=None):
             doc='Raised if sha1_git is not well formed')
 @doc.raises(exc=doc.excs.notfound,
             doc='Raised if a revision matching sha1_git was not found in SWH')
-@doc.returns(rettype=doc.argtypes.octet_stream,
+@doc.returns(rettype=doc.rettypes.octet_stream,
              retdoc="""The message of the revision identified by sha1_git
              as a downloadable octet stream""")
 def api_revision_raw_message(sha1_git):
@@ -670,7 +670,7 @@ def api_content_checksum_to_origin(q):
             doc='Raised if q is not well formed')
 @doc.raises(exc=doc.excs.notfound,
             doc='Raised if a content matching q was not found in SWH')
-@doc.returns(rettype='octet stream',
+@doc.returns(rettype=doc.rettypes.octet_stream,
              retdoc='The raw content data as an octet stream')
 def api_content_raw(q):
     """Return content's raw data if content is found.
