@@ -143,15 +143,6 @@ class arg(object):
             'doc': argdoc,
             'default': default
         }
-        self.req_args = ['call_args', 'doc_route']
-
-    def check_args(self, kwargs):
-        missing = [arg for arg in self.req_args if arg not in kwargs]
-        if len(missing) > 0:
-            message = 'Expected keyword args %s, missing %s.' % (
-                ', '.join(self.req_args),
-                ', '.join(missing))
-            raise SWHAPIDocException(message)
 
     def __call__(self, f):
         @wraps(f)
