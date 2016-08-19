@@ -10,7 +10,7 @@ import json
 from flask import Flask
 from swh.core import config
 
-from swh.web.ui.renderers import RENDERERS, urlize_api_links
+from swh.web.ui.renderers import urlize_api_links
 from swh.web.ui.renderers import safe_docstring_display
 from swh.web.ui.renderers import revision_id_from_url
 from swh.web.ui.renderers import SWHMultiResponse
@@ -92,7 +92,6 @@ def run_from_webserver(environ, start_response):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
-    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.INFO)
@@ -127,7 +126,6 @@ def run_debug_from(config_path, verbose=False):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
-    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')

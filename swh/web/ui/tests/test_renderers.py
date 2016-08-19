@@ -8,7 +8,6 @@ import unittest
 import yaml
 
 from flask import Response
-from flask_api.mediatypes import MediaType
 from nose.tools import istest
 from unittest.mock import patch, MagicMock
 
@@ -130,8 +129,9 @@ class RendererTestCase(unittest.TestCase):
         self.assertEqual(rv.mimetype, 'application/json')
         self.assertEqual(data, json.loads(rv.data.decode('utf-8')))
 
+    @patch('swh.web.ui.renderers.request')
     @istest
-    def apidoc_make_response_not_list_dict(self):
+    def swh_multi_response_make_response_not_list_dict(self, mock_request):
         # given
         incoming = Response()
 
@@ -165,142 +165,19 @@ class RendererTestCase(unittest.TestCase):
         mock_request.args = {'fields': 'a,c'}
         mock_utils.filter_field_keys.return_value = {'a': 'some-data'}
 
-        swh_filter_renderer = renderers.SWHFilterEnricher()
+        swh_filter_user = renderers.SWHMultiResponse()
 
         input_data = {'a': 'some-data',
                       'b': 'some-other-data'}
 
         # when
-        actual_data = swh_filter_renderer.filter_by_fields(input_data)
+        actual_data = swh_filter_user.filter_by_fields(input_data)
 
         # then
         self.assertEquals(actual_data, {'a': 'some-data'})
 
         mock_utils.filter_field_keys.assert_called_once_with(input_data,
                                                              {'a', 'c'})
-
-    @patch('swh.web.ui.renderers.request')
-    @istest
-    def yaml_renderer_without_filter(self, mock_request):
-        # given
-        mock_request.args = {}
-        yaml_renderer = renderers.YAMLRenderer()
-
-        input_data = {'target': 'sha1-dir',
-                      'type': 'dir',
-                      'dir-id': 'dir-id-sha1-git'}
-
-        expected_data = input_data
-
-        # when
-        actual_data = yaml_renderer.render(input_data, 'application/yaml')
-
-        # then
-        self.assertEqual(yaml.load(actual_data), expected_data)
-
-    @patch('swh.web.ui.renderers.request')
-    @istest
-    def yaml_renderer(self, mock_request):
-        # given
-        mock_request.args = {'fields': 'type,target'}
-        yaml_renderer = renderers.YAMLRenderer()
-
-        input_data = {'target': 'sha1-dir',
-                      'type': 'dir',
-                      'dir-id': 'dir-id-sha1-git'}
-
-        expected_data = {'target': 'sha1-dir', 'type': 'dir'}
-
-        # when
-        actual_data = yaml_renderer.render(input_data, 'application/yaml')
-
-        # then
-        self.assertEqual(yaml.load(actual_data), expected_data)
-
-    @patch('swh.web.ui.renderers.request')
-    @istest
-    def json_renderer_basic(self, mock_request):
-        # given
-        mock_request.args = {}
-        json_renderer = renderers.SWHJSONRenderer()
-
-        input_data = {'target': 'sha1-dir',
-                      'type': 'dir',
-                      'dir-id': 'dir-id-sha1-git'}
-
-        expected_data = input_data
-
-        # when
-        actual_data = json_renderer.render(input_data, MediaType(
-            'application/json'))
-
-        # then
-        self.assertEqual(json.loads(actual_data), expected_data)
-
-    @patch('swh.web.ui.renderers.request')
-    @istest
-    def json_renderer_basic_with_filter(self, mock_request):
-        # given
-        mock_request.args = {'fields': 'target'}
-        json_renderer = renderers.SWHJSONRenderer()
-
-        input_data = {'target': 'sha1-dir',
-                      'type': 'dir',
-                      'dir-id': 'dir-id-sha1-git'}
-
-        expected_data = {'target': 'sha1-dir'}
-
-        # when
-        actual_data = json_renderer.render(input_data, MediaType(
-            'application/json'))
-
-        # then
-        self.assertEqual(json.loads(actual_data), expected_data)
-
-    @patch('swh.web.ui.renderers.request')
-    @istest
-    def json_renderer_basic_with_filter_and_jsonp(self, mock_request):
-        # given
-        mock_request.args = {'fields': 'target',
-                             'callback': 'jsonpfn'}
-        json_renderer = renderers.SWHJSONRenderer()
-
-        input_data = {'target': 'sha1-dir',
-                      'type': 'dir',
-                      'dir-id': 'dir-id-sha1-git'}
-
-        # when
-        actual_data = json_renderer.render(input_data, MediaType(
-            'application/json'))
-
-        # then
-        self.assertEqual(actual_data, 'jsonpfn({"target": "sha1-dir"})')
-
-    @patch('swh.web.ui.renderers.request')
-    @istest
-    def jsonp_enricher_basic_with_filter_and_jsonp(self, mock_request):
-        # given
-        mock_request.args = {'callback': 'jsonpfn'}
-        jsonp_enricher = renderers.JSONPEnricher()
-
-        # when
-        actual_output = jsonp_enricher.enrich_with_jsonp({'output': 'test'})
-
-        # then
-        self.assertEqual(actual_output, "jsonpfn({'output': 'test'})")
-
-    @patch('swh.web.ui.renderers.request')
-    @istest
-    def jsonp_enricher_do_nothing(self, mock_request):
-        # given
-        mock_request.args = {}
-        jsonp_enricher = renderers.JSONPEnricher()
-
-        # when
-        actual_output = jsonp_enricher.enrich_with_jsonp({'output': 'test'})
-
-        # then
-        self.assertEqual(actual_output, {'output': 'test'})
 
     @istest
     def urlize_api_links(self):

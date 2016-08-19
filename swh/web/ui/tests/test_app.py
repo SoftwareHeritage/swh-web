@@ -7,7 +7,7 @@
 
 import unittest
 from swh.storage.api.client import RemoteStorage as Storage
-from swh.web.ui import renderers, main
+from swh.web.ui import main
 from flask.ext.testing import TestCase
 
 
@@ -51,7 +51,6 @@ def create_app(base_url='https://somewhere.org:4321'):
             'max_log_revs': 25}
 
     main.app.config.update({'conf': conf})
-    main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
 
     if not main.app.config['TESTING']:  # HACK: install controllers only once!
         main.app.config['TESTING'] = True
