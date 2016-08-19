@@ -139,7 +139,7 @@ def safe_docstring_display(docstring):
     def trim(docstring):
         """Correctly trim triple-quoted docstrings, taking into account
         first-line indentation inconsistency.
-        Sourced from PEP257.
+        Source: https://www.python.org/dev/peps/pep-0257/#handling-docstring-indentation  # noqa
         """
         if not docstring:
             return ''
