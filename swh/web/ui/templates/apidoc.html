@@ -13,7 +13,7 @@
   <h2> Request </h2>
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
   <h2> Result </h2>
-  <pre> {% autoescape off %} {{ response_data | urlize_api_links }} {% endautoescape %} </pre>
+  <pre>{% autoescape off %}{{ response_data | urlize_api_links }}{% endautoescape %}</pre>
 </div>
 {% endif %}
 <hr/>

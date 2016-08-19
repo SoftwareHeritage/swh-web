@@ -5,7 +5,7 @@
   {% for route, doc in doc_routes %}
   <div class="api-doc-route">
     <h2> <a href="{{ route }}">{{ route }}</a> </h2>
-    {{ doc }}
+    {% autoescape off %}{{ doc | safe_docstring_display }}{% endautoescape %}
   </div>
   </br>
   {% endfor %}
