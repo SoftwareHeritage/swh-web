@@ -214,9 +214,9 @@ class RendererTestCase(unittest.TestCase):
         # update api link with html links content with links
         docstring = """This is my list header:
 
-         - Here is item 1, with a continuation
-           line right here
-         - Here is item 2
+        - Here is item 1, with a continuation
+          line right here
+        - Here is item 2
 
         Here is something that is not part of the list"""
 

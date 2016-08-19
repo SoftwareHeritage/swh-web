@@ -6,6 +6,7 @@
 import re
 import yaml
 import json
+import sys
 
 from docutils.core import publish_parts
 from docutils.writers.html4css1 import Writer, HTMLTranslator
@@ -119,13 +120,6 @@ class NoHeaderHTMLTranslator(HTMLTranslator):
         self.body_prefix = []
         self.body_suffix = []
 
-    # disable blockquotes to ignore indentation issue with docstrings
-    def visit_block_quote(self, node):
-        pass
-
-    def depart_block_quote(self, node):
-        pass
-
     def visit_bullet_list(self, node):
         self.context.append((self.compact_simple, self.compact_p))
         self.compact_p = None
@@ -141,6 +135,31 @@ def safe_docstring_display(docstring):
     Utility function to htmlize reST-formatted documentation in browsable
     api.
     """
+
+    def trim(docstring):
+        """Correctly trim triple-quoted docstrings, taking into account
+        first-line indentation inconsistency.
+        Sourced from PEP257.
+        """
+        if not docstring:
+            return ''
+        lines = docstring.expandtabs().splitlines()
+        indent = sys.maxsize
+        for line in lines[1:]:
+            stripped = line.lstrip()
+            if stripped:
+                indent = min(indent, len(line) - len(stripped))
+        trimmed = [lines[0].strip()]
+        if indent < sys.maxsize:
+            for line in lines[1:]:
+                trimmed.append(line[indent:].rstrip())
+        while trimmed and not trimmed[-1]:
+            trimmed.pop()
+        while trimmed and not trimmed[0]:
+            trimmed.pop(0)
+        return '\n'.join(trimmed)
+
+    docstring = trim(docstring)
     return publish_parts(docstring, writer=DOCSTRING_WRITER)['html_body']
 
 
