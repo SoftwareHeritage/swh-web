@@ -14,7 +14,7 @@ from flask import g
 from swh.web.ui.main import app
 
 
-class argtypes(Enum):
+class argtypes(Enum):  # noqa: N801
     """Class for centralizing argument type descriptions
 
     """
@@ -29,7 +29,7 @@ class argtypes(Enum):
     algo_and_hash = 'algo_hash:hash'
 
 
-class rettypes(Enum):
+class rettypes(Enum):  # noqa: N801
     """Class for centralizing return type descriptions
 
     """
@@ -38,7 +38,7 @@ class rettypes(Enum):
     dict = 'dict'
 
 
-class excs(Enum):
+class excs(Enum):  # noqa: N801
     """Class for centralizing exception type descriptions
 
     """
@@ -96,7 +96,7 @@ class APIUrls(object):
             cls.apidoc_routes[route] = docstring
 
 
-class route(object):
+class route(object):  # noqa: N801
     """
     Decorate an API method to register it in the API doc route index
     and create the corresponding Flask route.
@@ -126,7 +126,7 @@ class route(object):
         return doc_func
 
 
-class arg(object):
+class arg(object):  # noqa: N801
     """
     Decorate an API method to display an argument's information on the doc
     page specified by @route above.
@@ -156,7 +156,7 @@ class arg(object):
         return arg_fun
 
 
-class raises(object):
+class raises(object):  # noqa: N801
     """
     Decorate an API method to display information pertaining to an exception
     that can be raised by this method.
@@ -181,7 +181,7 @@ class raises(object):
         return exc_fun
 
 
-class returns(object):
+class returns(object):  # noqa: N801
     """
     Decorate an API method to display information about its return value.
     Caution: this MUST be the last decorator in the apidoc decorator stack,
