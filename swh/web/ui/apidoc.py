@@ -21,6 +21,7 @@ class argtypes(Enum):
 
     ts = 'timestamp'
     int = 'integer'
+    str = 'string'
     path = 'path'
     sha1 = 'sha1'
     uuid = 'uuid'
@@ -225,7 +226,8 @@ class returns(object):
             # Build example endpoint URL
             if 'args' in env:
                 defaults = {arg['name']: arg['default'] for arg in env['args']}
-                env['example'] = url_for(f.__name__, **defaults)
+                example = url_for(f.__name__, **defaults)
+                env['example'] = re.sub(r'(.*)\?.*', r'\1', example)
 
             # Prepare and send to mimetype selector if it's not a doc request
             if re.match(route_re, request.url) and not kwargs['noargs']:
