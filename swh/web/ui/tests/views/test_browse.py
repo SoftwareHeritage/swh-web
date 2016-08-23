@@ -43,7 +43,7 @@ class SearchView(test_app.SWHViewTestCase):
     @istest
     def search_default(self):
         # when
-        rv = self.client.get('/search/')
+        rv = self.client.get('/content/search/')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
@@ -62,7 +62,7 @@ class SearchView(test_app.SWHViewTestCase):
             'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
-        rv = self.client.get('/search/?q=sha1:456')
+        rv = self.client.get('/content/search/?q=sha1:456')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
@@ -81,7 +81,7 @@ class SearchView(test_app.SWHViewTestCase):
         mock_api.api_search.side_effect = BadInputExc('error msg')
 
         # when
-        rv = self.client.get('/search/?q=sha1_git:789')
+        rv = self.client.get('/content/search/?q=sha1_git:789')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), 'error msg')
@@ -102,7 +102,7 @@ class SearchView(test_app.SWHViewTestCase):
             'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
-        rv = self.client.get('/search/?q=sha1:123')
+        rv = self.client.get('/content/search/?q=sha1:123')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
@@ -127,7 +127,7 @@ class SearchView(test_app.SWHViewTestCase):
             'error bad input')
 
         # when (mock_request completes the post request)
-        rv = self.client.post('/search/')
+        rv = self.client.post('/content/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
@@ -156,7 +156,7 @@ class SearchView(test_app.SWHViewTestCase):
                             'found': False}]}
 
         # when (mock_request completes the post request)
-        rv = self.client.post('/search/')
+        rv = self.client.post('/content/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
@@ -193,7 +193,7 @@ class SearchView(test_app.SWHViewTestCase):
                             'found': True}]}
 
         # when (mock_request completes the post request)
-        rv = self.client.post('/search/')
+        rv = self.client.post('/content/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)

@@ -40,9 +40,9 @@ def api_origin_visits(origin_id):
     return sorted(date_gen)
 
 
-@app.route('/api/1/search/', methods=['POST'])
-@app.route('/api/1/search/<string:q>/')
-@doc.route('/api/1/search/')
+@app.route('/api/1/content/search/', methods=['POST'])
+@app.route('/api/1/content/search/<string:q>/')
+@doc.route('/api/1/content/search/')
 @doc.arg('q',
          default='sha1:adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,

@@ -27,7 +27,7 @@ def api_doc():
     return render_template('api.html', **env)
 
 
-@app.route('/search/', methods=['GET', 'POST'])
+@app.route('/content/search/', methods=['GET', 'POST'])
 def search():
     """Search for hashes in swh-storage.
 

@@ -298,7 +298,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # when
-        rv = self.app.get('/api/1/search/sha1:blah/')
+        rv = self.app.get('/api/1/content/search/sha1:blah/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -320,7 +320,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # when
-        rv = self.app.get('/api/1/search/sha1:halb/',
+        rv = self.app.get('/api/1/content/search/sha1:halb/',
                           headers={'Accept': 'application/yaml'})
 
         self.assertEquals(rv.status_code, 200)
@@ -345,7 +345,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # when
-        rv = self.app.get('/api/1/search/sha1:halb/')
+        rv = self.app.get('/api/1/content/search/sha1:halb/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
