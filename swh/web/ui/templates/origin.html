@@ -12,7 +12,7 @@
 <script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.flot.time.min.js') }}"></script>
 <script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.flot.selection.min.js') }}"></script>
 <script language="javascript" type="text/javascript" src="{{ url_for('static', filename='lib/jquery.flot.tooltip.min.js') }}"></script>
-<div> Details on origin {{ origin_id }}:
+<div> Details on origin {{ origin['id'] }}:
   <div id="swh-calendar" style="height: 200px">
     <div id="cal-zoom-window" style="height: 60%">
     </div>
@@ -34,7 +34,7 @@
 	    </div>
 	{% endif %}
 </div>
-  <script>$(function(){var cal = new Calendar('{{ browse_url }}', '{{ visit_url }}', {{ origin_id }}, $('#cal-zoom-window'),  $('#cal-static-window'),  $('#cal-clear'));});</script>
+  <script>$(function(){var cal = new Calendar('{{ browse_url }}', '{{ visit_url }}', {{ origin['id'] }}, $('#cal-zoom-window'),  $('#cal-static-window'),  $('#cal-clear'));});</script>
 {% endif %}
 
 {% endblock %}
