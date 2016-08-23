@@ -527,7 +527,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_origin(self, mock_service):
+    def api_origin_by_id(self, mock_service):
         # given
         stub_origin = {
             'id': 1234,
@@ -548,7 +548,34 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, stub_origin)
 
-        mock_service.lookup_origin.assert_called_with(1234)
+        mock_service.lookup_origin.assert_called_with({'id': 1234})
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_origin_by_type_url(self, mock_service):
+        # given
+        stub_origin = {
+            'id': 1234,
+            'lister': 'uuid-lister-0',
+            'project': 'uuid-project-0',
+            'url': 'ftp://some/url/to/origin/0',
+            'type': 'ftp'
+        }
+        mock_service.lookup_origin.return_value = stub_origin
+
+        # when
+        rv = self.app.get('/api/1/origin/ftp/url/ftp://some/url/to/origin/0/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, stub_origin)
+
+        mock_service.lookup_origin.assert_called_with(
+            {'url': 'ftp://some/url/to/origin/0',
+             'type': 'ftp'})
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -567,7 +594,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'Origin with id 4321 not found.'
         })
 
-        mock_service.lookup_origin.assert_called_with(4321)
+        mock_service.lookup_origin.assert_called_with({'id': 4321})
 
     @patch('swh.web.ui.views.api.service')
     @istest

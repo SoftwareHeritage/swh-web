@@ -551,6 +551,22 @@ class ContentWithOriginView(test_app.SWHViewTestCase):
 class OriginView(test_app.SWHViewTestCase):
     render_template = False
 
+    def setUp(self):
+
+        def url_for_test(fn, **args):
+            if fn == 'browse_revision_with_origin':
+                return '/browse/revision/origin/%s/' % args['origin_id']
+            elif fn == 'api_origin_visits':
+                return '/api/1/stat/visits/%s/' % args['origin_id']
+
+        self.url_for_test = url_for_test
+
+        self.stub_origin = {'type': 'git',
+                            'lister': None,
+                            'project': None,
+                            'url': 'rsync://some/url',
+                            'id': 426}
+
     @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_origin_ko_not_found(self, mock_api):
@@ -563,12 +579,12 @@ class OriginView(test_app.SWHViewTestCase):
         # then
         self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
-        self.assertEqual(self.get_context_variable('origin_id'), 1)
+        self.assertIsNone(self.get_context_variable('origin'))
         self.assertEqual(
             self.get_context_variable('message'),
             'Not found!')
 
-        mock_api.api_origin.assert_called_once_with(1)
+        mock_api.api_origin.assert_called_once_with(1, None, None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -582,28 +598,19 @@ class OriginView(test_app.SWHViewTestCase):
         # then
         self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
-        self.assertEqual(self.get_context_variable('origin_id'), 426)
+        self.assertIsNone(self.get_context_variable('origin'))
 
-        mock_api.api_origin.assert_called_once_with(426)
+        mock_api.api_origin.assert_called_once_with(426, None, None)
 
     @patch('swh.web.ui.views.browse.api')
     @patch('swh.web.ui.views.browse.url_for')
     @istest
-    def browse_origin_found(self, mock_url_for, mock_api):
+    def browse_origin_found_id(self, mock_url_for, mock_api):
         # given
-        def url_for_test(fn, **args):
-            if fn == 'browse_revision_with_origin':
-                return '/browse/revision/origin/%s/' % args['origin_id']
-            elif fn == 'api_origin_visits':
-                return '/api/1/stat/visits/%s/' % args['origin_id']
-        mock_url_for.side_effect = url_for_test
 
-        mock_origin = {'type': 'git',
-                       'lister': None,
-                       'project': None,
-                       'url': 'rsync://some/url',
-                       'id': 426}
-        mock_api.api_origin.return_value = mock_origin
+        mock_url_for.side_effect = self.url_for_test
+
+        mock_api.api_origin.return_value = self.stub_origin
 
         # when
         rv = self.client.get('/browse/origin/426/')
@@ -611,14 +618,38 @@ class OriginView(test_app.SWHViewTestCase):
         # then
         self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
-        self.assertEqual(self.get_context_variable('origin_id'), 426)
-        self.assertEqual(self.get_context_variable('origin'), mock_origin)
+        self.assertEqual(self.get_context_variable('origin'), self.stub_origin)
         self.assertEqual(self.get_context_variable('browse_url'),
                          '/browse/revision/origin/426/')
         self.assertEqual(self.get_context_variable('visit_url'),
                          '/api/1/stat/visits/426/')
 
-        mock_api.api_origin.assert_called_once_with(426)
+        mock_api.api_origin.assert_called_once_with(426, None, None)
+
+    @patch('swh.web.ui.views.browse.api')
+    @patch('swh.web.ui.views.browse.url_for')
+    @istest
+    def browse_origin_found_url_type(self, mock_url_for, mock_api):
+        # given
+
+        mock_url_for.side_effect = self.url_for_test
+
+        mock_api.api_origin.return_value = self.stub_origin
+
+        # when
+        rv = self.client.get('/browse/origin/git/url/rsync://some/url/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('origin.html')
+        self.assertEqual(self.get_context_variable('origin'), self.stub_origin)
+        self.assertEqual(self.get_context_variable('browse_url'),
+                         '/browse/revision/origin/426/')
+        self.assertEqual(self.get_context_variable('visit_url'),
+                         '/api/1/stat/visits/426/')
+
+        mock_api.api_origin.assert_called_once_with(None, 'git',
+                                                    'rsync://some/url')
 
 
 class PersonView(test_app.SWHViewTestCase):

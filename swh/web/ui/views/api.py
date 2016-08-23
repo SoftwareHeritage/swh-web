@@ -153,21 +153,46 @@ def _api_lookup(criteria,
 
 
 @app.route('/api/1/origin/<int:origin_id>/')
+@app.route('/api/1/origin/<string:origin_type>/url/<path:origin_url>/')
 @doc.route('/api/1/origin/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
          argdoc="The origin's SWH origin_id.")
+@doc.arg('origin_type',
+         default='git',
+         argtype=doc.argtypes.str,
+         argdoc="The origin's type (git, svn..)")
+@doc.arg('origin_url',
+         default='https://github.com/hylang/hy',
+         argtype=doc.argtypes.path,
+         argdoc="The origin's URL.")
 @doc.raises(exc=doc.excs.notfound,
             doc='Raised if origin_id does not correspond to an origin in SWH')
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the origin identified by origin_id')
-def api_origin(origin_id):
-    """Return information about origin with id origin_id.
+def api_origin(origin_id=None, origin_type=None, origin_url=None):
+    """Return information about the origin matching the passed criteria.
+
+    Criteria may be:
+      - An SWH-specific ID, if you already know it
+      - An origin type and its URL, if you do not have the origin's SWH
+        identifier
     """
+    ori_dict = {
+        'id': origin_id,
+        'type': origin_type,
+        'url': origin_url
+    }
+    ori_dict = {k: v for k, v in ori_dict.items() if ori_dict[k]}
+    if 'id' in ori_dict:
+        error_msg = 'Origin with id %s not found.' % ori_dict['id']
+    else:
+        error_msg = 'Origin with type %s and URL %s not found' % (
+            ori_dict['type'], ori_dict['url'])
     return _api_lookup(
-        origin_id, lookup_fn=service.lookup_origin,
-        error_msg_if_not_found='Origin with id %s not found.' % origin_id)
+        ori_dict, lookup_fn=service.lookup_origin,
+        error_msg_if_not_found=error_msg)
 
 
 @app.route('/api/1/person/<int:person_id>/')

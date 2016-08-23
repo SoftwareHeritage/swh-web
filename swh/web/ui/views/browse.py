@@ -241,22 +241,30 @@ def browse_directory(sha1_git, path=None):
     return render_template('directory.html', **env)
 
 
+@app.route('/browse/origin/<string:origin_type>/url/<path:origin_url>/')
 @app.route('/browse/origin/<int:origin_id>/')
-def browse_origin(origin_id):
-    """Browse origin with id id.
+def browse_origin(origin_id=None, origin_type=None, origin_url=None):
+    """Browse origin matching given criteria - either origin_id or
+    origin_type and origin_path.
 
+    Args:
+        - origin_id: origin's swh identifier
+        - origin_type: origin's type
+        - origin_url: origin's URL
     """
-
-    browse_url = url_for('browse_revision_with_origin', origin_id=origin_id)
-    visit_url = url_for('api_origin_visits', origin_id=origin_id)
-
-    env = {'browse_url': browse_url,
-           'visit_url': visit_url,
-           'origin_id': origin_id,
+    # URLs for the calendar JS plugin
+    env = {'browse_url': None,
+           'visit_url': None,
            'origin': None}
 
     try:
-        env['origin'] = api.api_origin(origin_id)
+        origin = api.api_origin(origin_id, origin_type, origin_url)
+        env['origin'] = origin
+        env['browse_url'] = url_for('browse_revision_with_origin',
+                                    origin_id=origin['id'])
+        env['visit_url'] = url_for('api_origin_visits',
+                                   origin_id=origin['id'])
+
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
