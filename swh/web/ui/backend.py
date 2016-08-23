@@ -80,17 +80,18 @@ def directory_get(sha1_bin):
         return res[0]
 
 
-def origin_get(origin_id):
-    """Return information about the origin with id origin_id.
+def origin_get(origin):
+    """Return information about the origin matching dict origin.
 
     Args:
-        origin_id: origin's identifier
+        origin: origin's dict with keys either 'id' or
+        ('type' AND 'url')
 
     Returns:
         Origin information as dict.
 
     """
-    return main.storage().origin_get({'id': origin_id})
+    return main.storage().origin_get(origin)
 
 
 def person_get(person_id):

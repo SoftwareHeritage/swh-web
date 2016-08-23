@@ -174,7 +174,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.content_missing_per_sha1.assert_called_with(sha1s_bin)
 
     @istest
-    def origin_get(self):
+    def origin_get_by_id(self):
         # given
         self.storage.origin_get = MagicMock(return_value={
             'id': 'origin-id',
@@ -184,7 +184,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
             'type': 'ftp'})
 
         # when
-        actual_origin = backend.origin_get('origin-id')
+        actual_origin = backend.origin_get({'id': 'origin-id'})
 
         # then
         self.assertEqual(actual_origin, {'id': 'origin-id',
@@ -194,6 +194,31 @@ class BackendTestCase(test_app.SWHApiTestCase):
                                          'type': 'ftp'})
 
         self.storage.origin_get.assert_called_with({'id': 'origin-id'})
+
+    @istest
+    def origin_get_by_type_url(self):
+        # given
+        self.storage.origin_get = MagicMock(return_value={
+            'id': 'origin-id',
+            'lister': 'uuid-lister',
+            'project': 'uuid-project',
+            'url': 'ftp://some/url/to/origin',
+            'type': 'ftp'})
+
+        # when
+        actual_origin = backend.origin_get({'type': 'ftp',
+                                            'url': 'ftp://some/url/to/origin'})
+
+        # then
+        self.assertEqual(actual_origin, {'id': 'origin-id',
+                                         'lister': 'uuid-lister',
+                                         'project': 'uuid-project',
+                                         'url': 'ftp://some/url/to/origin',
+                                         'type': 'ftp'})
+
+        self.storage.origin_get.assert_called_with(
+            {'type': 'ftp',
+             'url': 'ftp://some/url/to/origin'})
 
     @istest
     def person_get(self):

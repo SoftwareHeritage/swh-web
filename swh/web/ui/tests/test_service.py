@@ -362,7 +362,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'ftp'})
 
         # when
-        actual_origin = service.lookup_origin('origin-id')
+        actual_origin = service.lookup_origin({'id': 'origin-id'})
 
         # then
         self.assertEqual(actual_origin, {'id': 'origin-id',
@@ -371,7 +371,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                                          'url': 'ftp://some/url/to/origin',
                                          'type': 'ftp'})
 
-        mock_backend.origin_get.assert_called_with('origin-id')
+        mock_backend.origin_get.assert_called_with({'id': 'origin-id'})
 
     @patch('swh.web.ui.service.backend')
     @istest

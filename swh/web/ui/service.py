@@ -73,17 +73,18 @@ def lookup_hash_origin(q):
     return converters.from_origin(origin)
 
 
-def lookup_origin(origin_id):
-    """Return information about the origin with id origin_id.
+def lookup_origin(origin):
+    """Return information about the origin matching dict origin.
 
     Args:
-        origin_id as string
+        origin: origin's dict with keys either 'id' or
+        ('type' AND 'url')
 
     Returns:
         origin information as dict.
 
     """
-    return backend.origin_get(origin_id)
+    return backend.origin_get(origin)
 
 
 def lookup_person(person_id):
