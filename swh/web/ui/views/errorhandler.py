@@ -15,7 +15,7 @@ def value_error_as_bad_request(error):
     """Compute a bad request and add body as payload.
 
     """
-    return renderers.error_response('Bad request', 400, error)
+    return renderers.error_response(400, error)
 
 
 @app.errorhandler(NotFoundExc)
@@ -23,7 +23,7 @@ def value_not_found(error):
     """Compute a not found and add body as payload.
 
     """
-    return renderers.error_response('Not found', 404, error)
+    return renderers.error_response(404, error)
 
 
 @app.errorhandler(StorageDBError)
@@ -32,6 +32,4 @@ def backend_problem(error):
     """Compute a not found and add body as payload.
 
     """
-    return renderers.error_response('Unexpected problem in SWH Storage.',
-                                    503,
-                                    error)
+    return renderers.error_response(503, error)

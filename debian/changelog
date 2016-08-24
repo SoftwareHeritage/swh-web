@@ -1,8 +1,9 @@
-swh-web (0.0.32-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.33-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * Release swh.web.ui v0.0.33
+  * New declarative API documentation mechanisms
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 20 Jul 2016 12:35:09 +0200
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Wed, 24 Aug 2016 16:25:24 +0200
 
 swh-web (0.0.32-1~swh1) unstable-swh; urgency=medium
 
