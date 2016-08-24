@@ -3,133 +3,154 @@
 {% block content %}
 
 {% if message is not none %}
+<div class="swh-message">
   {{ message }}
+</div>
 {% endif %}
 
-  <div class="container">
-    <h2>Queried revision:</h2>
-    {% if sha1_git is not none %}
-    <div>Revision with git SHA1 <a href="{{ sha1_url }}">{{ sha1_git }}</a></div>
-    {% else %}
-    <div><a href="{{ origin_url }}">Origin ID {{ origin_id }}</a></div>
-    <div>Branch name {{ branch_name }}</div>
-    {% if timestamp is not none %}
-    <div>Time stamp {{ timestamp }}</div>
-    {% endif %}
-    <div>
-    </div>
-    {% endif %}
-  </div>
+<div class="container">
+  <h2>Queried revision:</h2>
+  {% if sha1_git is not none %}
+  <div>Revision with git SHA1 <a href="{{ sha1_url }}">{{ sha1_git }}</a></div>
+  {% else %}
+  <div><a href="{{ origin_url }}">Origin ID {{ origin_id }}</a></div>
+  <div>Branch name {{ branch_name }}</div>
+  {% if timestamp is not none %}
+  <div>Time stamp {{ timestamp }}</div>
+  {% endif %}
+  {% endif %}
+</div>
 
 {% if revisions is not none %}
+<div class="container">
   {% for revision in revisions %}
-
-  <div class="container">
-    {% if revision['url'] is not none %}
-    <div class="row">
-       <div class="col-md-2">Revision</div>
-       <div class="col-md-6"><p><a href="{{ revision['url'] }}">{{ revision['url'] }}</a></p></div>
+  {% if revision['merge'] %}
+  <div class="row">
+    <div class="col-md-2">
+      Merge
     </div>
-    {% endif %}
-
-    {% if revision['history_url'] is not none %}
-    <div class="row">
-       <div class="col-md-2">Revision Log</div>
-       <div class="col-md-6"><p><a href="{{ revision['history_url'] }}">{{ revision['history_url'] }}</a></p></div>
+    <div class="col-md-6">
+      {% for url in revision['parent_urls'] %}
+      <a href={{ url }}>{{ url | revision_id_from_url }}</a>
+      {% endfor %}
     </div>
-    {% endif %}
-
-    {% if revision['history_context_url'] is not none %}
-    <div class="row">
-       <div class="col-md-2">Contextual Revision Log</div>
-       <div class="col-md-6"><p><a href="{{ revision['history_context_url'] }}">{{ revision['history_context_url'] }}</a></p></div>
-    </div>
-    {% endif %}
-    
-    {% if revision['directory_url'] is not none %}
-           <div class="row">
-              <div class="col-md-2">directory</div>
-              <div class="col-md-6"><p><a href="{{ revision['directory_url'] }}">{{ revision['directory_url'] }}</a></p></div>
-           </div>
-     {% endif %}
-
-    {% if revision['author'] is not none %}
-           <div class="row">
-              <div class="col-md-2">Author</div>
-              <div class="col-md-6">
-		<p>
-		  <a href="{{ revision['author_url'] }}">{{ revision['author']['name'] }}</a>
-		  {% if 'decoding_failures' in revision['author'] %}(some decoding errors){% endif %}
-		</p>
-	      </div>
-           </div>
-           <div class="row">
-              <div class="col-md-2">Date</div>
-              <div class="col-md-6"><p>{{ revision['date'] }}</p></div>
-           </div>
-    {% endif %}
-
-    {% if revision['committer'] is not none %}
-           <div class="row">
-              <div class="col-md-2">Committer</div>
-              <div class="col-md-6">
-		<p>
-		  <a href="{{ revision['committer_url'] }}">{{ revision['committer']['name'] }}</a>
-		  {% if 'decoding_failures' in revision['committer'] %}(some decoding errors){% endif %}
-		</p>
-	      </div>
-           </div>
-           <div class="row">
-              <div class="col-md-2">Committer Date</div>
-              <div class="col-md-6"><p>{{ revision['committer_date'] }}</p></div>
-           </div>
-    {% endif %}
-
-    {% if revision['message'] is not none %}
-            <div class="row">
-              <div class="col-md-2">Message</div>
-              <div class="col-md-6"><pre>{{ revision['message'] }}</pre></div>
-            </div>
-    {% elif revision['message_encoding_failed'] %}
-	    <div class="row">
-              <div class="col-md-2">Message</div>
-              <div class="col-md-6"><a href="{{ revision['message_url'] }}">Download raw message</a></div>
-            </div
-    {% else %}
-            <div class="row">
-              <div class="col-md-2">Message</div>
-              <div class="col-md-6">No message found.</div>
-            </div>
-    {% endif %}	    
-	    
-    {% for key in revision.keys() %}
-           {% if key in ['type', 'synthetic'] and key not in ['decoding_failures'] and revision[key] is not none %}
-            <div class="row">
-              <div class="col-md-2">{{ key }}</div>
-              <div class="col-md-6"><p>{{ revision[key] }}</pre></div>
-            </div>
-           {% endif %}
-    {% endfor %}
-    {% for key in ['parent_urls', 'children_urls'] %}
-        {% if revision[key] is not none %}
-         <div class="row">
-            <div class="col-md-2">{{ key }}</div>
-            {% for link in revision[key] %}
-            <div class="col-md-6"><a href="{{ link }}">{{ link }}</a></div>
-            {% endfor %}
-         </div>
-        {% endif %}
-    {% endfor %}
-	 {% if 'decoding_failures' in revision %}
-	 <div class="row">
-	   <div class="col-md-10">(some decoding errors occurred)</div>
-	 </div>
-	 {% endif %}
-
   </div>
-  <hr />
+  {% endif %}
+
+  {% if revision['url'] is not none %}
+  <div class="row">
+    <div class="col-md-2">Revision</div>
+    <div class="col-md-6"><p><a href="{{ revision['url'] }}">{{ revision['url']  }}</a></p></div>
+  </div>
+  {% endif %}
+
+  {% if revision['history_url'] is not none %}
+  <div class="row">
+    <div class="col-md-2">Revision Log</div>
+    <div class="col-md-6"><p><a href="{{ revision['history_url'] }}">{{ revision['history_url'] }}</a></p></div>
+  </div>
+  {% endif %}
+
+  {% if revision['history_context_url'] is not none %}
+  <div class="row">
+    <div class="col-md-2">Contextual Revision Log</div>
+    <div class="col-md-6"><p><a href="{{ revision['history_context_url'] }}">{{ revision['history_context_url'] }}</a></p></div>
+  </div>
+  {% endif %}
+
+  {% if revision['directory_url'] is not none %}
+  <div class="row">
+    <div class="col-md-2">directory</div>
+    <div class="col-md-6"><p><a href="{{ revision['directory_url'] }}">{{ revision['directory_url'] }}</a></p></div>
+  </div>
+  {% endif %}
+
+  {% if revision['author'] is not none %}
+  <div class="row">
+    <div class="col-md-2">Author</div>
+    <div class="col-md-6">
+      <p>
+	<a href="{{ revision['author_url'] }}">{{ revision['author']['name'] }}</a>
+      {% if 'decoding_failures' in revision['author'] %}(some decoding errors){% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-2">Date</div>
+    <div class="col-md-6"><p>{{ revision['date'] }}</p></div>
+  </div>
+  {% endif %}
+
+  {% if revision['committer'] is not none %}
+  <div class="row">
+    <div class="col-md-2">Committer</div>
+    <div class="col-md-6">
+      <p>
+	<a href="{{ revision['committer_url'] }}">{{ revision['committer']['name'] }}</a>
+	{% if 'decoding_failures' in revision['committer'] %}(some decoding errors){% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-2">Committer Date</div>
+    <div class="col-md-6"><p>{{ revision['committer_date'] }}</p></div>
+  </div>
+  {% endif %}
+
+  {% if revision['message'] is not none %}
+  <div class="row">
+    <div class="col-md-2">Message</div>
+    <div class="col-md-6"><pre>{{ revision['message'] }}</pre></div>
+  </div>
+  {% elif revision['message_encoding_failed'] %}
+  <div class="row">
+    <div class="col-md-2">Message</div>
+    <div class="col-md-6"><a href="{{ revision['message_url'] }}">Download raw message</a></div>
+  </div>
+  {% else %}
+  <div class="row">
+    <div class="col-md-2">Message</div>
+    <div class="col-md-6">No message found.</div>
+  </div>
+  {% endif %}
+
+  {% for key in revision.keys() %}
+  {% if key in ['type', 'synthetic'] and key not in ['decoding_failures'] and revision[key] is not none %}
+  <div class="row">
+    <div class="col-md-2">{{ key }}</div>
+    <div class="col-md-6"><pre>{{ revision[key] }}</pre></div>
+  </div>
+  {% endif %}
   {% endfor %}
 
-{% endif %}
-
+  {% for key in ['children_urls', 'parent_urls'] %}
+  {% if revision[key] is not none %}
+  <div class="row">
+    <div class="col-md-2">{{ key }}</div>    
+    {% for link in revision[key] %}
+    <div class="col-md-6"><a href="{{ link }}">{{ link }}</a></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endfor %}
+  
+  {% if 'decoding_failures' in revision %}
+  <div class="row">
+    <div class="col-md-10">(some decoding errors occurred)</div>
+  </div>
+  {% endif %}
+  <hr />
+  {% endfor %}
+  
+  {% if next_revs_url is not none %}
+  <span class="pull-right">
+    <a href="{{ next_revs_url }}" class="btn btn-primary">
+      Next revisions
+      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+    </a>
+  </span>
+  {% endif %}
+  {% endif %}
+</div>
+<hr />
 {% endblock %}

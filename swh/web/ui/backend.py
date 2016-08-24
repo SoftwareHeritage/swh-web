@@ -80,17 +80,18 @@ def directory_get(sha1_bin):
         return res[0]
 
 
-def origin_get(origin_id):
-    """Return information about the origin with id origin_id.
+def origin_get(origin):
+    """Return information about the origin matching dict origin.
 
     Args:
-        origin_id: origin's identifier
+        origin: origin's dict with keys either 'id' or
+        ('type' AND 'url')
 
     Returns:
         Origin information as dict.
 
     """
-    return main.storage().origin_get({'id': origin_id})
+    return main.storage().origin_get(origin)
 
 
 def person_get(person_id):
@@ -185,7 +186,7 @@ def revision_get_multiple(sha1_git_bin_list):
     return []
 
 
-def revision_log(sha1_git_bin, limit=100):
+def revision_log(sha1_git_bin, limit):
     """Return information about the revision with sha1 sha1_git_bin.
 
     Args:
@@ -202,7 +203,7 @@ def revision_log(sha1_git_bin, limit=100):
     return main.storage().revision_log([sha1_git_bin], limit)
 
 
-def revision_log_by(origin_id, branch_name, ts, limit=100):
+def revision_log_by(origin_id, branch_name, ts, limit):
     """Return information about the revision matching the timestamp
     ts, from origin origin_id, in branch branch_name.
 
@@ -215,10 +216,10 @@ def revision_log_by(origin_id, branch_name, ts, limit=100):
         Information for the revision matching the criterions.
 
     """
-
     return main.storage().revision_log_by(origin_id,
                                           branch_name,
-                                          ts)
+                                          ts,
+                                          limit=limit)
 
 
 def stat_counters():

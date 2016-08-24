@@ -174,7 +174,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.content_missing_per_sha1.assert_called_with(sha1s_bin)
 
     @istest
-    def origin_get(self):
+    def origin_get_by_id(self):
         # given
         self.storage.origin_get = MagicMock(return_value={
             'id': 'origin-id',
@@ -184,7 +184,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
             'type': 'ftp'})
 
         # when
-        actual_origin = backend.origin_get('origin-id')
+        actual_origin = backend.origin_get({'id': 'origin-id'})
 
         # then
         self.assertEqual(actual_origin, {'id': 'origin-id',
@@ -194,6 +194,31 @@ class BackendTestCase(test_app.SWHApiTestCase):
                                          'type': 'ftp'})
 
         self.storage.origin_get.assert_called_with({'id': 'origin-id'})
+
+    @istest
+    def origin_get_by_type_url(self):
+        # given
+        self.storage.origin_get = MagicMock(return_value={
+            'id': 'origin-id',
+            'lister': 'uuid-lister',
+            'project': 'uuid-project',
+            'url': 'ftp://some/url/to/origin',
+            'type': 'ftp'})
+
+        # when
+        actual_origin = backend.origin_get({'type': 'ftp',
+                                            'url': 'ftp://some/url/to/origin'})
+
+        # then
+        self.assertEqual(actual_origin, {'id': 'origin-id',
+                                         'lister': 'uuid-lister',
+                                         'project': 'uuid-project',
+                                         'url': 'ftp://some/url/to/origin',
+                                         'type': 'ftp'})
+
+        self.storage.origin_get.assert_called_with(
+            {'type': 'ftp',
+             'url': 'ftp://some/url/to/origin'})
 
     @istest
     def person_get(self):
@@ -532,12 +557,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.revision_log = MagicMock(return_value=stub_revision_log)
 
         # when
-        actual_revision = backend.revision_log(sha1_bin)
+        actual_revision = backend.revision_log(sha1_bin, limit=1)
 
         # then
         self.assertEqual(list(actual_revision), stub_revision_log)
 
-        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 1)
 
     @istest
     def revision_log_by(self):
@@ -571,11 +596,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
             return_value=stub_revision_log)
 
         # when
-        actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
+        actual_log = backend.revision_log_by(1, 'refs/heads/master',
+                                             None, limit=1)
 
         # then
         self.assertEqual(actual_log, stub_revision_log)
-        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 1)
 
     @istest
     def revision_log_by_norev(self):
@@ -586,11 +612,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.revision_log_by = MagicMock(return_value=None)
 
         # when
-        actual_log = backend.revision_log_by(1, 'refs/heads/master', None)
+        actual_log = backend.revision_log_by(1, 'refs/heads/master',
+                                             None, limit=1)
 
         # then
         self.assertEqual(actual_log, None)
-        self.storage.revision_log.assert_called_with([sha1_bin], 100)
+        self.storage.revision_log.assert_called_with([sha1_bin], 1)
 
     @istest
     def stat_counters(self):

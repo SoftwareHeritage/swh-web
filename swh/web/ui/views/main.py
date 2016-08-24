@@ -6,12 +6,9 @@
 import flask
 
 from ..main import app
-from flask.ext.api.decorators import set_renderers
-from flask.ext.api.renderers import HTMLRenderer
 
 
 @app.route('/')
-@set_renderers(HTMLRenderer)
 def homepage():
     """Home page
 
@@ -22,6 +19,5 @@ def homepage():
 
 
 @app.route('/about/')
-@set_renderers(HTMLRenderer)
 def about():
     return flask.render_template('about.html')
