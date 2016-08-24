@@ -1,3 +1,10 @@
+swh-web (0.0.33-1~swh1) unstable-swh; urgency=medium
+
+  * Release swh.web.ui v0.0.33
+  * New declarative API documentation mechanisms
+
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Wed, 24 Aug 2016 16:25:24 +0200
+
 swh-web (0.0.32-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.32
