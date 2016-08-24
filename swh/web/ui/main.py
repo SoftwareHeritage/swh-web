@@ -5,12 +5,15 @@
 
 import logging
 import os
+import json
 
-from flask.ext.api import FlaskAPI
+from flask import Flask
 from swh.core import config
 
-from swh.web.ui.renderers import RENDERERS, urlize_api_links
+from swh.web.ui.renderers import urlize_api_links
 from swh.web.ui.renderers import safe_docstring_display
+from swh.web.ui.renderers import revision_id_from_url
+from swh.web.ui.renderers import SWHMultiResponse
 from swh.storage import get_storage
 
 
@@ -22,19 +25,15 @@ DEFAULT_CONFIG = {
     'host': ('string', '127.0.0.1'),
     'port': ('int', 6543),
     'secret_key': ('string', 'development key'),
-    'max_upload_size': ('int', 16 * 1024 * 1024),
-    'upload_folder': ('string', '/tmp/swh-web-ui/uploads'),
-    'upload_allowed_extensions': ('list[str]', [])  # means all are accepted
+    'max_log_revs': ('int', 25),
 }
 
-
 # api's definition
-app = FlaskAPI(__name__)
+app = Flask(__name__)
+app.response_class = SWHMultiResponse
 app.jinja_env.filters['urlize_api_links'] = urlize_api_links
 app.jinja_env.filters['safe_docstring_display'] = safe_docstring_display
-
-
-AUTODOC_ENDPOINT_INSTALLED = False
+app.jinja_env.filters['revision_id_from_url'] = revision_id_from_url
 
 
 def read_config(config_file):
@@ -43,7 +42,7 @@ def read_config(config_file):
        dict"""
 
     conf = config.read(config_file, DEFAULT_CONFIG)
-    config.prepare_folders(conf, 'log_dir', 'upload_folder')
+    config.prepare_folders(conf, 'log_dir')
     conf['storage'] = get_storage(conf['storage_class'], conf['storage_args'])
 
     return conf
@@ -54,12 +53,6 @@ def load_controllers():
 
     """
     from swh.web.ui import views, apidoc  # flake8: noqa
-
-    # side-effects here (install autodoc endpoints so do it only once!)
-    global AUTODOC_ENDPOINT_INSTALLED
-    if not AUTODOC_ENDPOINT_INSTALLED:
-        apidoc.install_browsable_api_endpoints()
-        AUTODOC_ENDPOINT_INSTALLED = True
 
 
 def rules():
@@ -99,8 +92,6 @@ def run_from_webserver(environ, start_response):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
-    app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
-    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.INFO)
@@ -135,8 +126,6 @@ def run_debug_from(config_path, verbose=False):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
-    app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
-    app.config['DEFAULT_RENDERERS'] = RENDERERS
 
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')

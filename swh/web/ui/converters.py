@@ -181,6 +181,8 @@ def from_revision(revision):
                         dates={'date', 'committer_date'})
 
     if revision:
+        if 'parents' in revision:
+            revision['merge'] = len(revision['parents']) > 1
         if 'message' in revision:
             try:
                 revision['message'] = revision['message'].decode('utf-8')
@@ -195,6 +197,8 @@ def from_content(content):
     """Convert swh content to serializable content dictionary.
 
     """
+    if content:
+        content = {k: v for k, v in content.items() if k not in ['ctime']}
     return from_swh(content,
                     hashess={'sha1', 'sha1_git', 'sha256'},
                     bytess={},

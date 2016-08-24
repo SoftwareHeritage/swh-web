@@ -16,6 +16,87 @@ from swh.web.ui.tests import test_app
 
 class ServiceTestCase(test_app.SWHApiTestCase):
 
+    def setUp(self):
+        self.SHA1_SAMPLE = '18d8be353ed3480476f032475e7c233eff7371d5'
+        self.SHA1_SAMPLE_BIN = hex_to_hash(self.SHA1_SAMPLE)
+        self.SHA256_SAMPLE = ('39007420ca5de7cb3cfc15196335507e'
+                              'e76c98930e7e0afa4d2747d3bf96c926')
+        self.SHA256_SAMPLE_BIN = hex_to_hash(self.SHA256_SAMPLE)
+        self.SHA1GIT_SAMPLE = '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+        self.SHA1GIT_SAMPLE_BIN = hex_to_hash(self.SHA1GIT_SAMPLE)
+        self.DIRECTORY_ID = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
+        self.DIRECTORY_ID_BIN = hex_to_hash(self.DIRECTORY_ID)
+        self.AUTHOR_ID_BIN = {
+            'name': b'author',
+            'email': b'author@company.org',
+        }
+        self.AUTHOR_ID = {
+            'name': 'author',
+            'email': 'author@company.org',
+        }
+        self.COMMITTER_ID_BIN = {
+            'name': b'committer',
+            'email': b'committer@corp.org',
+        }
+        self.COMMITTER_ID = {
+            'name': 'committer',
+            'email': 'committer@corp.org',
+        }
+        self.SAMPLE_DATE_RAW = {
+            'timestamp': datetime.datetime(
+                2000, 1, 17, 11, 23, 54,
+                tzinfo=datetime.timezone.utc,
+            ).timestamp(),
+            'offset': 0,
+            'negative_utc': False,
+        }
+        self.SAMPLE_DATE = '2000-01-17T11:23:54+00:00'
+        self.SAMPLE_MESSAGE_BIN = b'elegant fix for bug 31415957'
+        self.SAMPLE_MESSAGE = 'elegant fix for bug 31415957'
+
+        self.SAMPLE_REVISION = {
+            'id': self.SHA1_SAMPLE,
+            'directory': self.DIRECTORY_ID,
+            'author': self.AUTHOR_ID,
+            'committer': self.COMMITTER_ID,
+            'message': self.SAMPLE_MESSAGE,
+            'date': self.SAMPLE_DATE,
+            'committer_date': self.SAMPLE_DATE,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+            'merge': False
+        }
+        self.SAMPLE_REVISION_RAW = {
+            'id': self.SHA1_SAMPLE_BIN,
+            'directory': self.DIRECTORY_ID_BIN,
+            'author': self.AUTHOR_ID_BIN,
+            'committer': self.COMMITTER_ID_BIN,
+            'message': self.SAMPLE_MESSAGE_BIN,
+            'date': self.SAMPLE_DATE_RAW,
+            'committer_date': self.SAMPLE_DATE_RAW,
+            'synthetic': False,
+            'type': 'git',
+            'parents': [],
+            'metadata': [],
+        }
+
+        self.SAMPLE_CONTENT = {
+            'sha1': self.SHA1_SAMPLE,
+            'sha256': self.SHA256_SAMPLE,
+            'sha1_git': self.SHA1GIT_SAMPLE,
+            'length': 190,
+            'status': 'absent'
+        }
+        self.SAMPLE_CONTENT_RAW = {
+            'sha1': self.SHA1_SAMPLE_BIN,
+            'sha256': self.SHA256_SAMPLE_BIN,
+            'sha1_git': self.SHA1GIT_SAMPLE_BIN,
+            'length': 190,
+            'status': 'hidden'
+        }
+
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_multiple_hashes_ball_missing(self, mock_backend):
@@ -270,54 +351,6 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.stat_origin_visits.assert_called_once_with(6)
 
     @patch('swh.web.ui.service.backend')
-    @patch('swh.web.ui.service.hashutil')
-    @istest
-    def hash_and_search(self, mock_hashutil, mock_backend):
-        # given
-        bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
-        mock_hashutil.hashfile.return_value = {'sha1': bhash}
-        mock_backend.content_find = MagicMock(return_value={
-            'sha1': bhash,
-            'sha1_git': bhash,
-        })
-
-        # when
-        actual_content = service.hash_and_search('/some/path')
-
-        # then
-        self.assertEqual(actual_content, {
-            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-            'sha1_git': '456caf10e9535160d90e874b45aa426de762f19f',
-            'found': True,
-        })
-
-        mock_hashutil.hashfile.assert_called_once_with('/some/path')
-        mock_backend.content_find.assert_called_once_with('sha1', bhash)
-
-    @patch('swh.web.ui.service.hashutil')
-    @istest
-    def hash_and_search_not_found(self, mock_hashutil):
-        # given
-        bhash = hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
-        mock_hashutil.hashfile.return_value = {'sha1': bhash}
-        mock_hashutil.hash_to_hex = MagicMock(
-            return_value='456caf10e9535160d90e874b45aa426de762f19f')
-        self.storage.content_find = MagicMock(return_value=None)
-
-        # when
-        actual_content = service.hash_and_search('/some/path')
-
-        # then
-        self.assertEqual(actual_content, {
-            'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-            'found': False,
-        })
-
-        mock_hashutil.hashfile.assert_called_once_with('/some/path')
-        self.storage.content_find.assert_called_once_with({'sha1': bhash})
-        mock_hashutil.hash_to_hex.assert_called_once_with(bhash)
-
-    @patch('swh.web.ui.service.backend')
     @istest
     def lookup_origin(self, mock_backend):
         # given
@@ -329,7 +362,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'type': 'ftp'})
 
         # when
-        actual_origin = service.lookup_origin('origin-id')
+        actual_origin = service.lookup_origin({'id': 'origin-id'})
 
         # then
         self.assertEqual(actual_origin, {'id': 'origin-id',
@@ -338,7 +371,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                                          'url': 'ftp://some/url/to/origin',
                                          'type': 'ftp'})
 
-        mock_backend.origin_get.assert_called_with('origin-id')
+        mock_backend.origin_get.assert_called_with({'id': 'origin-id'})
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -574,6 +607,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'parents': [],
             'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
             'directory': hash_to_hex(b'278'),
+            'merge': False
         })
 
         mock_query.parse_hash_with_algorithms_or_throws.assert_has_calls(
@@ -646,6 +680,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'parents': [],
             'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
             'directory': hash_to_hex(b'278'),
+            'merge': False
         })
 
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with(  # noqa
@@ -952,232 +987,72 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision(self, mock_backend):
         # given
-        mock_backend.revision_get = MagicMock(return_value={
-            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        })
+        mock_backend.revision_get = MagicMock(
+            return_value=self.SAMPLE_REVISION_RAW)
 
         # when
         actual_revision = service.lookup_revision(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+            self.SHA1_SAMPLE)
 
         # then
-        self.assertEqual(actual_revision, {
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'message': 'elegant fix for bug 31415957',
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        })
+        self.assertEqual(actual_revision, self.SAMPLE_REVISION)
 
         mock_backend.revision_get.assert_called_with(
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            self.SHA1_SAMPLE_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_invalid_msg(self, mock_backend):
         # given
-        stub_rev = {
-            'id': hex_to_hash('123456'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug \xff',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }
+        stub_rev = self.SAMPLE_REVISION_RAW
+        stub_rev['message'] = b'elegant fix for bug \xff'
+
+        expected_revision = self.SAMPLE_REVISION
+        expected_revision['message'] = None
+        expected_revision['message_decoding_failed'] = True
         mock_backend.revision_get = MagicMock(return_value=stub_rev)
 
         # when
         actual_revision = service.lookup_revision(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+            self.SHA1_SAMPLE)
 
         # then
-        self.assertEqual(actual_revision, {
-            'id': '123456',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'message': None,
-            'message_decoding_failed': True,
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        })
+        self.assertEqual(actual_revision, expected_revision)
 
         mock_backend.revision_get.assert_called_with(
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            self.SHA1_SAMPLE_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_msg_ok(self, mock_backend):
         # given
-        mock_backend.revision_get.return_value = {
-            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }
+        mock_backend.revision_get.return_value = self.SAMPLE_REVISION_RAW
 
         # when
         rv = service.lookup_revision_message(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+            self.SHA1_SAMPLE)
 
         # then
-        self.assertEquals(rv, {'message': b'elegant fix for bug 31415957'})
+        self.assertEquals(rv, {'message': self.SAMPLE_MESSAGE_BIN})
         mock_backend.revision_get.assert_called_with(
-            hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            self.SHA1_SAMPLE_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_msg_absent(self, mock_backend):
         # given
-        mock_backend.revision_get.return_value = {
-            'id': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }
+        stub_revision = self.SAMPLE_REVISION_RAW
+        del stub_revision['message']
+        mock_backend.revision_get.return_value = stub_revision
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_message(
-                '18d8be353ed3480476f032475e7c233eff7371d5')
+                self.SHA1_SAMPLE)
 
             # then
             mock_backend.revision_get.assert_called_with(
-                hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+                self.SHA1_SAMPLE_BIN)
             self.assertEqual(cm.exception.args[0], 'No message for revision '
                              'with sha1_git '
                              '18d8be353ed3480476f032475e7c233eff7371d5.')
@@ -1191,11 +1066,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_message(
-                '18d8be353ed3480476f032475e7c233eff7371d5')
+                self.SHA1_SAMPLE)
 
             # then
             mock_backend.revision_get.assert_called_with(
-                hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+                self.SHA1_SAMPLE_BIN)
             self.assertEqual(cm.exception.args[0], 'Revision with sha1_git '
                              '18d8be353ed3480476f032475e7c233eff7371d5 '
                              'not found.')
@@ -1204,44 +1079,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_multiple(self, mock_backend):
         # given
-
-        sha1_bin = '18d8be353ed3480476f032475e7c233eff7371d5'
+        sha1 = self.SHA1_SAMPLE
         sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
 
         stub_revisions = [
-            {
-                'id': hex_to_hash(sha1_bin),
-                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-                'author': {
-                    'name': b'bill & boule',
-                    'email': b'bill@boule.org',
-                },
-                'committer': {
-                    'name': b'boule & bill',
-                    'email': b'boule@bill.org',
-                },
-                'message': b'elegant fix for bug 31415957',
-                'date': {
-                    'timestamp': datetime.datetime(
-                        2000, 1, 17, 11, 23, 54,
-                        tzinfo=datetime.timezone.utc).timestamp(),
-                    'offset': 0,
-                    'negative_utc': False
-                    },
-                'date_offset': 0,
-                'committer_date': {
-                    'timestamp': datetime.datetime(
-                        2000, 1, 17, 11, 23, 54,
-                        tzinfo=datetime.timezone.utc).timestamp(),
-                    'offset': 0,
-                    'negative_utc': False
-                    },
-                'committer_date_offset': 0,
-                'synthetic': False,
-                'type': 'git',
-                'parents': [],
-                'metadata': [],
-            },
+            self.SAMPLE_REVISION_RAW,
             {
                 'id': hex_to_hash(sha1_other),
                 'directory': 'abcdbe353ed3480476f032475e7c233eff7371d5',
@@ -1281,31 +1123,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_revisions = service.lookup_revision_multiple(
-            [sha1_bin, sha1_other])
+            [sha1, sha1_other])
 
         # then
         self.assertEqual(list(actual_revisions), [
-            {
-                'id': sha1_bin,
-                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-                'author': {
-                    'name': 'bill & boule',
-                    'email': 'bill@boule.org',
-                },
-                'committer': {
-                    'name': 'boule & bill',
-                    'email': 'boule@bill.org',
-                },
-                'message': 'elegant fix for bug 31415957',
-                'date': '2000-01-17T11:23:54+00:00',
-                'date_offset': 0,
-                'committer_date': '2000-01-17T11:23:54+00:00',
-                'committer_date_offset': 0,
-                'synthetic': False,
-                'type': 'git',
-                'parents': [],
-                'metadata': [],
-            },
+            self.SAMPLE_REVISION,
             {
                 'id': sha1_other,
                 'directory': 'abcdbe353ed3480476f032475e7c233eff7371d5',
@@ -1326,21 +1148,20 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'type': 'git',
                 'parents': [],
                 'metadata': [],
+                'merge': False
             }
         ])
 
         self.assertEqual(
             list(mock_backend.revision_get_multiple.call_args[0][0]),
-            [hex_to_hash(
-                '18d8be353ed3480476f032475e7c233eff7371d5'),
-             hex_to_hash(
-                 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
+            [hex_to_hash(sha1),
+             hex_to_hash(sha1_other)])
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_multiple_none_found(self, mock_backend):
         # given
-        sha1_bin = '18d8be353ed3480476f032475e7c233eff7371d5'
+        sha1_bin = self.SHA1_SAMPLE
         sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
 
         mock_backend.revision_get_multiple.return_value = []
@@ -1353,146 +1174,43 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         self.assertEqual(
             list(mock_backend.revision_get_multiple.call_args[0][0]),
-            [hex_to_hash(
-                '18d8be353ed3480476f032475e7c233eff7371d5'),
-             hex_to_hash(
-                 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')])
+            [hex_to_hash(self.SHA1_SAMPLE),
+             hex_to_hash(sha1_other)])
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_log(self, mock_backend):
         # given
-        stub_revision_log = [{
-            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }]
+        stub_revision_log = [self.SAMPLE_REVISION_RAW]
         mock_backend.revision_log = MagicMock(return_value=stub_revision_log)
 
         # when
         actual_revision = service.lookup_revision_log(
-            'abcdbe353ed3480476f032475e7c233eff7371d5')
+            'abcdbe353ed3480476f032475e7c233eff7371d5',
+            limit=25)
 
         # then
-        self.assertEqual(list(actual_revision), [{
-            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'message': 'elegant fix for bug 31415957',
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }])
+        self.assertEqual(list(actual_revision), [self.SAMPLE_REVISION])
 
         mock_backend.revision_log.assert_called_with(
-            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'), 100)
+            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'), 25)
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_revision_log_by(self, mock_backend):
         # given
-        stub_revision_log = [{
-            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'bill & boule',
-                'email': b'bill@boule.org',
-            },
-            'committer': {
-                'name': b'boule & bill',
-                'email': b'boule@bill.org',
-            },
-            'message': b'elegant fix for bug 31415957',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2000, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc,
-                ).timestamp(),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }]
+        stub_revision_log = [self.SAMPLE_REVISION_RAW]
         mock_backend.revision_log_by = MagicMock(
             return_value=stub_revision_log)
 
         # when
         actual_log = service.lookup_revision_log_by(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, limit=100)
         # then
-        self.assertEqual(list(actual_log), [{
-            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'bill & boule',
-                'email': 'bill@boule.org',
-            },
-            'committer': {
-                'name': 'boule & bill',
-                'email': 'boule@bill.org',
-            },
-            'message': 'elegant fix for bug 31415957',
-            'date': "2000-01-17T11:23:54+00:00",
-            'committer_date': "2000-01-17T11:23:54+00:00",
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }])
+        self.assertEqual(list(actual_log), [self.SAMPLE_REVISION])
 
         mock_backend.revision_log_by.assert_called_with(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, 100)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1502,11 +1220,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         res = service.lookup_revision_log_by(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, limit=100)
         # then
         self.assertEquals(res, None)
         mock_backend.revision_log_by.assert_called_with(
-            1, 'refs/heads/master', None)
+            1, 'refs/heads/master', None, 100)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1522,31 +1240,29 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertIsNone(actual_content)
 
         mock_backend.content_find.assert_called_with(
-            'sha1', hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            'sha1', hex_to_hash(self.SHA1_SAMPLE))
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_content_raw(self, mock_backend):
         # given
         mock_backend.content_find = MagicMock(return_value={
-            'sha1': '18d8be353ed3480476f032475e7c233eff7371d5',
+            'sha1': self.SHA1_SAMPLE,
         })
         mock_backend.content_get = MagicMock(return_value={
             'data': b'binary data'})
 
         # when
         actual_content = service.lookup_content_raw(
-            'sha256:39007420ca5de7cb3cfc15196335507e'
-            'e76c98930e7e0afa4d2747d3bf96c926')
+            'sha256:%s' % self.SHA256_SAMPLE)
 
         # then
         self.assertEquals(actual_content, {'data': b'binary data'})
 
         mock_backend.content_find.assert_called_once_with(
-            'sha256', hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                  'e76c98930e7e0afa4d2747d3bf96c926'))
+            'sha256', self.SHA256_SAMPLE_BIN)
         mock_backend.content_get.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+            self.SHA1_SAMPLE)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1556,77 +1272,52 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_content = service.lookup_content(
-            'sha1:18d8be353ed3480476f032475e7c233eff7371d5')
+            'sha1:%s' % self.SHA1_SAMPLE)
 
         # then
         self.assertIsNone(actual_content)
 
         mock_backend.content_find.assert_called_with(
-            'sha1', hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            'sha1', self.SHA1_SAMPLE_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_content_with_sha1(self, mock_backend):
         # given
-        mock_backend.content_find = MagicMock(return_value={
-            'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                  'e76c98930e7e0afa4d2747d3bf96c926'),
-            'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                    'c5b00a6d03'),
-            'length': 190,
-            'status': 'hidden',
-        })
+        mock_backend.content_find = MagicMock(
+            return_value=self.SAMPLE_CONTENT_RAW)
 
         # when
         actual_content = service.lookup_content(
-            'sha1:18d8be353ed3480476f032475e7c233eff7371d5')
+            'sha1:%s' % self.SHA1_SAMPLE)
 
         # then
-        self.assertEqual(actual_content, {
-            'sha1': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
-            '7d3bf96c926',
-            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'length': 190,
-            'status': 'absent',
-        })
+        self.assertEqual(actual_content, self.SAMPLE_CONTENT)
 
         mock_backend.content_find.assert_called_with(
-            'sha1', hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'))
+            'sha1', hex_to_hash(self.SHA1_SAMPLE))
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_content_with_sha256(self, mock_backend):
         # given
-        mock_backend.content_find = MagicMock(return_value={
-            'sha1': hex_to_hash('18d8be353ed3480476f032475e7c233eff7371d5'),
-            'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                  'e76c98930e7e0afa4d2747d3bf96c926'),
-            'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                    'c5b00a6d03'),
-            'length': 360,
-            'status': 'visible',
-        })
+        stub_content = self.SAMPLE_CONTENT_RAW
+        stub_content['status'] = 'visible'
+
+        expected_content = self.SAMPLE_CONTENT
+        expected_content['status'] = 'visible'
+        mock_backend.content_find = MagicMock(
+            return_value=stub_content)
 
         # when
         actual_content = service.lookup_content(
-            'sha256:39007420ca5de7cb3cfc15196335507e'
-            'e76c98930e7e0afa4d2747d3bf96c926')
+            'sha256:%s' % self.SHA256_SAMPLE)
 
         # then
-        self.assertEqual(actual_content, {
-            'sha1': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
-            '7d3bf96c926',
-            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'length': 360,
-            'status': 'visible',
-        })
+        self.assertEqual(actual_content, expected_content)
 
         mock_backend.content_find.assert_called_with(
-            'sha256', hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                  'e76c98930e7e0afa4d2747d3bf96c926'))
+            'sha256', self.SHA256_SAMPLE_BIN)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1697,27 +1388,22 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # given
         stub_dir_entries = [{
-            'sha1': hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
-                                '2ebda5'),
-            'sha256': hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                  'e76c98930e7e0afa4d2747d3bf96c926'),
-            'sha1_git': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                    'c5b00a6d03'),
+            'sha1': self.SHA1_SAMPLE_BIN,
+            'sha256': self.SHA256_SAMPLE_BIN,
+            'sha1_git': self.SHA1GIT_SAMPLE_BIN,
             'target': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
                                   'c5b00a6d03'),
-            'dir_id': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                  'c5b00a6d03'),
+            'dir_id': self.DIRECTORY_ID_BIN,
             'name': b'bob',
             'type': 10,
         }]
 
         expected_dir_entries = [{
-            'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
-            'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d2747'
-            'd3bf96c926',
-            'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'sha1': self.SHA1_SAMPLE,
+            'sha256': self.SHA256_SAMPLE,
+            'sha1_git': self.SHA1GIT_SAMPLE,
             'target': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'dir_id': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'dir_id': self.DIRECTORY_ID,
             'name': 'bob',
             'type': 10,
         }]
@@ -1754,50 +1440,56 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_revision_by(self, mock_backend):
         # given
-        stub_rev = {
-            'id': hex_to_hash('28d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hex_to_hash(
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
-            'author': {
-                'name': b'ynot',
-                'email': b'ynot@blah.org',
-            },
-            'committer': {
-                'name': b'ynot',
-                'email': b'ynot@blah.org',
-            },
-            'message': b'elegant solution 31415',
-            'date': {
-                'timestamp': datetime.datetime(
-                    2016, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'offset': 420,
-                'negative_utc': None,
-            },
-            'committer_date': {
-                'timestamp': datetime.datetime(
-                    2016, 1, 17, 11, 23, 54,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'offset': 420,
-                'negative_utc': None,
-            },
-        }
+        stub_rev = self.SAMPLE_REVISION_RAW
 
-        expected_rev = {
-            'id': '28d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author': {
-                'name': 'ynot',
-                'email': 'ynot@blah.org',
-            },
-            'committer': {
-                'name': 'ynot',
-                'email': 'ynot@blah.org',
-            },
-            'message': 'elegant solution 31415',
-            'date': '2016-01-17T18:23:54+07:00',
-            'committer_date': '2016-01-17T18:23:54+07:00',
-        }
+        expected_rev = self.SAMPLE_REVISION
+
+        mock_backend.revision_get_by.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
+
+        # then
+        self.assertEquals(actual_revision, expected_rev)
+
+        mock_backend.revision_get_by(1, 'master2', 'some-ts')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by_nomerge(self, mock_backend):
+        # given
+        stub_rev = self.SAMPLE_REVISION_RAW
+        stub_rev['parents'] = [
+                hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')]
+
+        expected_rev = self.SAMPLE_REVISION
+        expected_rev['parents'] = ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc']
+        mock_backend.revision_get_by.return_value = stub_rev
+
+        # when
+        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
+
+        # then
+        self.assertEquals(actual_revision, expected_rev)
+
+        mock_backend.revision_get_by(1, 'master2', 'some-ts')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_revision_by_merge(self, mock_backend):
+        # given
+        stub_rev = self.SAMPLE_REVISION_RAW
+        stub_rev['parents'] = [
+            hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'),
+            hex_to_hash('ffff3b19e793491b1c6db0fd8b46cd9f32e592fc')
+        ]
+
+        expected_rev = self.SAMPLE_REVISION
+        expected_rev['parents'] = [
+            'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+            'ffff3b19e793491b1c6db0fd8b46cd9f32e592fc'
+        ]
+        expected_rev['merge'] = True
 
         mock_backend.revision_get_by.return_value = stub_rev
 

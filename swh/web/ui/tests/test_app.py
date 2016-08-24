@@ -7,7 +7,7 @@
 
 import unittest
 from swh.storage.api.client import RemoteStorage as Storage
-from swh.web.ui import renderers, main
+from swh.web.ui import main
 from flask.ext.testing import TestCase
 
 
@@ -48,19 +48,25 @@ def create_app(base_url='https://somewhere.org:4321'):
 
     # inject the mock data
     conf = {'storage': storage,
-            'upload_folder': '/some/upload-dir',
-            'upload_allowed_extensions': ['txt'],
-            'max_upload_size': 1024}
+            'max_log_revs': 25}
 
     main.app.config.update({'conf': conf})
-    main.app.config['MAX_CONTENT_LENGTH'] = conf['max_upload_size']
-    main.app.config['DEFAULT_RENDERERS'] = renderers.RENDERERS
 
     if not main.app.config['TESTING']:  # HACK: install controllers only once!
         main.app.config['TESTING'] = True
         main.load_controllers()
 
     return main.app.test_client(), main.app.config, storage, main.app
+
+
+class SWHApidocTestCase(unittest.TestCase):
+    """Testing APIDoc class.
+
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.app, cls.app_config, cls.storage, _ = create_app()
+        cls.maxDiff = None
 
 
 class SWHApiTestCase(unittest.TestCase):

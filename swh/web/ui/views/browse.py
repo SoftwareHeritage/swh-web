@@ -6,11 +6,8 @@
 from encodings.aliases import aliases
 from flask import render_template, request, url_for, redirect
 
-from flask.ext.api.decorators import set_renderers
-from flask.ext.api.renderers import HTMLRenderer
-
 from swh.core.hashutil import ALGORITHMS
-from .. import service, utils
+from .. import service, utils, apidoc
 from ..exc import BadInputExc, NotFoundExc
 from ..main import app
 from . import api
@@ -18,8 +15,19 @@ from . import api
 hash_filter_keys = ALGORITHMS
 
 
-@app.route('/search/', methods=['GET', 'POST'])
-@set_renderers(HTMLRenderer)
+@app.route('/api/1/doc/')
+def api_doc():
+    """Render the API's documentation.
+    """
+    routes = apidoc.APIUrls.get_app_endpoints()
+    # Return a list of routes with consistent ordering
+    env = {
+        'doc_routes': sorted(routes.items())
+    }
+    return render_template('api.html', **env)
+
+
+@app.route('/content/search/', methods=['GET', 'POST'])
 def search():
     """Search for hashes in swh-storage.
 
@@ -38,7 +46,6 @@ def search():
     TODO:
         Batch-process with all checksums, not just sha1
     """
-
     env = {'search_res': None,
            'search_stats': None,
            'message': []}
@@ -74,9 +81,7 @@ def search():
     return render_template('search.html', **env)
 
 
-@app.route('/browse/content/')
 @app.route('/browse/content/<string:q>/')
-@set_renderers(HTMLRenderer)
 def browse_content(q):
     """Given a hash and a checksum, display the content's meta-data.
 
@@ -164,7 +169,6 @@ The file's path referenced was '%s'.""" % (q,
 
 
 # @app.route('/browse/content/<string:q>/origin/')
-@set_renderers(HTMLRenderer)
 def browse_content_with_origin(q):
     """Show content information.
 
@@ -192,10 +196,8 @@ def browse_content_with_origin(q):
     return render_template('content-with-origin.html', **env)
 
 
-@app.route('/browse/directory/')
 @app.route('/browse/directory/<string:sha1_git>/')
 @app.route('/browse/directory/<string:sha1_git>/<path:path>/')
-@set_renderers(HTMLRenderer)
 def browse_directory(sha1_git, path=None):
     """Show directory information.
 
@@ -239,33 +241,37 @@ def browse_directory(sha1_git, path=None):
     return render_template('directory.html', **env)
 
 
-@app.route('/browse/origin/')
+@app.route('/browse/origin/<string:origin_type>/url/<path:origin_url>/')
 @app.route('/browse/origin/<int:origin_id>/')
-@set_renderers(HTMLRenderer)
-def browse_origin(origin_id):
-    """Browse origin with id id.
+def browse_origin(origin_id=None, origin_type=None, origin_url=None):
+    """Browse origin matching given criteria - either origin_id or
+    origin_type and origin_path.
 
+    Args:
+        - origin_id: origin's swh identifier
+        - origin_type: origin's type
+        - origin_url: origin's URL
     """
-
-    browse_url = url_for('browse_revision_with_origin', origin_id=origin_id)
-    visit_url = url_for('api_origin_visits', origin_id=origin_id)
-
-    env = {'browse_url': browse_url,
-           'visit_url': visit_url,
-           'origin_id': origin_id,
+    # URLs for the calendar JS plugin
+    env = {'browse_url': None,
+           'visit_url': None,
            'origin': None}
 
     try:
-        env['origin'] = api.api_origin(origin_id)
+        origin = api.api_origin(origin_id, origin_type, origin_url)
+        env['origin'] = origin
+        env['browse_url'] = url_for('browse_revision_with_origin',
+                                    origin_id=origin['id'])
+        env['visit_url'] = url_for('api_origin_visits',
+                                   origin_id=origin['id'])
+
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
     return render_template('origin.html', **env)
 
 
-@app.route('/browse/person/')
 @app.route('/browse/person/<int:person_id>/')
-@set_renderers(HTMLRenderer)
 def browse_person(person_id):
     """Browse person with id id.
 
@@ -282,9 +288,7 @@ def browse_person(person_id):
     return render_template('person.html', **env)
 
 
-@app.route('/browse/release/')
 @app.route('/browse/release/<string:sha1_git>/')
-@set_renderers(HTMLRenderer)
 def browse_release(sha1_git):
     """Browse release with sha1_git.
 
@@ -302,10 +306,8 @@ def browse_release(sha1_git):
     return render_template('release.html', **env)
 
 
-@app.route('/browse/revision/')
 @app.route('/browse/revision/<string:sha1_git>/')
 @app.route('/browse/revision/<string:sha1_git>/prev/<path:prev_sha1s>/')
-@set_renderers(HTMLRenderer)
 def browse_revision(sha1_git, prev_sha1s=None):
     """Browse the revision with git SHA1 sha1_git_cur, while optionally keeping
     the context from which we came as a list of previous (i.e. later)
@@ -323,7 +325,6 @@ def browse_revision(sha1_git, prev_sha1s=None):
     Example:
         GET /browse/revision/
     """
-
     env = {'sha1_git': sha1_git,
            'message': None,
            'revision': None}
@@ -333,7 +334,6 @@ def browse_revision(sha1_git, prev_sha1s=None):
         env['revision'] = utils.prepare_data_for_view(rev)
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
-
     return render_template('revision.html', **env)
 
 
@@ -347,7 +347,6 @@ def browse_revision_raw_message(sha1_git):
 
 @app.route('/browse/revision/<string:sha1_git>/log/')
 @app.route('/browse/revision/<string:sha1_git>/prev/<path:prev_sha1s>/log/')
-@set_renderers(HTMLRenderer)
 def browse_revision_log(sha1_git, prev_sha1s=None):
     """Browse revision with sha1_git's log. If the navigation path through the
     commit tree is specified, we intersect the earliest revision's log with the
@@ -364,16 +363,18 @@ def browse_revision_log(sha1_git, prev_sha1s=None):
            'revisions': []}
 
     try:
-        revisions = api.api_revision_log(sha1_git, prev_sha1s)
+        revision_data = api.api_revision_log(sha1_git, prev_sha1s)
+        revisions = revision_data['revisions']
+        next_revs_url = revision_data['next_revs_url']
         env['revisions'] = map(utils.prepare_data_for_view, revisions)
+        env['next_revs_url'] = utils.prepare_data_for_view(next_revs_url)
+
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
     return render_template('revision-log.html', **env)
 
 
-@app.route('/browse/revision'
-           '/origin/log/')
 @app.route('/browse/revision'
            '/origin/<int:origin_id>/log/')
 @app.route('/browse/revision'
@@ -386,7 +387,6 @@ def browse_revision_log(sha1_git, prev_sha1s=None):
 @app.route('/browse/revision'
            '/origin/<int:origin_id>'
            '/ts/<string:ts>/log/')
-@set_renderers(HTMLRenderer)
 def browse_revision_log_by(origin_id,
                            branch_name='refs/heads/master',
                            timestamp=None):
@@ -421,7 +421,6 @@ def browse_revision_log_by(origin_id,
 
 
 @app.route('/browse/revision/<string:sha1_git_cur>/prev/<path:sha1s>/')
-@set_renderers(HTMLRenderer)
 def browse_with_rev_context(sha1_git_cur, sha1s):
     """Browse the revision with git SHA1 sha1_git_cur, while keeping the context
     from which we came as a list of previous  (i.e. later) revisions' sha1s.
@@ -453,7 +452,6 @@ def browse_with_rev_context(sha1_git_cur, sha1s):
 
 
 @app.route('/browse/revision/<string:sha1_git_root>/history/<sha1_git>/')
-@set_renderers(HTMLRenderer)
 def browse_revision_history(sha1_git_root, sha1_git):
     """Display information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
@@ -495,7 +493,6 @@ def browse_revision_history(sha1_git_root, sha1_git):
 
 @app.route('/browse/revision/<string:sha1_git>/directory/')
 @app.route('/browse/revision/<string:sha1_git>/directory/<path:path>/')
-@set_renderers(HTMLRenderer)
 def browse_revision_directory(sha1_git, path=None):
     """Browse directory from revision with sha1_git.
 
@@ -532,7 +529,6 @@ def browse_revision_directory(sha1_git, path=None):
 @app.route('/browse/revision/<string:sha1_git_root>'
            '/history/<sha1_git>'
            '/directory/<path:path>/')
-@set_renderers(HTMLRenderer)
 def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
     """Return information about directory pointed to by the revision
     defined as: revision sha1_git, limited to the sub-graph of all
@@ -633,7 +629,6 @@ def browse_revision_history_directory(sha1_git_root, sha1_git, path=None):
            '/ts/<string:ts>'
            '/history/<sha1_git>'
            '/directory/<path:path>/')
-@set_renderers(HTMLRenderer)
 def browse_directory_through_revision_with_origin_history(
         origin_id,
         branch_name="refs/heads/master",
@@ -684,7 +679,6 @@ def browse_directory_through_revision_with_origin_history(
 @app.route('/browse/revision'
            '/origin/<int:origin_id>'
            '/ts/<string:ts>/')
-@set_renderers(HTMLRenderer)
 def browse_revision_with_origin(origin_id,
                                 branch_name="refs/heads/master",
                                 ts=None):
@@ -733,7 +727,6 @@ def browse_revision_with_origin(origin_id,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/history/<sha1_git>/')
-@set_renderers(HTMLRenderer)
 def browse_revision_history_through_origin(origin_id,
                                            branch_name='refs/heads/master',
                                            ts=None,
@@ -800,7 +793,6 @@ def browse_revision_history_through_origin(origin_id,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/directory/<path:path>/')
-@set_renderers(HTMLRenderer)
 def browse_revision_directory_through_origin(origin_id,
                                              branch_name='refs/heads/master',
                                              ts=None,
@@ -839,7 +831,6 @@ def browse_revision_directory_through_origin(origin_id,
 
 @app.route('/browse/entity/')
 @app.route('/browse/entity/<string:uuid>/')
-@set_renderers(HTMLRenderer)
 def browse_entity(uuid):
     env = {'entities': [],
            'message': None}

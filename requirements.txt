@@ -4,10 +4,10 @@
 
 # Runtime dependencies
 Flask
-Flask-API
 swh.core >= 0.0.20
 swh.storage >= 0.0.33
 dateutil
+docutils
 
 # Test dependencies
 #Flask-Testing

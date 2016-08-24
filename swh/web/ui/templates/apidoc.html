@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block title %}Software Heritage API{% endblock %}
+{% block content %}
+
+{% if docstring %}
+<div class="docstring">
+  <h2> Overview </h2>
+  {% autoescape off %} {{ docstring | safe_docstring_display }} {% endautoescape %}
+</div>
+{% endif %}
+{% if response_data and response_data is not none %}
+<div class="response-data">
+  <h2> Request </h2>
+  <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
+  <h2> Result </h2>
+  <pre>{% autoescape off %}{{ response_data | urlize_api_links }}{% endautoescape %}</pre>
+</div>
+{% endif %}
+<hr/>
+<div class="doc-urls">
+  <table class="m-x-auto table">
+    <thead>
+      <tr>
+	<th>URL</th>
+	<th>Allowed Methods</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for url in urls %}
+      <tr>
+	<td>
+	  {{ url['rule'] }}
+	</td>
+	<td>
+	  {{ url['methods'] | sort | join(', ') }}
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<hr/>
+{% if args and args|length > 0 %}
+<div class="doc-args">
+  <h2> Args </h2>
+  <dl class="doc-argslist dl-horizontal">
+    {% for arg in args %}
+    <dt> {{ arg['name'] }}: {{ arg['type'] }} </dt>
+    <dd> {% autoescape off %} {{ arg['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    {% endfor %}
+  </dl>
+ </div>
+{% endif %}
+{% if excs and excs|length > 0 %}
+<div class="doc-excs">
+  <h2> Raises </h2>
+  <dl class="doc-excslist dl-horizontal">
+    {% for exc in excs %}
+    <dt> {{ exc['exc'] }} </dt>
+    <dd> {% autoescape off %} {{ exc['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    {% endfor %}
+  </dl>
+</div>
+{% endif %}
+{% if return %}
+<div class="doc-return">
+  <h2> Returns </h2>
+  <dl class="doc-return dl-horizontal">
+    <dt> {{ return['type'] }} </dt>
+    <dd> {% autoescape off %} {{ return['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+  </dl>
+</div>
+{% endif %}
+{% if example %}
+<div class="doc-example">
+  <h2> Example </h2>
+  <dl class="doc-example dl-horizontal">
+    <dd>
+      <a href="{{ example }}">{{ example }}</a>
+    </dd>
+  </dl>
+</div>
+{% endif %}
+{% endblock %}

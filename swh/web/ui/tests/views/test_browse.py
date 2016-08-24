@@ -20,10 +20,30 @@ class FileMock():
 class SearchView(test_app.SWHViewTestCase):
     render_template = False
 
+    @patch('swh.web.ui.apidoc.APIUrls')
+    @istest
+    def browse_api_doc(self, mock_api_urls):
+        # given
+        endpoints = {
+            '/a/doc/endpoint/': 'relevant documentation',
+            '/some/other/endpoint/': 'more docstrings'}
+        mock_api_urls.apidoc_routes = endpoints
+
+        # when
+        rv = self.client.get('/api/1/doc/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertIsNotNone(
+            self.get_context_variable('doc_routes'),
+            sorted(endpoints.items())
+        )
+        self.assert_template_used('api.html')
+
     @istest
     def search_default(self):
         # when
-        rv = self.client.get('/search/')
+        rv = self.client.get('/content/search/')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
@@ -42,7 +62,7 @@ class SearchView(test_app.SWHViewTestCase):
             'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
-        rv = self.client.get('/search/?q=sha1:456')
+        rv = self.client.get('/content/search/?q=sha1:456')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
@@ -61,7 +81,7 @@ class SearchView(test_app.SWHViewTestCase):
         mock_api.api_search.side_effect = BadInputExc('error msg')
 
         # when
-        rv = self.client.get('/search/?q=sha1_git:789')
+        rv = self.client.get('/content/search/?q=sha1_git:789')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), 'error msg')
@@ -82,7 +102,7 @@ class SearchView(test_app.SWHViewTestCase):
             'search_stats': {'nbfiles': 1, 'pct': 100}}
 
         # when
-        rv = self.client.get('/search/?q=sha1:123')
+        rv = self.client.get('/content/search/?q=sha1:123')
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(self.get_context_variable('message'), '')
@@ -107,7 +127,7 @@ class SearchView(test_app.SWHViewTestCase):
             'error bad input')
 
         # when (mock_request completes the post request)
-        rv = self.client.post('/search/')
+        rv = self.client.post('/content/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
@@ -136,7 +156,7 @@ class SearchView(test_app.SWHViewTestCase):
                             'found': False}]}
 
         # when (mock_request completes the post request)
-        rv = self.client.post('/search/')
+        rv = self.client.post('/content/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
@@ -173,7 +193,7 @@ class SearchView(test_app.SWHViewTestCase):
                             'found': True}]}
 
         # when (mock_request completes the post request)
-        rv = self.client.post('/search/')
+        rv = self.client.post('/content/search/')
 
         # then
         self.assertEqual(rv.status_code, 200)
@@ -531,6 +551,22 @@ class ContentWithOriginView(test_app.SWHViewTestCase):
 class OriginView(test_app.SWHViewTestCase):
     render_template = False
 
+    def setUp(self):
+
+        def url_for_test(fn, **args):
+            if fn == 'browse_revision_with_origin':
+                return '/browse/revision/origin/%s/' % args['origin_id']
+            elif fn == 'api_origin_visits':
+                return '/api/1/stat/visits/%s/' % args['origin_id']
+
+        self.url_for_test = url_for_test
+
+        self.stub_origin = {'type': 'git',
+                            'lister': None,
+                            'project': None,
+                            'url': 'rsync://some/url',
+                            'id': 426}
+
     @patch('swh.web.ui.views.browse.api')
     @istest
     def browse_origin_ko_not_found(self, mock_api):
@@ -543,12 +579,12 @@ class OriginView(test_app.SWHViewTestCase):
         # then
         self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
-        self.assertEqual(self.get_context_variable('origin_id'), 1)
+        self.assertIsNone(self.get_context_variable('origin'))
         self.assertEqual(
             self.get_context_variable('message'),
             'Not found!')
 
-        mock_api.api_origin.assert_called_once_with(1)
+        mock_api.api_origin.assert_called_once_with(1, None, None)
 
     @patch('swh.web.ui.views.browse.api')
     @istest
@@ -562,28 +598,19 @@ class OriginView(test_app.SWHViewTestCase):
         # then
         self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
-        self.assertEqual(self.get_context_variable('origin_id'), 426)
+        self.assertIsNone(self.get_context_variable('origin'))
 
-        mock_api.api_origin.assert_called_once_with(426)
+        mock_api.api_origin.assert_called_once_with(426, None, None)
 
     @patch('swh.web.ui.views.browse.api')
     @patch('swh.web.ui.views.browse.url_for')
     @istest
-    def browse_origin_found(self, mock_url_for, mock_api):
+    def browse_origin_found_id(self, mock_url_for, mock_api):
         # given
-        def url_for_test(fn, **args):
-            if fn == 'browse_revision_with_origin':
-                return '/browse/revision/origin/%s/' % args['origin_id']
-            elif fn == 'api_origin_visits':
-                return '/api/1/stat/visits/%s/' % args['origin_id']
-        mock_url_for.side_effect = url_for_test
 
-        mock_origin = {'type': 'git',
-                       'lister': None,
-                       'project': None,
-                       'url': 'rsync://some/url',
-                       'id': 426}
-        mock_api.api_origin.return_value = mock_origin
+        mock_url_for.side_effect = self.url_for_test
+
+        mock_api.api_origin.return_value = self.stub_origin
 
         # when
         rv = self.client.get('/browse/origin/426/')
@@ -591,14 +618,38 @@ class OriginView(test_app.SWHViewTestCase):
         # then
         self.assertEqual(rv.status_code, 200)
         self.assert_template_used('origin.html')
-        self.assertEqual(self.get_context_variable('origin_id'), 426)
-        self.assertEqual(self.get_context_variable('origin'), mock_origin)
+        self.assertEqual(self.get_context_variable('origin'), self.stub_origin)
         self.assertEqual(self.get_context_variable('browse_url'),
                          '/browse/revision/origin/426/')
         self.assertEqual(self.get_context_variable('visit_url'),
                          '/api/1/stat/visits/426/')
 
-        mock_api.api_origin.assert_called_once_with(426)
+        mock_api.api_origin.assert_called_once_with(426, None, None)
+
+    @patch('swh.web.ui.views.browse.api')
+    @patch('swh.web.ui.views.browse.url_for')
+    @istest
+    def browse_origin_found_url_type(self, mock_url_for, mock_api):
+        # given
+
+        mock_url_for.side_effect = self.url_for_test
+
+        mock_api.api_origin.return_value = self.stub_origin
+
+        # when
+        rv = self.client.get('/browse/origin/git/url/rsync://some/url/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('origin.html')
+        self.assertEqual(self.get_context_variable('origin'), self.stub_origin)
+        self.assertEqual(self.get_context_variable('browse_url'),
+                         '/browse/revision/origin/426/')
+        self.assertEqual(self.get_context_variable('visit_url'),
+                         '/api/1/stat/visits/426/')
+
+        mock_api.api_origin.assert_called_once_with(None, 'git',
+                                                    'rsync://some/url')
 
 
 class PersonView(test_app.SWHViewTestCase):
@@ -913,27 +964,30 @@ class RevisionView(test_app.SWHViewTestCase):
     @istest
     def browse_revision_log(self, mock_api):
         # given
-        stub_revisions = [{
-            'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
-            'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
-            'committer': {
-                'email': 'torvalds@linux-foundation.org',
-                'name': 'Linus Torvalds'
-            },
-            'committer_date': 'Sun, 05 Jul 2015 18:01:52 GMT',
-            'type': 'git',
-            'author': {
-                'email': 'torvalds@linux-foundation.org',
-                'name': 'Linus Torvalds'
-            },
-            'message': 'Linux 4.2-rc1\n',
-            'synthetic': False,
-            'directory_url': '/api/1/directory/'
-            '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b/',
-            'parent_url': [
-                '/api/1/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf/'
-            ],
-        }]
+        stub_revisions = {
+            'revisions': [{
+                'id': 'd770e558e21961ad6cfdf0ff7df0eb5d7d4f0754',
+                'date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+                'committer': {
+                    'email': 'torvalds@linux-foundation.org',
+                    'name': 'Linus Torvalds'
+                },
+                'committer_date': 'Sun, 05 Jul 2015 18:01:52 GMT',
+                'type': 'git',
+                'author': {
+                    'email': 'torvalds@linux-foundation.org',
+                    'name': 'Linus Torvalds'
+                },
+                'message': 'Linux 4.2-rc1\n',
+                'synthetic': False,
+                'directory_url': '/api/1/directory/'
+                '2a1dbabeed4dcf1f4a4c441993b2ffc9d972780b/',
+                'parent_url': [
+                    '/api/1/revision/a585d2b738bfa26326b3f1f40f0f1eda0c067ccf/'
+                ],
+            }],
+            'next_revs_url': '/api/1/revision/1234/log/'
+        }
         mock_api.api_revision_log.return_value = stub_revisions
 
         # when
@@ -945,6 +999,9 @@ class RevisionView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('sha1_git'), '426')
         self.assertTrue(
             isinstance(self.get_context_variable('revisions'), map))
+        self.assertEqual(
+            self.get_context_variable('next_revs_url'),
+            '/browse/revision/1234/log/')
         self.assertIsNone(self.get_context_variable('message'))
 
         mock_api.api_revision_log.assert_called_once_with('426', None)

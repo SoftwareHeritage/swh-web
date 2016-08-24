@@ -30,29 +30,6 @@ def lookup_multiple_hashes(hashes):
     return hashes
 
 
-def hash_and_search(filepath):
-    """Hash the filepath's content as sha1, then search in storage if
-    it exists.
-
-    Args:
-        Filepath of the file to hash and search.
-
-    Returns:
-        Tuple (hex sha1, found as True or false).
-        The found boolean, according to whether the sha1 of the file
-        is present or not.
-    """
-    h = hashutil.hashfile(filepath)
-    c = backend.content_find('sha1', h['sha1'])
-    if c:
-        r = converters.from_content(c)
-        r['found'] = True
-        return r
-    else:
-        return {'sha1': hashutil.hash_to_hex(h['sha1']),
-                'found': False}
-
-
 def lookup_hash(q):
     """Checks if the storage contains a given content checksum
 
@@ -96,17 +73,18 @@ def lookup_hash_origin(q):
     return converters.from_origin(origin)
 
 
-def lookup_origin(origin_id):
-    """Return information about the origin with id origin_id.
+def lookup_origin(origin):
+    """Return information about the origin matching dict origin.
 
     Args:
-        origin_id as string
+        origin: origin's dict with keys either 'id' or
+        ('type' AND 'url')
 
     Returns:
         origin information as dict.
 
     """
-    return backend.origin_get(origin_id)
+    return backend.origin_get(origin)
 
 
 def lookup_person(person_id):
@@ -294,7 +272,7 @@ def lookup_revision_by(origin_id,
     return converters.from_revision(res)
 
 
-def lookup_revision_log(rev_sha1_git, limit=100):
+def lookup_revision_log(rev_sha1_git, limit):
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
@@ -317,7 +295,7 @@ def lookup_revision_log(rev_sha1_git, limit=100):
     return map(converters.from_revision, revision_entries)
 
 
-def lookup_revision_log_by(origin_id, branch_name, timestamp):
+def lookup_revision_log_by(origin_id, branch_name, timestamp, limit):
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
@@ -336,7 +314,8 @@ def lookup_revision_log_by(origin_id, branch_name, timestamp):
     """
     revision_entries = backend.revision_log_by(origin_id,
                                                branch_name,
-                                               timestamp)
+                                               timestamp,
+                                               limit)
     if not revision_entries:
         return None
     return map(converters.from_revision, revision_entries)
