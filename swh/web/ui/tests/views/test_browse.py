@@ -7,6 +7,8 @@ from nose.tools import istest
 
 from unittest.mock import patch
 
+from flask import url_for
+
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 from .. import test_app
 
@@ -15,6 +17,100 @@ class FileMock():
 
     def __init__(self, filename):
         self.filename = filename
+
+
+class SearchRedirectsView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @istest
+    def search_origin_simple(self):
+        # when
+        rv = self.client.get('/origin/search/?origin_id=1&meaningless_arg=42')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_origin', origin_id=1))
+
+    @istest
+    def search_origin_type_url(self):
+        # when
+        rv = self.client.get('/origin/search/?origin_type=git'
+                             '&origin_url=http://cool/project/url'
+                             '&meaningless_arg=42')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_origin',
+                                         origin_type='git',
+                                         origin_url='http://cool/project/url'))
+
+    @istest
+    def search_directory_dir_sha1_only(self):
+        # when
+        rv = self.client.get('/directory/search/?sha1_git=some_sha1'
+                             '&meaningless_arg=gandalf')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_directory',
+                                         sha1_git='some_sha1'))
+
+    @istest
+    def search_directory_dir_sha1(self):
+        # when
+        rv = self.client.get('/directory/search/?sha1_git=some_sha1'
+                             '&path=some/path/in/folder'
+                             '&meaningless_arg=gandalf')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_directory',
+                                         sha1_git='some_sha1',
+                                         path='some/path/in/folder'))
+
+    @istest
+    def search_directory_rev_sha1(self):
+        # when
+        rv = self.client.get('/directory/search/?sha1_git=some_sha1'
+                             '&dir_path=some/path/in/folder'
+                             '&meaningless_arg=gandalf')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_revision_directory',
+                                         sha1_git='some_sha1',
+                                         path='some/path/in/folder'))
+
+    @istest
+    def search_directory_dir_time_place(self):
+        # when
+        rv = self.client.get('/directory/search/?origin_id=42'
+                             '&branch_name=refs/heads/tail'
+                             '&meaningless_arg=gandalf'
+                             '&path=some/path')
+
+        # then
+        self.assertRedirects(rv, url_for(
+            'browse_revision_directory_through_origin',
+            origin_id=42, branch_name='refs/heads/tail',
+            path='some/path', ts=None))
+
+    @istest
+    def search_revision_sha1(self):
+        # when
+        rv = self.client.get('/revision/search/?sha1_git=some_sha1')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_revision',
+                                         sha1_git='some_sha1'))
+
+    @istest
+    def search_revision_time_place(self):
+        # when
+        rv = self.client.get('/revision/search/?origin_id=42'
+                             '&branch_name=big/branch/on/tree'
+                             '&ts=meaningful_ts')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_revision_with_origin',
+                                         origin_id=42,
+                                         branch_name='big/branch/on/tree',
+                                         ts='meaningful_ts'))
 
 
 class SearchView(test_app.SWHViewTestCase):
