@@ -1,0 +1,72 @@
+<!-- The text-based SHA1 or SHA256 search -->
+<h2>Search with SHA-1 or SHA-256:</h2>
+<form id="text-hash-form"
+      action="{{ url_for('search_content') }}"
+      class="form"
+      method="get">
+  <br/>
+  <div class="input-group">
+    <input id="text-hash-input"
+	   type="text" class="form-control"
+	   name="q"
+	   placeholder="SHA-1 or SHA-256 checksum" />
+    <span class="input-group-btn">
+      <button id="text-hash-submit"
+	      class="btn btn-primary"
+	      type="submit">
+	Text search
+      </button>
+    </span>
+  </div>
+</form>
+
+<!-- The file-based drag&drop UI-->
+<h2>Search with files</h2>
+<form id="file-hash-form"
+      action="{{ url_for('search_content') }}"
+      class="text-center form"
+      method="post"
+      enctype="multipart/form-data">
+  
+  <!--Form input -->
+  <input type="file"
+	 id="file-hash-input"
+	 class="form-control"
+	 multiple
+	 name="filename"
+	 value=""
+	 style="display:none"
+	 placeholder="File(s) to hash and search" />
+  <div id="file-drop" class="text-center" style="border: 1px dashed black">
+    Drag and drop or click here to hash files and search for them.
+    Your files will NOT be uploaded, hashing is done locally.
+    Filesizes over 20Mb may be slow to process, use with care.
+    <div id="filelist" class="row"></div>
+  </div>
+  
+  <!-- Form buttons -->
+  <div class="btn-group" style="margin-top: 10px">
+    <button id="file-hash-submission" type="submit" class="btn btn-primary">
+      <span class="glyphicon glyphicon-search" type="submit" aria-hidden="true"></span>
+      Search
+    </button>
+    <button id="file-hash-clear" class="btn btn-primary">
+      Clear
+      <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+    </button>
+  </div>
+</form>
+
+<!-- Required JS -->
+<script src="{{ url_for('static', filename='lib/core.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/lib-typedarrays.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/sha1.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/sha256.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+
+<!-- Script setup -->
+<script>
+  var sfc = new SearchFormController($('#text-hash-form'), $('#file-hash-form'), $('#search-message'));
+  sfc.setupTextForm($('#text-hash-input'));
+  sfc.setupFileForm($('#file-drop'),$('#filelist'),$('#file-hash-input'),$('#file-hash-clear'));
+</script>

@@ -2,89 +2,19 @@
 {% block title %}Search SWH{% endblock %}
 {% block content %}
 
-<script src="{{ url_for('static', filename='lib/core.js') }}"></script>
-<script src="{{ url_for('static', filename='lib/lib-typedarrays.js') }}"></script>
-<script src="{{ url_for('static', filename='lib/sha1.js') }}"></script>
-<script src="{{ url_for('static', filename='lib/sha256.js') }}"></script>
-<script src="{{ url_for('static', filename='js/search.js') }}"></script>
-
 <div class="container">
-  <!-- The text-based SHA1 or SHA256 search -->
-  <h1 class="label label-default">Search with SHA-1 or SHA-256:</h1>
-  <form id="text-hash-form"
-	action="{{ url_for('search') }}"
-	class="form"
-        method="get">
-    <br/>
-    <div class="input-group">
-      <input id="text-hash-input"
-	     type="text" class="form-control"
-	     name="q"
-	     placeholder="SHA-1 or SHA-256 checksum" />
-      <span class="input-group-btn">
-        <button id="text-hash-submit"
-		class="btn btn-primary"
-		type="submit">
-	  Text search
-	</button>
-      </span>
-    </div>
-  </form>
-
-  <!-- The file-based drag&drop UI-->
-  <h1 class="label label-default">Search with files</h1>
-  <form id="file-hash-form"
-	action="{{ url_for('search') }}"
-	class="text-center form"
-        method="post"
-        enctype="multipart/form-data">
-
-    <!--Form input -->
-    <input type="file"
-	   id="file-hash-input"
-	   class="form-control"
-	   multiple
-	   name="filename"
-           value=""
-	   style="display:none"
-           placeholder="File(s) to hash and search" />
-    <div id="file-drop" class="container text-center" style="border: 1px dashed black">
-      Drag and drop or click here to hash files and search for them.
-      Your files will NOT be uploaded, hashing is done locally.
-      Filesizes over 20Mb may be slow to process, use with care.
-      <div id="filelist" class="row"></div>
-    </div>
-    
-    <!-- Form buttons -->
-    <div class="btn-group" style="margin-top: 10px">
-      <button id="file-hash-submission" type="submit" class="btn btn-primary">
-	<span class="glyphicon glyphicon-search" type="submit" aria-hidden="true"></span>
-	Search
-      </button>
-      <button id="file-hash-clear" class="btn btn-primary">
-	Clear
-	<span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-      </button>
-    </div>
-  </form>
-
-  <div id="search-message" class="message"></div>
+  <!-- Include the predefined search form-->
+  {% include 'search-form.html' %}
   
-  <!-- Search forms setup -->
-  <script>
-    var sfc = new SearchFormController($('#text-hash-form'), $('#file-hash-form'), $('#search-message'));
-    sfc.setupTextForm($('#text-hash-input'));
-    sfc.setupFileForm($('#file-drop'),$('#filelist'),$('#file-hash-input'),$('#file-hash-clear'));
-  </script>
-
   {% if search_res is not none %}
   <!-- Search result display -->
-      {% if search_stats is not none %}
-      <label class="search-stats">
-         Files available in SWH: {{ '%.2f' | format(search_stats['pct']) }}% of
-         {{ search_stats['nbfiles'] }} files.
-      </label>
-      {% endif %}
+  {% if search_stats is not none %}
+  <label class="search-stats">
+    Files available in SWH: {{ '%.2f' | format(search_stats['pct']) }}% of
+    {{ search_stats['nbfiles'] }} files.
+  </label>
+  {% endif %}
+
   <table class="table table-striped search-res">
     <thead class="thead-default">
       <th>File name</th>
@@ -110,8 +40,8 @@
   </table>
   {% endif %}
   {% if message is not none and message != '' %}
-    <div class="span8">{{ message | safe }}</div>
-  </div>
-  {% endif %}
+  <div class="span8">{{ message | safe }}</div>
+</div>
+{% endif %}
 </div>
 {% endblock %}
