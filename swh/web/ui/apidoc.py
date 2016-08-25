@@ -230,7 +230,8 @@ class returns(object):  # noqa: N801
                 env['example'] = re.sub(r'(.*)\?.*', r'\1', example)
 
             # Prepare and send to mimetype selector if it's not a doc request
-            if re.match(route_re, request.url) and not kwargs['noargs']:
+            if re.match(route_re, request.url) and not kwargs['noargs'] \
+               and request.method == 'GET':
                 return app.response_class(
                     render_template('apidoc.html', **env),
                     content_type='text/html')
