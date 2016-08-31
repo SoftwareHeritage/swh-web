@@ -18,27 +18,27 @@
   <body>
     <div class="jumbotron">
       <div class="container">
-	<h1>{{ self.title() }}</h1>
-	<nav class="navbar navbar-default">
-	  <div class="navbar-header">
-	    <button type="button" class="navbar-toggle collapsed"
-		    data-toggle="collapse" data-target="#swh-navbar-collapse" aria-expanded="false">
-	    </button>
-	    <a class="navbar-brand" href="/">SWH Archive</a>
-	  </div>
-	  
-	  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-	    <ul class="nav navbar-nav">
-	      <li><a href="https://www.softwareheritage.org">Main site</a></li>
-	      <li role="separator" class="divider"></li>
-	      <li><a href="/browse/">Browse</a></li>
-	      <li role="separator" class="divider"></li>
-	      <li><a href="/api/">API</a></li>
-	      <li role="separator" class="divider"></li>
-	      <li><a href="/about/">About</a></li>
-	    </ul>
-	  </div>
-	</nav>
+        <h1>{{ self.title() }}</h1>
+        <nav class="navbar navbar-default">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed"
+                    data-toggle="collapse" data-target="#swh-navbar-collapse" aria-expanded="false">
+            </button>
+            <a class="navbar-brand" href="{{ url_for('homepage') }}">SWH Archive</a>
+          </div>
+          
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              <li><a href="https://www.softwareheritage.org">Main site</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="{{ url_for('browse') }}">Browse</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="{{ url_for('browse_api_doc') }}">API</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="{{ url_for('about') }}">About</a></li>
+            </ul>
+          </div>
+        </nav>
       </div>
     </div>
     {% with messages = get_flashed_messages(with_categories=true) %}

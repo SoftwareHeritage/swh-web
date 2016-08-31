@@ -3,10 +3,10 @@
 {% block content %}
 
 <ul>
-  <li><a href="/about">About</a></li>
+  <li><a href="{{ url_for('about') }}">About</a></li>
   <li><a href="https://www.softwareheritage.org">Main site</a></li>
-  <li><a href="/browse/">Browse</a></li>
-  <li><a href="/api/">API</a></li>
+  <li><a href="{{ url_for('browse') }}">Browse</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}">API</a></li>
 </ul>
 
 {% endblock %}

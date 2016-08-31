@@ -7,14 +7,14 @@
   <br/>
   <div class="input-group">
     <input id="text-hash-input"
-	   type="text" class="form-control"
-	   name="q"
-	   placeholder="SHA-1 or SHA-256 checksum" />
+           type="text" class="form-control"
+           name="q"
+           placeholder="SHA-1 or SHA-256 checksum" />
     <span class="input-group-btn">
       <button id="text-hash-submit"
-	      class="btn btn-primary"
-	      type="submit">
-	Text search
+              class="btn btn-primary"
+              type="submit">
+        Text search
       </button>
     </span>
   </div>
@@ -30,13 +30,13 @@
   
   <!--Form input -->
   <input type="file"
-	 id="file-hash-input"
-	 class="form-control"
-	 multiple
-	 name="filename"
-	 value=""
-	 style="display:none"
-	 placeholder="File(s) to hash and search" />
+         id="file-hash-input"
+         class="form-control"
+         multiple
+         name="filename"
+         value=""
+         style="display:none"
+         placeholder="File(s) to hash and search" />
   <div id="file-drop" class="text-center" style="border: 1px dashed black">
     Drag and drop or click here to hash files and search for them.
     Your files will NOT be uploaded, hashing is done locally.
@@ -58,13 +58,13 @@
 </form>
 
 <!-- Required JS -->
-{% for fname in ['lib/core.js', 'lib/lib-typedarrays.js', 'lib/sha256.js', 'js/search.js'] %}
+{% for fname in ['lib/core.js', 'lib/lib-typedarrays.js', 'lib/sha1.js', 'lib/sha256.js', 'js/search.js'] %}
 <script language="javascript" type="text/javascript" src="{{ url_for('static', filename=fname) }}"></script>
 {% endfor %}
 
 <!-- Script setup -->
 <script>
-  var sfc = new SearchFormController($('#text-hash-form'), $('#file-hash-form'), $('#search-message'));
+    var sfc = new SearchFormController($('#text-hash-form'), $('#file-hash-form'), $('#search-message'));
   sfc.setupTextForm($('#text-hash-input'));
   sfc.setupFileForm($('#file-drop'),$('#filelist'),$('#file-hash-input'),$('#file-hash-clear'));
 </script>

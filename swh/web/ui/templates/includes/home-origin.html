@@ -5,15 +5,15 @@
   <form method="get" action="{{ url_for('search_directory') }}">
     <div class="row">
       <div class="col-md-12">
-	<label>Origin ID</label>
-	<div class="input-group">
-	  <input class="form-control" type="text" placeholder="directory git SHA1" name="sha1_git" required="true"/>
-	  <span class="input-group-btn">
-	    <button class="btn btn-primary" type="submit">
-	      <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-	    </button>
-	  </span>
-	</div>
+        <label>Origin ID</label>
+        <div class="input-group">
+          <input class="form-control" type="text" placeholder="directory git SHA1" name="sha1_git" required="true"/>
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="submit">
+              <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+            </button>
+          </span>
+        </div>
       </div>
     </div>
   </form>
@@ -30,27 +30,27 @@
   <div>
     <form method="get" action="{{ url_for('search_origin') }}">
       <div class="forms-group row">
-	<div class="col-md-12">
-	  <div class="input-group multi-input-group">
-	    <label for="origin-type">Origin type</label>
-	    <input id="origin-type"
-		   class="form-control"
-		   type="text" placeholder="origin type"
-		   name="origin_type" required="true"/>
-	    <div class="input-group-field">
-	      <label for="origin-url">Origin URL</label>
-	      <input id="origin-url"
-		     class="form-control"
-		     type="text" placeholder="origin url"
-		     name="origin_url" required="true"/>
-	    </div>
-	    <span class="input-group-btn">
-	      <button id="origin-dummy-btn" class="btn btn-primary" type="submit">
-		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-	      </button>
-	    </span>
-	  </div>
-	</div>
+        <div class="col-md-12">
+          <div class="input-group multi-input-group">
+            <label for="origin-type">Origin type</label>
+            <input id="origin-type"
+                   class="form-control"
+                   type="text" placeholder="origin type"
+                   name="origin_type" required="true"/>
+            <div class="input-group-field">
+              <label for="origin-url">Origin URL</label>
+              <input id="origin-url"
+                     class="form-control"
+                     type="text" placeholder="origin url"
+                     name="origin_url" required="true"/>
+            </div>
+            <span class="input-group-btn">
+              <button id="origin-dummy-btn" class="btn btn-primary" type="submit">
+                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+              </button>
+            </span>
+          </div>
+        </div>
       </div>
     </form>
   </div>
