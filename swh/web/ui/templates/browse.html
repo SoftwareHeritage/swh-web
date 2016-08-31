@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block title %}Browse{% endblock %}
+{% block content %}
+
+<div class="browse-panel panel panel-default">
+  <div class="panel panel-body">
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li><a class="nav-link active" data-toggle="tab" href="#tab-content" role="tabpanel">Content</a></li>
+      <li><a class="nav-link" data-toggle="tab" href="#tab-revision" role="tabpanel">Revision</a></li>
+      <li><a class="nav-link" data-toggle="tab" href="#tab-origin" role="tabpanel">Origin</a></li>
+      <li><a class="nav-link" data-toggle="tab" href="#tab-directory" role="tabpanel">Directory</a></li>
+    </ul>
+
+    <div class="tab-content container-fluid">
+      <!-- Content pane -->
+      <div class="tab-pane active" id="tab-content" role="tabpanel">
+	<div class="row simple-desc container-fluid">
+	  You can refer to a content (i.e. a file that we have in our database) as its SHA1 or SHA256
+	  checksum. If you have files to input, you can drag and drop them below to have their hashes
+	  calculated and searched in SWH. Files with the same checksum will automatically be ignored.
+	</div>
+	<div class="row container-fluid">
+	  {% include 'includes/search-form.html' %}
+	</div>
+      </div>
+      
+      <!-- Revision pane -->
+      <div class="tab-pane" id="tab-revision" role="tabpanel">
+	{% include 'includes/home-revision.html' %}
+      </div>
+      
+      <!-- Origin pane -->
+      <div class="tab-pane" id="tab-origin" role="tabpanel">
+	{% include 'includes/home-origin.html' %}
+      </div>
+
+      <!-- Directory pane -->
+      <div class="tab-pane" id="tab-directory" role="tabpanel">
+	{% include 'includes/home-directory.html' %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Hash update on page load
+  var hash = window.location.hash;
+  hash && $('ul.nav a[href="' + hash + '"]').tab('show');
+  // Hash update on navbar click
+  $('.navbar a').click(function (e) {
+  var scrollmem = $('body').scrollTop();
+  window.location.hash = this.hash;
+  $('html,body').scrollTop(scrollmem);
+  $('ul.nav a[href="' + this.hash + '"]').tab('show');
+  });
+  // Hash update on nav-tab click
+  $('.nav-tabs a').click(function(e) {
+  window.location.hash = this.hash;
+  })
+</script>
+{% endblock %}
