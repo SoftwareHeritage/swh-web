@@ -118,7 +118,14 @@ def search_content():
     return render_template('search.html', **env)
 
 
-@app.route('/api/1/doc/')
+@app.route('/browse/')
+def browse():
+    """Render the user-facing browse view
+    """
+    return render_template('browse.html')
+
+
+@app.route('/api/')
 def browse_api_doc():
     """Render the API's documentation.
     """
