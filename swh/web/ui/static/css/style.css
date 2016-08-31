@@ -28,4 +28,39 @@ h2              { font-size: 1.2em; }
 
 .file-found     { color: #23BA49; }
 .file-notfound  { color: #FF4747; }
+
+/* Bootstrap custom styling */
+.input-group-field {
+    display: table-cell;
+    vertical-align: middle;
+    border-radius:4px;
+    min-width:1%;
+    white-space: nowrap;
+}
+
+.input-group-field .form-control {
+    border-radius: inherit !important;
+}
+
+.input-group-field:not(:first-child):not(:last-child) {
+    border-radius:0;
+}
+
+.input-group-field:not(:first-child):not(:last-child) .form-control {
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
+.input-group-field:last-child {
+    border-top-left-radius:0;
+    border-bottom-left-radius:0;
+}
+
+.input-group > span:not(:last-child) > button {
+   border-radius: 0;
+}
+
+.multi-input-group > .input-group-btn {
+  vertical-align: bottom;
+  padding: 0;
 }
