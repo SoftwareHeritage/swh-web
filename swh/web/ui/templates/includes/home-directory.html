@@ -1,0 +1,111 @@
+<div class="simple-search">
+  <div class="row simple-desc container-fluid">
+    Search a directory according to its SHA1 checksum
+  </div>
+  <form method="get" action="{{ url_for('search_directory') }}">
+    <div class="row">
+      <div class="col-md-6 required">
+	<label for="dir-sha1">Directory ID</label>
+	<div class="input-group">
+	  <input id="dir-sha1" class="form-control"
+		 type="text" placeholder="directory git SHA1"
+		 name="sha1_git" required="true"/>
+	  <span class="input-group-btn">
+	    <button class="btn btn-primary" type="submit">
+	      <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+	    </button>
+	  </span>
+	  <a class="input-group-addon" data-toggle="collapse" href="#dir-dir-collapse">Options</a>
+	</div>
+      </div>
+      <div class="col-md-6">
+	<div id="dir-dir-collapse" class="collapse">
+	  <label for="dir-path-1">Path within directory</label>
+	  <input id="dir-path-1" class="optional form-control"
+		 type="text" placeholder="path" name="path/">
+	</div>
+      </div>
+    </div>
+  </form>
+</div>
+<hr/>
+<div class="text-center">
+  <a data-toggle="collapse" href="#dir-advanced-search">Advanced search</a>
+</div>
+<div id="dir-advanced-search" data-toggle="collapse" class="collapse advanced-search">
+  <div class="row advanced-desc container-fluid">
+    You can also refer to a directory either:
+    <ul>
+      <li>
+	as a request for the content of a revision identified in absolute
+	terms by its git SHA1.
+      </li>
+      <li>
+	as a request for the content of a revision matching a
+	given time and place, with place the origin of the directory (and optionally its
+	branch name), and time a timestamp of when we collected it (or as close to the
+	timestamp as we can provide).
+      </li>
+    </ul>
+    In all cases, you may also specify a path within the top-level directory to which you
+    would like the results to be constrained.
+  </div>
+  <div>
+    <form method="get" action="{{ url_for('search_directory') }}">
+      <div class="forms-group row">
+	<div class="col-md-6 required">
+	  <label for="dir-rev-sha1">Revision ID</label>
+	  <div class="input-group">
+	    <input id="dir-rev-sha1" class="form-control"
+		   type="text" placeholder="revision git SHA1"
+		   name="sha1_git" required="true"/>
+	    <span class="input-group-btn">
+	      <button class="btn btn-primary" type="submit">
+		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+	      </button>
+	    </span>
+	    <a class="input-group-addon" data-toggle="collapse" href="#dir-rev-collapse">Options</a>
+	  </div>
+	</div>
+	<div class="col-md-6">
+	  <div id="dir-rev-collapse" class="collapse">
+	    <label for="dir-path-2">Path within directory</label>
+	    <input id="dir-path-2" class="optional form-control"
+		   type="text" placeholder="path" name="dir_path"/>
+	  </div>
+	</div>
+      </div>
+    </form>
+    <form method="get" action="{{ url_for('search_directory') }}">
+      <div class="form-groups row">
+	<div class="col-md-6">
+	  <label for="dir-origin-id">Origin ID</label>
+	  <div class="input-group">
+	    <input id="dir-origin-id" class="form-control"
+		   type="text" placeholder="origin id"
+		   name="origin_id" required="true"/>
+	    <span class="input-group-btn">
+	      <button class="btn btn-primary" type="submit">
+		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+	      </button>
+	    </span>
+	    <a class="input-group-addon" data-toggle="collapse" href="#dir-origin-collapse">Options</a>
+	  </div>
+	</div>
+	<div class="col-md-6">
+	  <div id="dir-origin-collapse" class="collapse">
+	    <label for="dir-branchname">Branch name</label>
+	    <input id="dir-branchname" class="optional form-control"
+		   type="text" placeholder="refs/heads/master" name="branch_name"/>
+	    <label for="dir-timestamp">Timestamp</label>
+	    <input id="dir-timestamp" class="optional form-control"
+		   type="text" placeholder="timestamp" name="ts"/>
+	    <label for="dir-path-3">Path within the directory</label>
+	    <input id="dir-path-3" class="optional form-control"
+		   type="text" placeholder="path" name="path"/>
+	  </div>
+	</div>
+      </div>
+    </form>
+  </div>
+</div>

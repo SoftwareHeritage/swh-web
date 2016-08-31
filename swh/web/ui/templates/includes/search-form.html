@@ -1,5 +1,5 @@
 <!-- The text-based SHA1 or SHA256 search -->
-<h2>Search with SHA-1 or SHA-256:</h2>
+<label for="text-hash-form">Search with SHA-1 or SHA-256:</label>
 <form id="text-hash-form"
       action="{{ url_for('search_content') }}"
       class="form"
@@ -21,7 +21,7 @@
 </form>
 
 <!-- The file-based drag&drop UI-->
-<h2>Search with files</h2>
+<label for="file-hash-form">Search with files</label>
 <form id="file-hash-form"
       action="{{ url_for('search_content') }}"
       class="text-center form"
@@ -58,11 +58,9 @@
 </form>
 
 <!-- Required JS -->
-<script src="{{ url_for('static', filename='lib/core.js') }}"></script>
-<script src="{{ url_for('static', filename='lib/lib-typedarrays.js') }}"></script>
-<script src="{{ url_for('static', filename='lib/sha1.js') }}"></script>
-<script src="{{ url_for('static', filename='lib/sha256.js') }}"></script>
-<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% for fname in ['lib/core.js', 'lib/lib-typedarrays.js', 'lib/sha256.js', 'js/search.js'] %}
+<script language="javascript" type="text/javascript" src="{{ url_for('static', filename=fname) }}"></script>
+{% endfor %}
 
 <!-- Script setup -->
 <script>

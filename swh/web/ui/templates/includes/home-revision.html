@@ -1,0 +1,66 @@
+<div class="simple-search">
+  <div class="row simple-desc container-fluid">
+    Search a revision according to its SHA1 identifier
+  </div>
+  <form method="get" action="{{ url_for('search_revision') }}">
+    <div class="row">
+      <div class="col-md-12">
+	<label for="rev-sha1">Revision SHA1</label>
+	<div class="input-group">
+	  <input id="rev-sha1" class="form-control"
+		 type="text" placeholder="git SHA1"
+		 name="sha1_git" required="true"/>
+	  <span class="input-group-btn">
+	    <button class="btn btn-primary" type="submit">
+	      <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+	    </button>
+	  </span>
+	</div>
+      </div>
+    </div>
+  </form>
+</div>
+<hr/> 
+<div class="text-center">
+  <a data-toggle="collapse" href="#rev-advanced-search">Advanced search</a>
+</div>
+<div id="rev-advanced-search" data-toggle="collapse" class="collapse advanced-search">
+  <div class="row advanced-desc container-fluid">
+    You can also refer to a revision as an SWH time and place, time being a timestamp of when we
+    collected it (or as close to the timestamp as we can provide), place being an origin, and
+    optionally a branch name within the origin. See the origin section to search for origins in
+    SWH and find out their identifier.
+  </div>
+  <div>
+    <form method="get" action="{{ url_for('search_revision') }}">
+      <div class="forms-group row">
+	<div class="col-md-6 required">
+	  <label>Revision Origin ID</label>
+	  <div class="input-group">
+	    <input class="form-control" type="text" placeholder="revision git SHA1" name="sha1_git" required="true"/>
+	    <span class="input-group-btn">
+	      <button class="btn btn-primary" type="submit">
+		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+	      </button>
+	    </span>
+	    <a class="input-group-addon" data-toggle="collapse" href="#rev-tandp-collapse">Options</a>
+	  </div>
+	</div>
+	<div class="col-md-6">
+	  <div id="rev-tandp-collapse" class="collapse">
+	    <label for="rev-branchname">Branch name</label>
+	    <input id="rev-branchname"
+		   class="optional form-control"
+		   type="text" placeholder="refs/heads/master"
+		   name="branch_name"/>
+	    <label for="rev-timestamp">Timestamp</label>
+	    <input id="rev-timestamp"
+		   class="optional form-control"
+		   type="text" placeholder="timestamp"
+		   name="ts"/>
+	  </div>
+	</div>
+      </div>
+    </form>
+  </div>
+</div>
