@@ -111,36 +111,38 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_content_provenance(self, mock_service):
         stub_provenances = [{
-            'origin_type': 'sftp',
-            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
-            'branch': 'master',
-            'date': '2015-01-01T22:00:00+00:00',
-            'target': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'target_type': 'revision',
+            'origin': 1,
+            'visit': 2,
+            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'content': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
         }]
         mock_service.lookup_content_provenance.return_value = stub_provenances
 
         # when
         rv = self.app.get(
-            '/api/1/provenance/sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/provenance/'
+            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
         # then
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, [{
-            'origin_type': 'sftp',
-            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
-            'branch': 'master',
-            'date': '2015-01-01T22:00:00+00:00',
-            'target': '/api/1/revision/b04caf10e9535160d90e874b45aa426de762f19f/',  # noqa
-            'target_type': 'revision',
+            'origin': 1,
+            'visit': 2,
+            'origin_url': '/api/1/origin/1/',
+            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'revision_url': '/api/1/revision/'
+                            'b04caf10e9535160d90e874b45aa426de762f19f/',
+            'content': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'content_url': '/api/1/content/'
+            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
             'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
         }])
 
         mock_service.lookup_content_provenance.assert_called_once_with(
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.views.api.service')
     @istest

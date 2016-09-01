@@ -231,36 +231,32 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_find_provenance = MagicMock(
             return_value=(p for p in [{
-                'origin_type': 'sftp',
-                'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
-                'branch': 'octavio-3.4.0.tar.gz',
-                'date': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'target': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
-                'target_type': 'revision',
+                'content': hex_to_hash(
+                    '123caf10e9535160d90e874b45aa426de762f19f'),
+                'revision': hex_to_hash(
+                    '456caf10e9535160d90e874b45aa426de762f19f'),
+                'origin': 100,
+                'visit': 1,
                 'path': b'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
             }]))
         expected_provenances = [{
-            'origin_type': 'sftp',
-            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
-            'branch': 'octavio-3.4.0.tar.gz',
-            'date': '2015-01-01T22:00:00+00:00',
-            'target': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'target_type': 'revision',
+            'content': '123caf10e9535160d90e874b45aa426de762f19f',
+            'revision': '456caf10e9535160d90e874b45aa426de762f19f',
+            'origin': 100,
+            'visit': 1,
             'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
         }]
 
         # when
         actual_provenances = service.lookup_content_provenance(
-            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
+            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
 
         # then
         self.assertEqual(list(actual_provenances), expected_provenances)
 
         mock_backend.content_find_provenance.assert_called_with(
             'sha1_git',
-            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'))
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest

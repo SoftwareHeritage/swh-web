@@ -140,24 +140,20 @@ class ConvertersTestCase(unittest.TestCase):
     def from_provenance(self):
         # given
         input_provenance = {
-            'origin_type': 'ftp',
-            'origin_url': 'rsync://ftp.gnu.org/gnu/octave',
-            'branch': b'octave-3.4.0.tar.gz',
-            'date': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-            'target': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
-            'target_type': 'revision',
+            'origin': 10,
+            'visit': 1,
+            'content': hashutil.hex_to_hash(
+                '321caf10e9535160d90e874b45aa426de762f19f'),
+            'revision': hashutil.hex_to_hash(
+                '123caf10e9535160d90e874b45aa426de762f19f'),
             'path': b'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
         }
 
         expected_provenance = {
-            'origin_type': 'ftp',
-            'origin_url': 'rsync://ftp.gnu.org/gnu/octave',
-            'branch': 'octave-3.4.0.tar.gz',
-            'date': '2015-01-01T22:00:00+00:00',
-            'target': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'target_type': 'revision',
+            'origin': 10,
+            'visit': 1,
+            'content': '321caf10e9535160d90e874b45aa426de762f19f',
+            'revision': '123caf10e9535160d90e874b45aa426de762f19f',
             'path': 'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
         }
 

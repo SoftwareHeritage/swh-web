@@ -108,19 +108,15 @@ def from_provenance(provenance):
 
     Args:
         provenance: Dictionary with the following keys:
-          origin_type (str) : origin's type
-          origin_url (str)  : origin's url
-          date (date)       : the visit date
-          branch (bytes)    : the branch at that visit
-          target (hashes)   : the targeted object
-          target_type (str) : the targeted type (revision)
-          path (bytes)      : the path the content was seen at
+          content (sha1_git)  : the content's identifier
+          revision (sha1_git) : the revision the content was seen
+          origin (int)        : the origin the content was seen
+          visit (int)         : the visit it occurred
+          path (bytes)        : the path the content was seen at
     """
     return from_swh(provenance,
-                    hashess={'target'},
-                    bytess={'branch', 'path'},
-                    convert={'date'},
-                    convert_fn=lambda dt: dt.isoformat())
+                    hashess={'content', 'revision'},
+                    bytess={'path'})
 
 
 def from_origin(origin):

@@ -673,7 +673,12 @@ def api_content_provenance(q):
     """
     def _enrich_revision(provenance):
         p = provenance.copy()
-        p['target'] = url_for('api_revision', sha1_git=provenance['target'])
+        p['revision_url'] = url_for('api_revision',
+                                    sha1_git=provenance['revision'])
+        p['content_url'] = url_for('api_content_metadata',
+                                   q='sha1_git:%s' % provenance['content'])
+        p['origin_url'] = url_for('api_origin',
+                                  origin_id=provenance['origin'])
         return p
 
     return _api_lookup(
