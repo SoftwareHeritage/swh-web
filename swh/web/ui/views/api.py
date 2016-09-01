@@ -682,7 +682,7 @@ def api_content_provenance(q):
     return _api_lookup(
         q,
         lookup_fn=service.lookup_content_provenance,
-        error_msg_if_not_found='Content %s does not exist!' % q,
+        error_msg_if_not_found='Content with %s not found.' % q,
         enrich_fn=_enrich_revision)
 
 

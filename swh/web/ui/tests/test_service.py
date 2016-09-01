@@ -229,17 +229,18 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_content_provenance(self, mock_backend):
         # given
-        mock_backend.content_find_provenance = MagicMock(return_value=[{
-            'origin_type': 'sftp',
-            'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
-            'branch': 'octavio-3.4.0.tar.gz',
-            'date': datetime.datetime(
+        mock_backend.content_find_provenance = MagicMock(
+            return_value=(p for p in [{
+                'origin_type': 'sftp',
+                'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
+                'branch': 'octavio-3.4.0.tar.gz',
+                'date': datetime.datetime(
                     2015, 1, 1, 22, 0, 0,
                     tzinfo=datetime.timezone.utc),
-            'target': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
-            'target_type': 'revision',
-            'path': b'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
-        }])
+                'target': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
+                'target_type': 'revision',
+                'path': b'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
+            }]))
         expected_provenances = [{
             'origin_type': 'sftp',
             'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
@@ -256,6 +257,23 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # then
         self.assertEqual(list(actual_provenances), expected_provenances)
+
+        mock_backend.content_find_provenance.assert_called_with(
+            'sha1_git',
+            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_content_provenance_not_found(self, mock_backend):
+        # given
+        mock_backend.content_find_provenance = MagicMock(return_value=None)
+
+        # when
+        actual_provenances = service.lookup_content_provenance(
+            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertIsNone(actual_provenances)
 
         mock_backend.content_find_provenance.assert_called_with(
             'sha1_git',

@@ -52,7 +52,7 @@ def content_find_provenance(algo, hash_bin):
         any (this can be empty if the cache is not populated)
 
     """
-    yield from main.storage().content_find_provenance({algo: hash_bin})
+    return main.storage().content_find_provenance({algo: hash_bin})
 
 
 def content_missing_per_sha1(sha1list):

@@ -110,7 +110,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_provenance(self, mock_service):
-        mock_service.lookup_hash.return_value = {'found': True}
         stub_provenances = [{
             'origin_type': 'sftp',
             'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
@@ -144,10 +143,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.views.api.service')
-#    @istest
+    @istest
     def api_content_provenance_sha_not_found(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {'found': False}
+        mock_service.lookup_content_provenance.return_value = None
+
         # when
         rv = self.app.get(
             '/api/1/provenance/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
@@ -160,8 +160,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 not found.'
         })
-        mock_service.lookup_hash.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.views.api.service')
     @istest

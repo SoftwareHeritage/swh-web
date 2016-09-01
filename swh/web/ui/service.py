@@ -70,8 +70,10 @@ def lookup_content_provenance(q):
 
     """
     algo, hash = query.parse_hash(q)
-    for provenance in backend.content_find_provenance(algo, hash):
-        yield converters.from_provenance(provenance)
+    provenances = backend.content_find_provenance(algo, hash)
+    if not provenances:
+        return None
+    return (converters.from_provenance(p) for p in provenances)
 
 
 def lookup_origin(origin):
