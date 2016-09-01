@@ -38,20 +38,27 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
 
 
 def fmap(f, data):
-    """Map f to data.
-    Keep the initial data structure as original but map function f to each
-    level.
+    """Map f to data at each level.
+
+    This must keep the origin data structure type:
+    - map -> map
+    - dict -> dict
+    - list -> list
+    - None -> None
 
     Args:
         f: function that expects one argument.
-        data: data to traverse to apply the f function. list, map, dict or bare
-        value.
+        data: data to traverse to apply the f function.
+              list, map, dict or bare value.
 
     Returns:
         The same data-structure with modified values by the f function.
+
     """
+    if not data:
+        return data
     if isinstance(data, map):
-        return (fmap(f, x) for x in data)
+        return map(lambda y: fmap(f, y), (x for x in data))
     if isinstance(data, list):
         return [fmap(f, x) for x in data]
     if isinstance(data, dict):
