@@ -137,6 +137,37 @@ class ConvertersTestCase(unittest.TestCase):
         self.assertIsNone(converters.from_swh(None))
 
     @istest
+    def from_provenance(self):
+        # given
+        input_provenance = {
+            'origin_type': 'ftp',
+            'origin_url': 'rsync://ftp.gnu.org/gnu/octave',
+            'branch': b'octave-3.4.0.tar.gz',
+            'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+            'target': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
+            'target_type': 'revision',
+            'path': b'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
+        }
+
+        expected_provenance = {
+            'origin_type': 'ftp',
+            'origin_url': 'rsync://ftp.gnu.org/gnu/octave',
+            'branch': 'octave-3.4.0.tar.gz',
+            'date': '2015-01-01T22:00:00+00:00',
+            'target': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'target_type': 'revision',
+            'path': 'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
+        }
+
+        # when
+        actual_provenance = converters.from_provenance(input_provenance)
+
+        # then
+        self.assertEqual(actual_provenance, expected_provenance)
+
+    @istest
     def from_origin(self):
         # given
         origin_input = {

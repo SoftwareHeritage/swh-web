@@ -59,18 +59,19 @@ def search_hash(q):
     return {'found': found is not None}
 
 
-def lookup_hash_origin(q):
-    """Return information about the checksum contained in the query q.
+def lookup_content_provenance(q):
+    """Return provenance information from a specified content.
 
-    Args: query string of the form <hash_algo:hash>
+    Args:
+        q: query string of the form <hash_algo:hash>
 
-    Returns:
-        origin as dictionary if found for the given content.
+    Yields:
+        provenance information (dict) list if the content is found.
 
     """
     algo, hash = query.parse_hash(q)
-    origin = backend.content_find_occurrence(algo, hash)
-    return converters.from_origin(origin)
+    for provenance in backend.content_find_provenance(algo, hash):
+        yield converters.from_provenance(provenance)
 
 
 def lookup_origin(origin):

@@ -227,32 +227,37 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
-    def lookup_hash_origin(self, mock_backend):
+    def lookup_content_provenance(self, mock_backend):
         # given
-        mock_backend.content_find_occurrence = MagicMock(return_value={
+        mock_backend.content_find_provenance = MagicMock(return_value=[{
             'origin_type': 'sftp',
             'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
             'branch': 'octavio-3.4.0.tar.gz',
-            'revision': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
-            'path': b'octavio-3.4.0/doc/interpreter/octave.html/doc_002dS_005fISREG.html'  # noqa
-        })
-        expected_origin = {
+            'date': datetime.datetime(
+                    2015, 1, 1, 22, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+            'target': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
+            'target_type': 'revision',
+            'path': b'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
+        }])
+        expected_provenances = [{
             'origin_type': 'sftp',
             'origin_url': 'sftp://ftp.gnu.org/gnu/octave',
             'branch': 'octavio-3.4.0.tar.gz',
-            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'path': 'octavio-3.4.0/doc/interpreter/octave.html/doc'
-                    '_002dS_005fISREG.html'
-        }
+            'date': '2015-01-01T22:00:00+00:00',
+            'target': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'target_type': 'revision',
+            'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
+        }]
 
         # when
-        actual_origin = service.lookup_hash_origin(
+        actual_provenances = service.lookup_content_provenance(
             'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEqual(actual_origin, expected_origin)
+        self.assertEqual(list(actual_provenances), expected_provenances)
 
-        mock_backend.content_find_occurrence.assert_called_with(
+        mock_backend.content_find_provenance.assert_called_with(
             'sha1_git',
             hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'))
 

@@ -103,6 +103,26 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
     return new_dict
 
 
+def from_provenance(provenance):
+    """Convert from a provenance information to a provenance dictionary.
+
+    Args:
+        provenance: Dictionary with the following keys:
+          origin_type (str) : origin's type
+          origin_url (str)  : origin's url
+          date (date)       : the visit date
+          branch (bytes)    : the branch at that visit
+          target (hashes)   : the targeted object
+          target_type (str) : the targeted type (revision)
+          path (bytes)      : the path the content was seen at
+    """
+    return from_swh(provenance,
+                    hashess={'target'},
+                    bytess={'branch', 'path'},
+                    convert={'date'},
+                    convert_fn=lambda dt: dt.isoformat())
+
+
 def from_origin(origin):
     """Convert from an SWH origin to an origin dictionary.
 
