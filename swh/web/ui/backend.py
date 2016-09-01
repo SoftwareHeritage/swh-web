@@ -5,7 +5,8 @@
 
 import os
 
-from swh.web.ui import main
+
+from . import main
 
 
 def content_get(sha1_bin):
