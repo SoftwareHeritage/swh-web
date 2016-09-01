@@ -11,13 +11,15 @@ from swh.web.ui.exc import NotFoundExc
 
 
 def lookup_multiple_hashes(hashes):
-    """Lookup the passed hashes in a single DB connection, using batch processing.
+    """Lookup the passed hashes in a single DB connection, using batch
+    processing.
 
     Args:
         An array of {filename: X, sha1: Y}, string X, hex sha1 string Y.
     Returns:
         The same array with elements updated with elem['found'] = true if
         the hash is present in storage, elem['found'] = false if not.
+
     """
     hashlist = [hashutil.hex_to_hash(elem['sha1']) for elem in hashes]
     content_missing = backend.content_missing_per_sha1(hashlist)
