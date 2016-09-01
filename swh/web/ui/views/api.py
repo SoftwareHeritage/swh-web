@@ -145,10 +145,7 @@ def _api_lookup(criteria,
     if not res:
         raise NotFoundExc(error_msg_if_not_found)
     if isinstance(res, (map, list, GeneratorType)):
-        enriched_data = []
-        for e in res:
-            enriched_data.append(enrich_fn(e))
-        return enriched_data
+        return [enrich_fn(x) for x in res]
     return enrich_fn(res)
 
 
