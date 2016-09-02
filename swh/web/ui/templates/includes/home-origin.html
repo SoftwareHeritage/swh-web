@@ -2,12 +2,12 @@
   <div class="row simple-desc container-fluid">
     Search an origin according to its SWH ID
   </div>
-  <form method="get" action="{{ url_for('search_directory') }}">
+  <form method="get" action="{{ url_for('search_origin') }}">
     <div class="row">
       <div class="col-md-12">
         <label>Origin ID</label>
         <div class="input-group">
-          <input class="form-control" type="text" placeholder="directory git SHA1" name="sha1_git" required="true"/>
+          <input class="form-control" type="text" placeholder="origin SWH ID" name="origin_id" required="true"/>
           <span class="input-group-btn">
             <button class="btn btn-primary" type="submit">
               <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
