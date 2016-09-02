@@ -47,10 +47,10 @@
 <script>
     // Hash update on page load
     var hash = window.location.hash;
-  hash && $('ul.nav a[href="' + hash + '"]').tab('show');
-  // Hash update on nav-tab click
-  $('.nav-tabs a').click(function(e) {
-      window.location.hash = this.hash;
-  })
+    hash && $('ul.nav a[href="' + hash + '"]').tab('show');
+    // Hash update on nav-tab click
+    $('.nav-tabs a').click(function(e) {
+        window.location.hash = this.hash;
+    })
 </script>
 {% endblock %}

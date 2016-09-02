@@ -29,7 +29,10 @@ h2              { font-size: 1.2em; }
 .file-found     { color: #23BA49; }
 .file-notfound  { color: #FF4747; }
 
-/* Bootstrap custom styling */
+/* Bootstrap custom styling to correctly render multiple 
+ * form-controls in an input-group: 
+ *                github.com/twbs/bootstrap/issues/12732 */
+
 .input-group-field {
     display: table-cell;
     vertical-align: middle;
