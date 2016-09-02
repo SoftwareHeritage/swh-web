@@ -654,36 +654,32 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_origin_visits(self):
         # given
-        expected_dates = [
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 1
-            },
-            {
-                'date': datetime.datetime(
-                    2013, 7, 1, 20, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 2
-            },
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 21, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 3
-            }
-        ]
+        expected_dates = [{
+            'date': datetime.datetime(
+                2015, 1, 1, 22, 0, 0,
+                tzinfo=datetime.timezone.utc),
+            'origin': 1,
+            'visit': 1
+        }, {
+            'date': datetime.datetime(
+                2013, 7, 1, 20, 0, 0,
+                tzinfo=datetime.timezone.utc),
+            'origin': 1,
+            'visit': 2
+        }, {
+            'date': datetime.datetime(
+                2015, 1, 1, 21, 0, 0,
+                tzinfo=datetime.timezone.utc),
+            'origin': 1,
+            'visit': 3
+        }]
         self.storage.origin_visit_get = MagicMock(return_value=expected_dates)
 
         # when
         actual_dates = backend.lookup_origin_visits(5)
 
         # then
-        self.assertEqual(actual_dates, expected_dates)
+        self.assertEqual(list(actual_dates), expected_dates)
 
         self.storage.origin_visit_get.assert_called_with(5)
 

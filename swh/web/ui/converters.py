@@ -232,6 +232,15 @@ def from_person(person):
                     bytess=set(['name', 'fullname', 'email']))
 
 
+def from_origin_visit(visit):
+    """Convert swh origin_visit to serializable origin_visit dictionary.
+
+    """
+    return from_swh(visit,
+                    convert={'date'},
+                    convert_fn=lambda d: d.timestamp())
+
+
 def from_directory_entry(dir_entry):
     """Convert swh person to serializable person dictionary.
 

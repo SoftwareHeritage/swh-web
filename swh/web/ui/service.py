@@ -542,8 +542,7 @@ def lookup_origin_visits(origin_id):
        An array of dates in the datetime format
     """
     for visit in backend.lookup_origin_visits(origin_id):
-        visit['date'] = visit['date'].timestamp()
-        yield(visit)
+        yield converters.from_origin_visit(visit)
 
 
 def lookup_entity_by_uuid(uuid):

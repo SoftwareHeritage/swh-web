@@ -311,61 +311,51 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_origin_visits(self, mock_backend):
         # given
-        stub_result = [
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 1
-            },
-            {
-                'date': datetime.datetime(
-                    2013, 7, 1, 20, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 2
-            },
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 21, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 3
-            }
-        ]
+        date_origin_visit1 = datetime.datetime(
+            2015, 1, 1, 22, 0, 0,
+            tzinfo=datetime.timezone.utc)
+
+        date_origin_visit2 = datetime.datetime(
+            2013, 7, 1, 20, 0, 0,
+            tzinfo=datetime.timezone.utc)
+
+        date_origin_visit3 = datetime.datetime(
+            2015, 1, 1, 21, 0, 0,
+            tzinfo=datetime.timezone.utc)
+        stub_result = [{
+            'date': date_origin_visit1,
+            'origin': 1,
+            'visit': 1
+        }, {
+            'date': date_origin_visit2,
+            'origin': 1,
+            'visit': 2
+        }, {
+            'date': date_origin_visit3,
+            'origin': 1,
+            'visit': 3
+        }]
         mock_backend.lookup_origin_visits.return_value = stub_result
 
         # when
-        expected_dates = [
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'origin': 1,
-                'visit': 1
-            },
-            {
-                'date': datetime.datetime(
-                    2013, 7, 1, 20, 0, 0,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'origin': 1,
-                'visit': 2
-            },
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 21, 0, 0,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'origin': 1,
-                'visit': 3
-            }
-        ]
+        expected_dates = [{
+            'date': date_origin_visit1.timestamp(),
+            'origin': 1,
+            'visit': 1
+        }, {
+            'date': date_origin_visit2.timestamp(),
+            'origin': 1,
+            'visit': 2
+        }, {
+            'date': date_origin_visit3.timestamp(),
+            'origin': 1,
+            'visit': 3
+        }]
 
         actual_dates = service.lookup_origin_visits(6)
 
         # then
-        self.assertEqual(expected_dates,
-                         list(actual_dates))
+        self.assertEqual(list(actual_dates), expected_dates)
 
         mock_backend.lookup_origin_visits.assert_called_once_with(6)
 

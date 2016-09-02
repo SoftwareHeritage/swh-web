@@ -239,7 +239,7 @@ def lookup_origin_visits(origin_id):
     Returns:
        An array of dates
     """
-    return main.storage().origin_visit_get(origin_id)
+    yield from main.storage().origin_visit_get(origin_id)
 
 
 def revision_get_by(origin_id, branch_name, timestamp):
