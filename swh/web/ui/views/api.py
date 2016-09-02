@@ -145,10 +145,7 @@ def _api_lookup(criteria,
     if not res:
         raise NotFoundExc(error_msg_if_not_found)
     if isinstance(res, (map, list, GeneratorType)):
-        enriched_data = []
-        for e in res:
-            enriched_data.append(enrich_fn(e))
-        return enriched_data
+        return [enrich_fn(x) for x in res]
     return enrich_fn(res)
 
 
@@ -654,32 +651,41 @@ def api_directory(sha1_git,
             utils.enrich_directory)
 
 
-# @app.route('/api/1/browse/')
-# @app.route('/api/1/browse/<string:q>/')
-def api_content_checksum_to_origin(q):
-    """Return content information up to one of its origin if the content
-    is found.
-
-    Args:
-        q is of the form algo_hash:hash with algo_hash in
-        (sha1, sha1_git, sha256).
-
-    Returns:
-        Information on one possible origin for such content.
-
-    Raises:
-        BadInputExc in case of unknown algo_hash or bad hash.
-        NotFoundExc if the content is not found.
-
-    Example:
-        GET /api/1/browse/sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242
+@app.route('/api/1/provenance/<string:q>/')
+@doc.route('/api/1/provenance/')
+@doc.arg('q',
+         default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
+         argtype=doc.argtypes.algo_and_hash,
+         argdoc="""The queried content's corresponding hash (supported hash
+ algorithms: sha1_git, sha1, sha256)""")
+@doc.raises(exc=doc.excs.badinput,
+            doc="""Raised if hash algorithm is incorrect  or if the hash
+ value is badly formatted.""")
+@doc.raises(exc=doc.excs.notfound,
+            doc="""Raised if a content matching the hash was not found
+ in SWH""")
+@doc.returns(rettype=doc.rettypes.dict,
+             retdoc="""List of provenance information (dict) for the matched
+content.""")
+def api_content_provenance(q):
+    """Return content's provenance information if any.
 
     """
-    found = service.lookup_hash(q)['found']
-    if not found:
-        raise NotFoundExc('Content with %s not found.' % q)
+    def _enrich_revision(provenance):
+        p = provenance.copy()
+        p['revision_url'] = url_for('api_revision',
+                                    sha1_git=provenance['revision'])
+        p['content_url'] = url_for('api_content_metadata',
+                                   q='sha1_git:%s' % provenance['content'])
+        p['origin_url'] = url_for('api_origin',
+                                  origin_id=provenance['origin'])
+        return p
 
-    return service.lookup_hash_origin(q)
+    return _api_lookup(
+        q,
+        lookup_fn=service.lookup_content_provenance,
+        error_msg_if_not_found='Content with %s not found.' % q,
+        enrich_fn=_enrich_revision)
 
 
 @app.route('/api/1/content/<string:q>/raw/')

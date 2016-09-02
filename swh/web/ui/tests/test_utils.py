@@ -207,8 +207,8 @@ class UtilsTestCase(unittest.TestCase):
 
     @istest
     def fmap(self):
-        self.assertEquals([2, 3, 4],
-                          utils.fmap(lambda x: x+1, [1, 2, 3]))
+        self.assertEquals([2, 3, None, 4],
+                          utils.fmap(lambda x: x+1, [1, 2, None, 3]))
         self.assertEquals([11, 12, 13],
                           list(utils.fmap(lambda x: x+10,
                                           map(lambda x: x, [1, 2, 3]))))
@@ -218,6 +218,8 @@ class UtilsTestCase(unittest.TestCase):
                           utils.fmap(lambda x: x*10, 10))
         self.assertEquals({'a': [2, 6], 'b': 4},
                           utils.fmap(lambda x: x*2, {'a': [1, 3], 'b': 2}))
+
+        self.assertIsNone(utils.fmap(lambda x: x, None))
 
     @istest
     def person_to_string(self):

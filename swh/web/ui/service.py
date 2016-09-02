@@ -11,13 +11,15 @@ from swh.web.ui.exc import NotFoundExc
 
 
 def lookup_multiple_hashes(hashes):
-    """Lookup the passed hashes in a single DB connection, using batch processing.
+    """Lookup the passed hashes in a single DB connection, using batch
+    processing.
 
     Args:
         An array of {filename: X, sha1: Y}, string X, hex sha1 string Y.
     Returns:
         The same array with elements updated with elem['found'] = true if
         the hash is present in storage, elem['found'] = false if not.
+
     """
     hashlist = [hashutil.hex_to_hash(elem['sha1']) for elem in hashes]
     content_missing = backend.content_missing_per_sha1(hashlist)
@@ -59,18 +61,21 @@ def search_hash(q):
     return {'found': found is not None}
 
 
-def lookup_hash_origin(q):
-    """Return information about the checksum contained in the query q.
+def lookup_content_provenance(q):
+    """Return provenance information from a specified content.
 
-    Args: query string of the form <hash_algo:hash>
+    Args:
+        q: query string of the form <hash_algo:hash>
 
-    Returns:
-        origin as dictionary if found for the given content.
+    Yields:
+        provenance information (dict) list if the content is found.
 
     """
     algo, hash = query.parse_hash(q)
-    origin = backend.content_find_occurrence(algo, hash)
-    return converters.from_origin(origin)
+    provenances = backend.content_find_provenance(algo, hash)
+    if not provenances:
+        return None
+    return (converters.from_provenance(p) for p in provenances)
 
 
 def lookup_origin(origin):

@@ -5,30 +5,20 @@
 
 from nose.tools import istest
 
-from unittest.mock import patch
-
 from .. import test_app
 
 
 class MainViewTestCase(test_app.SWHViewTestCase):
     render_template = False
 
-    @patch('flask.flash')
     @istest
-    def homepage(self, mock_flash):
-        # given
-        mock_flash.return_value = 'something'
-
+    def homepage(self):
         # when
         rv = self.client.get('/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('home.html')
-
-        mock_flash.assert_called_once_with(
-            'This Web app is still work in progress, use at your own risk',
-            'warning')
+        self.assertEquals(rv.status_code, 302)
+        self.assertRedirects(rv, '/browse/')
 
     @istest
     def info(self):

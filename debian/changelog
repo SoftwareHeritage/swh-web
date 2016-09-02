@@ -1,8 +1,11 @@
-swh-web (0.0.33-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.34-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.34
+  * Improve global ui navigation
+  * Fix apidoc rendering issue
+  * Open /api/1/provenance/ about content provenant information
 
- -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Wed, 24 Aug 2016 16:25:25 +0200
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 02 Sep 2016 11:42:04 +0200
 
 swh-web (0.0.33-1~swh1) unstable-swh; urgency=medium
 
