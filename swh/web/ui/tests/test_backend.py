@@ -101,37 +101,38 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.content_find.assert_called_with({'sha1': sha1_bin})
 
     @istest
-    def content_find_occurrence_ko_no_result(self):
+    def content_find_provenance_ko_no_result(self):
         # given
         sha1_bin = hashutil.hex_to_hash(
             '123caf10e9535160d90e874b45aa426de762f19f')
-        self.storage.content_find_occurrence = MagicMock(return_value=None)
+        self.storage.content_find_provenance = MagicMock(
+            return_value=(x for x in []))
 
         # when
-        actual_lookup = backend.content_find_occurrence('sha1_git', sha1_bin)
+        actual_lookup = backend.content_find_provenance('sha1_git', sha1_bin)
 
         # then
-        self.assertIsNone(actual_lookup)
+        self.assertEquals(list(actual_lookup), [])
 
-        self.storage.content_find_occurrence.assert_called_once_with(
+        self.storage.content_find_provenance.assert_called_once_with(
             {'sha1_git': sha1_bin})
 
     @istest
-    def content_find_occurrence(self):
+    def content_find_provenance(self):
         # given
         sha1_bin = hashutil.hex_to_hash(
             '456caf10e9535160d90e874b45aa426de762f19f')
-        self.storage.content_find_occurrence = MagicMock(
-            return_value=(1, 2, 3))
+        self.storage.content_find_provenance = MagicMock(
+            return_value=(x for x in (1, 2, 3)))
 
         # when
-        actual_content = backend.content_find_occurrence('sha1', sha1_bin)
+        actual_content = backend.content_find_provenance('sha1', sha1_bin)
 
         # then
-        self.assertEquals(actual_content, (1, 2, 3))
+        self.assertEquals(list(actual_content), [1, 2, 3])
 
         # check the function has been called with parameters
-        self.storage.content_find_occurrence.assert_called_with(
+        self.storage.content_find_provenance.assert_called_with(
             {'sha1': sha1_bin})
 
     @istest

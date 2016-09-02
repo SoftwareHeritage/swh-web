@@ -51,11 +51,11 @@ swh/web/ui/static/lib/jquery.flot.time.min.js
 swh/web/ui/templates/about.html
 swh/web/ui/templates/api.html
 swh/web/ui/templates/apidoc.html
+swh/web/ui/templates/browse.html
 swh/web/ui/templates/content-with-origin.html
 swh/web/ui/templates/content.html
 swh/web/ui/templates/directory.html
 swh/web/ui/templates/entity.html
-swh/web/ui/templates/home.html
 swh/web/ui/templates/layout.html
 swh/web/ui/templates/origin.html
 swh/web/ui/templates/person.html
@@ -64,6 +64,10 @@ swh/web/ui/templates/revision-directory.html
 swh/web/ui/templates/revision-log.html
 swh/web/ui/templates/revision.html
 swh/web/ui/templates/search.html
+swh/web/ui/templates/includes/home-directory.html
+swh/web/ui/templates/includes/home-origin.html
+swh/web/ui/templates/includes/home-revision.html
+swh/web/ui/templates/includes/search-form.html
 swh/web/ui/tests/__init__.py
 swh/web/ui/tests/test_apidoc.py
 swh/web/ui/tests/test_app.py

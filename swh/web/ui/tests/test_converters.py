@@ -137,6 +137,33 @@ class ConvertersTestCase(unittest.TestCase):
         self.assertIsNone(converters.from_swh(None))
 
     @istest
+    def from_provenance(self):
+        # given
+        input_provenance = {
+            'origin': 10,
+            'visit': 1,
+            'content': hashutil.hex_to_hash(
+                '321caf10e9535160d90e874b45aa426de762f19f'),
+            'revision': hashutil.hex_to_hash(
+                '123caf10e9535160d90e874b45aa426de762f19f'),
+            'path': b'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
+        }
+
+        expected_provenance = {
+            'origin': 10,
+            'visit': 1,
+            'content': '321caf10e9535160d90e874b45aa426de762f19f',
+            'revision': '123caf10e9535160d90e874b45aa426de762f19f',
+            'path': 'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
+        }
+
+        # when
+        actual_provenance = converters.from_provenance(input_provenance)
+
+        # then
+        self.assertEqual(actual_provenance, expected_provenance)
+
+    @istest
     def from_origin(self):
         # given
         origin_input = {
