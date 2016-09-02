@@ -652,7 +652,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.stat_counters.assert_called_with()
 
     @istest
-    def stat_origin_visits(self):
+    def lookup_origin_visits(self):
         # given
         expected_dates = [
             {
@@ -680,7 +680,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.origin_visit_get = MagicMock(return_value=expected_dates)
 
         # when
-        actual_dates = backend.stat_origin_visits(5)
+        actual_dates = backend.lookup_origin_visits(5)
 
         # then
         self.assertEqual(actual_dates, expected_dates)

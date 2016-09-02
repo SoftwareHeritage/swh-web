@@ -309,7 +309,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
-    def stat_origin_visits(self, mock_backend):
+    def lookup_origin_visits(self, mock_backend):
         # given
         stub_result = [
             {
@@ -334,7 +334,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'visit': 3
             }
         ]
-        mock_backend.stat_origin_visits.return_value = stub_result
+        mock_backend.lookup_origin_visits.return_value = stub_result
 
         # when
         expected_dates = [
@@ -361,13 +361,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             }
         ]
 
-        actual_dates = service.stat_origin_visits(6)
+        actual_dates = service.lookup_origin_visits(6)
 
         # then
         self.assertEqual(expected_dates,
                          list(actual_dates))
 
-        mock_backend.stat_origin_visits.assert_called_once_with(6)
+        mock_backend.lookup_origin_visits.assert_called_once_with(6)
 
     @patch('swh.web.ui.service.backend')
     @istest

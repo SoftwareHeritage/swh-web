@@ -143,7 +143,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
     this.calendar = function(data) {
         // POSIX timestamps to JS timestamps
         self.cal_data = data.map(function(e)
-                                 { return Math.floor(e * 1000); });
+                                 { return Math.floor(e['date'] * 1000); });
         /** Bootstrap the group ratio  **/
         var cal_data_range = null;
         if (self.cal_data.length == 1) {

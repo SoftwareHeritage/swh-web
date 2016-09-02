@@ -23,21 +23,31 @@ def api_stats():
     return service.stat_counters()
 
 
-@app.route('/api/1/stat/visits/<int:origin_id>/')
-@doc.route('/api/1/stat/visits/')
+@app.route('/api/1/origin/<int:origin_id>/visits/')
+@app.route('/api/1/origin/<int:origin_id>/visits/<int:visit_id>')
+@doc.route('/api/1/origin/visits/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin identifier')
+@doc.arg('visit_id',
+         default=None,
+         argtype=doc.argtypes.int,
+         argdoc='The requested SWH origin visit identifier')
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""All instances of visits of the origin pointed by
-             origin_id as POSIX time since epoch""")
-def api_origin_visits(origin_id):
+             origin_id as POSIX time since epoch (if visit_id is not defined).
+             Only the instance of visit pointed by origin_id and visit_id.""")
+def api_origin_visits(origin_id, visit_id=None):
     """Return a list of visit dates as POSIX timestamps for the
     given revision.
     """
-    date_gen = (item['date'] for item in service.stat_origin_visits(origin_id))
-    return sorted(date_gen)
+    if not visit_id:
+        return _api_lookup(
+            origin_id,
+            service.lookup_origin_visits,
+            error_msg_if_not_found='No origin %s found' % origin_id)
+    # TODO
 
 
 @app.route('/api/1/content/search/', methods=['POST'])

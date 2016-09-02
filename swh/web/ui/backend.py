@@ -233,7 +233,7 @@ def stat_counters():
     return main.storage().stat_counters()
 
 
-def stat_origin_visits(origin_id):
+def lookup_origin_visits(origin_id):
     """Return the dates at which the given origin was scanned for content.
 
     Returns:
