@@ -246,6 +246,20 @@ def lookup_origin_visits(origin_id):
     yield from main.storage().origin_visit_get(origin_id)
 
 
+def lookup_origin_visit(origin_id, visit_id):
+    """Return information about visit visit_id with origin origin_id.
+
+    Args:
+        origin_id: origin concerned by the visit
+        visit_id: the visit identifier to lookup
+
+    Yields:
+       The dict origin_visit concerned
+
+    """
+    return main.storage().origin_visit_get_by(origin_id, visit_id)
+
+
 def revision_get_by(origin_id, branch_name, timestamp):
     """Return occurrence information matching the criterions origin_id,
     branch_name, ts.

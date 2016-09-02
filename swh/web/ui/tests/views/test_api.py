@@ -534,6 +534,47 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_1_lookup_origin_visit(self, mock_service):
+        # given
+        stub_origin_visit = {
+            'date': 1104616800.0,
+            'origin': 10,
+            'visit': 100,
+            'metadata': None,
+            'status': 'full',
+        }
+        mock_service.lookup_origin_visit.return_value = stub_origin_visit
+
+        # when
+        rv = self.app.get('/api/1/origin/10/visits/100/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, stub_origin_visit)
+
+        mock_service.lookup_origin_visit.assert_called_once_with(10, 100)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_lookup_origin_visit_not_found(self, mock_service):
+        # given
+        mock_service.lookup_origin_visit.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/origin/1/visits/1000/')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No visit 1000 for origin 1 found'
+        })
+
+        mock_service.lookup_origin_visit.assert_called_once_with(1, 1000)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_origin_by_id(self, mock_service):
         # given
         stub_origin = {

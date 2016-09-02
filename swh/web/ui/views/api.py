@@ -24,8 +24,27 @@ def api_stats():
 
 
 @app.route('/api/1/origin/<int:origin_id>/visits/')
-@app.route('/api/1/origin/<int:origin_id>/visits/<int:visit_id>')
 @doc.route('/api/1/origin/visits/')
+@doc.arg('origin_id',
+         default=1,
+         argtype=doc.argtypes.int,
+         argdoc='The requested SWH origin identifier')
+@doc.returns(rettype=doc.rettypes.list,
+             retdoc="""All instances of visits of the origin pointed by
+             origin_id as POSIX time since epoch (if visit_id is not defined)
+""")
+def api_origin_visits(origin_id):
+    """Return a list of visit dates as POSIX timestamps for the
+    given revision.
+    """
+    return _api_lookup(
+        origin_id,
+        service.lookup_origin_visits,
+        error_msg_if_not_found='No origin %s found' % origin_id)
+
+
+@app.route('/api/1/origin/<int:origin_id>/visits/<int:visit_id>/')
+@doc.route('/api/1/origin/visits/id/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
@@ -35,19 +54,15 @@ def api_stats():
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin visit identifier')
 @doc.returns(rettype=doc.rettypes.list,
-             retdoc="""All instances of visits of the origin pointed by
-             origin_id as POSIX time since epoch (if visit_id is not defined).
-             Only the instance of visit pointed by origin_id and visit_id.""")
-def api_origin_visits(origin_id, visit_id=None):
-    """Return a list of visit dates as POSIX timestamps for the
-    given revision.
-    """
-    if not visit_id:
-        return _api_lookup(
-            origin_id,
-            service.lookup_origin_visits,
-            error_msg_if_not_found='No origin %s found' % origin_id)
-    # TODO
+             retdoc="""The single instance visit visit_id of the origin pointed
+             by origin_id as POSIX time since epoch""")
+def api_origin_visit(origin_id, visit_id):
+    return _api_lookup(
+        origin_id,
+        service.lookup_origin_visit,
+        'No visit %s for origin %s found' % (visit_id, origin_id),
+        lambda x: x,
+        visit_id)
 
 
 @app.route('/api/1/content/search/', methods=['POST'])

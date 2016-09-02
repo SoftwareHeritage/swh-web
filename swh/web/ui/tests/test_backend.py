@@ -15,6 +15,15 @@ from swh.web.ui.tests import test_app
 
 class BackendTestCase(test_app.SWHApiTestCase):
 
+    def setUp(self):
+        self.origin_visit1 = {
+            'date': datetime.datetime(
+                2015, 1, 1, 22, 0, 0,
+                tzinfo=datetime.timezone.utc),
+            'origin': 1,
+            'visit': 1
+        }
+
     @istest
     def content_get_ko_not_found_1(self):
         # given
@@ -654,34 +663,58 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def lookup_origin_visits(self):
         # given
-        expected_dates = [{
-            'date': datetime.datetime(
-                2015, 1, 1, 22, 0, 0,
-                tzinfo=datetime.timezone.utc),
-            'origin': 1,
-            'visit': 1
-        }, {
-            'date': datetime.datetime(
-                2013, 7, 1, 20, 0, 0,
-                tzinfo=datetime.timezone.utc),
-            'origin': 1,
-            'visit': 2
-        }, {
-            'date': datetime.datetime(
-                2015, 1, 1, 21, 0, 0,
-                tzinfo=datetime.timezone.utc),
-            'origin': 1,
-            'visit': 3
-        }]
-        self.storage.origin_visit_get = MagicMock(return_value=expected_dates)
+        expected_origin_visits = [
+            self.origin_visit1, {
+                'date': datetime.datetime(
+                    2013, 7, 1, 20, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 2
+            }, {
+                'date': datetime.datetime(
+                    2015, 1, 1, 21, 0, 0,
+                    tzinfo=datetime.timezone.utc),
+                'origin': 1,
+                'visit': 3
+            }]
+        self.storage.origin_visit_get = MagicMock(
+            return_value=expected_origin_visits)
 
         # when
-        actual_dates = backend.lookup_origin_visits(5)
+        actual_origin_visits = backend.lookup_origin_visits(5)
 
         # then
-        self.assertEqual(list(actual_dates), expected_dates)
+        self.assertEqual(list(actual_origin_visits), expected_origin_visits)
 
         self.storage.origin_visit_get.assert_called_with(5)
+
+    @istest
+    def lookup_origin_visit(self):
+        # given
+        self.storage.origin_visit_get_by = MagicMock(
+            return_value=self.origin_visit1)
+
+        # when
+        actual_origin_visit = backend.lookup_origin_visit(10, 1)
+
+        # then
+        self.assertEqual(actual_origin_visit, self.origin_visit1)
+
+        self.storage.origin_visit_get_by.assert_called_with(10, 1)
+
+    @istest
+    def lookup_origin_visit_None(self):
+        # given
+        self.storage.origin_visit_get_by = MagicMock(
+            return_value=None)
+
+        # when
+        actual_origin_visit = backend.lookup_origin_visit(1, 10)
+
+        # then
+        self.assertIsNone(actual_origin_visit)
+
+        self.storage.origin_visit_get_by.assert_called_with(1, 10)
 
     @istest
     def directory_entry_get_by_path(self):
