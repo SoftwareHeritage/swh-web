@@ -234,10 +234,14 @@ def stat_counters():
 
 
 def lookup_origin_visits(origin_id):
-    """Return the dates at which the given origin was scanned for content.
+    """Yields the origin origin_ids' visits.
 
-    Returns:
-       An array of dates
+    Args:
+        origin_id: origin to list visits for
+
+    Yields:
+       Dictionaries of origin_visit for that origin
+
     """
     yield from main.storage().origin_visit_get(origin_id)
 
