@@ -704,6 +704,11 @@ def api_content_provenance(q):
                                    q='sha1_git:%s' % provenance['content'])
         p['origin_url'] = url_for('api_origin',
                                   origin_id=provenance['origin'])
+        p['origin_visits_url'] = url_for('api_origin_visits',
+                                         origin_id=provenance['origin'])
+        p['origin_visit_url'] = url_for('api_origin_visit',
+                                        origin_id=provenance['origin'],
+                                        visit_id=provenance['visit'])
         return p
 
     return _api_lookup(

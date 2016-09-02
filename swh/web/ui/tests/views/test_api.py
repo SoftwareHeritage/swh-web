@@ -132,6 +132,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'origin': 1,
             'visit': 2,
             'origin_url': '/api/1/origin/1/',
+            'origin_visits_url': '/api/1/origin/1/visits/',
+            'origin_visit_url': '/api/1/origin/1/visits/2/',
             'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
             'revision_url': '/api/1/revision/'
                             'b04caf10e9535160d90e874b45aa426de762f19f/',
