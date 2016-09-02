@@ -172,6 +172,7 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
         mock_api_urls.get_method_endpoints.return_value = self.stub_rule_list
 
         mock_request.url = 'http://my-domain.tld/some/doc/route/'
+        mock_request.method = 'GET'
         mock_url_for.return_value = 'http://my-domain.tld/meaningful_route/'
 
         expected_env = {
@@ -246,6 +247,52 @@ class APIDocTestCase(test_app.SWHApidocTestCase):
 
         # then
         mock_fun.assert_called_once_with()
+        self.assertEqual(mock_g.doc_env, doc_dict)
+
+    @patch('swh.web.ui.apidoc.g')
+    @patch('swh.web.ui.apidoc.url_for')
+    @patch('swh.web.ui.apidoc.APIUrls')
+    @patch('swh.web.ui.apidoc.request')
+    @istest
+    def apidoc_returns_same_fun(self,
+                                mock_request,
+                                mock_api_urls,
+                                mock_url_for,
+                                mock_g):
+
+        # given
+        decorator = apidoc.returns(rettype=apidoc.rettypes.dict,
+                                   retdoc='a dict with amazing properties')
+        mock_fun = MagicMock(return_value=123)
+        mock_fun.__name__ = 'some_fname'
+        mock_fun.__doc__ = 'Some documentation'
+        decorated = decorator.__call__(mock_fun)
+
+        mock_api_urls.get_method_endpoints.return_value = [
+            {'rule': 'some/doc/route/',
+             'methods': {'GET', 'HEAD', 'OPTIONS'}},
+            {'rule': 'some/doc/route/',
+             'methods': {'POST'}}]
+        mock_request.url = 'http://my-domain.tld/some/doc/route/'
+        mock_request.method = 'POST'
+        doc_dict = {
+            'urls': [{'rule': 'some/doc/route/',
+                      'methods': {'POST'}}],
+            'docstring': 'Some documentation',
+            'route': 'some/doc/route/',
+            'return': {'type': apidoc.rettypes.dict.value,
+                       'doc': 'a dict with amazing properties'}
+        }
+
+        # when
+        decorated(
+            call_args=(('my', 'args'), {'kw': 'andkwargs'}),
+            doc_route='some/doc/route/',
+            noargs=False
+        )
+
+        # then
+        mock_fun.assert_called_once_with('my', 'args', kw='andkwargs')
         self.assertEqual(mock_g.doc_env, doc_dict)
 
     @patch('swh.web.ui.apidoc.g')

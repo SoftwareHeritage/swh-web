@@ -108,41 +108,51 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_result, {'a': 100})
 
     @patch('swh.web.ui.views.api.service')
-#    @istest
-    def api_content_checksum_to_origin(self, mock_service):
-        mock_service.lookup_hash.return_value = {'found': True}
-        stub_origin = {
-            "lister": None,
-            "url": "rsync://ftp.gnu.org/old-gnu/webbase",
-            "type": "ftp",
-            "id": 2,
-            "project": None
-        }
-        mock_service.lookup_hash_origin.return_value = stub_origin
+    @istest
+    def api_content_provenance(self, mock_service):
+        stub_provenances = [{
+            'origin': 1,
+            'visit': 2,
+            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'content': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
+        }]
+        mock_service.lookup_content_provenance.return_value = stub_provenances
 
         # when
         rv = self.app.get(
-            '/api/1/browse/sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/provenance/'
+            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
         # then
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_origin)
+        self.assertEquals(response_data, [{
+            'origin': 1,
+            'visit': 2,
+            'origin_url': '/api/1/origin/1/',
+            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
+            'revision_url': '/api/1/revision/'
+                            'b04caf10e9535160d90e874b45aa426de762f19f/',
+            'content': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'content_url': '/api/1/content/'
+            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
+        }])
 
-        mock_service.lookup_hash.assert_called_once_with(
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-        mock_service.lookup_hash_origin.assert_called_once_with(
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        mock_service.lookup_content_provenance.assert_called_once_with(
+            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.views.api.service')
-#    @istest
-    def api_content_checksum_to_origin_sha_not_found(self, mock_service):
+    @istest
+    def api_content_provenance_sha_not_found(self, mock_service):
         # given
-        mock_service.lookup_hash.return_value = {'found': False}
+        mock_service.lookup_content_provenance.return_value = None
+
         # when
         rv = self.app.get(
-            '/api/1/browse/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/provenance/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -152,8 +162,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 not found.'
         })
-        mock_service.lookup_hash.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -194,7 +202,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def api_content_not_found_as_json(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
-        mock_service.lookup_hash_origin = MagicMock()
+        mock_service.lookup_content_provenance = MagicMock()
 
         # when
         rv = self.app.get(
@@ -212,14 +220,14 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_content.assert_called_once_with(
             'sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
             'be4735637006560c')
-        mock_service.lookup_hash_origin.called = False
+        mock_service.lookup_content_provenance.called = False
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_not_found_as_yaml(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
-        mock_service.lookup_hash_origin = MagicMock()
+        mock_service.lookup_content_provenance = MagicMock()
 
         # when
         rv = self.app.get(
@@ -239,7 +247,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_content.assert_called_once_with(
             'sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
             'be4735637006560c')
-        mock_service.lookup_hash_origin.called = False
+        mock_service.lookup_content_provenance.called = False
 
     @patch('swh.web.ui.views.api.service')
     @istest

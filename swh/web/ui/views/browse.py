@@ -15,20 +15,57 @@ from . import api
 hash_filter_keys = ALGORITHMS
 
 
-@app.route('/api/1/doc/')
-def api_doc():
-    """Render the API's documentation.
-    """
-    routes = apidoc.APIUrls.get_app_endpoints()
-    # Return a list of routes with consistent ordering
-    env = {
-        'doc_routes': sorted(routes.items())
-    }
-    return render_template('api.html', **env)
+@app.route('/origin/search/')
+def search_origin():
+    if request.method == 'GET':
+        data = request.args
+        origin_id = data.get('origin_id')
+        if origin_id:
+            return redirect(url_for('browse_origin', origin_id=origin_id))
+        args = ['origin_type', 'origin_url']
+        values = {arg: data.get(arg) for arg in args if data.get(arg)}
+        if 'origin_type' in values and 'origin_url' in values:
+            return redirect(url_for('browse_origin', **values))
+
+
+@app.route('/directory/search/')
+def search_directory():
+    if request.method == 'GET':
+        data = request.args
+        sha1_git = data.get('sha1_git')
+        if sha1_git:
+            path = data.get('path')
+            if 'dir_path' in data:
+                return redirect(url_for('browse_revision_directory',
+                                        sha1_git=sha1_git,
+                                        path=data.get('dir_path')))
+            if path:
+                return redirect(url_for('browse_directory',
+                                        sha1_git=sha1_git,
+                                        path=path))
+            return redirect(url_for('browse_directory', sha1_git=sha1_git))
+        args = ['origin_id', 'branch_name', 'ts', 'path']
+        values = {arg: data.get(arg) for arg in args if data.get(arg)}
+        if 'origin_id' in values:
+            return redirect(url_for('browse_revision_directory_through_origin',
+                                    **values))
+
+
+@app.route('/revision/search/')
+def search_revision():
+    if request.method == 'GET':
+        data = request.args
+        sha1_git = data.get('sha1_git')
+        if sha1_git:
+            return redirect(url_for('browse_revision', sha1_git=sha1_git))
+        args = ['origin_id', 'branch_name', 'ts']
+        values = {arg: data.get(arg) for arg in args if data.get(arg)}
+        if 'origin_id' in values:
+            return redirect(url_for('browse_revision_with_origin', **values))
 
 
 @app.route('/content/search/', methods=['GET', 'POST'])
-def search():
+def search_content():
     """Search for hashes in swh-storage.
 
     One form to submit either:
@@ -79,6 +116,25 @@ def search():
     env['search_res'] = search_res
     env['message'] = message
     return render_template('search.html', **env)
+
+
+@app.route('/browse/')
+def browse():
+    """Render the user-facing browse view
+    """
+    return render_template('browse.html')
+
+
+@app.route('/api/')
+def browse_api_doc():
+    """Render the API's documentation.
+    """
+    routes = apidoc.APIUrls.get_app_endpoints()
+    # Return a list of routes with consistent ordering
+    env = {
+        'doc_routes': sorted(routes.items())
+    }
+    return render_template('api.html', **env)
 
 
 @app.route('/browse/content/<string:q>/')

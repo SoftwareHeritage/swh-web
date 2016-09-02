@@ -13,9 +13,7 @@ def homepage():
     """Home page
 
     """
-    flask.flash('This Web app is still work in progress, use at your own risk',
-                'warning')
-    return flask.render_template('home.html')
+    return flask.redirect(flask.url_for('browse'))
 
 
 @app.route('/about/')

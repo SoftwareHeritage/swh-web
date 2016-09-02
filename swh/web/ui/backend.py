@@ -5,7 +5,8 @@
 
 import os
 
-from swh.web.ui import main
+
+from . import main
 
 
 def content_get(sha1_bin):
@@ -40,18 +41,19 @@ def content_find(algo, hash_bin):
     return main.storage().content_find({algo: hash_bin})
 
 
-def content_find_occurrence(algo, hash_bin):
-    """Find the content's occurrence.
+def content_find_provenance(algo, hash_bin):
+    """Find the content's provenance information.
 
     Args:
         algo: nature of the hash hash_bin.
-        hash_bin: content's hash searched for.
+        hash_bin: content's hash corresponding to algo searched for.
 
-    Returns:
-        The occurrence of the content.
+    Yields:
+        Yields the list of provenance information for that content if
+        any (this can be empty if the cache is not populated)
 
     """
-    return main.storage().content_find_occurrence({algo: hash_bin})
+    return main.storage().content_find_provenance({algo: hash_bin})
 
 
 def content_missing_per_sha1(sha1list):
