@@ -97,6 +97,16 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'status': 'hidden'
         }
 
+        self.date_origin_visit1 = datetime.datetime(
+            2015, 1, 1, 22, 0, 0,
+            tzinfo=datetime.timezone.utc)
+
+        self.origin_visit1 = {
+            'date': self.date_origin_visit1,
+            'origin': 1,
+            'visit': 1
+        }
+
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_multiple_hashes_ball_missing(self, mock_backend):
@@ -309,65 +319,74 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
-    def stat_origin_visits(self, mock_backend):
+    def lookup_origin_visits(self, mock_backend):
         # given
-        stub_result = [
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 1
-            },
-            {
-                'date': datetime.datetime(
-                    2013, 7, 1, 20, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 2
-            },
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 21, 0, 0,
-                    tzinfo=datetime.timezone.utc),
-                'origin': 1,
-                'visit': 3
-            }
-        ]
-        mock_backend.stat_origin_visits.return_value = stub_result
+        date_origin_visit2 = datetime.datetime(
+            2013, 7, 1, 20, 0, 0,
+            tzinfo=datetime.timezone.utc)
+
+        date_origin_visit3 = datetime.datetime(
+            2015, 1, 1, 21, 0, 0,
+            tzinfo=datetime.timezone.utc)
+        stub_result = [self.origin_visit1, {
+            'date': date_origin_visit2,
+            'origin': 1,
+            'visit': 2,
+            'target': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
+            'branch': b'master',
+            'target_type': 'release'
+        }, {
+            'date': date_origin_visit3,
+            'origin': 1,
+            'visit': 3
+        }]
+        mock_backend.lookup_origin_visits.return_value = stub_result
 
         # when
-        expected_dates = [
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'origin': 1,
-                'visit': 1
-            },
-            {
-                'date': datetime.datetime(
-                    2013, 7, 1, 20, 0, 0,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'origin': 1,
-                'visit': 2
-            },
-            {
-                'date': datetime.datetime(
-                    2015, 1, 1, 21, 0, 0,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'origin': 1,
-                'visit': 3
-            }
-        ]
+        expected_origin_visits = [{
+            'date': self.origin_visit1['date'].timestamp(),
+            'origin': self.origin_visit1['origin'],
+            'visit': self.origin_visit1['visit']
+        }, {
+            'date': date_origin_visit2.timestamp(),
+            'origin': 1,
+            'visit': 2,
+            'target': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
+            'branch': 'master',
+            'target_type': 'release'
+        }, {
+            'date': date_origin_visit3.timestamp(),
+            'origin': 1,
+            'visit': 3
+        }]
 
-        actual_dates = service.stat_origin_visits(6)
+        actual_origin_visits = service.lookup_origin_visits(6)
 
         # then
-        self.assertEqual(expected_dates,
-                         list(actual_dates))
+        self.assertEqual(list(actual_origin_visits), expected_origin_visits)
 
-        mock_backend.stat_origin_visits.assert_called_once_with(6)
+        mock_backend.lookup_origin_visits.assert_called_once_with(6)
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_origin_visit(self, mock_backend):
+        # given
+        stub_result = self.origin_visit1
+        mock_backend.lookup_origin_visit.return_value = stub_result
+
+        expected_origin_visit = {
+            'date': self.origin_visit1['date'].timestamp(),
+            'origin': self.origin_visit1['origin'],
+            'visit': self.origin_visit1['visit']
+        }
+
+        # when
+        actual_origin_visit = service.lookup_origin_visit(1, 1)
+
+        # then
+        self.assertEqual(actual_origin_visit, expected_origin_visit)
+
+        mock_backend.lookup_origin_visit.assert_called_once_with(1, 1)
 
     @patch('swh.web.ui.service.backend')
     @istest
