@@ -554,7 +554,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         expected_origin_visit = self.origin_visit1.copy()
         expected_origin_visit.update({
             'origin_url': '/api/1/origin/10/',
-            'revision_url': '/api/1/revision/revision-id/'
+            'target_url': '/api/1/revision/revision-id/'
         })
 
         # when
@@ -566,36 +566,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, expected_origin_visit)
 
         mock_service.lookup_origin_visit.assert_called_once_with(10, 100)
-
-    @patch('swh.web.ui.views.api.service')
-    @istest
-    def api_1_lookup_origin_visit_2(self, mock_service):
-        # given
-        stub_origin_visit = self.origin_visit1.copy()
-        stub_origin_visit.update({
-            'origin': 99,
-            'target_type': 'release',
-            'target': 'release-id',
-        })
-        mock_service.lookup_origin_visit.return_value = stub_origin_visit
-
-        expected_origin_visit = stub_origin_visit.copy()
-        expected_origin_visit.update({
-            'origin_url': '/api/1/origin/99/',
-            'release_url': '/api/1/release/release-id/'
-        })
-
-        # when
-        rv = self.app.get('/api/1/origin/99/visits/999/')
-
-        # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv.mimetype, 'application/json')
-        response_data = json.loads(rv.data.decode('utf-8'))
-
-        self.assertEquals(response_data, expected_origin_visit)
-
-        mock_service.lookup_origin_visit.assert_called_once_with(99, 999)
 
     @patch('swh.web.ui.views.api.service')
     @istest
