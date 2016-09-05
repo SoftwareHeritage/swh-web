@@ -1,3 +1,12 @@
+swh-web (0.0.35-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.35
+  * Open /api/1/provenance/<algo:content-hash>/ api endpoint
+  * Open /api/1/origin/<id>/visits/(<visit-id>) api endpoint
+  * View: Fix redirection url issue
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 05 Sep 2016 14:28:33 +0200
+
 swh-web (0.0.34-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.34
