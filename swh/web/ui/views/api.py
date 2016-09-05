@@ -57,11 +57,25 @@ def api_origin_visits(origin_id):
              retdoc="""The single instance visit visit_id of the origin pointed
              by origin_id as POSIX time since epoch""")
 def api_origin_visit(origin_id, visit_id):
+    def _enrich_origin_visit(origin_visit):
+        ov = origin_visit.copy()
+        if 'target_type' in ov and 'target' in ov:
+            if ov['target_type'] == 'revision':
+                ov['revision_url'] = url_for('api_revision',
+                                             sha1_git=ov['target'])
+            elif ov['target_type'] == 'release':
+                ov['release_url'] = url_for('api_release',
+                                            sha1_git=ov['target'])
+
+        ov['origin_url'] = url_for('api_origin', origin_id=ov['origin'])
+
+        return ov
+
     return _api_lookup(
         origin_id,
         service.lookup_origin_visit,
         'No visit %s for origin %s found' % (visit_id, origin_id),
-        lambda x: x,
+        _enrich_origin_visit,
         visit_id)
 
 

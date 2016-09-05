@@ -228,6 +228,8 @@ def from_origin_visit(visit):
 
     """
     return from_swh(visit,
+                    hashess={'target'},
+                    bytess={'branch'},
                     convert={'date'},
                     convert_fn=lambda d: d.timestamp())
 

@@ -331,7 +331,10 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         stub_result = [self.origin_visit1, {
             'date': date_origin_visit2,
             'origin': 1,
-            'visit': 2
+            'visit': 2,
+            'target': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
+            'branch': b'master',
+            'target_type': 'release'
         }, {
             'date': date_origin_visit3,
             'origin': 1,
@@ -347,7 +350,10 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         }, {
             'date': date_origin_visit2.timestamp(),
             'origin': 1,
-            'visit': 2
+            'visit': 2,
+            'target': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
+            'branch': 'master',
+            'target_type': 'release'
         }, {
             'date': date_origin_visit3.timestamp(),
             'origin': 1,
