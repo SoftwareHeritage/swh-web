@@ -124,8 +124,8 @@ def from_origin(origin):
 
     """
     return from_swh(origin,
-                    hashess=set(['revision']),
-                    bytess=set(['path']))
+                    hashess={'revision'},
+                    bytess={'path'})
 
 
 def from_release(release):
@@ -153,8 +153,8 @@ def from_release(release):
     """
     return from_swh(
         release,
-        hashess=set(['id', 'target']),
-        bytess=set(['message', 'name', 'fullname', 'email']),
+        hashess={'id', 'target'},
+        bytess={'message', 'name', 'fullname', 'email'},
         dates={'date'},
     )
 
@@ -187,13 +187,8 @@ def from_revision(revision):
 
     """
     revision = from_swh(revision,
-                        hashess=set(['id',
-                                     'directory',
-                                     'parents',
-                                     'children']),
-                        bytess=set(['name',
-                                    'fullname',
-                                    'email']),
+                        hashess={'id', 'directory', 'parents', 'children'},
+                        bytess={'name', 'fullname', 'email'},
                         dates={'date', 'committer_date'})
 
     if revision:
@@ -213,12 +208,9 @@ def from_content(content):
     """Convert swh content to serializable content dictionary.
 
     """
-    if content:
-        content = {k: v for k, v in content.items() if k not in ['ctime']}
     return from_swh(content,
                     hashess={'sha1', 'sha1_git', 'sha256'},
-                    bytess={},
-                    blacklist={},
+                    blacklist={'ctime'},
                     convert={'status'},
                     convert_fn=lambda v: 'absent' if v == 'hidden' else v)
 
@@ -228,8 +220,18 @@ def from_person(person):
 
     """
     return from_swh(person,
-                    hashess=set(),
-                    bytess=set(['name', 'fullname', 'email']))
+                    bytess={'name', 'fullname', 'email'})
+
+
+def from_origin_visit(visit):
+    """Convert swh origin_visit to serializable origin_visit dictionary.
+
+    """
+    return from_swh(visit,
+                    hashess={'target'},
+                    bytess={'branch'},
+                    convert={'date'},
+                    convert_fn=lambda d: d.timestamp())
 
 
 def from_directory_entry(dir_entry):
@@ -237,12 +239,7 @@ def from_directory_entry(dir_entry):
 
     """
     return from_swh(dir_entry,
-                    hashess=set(['dir_id',
-                                 'sha1_git',
-                                 'sha1',
-                                 'sha256',
-                                 'target']),
-                    bytess=set(['name']),
-                    blacklist={},
+                    hashess={'dir_id', 'sha1_git', 'sha1', 'sha256', 'target'},
+                    bytess={'name'},
                     convert={'status'},
                     convert_fn=lambda v: 'absent' if v == 'hidden' else v)

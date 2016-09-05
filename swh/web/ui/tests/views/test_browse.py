@@ -76,16 +76,6 @@ class SearchRedirectsView(test_app.SWHViewTestCase):
                                          origin_url='http://cool/project/url'))
 
     @istest
-    def search_directory_dir_sha1_only(self):
-        # when
-        rv = self.client.get('/directory/search/?sha1_git=some_sha1'
-                             '&meaningless_arg=gandalf')
-
-        # then
-        self.assertRedirects(rv, url_for('browse_directory',
-                                         sha1_git='some_sha1'))
-
-    @istest
     def search_directory_dir_sha1(self):
         # when
         rv = self.client.get('/directory/search/?sha1_git=some_sha1'
@@ -98,6 +88,16 @@ class SearchRedirectsView(test_app.SWHViewTestCase):
                                          path='some/path/in/folder'))
 
     @istest
+    def search_directory_dir_sha1_nopath(self):
+        # when
+        rv = self.client.get('/directory/search/?sha1_git=some_sha1'
+                             '&meaningless_arg=gandalf')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_directory',
+                                         sha1_git='some_sha1'))
+
+    @istest
     def search_directory_rev_sha1(self):
         # when
         rv = self.client.get('/directory/search/?sha1_git=some_sha1'
@@ -107,7 +107,18 @@ class SearchRedirectsView(test_app.SWHViewTestCase):
         # then
         self.assertRedirects(rv, url_for('browse_revision_directory',
                                          sha1_git='some_sha1',
-                                         path='some/path/in/folder'))
+                                         dir_path='some/path/in/folder'))
+
+    @istest
+    def search_directory_rev_sha1_nopath(self):
+        # when
+        rv = self.client.get('/directory/search/?sha1_git=some_sha1'
+                             '&dir_path='
+                             '&meaningless_arg=gandalf')
+
+        # then
+        self.assertRedirects(rv, url_for('browse_revision_directory',
+                                         sha1_git='some_sha1'))
 
     @istest
     def search_directory_dir_time_place(self):

@@ -1,12 +1,12 @@
 /**
  *  Calendar:
  *     A one-off object that makes an AJAX call to the API's visit stats
- *     endpoint, then displays these statistics in a zoomable timeline-like 
+ *     endpoint, then displays these statistics in a zoomable timeline-like
  *     format.
  *  Args:
- *     browse_url: the relative URL for browsing a revision via the web ui, 
+ *     browse_url: the relative URL for browsing a revision via the web ui,
  *     accurate up to the origin
- *     visit_url: the complete relative URL for getting the origin's visit 
+ *     visit_url: the complete relative URL for getting the origin's visit
  *     stats
  *     origin_id: the origin being browsed
  *     zoomw: the element that should contain the zoomable part of the calendar
@@ -21,7 +21,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
     this.month_names = ['Jan', 'Feb', 'Mar',
                         'Apr', 'May', 'Jun',
                         'Jul', 'Aug', 'Sep',
-                        'Oct', 'Nov', 'Dec'];    
+                        'Oct', 'Nov', 'Dec'];
 
     /** Display **/
     this.desiredPxWidth = 7;
@@ -44,13 +44,13 @@ var Calendar = function(browse_url, visit_url, origin_id,
         plot_data: null
     };
 
-    /** 
+    /**
      *  Keep a reference to the Calendar object context.
      *  Otherwise, 'this' changes to represent current function caller scope
      */
     var self = this;
 
-    /** Start AJAX call **/ 
+    /** Start AJAX call **/
     $.ajax({
         type: 'GET',
         url: visit_url,
@@ -58,13 +58,13 @@ var Calendar = function(browse_url, visit_url, origin_id,
             self.calendar(data);
         }
     });
-    
+
     /**
-     *  Group the plot's base data according to the grouping ratio and the 
+     *  Group the plot's base data according to the grouping ratio and the
      *  range required
      *  Args:
      *     groupFactor: the amount the data should be grouped by
-     *     range: 
+     *     range:
      *  Returns:
      *     A dictionary containing timestamps divided by the grouping ratio as
      *     keys, a list of the corresponding complete timestamps as values
@@ -131,19 +131,19 @@ var Calendar = function(browse_url, visit_url, origin_id,
     this.plotStatic = function(static_options) {
         return $.plot(self.staticw, self.static.plot_data, static_options);
     };
-    
+
     /**
      *  Display a zoomable calendar with click-through links to revisions
      *  of the same origin
      *
      *  Args:
-     *     data: the data that the calendar should present, as a list of 
+     *     data: the data that the calendar should present, as a list of
      *           POSIX second-since-epoch timestamps
      */
     this.calendar = function(data) {
         // POSIX timestamps to JS timestamps
         self.cal_data = data.map(function(e)
-                                 { return Math.floor(e * 1000); });
+                                 { return Math.floor(e['date'] * 1000); });
         /** Bootstrap the group ratio  **/
         var cal_data_range = null;
         if (self.cal_data.length == 1) {
@@ -280,16 +280,16 @@ var Calendar = function(browse_url, visit_url, origin_id,
         var plot = self.plotZoom(addPadding(zoom_options, cal_data_range));
         var overview = self.plotStatic(
             addPadding(overview_options, cal_data_range));
-        
+
         var current_ranges = $.extend(true, {}, cal_data_range);
 
         /**
          *  Zoom to the mouse-selected range in the given window
-         *  
+         *
          *  Args:
          *     plotzone: the jQuery-selected element the zoomed plot should be
          *     in (usually the same as the original 'zoom plot' element)
-         *     range: the data range as a dict {xaxis: {from:, to:}, 
+         *     range: the data range as a dict {xaxis: {from:, to:},
          *                                      yaxis:{from:, to:}}
          */
         function zoom(ranges) {
@@ -306,14 +306,14 @@ var Calendar = function(browse_url, visit_url, origin_id,
             });
             return self.plotZoom(zoomedopts);
         }
-        
+
         function resetZoomW(plot_options) {
             self.zoom.group_data = self.static.group_data;
             self.zoom.plot_data = self.static.plot_data;
             self.updateGroupFactorAndData(zoomw, self.zoom, cal_data_range);
             plot = self.plotZoom(addPadding(plot_options, cal_data_range));
         }
-        
+
         // now connect the two
         self.zoomw.bind('plotselected', function (event, ranges) {
             // clamp the zooming to prevent eternal zoom
@@ -338,7 +338,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
             self.zoomw.bind('plotclick', redirect_to_revision);
             self.staticw.bind('plotclick', redirect_to_revision);
         }
-        
+
         function redirect_to_revision(event, pos, item) {
             if (item) {
                 var ts = Math.floor(item.datapoint[0] / 1000); // POSIX ts
@@ -367,7 +367,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
             overview = self.plotStatic(
                 addPadding(overview_options, cal_data_range));
         });
-        
+
         bindClick();
     };
 };

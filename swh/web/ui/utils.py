@@ -142,27 +142,41 @@ def parse_timestamp(timestamp):
     return res
 
 
-def enrich_release(release):
-    """Enrich a release with link to the 'target' of 'type' revision.
+def enrich_object(object):
+    """Enrich an object (revision, release) with link to the 'target' of
+    type 'target_type'.
+
+    Args:
+        object: An object with target and target_type keys
+        (e.g. release, revision)
+
+    Returns:
+        Object enriched with target_url pointing to the right
+        swh.web.ui.api urls for the pointing object (revision,
+        release, content, directory)
 
     """
-    if 'target' in release and 'target_type' in release:
-        if release['target_type'] == 'revision':
-            release['target_url'] = flask.url_for('api_revision',
-                                                  sha1_git=release['target'])
-        elif release['target_type'] == 'release':
-            release['target_url'] = flask.url_for('api_release',
-                                                  sha1_git=release['target'])
-        elif release['target_type'] == 'content':
-            release['target_url'] = flask.url_for(
+    obj = object.copy()
+    if 'target' in obj and 'target_type' in obj:
+        if obj['target_type'] == 'revision':
+            obj['target_url'] = flask.url_for('api_revision',
+                                              sha1_git=obj['target'])
+        elif obj['target_type'] == 'release':
+            obj['target_url'] = flask.url_for('api_release',
+                                              sha1_git=obj['target'])
+        elif obj['target_type'] == 'content':
+            obj['target_url'] = flask.url_for(
                 'api_content_metadata',
-                q='sha1_git:' + release['target'])
+                q='sha1_git:' + obj['target'])
 
-        elif release['target_type'] == 'directory':
-            release['target_url'] = flask.url_for('api_directory',
-                                                  q=release['target'])
+        elif obj['target_type'] == 'directory':
+            obj['target_url'] = flask.url_for('api_directory',
+                                              q=obj['target'])
 
-    return release
+    return obj
+
+
+enrich_release = enrich_object
 
 
 def enrich_directory(directory, context_url=None):
