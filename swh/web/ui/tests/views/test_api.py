@@ -30,6 +30,14 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'target': 'revision-id',
         }
 
+        self.origin1 = {
+            'id': 1234,
+            'lister': 'uuid-lister-0',
+            'project': 'uuid-project-0',
+            'url': 'ftp://some/url/to/origin/0',
+            'type': 'ftp'
+        }
+
     @istest
     def generic_api_lookup_nothing_is_found(self):
         # given
@@ -609,14 +617,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_origin_by_id(self, mock_service):
         # given
-        stub_origin = {
-            'id': 1234,
-            'lister': 'uuid-lister-0',
-            'project': 'uuid-project-0',
-            'url': 'ftp://some/url/to/origin/0',
-            'type': 'ftp'
-        }
-        mock_service.lookup_origin.return_value = stub_origin
+        mock_service.lookup_origin.return_value = self.origin1
+
+        expected_origin = self.origin1.copy()
+        expected_origin.update({
+            'origin_visits_url': '/api/1/origin/1234/visits/'
+        })
 
         # when
         rv = self.app.get('/api/1/origin/1234/')
@@ -626,7 +632,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_origin)
+        self.assertEquals(response_data, expected_origin)
 
         mock_service.lookup_origin.assert_called_with({'id': 1234})
 
@@ -634,14 +640,16 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_origin_by_type_url(self, mock_service):
         # given
-        stub_origin = {
-            'id': 1234,
-            'lister': 'uuid-lister-0',
-            'project': 'uuid-project-0',
-            'url': 'ftp://some/url/to/origin/0',
-            'type': 'ftp'
-        }
+        stub_origin = self.origin1.copy()
+        stub_origin.update({
+            'id': 987
+        })
         mock_service.lookup_origin.return_value = stub_origin
+
+        expected_origin = stub_origin.copy()
+        expected_origin.update({
+            'origin_visits_url': '/api/1/origin/987/visits/'
+        })
 
         # when
         rv = self.app.get('/api/1/origin/ftp/url/ftp://some/url/to/origin/0/')
@@ -651,7 +659,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_origin)
+        self.assertEquals(response_data, expected_origin)
 
         mock_service.lookup_origin.assert_called_with(
             {'url': 'ftp://some/url/to/origin/0',

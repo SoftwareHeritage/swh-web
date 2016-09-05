@@ -225,9 +225,20 @@ def api_origin(origin_id=None, origin_type=None, origin_url=None):
     else:
         error_msg = 'Origin with type %s and URL %s not found' % (
             ori_dict['type'], ori_dict['url'])
+
+    def _enrich_origin(origin):
+        if 'id' in origin:
+            o = origin.copy()
+            o['origin_visits_url'] = url_for('api_origin_visits',
+                                             origin_id=o['id'])
+            return o
+
+        return origin
+
     return _api_lookup(
         ori_dict, lookup_fn=service.lookup_origin,
-        error_msg_if_not_found=error_msg)
+        error_msg_if_not_found=error_msg,
+        enrich_fn=_enrich_origin)
 
 
 @app.route('/api/1/person/<int:person_id>/')
