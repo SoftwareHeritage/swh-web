@@ -37,10 +37,18 @@ def api_origin_visits(origin_id):
     """Return a list of visit dates as POSIX timestamps for the
     given revision.
     """
+    def _enrich_origin_visit(origin_visit):
+        ov = origin_visit.copy()
+        ov['origin_visit_url'] = url_for('api_origin_visit',
+                                         origin_id=ov['origin'],
+                                         visit_id=ov['visit'])
+        return ov
+
     return _api_lookup(
         origin_id,
         service.lookup_origin_visits,
-        error_msg_if_not_found='No origin %s found' % origin_id)
+        error_msg_if_not_found='No origin %s found' % origin_id,
+        enrich_fn=_enrich_origin_visit)
 
 
 @app.route('/api/1/origin/<int:origin_id>/visits/<int:visit_id>/')

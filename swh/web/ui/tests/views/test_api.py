@@ -533,6 +533,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'visit': 3
             }
         ]
+
         mock_service.lookup_origin_visits.return_value = stub_visits
 
         # when
@@ -541,7 +542,26 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_visits)
+        self.assertEquals(response_data, [
+            {
+                'date': 1104616800.0,
+                'origin': 1,
+                'visit': 1,
+                'origin_visit_url': '/api/1/origin/1/visits/1/',
+            },
+            {
+                'date': 1293919200.0,
+                'origin': 1,
+                'visit': 2,
+                'origin_visit_url': '/api/1/origin/1/visits/2/',
+            },
+            {
+                'date': 1420149600.0,
+                'origin': 1,
+                'visit': 3,
+                'origin_visit_url': '/api/1/origin/1/visits/3/',
+            }
+        ])
 
         mock_service.lookup_origin_visits.assert_called_once_with(2)
 
