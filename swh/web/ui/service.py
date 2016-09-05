@@ -535,15 +535,34 @@ def stat_counters():
     return backend.stat_counters()
 
 
-def stat_origin_visits(origin_id):
-    """Return the dates at which the given origin was scanned for content.
+def lookup_origin_visits(origin_id):
+    """Yields the origin origin_ids' visits.
 
-    Returns:
-       An array of dates in the datetime format
+    Args:
+        origin_id: origin to list visits for
+
+    Yields:
+       Dictionaries of origin_visit for that origin
+
     """
-    for visit in backend.stat_origin_visits(origin_id):
-        visit['date'] = visit['date'].timestamp()
-        yield(visit)
+    visits = backend.lookup_origin_visits(origin_id)
+    for visit in visits:
+        yield converters.from_origin_visit(visit)
+
+
+def lookup_origin_visit(origin_id, visit_id):
+    """Return information about visit visit_id with origin origin_id.
+
+    Args:
+        origin_id: origin concerned by the visit
+        visit_id: the visit identifier to lookup
+
+    Yields:
+       The dict origin_visit concerned
+
+    """
+    visit = backend.lookup_origin_visit(origin_id, visit_id)
+    return converters.from_origin_visit(visit)
 
 
 def lookup_entity_by_uuid(uuid):

@@ -23,21 +23,59 @@ def api_stats():
     return service.stat_counters()
 
 
-@app.route('/api/1/stat/visits/<int:origin_id>/')
-@doc.route('/api/1/stat/visits/')
+@app.route('/api/1/origin/<int:origin_id>/visits/')
+@doc.route('/api/1/origin/visits/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin identifier')
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""All instances of visits of the origin pointed by
-             origin_id as POSIX time since epoch""")
+             origin_id as POSIX time since epoch (if visit_id is not defined)
+""")
 def api_origin_visits(origin_id):
     """Return a list of visit dates as POSIX timestamps for the
     given revision.
     """
-    date_gen = (item['date'] for item in service.stat_origin_visits(origin_id))
-    return sorted(date_gen)
+    def _enrich_origin_visit(origin_visit):
+        ov = origin_visit.copy()
+        ov['origin_visit_url'] = url_for('api_origin_visit',
+                                         origin_id=ov['origin'],
+                                         visit_id=ov['visit'])
+        return ov
+
+    return _api_lookup(
+        origin_id,
+        service.lookup_origin_visits,
+        error_msg_if_not_found='No origin %s found' % origin_id,
+        enrich_fn=_enrich_origin_visit)
+
+
+@app.route('/api/1/origin/<int:origin_id>/visits/<int:visit_id>/')
+@doc.route('/api/1/origin/visits/id/')
+@doc.arg('origin_id',
+         default=1,
+         argtype=doc.argtypes.int,
+         argdoc='The requested SWH origin identifier')
+@doc.arg('visit_id',
+         default=None,
+         argtype=doc.argtypes.int,
+         argdoc='The requested SWH origin visit identifier')
+@doc.returns(rettype=doc.rettypes.list,
+             retdoc="""The single instance visit visit_id of the origin pointed
+             by origin_id as POSIX time since epoch""")
+def api_origin_visit(origin_id, visit_id):
+    def _enrich_origin_visit(origin_visit):
+        ov = utils.enrich_object(origin_visit)
+        ov['origin_url'] = url_for('api_origin', origin_id=ov['origin'])
+        return ov
+
+    return _api_lookup(
+        origin_id,
+        service.lookup_origin_visit,
+        'No visit %s for origin %s found' % (visit_id, origin_id),
+        _enrich_origin_visit,
+        visit_id)
 
 
 @app.route('/api/1/content/search/', methods=['POST'])
@@ -187,9 +225,20 @@ def api_origin(origin_id=None, origin_type=None, origin_url=None):
     else:
         error_msg = 'Origin with type %s and URL %s not found' % (
             ori_dict['type'], ori_dict['url'])
+
+    def _enrich_origin(origin):
+        if 'id' in origin:
+            o = origin.copy()
+            o['origin_visits_url'] = url_for('api_origin_visits',
+                                             origin_id=o['id'])
+            return o
+
+        return origin
+
     return _api_lookup(
         ori_dict, lookup_fn=service.lookup_origin,
-        error_msg_if_not_found=error_msg)
+        error_msg_if_not_found=error_msg,
+        enrich_fn=_enrich_origin)
 
 
 @app.route('/api/1/person/<int:person_id>/')
@@ -679,6 +728,11 @@ def api_content_provenance(q):
                                    q='sha1_git:%s' % provenance['content'])
         p['origin_url'] = url_for('api_origin',
                                   origin_id=provenance['origin'])
+        p['origin_visits_url'] = url_for('api_origin_visits',
+                                         origin_id=provenance['origin'])
+        p['origin_visit_url'] = url_for('api_origin_visit',
+                                        origin_id=provenance['origin'],
+                                        visit_id=provenance['visit'])
         return p
 
     return _api_lookup(

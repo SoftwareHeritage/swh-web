@@ -19,6 +19,25 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 
 class ApiTestCase(test_app.SWHApiTestCase):
 
+    def setUp(self):
+        self.origin_visit1 = {
+            'date': 1104616800.0,
+            'origin': 10,
+            'visit': 100,
+            'metadata': None,
+            'status': 'full',
+            'target_type': 'revision',
+            'target': 'revision-id',
+        }
+
+        self.origin1 = {
+            'id': 1234,
+            'lister': 'uuid-lister-0',
+            'project': 'uuid-project-0',
+            'url': 'ftp://some/url/to/origin/0',
+            'type': 'ftp'
+        }
+
     @istest
     def generic_api_lookup_nothing_is_found(self):
         # given
@@ -132,6 +151,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'origin': 1,
             'visit': 2,
             'origin_url': '/api/1/origin/1/',
+            'origin_visits_url': '/api/1/origin/1/visits/',
+            'origin_visit_url': '/api/1/origin/1/visits/2/',
             'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
             'revision_url': '/api/1/revision/'
                             'b04caf10e9535160d90e874b45aa426de762f19f/',
@@ -448,12 +469,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_1_stat_origin_visits_raise_error(self, mock_service):
+    def api_1_lookup_origin_visits_raise_error(self, mock_service):
         # given
-        mock_service.stat_origin_visits.side_effect = ValueError(
+        mock_service.lookup_origin_visits.side_effect = ValueError(
             'voluntary error to check the bad request middleware.')
         # when
-        rv = self.app.get('/api/1/stat/visits/2/')
+        rv = self.app.get('/api/1/origin/2/visits/')
         # then
         self.assertEquals(rv.status_code, 400)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -463,13 +484,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_1_stat_origin_visits_raise_swh_storage_error_db(
+    def api_1_lookup_origin_visits_raise_swh_storage_error_db(
             self, mock_service):
         # given
-        mock_service.stat_origin_visits.side_effect = StorageDBError(
+        mock_service.lookup_origin_visits.side_effect = StorageDBError(
             'SWH Storage exploded! Will be back online shortly!')
         # when
-        rv = self.app.get('/api/1/stat/visits/2/')
+        rv = self.app.get('/api/1/origin/2/visits/')
         # then
         self.assertEquals(rv.status_code, 503)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -481,14 +502,14 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_1_stat_origin_visits_raise_swh_storage_error_api(
+    def api_1_lookup_origin_visits_raise_swh_storage_error_api(
             self, mock_service):
         # given
-        mock_service.stat_origin_visits.side_effect = StorageAPIError(
+        mock_service.lookup_origin_visits.side_effect = StorageAPIError(
             'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
         )
         # when
-        rv = self.app.get('/api/1/stat/visits/2/')
+        rv = self.app.get('/api/1/origin/2/visits/')
         # then
         self.assertEquals(rv.status_code, 503)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -501,50 +522,107 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_1_stat_origin_visits(self, mock_service):
+    def api_1_lookup_origin_visits(self, mock_service):
         # given
-        stub_stats = [
+        stub_visits = [
             {
-                'date': 1420149600.0,
+                'date': 1104616800.0,
                 'origin': 1,
                 'visit': 1
             },
             {
-                'date': 1104616800.0,
+                'date': 1293919200.0,
                 'origin': 1,
                 'visit': 2
             },
             {
-                'date': 1293919200.0,
+                'date': 1420149600.0,
                 'origin': 1,
                 'visit': 3
             }
         ]
-        expected_stats = [1104616800.0, 1293919200.0, 1420149600.0]
-        mock_service.stat_origin_visits.return_value = stub_stats
+
+        mock_service.lookup_origin_visits.return_value = stub_visits
 
         # when
-        rv = self.app.get('/api/1/stat/visits/2/')
+        rv = self.app.get('/api/1/origin/2/visits/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, expected_stats)
+        self.assertEquals(response_data, [
+            {
+                'date': 1104616800.0,
+                'origin': 1,
+                'visit': 1,
+                'origin_visit_url': '/api/1/origin/1/visits/1/',
+            },
+            {
+                'date': 1293919200.0,
+                'origin': 1,
+                'visit': 2,
+                'origin_visit_url': '/api/1/origin/1/visits/2/',
+            },
+            {
+                'date': 1420149600.0,
+                'origin': 1,
+                'visit': 3,
+                'origin_visit_url': '/api/1/origin/1/visits/3/',
+            }
+        ])
 
-        mock_service.stat_origin_visits.assert_called_once_with(2)
+        mock_service.lookup_origin_visits.assert_called_once_with(2)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_lookup_origin_visit(self, mock_service):
+        # given
+        mock_service.lookup_origin_visit.return_value = self.origin_visit1
+
+        expected_origin_visit = self.origin_visit1.copy()
+        expected_origin_visit.update({
+            'origin_url': '/api/1/origin/10/',
+            'target_url': '/api/1/revision/revision-id/'
+        })
+
+        # when
+        rv = self.app.get('/api/1/origin/10/visits/100/')
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_origin_visit)
+
+        mock_service.lookup_origin_visit.assert_called_once_with(10, 100)
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_1_lookup_origin_visit_not_found(self, mock_service):
+        # given
+        mock_service.lookup_origin_visit.return_value = None
+
+        # when
+        rv = self.app.get('/api/1/origin/1/visits/1000/')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No visit 1000 for origin 1 found'
+        })
+
+        mock_service.lookup_origin_visit.assert_called_once_with(1, 1000)
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_origin_by_id(self, mock_service):
         # given
-        stub_origin = {
-            'id': 1234,
-            'lister': 'uuid-lister-0',
-            'project': 'uuid-project-0',
-            'url': 'ftp://some/url/to/origin/0',
-            'type': 'ftp'
-        }
-        mock_service.lookup_origin.return_value = stub_origin
+        mock_service.lookup_origin.return_value = self.origin1
+
+        expected_origin = self.origin1.copy()
+        expected_origin.update({
+            'origin_visits_url': '/api/1/origin/1234/visits/'
+        })
 
         # when
         rv = self.app.get('/api/1/origin/1234/')
@@ -554,7 +632,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_origin)
+        self.assertEquals(response_data, expected_origin)
 
         mock_service.lookup_origin.assert_called_with({'id': 1234})
 
@@ -562,14 +640,16 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_origin_by_type_url(self, mock_service):
         # given
-        stub_origin = {
-            'id': 1234,
-            'lister': 'uuid-lister-0',
-            'project': 'uuid-project-0',
-            'url': 'ftp://some/url/to/origin/0',
-            'type': 'ftp'
-        }
+        stub_origin = self.origin1.copy()
+        stub_origin.update({
+            'id': 987
+        })
         mock_service.lookup_origin.return_value = stub_origin
+
+        expected_origin = stub_origin.copy()
+        expected_origin.update({
+            'origin_visits_url': '/api/1/origin/987/visits/'
+        })
 
         # when
         rv = self.app.get('/api/1/origin/ftp/url/ftp://some/url/to/origin/0/')
@@ -579,7 +659,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, stub_origin)
+        self.assertEquals(response_data, expected_origin)
 
         mock_service.lookup_origin.assert_called_with(
             {'url': 'ftp://some/url/to/origin/0',

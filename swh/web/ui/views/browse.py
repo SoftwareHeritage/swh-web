@@ -17,6 +17,10 @@ hash_filter_keys = ALGORITHMS
 
 @app.route('/origin/search/')
 def search_origin():
+    """
+    Redirect request with GET params for an origin to our fragmented URI scheme
+
+    """
     if request.method == 'GET':
         data = request.args
         origin_id = data.get('origin_id')
@@ -30,20 +34,36 @@ def search_origin():
 
 @app.route('/directory/search/')
 def search_directory():
+    """
+    Redirect request with GET params for a directory to our fragmented
+    URI scheme
+
+    """
+
+    def url_for_filtered(endpoint, **kwargs):
+        """Make url_for ignore keyword args that have an empty string for value
+        """
+        filtered = {k: v for k, v in kwargs.items() if kwargs[k]}
+        return url_for(endpoint, **filtered)
+
     if request.method == 'GET':
         data = request.args
         sha1_git = data.get('sha1_git')
         if sha1_git:
-            path = data.get('path')
             if 'dir_path' in data:
-                return redirect(url_for('browse_revision_directory',
-                                        sha1_git=sha1_git,
-                                        path=data.get('dir_path')))
-            if path:
-                return redirect(url_for('browse_directory',
-                                        sha1_git=sha1_git,
-                                        path=path))
-            return redirect(url_for('browse_directory', sha1_git=sha1_git))
+                # dir_path exists only in requests for a revision's directory
+                return redirect(url_for_filtered(
+                    'browse_revision_directory',
+                    sha1_git=sha1_git,
+                    dir_path=data.get('dir_path')
+                ))
+
+            return redirect(url_for_filtered(
+                'browse_directory',
+                sha1_git=sha1_git,
+                path=data.get('path')
+            ))
+
         args = ['origin_id', 'branch_name', 'ts', 'path']
         values = {arg: data.get(arg) for arg in args if data.get(arg)}
         if 'origin_id' in values:
@@ -53,6 +73,11 @@ def search_directory():
 
 @app.route('/revision/search/')
 def search_revision():
+    """
+    Redirect request with GET params for a revision to our fragmented
+    URI scheme
+
+    """
     if request.method == 'GET':
         data = request.args
         sha1_git = data.get('sha1_git')
@@ -548,14 +573,14 @@ def browse_revision_history(sha1_git_root, sha1_git):
 
 
 @app.route('/browse/revision/<string:sha1_git>/directory/')
-@app.route('/browse/revision/<string:sha1_git>/directory/<path:path>/')
-def browse_revision_directory(sha1_git, path=None):
+@app.route('/browse/revision/<string:sha1_git>/directory/<path:dir_path>/')
+def browse_revision_directory(sha1_git, dir_path=None):
     """Browse directory from revision with sha1_git.
 
     """
     env = {
         'sha1_git': sha1_git,
-        'path': '.' if not path else path,
+        'path': '.' if not dir_path else dir_path,
         'message': None,
         'result': None
     }
@@ -568,7 +593,7 @@ def browse_revision_directory(sha1_git, path=None):
         return render_template('revision-directory.html', **env)
 
     try:
-        result = api.api_revision_directory(sha1_git, path, with_data=True)
+        result = api.api_revision_directory(sha1_git, dir_path, with_data=True)
         result['content'] = utils.prepare_data_for_view(result['content'],
                                                         encoding=encoding)
         env['revision'] = result['revision']
