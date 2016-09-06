@@ -60,7 +60,7 @@ def api_origin_visits(origin_id):
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin identifier')
 @doc.arg('visit_id',
-         default=None,
+         default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin visit identifier')
 @doc.returns(rettype=doc.rettypes.list,
