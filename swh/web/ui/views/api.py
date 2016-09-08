@@ -73,8 +73,13 @@ def api_origin_visit(origin_id, visit_id):
 
     """
     def _enrich_origin_visit(origin_visit):
-        ov = utils.enrich_object(origin_visit)
+        ov = origin_visit.copy()
         ov['origin_url'] = url_for('api_origin', origin_id=ov['origin'])
+        if 'occurrences' in ov:
+            ov['occurrences'] = {
+                k: utils.enrich_object(v)
+                for k, v in ov['occurrences'].items()
+            }
         return ov
 
     return _api_lookup(
