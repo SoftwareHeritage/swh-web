@@ -5,7 +5,7 @@
 # Runtime dependencies
 Flask
 swh.core >= 0.0.20
-swh.storage >= 0.0.54
+swh.storage >= 0.0.55
 dateutil
 docutils
 

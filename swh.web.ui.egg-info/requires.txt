@@ -2,4 +2,4 @@ Flask
 dateutil
 docutils
 swh.core>=0.0.20
-swh.storage>=0.0.54
+swh.storage>=0.0.55

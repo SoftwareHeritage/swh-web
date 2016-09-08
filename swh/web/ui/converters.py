@@ -227,11 +227,19 @@ def from_origin_visit(visit):
     """Convert swh origin_visit to serializable origin_visit dictionary.
 
     """
-    return from_swh(visit,
-                    hashess={'target'},
-                    bytess={'branch'},
-                    convert={'date'},
-                    convert_fn=lambda d: d.timestamp())
+    ov = from_swh(visit,
+                  hashess={'target'},
+                  bytess={'branch'},
+                  convert={'date'},
+                  convert_fn=lambda d: d.timestamp())
+
+    if 'occurrences' in ov:
+        ov['occurrences'] = {
+            decode_with_escape(k): v
+            for k, v in ov['occurrences'].items()
+        }
+
+    return ov
 
 
 def from_directory_entry(dir_entry):
