@@ -34,8 +34,10 @@ def api_stats():
              origin_id as POSIX time since epoch (if visit_id is not defined)
 """)
 def api_origin_visits(origin_id):
-    """Return a list of visit dates as POSIX timestamps for the
-    given revision.
+    """Return a list of origin visit (dict) for that particular origin
+       including date (visit date as posix timestamp), target,
+       target_type, status, ...
+
     """
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()
@@ -58,16 +60,26 @@ def api_origin_visits(origin_id):
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin identifier')
 @doc.arg('visit_id',
-         default=None,
+         default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin visit identifier')
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""The single instance visit visit_id of the origin pointed
              by origin_id as POSIX time since epoch""")
 def api_origin_visit(origin_id, visit_id):
+    """Return origin visit (dict) for that particular origin including
+       (but not limited to) date (visit date as posix timestamp),
+       target, target_type, status, ...
+
+    """
     def _enrich_origin_visit(origin_visit):
-        ov = utils.enrich_object(origin_visit)
+        ov = origin_visit.copy()
         ov['origin_url'] = url_for('api_origin', origin_id=ov['origin'])
+        if 'occurrences' in ov:
+            ov['occurrences'] = {
+                k: utils.enrich_object(v)
+                for k, v in ov['occurrences'].items()
+            }
         return ov
 
     return _api_lookup(

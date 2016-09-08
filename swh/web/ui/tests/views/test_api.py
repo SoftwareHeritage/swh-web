@@ -26,8 +26,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'visit': 100,
             'metadata': None,
             'status': 'full',
-            'target_type': 'revision',
-            'target': 'revision-id',
         }
 
         self.origin1 = {
@@ -577,12 +575,28 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_1_lookup_origin_visit(self, mock_service):
         # given
-        mock_service.lookup_origin_visit.return_value = self.origin_visit1
+        origin_visit = self.origin_visit1.copy()
+        origin_visit.update({
+            'occurrences': {
+                'master': {
+                    'target_type': 'revision',
+                    'target': 'revision-id',
+                }
+            }
+        })
+
+        mock_service.lookup_origin_visit.return_value = origin_visit
 
         expected_origin_visit = self.origin_visit1.copy()
         expected_origin_visit.update({
             'origin_url': '/api/1/origin/10/',
-            'target_url': '/api/1/revision/revision-id/'
+            'occurrences': {
+                'master': {
+                    'target_type': 'revision',
+                    'target': 'revision-id',
+                    'target_url': '/api/1/revision/revision-id/'
+                }
+            }
         })
 
         # when
