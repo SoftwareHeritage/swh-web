@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -774,18 +774,12 @@ def api_content_filetype(q):
     """Return content's filetype information if any.
 
     """
-    def _enrich_filetype(content):
-        c = content.copy()
-        c['content_url'] = url_for('api_content_metadata',
-                                   q='sha1:%s' % c['id'])
-        return c
-
     return _api_lookup(
         q,
         lookup_fn=service.lookup_content_filetype,
         error_msg_if_not_found='No filetype information found '
         'for content %s.' % q,
-        enrich_fn=_enrich_filetype)
+        enrich_fn=utils.enrich_metadata_endpoint)
 
 
 @app.route('/api/1/language/<string:q>/')
@@ -808,18 +802,12 @@ def api_content_language(q):
     """Return content's language information if any.
 
     """
-    def _enrich_language(content):
-        c = content.copy()
-        c['content_url'] = url_for('api_content_metadata',
-                                   q='sha1:%s' % c['id'])
-        return c
-
     return _api_lookup(
         q,
         lookup_fn=service.lookup_content_language,
         error_msg_if_not_found='No language information found '
         'for content %s.' % q,
-        enrich_fn=_enrich_language)
+        enrich_fn=utils.enrich_metadata_endpoint)
 
 
 @app.route('/api/1/license/<string:q>/')
@@ -842,18 +830,12 @@ def api_content_license(q):
     """Return content's license information if any.
 
     """
-    def _enrich_license(content):
-        c = content.copy()
-        c['content_url'] = url_for('api_content_metadata',
-                                   q='sha1:%s' % c['id'])
-        return c
-
     return _api_lookup(
         q,
         lookup_fn=service.lookup_content_license,
         error_msg_if_not_found='No license information found '
         'for content %s.' % q,
-        enrich_fn=_enrich_license)
+        enrich_fn=utils.enrich_metadata_endpoint)
 
 
 @app.route('/api/1/content/<string:q>/raw/')
