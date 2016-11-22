@@ -251,3 +251,12 @@ def from_directory_entry(dir_entry):
                     bytess={'name'},
                     convert={'status'},
                     convert_fn=lambda v: 'absent' if v == 'hidden' else v)
+
+
+def from_filetype(content_entry):
+    """Convert swh person to serializable person dictionary.
+
+    """
+    return from_swh(content_entry,
+                    hashess={'id'},
+                    bytess={'mimetype', 'encoding'})
