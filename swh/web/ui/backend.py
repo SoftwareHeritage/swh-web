@@ -34,8 +34,8 @@ def content_find(algo, hash_bin):
         hash_bin: content's hash searched for.
 
     Returns:
-        A triplet (sha1, sha1_git, sha256) if the content exist
-        or None otherwise.
+        A dict with keys sha1, sha1_git, sha256, ... if the content
+        exist or None otherwise.
 
     """
     return main.storage().content_find({algo: hash_bin})
