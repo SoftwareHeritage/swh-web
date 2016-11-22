@@ -126,6 +126,58 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_content_filetype(self, mock_service):
+        stub_filetype = {
+            'mimetype': 'application/xml',
+            'encoding': 'ascii',
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+        }
+        mock_service.lookup_content_filetype.return_value = stub_filetype
+
+        # when
+        rv = self.app.get(
+            '/api/1/filetype/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'mimetype': 'application/xml',
+            'encoding': 'ascii',
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'content_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        })
+
+        mock_service.lookup_content_filetype.assert_called_once_with(
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_filetype_sha_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content_filetype.return_value = None
+
+        # when
+        rv = self.app.get(
+            '/api/1/filetype/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No filetype information found for content '
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
+        })
+
+        mock_service.lookup_content_filetype.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_content_provenance(self, mock_service):
         stub_provenances = [{
             'origin': 1,
@@ -181,6 +233,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 not found.'
         })
+
+        mock_service.lookup_content_provenance.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.views.api.service')
     @istest

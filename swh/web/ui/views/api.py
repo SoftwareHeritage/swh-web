@@ -754,6 +754,40 @@ def api_content_provenance(q):
         enrich_fn=_enrich_revision)
 
 
+@app.route('/api/1/filetype/<string:q>/')
+@doc.route('/api/1/filetype/')
+@doc.arg('q',
+         default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
+         argtype=doc.argtypes.algo_and_hash,
+         argdoc="""The queried content's corresponding hash (supported hash
+ algorithms: sha1_git, sha1, sha256)""")
+@doc.raises(exc=doc.excs.badinput,
+            doc="""Raised if hash algorithm is incorrect or if the hash
+ value is badly formatted.""")
+@doc.raises(exc=doc.excs.notfound,
+            doc="""Raised if a content matching the hash was not found
+ in SWH""")
+@doc.returns(rettype=doc.rettypes.dict,
+             retdoc="""Filetype information (dict) for the matched
+content.""")
+def api_content_filetype(q):
+    """Return content's filetype information if any.
+
+    """
+    def _enrich_filetype(content):
+        c = content.copy()
+        c['content_url'] = url_for('api_content_metadata',
+                                   q='sha1:%s' % c['id'])
+        return c
+
+    return _api_lookup(
+        q,
+        lookup_fn=service.lookup_content_filetype,
+        error_msg_if_not_found='No filetype information found '
+        'for content %s.' % q,
+        enrich_fn=_enrich_filetype)
+
+
 @app.route('/api/1/content/<string:q>/raw/')
 @doc.route('/api/1/content/raw/')
 @doc.arg('q',

@@ -124,6 +124,7 @@ class NoHeaderHTMLTranslator(HTMLTranslator):
         self.compact_simple = self.is_compactable(node)
         self.body.append(self.starttag(node, 'ul', CLASS='docstring'))
 
+
 DOCSTRING_WRITER = Writer()
 DOCSTRING_WRITER.translator_class = NoHeaderHTMLTranslator
 
