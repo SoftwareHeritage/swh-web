@@ -214,6 +214,8 @@ def enrich_content(content):
                                                     q=q)
             content['language_url'] = flask.url_for('api_content_language',
                                                     q=q)
+            content['license_url'] = flask.url_for('api_content_license',
+                                                   q=q)
             break
 
     return content

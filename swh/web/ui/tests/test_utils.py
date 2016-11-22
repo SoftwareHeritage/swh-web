@@ -437,6 +437,7 @@ class UtilsTestCase(unittest.TestCase):
                 '/api/content/%s:123/raw/' % h,
                 '/api/filetype/%s:123/' % h,
                 '/api/language/%s:123/' % h,
+                '/api/license/%s:123/' % h,
                 ]
 
             # when
@@ -456,6 +457,7 @@ class UtilsTestCase(unittest.TestCase):
                     'data_url': '/api/content/%s:123/raw/' % h,
                     'filetype_url': '/api/filetype/%s:123/' % h,
                     'language_url': '/api/language/%s:123/' % h,
+                    'license_url': '/api/license/%s:123/' % h,
                 }
             )
 
@@ -463,6 +465,7 @@ class UtilsTestCase(unittest.TestCase):
                 call('api_content_raw', q='%s:blahblah' % h),
                 call('api_content_filetype', q='%s:blahblah' % h),
                 call('api_content_language', q='%s:blahblah' % h),
+                call('api_content_license', q='%s:blahblah' % h),
             ])
 
             mock_flask.reset()
