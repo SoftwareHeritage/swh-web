@@ -78,6 +78,69 @@ def lookup_content_provenance(q):
     return (converters.from_provenance(p) for p in provenances)
 
 
+def lookup_content_filetype(q):
+    """Return filetype information from a specified content.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Yields:
+        filetype information (dict) list if the content is found.
+
+    """
+    algo, hash = query.parse_hash(q)
+    if algo != 'sha1':
+        hashes = backend.content_find(algo, hash)
+        hash = hashes['sha1']
+
+    filetype = backend.content_filetype_get(hash)
+    if not filetype:
+        return None
+    return converters.from_filetype(filetype)
+
+
+def lookup_content_language(q):
+    """Return language information from a specified content.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Yields:
+        language information (dict) list if the content is found.
+
+    """
+    algo, hash = query.parse_hash(q)
+    if algo != 'sha1':
+        hashes = backend.content_find(algo, hash)
+        hash = hashes['sha1']
+
+    lang = backend.content_language_get(hash)
+    if not lang:
+        return None
+    return converters.from_swh(lang, hashess={'id'})
+
+
+def lookup_content_license(q):
+    """Return license information from a specified content.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Yields:
+        license information (dict) list if the content is found.
+
+    """
+    algo, hash = query.parse_hash(q)
+    if algo != 'sha1':
+        hashes = backend.content_find(algo, hash)
+        hash = hashes['sha1']
+
+    lang = backend.content_license_get(hash)
+    if not lang:
+        return None
+    return converters.from_swh(lang, hashess={'id'})
+
+
 def lookup_origin(origin):
     """Return information about the origin matching dict origin.
 

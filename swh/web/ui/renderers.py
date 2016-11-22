@@ -39,7 +39,7 @@ class SWHFilterEnricher():
 class SWHMultiResponse(Response, SWHFilterEnricher):
     """
     A Flask Response subclass.
-    Override force_type to transform dict responses into callable Flask
+    Override force_type to transform dict/list responses into callable Flask
     response objects whose mimetype matches the request's Accept header: HTML
     template render, YAML dump or default to a JSON dump.
     """
@@ -62,7 +62,7 @@ class SWHMultiResponse(Response, SWHFilterEnricher):
         rv = cls.filter_by_fields(cls, rv)
         acc_mime = ['application/json', 'application/yaml', 'text/html']
         best_match = request.accept_mimetypes.best_match(acc_mime)
-        # return a template render
+
         if wants_html(best_match):
             data = json.dumps(rv, sort_keys=True,
                               indent=4, separators=(',', ': '))
@@ -72,13 +72,11 @@ class SWHMultiResponse(Response, SWHFilterEnricher):
             rv = Response(render_template('apidoc.html', **env),
                           content_type='text/html',
                           **options)
-        # return formatted yaml
         elif wants_yaml(best_match):
             rv = Response(
                 yaml.dump(rv),
                 content_type='application/yaml',
                 **options)
-        # return formatted json
         else:
             # jsonify is unhappy with lists in Flask 0.10.1, use json.dumps
             rv = Response(
@@ -125,6 +123,7 @@ class NoHeaderHTMLTranslator(HTMLTranslator):
         self.compact_p = None
         self.compact_simple = self.is_compactable(node)
         self.body.append(self.starttag(node, 'ul', CLASS='docstring'))
+
 
 DOCSTRING_WRITER = Writer()
 DOCSTRING_WRITER.translator_class = NoHeaderHTMLTranslator

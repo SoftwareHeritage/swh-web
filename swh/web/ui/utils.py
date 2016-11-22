@@ -201,12 +201,23 @@ def enrich_directory(directory, context_url=None):
 
 
 def enrich_content(content):
-    """Enrich content with 'data', a link to its raw content.
+    """Enrich content with links to:
+        - data_url: its raw data
+        - filetype_url: its filetype information
 
     """
-    if 'sha1' in content:
-        content['data_url'] = flask.url_for('api_content_raw',
-                                            q=content['sha1'])
+    for h in ['sha1', 'sha1_git', 'sha256']:
+        if h in content:
+            q = '%s:%s' % (h, content[h])
+            content['data_url'] = flask.url_for('api_content_raw', q=q)
+            content['filetype_url'] = flask.url_for('api_content_filetype',
+                                                    q=q)
+            content['language_url'] = flask.url_for('api_content_language',
+                                                    q=q)
+            content['license_url'] = flask.url_for('api_content_license',
+                                                   q=q)
+            break
+
     return content
 
 

@@ -127,6 +127,108 @@ class BackendTestCase(test_app.SWHApiTestCase):
             {'sha1_git': sha1_bin})
 
     @istest
+    def content_filetype_get(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_mimetype_get = MagicMock(
+            return_value=[1, 2, 3])
+
+        # when
+        actual_content = backend.content_filetype_get(sha1_bin)
+
+        # then
+        self.assertEquals(actual_content, 1)
+
+        self.storage.content_mimetype_get.assert_called_with(
+            [sha1_bin])
+
+    @istest
+    def content_filetype_get_no_result(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_mimetype_get = MagicMock(
+            return_value=[])
+
+        # when
+        actual_content = backend.content_filetype_get(sha1_bin)
+
+        # then
+        self.assertIsNone(actual_content)
+
+        self.storage.content_mimetype_get.assert_called_with(
+            [sha1_bin])
+
+    @istest
+    def content_language_get(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_language_get = MagicMock(
+            return_value=[1, 2, 3])
+
+        # when
+        actual_content = backend.content_language_get(sha1_bin)
+
+        # then
+        self.assertEquals(actual_content, 1)
+
+        self.storage.content_language_get.assert_called_with(
+            [sha1_bin])
+
+    @istest
+    def content_language_get_no_result(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_language_get = MagicMock(
+            return_value=[])
+
+        # when
+        actual_content = backend.content_language_get(sha1_bin)
+
+        # then
+        self.assertIsNone(actual_content)
+
+        self.storage.content_language_get.assert_called_with(
+            [sha1_bin])
+
+    @istest
+    def content_license_get(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_fossology_license_get = MagicMock(
+            return_value=[1, 2, 3])
+
+        # when
+        actual_content = backend.content_license_get(sha1_bin)
+
+        # then
+        self.assertEquals(actual_content, 1)
+
+        self.storage.content_fossology_license_get.assert_called_with(
+            [sha1_bin])
+
+    @istest
+    def content_license_get_no_result(self):
+        # given
+        sha1_bin = hashutil.hex_to_hash(
+            '456caf10e9535160d90e874b45aa426de762f19f')
+        self.storage.content_fossology_license_get = MagicMock(
+            return_value=[])
+
+        # when
+        actual_content = backend.content_license_get(sha1_bin)
+
+        # then
+        self.assertIsNone(actual_content)
+
+        self.storage.content_fossology_license_get.assert_called_with(
+            [sha1_bin])
+
+    @istest
     def content_find_provenance(self):
         # given
         sha1_bin = hashutil.hex_to_hash(

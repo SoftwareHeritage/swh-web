@@ -126,6 +126,160 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_content_filetype(self, mock_service):
+        stub_filetype = {
+            'mimetype': 'application/xml',
+            'encoding': 'ascii',
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+        }
+        mock_service.lookup_content_filetype.return_value = stub_filetype
+
+        # when
+        rv = self.app.get(
+            '/api/1/filetype/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'mimetype': 'application/xml',
+            'encoding': 'ascii',
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'content_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        })
+
+        mock_service.lookup_content_filetype.assert_called_once_with(
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_filetype_sha_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content_filetype.return_value = None
+
+        # when
+        rv = self.app.get(
+            '/api/1/filetype/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No filetype information found for content '
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
+        })
+
+        mock_service.lookup_content_filetype.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_language(self, mock_service):
+        stub_language = {
+            'lang': 'lisp',
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+        }
+        mock_service.lookup_content_language.return_value = stub_language
+
+        # when
+        rv = self.app.get(
+            '/api/1/language/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'lang': 'lisp',
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'content_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        })
+
+        mock_service.lookup_content_language.assert_called_once_with(
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_language_sha_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content_language.return_value = None
+
+        # when
+        rv = self.app.get(
+            '/api/1/language/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No language information found for content '
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
+        })
+
+        mock_service.lookup_content_language.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_license(self, mock_service):
+        stub_license = {
+            'licenses': ['No_license_found', 'Apache-2.0'],
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'tool_name': 'nomos',
+        }
+        mock_service.lookup_content_license.return_value = stub_license
+
+        # when
+        rv = self.app.get(
+            '/api/1/license/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'licenses': ['No_license_found', 'Apache-2.0'],
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'tool_name': 'nomos',
+            'content_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        })
+
+        mock_service.lookup_content_license.assert_called_once_with(
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_license_sha_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content_license.return_value = None
+
+        # when
+        rv = self.app.get(
+            '/api/1/license/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No license information found for content '
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
+        })
+
+        mock_service.lookup_content_license.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_content_provenance(self, mock_service):
         stub_provenances = [{
             'origin': 1,
@@ -182,6 +336,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '6c5b00a6d03 not found.'
         })
 
+        mock_service.lookup_content_provenance.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_content_metadata(self, mock_service):
@@ -204,7 +361,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
             'data_url': '/api/1/content/'
-                        '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
+            'filetype_url': '/api/1/filetype/'
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'language_url': '/api/1/language/'
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'license_url': '/api/1/license/'
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
