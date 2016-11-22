@@ -1,3 +1,11 @@
+swh-web (0.0.38-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.38
+  * Minor refactoring
+  * Remove one commit which breaks production
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 22 Nov 2016 16:26:03 +0100
+
 swh-web (0.0.37-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.37
