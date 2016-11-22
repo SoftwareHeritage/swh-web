@@ -436,6 +436,7 @@ class UtilsTestCase(unittest.TestCase):
             mock_flask.url_for.side_effect = [
                 '/api/content/%s:123/raw/' % h,
                 '/api/filetype/%s:123/' % h,
+                '/api/language/%s:123/' % h,
                 ]
 
             # when
@@ -454,12 +455,14 @@ class UtilsTestCase(unittest.TestCase):
                     h: 'blahblah',
                     'data_url': '/api/content/%s:123/raw/' % h,
                     'filetype_url': '/api/filetype/%s:123/' % h,
+                    'language_url': '/api/language/%s:123/' % h,
                 }
             )
 
             mock_flask.url_for.assert_has_calls([
                 call('api_content_raw', q='%s:blahblah' % h),
                 call('api_content_filetype', q='%s:blahblah' % h),
+                call('api_content_language', q='%s:blahblah' % h),
             ])
 
             mock_flask.reset()

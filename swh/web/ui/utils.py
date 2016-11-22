@@ -212,6 +212,8 @@ def enrich_content(content):
             content['data_url'] = flask.url_for('api_content_raw', q=q)
             content['filetype_url'] = flask.url_for('api_content_filetype',
                                                     q=q)
+            content['language_url'] = flask.url_for('api_content_language',
+                                                    q=q)
             break
 
     return content
