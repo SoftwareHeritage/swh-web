@@ -423,25 +423,52 @@ class UtilsTestCase(unittest.TestCase):
                                                    sha1_git='456')
 
     @istest
-    def enrich_content_without_sha1(self):
+    def enrich_content_without_hashes(self):
         # when/then
         self.assertEqual(utils.enrich_content({'id': '123'}),
                          {'id': '123'})
 
     @patch('swh.web.ui.utils.flask')
     @istest
-    def enrich_content_with_sha1(self, mock_flask):
-        # given
-        mock_flask.url_for.return_value = '/api/content/sha1:123/raw/'
+    def enrich_content_with_hashes(self, mock_flask):
+        for h in ['sha1', 'sha256', 'sha1_git']:
+            # given
+            mock_flask.url_for.side_effect = [
+                '/api/content/%s:123/raw/' % h,
+                '/api/filetype/%s:123/' % h,
+                '/api/language/%s:123/' % h,
+                '/api/license/%s:123/' % h,
+                ]
 
-        # when/then
-        self.assertEqual(utils.enrich_content(
-            {'id': '123', 'sha1': 'blahblah'}),
-                         {'id': '123', 'sha1': 'blahblah',
-                          'data_url': '/api/content/sha1:123/raw/'})
+            # when
+            enriched_content = utils.enrich_content(
+                {
+                    'id': '123',
+                    h: 'blahblah'
+                }
+            )
 
-        mock_flask.url_for.assert_called_once_with('api_content_raw',
-                                                   q='blahblah')
+            # then
+            self.assertEqual(
+                enriched_content,
+                {
+                    'id': '123',
+                    h: 'blahblah',
+                    'data_url': '/api/content/%s:123/raw/' % h,
+                    'filetype_url': '/api/filetype/%s:123/' % h,
+                    'language_url': '/api/language/%s:123/' % h,
+                    'license_url': '/api/license/%s:123/' % h,
+                }
+            )
+
+            mock_flask.url_for.assert_has_calls([
+                call('api_content_raw', q='%s:blahblah' % h),
+                call('api_content_filetype', q='%s:blahblah' % h),
+                call('api_content_language', q='%s:blahblah' % h),
+                call('api_content_license', q='%s:blahblah' % h),
+            ])
+
+            mock_flask.reset()
 
     @istest
     def enrich_entity_identity(self):

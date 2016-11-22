@@ -692,3 +692,24 @@ class ConvertersTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_dir_entries, expected_dir_entries)
+
+    @istest
+    def from_filetype(self):
+        content_filetype = {
+            'id': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebd'
+                                       'a5'),
+            'encoding': b'utf-8',
+            'mimetype': b'text/plain',
+        }
+
+        expected_content_filetype = {
+            'id': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
+            'encoding': 'utf-8',
+            'mimetype': 'text/plain',
+        }
+
+        # when
+        actual_content_filetype = converters.from_filetype(content_filetype)
+
+        # then
+        self.assertEqual(actual_content_filetype, expected_content_filetype)

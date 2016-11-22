@@ -34,8 +34,8 @@ def content_find(algo, hash_bin):
         hash_bin: content's hash searched for.
 
     Returns:
-        A triplet (sha1, sha1_git, sha256) if the content exist
-        or None otherwise.
+        A dict with keys sha1, sha1_git, sha256, ... if the content
+        exist or None otherwise.
 
     """
     return main.storage().content_find({algo: hash_bin})
@@ -54,6 +54,36 @@ def content_find_provenance(algo, hash_bin):
 
     """
     return main.storage().content_find_provenance({algo: hash_bin})
+
+
+def content_filetype_get(id):
+    """Retrieve content's filetype information.
+
+    """
+    r = list(main.storage().content_mimetype_get([id]))
+    if not r:
+        return None
+    return r[0]
+
+
+def content_language_get(id):
+    """Retrieve content's language information.
+
+    """
+    r = list(main.storage().content_language_get([id]))
+    if not r:
+        return None
+    return r[0]
+
+
+def content_license_get(id):
+    """Retrieve content's license information.
+
+    """
+    r = list(main.storage().content_fossology_license_get([id]))
+    if not r:
+        return None
+    return r[0]
 
 
 def content_missing_per_sha1(sha1list):
