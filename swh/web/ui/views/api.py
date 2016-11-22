@@ -788,6 +788,40 @@ def api_content_filetype(q):
         enrich_fn=_enrich_filetype)
 
 
+@app.route('/api/1/language/<string:q>/')
+@doc.route('/api/1/language/')
+@doc.arg('q',
+         default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
+         argtype=doc.argtypes.algo_and_hash,
+         argdoc="""The queried content's corresponding hash (supported hash
+ algorithms: sha1_git, sha1, sha256)""")
+@doc.raises(exc=doc.excs.badinput,
+            doc="""Raised if hash algorithm is incorrect or if the hash
+ value is badly formatted.""")
+@doc.raises(exc=doc.excs.notfound,
+            doc="""Raised if a content matching the hash was not found
+ in SWH""")
+@doc.returns(rettype=doc.rettypes.dict,
+             retdoc="""Language information (dict) for the matched
+content.""")
+def api_content_language(q):
+    """Return content's language information if any.
+
+    """
+    def _enrich_language(content):
+        c = content.copy()
+        c['content_url'] = url_for('api_content_metadata',
+                                   q='sha1:%s' % c['id'])
+        return c
+
+    return _api_lookup(
+        q,
+        lookup_fn=service.lookup_content_language,
+        error_msg_if_not_found='No language information found '
+        'for content %s.' % q,
+        enrich_fn=_enrich_language)
+
+
 @app.route('/api/1/content/<string:q>/raw/')
 @doc.route('/api/1/content/raw/')
 @doc.arg('q',
