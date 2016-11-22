@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -198,6 +198,16 @@ def enrich_directory(directory, context_url=None):
                 directory['dir_url'] = context_url + directory['name'] + '/'
 
     return directory
+
+
+def enrich_metadata_endpoint(content):
+    """Enrich metadata endpoint with link to the upper metadata endpoint.
+
+    """
+    c = content.copy()
+    c['content_url'] = flask.url_for('api_content_metadata',
+                                     q='sha1:%s' % c['id'])
+    return c
 
 
 def enrich_content(content):
