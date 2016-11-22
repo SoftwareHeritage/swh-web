@@ -228,6 +228,58 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_content_license(self, mock_service):
+        stub_license = {
+            'licenses': ['No_license_found', 'Apache-2.0'],
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'tool_name': 'nomos',
+        }
+        mock_service.lookup_content_license.return_value = stub_license
+
+        # when
+        rv = self.app.get(
+            '/api/1/license/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'licenses': ['No_license_found', 'Apache-2.0'],
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'tool_name': 'nomos',
+            'content_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        })
+
+        mock_service.lookup_content_license.assert_called_once_with(
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_license_sha_not_found(self, mock_service):
+        # given
+        mock_service.lookup_content_license.return_value = None
+
+        # when
+        rv = self.app.get(
+            '/api/1/license/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No license information found for content '
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
+        })
+
+        mock_service.lookup_content_license.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_content_provenance(self, mock_service):
         stub_provenances = [{
             'origin': 1,

@@ -361,6 +361,66 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
+    def lookup_content_license(self, mock_backend):
+        # given
+        mock_backend.content_license_get = MagicMock(
+            return_value={
+                'id': hex_to_hash(
+                    '123caf10e9535160d90e874b45aa426de762f19f'),
+                'lang': 'python',
+            })
+        expected_license = {
+                'id': '123caf10e9535160d90e874b45aa426de762f19f',
+                'lang': 'python',
+        }
+
+        # when
+        actual_license = service.lookup_content_license(
+            'sha1:123caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertEqual(actual_license, expected_license)
+
+        mock_backend.content_license_get.assert_called_with(
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_content_license_2(self, mock_backend):
+        # given
+        mock_backend.content_find = MagicMock(
+            return_value={
+                'sha1': hex_to_hash(
+                    '123caf10e9535160d90e874b45aa426de762f19f')
+            }
+        )
+        mock_backend.content_license_get = MagicMock(
+            return_value={
+                'id': hex_to_hash(
+                    '123caf10e9535160d90e874b45aa426de762f19f'),
+                'lang': 'haskell',
+            }
+        )
+        expected_license = {
+                'id': '123caf10e9535160d90e874b45aa426de762f19f',
+                'lang': 'haskell',
+        }
+
+        # when
+        actual_license = service.lookup_content_license(
+            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
+
+        # then
+        self.assertEqual(actual_license, expected_license)
+
+        mock_backend.content_find(
+            'sha1_git', hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+        )
+        mock_backend.content_license_get.assert_called_with(
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
     def lookup_content_provenance(self, mock_backend):
         # given
         mock_backend.content_find_provenance = MagicMock(

@@ -76,6 +76,16 @@ def content_language_get(id):
     return r[0]
 
 
+def content_license_get(id):
+    """Retrieve content's license information.
+
+    """
+    r = list(main.storage().content_fossology_license_get([id]))
+    if not r:
+        return None
+    return r[0]
+
+
 def content_missing_per_sha1(sha1list):
     """List content missing from storage based on sha1
 

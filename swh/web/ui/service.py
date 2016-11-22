@@ -120,6 +120,27 @@ def lookup_content_language(q):
     return converters.from_swh(lang, hashess={'id'})
 
 
+def lookup_content_license(q):
+    """Return license information from a specified content.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Yields:
+        license information (dict) list if the content is found.
+
+    """
+    algo, hash = query.parse_hash(q)
+    if algo != 'sha1':
+        hashes = backend.content_find(algo, hash)
+        hash = hashes['sha1']
+
+    lang = backend.content_license_get(hash)
+    if not lang:
+        return None
+    return converters.from_swh(lang, hashess={'id'})
+
+
 def lookup_origin(origin):
     """Return information about the origin matching dict origin.
 
