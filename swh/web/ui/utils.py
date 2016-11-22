@@ -200,6 +200,16 @@ def enrich_directory(directory, context_url=None):
     return directory
 
 
+def enrich_metadata_endpoint(content):
+    """Enrich metadata endpoint with link to the upper metadata endpoint.
+
+    """
+    c = content.copy()
+    c['content_url'] = flask.url_for('api_content_metadata',
+                                     q='sha1:%s' % c['id'])
+    return c
+
+
 def enrich_content(content):
     """Enrich content with links to:
         - data_url: its raw data

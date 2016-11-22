@@ -78,6 +78,25 @@ def lookup_content_provenance(q):
     return (converters.from_provenance(p) for p in provenances)
 
 
+def _lookup_content_sha1(q):
+    """Given a possible input, query for the content's sha1.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Returns:
+        binary sha1 if found or None
+
+    """
+    algo, hash = query.parse_hash(q)
+    if algo != 'sha1':
+        hashes = backend.content_find(algo, hash)
+        if not hashes:
+            return None
+        return hashes['sha1']
+    return hash
+
+
 def lookup_content_filetype(q):
     """Return filetype information from a specified content.
 
@@ -88,12 +107,10 @@ def lookup_content_filetype(q):
         filetype information (dict) list if the content is found.
 
     """
-    algo, hash = query.parse_hash(q)
-    if algo != 'sha1':
-        hashes = backend.content_find(algo, hash)
-        hash = hashes['sha1']
-
-    filetype = backend.content_filetype_get(hash)
+    sha1 = _lookup_content_sha1(q)
+    if not sha1:
+        return None
+    filetype = backend.content_filetype_get(sha1)
     if not filetype:
         return None
     return converters.from_filetype(filetype)
@@ -109,12 +126,10 @@ def lookup_content_language(q):
         language information (dict) list if the content is found.
 
     """
-    algo, hash = query.parse_hash(q)
-    if algo != 'sha1':
-        hashes = backend.content_find(algo, hash)
-        hash = hashes['sha1']
-
-    lang = backend.content_language_get(hash)
+    sha1 = _lookup_content_sha1(q)
+    if not sha1:
+        return None
+    lang = backend.content_language_get(sha1)
     if not lang:
         return None
     return converters.from_swh(lang, hashess={'id'})
@@ -130,12 +145,10 @@ def lookup_content_license(q):
         license information (dict) list if the content is found.
 
     """
-    algo, hash = query.parse_hash(q)
-    if algo != 'sha1':
-        hashes = backend.content_find(algo, hash)
-        hash = hashes['sha1']
-
-    lang = backend.content_license_get(hash)
+    sha1 = _lookup_content_sha1(q)
+    if not sha1:
+        return None
+    lang = backend.content_license_get(sha1)
     if not lang:
         return None
     return converters.from_swh(lang, hashess={'id'})
