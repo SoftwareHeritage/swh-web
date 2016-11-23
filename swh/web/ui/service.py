@@ -32,6 +32,24 @@ def lookup_multiple_hashes(hashes):
     return hashes
 
 
+def lookup_expression(expression):
+    """Lookup expression in raw content.
+
+    Args:
+        expression (str): An expression to lookup through raw indexed
+        content
+
+    Returns:
+        List of ctags whose content match the expression
+
+    """
+    for ctag in backend.content_ctags_search(expression):
+        ctag = converters.from_swh(ctag, hashess={'id'})
+        ctag['sha1'] = ctag['id']
+        ctag.pop('id')
+        yield ctag
+
+
 def lookup_hash(q):
     """Checks if the storage contains a given content checksum
 
