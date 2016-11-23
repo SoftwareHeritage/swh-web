@@ -139,10 +139,10 @@ class APIDocBase(object):
             rv = f(*args, **kwargs)
         else:
             nargs = {k: v for k, v in kwargs.items() if k != 'outer_decorator'}
-            if f.__code__.co_argcount > 0 and (args, nargs) == ((), {}):
-                rv = None  # Documentation call
-            else:
+            try:
                 rv = f(*args, **nargs)
+            except TypeError:  # documentation call
+                rv = None
         return rv
 
     def maintain_stack(self, f, args, kwargs):
