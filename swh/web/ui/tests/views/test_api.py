@@ -228,6 +228,60 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_fulltext_search(self, mock_service):
+        stub_ctag = [{
+            'sha1': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'name': 'foobar',
+            'kind': 'Haskell',
+            'line': 10,
+        }]
+        mock_service.lookup_expression.return_value = stub_ctag
+
+        # when
+        rv = self.app.get('/api/1/symbol/foo/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, [{
+            'sha1': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'name': 'foobar',
+            'kind': 'Haskell',
+            'line': 10,
+            'data_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
+            'license_url': '/api/1/license/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'language_url': '/api/1/language/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'filetype_url': '/api/1/filetype/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        }])
+
+        mock_service.lookup_expression.assert_called_once_with('foo')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_fulltext_search_not_found(self, mock_service):
+        # given
+        mock_service.lookup_expression.return_value = []
+
+        # when
+        rv = self.app.get('/api/1/symbol/bar/')
+
+        # then
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'error': 'No indexed raw content match expression \'bar\'.'
+        })
+
+        mock_service.lookup_expression.assert_called_once_with('bar')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_content_license(self, mock_service):
         stub_license = {
             'licenses': ['No_license_found', 'Apache-2.0'],

@@ -361,6 +361,51 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.service.backend')
     @istest
+    def lookup_expression(self, mock_backend):
+        # given
+        mock_backend.content_ctags_search = MagicMock(
+            return_value=[{
+                'id': hex_to_hash(
+                    '123caf10e9535160d90e874b45aa426de762f19f'),
+                'name': 'foobar',
+                'kind': 'variable',
+                'lang': 'C',
+                'line': 10
+            }])
+        expected_ctags = [{
+            'sha1': '123caf10e9535160d90e874b45aa426de762f19f',
+            'name': 'foobar',
+            'kind': 'variable',
+            'lang': 'C',
+            'line': 10
+        }]
+
+        # when
+        actual_ctags = list(service.lookup_expression('foobar'))
+
+        # then
+        self.assertEqual(actual_ctags, expected_ctags)
+
+        mock_backend.content_ctags_search.assert_called_with('foobar')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_expression_no_result(self, mock_backend):
+        # given
+        mock_backend.content_ctags_search = MagicMock(
+            return_value=[])
+        expected_ctags = []
+
+        # when
+        actual_ctags = list(service.lookup_expression('barfoo'))
+
+        # then
+        self.assertEqual(actual_ctags, expected_ctags)
+
+        mock_backend.content_ctags_search.assert_called_with('barfoo')
+
+    @patch('swh.web.ui.service.backend')
+    @istest
     def lookup_content_license(self, mock_backend):
         # given
         mock_backend.content_license_get = MagicMock(
