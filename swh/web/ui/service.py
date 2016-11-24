@@ -32,18 +32,19 @@ def lookup_multiple_hashes(hashes):
     return hashes
 
 
-def lookup_expression(expression):
+def lookup_expression(expression, page):
     """Lookup expression in raw content.
 
     Args:
         expression (str): An expression to lookup through raw indexed
         content
+        page (int): Page of results (start from 1)
 
     Returns:
         List of ctags whose content match the expression
 
     """
-    for ctag in backend.content_ctags_search(expression):
+    for ctag in backend.content_ctags_search(expression, page):
         ctag = converters.from_swh(ctag, hashess={'id'})
         ctag['sha1'] = ctag['id']
         ctag.pop('id')

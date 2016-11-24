@@ -57,28 +57,56 @@ class BackendTestCase(test_app.SWHApiTestCase):
             [sha1_bin])
 
     @istest
-    def content_get(self):
+    def content_ctags_search_1(self):
         # given
-        self.storage.content_ctags_search = MagicMock(return_value=[1, 2, 3])
+        self.storage.content_ctags_search = MagicMock(
+            return_value="some-result")
 
         # when
-        actual_ctags = backend.content_ctags_search('foo|bar')
+        actual_ctags = backend.content_ctags_search('foo', page=1, limit=1)
 
         # then
-        self.assertEquals(actual_ctags, [1, 2, 3])
+        self.assertEquals(actual_ctags, 'some-result')
         self.storage.content_ctags_search.assert_called_once_with(
-            'foo|bar')
+            'foo', limit=1, offset=0)
 
     @istest
-    def content_ctags_search(self):
+    def content_ctags_search_2(self):
+        # given
+        self.storage.content_ctags_search = MagicMock(
+            return_value="some other result")
+
+        # when
+        actual_ctags = backend.content_ctags_search('foo|bar', page=1, limit=2)
+
+        # then
+        self.assertEquals(actual_ctags, 'some other result')
+        self.storage.content_ctags_search.assert_called_once_with(
+            'foo|bar', limit=2, offset=0)
+
+    @istest
+    def content_ctags_search_3(self):
+        # given
+        self.storage.content_ctags_search = MagicMock(
+            return_value="yet another result")
+
+        # when
+        actual_ctags = backend.content_ctags_search('bar', page=3, limit=10)
+
+        # then
+        self.assertEquals(actual_ctags, 'yet another result')
+        self.storage.content_ctags_search.assert_called_once_with(
+            'bar', limit=10, offset=20)
+
+    @istest
+    def content_ctags_get(self):
         # given
         sha1_bin = hashutil.hex_to_hash(
             '123caf10e9535160d90e874b45aa426de762f19f')
         stub_contents = [{
             'sha1': sha1_bin,
             'data': b'binary data',
-        },
-                        {}]
+        }]
 
         self.storage.content_get = MagicMock(return_value=stub_contents)
 

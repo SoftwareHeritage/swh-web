@@ -851,3 +851,29 @@ class UtilsTestCase(unittest.TestCase):
                   context='prev-rev/rev-id'),
              call('api_revision',
                   sha1_git='456')])
+
+    @patch('swh.web.ui.utils.flask')
+    def next_page(self, mock_flask):
+        mock_flask.url_for.return_value = '/some/api/url/'
+
+        # when
+        actual_url = utils.next_page('some-function-name', q='barfoo', page=10)
+
+        # then
+        self.assertEquals(actual_url, '/some/api/url/?page=11')
+
+        mock_flask.url_for.assert_called_once_with('some-function-name',
+                                                   q='barfoo')
+
+    @patch('swh.web.ui.utils.flask')
+    def prev_page(self, mock_flask):
+        mock_flask.url_for.return_value = '/some/api/url/'
+
+        # when
+        actual_url = utils.prev_page('some-function-name', q='barfoo', page=10)
+
+        # then
+        self.assertEquals(actual_url, '/some/api/url/?page=9')
+
+        mock_flask.url_for.assert_called_once_with('some-function-name',
+                                                   q='barfoo')

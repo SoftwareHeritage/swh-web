@@ -56,17 +56,21 @@ def content_find_provenance(algo, hash_bin):
     return main.storage().content_find_provenance({algo: hash_bin})
 
 
-def content_ctags_search(expression):
+def content_ctags_search(expression, page, limit=10):
     """Lookup the content designed by {algo: hash_bin}.
 
     Args:
         expression (str): Expression to lookup in indexed raw content
+        page (int): Page of results to fetch (start from 1)
+        limit (int): Number of elements per page
 
     Returns:
         sha1 whose indexed content match the expression
 
     """
-    return main.storage().content_ctags_search(expression)
+    offset = limit * (page - 1)
+    return main.storage().content_ctags_search(expression,
+                                               limit=limit, offset=offset)
 
 
 def content_filetype_get(id):
