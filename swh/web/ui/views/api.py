@@ -111,9 +111,10 @@ def api_fulltext_search(q=None):
     """Search a content per expression.
 
     """
+    page = int(request.args.get('page', '1'))
     return _api_lookup(
         q,
-        lookup_fn=service.lookup_expression,
+        lookup_fn=lambda exp, page=page: service.lookup_expression(exp, page),
         error_msg_if_not_found='No indexed raw content match expression \''
         '%s\'.' % q,
         enrich_fn=utils.enrich_content)

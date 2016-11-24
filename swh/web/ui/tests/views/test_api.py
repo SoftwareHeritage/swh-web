@@ -259,7 +259,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
         }])
 
-        mock_service.lookup_expression.assert_called_once_with('foo')
+        mock_service.lookup_expression.assert_called_once_with('foo', 1)
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -268,7 +268,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_expression.return_value = []
 
         # when
-        rv = self.app.get('/api/1/symbol/bar/')
+        rv = self.app.get('/api/1/symbol/bar/?page=2')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -278,7 +278,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'error': 'No indexed raw content match expression \'bar\'.'
         })
 
-        mock_service.lookup_expression.assert_called_once_with('bar')
+        mock_service.lookup_expression.assert_called_once_with('bar', 2)
 
     @patch('swh.web.ui.views.api.service')
     @istest
