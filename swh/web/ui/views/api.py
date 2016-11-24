@@ -111,13 +111,38 @@ def api_fulltext_search(q=None):
     """Search a content per expression.
 
     """
+    result = {}
     page = int(request.args.get('page', '1'))
-    return _api_lookup(
+    symbols = _api_lookup(
         q,
         lookup_fn=lambda exp, page=page: service.lookup_expression(exp, page),
         error_msg_if_not_found='No indexed raw content match expression \''
         '%s\'.' % q,
         enrich_fn=utils.enrich_content)
+
+    if symbols:
+        if page > 1:
+            result.update({
+                'headers': {
+                    'link-next': utils.next_page('api_fulltext_search',
+                                                 q, page),
+                    'link-prev': utils.prev_page('api_fulltext_search',
+                                                 q, page),
+                }
+            })
+        else:
+            result.update({
+                'headers': {
+                    'link-next': utils.next_page('api_fulltext_search',
+                                                 q, page),
+                }
+            })
+
+    result.update({
+        'results': symbols
+    })
+
+    return result
 
 
 @app.route('/api/1/content/search/', methods=['POST'])

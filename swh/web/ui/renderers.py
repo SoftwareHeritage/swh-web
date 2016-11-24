@@ -21,7 +21,8 @@ class SWHFilterEnricher():
     """Global filter on fields.
 
     """
-    def filter_by_fields(self, data):
+    @classmethod
+    def filter_by_fields(cls, data):
         """Extract a request parameter 'fields' if it exists to permit the
            filtering on the data dict's keys.
 
@@ -36,7 +37,61 @@ class SWHFilterEnricher():
         return data
 
 
-class SWHMultiResponse(Response, SWHFilterEnricher):
+class SWHAddLinkHeaderEnricher:
+    """Add link header to response.
+
+    Mixin intended to be used for example in SWHMultiResponse
+
+    """
+    @classmethod
+    def add_link_header(cls, rv, options):
+        """Add Link header in returned value results.
+
+        Args:
+            rv (dict): with keys:
+                - 'headers': potential headers with 'link-next'
+                  and 'link-prev' keys
+                - 'results': containing the result to return
+
+        Returns:
+            tuple rv, options:
+
+            If link-headers are present, rv is the returned value
+            present in the 'results' key. Also, options is updated
+            with headers 'Link' containing the 'link-next' and
+            'link-prev' headers.
+
+            Otherwise, rv, options stays the same as the input.
+
+        """
+        link_headers = []
+
+        if 'headers' not in rv:
+            return rv, options
+
+        rv_headers = rv['headers']
+
+        if 'link-next' in rv_headers:
+            link_headers.append('<%s>; rel="next"' % (
+                rv_headers['link-next']))
+        if 'link-prev' in rv_headers:
+            link_headers.append('<%s>; rel="previous"' % (
+                rv_headers['link-prev']))
+
+        if link_headers:
+            link_header_str = ','.join(link_headers)
+            headers = options.get('headers', {})
+            headers.update({
+                'Link': link_header_str
+            })
+            options['headers'] = headers
+            rv.pop('headers')
+            return rv['results'], options
+
+        return rv, options
+
+
+class SWHMultiResponse(Response, SWHFilterEnricher, SWHAddLinkHeaderEnricher):
     """
     A Flask Response subclass.
     Override force_type to transform dict/list responses into callable Flask
@@ -59,9 +114,11 @@ class SWHMultiResponse(Response, SWHFilterEnricher):
                 request.accept_mimetypes[best_match] > \
                 request.accept_mimetypes['application/json']
 
-        rv = cls.filter_by_fields(cls, rv)
+        rv = cls.filter_by_fields(rv)
         acc_mime = ['application/json', 'application/yaml', 'text/html']
         best_match = request.accept_mimetypes.best_match(acc_mime)
+
+        rv, options = cls.add_link_header(rv, options)
 
         if wants_html(best_match):
             data = json.dumps(rv, sort_keys=True,
