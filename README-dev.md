@@ -41,6 +41,13 @@ Folder swh/web/ui/:
                  Used by `api`
 - utils          Utilities used throughout swh-web-ui.
 
+### About apidoc
+
+This is a 'decorator tower' that stores the data associated with the
+documentation upon loading the apidoc module. The top decorator of any
+tower should be @apidoc.route(). Apidoc raises an exception if this
+decorator is missing, and flask raises an exception if it is present
+but not at the top of the tower.
 
 ## Graphics summary
 

@@ -56,6 +56,19 @@ def content_find_provenance(algo, hash_bin):
     return main.storage().content_find_provenance({algo: hash_bin})
 
 
+def content_ctags_search(expression):
+    """Lookup the content designed by {algo: hash_bin}.
+
+    Args:
+        expression (str): Expression to lookup in indexed raw content
+
+    Returns:
+        sha1 whose indexed content match the expression
+
+    """
+    return main.storage().content_ctags_search(expression)
+
+
 def content_filetype_get(id):
     """Retrieve content's filetype information.
 
