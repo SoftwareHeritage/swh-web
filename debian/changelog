@@ -1,8 +1,9 @@
-swh-web (0.0.39-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.40-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.40
+  * Add pagination to symbol search endpoint
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 24 Nov 2016 10:28:43 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 24 Nov 2016 14:23:45 +0100
 
 swh-web (0.0.39-1~swh1) unstable-swh; urgency=medium
 
