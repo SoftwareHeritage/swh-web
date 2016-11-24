@@ -90,6 +90,35 @@ def api_origin_visit(origin_id, visit_id):
         visit_id)
 
 
+@app.route('/api/1/symbol/', methods=['POST'])
+@app.route('/api/1/symbol/<string:q>/')
+@doc.route('/api/1/symbol/search')
+@doc.arg('q',
+         default='hello',
+         argtype=doc.argtypes.str,
+         argdoc="""An expression string to lookup in swh's raw content""")
+@doc.returns(rettype=doc.rettypes.list,
+             retdoc="""A list of dict whose content matches the expression.
+             Each dict has the following keys:
+             - id (bytes): identifier of the content
+             - name (text): symbol whose content match the expression
+             - kind (text): kind of the symbol that matched
+             - lang (text): Language for that entry
+             - line (int): Number line for the symbol
+
+             """)
+def api_fulltext_search(q=None):
+    """Search a content per expression.
+
+    """
+    return _api_lookup(
+        q,
+        lookup_fn=service.lookup_expression,
+        error_msg_if_not_found='No indexed raw content match expression \''
+        '%s\'.' % q,
+        enrich_fn=utils.enrich_content)
+
+
 @app.route('/api/1/content/search/', methods=['POST'])
 @app.route('/api/1/content/search/<string:q>/')
 @doc.route('/api/1/content/search/')

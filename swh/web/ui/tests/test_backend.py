@@ -59,6 +59,19 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_get(self):
         # given
+        self.storage.content_ctags_search = MagicMock(return_value=[1, 2, 3])
+
+        # when
+        actual_ctags = backend.content_ctags_search('foo|bar')
+
+        # then
+        self.assertEquals(actual_ctags, [1, 2, 3])
+        self.storage.content_ctags_search.assert_called_once_with(
+            'foo|bar')
+
+    @istest
+    def content_ctags_search(self):
+        # given
         sha1_bin = hashutil.hex_to_hash(
             '123caf10e9535160d90e874b45aa426de762f19f')
         stub_contents = [{
