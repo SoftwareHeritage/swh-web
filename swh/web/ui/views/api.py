@@ -92,9 +92,9 @@ def api_origin_visit(origin_id, visit_id):
 
 @app.route('/api/1/symbol/', methods=['POST'])
 @app.route('/api/1/symbol/<string:q>/')
-@doc.route('/api/1/symbol/search')
+@doc.route('/api/1/symbol/')
 @doc.arg('q',
-         default='hello',
+         default='hello|hy',
          argtype=doc.argtypes.str,
          argdoc="""An expression string to lookup in swh's raw content""")
 @doc.returns(rettype=doc.rettypes.list,
@@ -812,7 +812,7 @@ def api_content_provenance(q):
 @app.route('/api/1/filetype/<string:q>/')
 @doc.route('/api/1/filetype/')
 @doc.arg('q',
-         default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
+         default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
          argdoc="""The queried content's corresponding hash (supported hash
  algorithms: sha1_git, sha1, sha256)""")
@@ -840,7 +840,7 @@ def api_content_filetype(q):
 @app.route('/api/1/language/<string:q>/')
 @doc.route('/api/1/language/')
 @doc.arg('q',
-         default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
+         default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
          argdoc="""The queried content's corresponding hash (supported hash
  algorithms: sha1_git, sha1, sha256)""")
@@ -868,7 +868,7 @@ def api_content_language(q):
 @app.route('/api/1/license/<string:q>/')
 @doc.route('/api/1/license/')
 @doc.arg('q',
-         default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
+         default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
          argdoc="""The queried content's corresponding hash (supported hash
  algorithms: sha1_git, sha1, sha256)""")
