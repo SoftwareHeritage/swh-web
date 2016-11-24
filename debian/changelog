@@ -1,3 +1,11 @@
+swh-web (0.0.39-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.39
+  * Open /api/1/symbol/<expression>/
+  * Fix api breaking on /api/1/content/search/
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 24 Nov 2016 10:28:42 +0100
+
 swh-web (0.0.38-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.38
