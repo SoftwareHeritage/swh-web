@@ -10,6 +10,24 @@ import re
 from dateutil import parser
 
 
+def next_page(function_name, q, page):
+    """Compute the next page for function_name with parameter q at page.
+
+    """
+    url = flask.url_for(function_name, q=q)
+    url = '%s?page=%s' % (url, page + 1)
+    return url
+
+
+def prev_page(function_name, q, page):
+    """Compute the previous page for function_name with parameter q at page.
+
+    """
+    url = flask.url_for(function_name, q=q)
+    url = '%s?page=%s' % (url, page - 1)
+    return url
+
+
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
     """Filter endpoints by prefix url rule.
 

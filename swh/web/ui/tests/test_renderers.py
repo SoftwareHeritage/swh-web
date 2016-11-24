@@ -14,6 +14,49 @@ from unittest.mock import patch, MagicMock
 from swh.web.ui import renderers
 
 
+class SWHAddLinkHeaderEnricherTest(unittest.TestCase):
+    @istest
+    def add_link_header(self):
+        rv = {
+            'headers': {'link-next': 'foo', 'link-prev': 'bar'},
+            'results': [1, 2, 3]
+        }
+        options = {}
+
+        # when
+        _rv, _options = renderers.SWHAddLinkHeaderEnricher.add_link_header(
+            rv, options)
+
+        self.assertEquals(_rv, [1, 2, 3])
+        self.assertEquals(_options, {'headers': {
+            'Link': '<foo>; rel="next",<bar>; rel="previous"',
+        }})
+
+    @istest
+    def add_link_header_nothing_changed(self):
+        rv = {}
+        options = {}
+
+        # when
+        _rv, _options = renderers.SWHAddLinkHeaderEnricher.add_link_header(
+            rv, options)
+
+        self.assertEquals(_rv, {})
+        self.assertEquals(_options, {})
+
+    @istest
+    def add_link_header_nothing_changed_2(self):
+        rv = {'headers': {}}
+        options = {}
+
+        # when
+        _rv, _options = renderers.SWHAddLinkHeaderEnricher.add_link_header(
+            rv, options)
+
+        self.assertEquals(_rv, {'headers': {}})
+        self.assertEquals(_options, {})
+
+
 class RendererTestCase(unittest.TestCase):
 
     @patch('swh.web.ui.renderers.g')
@@ -22,12 +65,16 @@ class RendererTestCase(unittest.TestCase):
     @patch('swh.web.ui.renderers.render_template')
     @patch('swh.web.ui.renderers.SWHMultiResponse.filter_by_fields')
     @istest
-    def swh_multi_response_mimetype_html(self, mock_filter, mock_render,
-                                         mock_request, mock_json, mock_g):
+    def swh_multi_response_mimetype_html(self, mock_filter,
+                                         mock_render, mock_request, mock_json,
+                                         mock_g):
         # given
-        data = {'data': [12, 34],
-                'id': 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'}
+        data = {
+            'data': [12, 34],
+            'id': 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
+        }
         mock_g.get.return_value = {'my_key': 'my_display_value'}
+        # mock_enricher.return_value = (data, {})
         mock_filter.return_value = data
         expected_env = {
             'my_key': 'my_display_value',
@@ -52,7 +99,8 @@ class RendererTestCase(unittest.TestCase):
         rv = renderers.SWHMultiResponse.make_response_from_mimetype(data)
 
         # then
-        mock_filter.assert_called_once_with(renderers.SWHMultiResponse, data)
+        # mock_enricher.assert_called_once_with(data, {})
+        mock_filter.assert_called_once_with(data)
         mock_render.assert_called_with('apidoc.html', **expected_env)
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv.mimetype, 'text/html')
@@ -87,7 +135,7 @@ class RendererTestCase(unittest.TestCase):
         rv = renderers.SWHMultiResponse.make_response_from_mimetype(data)
 
         # then
-        mock_filter.assert_called_once_with(renderers.SWHMultiResponse, data)
+        mock_filter.assert_called_once_with(data)
         mock_yaml.dump.assert_called_once_with(data)
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv.mimetype, 'application/yaml')
@@ -123,7 +171,7 @@ class RendererTestCase(unittest.TestCase):
         rv = renderers.SWHMultiResponse.make_response_from_mimetype(data)
 
         # then
-        mock_filter.assert_called_once_with(renderers.SWHMultiResponse, data)
+        mock_filter.assert_called_once_with(data)
         mock_json.dumps.assert_called_once_with(data)
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv.mimetype, 'application/json')
