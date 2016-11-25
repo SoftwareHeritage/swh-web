@@ -4,14 +4,14 @@
 
 <div class="browse-panel panel panel-default">
   <div class="panel panel-body">
-    
+
     <ul class="nav nav-tabs" role="tablist">
       <li><a class="nav-link active" data-toggle="tab" href="#tab-content" role="tabpanel">Content</a></li>
       <li><a class="nav-link" data-toggle="tab" href="#tab-revision" role="tabpanel">Revision</a></li>
       <li><a class="nav-link" data-toggle="tab" href="#tab-origin" role="tabpanel">Origin</a></li>
       <li><a class="nav-link" data-toggle="tab" href="#tab-directory" role="tabpanel">Directory</a></li>
     </ul>
-    
+
     <div class="tab-content container-fluid">
       <!-- Content pane -->
       <div class="tab-pane active" id="tab-content" role="tabpanel">
@@ -24,23 +24,23 @@
           {% include 'includes/search-form.html' %}
         </div>
       </div>
-      
+
       <!-- Revision pane -->
       <div class="tab-pane" id="tab-revision" role="tabpanel">
         {% include 'includes/home-revision.html' %}
       </div>
-      
+
       <!-- Origin pane -->
       <div class="tab-pane" id="tab-origin" role="tabpanel">
         {% include 'includes/home-origin.html' %}
       </div>
-      
+
       <!-- Directory pane -->
       <div class="tab-pane" id="tab-directory" role="tabpanel">
         {% include 'includes/home-directory.html' %}
       </div>
     </div>
-    
+
   </div>
 </div>
 

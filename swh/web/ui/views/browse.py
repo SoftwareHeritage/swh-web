@@ -12,6 +12,7 @@ from ..exc import BadInputExc, NotFoundExc
 from ..main import app
 from . import api
 
+
 hash_filter_keys = ALGORITHMS
 
 
@@ -194,6 +195,7 @@ def browse_content(q):
         content_raw = service.lookup_content_raw(q)
         if content_raw:
             content['data'] = content_raw['data']
+
         env['content'] = utils.prepare_data_for_view(content,
                                                      encoding=encoding)
     except (NotFoundExc, BadInputExc) as e:
