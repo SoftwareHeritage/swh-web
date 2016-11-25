@@ -5,10 +5,12 @@
 
 from nose.tools import istest
 
+from unittest import TestCase
 from unittest.mock import patch
 
 from flask import url_for
 
+from swh.web.ui.views import browse
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 from .. import test_app
 
@@ -380,12 +382,31 @@ class ContentView(test_app.SWHViewTestCase):
     @istest
     def browse_content(self, mock_api, mock_service):
         # given
-        stub_content = {'sha1': 'sha1_hash'}
+        stub_content = {
+            'sha1': 'sha1_hash'
+        }
         mock_api.api_content_metadata.return_value = stub_content
-        mock_service.lookup_content_raw.return_value = {'data': b'blah'}
+        mock_api.api_content_filetype.return_value = {
+            'mimetype': 'text/plain',
+        }
+        mock_api.api_content_language.return_value = {
+            'lang': 'Hy',
+        }
+        mock_api.api_content_license.return_value = {
+            'licenses': ['MIT', 'BSD'],
+        }
+        mock_service.lookup_content_raw.return_value = {
+            'data': b'blah'
+        }
 
-        expected_content = {'sha1': 'sha1_hash',
-                            'data': 'blah'}
+        expected_content = {
+            'sha1': 'sha1_hash',
+            'data': 'blah',
+            'encoding': None,
+            'mimetype': 'text/plain',
+            'language': 'Hy',
+            'licenses': "MIT, BSD",
+        }
 
         # when
         rv = self.client.get('/browse/content/sha1:sha1-hash/')
@@ -399,8 +420,49 @@ class ContentView(test_app.SWHViewTestCase):
 
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:sha1-hash')
-        mock_api.api_content_metadata.assert_called_once_with(
-            'sha1:sha1-hash')
+        mock_api.api_content_language.assert_called_once_with('sha1:sha1-hash')
+        mock_api.api_content_filetype.assert_called_once_with('sha1:sha1-hash')
+        mock_api.api_content_license.assert_called_once_with('sha1:sha1-hash')
+        mock_api.api_content_metadata.assert_called_once_with('sha1:sha1-hash')
+
+    @patch('swh.web.ui.views.browse.service')
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def browse_content_less_data(self, mock_api, mock_service):
+        # given
+        stub_content = {
+            'sha1': 'ha1',
+        }
+        mock_api.api_content_metadata.return_value = stub_content
+        mock_api.api_content_filetype.return_value = None
+        mock_api.api_content_language.return_value = None
+        mock_api.api_content_license.return_value = None
+        mock_service.lookup_content_raw.return_value = None
+
+        expected_content = {
+            'sha1': 'ha1',
+            'data': None,
+            'encoding': None,
+            'mimetype': None,
+            'language': None,
+            'licenses': None,
+        }
+
+        # when
+        rv = self.client.get('/browse/content/sha1:ha1/')
+
+        # then
+        self.assertEqual(rv.status_code, 200)
+        self.assert_template_used('content.html')
+        self.assertIsNone(self.get_context_variable('message'))
+        actual_content = self.get_context_variable('content')
+        self.assertEqual(actual_content, expected_content)
+
+        mock_service.lookup_content_raw.assert_called_once_with('sha1:ha1')
+        mock_api.api_content_language.assert_called_once_with('sha1:ha1')
+        mock_api.api_content_filetype.assert_called_once_with('sha1:ha1')
+        mock_api.api_content_license.assert_called_once_with('sha1:ha1')
+        mock_api.api_content_metadata.assert_called_once_with('sha1:ha1')
 
     @patch('swh.web.ui.views.browse.redirect')
     @patch('swh.web.ui.views.browse.url_for')
@@ -1879,3 +1941,44 @@ class EntityView(test_app.SWHViewTestCase):
 
         mock_api.api_entity_by_uuid.assert_called_once_with(
             '5f4d4c51-5a9b-4e28-88b3-b3e4e8396cba')
+
+
+class Lookup(TestCase):
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def api_lookup(self, mock_api):
+        # given
+        mock_api.api_content_metadata.return_value = {'id': 'blah'}
+
+        # given
+        r = browse.api_lookup(mock_api.api_content_metadata, 'sha1:blah')
+
+        # then
+        self.assertEquals(r, {'id': 'blah'})
+        mock_api.api_content_metadata.assert_called_once_with('sha1:blah')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def api_lookup_not_found(self, mock_api):
+        # given
+        mock_api.api_content_filetype.side_effect = NotFoundExc
+
+        # given
+        r = browse.api_lookup(mock_api.api_content_filetype, 'sha1_git:foo')
+
+        # then
+        self.assertIsNone(r)
+        mock_api.api_content_filetype.assert_called_once_with('sha1_git:foo')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def api_lookup_bad_input(self, mock_api):
+        # given
+        mock_api.api_content_license.side_effect = BadInputExc
+
+        # given
+        r = browse.api_lookup(mock_api.api_content_license, 'sha1_git:foo')
+
+        # then
+        self.assertIsNone(r)
+        mock_api.api_content_license.assert_called_once_with('sha1_git:foo')

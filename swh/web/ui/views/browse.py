@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,7 +12,22 @@ from ..exc import BadInputExc, NotFoundExc
 from ..main import app
 from . import api
 
+
 hash_filter_keys = ALGORITHMS
+
+
+def api_lookup(api_fn, query):
+    """Lookup api with api_fn function with parameter query.
+
+    Example:
+        filetype = api_lookup('api_content_filetype', 'sha1:blah')
+        if filetype:
+            content['mimetype'] = filetype['mimetype']
+    """
+    try:
+        return api_fn(query)
+    except (NotFoundExc, BadInputExc):
+        return None
 
 
 @app.route('/origin/search/')
@@ -191,9 +206,32 @@ def browse_content(q):
 
     try:
         content = api.api_content_metadata(q)
+        filetype = api_lookup(api.api_content_filetype, q)
+        if filetype:
+            content['mimetype'] = filetype.get('mimetype')
+            content['encoding'] = filetype.get('encoding')
+        else:
+            content['mimetype'] = None
+            content['encoding'] = None
+
+        language = api_lookup(api.api_content_language, q)
+        if language:
+            content['language'] = language.get('lang')
+        else:
+            content['language'] = None
+
+        licenses = api_lookup(api.api_content_license, q)
+        if licenses:
+            content['licenses'] = ', '.join(licenses.get('licenses', []))
+        else:
+            content['licenses'] = None
+
         content_raw = service.lookup_content_raw(q)
         if content_raw:
             content['data'] = content_raw['data']
+        else:
+            content['data'] = None
+
         env['content'] = utils.prepare_data_for_view(content,
                                                      encoding=encoding)
     except (NotFoundExc, BadInputExc) as e:

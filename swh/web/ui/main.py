@@ -1,18 +1,16 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import logging
 import os
-import json
 
 from flask import Flask
 from swh.core import config
 
-from swh.web.ui.renderers import urlize_api_links
-from swh.web.ui.renderers import safe_docstring_display
-from swh.web.ui.renderers import revision_id_from_url
+from swh.web.ui.renderers import urlize_api_links, safe_docstring_display
+from swh.web.ui.renderers import revision_id_from_url, highlight_source
 from swh.web.ui.renderers import SWHMultiResponse
 from swh.storage import get_storage
 
@@ -34,6 +32,7 @@ app.response_class = SWHMultiResponse
 app.jinja_env.filters['urlize_api_links'] = urlize_api_links
 app.jinja_env.filters['safe_docstring_display'] = safe_docstring_display
 app.jinja_env.filters['revision_id_from_url'] = revision_id_from_url
+app.jinja_env.filters['highlight_source'] = highlight_source
 
 
 def read_config(config_file):
