@@ -232,6 +232,19 @@ def browse_content(q):
         else:
             content['data'] = None
 
+        ctags = api_lookup(api.api_content_ctags, q)
+        if ctags:
+            url = url_for('browse_content', q=q)
+            content['ctags'] = ' '.join([
+                '<a href="%s#l-%s">%s</a>' % (
+                    url,
+                    ctag['line'],
+                    ctag['line'])
+                for ctag in ctags
+            ])
+        else:
+            content['ctags'] = None
+
         env['content'] = utils.prepare_data_for_view(content,
                                                      encoding=encoding)
     except (NotFoundExc, BadInputExc) as e:

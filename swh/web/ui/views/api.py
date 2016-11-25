@@ -893,6 +893,34 @@ def api_content_license(q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
+@app.route('/api/1/ctags/<string:q>/')
+@doc.route('/api/1/ctags/')
+@doc.arg('q',
+         default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
+         argtype=doc.argtypes.algo_and_hash,
+         argdoc="""The queried content's corresponding hash (supported hash
+ algorithms: sha1_git, sha1, sha256)""")
+@doc.raises(exc=doc.excs.badinput,
+            doc="""Raised if hash algorithm is incorrect or if the hash
+ value is badly formatted.""")
+@doc.raises(exc=doc.excs.notfound,
+            doc="""Raised if a content matching the hash was not found
+ in SWH""")
+@doc.returns(rettype=doc.rettypes.dict,
+             retdoc="""Ctags symbol (dict) for the matched
+content.""")
+def api_content_ctags(q):
+    """Return content's ctags symbols if any.
+
+    """
+    return _api_lookup(
+        q,
+        lookup_fn=service.lookup_content_ctags,
+        error_msg_if_not_found='No ctags symbol found '
+        'for content %s.' % q,
+        enrich_fn=utils.enrich_metadata_endpoint)
+
+
 @app.route('/api/1/content/<string:q>/raw/')
 @doc.route('/api/1/content/raw/')
 @doc.arg('q',

@@ -56,6 +56,22 @@ def content_find_provenance(algo, hash_bin):
     return main.storage().content_find_provenance({algo: hash_bin})
 
 
+def content_ctags_get(id):
+    """Retrieve the list of ctags symbols for a specific sha1.
+
+    Args:
+        id (bytes): content's hash identifier
+
+    Returns:
+        dict of keys 'id' (bytes) and 'ctags' (list of dict)
+
+    """
+    r = list(main.storage().content_ctags_get([id]))
+    if not r:
+        return None
+    return r[0]
+
+
 def content_ctags_search(expression, page, limit=10):
     """Lookup the content designed by {algo: hash_bin}.
 
