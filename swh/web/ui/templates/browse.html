@@ -15,14 +15,7 @@
     <div class="tab-content container-fluid">
       <!-- Content pane -->
       <div class="tab-pane active" id="tab-content" role="tabpanel">
-        <div class="row simple-desc container-fluid">
-          You can refer to a content (i.e. a file that we have in our database) as its SHA1 or SHA256
-          checksum. If you have files to input, you can drag and drop them below to have their hashes
-          calculated and searched in SWH. Files with the same checksum will automatically be ignored.
-        </div>
-        <div class="row container-fluid">
-          {% include 'includes/search-form.html' %}
-        </div>
+        {% include 'includes/home-content.html' %}
       </div>
 
       <!-- Revision pane -->
