@@ -22,7 +22,7 @@
     {% if content['data'] is not none %}
     <div class="row">
        <div class="col-md-2">data</div>
-       <div class="col-md-10"><pre>{{ content['data'] }}</pre></div>
+       <div class="col-md-10">{{ content['data'] | highlight_source }}</div>
     </div>
     {% endif %}
     {% if 'decoding_failures' in content %}

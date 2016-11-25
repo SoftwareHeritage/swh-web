@@ -8,6 +8,7 @@ swh.core >= 0.0.20
 swh.storage >= 0.0.72
 dateutil
 docutils
+pygments
 
 # Test dependencies
 #Flask-Testing
