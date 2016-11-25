@@ -6,7 +6,8 @@
     <p>{{ message }}</p>
   {% endif %}
   {% if content is not none %}
-    {% for key in ['sha1', 'sha256', 'sha1_git', 'status', 'length', 'ctime'] %}
+    {% for key in ['sha1', 'sha256', 'sha1_git', 'status', 'length', 'ctime',
+                   'licenses', 'language', 'mimetype', 'encoding'] %}
     <div class="row">
        <div class="col-md-2">{{ key }}</div>
        <div class="col-md-6">{{ content[key] }}</div>
