@@ -1,3 +1,12 @@
+swh-web (0.0.41-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.41
+  * Improve browse content view by:
+  * adding new information (license, mimetype, language)
+  * highlighting source code
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 25 Nov 2016 14:52:34 +0100
+
 swh-web (0.0.40-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.40
