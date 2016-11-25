@@ -5,7 +5,6 @@
 
 import logging
 import os
-import json
 
 from flask import Flask
 from swh.core import config
