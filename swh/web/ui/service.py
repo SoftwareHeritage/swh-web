@@ -116,6 +116,30 @@ def _lookup_content_sha1(q):
     return hash
 
 
+def lookup_content_ctags(q):
+    """Return ctags information from a specified content.
+
+    Args:
+        q: query string of the form <hash_algo:hash>
+
+    Yields:
+        ctags information (dict) list if the content is found.
+
+    """
+    sha1 = _lookup_content_sha1(q)
+    if not sha1:
+        return None
+
+    ctags = backend.content_ctags_get(sha1)
+    if not ctags:
+        return None
+
+    hex_sha1 = hashutil.hash_to_hex(sha1)
+    for ctag in ctags['ctags']:
+        ctag['id'] = hex_sha1
+        yield ctag
+
+
 def lookup_content_filetype(q):
     """Return filetype information from a specified content.
 
