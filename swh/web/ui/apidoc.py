@@ -141,7 +141,7 @@ class APIDocBase(object):
             nargs = {k: v for k, v in kwargs.items() if k != 'outer_decorator'}
             try:
                 rv = f(*args, **nargs)
-            except TypeError:  # documentation call
+            except (TypeError, KeyError):  # documentation call
                 rv = None
         return rv
 

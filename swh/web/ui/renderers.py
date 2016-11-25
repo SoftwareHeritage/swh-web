@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,9 +10,12 @@ import json
 from docutils.core import publish_parts
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 from inspect import cleandoc
-
+from jinja2 import Markup
 from flask import request, Response, render_template
 from flask import g
+from pygments import highlight
+from pygments.lexers import guess_lexer
+from pygments.formatters import HtmlFormatter
 
 from swh.web.ui import utils
 
@@ -200,3 +203,26 @@ def revision_id_from_url(url):
     """Utility function to obtain a revision's ID from its browsing URL."""
     return re.sub(r'/browse/revision/([0-9a-f]{40}|[0-9a-f]{64})/.*',
                   r'\1', url)
+
+
+def highlight_source(source_code_as_text):
+    """Leverage pygments to guess and highlight source code.
+
+    Args
+        source_code_as_text (str): source code in plain text
+
+    Returns:
+        Highlighted text if possible or plain text otherwise
+
+    """
+    try:
+        maybe_lexer = guess_lexer(source_code_as_text)
+        if maybe_lexer:
+            r = highlight(
+                source_code_as_text, maybe_lexer, HtmlFormatter(linenos=True))
+        else:
+            r = '<pre>%s</pre>' % source_code_as_text
+    except:
+        r = '<pre>%s</pre>' % source_code_as_text
+
+    return Markup(r)
