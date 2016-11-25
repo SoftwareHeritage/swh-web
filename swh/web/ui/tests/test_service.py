@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -234,6 +234,56 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'sha1',
             hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'),
         )
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_content_ctags(self, mock_backend):
+        # given
+        mock_backend.content_ctags_get = MagicMock(
+            return_value={
+                'id': hex_to_hash(
+                    '123caf10e9535160d90e874b45aa426de762f19f'),
+                'ctags': [{
+                    'line': 100,
+                    'name': 'hello',
+                    'kind': 'function',
+                }]
+            })
+        expected_ctags = [{
+            'id': '123caf10e9535160d90e874b45aa426de762f19f',
+            'line': 100,
+            'name': 'hello',
+            'kind': 'function',
+        }]
+
+        # when
+        actual_ctags = list(service.lookup_content_ctags(
+            'sha1:123caf10e9535160d90e874b45aa426de762f19f'))
+
+        # then
+        self.assertEqual(actual_ctags, expected_ctags)
+
+        mock_backend.content_ctags_get.assert_called_with(
+            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+
+    @patch('swh.web.ui.service.backend')
+    @istest
+    def lookup_content_ctags_no_hash(self, mock_backend):
+        # given
+        mock_backend.content_find.return_value = None
+        mock_backend.content_ctags_get = MagicMock(
+            return_value=None)
+
+        # when
+        actual_ctags = list(service.lookup_content_ctags(
+            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f'))
+
+        # then
+        self.assertEqual(actual_ctags, [])
+
+        mock_backend.content_find.assert_called_once_with(
+            'sha1_git', hex_to_hash(
+                '123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest

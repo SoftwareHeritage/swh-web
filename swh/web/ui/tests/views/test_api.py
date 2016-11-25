@@ -288,6 +288,34 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
+    def api_content_ctags(self, mock_service):
+        stub_ctags = {
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'ctags': []
+        }
+        mock_service.lookup_content_ctags.return_value = stub_ctags
+
+        # when
+        rv = self.app.get(
+            '/api/1/ctags/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, {
+            'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'ctags': [],
+            'content_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        })
+
+        mock_service.lookup_content_ctags.assert_called_once_with(
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
     def api_content_license(self, mock_service):
         stub_license = {
             'licenses': ['No_license_found', 'Apache-2.0'],

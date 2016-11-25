@@ -1,8 +1,9 @@
-swh-web (0.0.41-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.42-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.42
+  * List ctags line as link to content in /browse/content/ view
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 25 Nov 2016 14:52:35 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 25 Nov 2016 16:21:12 +0100
 
 swh-web (0.0.41-1~swh1) unstable-swh; urgency=medium
 

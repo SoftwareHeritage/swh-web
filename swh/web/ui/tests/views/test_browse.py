@@ -398,6 +398,14 @@ class ContentView(test_app.SWHViewTestCase):
         mock_service.lookup_content_raw.return_value = {
             'data': b'blah'
         }
+        mock_api.api_content_ctags.return_value = [
+            {
+                'line': 12,
+            },
+            {
+                'line': 14,
+            }
+        ]
 
         expected_content = {
             'sha1': 'sha1_hash',
@@ -406,6 +414,7 @@ class ContentView(test_app.SWHViewTestCase):
             'mimetype': 'text/plain',
             'language': 'Hy',
             'licenses': "MIT, BSD",
+            'ctags': """<a href="/browse/content/sha1:sha1-hash/#l-12">12</a> <a href="/browse/content/sha1:sha1-hash/#l-14">14</a>"""  # noqa
         }
 
         # when
@@ -424,6 +433,7 @@ class ContentView(test_app.SWHViewTestCase):
         mock_api.api_content_filetype.assert_called_once_with('sha1:sha1-hash')
         mock_api.api_content_license.assert_called_once_with('sha1:sha1-hash')
         mock_api.api_content_metadata.assert_called_once_with('sha1:sha1-hash')
+        mock_api.api_content_ctags.assert_called_once_with('sha1:sha1-hash')
 
     @patch('swh.web.ui.views.browse.service')
     @patch('swh.web.ui.views.browse.api')
@@ -438,6 +448,7 @@ class ContentView(test_app.SWHViewTestCase):
         mock_api.api_content_language.return_value = None
         mock_api.api_content_license.return_value = None
         mock_service.lookup_content_raw.return_value = None
+        mock_api.api_content_ctags.return_value = []
 
         expected_content = {
             'sha1': 'ha1',
@@ -446,6 +457,7 @@ class ContentView(test_app.SWHViewTestCase):
             'mimetype': None,
             'language': None,
             'licenses': None,
+            'ctags': None,
         }
 
         # when
@@ -463,6 +475,7 @@ class ContentView(test_app.SWHViewTestCase):
         mock_api.api_content_filetype.assert_called_once_with('sha1:ha1')
         mock_api.api_content_license.assert_called_once_with('sha1:ha1')
         mock_api.api_content_metadata.assert_called_once_with('sha1:ha1')
+        mock_api.api_content_ctags.assert_called_once_with('sha1:ha1')
 
     @patch('swh.web.ui.views.browse.redirect')
     @patch('swh.web.ui.views.browse.url_for')

@@ -194,7 +194,6 @@ def safe_docstring_display(docstring):
     Utility function to htmlize reST-formatted documentation in browsable
     api.
     """
-
     docstring = cleandoc(docstring)
     return publish_parts(docstring, writer=DOCSTRING_WRITER)['html_body']
 
@@ -219,7 +218,10 @@ def highlight_source(source_code_as_text):
         maybe_lexer = guess_lexer(source_code_as_text)
         if maybe_lexer:
             r = highlight(
-                source_code_as_text, maybe_lexer, HtmlFormatter(linenos=True))
+                source_code_as_text, maybe_lexer,
+                HtmlFormatter(linenos=True,
+                              lineanchors='l',
+                              anchorlinenos=True))
         else:
             r = '<pre>%s</pre>' % source_code_as_text
     except:
