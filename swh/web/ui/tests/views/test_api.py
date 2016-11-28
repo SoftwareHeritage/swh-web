@@ -249,6 +249,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'name': 'foobar',
             'kind': 'Haskell',
             'line': 10,
+            'content_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
             'data_url': '/api/1/content/'
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
             'license_url': '/api/1/license/'
