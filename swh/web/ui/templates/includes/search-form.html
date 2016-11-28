@@ -27,7 +27,7 @@
       class="text-center form"
       method="post"
       enctype="multipart/form-data">
-  
+
   <!--Form input -->
   <input type="file"
          id="file-hash-input"
@@ -43,7 +43,7 @@
     Filesizes over 20Mb may be slow to process, use with care.
     <div id="filelist" class="row"></div>
   </div>
-  
+
   <!-- Form buttons -->
   <div class="btn-group" style="margin-top: 10px">
     <button id="file-hash-submission" type="submit" class="btn btn-primary">
@@ -64,7 +64,7 @@
 
 <!-- Script setup -->
 <script>
-    var sfc = new SearchFormController($('#text-hash-form'), $('#file-hash-form'), $('#search-message'));
+  var sfc = new SearchFormController($('#text-hash-form'), $('#file-hash-form'), $('#search-message'));
   sfc.setupTextForm($('#text-hash-input'));
   sfc.setupFileForm($('#file-drop'),$('#filelist'),$('#file-hash-input'),$('#file-hash-clear'));
 </script>
