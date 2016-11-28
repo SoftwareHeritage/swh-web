@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Search SWH{% endblock %}
+{% block content %}
+
+<div class="container">
+  <!-- Include the predefined search form-->
+  {% include 'includes/search-form.html' %}
+
+  {% if result is not none %}
+  <table class="table table-striped search-res">
+    <thead class="thead-default">
+      <th>content</th>
+      <th>kind</th>
+      <th>line</th>
+    </thead>
+    {% for res in result %}
+    <tr>
+      <td><a href="{{ res['content_url'] }}">{{ res['sha1'] }}</a></td>
+      <td>{{ res['kind'] }}</td>
+      <td><a href="{{ ('%s#l-%s' % (res['content_url'], res['line'])) }}">{{ res['line'] }}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% if message is not none and message != '' %}
+  <div class="span8">{{ message | safe }}</div>
+  {% endif %}
+</div>
+{% endblock %}

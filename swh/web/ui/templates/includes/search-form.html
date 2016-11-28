@@ -19,6 +19,7 @@
     </span>
   </div>
 </form>
+<br/>
 
 <!-- The file-based drag&drop UI-->
 <label for="file-hash-form">Search with files</label>
@@ -28,6 +29,7 @@
       method="post"
       enctype="multipart/form-data">
 
+  <br/>
   <!--Form input -->
   <input type="file"
          id="file-hash-input"
@@ -54,6 +56,35 @@
       Clear
       <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
     </button>
+  </div>
+</form>
+
+<br />
+<!-- The symbol search-->
+<label for="file-hash-form">Search symbol</label>
+<div class="simple-desc container-fluid">
+  Permits to lookup symbols in content that SWH
+  indexed (i.e. a file that we have in our database).
+</div>
+<form id="file-hash-form"
+      action="{{ url_for('search_symbol') }}"
+      class="text-center form"
+      method="post"
+      enctype="multipart/form-data">
+
+  <br/>
+  <div class="input-group">
+    <input id="text-symbol-input"
+           type="text" class="form-control"
+           name="q"
+           placeholder="Symbol to lookup" />
+    <span class="input-group-btn">
+      <button id="text-symbol-submit"
+              class="btn btn-primary"
+              type="submit">
+        Symbol search
+      </button>
+    </span>
   </div>
 </form>
 
