@@ -107,7 +107,7 @@ def api_origin_visit(origin_id, visit_id):
              - line (int): Number line for the symbol
 
              """)
-def api_fulltext_search(q=None):
+def api_content_symbol(q=None):
     """Search a content per expression.
 
     """
@@ -118,22 +118,22 @@ def api_fulltext_search(q=None):
         lookup_fn=lambda exp, page=page: service.lookup_expression(exp, page),
         error_msg_if_not_found='No indexed raw content match expression \''
         '%s\'.' % q,
-        enrich_fn=utils.enrich_content)
+        enrich_fn=lambda x: utils.enrich_content(x, top_url=True))
 
     if symbols:
         if page > 1:
             result.update({
                 'headers': {
-                    'link-next': utils.next_page('api_fulltext_search',
+                    'link-next': utils.next_page('api_content_symbol',
                                                  q, page),
-                    'link-prev': utils.prev_page('api_fulltext_search',
+                    'link-prev': utils.prev_page('api_content_symbol',
                                                  q, page),
                 }
             })
         else:
             result.update({
                 'headers': {
-                    'link-next': utils.next_page('api_fulltext_search',
+                    'link-next': utils.next_page('api_content_symbol',
                                                  q, page),
                 }
             })

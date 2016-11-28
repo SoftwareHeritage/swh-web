@@ -5,8 +5,10 @@
 
 import os
 
+from swh.storage.exc import BadSyntaxAPIError
 
 from . import main
+from .exc import BadInputExc
 
 
 def content_get(sha1_bin):
@@ -85,8 +87,11 @@ def content_ctags_search(expression, page, limit=10):
 
     """
     offset = limit * (page - 1)
-    return main.storage().content_ctags_search(expression,
-                                               limit=limit, offset=offset)
+    try:
+        return main.storage().content_ctags_search(expression,
+                                                   limit=limit, offset=offset)
+    except BadSyntaxAPIError as e:
+        raise BadInputExc(e)
 
 
 def content_filetype_get(id):

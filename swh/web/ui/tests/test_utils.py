@@ -470,6 +470,52 @@ class UtilsTestCase(unittest.TestCase):
 
             mock_flask.reset()
 
+    @patch('swh.web.ui.utils.flask')
+    @istest
+    def enrich_content_with_hashes_and_top_level_url(self, mock_flask):
+        for h in ['sha1', 'sha256', 'sha1_git']:
+            # given
+            mock_flask.url_for.side_effect = [
+                '/api/content/%s:123/' % h,
+                '/api/content/%s:123/raw/' % h,
+                '/api/filetype/%s:123/' % h,
+                '/api/language/%s:123/' % h,
+                '/api/license/%s:123/' % h,
+                ]
+
+            # when
+            enriched_content = utils.enrich_content(
+                {
+                    'id': '123',
+                    h: 'blahblah'
+                },
+                top_url=True
+            )
+
+            # then
+            self.assertEqual(
+                enriched_content,
+                {
+                    'id': '123',
+                    h: 'blahblah',
+                    'content_url': '/api/content/%s:123/' % h,
+                    'data_url': '/api/content/%s:123/raw/' % h,
+                    'filetype_url': '/api/filetype/%s:123/' % h,
+                    'language_url': '/api/language/%s:123/' % h,
+                    'license_url': '/api/license/%s:123/' % h,
+                }
+            )
+
+            mock_flask.url_for.assert_has_calls([
+                call('api_content_metadata', q='%s:blahblah' % h),
+                call('api_content_raw', q='%s:blahblah' % h),
+                call('api_content_filetype', q='%s:blahblah' % h),
+                call('api_content_language', q='%s:blahblah' % h),
+                call('api_content_license', q='%s:blahblah' % h),
+            ])
+
+            mock_flask.reset()
+
     @istest
     def enrich_entity_identity(self):
         # when/then

@@ -33,7 +33,7 @@ var SearchFormController = function(textForm, fileForm, messageElem)
     };
 
     /**
-     *  Setup the text field 
+     *  Setup the text field
      *  Args:
      *    textFormInput: the text form's input
      */
@@ -51,7 +51,7 @@ var SearchFormController = function(textForm, fileForm, messageElem)
         });
     };
 
-    /** 
+    /**
      *  Setup the file drag&drop UI and hashing support.
      *  Args:
      *    fileDropElem: the element receptive to drag & drop
@@ -64,13 +64,13 @@ var SearchFormController = function(textForm, fileForm, messageElem)
             self.searchMessage("Client-side file hashing is not available for your browser.");
             return;
         }
-        
+
         // Enable clicking on the text element for file picker
         fileDropElem.click(function(event) {
             event.preventDefault();
             fileFormInput.click();
         });
-        
+
         // Enable drag&drop
         var makeDroppable = function(fileReceptionElt) {
             var fileshovering = false;
@@ -123,7 +123,7 @@ var SearchFormController = function(textForm, fileForm, messageElem)
             });
         };
         makeDroppable(fileDropElem);
-        
+
         // Connect input change and rehash
         var makeInputChange = function(fileInput) {
             return fileInput.each(function() {
@@ -133,7 +133,7 @@ var SearchFormController = function(textForm, fileForm, messageElem)
             });
         };
         makeInputChange(fileFormInput);
-        
+
         // Connect clear button
         var makeClearButton = function(button) {
             return button.each(function() {
@@ -207,7 +207,7 @@ var SearchFormController = function(textForm, fileForm, messageElem)
          *  Args:
          *     buffer: the buffer to hash
          *     fname: the file name corresponding to the buffer
-         */ 
+         */
         var dedupAndAdd = function(buffer, fname) {
             var hashes = hashBuffer(buffer);
             var has_duplicate = false;
