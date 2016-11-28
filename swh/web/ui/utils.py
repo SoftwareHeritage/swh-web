@@ -228,7 +228,7 @@ def enrich_metadata_endpoint(content):
     return c
 
 
-def enrich_content(content):
+def enrich_content(content, top_url=False):
     """Enrich content with links to:
         - data_url: its raw data
         - filetype_url: its filetype information
@@ -237,6 +237,9 @@ def enrich_content(content):
     for h in ['sha1', 'sha1_git', 'sha256']:
         if h in content:
             q = '%s:%s' % (h, content[h])
+            if top_url:
+                content['content_url'] = flask.url_for('api_content_metadata',
+                                                       q=q)
             content['data_url'] = flask.url_for('api_content_raw', q=q)
             content['filetype_url'] = flask.url_for('api_content_filetype',
                                                     q=q)

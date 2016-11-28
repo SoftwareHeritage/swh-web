@@ -65,6 +65,7 @@ swh/web/ui/templates/revision-directory.html
 swh/web/ui/templates/revision-log.html
 swh/web/ui/templates/revision.html
 swh/web/ui/templates/search.html
+swh/web/ui/templates/symbols.html
 swh/web/ui/templates/includes/home-content.html
 swh/web/ui/templates/includes/home-directory.html
 swh/web/ui/templates/includes/home-origin.html

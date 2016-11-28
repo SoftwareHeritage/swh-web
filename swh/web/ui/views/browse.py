@@ -104,6 +104,35 @@ def search_revision():
             return redirect(url_for('browse_revision_with_origin', **values))
 
 
+@app.route('/content/symbol/', methods=['GET', 'POST'])
+def search_symbol():
+    """Search for symbols in contents.
+
+    Returns:
+        dict representing data to look for in swh storage.
+
+    """
+    env = {'result': None,
+           'message': ''}
+
+    # Read form or get information
+    if request.method == 'POST':
+        data = request.form
+    else:  # GET
+        data = request.args
+
+    q = data.get('q')
+
+    if q:
+        try:
+            result = api.api_content_symbol(q)
+            env['result'] = utils.prepare_data_for_view(result['results'])
+        except BadInputExc as e:
+            env['message'] = str(e)
+
+    return render_template('symbols.html', **env)
+
+
 @app.route('/content/search/', methods=['GET', 'POST'])
 def search_content():
     """Search for hashes in swh-storage.
