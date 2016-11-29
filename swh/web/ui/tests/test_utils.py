@@ -925,3 +925,10 @@ class UtilsTestCase(unittest.TestCase):
 
         mock_flask.url_for.assert_called_once_with('some-function-name',
                                                    q='barfoo')
+
+    @istest
+    def to_url(self):
+        self.assertEquals(utils.to_url('some-url?foo=bar', 'param', '10'),
+                          'some-url?foo=bar&param=10')
+        self.assertEquals(utils.to_url('some-url', 'foo', 'bar'),
+                          'some-url?foo=bar')

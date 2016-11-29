@@ -104,7 +104,7 @@ def search_revision():
             return redirect(url_for('browse_revision_with_origin', **values))
 
 
-@app.route('/content/symbol/', methods=['GET', 'POST'])
+@app.route('/content/symbol/', methods=['GET'])
 def search_symbol():
     """Search for symbols in contents.
 
@@ -112,21 +112,32 @@ def search_symbol():
         dict representing data to look for in swh storage.
 
     """
-    env = {'result': None,
-           'message': ''}
+    env = {
+        'result': None,
+        'message': '',
+        'linknext': None,
+        'linkprev': None,
+    }
 
     # Read form or get information
-    if request.method == 'POST':
-        data = request.form
-    else:  # GET
-        data = request.args
-
+    data = request.args
     q = data.get('q')
+    page = int(data.get('page', '1'))
 
     if q:
         try:
             result = api.api_content_symbol(q)
-            env['result'] = utils.prepare_data_for_view(result['results'])
+            if result:
+                headers = result.get('headers')
+                env['result'] = utils.prepare_data_for_view(result['results'])
+                if headers:
+                    if 'link-next' in headers:
+                        env['linknext'] = utils.next_page(
+                            'search_symbol', q, page)
+                    if 'link-prev' in headers:
+                        env['linkprev'] = utils.prev_page(
+                            'search_symbol', q, page)
+
         except BadInputExc as e:
             env['message'] = str(e)
 
