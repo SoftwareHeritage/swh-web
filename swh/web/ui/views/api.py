@@ -106,9 +106,16 @@ def api_origin_visit(origin_id, visit_id):
              - lang (text): Language for that entry
              - line (int): Number line for the symbol
 
+             The result is paginated by page of 10 results.  The
+             'Link' header gives the relation to follow for the next
+             and eventually the previous page.
+
              """)
 def api_content_symbol(q=None):
-    """Search a content per expression.
+    """Search symbol in indexed content's data.
+
+    The result is paginated and and Link header will give the next and
+    previous link to have the next result.
 
     """
     result = {}
