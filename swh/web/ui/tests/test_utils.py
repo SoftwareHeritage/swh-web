@@ -899,6 +899,7 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='456')])
 
     @patch('swh.web.ui.utils.flask')
+    @istest
     def next_page(self, mock_flask):
         mock_flask.url_for.return_value = '/some/api/url/'
 
@@ -912,6 +913,7 @@ class UtilsTestCase(unittest.TestCase):
                                                    q='barfoo')
 
     @patch('swh.web.ui.utils.flask')
+    @istest
     def prev_page(self, mock_flask):
         mock_flask.url_for.return_value = '/some/api/url/'
 
