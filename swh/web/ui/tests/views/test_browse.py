@@ -159,6 +159,75 @@ class SearchRedirectsView(test_app.SWHViewTestCase):
                                          ts='meaningful_ts'))
 
 
+class SearchSymbolView(test_app.SWHViewTestCase):
+    render_template = False
+
+    @istest
+    def search_symbol(self):
+        # when
+        rv = self.client.get('/content/symbol/')
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('result'), None)
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('linknext'), None)
+        self.assertEqual(self.get_context_variable('linkprev'), None)
+        self.assert_template_used('symbols.html')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def search_symbol_with_result(self, mock_api):
+        # given
+        mock_api.api_content_symbol.return_value = {
+            'results': [
+                {
+                    'kind': 'function',
+                    'name': 'hy',
+                    'id': 'some-hash',
+                },
+            ],
+            'headers': {
+                'link-next': 'some-link',
+            }
+        }
+
+        # when
+        rv = self.client.get('/content/symbol/?q=hy')
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('result'), [{
+            'kind': 'function',
+            'name': 'hy',
+            'id': 'some-hash',
+        }])
+
+        self.assertEqual(self.get_context_variable('message'), '')
+        self.assertEqual(self.get_context_variable('linknext'),
+                         '/content/symbol/?q=hy&page=2')
+        self.assertEqual(self.get_context_variable('linkprev'), None)
+        self.assert_template_used('symbols.html')
+
+        mock_api.api_content_symbol.assert_called_once_with('hy')
+
+    @patch('swh.web.ui.views.browse.api')
+    @istest
+    def search_symbol_bad_input(self, mock_api):
+        # given
+        mock_api.api_content_symbol.side_effect = BadInputExc('error msg')
+
+        # when
+        rv = self.client.get('/content/symbol/?q=hello|hy')
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(self.get_context_variable('message'), 'error msg')
+        self.assertEqual(self.get_context_variable('result'), None)
+        self.assertEqual(self.get_context_variable('linknext'), None)
+        self.assertEqual(self.get_context_variable('linkprev'), None)
+        self.assert_template_used('symbols.html')
+
+        mock_api.api_content_symbol.assert_called_once_with('hello|hy')
+
+
 class SearchView(test_app.SWHViewTestCase):
     render_template = False
 
