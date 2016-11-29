@@ -90,9 +90,9 @@ def api_origin_visit(origin_id, visit_id):
         visit_id)
 
 
-@app.route('/api/1/symbol/', methods=['POST'])
-@app.route('/api/1/symbol/<string:q>/')
-@doc.route('/api/1/symbol/')
+@app.route('/api/1/content/symbol/', methods=['POST'])
+@app.route('/api/1/content/symbol/<string:q>/')
+@doc.route('/api/1/content/symbol/')
 @doc.arg('q',
          default='hello|hy',
          argtype=doc.argtypes.str,
@@ -106,9 +106,16 @@ def api_origin_visit(origin_id, visit_id):
              - lang (text): Language for that entry
              - line (int): Number line for the symbol
 
+             The result is paginated by page of 10 results.  The
+             'Link' header gives the relation to follow for the next
+             and eventually the previous page.
+
              """)
 def api_content_symbol(q=None):
-    """Search a content per expression.
+    """Search symbol in indexed content's data.
+
+    The result is paginated and and Link header will give the next and
+    previous link to have the next result.
 
     """
     result = {}
@@ -168,10 +175,11 @@ def api_search(q=None):
 
     This may take the form of:
 
-    - a GET request with a single checksum
-    - a POST request with many hashes, with the request body containing
-      identifiers (typically filenames) as keys and corresponding hashes as
-      values.
+    - a GET request with many hashes (limited to the size of parameter
+      we can pass in url) a POST request with many hashes, with the
+    - request body containing identifiers (typically filenames) as
+    - keys and corresponding hashes as values.
+
     """
 
     response = {'search_res': None,
@@ -179,19 +187,16 @@ def api_search(q=None):
     search_stats = {'nbfiles': 0, 'pct': 0}
     search_res = None
 
-    # Single hash request route
+    queries = []
+    # GET: Many hash separated values request
     if q:
-        r = service.search_hash(q)
-        search_res = [{'filename': None,
-                       'sha1': q,
-                       'found': r['found']}]
-        search_stats['nbfiles'] = 1
-        search_stats['pct'] = 100 if r['found'] else 0
+        hashes = q.split(',')
+        for v in hashes:
+            queries.append({'filename': None, 'sha1': v})
 
-    # Post form submission with many hash requests
+    # POST: Many hash requests in post form submission
     elif request.method == 'POST':
         data = request.form
-        queries = []
         # Remove potential inputs with no associated value
         for k, v in data.items():
             if v is not None:
@@ -200,17 +205,18 @@ def api_search(q=None):
                 elif v != '':
                     queries.append({'filename': k, 'sha1': v})
 
-        if len(queries) > 0:
-            lookup = service.lookup_multiple_hashes(queries)
-            result = []
-            for el in lookup:
-                result.append({'filename': el['filename'],
-                               'sha1': el['sha1'],
-                               'found': el['found']})
+    if queries:
+        lookup = service.lookup_multiple_hashes(queries)
+        result = []
+        l = len(queries)
+        for el in lookup:
+            result.append({'filename': el['filename'],
+                           'sha1': el['sha1'],
+                           'found': el['found']})
             search_res = result
             nbfound = len([x for x in lookup if x['found']])
-            search_stats['nbfiles'] = len(queries)
-            search_stats['pct'] = (nbfound / len(queries))*100
+            search_stats['nbfiles'] = l
+            search_stats['pct'] = (nbfound / l) * 100
 
     response['search_res'] = search_res
     response['search_stats'] = search_stats
