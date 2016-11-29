@@ -568,7 +568,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_search(self, mock_service):
         # given
-        mock_service.search_hash.return_value = {'found': True}
+        mock_service.lookup_multiple_hashes.return_value = [
+            {'found': True,
+             'filename': None,
+             'sha1': 'sha1:blah'}
+        ]
 
         expected_result = {
             'search_stats': {'nbfiles': 1, 'pct': 100},
@@ -585,22 +589,34 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, expected_result)
-        mock_service.search_hash.assert_called_once_with('sha1:blah')
+        mock_service.lookup_multiple_hashes.assert_called_once_with(
+            [{'filename': None, 'sha1': 'sha1:blah'}])
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_as_yaml(self, mock_service):
         # given
-        mock_service.search_hash.return_value = {'found': True}
+        mock_service.lookup_multiple_hashes.return_value = [
+            {'found': True,
+             'filename': None,
+             'sha1': 'sha1:halb'},
+            {'found': False,
+             'filename': None,
+             'sha1': 'sha1_git:hello'}
+        ]
+
         expected_result = {
-            'search_stats': {'nbfiles': 1, 'pct': 100},
+            'search_stats': {'nbfiles': 2, 'pct': 50},
             'search_res': [{'filename': None,
                             'sha1': 'sha1:halb',
-                            'found': True}]
+                            'found': True},
+                           {'filename': None,
+                            'sha1': 'sha1_git:hello',
+                            'found': False}]
         }
 
         # when
-        rv = self.app.get('/api/1/content/search/sha1:halb/',
+        rv = self.app.get('/api/1/content/search/sha1:halb,sha1_git:hello/',
                           headers={'Accept': 'application/yaml'})
 
         self.assertEquals(rv.status_code, 200)
@@ -609,19 +625,58 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = yaml.load(rv.data.decode('utf-8'))
         self.assertEquals(response_data, expected_result)
 
-        mock_service.search_hash.assert_called_once_with('sha1:halb')
+        mock_service.lookup_multiple_hashes.assert_called_once_with(
+            [{'filename': None, 'sha1': 'sha1:halb'},
+             {'filename': None, 'sha1': 'sha1_git:hello'}])
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_search_post_as_yaml(self, mock_service):
+        # given
+        stub_result = [{'filename': None,
+                        'sha1': '7e62b1fe10c88a3eddbba930b156bee2956b2435',
+                        'found': True},
+                       {'filename': 'filepath',
+                        'sha1': '8e62b1fe10c88a3eddbba930b156bee2956b2435',
+                        'found': True},
+                       {'filename': 'filename',
+                        'sha1': '64025b5d1520c615061842a6ce6a456cad962a3f',
+                        'found': False}]
+        mock_service.lookup_multiple_hashes.return_value = stub_result
+
+        expected_result = {
+            'search_stats': {'nbfiles': 3, 'pct': 2/3 * 100},
+            'search_res': stub_result
+        }
+
+        # when
+        rv = self.app.post(
+            '/api/1/content/search/',
+            headers={'Accept': 'application/yaml'},
+            data=dict(
+                q='7e62b1fe10c88a3eddbba930b156bee2956b2435',
+                filepath='8e62b1fe10c88a3eddbba930b156bee2956b2435',
+                filename='64025b5d1520c615061842a6ce6a456cad962a3f')
+        )
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/yaml')
+
+        response_data = yaml.load(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, expected_result)
 
     @patch('swh.web.ui.views.api.service')
     @istest
     def api_search_not_found(self, mock_service):
         # given
-        mock_service.search_hash.return_value = {'found': False}
+        stub_result = [{'filename': None,
+                        'sha1': 'sha1:halb',
+                        'found': False}]
+        mock_service.lookup_multiple_hashes.return_value = stub_result
 
         expected_result = {
             'search_stats': {'nbfiles': 1, 'pct': 0},
-            'search_res': [{'filename': None,
-                            'sha1': 'sha1:halb',
-                            'found': False}]
+            'search_res': stub_result
         }
 
         # when
@@ -632,7 +687,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, expected_result)
 
-        mock_service.search_hash.assert_called_once_with('sha1:halb')
+        mock_service.lookup_multiple_hashes.assert_called_once_with(
+            [{'filename': None, 'sha1': 'sha1:halb'}])
 
     @patch('swh.web.ui.views.api.service')
     @istest
