@@ -90,9 +90,9 @@ def api_origin_visit(origin_id, visit_id):
         visit_id)
 
 
-@app.route('/api/1/symbol/', methods=['POST'])
-@app.route('/api/1/symbol/<string:q>/')
-@doc.route('/api/1/symbol/')
+@app.route('/api/1/content/symbol/', methods=['POST'])
+@app.route('/api/1/content/symbol/<string:q>/')
+@doc.route('/api/1/content/symbol/')
 @doc.arg('q',
          default='hello|hy',
          argtype=doc.argtypes.str,

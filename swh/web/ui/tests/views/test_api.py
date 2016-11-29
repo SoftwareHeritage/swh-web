@@ -238,7 +238,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_expression.return_value = stub_ctag
 
         # when
-        rv = self.app.get('/api/1/symbol/foo/?page=2')
+        rv = self.app.get('/api/1/content/symbol/foo/?page=2')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -261,20 +261,21 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
         }])
         actual_headers = dict(rv.headers)
-        self.assertEquals(actual_headers['Link'],
-                          '</api/1/symbol/foo/?page=3>; rel="next",'
-                          '</api/1/symbol/foo/?page=1>; rel="previous"')
+        self.assertEquals(
+            actual_headers['Link'],
+            '</api/1/content/symbol/foo/?page=3>; rel="next",'
+            '</api/1/content/symbol/foo/?page=1>; rel="previous"')
 
         mock_service.lookup_expression.assert_called_once_with('foo', 2)
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_fulltext_search_not_found(self, mock_service):
+    def api_content_symbol_not_found(self, mock_service):
         # given
         mock_service.lookup_expression.return_value = []
 
         # when
-        rv = self.app.get('/api/1/symbol/bar/?page=2')
+        rv = self.app.get('/api/1/content/symbol/bar/?page=2')
 
         # then
         self.assertEquals(rv.status_code, 404)
