@@ -161,25 +161,19 @@ def search_content():
     message = ''
 
     # Get with a single hash request
-    if request.method == 'GET':
+    if request.method == 'POST':
+        # Post form submission with many hash requests
+        q = None
+    else:
         data = request.args
         q = data.get('q')
-        if q:
-            try:
-                search = api.api_search(q)
-                search_res = search['search_res']
-                search_stats = search['search_stats']
-            except BadInputExc as e:
-                message = str(e)
 
-    # Post form submission with many hash requests
-    elif request.method == 'POST':
-        try:
-            search = api.api_search(None)
-            search_res = search['search_res']
-            search_stats = search['search_stats']
-        except BadInputExc as e:
-            message = str(e)
+    try:
+        search = api.api_search(q)
+        search_res = search['search_res']
+        search_stats = search['search_stats']
+    except BadInputExc as e:
+        message = str(e)
 
     env['search_stats'] = search_stats
     env['search_res'] = search_res
