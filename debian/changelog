@@ -1,8 +1,10 @@
-swh-web (0.0.43-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.44-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.44
+  * Rename appropriately /api/1/symbol to /api/1/content/symbol/
+  * Improve documentation on /api/1/content/symbol/ api endpoint
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 28 Nov 2016 16:42:33 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 29 Nov 2016 15:00:14 +0100
 
 swh-web (0.0.43-1~swh1) unstable-swh; urgency=medium
 

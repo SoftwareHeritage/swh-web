@@ -69,8 +69,7 @@
 <form id="file-hash-form"
       action="{{ url_for('search_symbol') }}"
       class="text-center form"
-      method="post"
-      enctype="multipart/form-data">
+      method="get">
 
   <br/>
   <div class="input-group">
@@ -87,6 +86,8 @@
     </span>
   </div>
 </form>
+
+<br />
 
 <!-- Required JS -->
 {% for fname in ['lib/core.js', 'lib/lib-typedarrays.js', 'lib/sha1.js', 'lib/sha256.js', 'js/search.js'] %}
