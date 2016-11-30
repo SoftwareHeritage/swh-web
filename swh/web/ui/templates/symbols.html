@@ -39,7 +39,8 @@
     </table>
 
   {% if linknext is not none and linknext != '' %}
-  <span><a href="{{ linknext }}">Next</a></span>
+    <br />
+    <span><a href="{{ linknext }}">Next</a></span>
   {% endif %}
 
   {% endif %}
@@ -50,7 +51,13 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
-      $('table.swhtable').DataTable();
+      // basic setup
+      // $('table.swhtable').DataTable();
+      // more complex setup
+      $('table.swhtable').DataTable({
+        // "lengthMenu": [[2, 4, 6, -1], [2, 4, 6, "All"]],
+        "pagingType": "numbers"
+      });
   });
 </script>
 
