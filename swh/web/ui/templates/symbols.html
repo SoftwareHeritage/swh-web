@@ -7,22 +7,24 @@
   {% include 'includes/search-form.html' %}
 
   {% if result is not none %}
-  <table class="table table-striped search-res">
-    <thead class="thead-default">
-      <th>name</th>
-      <th>content</th>
-      <th>kind</th>
-      <th>language</th>
-    </thead>
-    {% for res in result %}
-    <tr>
-      <td>{{ res['name'] | truncate(50) }}</td>
-      <td><a href="{{ ('%s#l-%s' % (res['content_url'], res['line'])) }}">{{ res['sha1'] }}</a></td>
-      <td>{{ res['kind'] }}</td>
-      <td>{{ res['lang'] }}</td>
-    </tr>
-    {% endfor %}
-  </table>
+  <div class="table-responsive">
+    <table class="table table-striped search-res">
+      <thead class="thead-default">
+        <th>name</th>
+        <th>content</th>
+        <th>kind</th>
+        <th>language</th>
+      </thead>
+      {% for res in result %}
+      <tr>
+        <td>{{ res['name'] | truncate(50) }}</td>
+        <td><a href="{{ ('%s#l-%s' % (res['content_url'], res['line'])) }}">{{ res['sha1'] }}</a></td>
+        <td>{{ res['kind'] }}</td>
+        <td>{{ res['lang'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+   </div>
 
   {% if linknext is not none and linknext != '' %}
   <span><a href="{{ linknext }}">Next</a></span>
