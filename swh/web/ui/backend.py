@@ -5,10 +5,7 @@
 
 import os
 
-from swh.storage.exc import BadSyntaxAPIError
-
 from . import main
-from .exc import BadInputExc
 
 
 def content_get(sha1_bin):
@@ -74,24 +71,21 @@ def content_ctags_get(id):
     return r[0]
 
 
-def content_ctags_search(expression, page, limit=10):
+def content_ctags_search(expression, last_sha1, limit=10):
     """Lookup the content designed by {algo: hash_bin}.
 
     Args:
         expression (str): Expression to lookup in indexed raw content
-        page (int): Page of results to fetch (start from 1)
+        last_sha1 (str): Last hash
         limit (int): Number of elements per page
 
     Returns:
         sha1 whose indexed content match the expression
 
     """
-    offset = limit * (page - 1)
-    try:
-        return main.storage().content_ctags_search(expression,
-                                                   limit=limit, offset=offset)
-    except BadSyntaxAPIError as e:
-        raise BadInputExc(e)
+    return main.storage().content_ctags_search(expression,
+                                               last_sha1=last_sha1,
+                                               limit=limit)
 
 
 def content_filetype_get(id):

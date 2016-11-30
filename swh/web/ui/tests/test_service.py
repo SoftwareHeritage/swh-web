@@ -431,12 +431,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         }]
 
         # when
-        actual_ctags = list(service.lookup_expression('foobar', page=1))
+        actual_ctags = list(service.lookup_expression(
+            'foobar', last_sha1='hash'))
 
         # then
         self.assertEqual(actual_ctags, expected_ctags)
 
-        mock_backend.content_ctags_search.assert_called_with('foobar', 1)
+        mock_backend.content_ctags_search.assert_called_with('foobar', 'hash')
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -447,12 +448,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         expected_ctags = []
 
         # when
-        actual_ctags = list(service.lookup_expression('barfoo', page=1))
+        actual_ctags = list(service.lookup_expression('barfoo',
+                                                      last_sha1='hash'))
 
         # then
         self.assertEqual(actual_ctags, expected_ctags)
 
-        mock_backend.content_ctags_search.assert_called_with('barfoo', 1)
+        mock_backend.content_ctags_search.assert_called_with('barfoo', 'hash')
 
     @patch('swh.web.ui.service.backend')
     @istest

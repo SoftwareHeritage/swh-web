@@ -119,29 +119,37 @@ def api_content_symbol(q=None):
 
     """
     result = {}
-    page = int(request.args.get('page', '1'))
+    last_sha1 = request.args.get('last_sha1', None)
+
+    def lookup_exp(exp, last_sha1=last_sha1):
+        return service.lookup_expression(exp, last_sha1)
+
     symbols = _api_lookup(
         q,
-        lookup_fn=lambda exp, page=page: service.lookup_expression(exp, page),
+        lookup_fn=lookup_exp,
         error_msg_if_not_found='No indexed raw content match expression \''
         '%s\'.' % q,
         enrich_fn=lambda x: utils.enrich_content(x, top_url=True))
 
     if symbols:
-        if page > 1:
+        new_last_sha1 = symbols[-1]['sha1']
+        print(new_last_sha1)
+
+        url = url_for('api_content_symbol', q=q)
+        if last_sha1:
             result.update({
                 'headers': {
-                    'link-next': utils.next_page('api_content_symbol',
-                                                 q, page),
-                    'link-prev': utils.prev_page('api_content_symbol',
-                                                 q, page),
+                    'link-next': utils.to_url(
+                        url, (('last_sha1', new_last_sha1), )),
+                    'link-prev': utils.to_url(
+                        url, (('last_sha1', last_sha1), ))
                 }
             })
         else:
             result.update({
                 'headers': {
-                    'link-next': utils.next_page('api_content_symbol',
-                                                 q, page),
+                    'link-next': utils.to_url(
+                        url, (('last_sha1', new_last_sha1), )),
                 }
             })
 

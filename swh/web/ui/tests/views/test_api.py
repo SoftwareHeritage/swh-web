@@ -238,7 +238,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_expression.return_value = stub_ctag
 
         # when
-        rv = self.app.get('/api/1/content/symbol/foo/?page=2')
+        rv = self.app.get('/api/1/content/symbol/foo/?last_sha1=sha1')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -263,10 +263,51 @@ class ApiTestCase(test_app.SWHApiTestCase):
         actual_headers = dict(rv.headers)
         self.assertEquals(
             actual_headers['Link'],
-            '</api/1/content/symbol/foo/?page=3>; rel="next",'
-            '</api/1/content/symbol/foo/?page=1>; rel="previous"')
+            '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03>; rel="next",'      # noqa
+            '</api/1/content/symbol/foo/?last_sha1=sha1>; rel="previous"')  # noqa
 
-        mock_service.lookup_expression.assert_called_once_with('foo', 2)
+        mock_service.lookup_expression.assert_called_once_with('foo', 'sha1')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_symbol_2(self, mock_service):
+        stub_ctag = [{
+            'sha1': '67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'name': 'foo',
+            'kind': 'variable',
+            'line': 100,
+        }]
+        mock_service.lookup_expression.return_value = stub_ctag
+
+        # when
+        rv = self.app.get('/api/1/content/symbol/foo/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/json')
+        response_data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(response_data, [{
+            'sha1': '67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'name': 'foo',
+            'kind': 'variable',
+            'line': 100,
+            'content_url': '/api/1/content/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'data_url': '/api/1/content/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
+            'license_url': '/api/1/license/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'language_url': '/api/1/language/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'filetype_url': '/api/1/filetype/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+        }])
+        actual_headers = dict(rv.headers)
+        self.assertEquals(
+            actual_headers['Link'],
+            '</api/1/content/symbol/foo/?last_sha1=67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03>; rel="next"')  # noqa
+
+        mock_service.lookup_expression.assert_called_once_with('foo', None)
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -275,7 +316,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_expression.return_value = []
 
         # when
-        rv = self.app.get('/api/1/content/symbol/bar/?page=2')
+        rv = self.app.get('/api/1/content/symbol/bar/?last_sha1=hash')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -287,7 +328,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         actual_headers = dict(rv.headers)
         self.assertFalse('Link' in actual_headers)
 
-        mock_service.lookup_expression.assert_called_once_with('bar', 2)
+        mock_service.lookup_expression.assert_called_once_with('bar', 'hash')
 
     @patch('swh.web.ui.views.api.service')
     @istest
