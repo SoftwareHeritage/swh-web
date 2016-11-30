@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,9 +14,9 @@ from unittest.mock import patch, MagicMock
 from swh.web.ui import renderers
 
 
-class SWHAddLinkHeaderEnricherTest(unittest.TestCase):
+class SWHComputeLinkHeaderTest(unittest.TestCase):
     @istest
-    def add_link_header(self):
+    def compute_link_header(self):
         rv = {
             'headers': {'link-next': 'foo', 'link-prev': 'bar'},
             'results': [1, 2, 3]
@@ -24,37 +24,66 @@ class SWHAddLinkHeaderEnricherTest(unittest.TestCase):
         options = {}
 
         # when
-        _rv, _options = renderers.SWHAddLinkHeaderEnricher.add_link_header(
+        _options = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_rv, [1, 2, 3])
         self.assertEquals(_options, {'headers': {
             'Link': '<foo>; rel="next",<bar>; rel="previous"',
         }})
 
     @istest
-    def add_link_header_nothing_changed(self):
+    def compute_link_header_nothing_changed(self):
         rv = {}
         options = {}
 
         # when
-        _rv, _options = renderers.SWHAddLinkHeaderEnricher.add_link_header(
+        _options = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_rv, {})
         self.assertEquals(_options, {})
 
     @istest
-    def add_link_header_nothing_changed_2(self):
+    def compute_link_header_nothing_changed_2(self):
         rv = {'headers': {}}
         options = {}
 
         # when
-        _rv, _options = renderers.SWHAddLinkHeaderEnricher.add_link_header(
+        _options = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_rv, {'headers': {}})
         self.assertEquals(_options, {})
+
+
+class SWHTransformProcessorTest(unittest.TestCase):
+    @istest
+    def transform_only_return_results_1(self):
+        rv = {'results': {'some-key': 'some-value'}}
+
+        self.assertEquals(renderers.SWHTransformProcessor.transform(rv),
+                          {'some-key': 'some-value'})
+
+    @istest
+    def transform_only_return_results_2(self):
+        rv = {'headers': {'something': 'do changes'},
+              'results': {'some-key': 'some-value'}}
+
+        self.assertEquals(renderers.SWHTransformProcessor.transform(rv),
+                          {'some-key': 'some-value'})
+
+    @istest
+    def transform_do_remove_headers(self):
+        rv = {'headers': {'something': 'do changes'},
+              'some-key': 'some-value'}
+
+        self.assertEquals(renderers.SWHTransformProcessor.transform(rv),
+                          {'some-key': 'some-value'})
+
+    @istest
+    def transform_do_nothing(self):
+        rv = {'some-key': 'some-value'}
+
+        self.assertEquals(renderers.SWHTransformProcessor.transform(rv),
+                          {'some-key': 'some-value'})
 
 
 class RendererTestCase(unittest.TestCase):
