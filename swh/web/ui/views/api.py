@@ -120,9 +120,10 @@ def api_content_symbol(q=None):
     """
     result = {}
     last_sha1 = request.args.get('last_sha1', None)
+    per_page = int(request.args.get('per_page', '10'))
 
-    def lookup_exp(exp, last_sha1=last_sha1):
-        return service.lookup_expression(exp, last_sha1)
+    def lookup_exp(exp, last_sha1=last_sha1, per_page=per_page):
+        return service.lookup_expression(exp, last_sha1, per_page)
 
     symbols = _api_lookup(
         q,
@@ -132,26 +133,21 @@ def api_content_symbol(q=None):
         enrich_fn=lambda x: utils.enrich_content(x, top_url=True))
 
     if symbols:
-        new_last_sha1 = symbols[-1]['sha1']
-        print(new_last_sha1)
-
+        l = len(symbols)
         url = url_for('api_content_symbol', q=q)
+
+        headers = {}
+        if l == per_page:
+            new_last_sha1 = symbols[-1]['sha1']
+            headers['link-next'] = utils.to_url(
+                        url, (('last_sha1', new_last_sha1), ))
+
         if last_sha1:
-            result.update({
-                'headers': {
-                    'link-next': utils.to_url(
-                        url, (('last_sha1', new_last_sha1), )),
-                    'link-prev': utils.to_url(
+            headers['link-prev'] = utils.to_url(
                         url, (('last_sha1', last_sha1), ))
-                }
-            })
-        else:
-            result.update({
-                'headers': {
-                    'link-next': utils.to_url(
-                        url, (('last_sha1', new_last_sha1), )),
-                }
-            })
+
+        if headers:
+            result['headers'] = headers
 
     result.update({
         'results': symbols

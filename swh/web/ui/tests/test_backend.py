@@ -94,12 +94,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_ctags = backend.content_ctags_search(
-            'bar', last_sha1='some-hash', limit=10)
+            'bar', last_sha1='some-hash', limit=1000)
 
         # then
         self.assertEquals(actual_ctags, 'yet another result')
         self.storage.content_ctags_search.assert_called_once_with(
-            'bar', last_sha1='some-hash', limit=10)
+            'bar', last_sha1='some-hash', limit=100)
 
     @istest
     def content_get(self):

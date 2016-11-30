@@ -83,6 +83,7 @@ def content_ctags_search(expression, last_sha1, limit=10):
         sha1 whose indexed content match the expression
 
     """
+    limit = min(limit, 100)
     return main.storage().content_ctags_search(expression,
                                                last_sha1=last_sha1,
                                                limit=limit)
