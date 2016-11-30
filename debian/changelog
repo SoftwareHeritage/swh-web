@@ -1,8 +1,13 @@
-swh-web (0.0.44-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.45-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.45
+  * Migrate search symbol api endpoint to strict equality search
+  * Improve search symbol view result (based on that api) to navigate
+  * through result
+  * Permit to slice result per page with per page flag (limited to 100)
+  * Unify behavior in renderer regarding pagination computation
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 29 Nov 2016 15:00:15 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 30 Nov 2016 11:00:49 +0100
 
 swh-web (0.0.44-1~swh1) unstable-swh; urgency=medium
 

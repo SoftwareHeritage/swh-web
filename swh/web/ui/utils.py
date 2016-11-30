@@ -8,32 +8,17 @@ import flask
 import re
 
 from dateutil import parser
+from urllib.parse import urlencode
 
 
-def to_url(url, param_name, param_value):
+def to_url(url, params):
     """Compute a url with a new param.
 
     """
+    end_url = urlencode(params)
     if '?' in url:
-        return '%s&%s=%s' % (url, param_name, param_value)
-    return '%s?%s=%s' % (url, param_name, param_value)
-
-
-def next_page(function_name, q, page):
-    """Compute the next page for function_name with parameter q at page.
-
-    """
-    url = flask.url_for(function_name, q=q)
-    return to_url(url, 'page', page+1)
-
-
-def prev_page(function_name, q, page):
-    """Compute the previous page for function_name with parameter q at
-       page.
-
-    """
-    url = flask.url_for(function_name, q=q)
-    return to_url(url, 'page', page-1)
+        return '%s&%s' % (url, end_url)
+    return '%s?%s' % (url, end_url)
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
