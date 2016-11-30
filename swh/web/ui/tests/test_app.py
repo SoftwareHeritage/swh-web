@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2016  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@
 import unittest
 from swh.storage.api.client import RemoteStorage as Storage
 from swh.web.ui import main
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 
 
 # Because the Storage's __init__ function does side effect at startup...

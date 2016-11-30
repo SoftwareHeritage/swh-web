@@ -63,12 +63,13 @@ class BackendTestCase(test_app.SWHApiTestCase):
             return_value="some-result")
 
         # when
-        actual_ctags = backend.content_ctags_search('foo', page=1, limit=1)
+        actual_ctags = backend.content_ctags_search(
+            'foo', last_sha1='some-hash', limit=1)
 
         # then
         self.assertEquals(actual_ctags, 'some-result')
         self.storage.content_ctags_search.assert_called_once_with(
-            'foo', limit=1, offset=0)
+            'foo', last_sha1='some-hash', limit=1)
 
     @istest
     def content_ctags_search_2(self):
@@ -77,12 +78,13 @@ class BackendTestCase(test_app.SWHApiTestCase):
             return_value="some other result")
 
         # when
-        actual_ctags = backend.content_ctags_search('foo|bar', page=1, limit=2)
+        actual_ctags = backend.content_ctags_search(
+            'foo|bar', last_sha1='some-hash', limit=2)
 
         # then
         self.assertEquals(actual_ctags, 'some other result')
         self.storage.content_ctags_search.assert_called_once_with(
-            'foo|bar', limit=2, offset=0)
+            'foo|bar', last_sha1='some-hash', limit=2)
 
     @istest
     def content_ctags_search_3(self):
@@ -91,12 +93,13 @@ class BackendTestCase(test_app.SWHApiTestCase):
             return_value="yet another result")
 
         # when
-        actual_ctags = backend.content_ctags_search('bar', page=3, limit=10)
+        actual_ctags = backend.content_ctags_search(
+            'bar', last_sha1='some-hash', limit=1000)
 
         # then
         self.assertEquals(actual_ctags, 'yet another result')
         self.storage.content_ctags_search.assert_called_once_with(
-            'bar', limit=10, offset=20)
+            'bar', last_sha1='some-hash', limit=100)
 
     @istest
     def content_get(self):
