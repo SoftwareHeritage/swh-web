@@ -1,3 +1,10 @@
+swh-web (0.0.46-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.46
+  * Improve search output view on symbols
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 30 Nov 2016 17:45:40 +0100
+
 swh-web (0.0.45-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.45
