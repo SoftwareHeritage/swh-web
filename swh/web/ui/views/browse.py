@@ -7,6 +7,7 @@ from encodings.aliases import aliases
 from flask import render_template, request, url_for, redirect
 
 from swh.core.hashutil import ALGORITHMS
+from swh.core.utils import grouper
 from .. import service, utils, apidoc
 from ..exc import BadInputExc, NotFoundExc
 from ..main import app
@@ -276,13 +277,13 @@ def browse_content(q):
         ctags = api_lookup(api.api_content_ctags, q)
         if ctags:
             url = url_for('browse_content', q=q)
-            content['ctags'] = ' '.join([
+            content['ctags'] = grouper((
                 '<a href="%s#l-%s">%s</a>' % (
                     url,
                     ctag['line'],
                     ctag['line'])
                 for ctag in ctags
-            ])
+            ), 20)
         else:
             content['ctags'] = None
 

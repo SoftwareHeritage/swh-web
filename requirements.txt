@@ -18,3 +18,4 @@ pygments
 #libjs-cryptojs
 #libjs-jquery-flot
 #libjs-jquery-flot-tooltip
+#libjs-jquery-datatables

@@ -7,23 +7,40 @@
   {% include 'includes/search-form.html' %}
 
   {% if result is not none %}
-  <table class="table table-striped search-res">
-    <thead class="thead-default">
-      <th>name</th>
-      <th>content</th>
-      <th>kind</th>
-    </thead>
-    {% for res in result %}
-    <tr>
-      <td>{{ res['name'] | truncate(50) }}</td>
-      <td><a href="{{ ('%s#l-%s' % (res['content_url'], res['line'])) }}">{{ res['sha1'] }}</a></td>
-      <td>{{ res['kind'] }}</td>
-    </tr>
-    {% endfor %}
-  </table>
+  <br />
+  <div class="table-responsive">
+    <table class="table table-striped search-res swhtable">
+      <thead>
+        <tr>
+          <th>name</th>
+          <th>content</th>
+          <th>kind</th>
+          <th>language</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>name</th>
+          <th>content</th>
+          <th>kind</th>
+          <th>language</th>
+        </tr>
+      </tfoot>
+      <tbody>
+      {% for res in result %}
+        <tr>
+          <td>{{ res['name'] | truncate(50) }}</td>
+          <td><a href="{{ ('%s#l-%s' % (res['content_url'], res['line'])) }}">{{ res['sha1'] }}</a></td>
+          <td>{{ res['kind'] }}</td>
+          <td>{{ res['lang'] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
 
   {% if linknext is not none and linknext != '' %}
-  <span><a href="{{ linknext }}">Next</a></span>
+    <br />
+    <span><a href="{{ linknext }}">Next</a></span>
   {% endif %}
 
   {% endif %}
@@ -31,4 +48,17 @@
   <div class="span8">{{ message | safe }}</div>
   {% endif %}
 </div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+      // basic setup
+      // $('table.swhtable').DataTable();
+      // more complex setup
+      $('table.swhtable').DataTable({
+        // "lengthMenu": [[2, 4, 6, -1], [2, 4, 6, "All"]],
+        "pagingType": "numbers"
+      });
+  });
+</script>
+
 {% endblock %}
