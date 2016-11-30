@@ -40,15 +40,19 @@ class SWHFilterEnricher():
         return data
 
 
-class SWHAddLinkHeaderEnricher:
+class SWHComputeLinkHeader:
     """Add link header to response.
 
     Mixin intended to be used for example in SWHMultiResponse
 
     """
     @classmethod
-    def add_link_header(cls, rv, options):
+    def compute_link_header(cls, rv, options):
         """Add Link header in returned value results.
+
+        Expects rv to be a dict with 'results' and 'headers' key:
+            'results': the returned value expected to be shown
+            'headers': dictionary with link-next and link-prev
 
         Args:
             rv (dict): with keys:
@@ -70,7 +74,7 @@ class SWHAddLinkHeaderEnricher:
         link_headers = []
 
         if 'headers' not in rv:
-            return rv, options
+            return options
 
         rv_headers = rv['headers']
 
@@ -88,13 +92,35 @@ class SWHAddLinkHeaderEnricher:
                 'Link': link_header_str
             })
             options['headers'] = headers
+            return options
+
+        return options
+
+
+class SWHTransformProcessor:
+    """Transform an eventual returned value with multiple layer of
+    information with only what's necessary.
+
+    If the returned value rv contains the 'results' key, this is the
+    associated value which is returned.
+
+    Otherwise, return the initial dict without the potential 'headers'
+    key.
+
+    """
+    @classmethod
+    def transform(cls, rv):
+        if 'results' in rv:
+            return rv['results']
+
+        if 'headers' in rv:
             rv.pop('headers')
-            return rv['results'], options
 
-        return rv, options
+        return rv
 
 
-class SWHMultiResponse(Response, SWHFilterEnricher, SWHAddLinkHeaderEnricher):
+class SWHMultiResponse(Response, SWHFilterEnricher,
+                       SWHComputeLinkHeader, SWHTransformProcessor):
     """
     A Flask Response subclass.
     Override force_type to transform dict/list responses into callable Flask
@@ -121,7 +147,8 @@ class SWHMultiResponse(Response, SWHFilterEnricher, SWHAddLinkHeaderEnricher):
         acc_mime = ['application/json', 'application/yaml', 'text/html']
         best_match = request.accept_mimetypes.best_match(acc_mime)
 
-        rv, options = cls.add_link_header(rv, options)
+        options = cls.compute_link_header(rv, options)
+        rv = cls.transform(rv)
 
         if wants_html(best_match):
             data = json.dumps(rv, sort_keys=True,

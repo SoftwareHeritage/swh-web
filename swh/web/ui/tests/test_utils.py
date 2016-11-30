@@ -898,37 +898,10 @@ class UtilsTestCase(unittest.TestCase):
              call('api_revision',
                   sha1_git='456')])
 
-    @patch('swh.web.ui.utils.flask')
-    @istest
-    def next_page(self, mock_flask):
-        mock_flask.url_for.return_value = '/some/api/url/'
-
-        # when
-        actual_url = utils.next_page('some-function-name', q='barfoo', page=10)
-
-        # then
-        self.assertEquals(actual_url, '/some/api/url/?page=11')
-
-        mock_flask.url_for.assert_called_once_with('some-function-name',
-                                                   q='barfoo')
-
-    @patch('swh.web.ui.utils.flask')
-    @istest
-    def prev_page(self, mock_flask):
-        mock_flask.url_for.return_value = '/some/api/url/'
-
-        # when
-        actual_url = utils.prev_page('some-function-name', q='barfoo', page=10)
-
-        # then
-        self.assertEquals(actual_url, '/some/api/url/?page=9')
-
-        mock_flask.url_for.assert_called_once_with('some-function-name',
-                                                   q='barfoo')
-
     @istest
     def to_url(self):
-        self.assertEquals(utils.to_url('some-url?foo=bar', 'param', '10'),
+        self.assertEquals(utils.to_url('some-url?foo=bar', (('param', 10),)),
                           'some-url?foo=bar&param=10')
-        self.assertEquals(utils.to_url('some-url', 'foo', 'bar'),
-                          'some-url?foo=bar')
+        self.assertEquals(utils.to_url('some-url', (('foo', 'bar'),
+                                                    ('bar', 'barfoo'),)),
+                          'some-url?foo=bar&bar=barfoo')

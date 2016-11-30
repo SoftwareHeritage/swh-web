@@ -122,21 +122,28 @@ def search_symbol():
     # Read form or get information
     data = request.args
     q = data.get('q')
-    page = int(data.get('page', '1'))
+    per_page = data.get('per_page')
 
     if q:
         try:
             result = api.api_content_symbol(q)
             if result:
                 headers = result.get('headers')
-                env['result'] = utils.prepare_data_for_view(result['results'])
+                result = utils.prepare_data_for_view(result['results'])
+                env['result'] = result
                 if headers:
+                    url = url_for('search_symbol')
                     if 'link-next' in headers:
-                        env['linknext'] = utils.next_page(
-                            'search_symbol', q, page)
-                    if 'link-prev' in headers:
-                        env['linkprev'] = utils.prev_page(
-                            'search_symbol', q, page)
+                        next_last_sha1 = result[-1]['sha1']
+                        if per_page:
+                            params = (('q', q),
+                                      ('last_sha1', next_last_sha1),
+                                      ('per_page', per_page))
+                        else:
+                            params = (('q', q),
+                                      ('last_sha1', next_last_sha1))
+
+                        env['linknext'] = utils.to_url(url, params)
 
         except BadInputExc as e:
             env['message'] = str(e)
