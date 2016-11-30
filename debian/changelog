@@ -1,3 +1,14 @@
+swh-web (0.0.45-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.45
+  * Migrate search symbol api endpoint to strict equality search
+  * Improve search symbol view result (based on that api) to navigate
+  * through result
+  * Permit to slice result per page with per page flag (limited to 100)
+  * Unify behavior in renderer regarding pagination computation
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 30 Nov 2016 11:00:49 +0100
+
 swh-web (0.0.44-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.44
