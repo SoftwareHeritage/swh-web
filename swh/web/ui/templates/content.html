@@ -23,7 +23,17 @@
     {% if content['ctags'] is not none %}
     <div class="row">
        <div class="col-md-2">ctags</div>
-       <div class="col-md-10">{{ content['ctags'] | safe }}</div>
+       <div class="col-md-10">
+         <table>
+           {% for ctag_row in content['ctags'] %}
+           <tr>
+             {% for ctag in ctag_row %}
+             <td>{{ ctag | safe }}&nbsp;</td>
+             {% endfor %}
+           </tr>
+         {% endfor %}
+         </table>
+       </div>
     </div>
     {% endif %}
 

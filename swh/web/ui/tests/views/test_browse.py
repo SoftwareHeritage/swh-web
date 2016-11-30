@@ -478,7 +478,7 @@ class ContentView(test_app.SWHViewTestCase):
     def browse_content(self, mock_api, mock_service):
         # given
         stub_content = {
-            'sha1': 'sha1_hash'
+            'sha1': 'sha1-hash'
         }
         mock_api.api_content_metadata.return_value = stub_content
         mock_api.api_content_filetype.return_value = {
@@ -503,13 +503,12 @@ class ContentView(test_app.SWHViewTestCase):
         ]
 
         expected_content = {
-            'sha1': 'sha1_hash',
+            'sha1': 'sha1-hash',
             'data': 'blah',
             'encoding': None,
             'mimetype': 'text/plain',
             'language': 'Hy',
             'licenses': "MIT, BSD",
-            'ctags': """<a href="/browse/content/sha1:sha1-hash/#l-12">12</a> <a href="/browse/content/sha1:sha1-hash/#l-14">14</a>"""  # noqa
         }
 
         # when
@@ -519,8 +518,9 @@ class ContentView(test_app.SWHViewTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assert_template_used('content.html')
         self.assertIsNone(self.get_context_variable('message'))
-        self.assertEqual(self.get_context_variable('content'),
-                         expected_content)
+        actual_content = self.get_context_variable('content')
+        actual_content.pop('ctags')
+        self.assertEqual(actual_content, expected_content)
 
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:sha1-hash')

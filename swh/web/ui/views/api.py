@@ -156,7 +156,7 @@ def api_content_symbol(q=None):
 @app.route('/api/1/content/search/<string:q>/')
 @doc.route('/api/1/content/search/')
 @doc.arg('q',
-         default='sha1:adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+         default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
          argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
          sha1_git or sha256 and hash is the hash to search for in SWH""")

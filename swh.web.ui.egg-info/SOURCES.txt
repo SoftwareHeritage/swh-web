@@ -41,11 +41,13 @@ swh/web/ui/renderers.py
 swh/web/ui/service.py
 swh/web/ui/utils.py
 swh/web/ui/static/css/bootstrap-responsive.min.css
+swh/web/ui/static/css/jquery.dataTables.min.css
 swh/web/ui/static/css/pygment.css
 swh/web/ui/static/css/style.css
 swh/web/ui/static/js/calendar.js
 swh/web/ui/static/js/search.js
 swh/web/ui/static/lib/README
+swh/web/ui/static/lib/jquery.dataTables.min.js
 swh/web/ui/static/lib/jquery.flot.min.js
 swh/web/ui/static/lib/jquery.flot.selection.min.js
 swh/web/ui/static/lib/jquery.flot.time.min.js
