@@ -12,12 +12,14 @@
       <th>name</th>
       <th>content</th>
       <th>kind</th>
+      <th>language</th>
     </thead>
     {% for res in result %}
     <tr>
       <td>{{ res['name'] | truncate(50) }}</td>
       <td><a href="{{ ('%s#l-%s' % (res['content_url'], res['line'])) }}">{{ res['sha1'] }}</a></td>
       <td>{{ res['kind'] }}</td>
+      <td>{{ res['lang'] }}</td>
     </tr>
     {% endfor %}
   </table>
