@@ -261,9 +261,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
         }])
         actual_headers = dict(rv.headers)
-        self.assertEquals(
-            actual_headers['Link'],
-            '</api/1/content/symbol/foo/?last_sha1=sha1>; rel="previous"')  # noqa
+        self.assertFalse('Link' in actual_headers)
 
         mock_service.lookup_expression.assert_called_once_with(
             'foo', 'sha1', 10)
@@ -306,8 +304,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         actual_headers = dict(rv.headers)
         self.assertEquals(
             actual_headers['Link'],
-            '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03>; rel="next",'      # noqa
-            '</api/1/content/symbol/foo/?last_sha1=prev-sha1>; rel="previous"')  # noqa
+            '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03>; rel="next"')  # noqa
 
         mock_service.lookup_expression.assert_called_once_with(
             'foo', 'prev-sha1', 1)

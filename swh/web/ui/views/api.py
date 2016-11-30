@@ -142,10 +142,6 @@ def api_content_symbol(q=None):
             headers['link-next'] = utils.to_url(
                         url, (('last_sha1', new_last_sha1), ))
 
-        if last_sha1:
-            headers['link-prev'] = utils.to_url(
-                        url, (('last_sha1', last_sha1), ))
-
         if headers:
             result['headers'] = headers
 

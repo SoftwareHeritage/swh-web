@@ -122,7 +122,6 @@ def search_symbol():
     # Read form or get information
     data = request.args
     q = data.get('q')
-    last_sha1 = data.get('last_sha1')
     per_page = data.get('per_page')
 
     if q:
@@ -145,15 +144,6 @@ def search_symbol():
                                       ('last_sha1', next_last_sha1))
 
                         env['linknext'] = utils.to_url(url, params)
-                    if 'link-prev' in headers:
-                        if per_page:
-                            params = (('q', q),
-                                      ('last_sha1', last_sha1),
-                                      ('per_page', per_page))
-                        else:
-                            params = (('q', q),
-                                      ('last_sha1', last_sha1))
-                        env['linkprev'] = utils.to_url(url, params)
 
         except BadInputExc as e:
             env['message'] = str(e)

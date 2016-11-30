@@ -237,43 +237,6 @@ class SearchSymbolView(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.views.browse.api')
     @istest
-    def search_symbol_with_result_and_pages_and_last_sha1(self, mock_api):
-        # given
-        stub_results = [
-            {
-                'kind': 'function',
-                'name': 'hy',
-                'sha1': 'some-hash',
-            }
-        ]
-        mock_api.api_content_symbol.return_value = {
-            'results': stub_results,
-            'headers': {
-                'link-next': 'some-link-we-dont-reuse',
-                'link-prev': 'some-link-we-dont-reuse',
-            }
-        }
-
-        # when
-        rv = self.client.get(
-            '/content/symbol/?per_page=2&q=hy&last_sha1=old-hash')
-
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(self.get_context_variable('result'), stub_results)
-
-        self.assertEqual(self.get_context_variable('message'), '')
-        self.assertEqual(
-            self.get_context_variable('linknext'),
-            '/content/symbol/?q=hy&last_sha1=some-hash&per_page=2')
-        self.assertEqual(
-            self.get_context_variable('linkprev'),
-            '/content/symbol/?q=hy&last_sha1=old-hash&per_page=2')
-        self.assert_template_used('symbols.html')
-
-        mock_api.api_content_symbol.assert_called_once_with('hy')
-
-    @patch('swh.web.ui.views.browse.api')
-    @istest
     def search_symbol_bad_input(self, mock_api):
         # given
         mock_api.api_content_symbol.side_effect = BadInputExc('error msg')
