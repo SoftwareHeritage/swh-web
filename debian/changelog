@@ -1,3 +1,11 @@
+swh-web (0.0.48-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.48
+  * Fix api doc example to actual existing data
+  * Improve search symbol view experience
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 01 Dec 2016 15:32:44 +0100
+
 swh-web (0.0.47-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.47
