@@ -67,3 +67,8 @@ h2              { font-size: 1.2em; }
   vertical-align: bottom;
   padding: 0;
 }
+
+.dataTables_filter input {
+    width: 75%;
+    float: right;
+}
