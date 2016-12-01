@@ -94,7 +94,7 @@ def api_origin_visit(origin_id, visit_id):
 @app.route('/api/1/content/symbol/<string:q>/')
 @doc.route('/api/1/content/symbol/')
 @doc.arg('q',
-         default='hello|hy',
+         default='hello',
          argtype=doc.argtypes.str,
          argdoc="""An expression string to lookup in swh's raw content""")
 @doc.returns(rettype=doc.rettypes.list,
@@ -335,7 +335,7 @@ def api_person(person_id):
 @app.route('/api/1/release/<string:sha1_git>/')
 @doc.route('/api/1/release/')
 @doc.arg('sha1_git',
-         default='8b137891791fe96927ad78e64b0aad7bded08bdc',
+         default='97d8dcd0c589b1d94a5d26cf0c1e8f2f44b92bfd',
          argtype=doc.argtypes.sha1_git,
          argdoc="The release's sha1_git identifier")
 @doc.raises(exc=doc.excs.badinput,
@@ -736,7 +736,7 @@ def api_revision_log_by(origin_id,
 @app.route('/api/1/directory/<string:sha1_git>/<path:path>/')
 @doc.route('/api/1/directory/')
 @doc.arg('sha1_git',
-         default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+         default='1bd0e65f7d2ff14ae994de17a1e7fe65111dcad8',
          argtype=doc.argtypes.sha1_git,
          argdoc="The queried directory's corresponding sha1_git hash")
 @doc.arg('path',
