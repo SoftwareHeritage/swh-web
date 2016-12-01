@@ -1,3 +1,13 @@
+swh-web (0.0.47-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.47
+  * Improve search content ui (add datatable)
+  * Improve search symbol ui (add datatable without pagination, with
+  * multi-field search)
+  * Split those views to improve readability
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 01 Dec 2016 11:57:16 +0100
+
 swh-web (0.0.46-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.46
