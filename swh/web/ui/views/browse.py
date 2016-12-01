@@ -115,7 +115,7 @@ def search_symbol():
     """
     env = {
         'result': None,
-        'title': None,
+        'per_page': None,
         'message': '',
         'linknext': None,
         'linkprev': None,
@@ -127,6 +127,8 @@ def search_symbol():
     per_page = data.get('per_page')
 
     env['q'] = q
+    if per_page:
+        env['per_page'] = per_page
 
     if q:
         try:
