@@ -15,8 +15,9 @@
   </label>
   {% endif %}
 
+  <br />
   <div class="table-responsive">
-    <table class="table table-striped search-res">
+    <table class="table table-striped search-res swhtable">
       <thead class="thead-default">
         <th>File name</th>
         <th>SHA1 checksum</th>
@@ -46,4 +47,10 @@
 </div>
 {% endif %}
 </div>
+<script type="text/javascript">
+  $(document).ready(function() {
+      // basic setup
+      $('table.swhtable').DataTable();
+  });
+</script>
 {% endblock %}
