@@ -4,15 +4,16 @@
 
 <div class="container">
   <!-- Include the predefined search form-->
-  {% include 'includes/search-form.html' %}
+  {% include 'includes/home-search-symbol.html' %}
 
-  {% if result is not none %}
+  {% if result is not none and result|length > 0 %}
+  <br />
+  <h2>Result for '{{ q | truncate(50) }}'</h2>
   <br />
   <div class="table-responsive">
-    <table class="table table-striped search-res swhtable">
+    <table class="display swhtable" cellspacing="0" width="100%">
       <thead>
         <tr>
-          <th>name</th>
           <th>content</th>
           <th>kind</th>
           <th>language</th>
@@ -20,7 +21,6 @@
       </thead>
       <tfoot>
         <tr>
-          <th>name</th>
           <th>content</th>
           <th>kind</th>
           <th>language</th>
@@ -29,7 +29,6 @@
       <tbody>
       {% for res in result %}
         <tr>
-          <td>{{ res['name'] | truncate(50) }}</td>
           <td><a href="{{ ('%s#l-%s' % (res['content_url'], res['line'])) }}">{{ res['sha1'] }}</a></td>
           <td>{{ res['kind'] }}</td>
           <td>{{ res['lang'] }}</td>
@@ -47,16 +46,34 @@
   {% if message is not none and message != '' %}
   <div class="span8">{{ message | safe }}</div>
   {% endif %}
+
+  {% if result is not none and result|length == 0 %}
+  No result for '{{ q | truncate(50) }}'.
+  {% endif %}
 </div>
 
 <script type="text/javascript">
   $(document).ready(function() {
-      // basic setup
-      // $('table.swhtable').DataTable();
-      // more complex setup
-      $('table.swhtable').DataTable({
-        // "lengthMenu": [[2, 4, 6, -1], [2, 4, 6, "All"]],
-        "pagingType": "numbers"
+      // Setup - add a text input to each footer cell
+      $('table.swhtable tfoot th').each(function () {
+          var title = $(this).text();
+          $(this).html('<input type="text" placeholder="Search '+title+'" />');
+      });
+
+      // DataTable
+      var table = $('table.swhtable').DataTable({
+          "paging": false
+      });
+
+      // Apply the search
+      table.columns().every(function () {
+          var that = this;
+
+          $('input', this.footer()).on('keyup change', function () {
+              if (that.search() !== this.value) {
+                  that.search(this.value).draw();
+              }
+          });
       });
   });
 </script>
