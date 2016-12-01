@@ -58,7 +58,9 @@
       });
 
       // DataTable
-      var table = $('table.swhtable').DataTable();
+      var table = $('table.swhtable').DataTable({
+          "paging": false
+      });
 
       // Apply the search
       table.columns().every(function () {
