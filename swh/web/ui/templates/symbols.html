@@ -54,16 +54,18 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+      // Apply same style to every input of the page
       // Setup - add a text input to each footer cell
       $('table.swhtable tfoot th').each(function () {
           var title = $(this).text();
-          $(this).html('<input type="text" placeholder="Search '+title+'" />');
+          $(this).html('<input type="text" placeholder="Search '+title+'" class="form-control" />');
       });
 
       // DataTable
       var table = $('table.swhtable').DataTable({
-          "paging": false
+          "paging": false,
       });
+      $(".dataTables_filter input").addClass("form-control")
 
       // Apply the search
       table.columns().every(function () {
