@@ -7,6 +7,7 @@
 
     <ul class="nav nav-tabs" role="tablist">
       <li><a class="nav-link active" data-toggle="tab" href="#tab-content" role="tabpanel">Content</a></li>
+      <li><a class="nav-link" data-toggle="tab" href="#tab-search" role="tabpanel">Search</a></li>
       <li><a class="nav-link" data-toggle="tab" href="#tab-revision" role="tabpanel">Revision</a></li>
       <li><a class="nav-link" data-toggle="tab" href="#tab-origin" role="tabpanel">Origin</a></li>
       <li><a class="nav-link" data-toggle="tab" href="#tab-directory" role="tabpanel">Directory</a></li>
@@ -16,6 +17,11 @@
       <!-- Content pane -->
       <div class="tab-pane active" id="tab-content" role="tabpanel">
         {% include 'includes/home-content.html' %}
+      </div>
+
+      <!-- Search Symbol pane -->
+      <div class="tab-pane" id="tab-search" role="tabpanel">
+        {% include 'includes/home-search-symbol.html' %}
       </div>
 
       <!-- Revision pane -->

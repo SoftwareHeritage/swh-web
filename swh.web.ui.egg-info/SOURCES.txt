@@ -72,6 +72,7 @@ swh/web/ui/templates/includes/home-content.html
 swh/web/ui/templates/includes/home-directory.html
 swh/web/ui/templates/includes/home-origin.html
 swh/web/ui/templates/includes/home-revision.html
+swh/web/ui/templates/includes/home-search-symbol.html
 swh/web/ui/templates/includes/search-form.html
 swh/web/ui/tests/__init__.py
 swh/web/ui/tests/test_apidoc.py
