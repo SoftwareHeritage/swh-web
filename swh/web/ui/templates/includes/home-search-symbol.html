@@ -1,27 +1,44 @@
 <!-- The symbol search-->
 <label for="file-hash-form">Search symbol</label>
 <div class="simple-desc container-fluid">
-  Permits to lookup symbols in content that SWH
-  indexed (i.e. a file that we have in our database).
+  Lookup symbols in content that SWH indexed (i.e. a file that we have
+  in our database).
 </div>
+<br />
 <form id="file-hash-form"
       action="{{ url_for('search_symbol') }}"
-      class="text-center form"
+      class="text-center form-inline"
       method="get">
 
-  <br/>
   <div class="input-group">
     <input id="text-symbol-input"
-           type="text" class="form-control"
+           type="text"
            name="q"
-           placeholder="Symbol to lookup" />
-    <span class="input-group-btn">
-      <button id="text-symbol-submit"
-              class="btn btn-primary"
-              type="submit">
-        Symbol search
-      </button>
-    </span>
+           placeholder="Symbol to lookup"
+           class="form-control"
+           {% if q is not none %}
+           value="{{ q }}"
+           {% endif %}
+           />
+  </div>
+  <div class="form-group">
+    <select id="per_page" name="per_page" class="form-control">
+      {% for v in ['10', '25', '50'] %}
+      {% if per_page == v %}
+      <option selected="selected">{{ v }}</option>
+      {% else %}
+      <option>{{ v }}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <button id="text-symbol-submit"
+            class="btn btn-default"
+            type="submit">
+      Symbol search
+    </button>
+  </div>
   </div>
 </form>
 <br />
