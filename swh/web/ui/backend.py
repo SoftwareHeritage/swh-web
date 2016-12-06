@@ -65,10 +65,7 @@ def content_ctags_get(id):
         dict of keys 'id' (bytes) and 'ctags' (list of dict)
 
     """
-    r = list(main.storage().content_ctags_get([id]))
-    if not r:
-        return None
-    return r[0]
+    return list(main.storage().content_ctags_get([id]))
 
 
 def content_ctags_search(expression, last_sha1, limit=10):
