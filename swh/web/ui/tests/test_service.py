@@ -240,20 +240,22 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     def lookup_content_ctags(self, mock_backend):
         # given
         mock_backend.content_ctags_get = MagicMock(
-            return_value={
+            return_value=[{
                 'id': hex_to_hash(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
-                'ctags': [{
-                    'line': 100,
-                    'name': 'hello',
-                    'kind': 'function',
-                }]
-            })
+                'line': 100,
+                'name': 'hello',
+                'kind': 'function',
+                'tool_name': 'ctags',
+                'tool_version': 'some-version',
+            }])
         expected_ctags = [{
             'id': '123caf10e9535160d90e874b45aa426de762f19f',
             'line': 100,
             'name': 'hello',
             'kind': 'function',
+            'tool_name': 'ctags',
+            'tool_version': 'some-version',
         }]
 
         # when
