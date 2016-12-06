@@ -135,10 +135,8 @@ def lookup_content_ctags(q):
     if not ctags:
         return None
 
-    hex_sha1 = hashutil.hash_to_hex(sha1)
-    for ctag in ctags['ctags']:
-        ctag['id'] = hex_sha1
-        yield ctag
+    for ctag in ctags:
+        yield converters.from_swh(ctag, hashess={'id'})
 
 
 def lookup_content_filetype(q):

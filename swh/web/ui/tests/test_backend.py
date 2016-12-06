@@ -182,7 +182,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         actual_content = backend.content_ctags_get(sha1_bin)
 
         # then
-        self.assertEquals(actual_content, 1)
+        self.assertEquals(actual_content, [1, 2, 3])
 
         self.storage.content_ctags_get.assert_called_with(
             [sha1_bin])
@@ -199,7 +199,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         actual_content = backend.content_ctags_get(sha1_bin)
 
         # then
-        self.assertIsNone(actual_content)
+        self.assertEquals(actual_content, [])
 
         self.storage.content_ctags_get.assert_called_with(
             [sha1_bin])
