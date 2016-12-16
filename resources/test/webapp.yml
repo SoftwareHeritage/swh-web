@@ -1,0 +1,19 @@
+storage:
+  cls: remote
+  args:
+    url: http://localhost:5000/
+
+# where to log information
+log_dir: /tmp/swh/web-ui/log
+
+# for dev only
+debug: true
+
+# current server (0.0.0.0 for world opening)
+host: 127.0.0.1
+
+# its port
+port: 6543
+
+# Max revisions shown in a log
+max_log_revs: 25

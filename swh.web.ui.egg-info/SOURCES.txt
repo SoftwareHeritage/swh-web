@@ -24,7 +24,7 @@ docs/source/modules.rst
 docs/source/swh.web.ui.rst
 docs/source/_static/dependencies.dot
 docs/source/_static/dependencies.png
-resources/test/webapp.ini
+resources/test/webapp.yml
 swh.web.ui.egg-info/PKG-INFO
 swh.web.ui.egg-info/SOURCES.txt
 swh.web.ui.egg-info/dependency_links.txt
