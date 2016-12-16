@@ -16,8 +16,12 @@ from swh.storage import get_storage
 
 
 DEFAULT_CONFIG = {
-    'storage_args': ('list[str]', ['http://localhost:5000/']),
-    'storage_class': ('str', 'remote_storage'),
+    'storage': ('dict', {
+        'cls': 'remote',
+        'args': {
+            'url': 'http://127.0.0.1:5002/',
+        },
+    }),
     'log_dir': ('string', '/tmp/swh/log'),
     'debug': ('bool', None),
     'host': ('string', '127.0.0.1'),
@@ -42,7 +46,7 @@ def read_config(config_file):
 
     conf = config.read(config_file, DEFAULT_CONFIG)
     config.prepare_folders(conf, 'log_dir')
-    conf['storage'] = get_storage(conf['storage_class'], conf['storage_args'])
+    conf['storage'] = get_storage(**conf['storage'])
 
     return conf
 
@@ -85,7 +89,7 @@ def run_from_webserver(environ, start_response):
 
     load_controllers()
 
-    config_path = '/etc/softwareheritage/webapp/webapp.ini'
+    config_path = '/etc/softwareheritage/webapp/webapp.yml'
 
     conf = read_config(config_path)
 

@@ -3,7 +3,7 @@ FLAG=-v
 NOSEFLAGS=-v -s
 
 run-dev:
-	$(SWH_WEB_UI) $(FLAG) --config ./resources/test/webapp.ini
+	$(SWH_WEB_UI) $(FLAG) --config ./resources/test/webapp.yml
 
-run: # works with the default ~/.config/swh/web-ui.ini file
+run: # works with the default ~/.config/swh/webapp.yml file
 	$(SWH_WEB_UI) $(FLAG)
