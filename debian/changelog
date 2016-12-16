@@ -1,3 +1,10 @@
+swh-web (0.0.51-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.51
+  * Update configuration file from ini to yml
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 16 Dec 2016 13:27:08 +0100
+
 swh-web (0.0.50-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.50
