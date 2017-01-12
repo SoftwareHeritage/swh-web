@@ -54,7 +54,7 @@ def api_origin_visits(origin_id):
 
 
 @app.route('/api/1/origin/<int:origin_id>/visit/<int:visit_id>/')
-@doc.route('/api/1/origin/visit/id/')
+@doc.route('/api/1/origin/visit/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
