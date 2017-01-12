@@ -53,8 +53,8 @@ def api_origin_visits(origin_id):
         enrich_fn=_enrich_origin_visit)
 
 
-@app.route('/api/1/origin/<int:origin_id>/visits/<int:visit_id>/')
-@doc.route('/api/1/origin/visits/id/')
+@app.route('/api/1/origin/<int:origin_id>/visit/<int:visit_id>/')
+@doc.route('/api/1/origin/visit/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
@@ -63,6 +63,8 @@ def api_origin_visits(origin_id):
          default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin visit identifier')
+@doc.raises(exc=doc.excs.notfound,
+            doc='Raised if no visit that match the query is found')
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""The single instance visit visit_id of the origin pointed
              by origin_id as POSIX time since epoch""")
