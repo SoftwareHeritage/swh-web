@@ -203,7 +203,7 @@ class route(APIDocBase):  # noqa: N801
         return True
 
     def compute_return(self, f, rv):
-        # Build documentation
+        """Build documentation"""
         data = self.data
         if not f.__doc__:
             raise APIDocException('Apidoc %s: expected a docstring'
