@@ -477,7 +477,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'visit': 2,
             'origin_url': '/api/1/origin/1/',
             'origin_visits_url': '/api/1/origin/1/visits/',
-            'origin_visit_url': '/api/1/origin/1/visits/2/',
+            'origin_visit_url': '/api/1/origin/1/visit/2/',
             'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
             'revision_url': '/api/1/revision/'
                             'b04caf10e9535160d90e874b45aa426de762f19f/',
@@ -945,19 +945,19 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'date': 1104616800.0,
                 'origin': 1,
                 'visit': 1,
-                'origin_visit_url': '/api/1/origin/1/visits/1/',
+                'origin_visit_url': '/api/1/origin/1/visit/1/',
             },
             {
                 'date': 1293919200.0,
                 'origin': 1,
                 'visit': 2,
-                'origin_visit_url': '/api/1/origin/1/visits/2/',
+                'origin_visit_url': '/api/1/origin/1/visit/2/',
             },
             {
                 'date': 1420149600.0,
                 'origin': 1,
                 'visit': 3,
-                'origin_visit_url': '/api/1/origin/1/visits/3/',
+                'origin_visit_url': '/api/1/origin/1/visit/3/',
             }
         ])
 
@@ -992,7 +992,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         })
 
         # when
-        rv = self.app.get('/api/1/origin/10/visits/100/')
+        rv = self.app.get('/api/1/origin/10/visit/100/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -1008,7 +1008,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_origin_visit.return_value = None
 
         # when
-        rv = self.app.get('/api/1/origin/1/visits/1000/')
+        rv = self.app.get('/api/1/origin/1/visit/1000/')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
