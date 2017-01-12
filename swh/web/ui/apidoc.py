@@ -242,11 +242,13 @@ class route(APIDocBase):  # noqa: N801
             if isinstance(doc_instance, arg):
                 if 'args' not in data:
                     data['args'] = []
-                    data['args'].append(doc_instance.data)
+
+                data['args'].append(doc_instance.data)
             elif isinstance(doc_instance, raises):
                 if 'excs' not in data:
                     data['excs'] = []
-                    data['excs'].append(doc_instance.data)
+
+                data['excs'].append(doc_instance.data)
             elif isinstance(doc_instance, returns):
                 data['return'] = doc_instance.data
             else:
