@@ -53,8 +53,8 @@ def api_origin_visits(origin_id):
         enrich_fn=_enrich_origin_visit)
 
 
-@app.route('/api/1/origin/<int:origin_id>/visits/<int:visit_id>/')
-@doc.route('/api/1/origin/visits/id/')
+@app.route('/api/1/origin/<int:origin_id>/visit/<int:visit_id>/')
+@doc.route('/api/1/origin/visit/id/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
