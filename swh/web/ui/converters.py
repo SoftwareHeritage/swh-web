@@ -233,7 +233,7 @@ def from_origin_visit(visit):
                   convert={'date'},
                   convert_fn=lambda d: d.timestamp())
 
-    if 'occurrences' in ov:
+    if ov and 'occurrences' in ov:
         ov['occurrences'] = {
             decode_with_escape(k): v
             for k, v in ov['occurrences'].items()

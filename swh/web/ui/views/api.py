@@ -63,6 +63,8 @@ def api_origin_visits(origin_id):
          default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin visit identifier')
+@doc.raises(exc=doc.excs.notfound,
+            doc='Raised if no visit that match the query is found')
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""The single instance visit visit_id of the origin pointed
              by origin_id as POSIX time since epoch""")
