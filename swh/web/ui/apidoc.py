@@ -88,12 +88,15 @@ class APIUrls(object):
         return endpoints
 
     @classmethod
-    def index_add_route(cls, route, docstring):
+    def index_add_route(cls, route, docstring, **kwargs):
         """
         Add a route to the self-documenting API reference
         """
         if route not in cls.apidoc_routes:
-            cls.apidoc_routes[route] = docstring
+            d = {'docstring': docstring}
+            for k, v in kwargs.items():
+                d[k] = v
+            cls.apidoc_routes[route] = d
 
 
 class APIDocException(Exception):
@@ -179,15 +182,19 @@ class route(APIDocBase):  # noqa: N801
                 in the /api endpoints. Default to False.
 
     """
-    def __init__(self, route, noargs=False, hidden=False):
+    def __init__(self, route, noargs=False, tags=[]):
         super().__init__()
         self.route = route
         self.noargs = noargs
-        self.hidden = hidden
+        self.tags = set(tags)
 
     def __call__(self, f):
-        if not self.hidden:
-            APIUrls.index_add_route(self.route, f.__doc__)
+        if 'hidden' not in self.tags:
+            options = {}
+            for k in self.tags:
+                options[k] = True
+
+            APIUrls.index_add_route(self.route, f.__doc__, **options)
 
         @wraps(f)
         def doc_func(*args, **kwargs):
