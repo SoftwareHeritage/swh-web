@@ -94,7 +94,7 @@ def api_origin_visit(origin_id, visit_id):
 
 @app.route('/api/1/content/symbol/', methods=['POST'])
 @app.route('/api/1/content/symbol/<string:q>/')
-@doc.route('/api/1/content/symbol/')
+@doc.route('/api/1/content/symbol/', hidden=True)
 @doc.arg('q',
          default='hello',
          argtype=doc.argtypes.str,
@@ -784,7 +784,7 @@ def api_directory(sha1_git,
 
 
 @app.route('/api/1/provenance/<string:q>/')
-@doc.route('/api/1/provenance/')
+@doc.route('/api/1/provenance/', hidden=True)
 @doc.arg('q',
          default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
          argtype=doc.argtypes.algo_and_hash,
@@ -938,7 +938,7 @@ def api_content_ctags(q):
 
 
 @app.route('/api/1/content/<string:q>/raw/')
-@doc.route('/api/1/content/raw/')
+@doc.route('/api/1/content/raw/', hidden=True)
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
@@ -997,7 +997,7 @@ def api_content_metadata(q):
 
 
 @app.route('/api/1/entity/<string:uuid>/')
-@doc.route('/api/1/entity/')
+@doc.route('/api/1/entity/', hidden=True)
 @doc.arg('uuid',
          default='5f4d4c51-498a-4e28-88b3-b3e4e8396cba',
          argtype=doc.argtypes.uuid,
