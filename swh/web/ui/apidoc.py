@@ -163,8 +163,7 @@ class APIDocBase(object):
 
 
 class route(APIDocBase):  # noqa: N801
-    """
-    Decorate an API method to register it in the API doc route index
+    """Decorate an API method to register it in the API doc route index
     and create the corresponding Flask route.
 
     This decorator is responsible for bootstrapping the linking of subsequent
@@ -172,16 +171,24 @@ class route(APIDocBase):  # noqa: N801
     documentation data from it.
 
     Args:
-        route: the documentation page's route
-        noargs: set to True if the route has no arguments, and its result
-        should be displayed anytime its documentation is requested
+        route: documentation page's route
+        noargs: set to True if the route has no arguments, and its
+                result should be displayed anytime its documentation
+                is requested. Default to False
+        hidden: set to True to remove the endpoint from being listed
+                in the /api endpoints. Default to False.
+
     """
-    def __init__(self, route, noargs=False):
+    def __init__(self, route, noargs=False, hidden=False):
         super().__init__()
         self.route = route
         self.noargs = noargs
+        self.hidden = hidden
 
     def __call__(self, f):
+        if self.hidden:
+            return f
+
         APIUrls.index_add_route(self.route, f.__doc__)
 
         @wraps(f)
