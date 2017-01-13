@@ -88,12 +88,15 @@ class APIUrls(object):
         return endpoints
 
     @classmethod
-    def index_add_route(cls, route, docstring):
+    def index_add_route(cls, route, docstring, **kwargs):
         """
         Add a route to the self-documenting API reference
         """
         if route not in cls.apidoc_routes:
-            cls.apidoc_routes[route] = docstring
+            d = {'docstring': docstring}
+            for k, v in kwargs.items():
+                d[k] = v
+            cls.apidoc_routes[route] = d
 
 
 class APIDocException(Exception):
@@ -163,8 +166,7 @@ class APIDocBase(object):
 
 
 class route(APIDocBase):  # noqa: N801
-    """
-    Decorate an API method to register it in the API doc route index
+    """Decorate an API method to register it in the API doc route index
     and create the corresponding Flask route.
 
     This decorator is responsible for bootstrapping the linking of subsequent
@@ -172,17 +174,27 @@ class route(APIDocBase):  # noqa: N801
     documentation data from it.
 
     Args:
-        route: the documentation page's route
-        noargs: set to True if the route has no arguments, and its result
-        should be displayed anytime its documentation is requested
+        route: documentation page's route
+        noargs: set to True if the route has no arguments, and its
+                result should be displayed anytime its documentation
+                is requested. Default to False
+        hidden: set to True to remove the endpoint from being listed
+                in the /api endpoints. Default to False.
+
     """
-    def __init__(self, route, noargs=False):
+    def __init__(self, route, noargs=False, tags=[]):
         super().__init__()
         self.route = route
         self.noargs = noargs
+        self.tags = set(tags)
 
     def __call__(self, f):
-        APIUrls.index_add_route(self.route, f.__doc__)
+        if 'hidden' not in self.tags:
+            options = {}
+            for k in self.tags:
+                options[k] = True
+
+            APIUrls.index_add_route(self.route, f.__doc__, **options)
 
         @wraps(f)
         def doc_func(*args, **kwargs):
