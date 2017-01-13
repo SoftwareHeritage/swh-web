@@ -4,10 +4,10 @@
 <div class="api-doc">
   {% for route, doc in doc_routes %}
   {% if 'deprecated' in doc and doc['deprecated'] is not none %}
-  <div class="api-doc-route-deprecated">
+  <div class="api-doc-route api-doc-route-deprecated">
     <h2> {{ route }} </h2>
   {% elif 'upcoming' in doc and doc['upcoming'] is not none %}
-  <div class="api-doc-route-upcoming">
+  <div class="api-doc-route api-doc-route-upcoming">
     <h2> {{ route }} </h2>
   {% else %}
   <div class="api-doc-route">
