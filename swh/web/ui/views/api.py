@@ -605,11 +605,12 @@ def api_revision_directory(sha1_git,
 @doc.arg('sha1_git',
          default='ec72c666fb345ea5f21359b7bc063710ce558e39',
          argtype=doc.argtypes.sha1_git,
-         argdoc='The sha1_git of the revision queried')
+         argdoc="The revision's identifier queried")
 @doc.arg('prev_sha1s',
          default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
          argtype=doc.argtypes.path,
-         argdoc='The navigation breadcrumbs -- use at your own risk!')
+         argdoc="""The optional navigation breadcrumbs (descendant revisions
+previously visited).  If multiple values, use / as delimiter.  """)
 @doc.raises(exc=doc.excs.badinput,
             doc='Raised if sha1_git or prev_sha1s is not well formed')
 @doc.raises(exc=doc.excs.notfound,
@@ -622,6 +623,9 @@ def api_revision_log(sha1_git, prev_sha1s=None):
     """Show all revisions (~git log) starting from sha1_git.
     The first element returned is the given sha1_git, or the first
     breadcrumb, if any.
+
+    To browse for the following revisions, use the link mentioned in
+    the 'next_revs_url' key.
 
     """
     limit = app.config['conf']['max_log_revs']
