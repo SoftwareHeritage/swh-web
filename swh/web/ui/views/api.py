@@ -609,7 +609,7 @@ def api_revision_directory(sha1_git,
 @doc.arg('prev_sha1s',
          default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
          argtype=doc.argtypes.path,
-         argdoc="""The optional navigation breadcrumbs (descendant revisions
+         argdoc="""(Optional) Navigation breadcrumbs (descendant revisions
 previously visited).  If multiple values, use / as delimiter.  """)
 @doc.raises(exc=doc.excs.badinput,
             doc='Raised if sha1_git or prev_sha1s is not well formed')
@@ -624,8 +624,8 @@ def api_revision_log(sha1_git, prev_sha1s=None):
     The first element returned is the given sha1_git, or the first
     breadcrumb, if any.
 
-    To browse for the following revisions, use the link mentioned in
-    the 'next_revs_url' key.
+    The result is paginated.  To browse for the following revisions,
+    use the link mentioned in the 'next_revs_url' key.
 
     """
     limit = app.config['conf']['max_log_revs']
@@ -687,11 +687,12 @@ def api_revision_log(sha1_git, prev_sha1s=None):
 @doc.arg('branch_name',
          default='refs/heads/master',
          argtype=doc.argtypes.path,
-         argdoc="The revision's branch name within the origin specified")
+         argdoc="""(Optional) The revision's branch name within the origin specified.
+Defaults to 'refs/heads/master'.""")
 @doc.arg('ts',
          default='2000-01-17T11:23:54+00:00',
          argtype=doc.argtypes.ts,
-         argdoc="""A time or timestamp string to parse""")
+         argdoc="""(Optional) A time or timestamp string to parse""")
 @doc.raises(exc=doc.excs.notfound,
             doc="""Raised if a revision matching the given criteria was not
             found in SWH""")
@@ -701,9 +702,12 @@ def api_revision_log(sha1_git, prev_sha1s=None):
 def api_revision_log_by(origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
-    """Show all revisions (~git log) starting from the revision
-    described by its origin_id, optional branch name and timestamp.
-    The first element returned is the described revision.
+    """Show all revisions (~git log) starting from the revision targeted
+    by the origin_id provided and optionally a branch name or/and a
+    timestamp.
+
+    The result is paginated. To browse the following revisions, use
+    the link mentioned in the 'next_revs_url' key.
 
     """
     limit = app.config['conf']['max_log_revs']
