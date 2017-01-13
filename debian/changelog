@@ -1,8 +1,13 @@
-swh-web (0.0.52-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.53-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.53
+  * apidoc: Update upcoming and hidden endpoints information
+  * apidoc: Enrich route information with tags
+  * apidoc: /api/1/revision/origin/log/: Add pagination explanation
+  * apidoc: /api/1/revision/log/: Add pagination explanation
+  * api: Fix filtering fields to work in depth
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 12 Jan 2017 17:38:59 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 13 Jan 2017 17:33:01 +0100
 
 swh-web (0.0.52-1~swh1) unstable-swh; urgency=medium
 

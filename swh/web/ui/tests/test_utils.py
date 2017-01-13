@@ -184,6 +184,19 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(actual_res, [{}, {}])
 
     @istest
+    def filter_field_keys_map(self):
+        # when
+        actual_res = utils.filter_field_keys(
+            map(lambda x: {'i': x['i']+1, 'j': x['j']},
+                [{'i': 1, 'j': None},
+                 {'i': 2, 'j': None},
+                 {'i': 3, 'j': None}]),
+            {'i'})
+
+        # then
+        self.assertEqual(list(actual_res), [{'i': 2}, {'i': 3}, {'i': 4}])
+
+    @istest
     def filter_field_keys_list(self):
         # when
         actual_res = utils.filter_field_keys(
@@ -193,6 +206,40 @@ class UtilsTestCase(unittest.TestCase):
 
         # then
         self.assertEqual(actual_res, [{'directory': 1}, {'dir': 1}])
+
+    @istest
+    def filter_field_keys_complex_1(self):
+        actual_res = utils.filter_field_keys(
+            {
+                'list': [
+                    {'directory': 1, 'file': 2, 'link': 3},
+                    {'dir': 1, 'fil': 2, 'lin': 3}
+                ]
+            },
+            {'list', 'directory', 'dir'})
+        # then
+        self.assertEqual(actual_res,
+                         {'list': [{'directory': 1}, {'dir': 1}]})
+
+    @istest
+    def filter_field_keys_complex_2(self):
+        actual_res = utils.filter_field_keys(
+            {
+                'list': [
+                    [{'directory': 1, 'file': 2, 'link': 3}],
+                    [{'dir': 1, 'fil': 2, 'lin': 3}],
+                ]
+            },
+            {'list', 'directory', 'dir'})
+        # then
+        self.assertEqual(
+            actual_res,
+            {
+                'list': [
+                    [{'directory': 1}],
+                    [{'dir': 1}]
+                ]
+            })
 
     @istest
     def filter_field_keys_other(self):

@@ -114,11 +114,12 @@ def filter_field_keys(data, field_keys):
 
     """
     if isinstance(data, map):
-        return (filter_field_keys(x, field_keys) for x in data)
+        return map(lambda x: filter_field_keys(x, field_keys), data)
     if isinstance(data, list):
         return [filter_field_keys(x, field_keys) for x in data]
     if isinstance(data, dict):
-        return {k: v for (k, v) in data.items() if k in field_keys}
+        return {k: filter_field_keys(v, field_keys)
+                for (k, v) in data.items() if k in field_keys}
     return data
 
 
