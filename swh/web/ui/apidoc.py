@@ -186,10 +186,8 @@ class route(APIDocBase):  # noqa: N801
         self.hidden = hidden
 
     def __call__(self, f):
-        if self.hidden:
-            return f
-
-        APIUrls.index_add_route(self.route, f.__doc__)
+        if not self.hidden:
+            APIUrls.index_add_route(self.route, f.__doc__)
 
         @wraps(f)
         def doc_func(*args, **kwargs):
