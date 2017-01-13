@@ -24,7 +24,7 @@ def api_stats():
 
 
 @app.route('/api/1/origin/<int:origin_id>/visits/')
-@doc.route('/api/1/origin/visits/')
+@doc.route('/api/1/origin/visits/', tags=['upcoming'])
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
@@ -94,7 +94,7 @@ def api_origin_visit(origin_id, visit_id):
 
 @app.route('/api/1/content/symbol/', methods=['POST'])
 @app.route('/api/1/content/symbol/<string:q>/')
-@doc.route('/api/1/content/symbol/', hidden=True)
+@doc.route('/api/1/content/symbol/', tags=['upcoming'])
 @doc.arg('q',
          default='hello',
          argtype=doc.argtypes.str,
@@ -784,7 +784,7 @@ def api_directory(sha1_git,
 
 
 @app.route('/api/1/provenance/<string:q>/')
-@doc.route('/api/1/provenance/', hidden=True)
+@doc.route('/api/1/provenance/', tags=['hidden'])
 @doc.arg('q',
          default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
          argtype=doc.argtypes.algo_and_hash,
@@ -826,7 +826,7 @@ def api_content_provenance(q):
 
 
 @app.route('/api/1/filetype/<string:q>/')
-@doc.route('/api/1/filetype/')
+@doc.route('/api/1/filetype/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -854,7 +854,7 @@ def api_content_filetype(q):
 
 
 @app.route('/api/1/language/<string:q>/')
-@doc.route('/api/1/language/')
+@doc.route('/api/1/language/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -882,7 +882,7 @@ def api_content_language(q):
 
 
 @app.route('/api/1/license/<string:q>/')
-@doc.route('/api/1/license/')
+@doc.route('/api/1/license/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -910,7 +910,7 @@ def api_content_license(q):
 
 
 @app.route('/api/1/ctags/<string:q>/')
-@doc.route('/api/1/ctags/')
+@doc.route('/api/1/ctags/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -938,7 +938,7 @@ def api_content_ctags(q):
 
 
 @app.route('/api/1/content/<string:q>/raw/')
-@doc.route('/api/1/content/raw/', hidden=True)
+@doc.route('/api/1/content/raw/', tags=['hidden'])
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
@@ -997,7 +997,7 @@ def api_content_metadata(q):
 
 
 @app.route('/api/1/entity/<string:uuid>/')
-@doc.route('/api/1/entity/', hidden=True)
+@doc.route('/api/1/entity/', tags=['hidden'])
 @doc.arg('uuid',
          default='5f4d4c51-498a-4e28-88b3-b3e4e8396cba',
          argtype=doc.argtypes.uuid,
