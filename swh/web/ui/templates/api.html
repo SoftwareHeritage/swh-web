@@ -3,17 +3,13 @@
 {% block content %}
 <div class="api-doc">
   {% for route, doc in doc_routes %}
-  {% if 'deprecated' in doc and doc['deprecated'] is not none %}
-  <div class="api-doc-route api-doc-route-deprecated">
-    <h2> {{ route }} </h2> (deprecated)
-
-  {% elif 'upcoming' in doc and doc['upcoming'] is not none %}
-  <div class="api-doc-route api-doc-route-upcoming">
-    <h2> {{ route }} </h2> (upcoming)
-  {% else %}
+    {% if 'tags' in doc and doc['tags'] is not none %}
+  <div class="api-doc-route{% for tag in doc['tags'] %} api-doc-route-{{ tag }}{% endfor %}">
+    <h2> {{ route }} </h2> ({{ ', '.join(doc['tags']) }})
+    {% else %}
   <div class="api-doc-route">
     <h2> <a href="{{ route }}">{{ route }}</a> </h2>
-  {% endif %}
+    {% endif %}
     {% autoescape off %}{{ doc['docstring'] | safe_docstring_display }}{% endautoescape %}
   </div>
   </br>
