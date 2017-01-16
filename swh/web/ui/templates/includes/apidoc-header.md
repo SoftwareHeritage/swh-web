@@ -1,37 +1,38 @@
-Welcome to Software Heritage project's API.
+Welcome to Software Heritage project's API documentation.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
 **Table of Contents**
 
+- [Version](#version)
 - [Schema](#schema)
-    - [Mimetype override](#mimetype-override)
-    - [Parameters](#parameters)
-        - [Global parameter](#global-parameter)
-    - [Client errors](#client-errors)
-        - [Bad request](#bad-request)
-        - [Not found](#not-found)
-    - [Terminology](#terminology)
-        - [Content](#content)
-        - [(Cryptographic) hash](#cryptographic-hash)
-        - [Directory](#directory)
-        - [Origin](#origin)
-        - [Project](#project)
-        - [Release](#release)
-        - [Revision](#revision)
-    - [Opened endpoints](#opened-endpoints)
+- [Mimetype override](#mimetype-override)
+- [Parameters](#parameters)
+    - [Global parameter](#global-parameter)
+- [Client errors](#client-errors)
+    - [Bad request](#bad-request)
+    - [Not found](#not-found)
+- [Terminology](#terminology)
+    - [Content](#content)
+    - [(Cryptographic) hash](#cryptographic-hash)
+    - [Directory](#directory)
+    - [Origin](#origin)
+    - [Project](#project)
+    - [Release](#release)
+    - [Revision](#revision)
+- [Opened endpoints](#opened-endpoints)
 
 <!-- markdown-toc end -->
 
 
 ### Version
 
-Current version is 1.
+Current version is [1](/api/1/).
 
 ### Schema
 
-Api access is over https and accessed through [https://archive.softwareheritage.org/api/1/](https://archive.softwareheritage.org/api/).
+Api access is over https and accessed through [https://archive.softwareheritage.org/api/1/](/api/1/).
 
-Data is sent and received as json.
+Data is sent and received as json by default.
 
 Example:
 ``` shell
@@ -249,7 +250,4 @@ Examples:
 
 ### Opened endpoints
 
-(may have to move to /api/1/)
-
-Below, you will find the opened endpoints.  This will permit you to
-read information on the origin we load up until now.
+Open api endpoints is accessed at [https://archive.softwareheritage.org/api/1/](/api/1/).

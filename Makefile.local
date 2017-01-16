@@ -10,4 +10,4 @@ run: # works with the default ~/.config/swh/webapp.yml file
 	$(SWH_WEB_UI) $(FLAG)
 
 doc:
-	cd swh/web/ui/templates/includes/ && pandoc -o api-header.html api-header.md
+	cd swh/web/ui/templates/includes/ && pandoc -o apidoc-header.html apidoc-header.md

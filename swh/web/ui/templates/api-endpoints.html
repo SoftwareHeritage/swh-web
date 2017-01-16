@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block title %}API Overview{% endblock %}
+{% block content %}
+
+<div class="api-doc">
+  <p>This lists the current API endpoints for version 1.</p>
+
+  <p>
+    For a more general description, please refer
+    to <a href="/api/">the main documentation</a>.
+  </p>
+
+  <p>
+  The currently opened endpoints are blue. You can follow them for a
+  more detailed description.  The other endpoints are upcoming and are
+  not followable for now.
+  </p>
+  <p>
+    <ul>
+    {% for route, doc in doc_routes %}
+      <li><a href="#{{ route }}">{{ route }}</a></li>
+    {% endfor %}
+    </ul>
+  </p>
+</div>
+
+<div class="api-doc">
+  <!-- List api endpoints -->
+  {% for route, doc in doc_routes %}
+    {% if 'tags' in doc and doc['tags'] is not none %}
+  <div class="api-doc-route{% for tag in doc['tags'] %} api-doc-route-{{ tag }}{% endfor %}">
+    <h4 id="{{ route }}"> {{ route }} </h4>
+    ({{ ', '.join(doc['tags']) }})
+    {% else %}
+  <div class="api-doc-route">
+    <h4 id="{{ route }}"> <a href="{{ route }}">{{ route }}</a> </h4>
+    {% endif %}
+    {% autoescape off %}{{ doc['docstring'] | safe_docstring_display }}{% endautoescape %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
