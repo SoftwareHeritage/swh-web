@@ -26,7 +26,7 @@ class StaticViews(test_app.SWHViewTestCase):
 
     @patch('swh.web.ui.apidoc.APIUrls')
     @istest
-    def browse_api_doc(self, mock_api_urls):
+    def browse_api_endpoints(self, mock_api_urls):
         # given
         endpoints = {
             '/a/doc/endpoint/': 'relevant documentation',
@@ -34,7 +34,7 @@ class StaticViews(test_app.SWHViewTestCase):
         mock_api_urls.apidoc_routes = endpoints
 
         # when
-        rv = self.client.get('/api/')
+        rv = self.client.get('/api/1/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -42,6 +42,17 @@ class StaticViews(test_app.SWHViewTestCase):
             self.get_context_variable('doc_routes'),
             sorted(endpoints.items())
         )
+        self.assert_template_used('api-endpoints.html')
+
+    @istest
+    def browse_api_doc(self):
+        # given
+
+        # when
+        rv = self.client.get('/api/')
+
+        # then
+        self.assertEquals(rv.status_code, 200)
         self.assert_template_used('api.html')
 
     @istest

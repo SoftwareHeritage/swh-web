@@ -212,16 +212,25 @@ def browse():
     return render_template('browse.html')
 
 
-@app.route('/api/')
-def browse_api_doc():
-    """Render the API's documentation.
+@app.route('/api/1/')
+def browse_api_endpoints():
+    """Display the list of opened api endpoints.
+
     """
     routes = apidoc.APIUrls.get_app_endpoints()
     # Return a list of routes with consistent ordering
     env = {
         'doc_routes': sorted(routes.items())
     }
-    return render_template('api.html', **env)
+    return render_template('api-endpoints.html', **env)
+
+
+@app.route('/api/')
+def browse_api_doc():
+    """Display the API's documentation.
+
+    """
+    return render_template('api.html')
 
 
 @app.route('/browse/content/<string:q>/')
