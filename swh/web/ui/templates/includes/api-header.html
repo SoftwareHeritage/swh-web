@@ -1,0 +1,178 @@
+<p>Welcome to Software Heritage project's API.</p>
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#schema">Schema</a>
+<ul>
+<li><a href="#mimetype-override">Mimetype override</a></li>
+<li><a href="#parameters">Parameters</a>
+<ul>
+<li><a href="#global-parameter">Global parameter</a></li>
+</ul></li>
+<li><a href="#client-errors">Client errors</a>
+<ul>
+<li><a href="#bad-request">Bad request</a></li>
+<li><a href="#not-found">Not found</a></li>
+</ul></li>
+<li><a href="#terminology">Terminology</a>
+<ul>
+<li><a href="#content">Content</a></li>
+<li><a href="#cryptographic-hash">(Cryptographic) hash</a></li>
+<li><a href="#directory">Directory</a></li>
+<li><a href="#origin">Origin</a></li>
+<li><a href="#project">Project</a></li>
+<li><a href="#release">Release</a></li>
+<li><a href="#revision">Revision</a></li>
+</ul></li>
+<li><a href="#opened-endpoints">Opened endpoints</a></li>
+</ul></li>
+</ul>
+<!-- markdown-toc end -->
+<h3 id="version">Version</h3>
+<p>Current version is 1.</p>
+<h3 id="schema">Schema</h3>
+<p>Api access is over https and accessed through <a href="https://archive.softwareheritage.org/api/">https://archive.softwareheritage.org/api/1/</a>.</p>
+<p>Data is sent and received as json.</p>
+<p>Example:</p>
+<pre class="shell"><code>$ curl -i https://archive.softwareheritage.org/api/1/stat/counters/
+HTTP/1.1 200 OK
+Date: Mon, 16 Jan 2017 10:57:56 GMT
+Server: Apache
+Content-Type: application/json
+Content-Length: 395
+Vary: Accept-Encoding
+Access-Control-Allow-Origin: *
+Connection: close
+
+{
+  &quot;directory_entry_rev&quot;: 3039473,
+  &quot;person&quot;: 13903080,
+  &quot;entity&quot;: 7103795,
+  &quot;skipped_content&quot;: 17864,
+  &quot;entity_history&quot;: 7147753,
+  &quot;revision_history&quot;: 720840448,
+  &quot;revision&quot;: 703277184,
+  &quot;directory&quot;: 2616883200,
+  &quot;release&quot;: 5692900,
+  &quot;origin&quot;: 49938216,
+  &quot;directory_entry_dir&quot;: 2140887552,
+  &quot;occurrence_history&quot;: 254274832,
+  &quot;occurrence&quot;: 241899344,
+  &quot;content&quot;: 3155739136,
+  &quot;directory_entry_file&quot;: 3173807104
+}</code></pre>
+<h4 id="mimetype-override">Mimetype override</h4>
+<p>The response output can be sent as yaml provided the client specifies it using the header field.</p>
+<p>For example:</p>
+<pre class="shell"><code>curl -i -H &#39;Accept: application/yaml&#39; https://archive.softwareheritage.org/api/1/stat/counters/
+HTTP/1.1 200 OK
+Date: Mon, 16 Jan 2017 12:31:50 GMT
+Server: Apache
+Content-Type: application/yaml
+Content-Length: 372
+Access-Control-Allow-Origin: *
+Connection: close
+
+{content: 3155758336,
+ directory: 2616955136,
+ directory_entry_dir: 2140925824,
+ directory_entry_file: 3173833984,
+ directory_entry_rev: 3039473,
+ entity: 7103741,
+ entity_history: 7148121,
+ occurrence: 241887488,
+ occurrence_history: 254277584,
+ origin: 49939848,
+ person: 13898394,
+ release: 5693922,
+ revision: 703275840,
+ revision_history: 720842176,
+ skipped_content: 17864}</code></pre>
+<h3 id="parameters">Parameters</h3>
+<p>Some API endpoints can be used with with local parameters. The url then needs to be adapted accordingly.</p>
+<p>For example:</p>
+<pre class="text"><code>https://archive.softwareheritage.org/api/1/&lt;endpoint-name&gt;?&lt;field0&gt;=&lt;value0&gt;&amp;&lt;field1&gt;=&lt;value1&gt;</code></pre>
+<p>where:</p>
+<ul>
+<li>field0 is an appropriate field for the <endpoint-name> and value0</li>
+<li>field1 is an appropriate field for the <endpoint-name> and value1</li>
+</ul>
+<h4 id="global-parameter">Global parameter</h4>
+<p>One parameter is defined for all api endpoints <code>fields</code>. It permits to filter the output fields per key.</p>
+<p>For example, to only list the number of contents, revisions, directories on the statistical endpoints, one uses:</p>
+<pre class="shell"><code>$ curl https://archive.softwareheritage.org/api/1/stat/counters/\?fields\=content,directory,revision | jq
+{
+  &quot;content&quot;: 3155739136,
+  &quot;revision&quot;: 703277184,
+  &quot;directory&quot;: 2616883200
+}</code></pre>
+<p>Note: If the keys provided to filter on do not exist, they are ignored.</p>
+<h3 id="client-errors">Client errors</h3>
+<p>There are 2 kinds of error.</p>
+<p>In that case, the http error code will reflect that error and a json response is sent with the detailed error.</p>
+<h4 id="bad-request">Bad request</h4>
+<p>This means that the input is incorrect.</p>
+<p>Example:</p>
+<pre class="shell"><code>curl -i https://archive.softwareheritage.org/api/1/content/1/
+HTTP/1.1 400 BAD REQUEST
+Date: Mon, 16 Jan 2017 11:28:08 GMT
+Server: Apache
+Content-Type: application/json
+Content-Length: 44
+Connection: close
+
+{&quot;error&quot;: &quot;Invalid checksum query string 1&quot;}</code></pre>
+<p>Here, the api content expects an hash identifier.</p>
+<h4 id="not-found">Not found</h4>
+<p>This means that the request is ok but we do not found the information the user requests.</p>
+<p>Example:</p>
+<pre class="shell"><code>curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/
+HTTP/1.1 404 NOT FOUND
+Date: Mon, 16 Jan 2017 11:31:46 GMT
+Server: Apache
+Content-Type: application/json
+Content-Length: 77
+Connection: close
+
+{&quot;error&quot;: &quot;Content with 04740277a81c5be6c16f6c9da488ca073b770d7f not found.&quot;}</code></pre>
+<h3 id="terminology">Terminology</h3>
+<p>You will find below the terminology the project swh uses. More details can be found on <a href="https://wiki.softwareheritage.org/index.php?title=Glossary">swh's wiki glossary page</a>.</p>
+<h4 id="content">Content</h4>
+<p>A (specific version of a) file stored in the archive, identified by its cryptographic hashes (SHA1, &quot;git-like&quot; SHA1, SHA256) and its size.</p>
+<p>Also known as: Blob Note.</p>
+<h4 id="cryptographic-hash">(Cryptographic) hash</h4>
+<p>A fixed-size &quot;summary&quot; of a stream of bytes that is easy to compute, and hard to reverse.</p>
+<p>Also known as: Checksum, Digest.</p>
+<h4 id="directory">Directory</h4>
+<p>A set of named pointers to contents (file entries), directories (directory entries) and revisions (revision entries).</p>
+<h4 id="origin">Origin</h4>
+<p>A location from which a coherent set of sources has been obtained.</p>
+<p>Also known as: Data source.</p>
+<p>Examples:</p>
+<ul>
+<li>a Git repository</li>
+<li>a directory containing tarballs</li>
+<li>the history of a Debian package on snapshot.debian.org.</li>
+</ul>
+<h4 id="project">Project</h4>
+<p>An organized effort to develop a software product.</p>
+<p>Projects might be nested following organizational structures (sub-project, sub-sub-project), are associated to a number of human-meaningful metadata, and release software products via Origins.</p>
+<h4 id="release">Release</h4>
+<p>A revision that has been marked by a project as noteworthy with a specific, usually mnemonic, name (for instance, a version number).</p>
+<p>Also known as: Tag (Git-specific terminology).</p>
+<p>Examples:</p>
+<ul>
+<li>a Git tag with its name</li>
+<li>a tarball with its name</li>
+<li>a Debian source package with its version number.</li>
+</ul>
+<h4 id="revision">Revision</h4>
+<p>A &quot;point in time&quot; snapshot in the development history of a project.</p>
+<p>Also known as: Commit</p>
+<p>Examples:</p>
+<ul>
+<li>a Git commit</li>
+</ul>
+<h3 id="opened-endpoints">Opened endpoints</h3>
+<p>(may have to move to /api/1/)</p>
+<p>Below, you will find the opened endpoints. This will permit you to read information on the origin we load up until now.</p>

@@ -1,14 +1,17 @@
 {% extends "layout.html" %}
 {% block title %}API Overview{% endblock %}
 {% block content %}
+
 <div class="api-doc">
+  {% include 'includes/api-header.html' %}
   {% for route, doc in doc_routes %}
     {% if 'tags' in doc and doc['tags'] is not none %}
   <div class="api-doc-route{% for tag in doc['tags'] %} api-doc-route-{{ tag }}{% endfor %}">
-    <h2> {{ route }} </h2> ({{ ', '.join(doc['tags']) }})
+    <h4> {{ route }} </h4>
+    ({{ ', '.join(doc['tags']) }})
     {% else %}
   <div class="api-doc-route">
-    <h2> <a href="{{ route }}">{{ route }}</a> </h2>
+    <h4> <a href="{{ route }}">{{ route }}</a> </h4>
     {% endif %}
     {% autoescape off %}{{ doc['docstring'] | safe_docstring_display }}{% endautoescape %}
   </div>

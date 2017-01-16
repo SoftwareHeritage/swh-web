@@ -73,10 +73,10 @@ h2              { font-size: 1.2em; }
     float: right;
 }
 
-.api-doc-route-upcoming h2 {
+.api-doc-route-upcoming h4 {
     color: orange;
 }
 
-.api-doc-route-deprecated h2 {
+.api-doc-route-deprecated h4 {
     color: red;
 }
