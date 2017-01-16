@@ -52,6 +52,7 @@ swh/web/ui/static/lib/jquery.flot.min.js
 swh/web/ui/static/lib/jquery.flot.selection.min.js
 swh/web/ui/static/lib/jquery.flot.time.min.js
 swh/web/ui/templates/about.html
+swh/web/ui/templates/api-endpoints.html
 swh/web/ui/templates/api.html
 swh/web/ui/templates/apidoc.html
 swh/web/ui/templates/browse.html
@@ -68,6 +69,8 @@ swh/web/ui/templates/revision-log.html
 swh/web/ui/templates/revision.html
 swh/web/ui/templates/search.html
 swh/web/ui/templates/symbols.html
+swh/web/ui/templates/includes/apidoc-header.html
+swh/web/ui/templates/includes/apidoc-header.md
 swh/web/ui/templates/includes/home-content.html
 swh/web/ui/templates/includes/home-directory.html
 swh/web/ui/templates/includes/home-origin.html

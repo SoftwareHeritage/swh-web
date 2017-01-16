@@ -189,11 +189,10 @@ class route(APIDocBase):  # noqa: N801
         self.tags = set(tags)
 
     def __call__(self, f):
+        options = {}
         if 'hidden' not in self.tags:
-            options = {}
-            for k in self.tags:
-                options[k] = True
-
+            if self.tags:
+                options['tags'] = self.tags
             APIUrls.index_add_route(self.route, f.__doc__, **options)
 
         @wraps(f)
