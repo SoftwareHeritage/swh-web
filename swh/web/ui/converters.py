@@ -11,7 +11,8 @@ from swh.web.ui import utils
 
 
 def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
-             removables_if_empty={}, convert={}, convert_fn=lambda x: x):
+             removables_if_empty={}, empty_dict={}, empty_list={},
+             convert={}, convert_fn=lambda x: x):
     """Convert from an swh dictionary to something reasonably json
     serializable.
 
@@ -103,6 +104,10 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
             new_dict[key] = convert_fn(value)
         elif key in removables_if_empty and not value:
             continue
+        elif key in empty_dict and not value:
+            new_dict[key] = {}
+        elif key in empty_list and not value:
+            new_dict[key] = []
         else:
             new_dict[key] = value
 
@@ -236,6 +241,7 @@ def from_origin_visit(visit):
                   hashess={'target'},
                   bytess={'branch'},
                   convert={'date'},
+                  empty_dict={'metadata'},
                   convert_fn=lambda d: d.timestamp())
 
     if ov and 'occurrences' in ov:

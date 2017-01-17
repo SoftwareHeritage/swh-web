@@ -43,6 +43,8 @@ class ConvertersTestCase(unittest.TestCase):
                 'negative_utc': None,
             },
             't': None,
+            'u': None,
+            'v': None,
         }
 
         expected_output = {
@@ -63,6 +65,8 @@ class ConvertersTestCase(unittest.TestCase):
             'r': {'p': 'also intact',
                   'q': 'foo'},
             's': '1969-12-31T17:00:42-07:00',
+            'u': {},
+            'v': [],
         }
 
         def test_convert_fn(v):
@@ -74,6 +78,8 @@ class ConvertersTestCase(unittest.TestCase):
                                             dates={'s'},
                                             blacklist={'h', 'm', 'n', 'o'},
                                             removables_if_empty={'t'},
+                                            empty_dict={'u'},
+                                            empty_list={'v'},
                                             convert={'p', 'q'},
                                             convert_fn=test_convert_fn)
 
