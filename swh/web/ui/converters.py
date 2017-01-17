@@ -199,6 +199,7 @@ def from_revision(revision):
     revision = from_swh(revision,
                         hashess={'id', 'directory', 'parents', 'children'},
                         bytess={'name', 'fullname', 'email'},
+                        empty_list={'metadata'},
                         dates={'date', 'committer_date'})
 
     if revision:
