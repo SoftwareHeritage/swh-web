@@ -207,7 +207,7 @@ def lookup_origin(origin):
         origin information as dict.
 
     """
-    return backend.origin_get(origin)
+    return converters.from_origin(backend.origin_get(origin))
 
 
 def lookup_person(person_id):
