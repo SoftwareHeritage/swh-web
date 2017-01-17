@@ -694,7 +694,11 @@ def lookup_entity_by_uuid(uuid):
 
     """
     uuid = query.parse_uuid4(uuid)
-    return backend.entity_get(uuid)
+    for entity in backend.entity_get(uuid):
+        entity = converters.from_swh(entity,
+                                     convert={'last_seen', 'uuid'},
+                                     convert_fn=lambda x: str(x))
+        yield entity
 
 
 def lookup_revision_through(revision, limit=100):

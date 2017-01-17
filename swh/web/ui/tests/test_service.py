@@ -1889,7 +1889,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.entity_get.return_value = stub_entities
 
         # when
-        actual_entities = service.lookup_entity_by_uuid(uuid_test)
+        actual_entities = list(service.lookup_entity_by_uuid(uuid_test))
 
         # then
         self.assertEquals(actual_entities, stub_entities)
