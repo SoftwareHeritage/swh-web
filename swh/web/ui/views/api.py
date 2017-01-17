@@ -24,7 +24,7 @@ def api_stats():
 
 
 @app.route('/api/1/origin/<int:origin_id>/visits/')
-@doc.route('/api/1/origin/visits/', tags=['upcoming'])
+@doc.route('/api/1/origin/visits/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
