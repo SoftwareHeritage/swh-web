@@ -282,7 +282,7 @@ class SearchView(test_app.SWHViewTestCase):
     @istest
     def search_get_query_hash_not_found(self, mock_api):
         # given
-        mock_api.api_search.return_value = {
+        mock_api.api_check_content_known.return_value = {
             'search_res': [{
                 'filename': None,
                 'sha1': 'sha1:456',
@@ -300,13 +300,13 @@ class SearchView(test_app.SWHViewTestCase):
              'found': False}])
         self.assert_template_used('search.html')
 
-        mock_api.api_search.assert_called_once_with('sha1:456')
+        mock_api.api_check_content_known.assert_called_once_with('sha1:456')
 
     @patch('swh.web.ui.views.browse.api')
     @istest
     def search_get_query_hash_bad_input(self, mock_api):
         # given
-        mock_api.api_search.side_effect = BadInputExc('error msg')
+        mock_api.api_check_content_known.side_effect = BadInputExc('error msg')
 
         # when
         rv = self.client.get('/content/search/?q=sha1_git:789')
@@ -316,13 +316,14 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('search_res'), None)
         self.assert_template_used('search.html')
 
-        mock_api.api_search.assert_called_once_with('sha1_git:789')
+        mock_api.api_check_content_known.assert_called_once_with(
+            'sha1_git:789')
 
     @patch('swh.web.ui.views.browse.api')
     @istest
     def search_get_query_hash_found(self, mock_api):
         # given
-        mock_api.api_search.return_value = {
+        mock_api.api_check_content_known.return_value = {
             'search_res': [{
                 'filename': None,
                 'sha1': 'sha1:123',
@@ -341,7 +342,7 @@ class SearchView(test_app.SWHViewTestCase):
         self.assertEqual(resp['found'], True)
         self.assert_template_used('search.html')
 
-        mock_api.api_search.assert_called_once_with('sha1:123')
+        mock_api.api_check_content_known.assert_called_once_with('sha1:123')
 
     @patch('swh.web.ui.views.browse.request')
     @patch('swh.web.ui.views.browse.api')
@@ -351,7 +352,7 @@ class SearchView(test_app.SWHViewTestCase):
         mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
                              'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
-        mock_api.api_search.side_effect = BadInputExc(
+        mock_api.api_check_content_known.side_effect = BadInputExc(
             'error bad input')
 
         # when (mock_request completes the post request)
@@ -374,7 +375,7 @@ class SearchView(test_app.SWHViewTestCase):
         mock_request.form = {'a': ['456caf10e9535160d90e874b45aa426de762f19f'],
                              'b': ['745bab676c8f3cec8016e0c39ea61cf57e518865']}
         mock_request.method = 'POST'
-        mock_api.api_search.return_value = {
+        mock_api.api_check_content_known.return_value = {
             'search_stats': {'nbfiles': 2, 'pct': 0},
             'search_res': [{'filename': 'a',
                             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
@@ -411,7 +412,7 @@ class SearchView(test_app.SWHViewTestCase):
         mock_request.form = {'a': '456caf10e9535160d90e874b45aa426de762f19f',
                              'b': '745bab676c8f3cec8016e0c39ea61cf57e518865'}
         mock_request.method = 'POST'
-        mock_api.api_search.return_value = {
+        mock_api.api_check_content_known.return_value = {
             'search_stats': {'nbfiles': 2, 'pct': 50},
             'search_res': [{'filename': 'a',
                             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',

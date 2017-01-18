@@ -619,7 +619,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'visit': 2,
             'target': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
             'branch': b'master',
-            'target_type': 'release'
+            'target_type': 'release',
+            'metadata': None,
         }, {
             'date': date_origin_visit3,
             'origin': 1,
@@ -638,7 +639,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'visit': 2,
             'target': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
             'branch': 'master',
-            'target_type': 'release'
+            'target_type': 'release',
+            'metadata': {},
         }, {
             'date': date_origin_visit3.timestamp(),
             'origin': 1,
@@ -1887,7 +1889,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.entity_get.return_value = stub_entities
 
         # when
-        actual_entities = service.lookup_entity_by_uuid(uuid_test)
+        actual_entities = list(service.lookup_entity_by_uuid(uuid_test))
 
         # then
         self.assertEquals(actual_entities, stub_entities)

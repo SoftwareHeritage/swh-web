@@ -649,7 +649,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_search(self, mock_service):
+    def api_check_content_known(self, mock_service):
         # given
         mock_service.lookup_multiple_hashes.return_value = [
             {'found': True,
@@ -665,7 +665,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # when
-        rv = self.app.get('/api/1/content/search/sha1:blah/')
+        rv = self.app.get('/api/1/content/known/sha1:blah/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
@@ -677,7 +677,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_search_as_yaml(self, mock_service):
+    def api_check_content_known_as_yaml(self, mock_service):
         # given
         mock_service.lookup_multiple_hashes.return_value = [
             {'found': True,
@@ -699,7 +699,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # when
-        rv = self.app.get('/api/1/content/search/sha1:halb,sha1_git:hello/',
+        rv = self.app.get('/api/1/content/known/sha1:halb,sha1_git:hello/',
                           headers={'Accept': 'application/yaml'})
 
         self.assertEquals(rv.status_code, 200)
@@ -714,7 +714,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_search_post_as_yaml(self, mock_service):
+    def api_check_content_known_post_as_yaml(self, mock_service):
         # given
         stub_result = [{'filename': None,
                         'sha1': '7e62b1fe10c88a3eddbba930b156bee2956b2435',
@@ -734,7 +734,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.post(
-            '/api/1/content/search/',
+            '/api/1/content/known/',
             headers={'Accept': 'application/yaml'},
             data=dict(
                 q='7e62b1fe10c88a3eddbba930b156bee2956b2435',
@@ -750,7 +750,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_search_not_found(self, mock_service):
+    def api_check_content_known_not_found(self, mock_service):
         # given
         stub_result = [{'filename': None,
                         'sha1': 'sha1:halb',
@@ -763,7 +763,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         }
 
         # when
-        rv = self.app.get('/api/1/content/search/sha1:halb/')
+        rv = self.app.get('/api/1/content/known/sha1:halb/')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')

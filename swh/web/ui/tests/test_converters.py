@@ -41,7 +41,10 @@ class ConvertersTestCase(unittest.TestCase):
                 'timestamp': 42,
                 'offset': -420,
                 'negative_utc': None,
-            }
+            },
+            't': None,
+            'u': None,
+            'v': None,
         }
 
         expected_output = {
@@ -62,6 +65,8 @@ class ConvertersTestCase(unittest.TestCase):
             'r': {'p': 'also intact',
                   'q': 'foo'},
             's': '1969-12-31T17:00:42-07:00',
+            'u': {},
+            'v': [],
         }
 
         def test_convert_fn(v):
@@ -72,6 +77,9 @@ class ConvertersTestCase(unittest.TestCase):
                                             bytess={'c', 'e', 'g', 'l'},
                                             dates={'s'},
                                             blacklist={'h', 'm', 'n', 'o'},
+                                            removables_if_empty={'t'},
+                                            empty_dict={'u'},
+                                            empty_list={'v'},
                                             convert={'p', 'q'},
                                             convert_fn=test_convert_fn)
 
@@ -167,19 +175,17 @@ class ConvertersTestCase(unittest.TestCase):
     def from_origin(self):
         # given
         origin_input = {
-            'origin_type': 'ftp',
-            'origin_url': 'rsync://ftp.gnu.org/gnu/octave',
-            'branch': 'octave-3.4.0.tar.gz',
-            'revision': b'\xb0L\xaf\x10\xe9SQ`\xd9\x0e\x87KE\xaaBm\xe7b\xf1\x9f',  # noqa
-            'path': b'octave-3.4.0/doc/interpreter/octave.html/doc_002dS_005fISREG.html'  # noqa
+            'id': 9,
+            'type': 'ftp',
+            'url': 'rsync://ftp.gnu.org/gnu/octave',
+            'project': None,
+            'lister': None,
         }
 
         expected_origin = {
-            'origin_type': 'ftp',
-            'origin_url': 'rsync://ftp.gnu.org/gnu/octave',
-            'branch': 'octave-3.4.0.tar.gz',
-            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'path': 'octave-3.4.0/doc/interpreter/octave.html/doc_002dS_005fISREG.html'  # noqa
+            'id': 9,
+            'type': 'ftp',
+            'url': 'rsync://ftp.gnu.org/gnu/octave',
         }
 
         # when
