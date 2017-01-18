@@ -99,6 +99,9 @@ def api_origin_visit(origin_id, visit_id):
          default='hello',
          argtype=doc.argtypes.str,
          argdoc="""An expression string to lookup in swh's raw content""")
+@doc.header('Link', doc="""Optional 'Link' header proposed to the api consumer
+                           for navigation purpose. possible are 'next'
+                           or 'previous' page.""")
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""A list of dict whose content matches the expression.
              Each dict has the following keys:

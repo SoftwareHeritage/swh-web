@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -108,7 +108,10 @@ class RendererTestCase(unittest.TestCase):
         expected_env = {
             'my_key': 'my_display_value',
             'response_data': json.dumps(data),
-            'request': mock_request
+            'request': mock_request,
+            'headers_data': {
+                'Link': '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03>; rel="next"'  # noqa
+            }
         }
 
         def mock_mimetypes(key):
@@ -277,6 +280,19 @@ class RendererTestCase(unittest.TestCase):
         other_content = '{"url": "/something/api/1/other"}'
         self.assertEquals(renderers.urlize_api_links(other_content),
                           other_content)
+
+    @istest
+    def urlize_header_links(self):
+        # update api link with html links content with links
+        content = """</api/1/abc/>; rel="next"
+</api/1/def/>; rel="prev"
+"""
+        expected_content = """<<a href="/api/1/abc/">/api/1/abc/</a>>; rel="next"
+<<a href="/api/1/def/">/api/1/def/</a>>; rel="prev"
+"""
+
+        self.assertEquals(renderers.urlize_header_links(content),
+                          expected_content)
 
     @istest
     def revision_id_from_url(self):

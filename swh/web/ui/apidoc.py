@@ -291,6 +291,11 @@ class route(APIDocBase):  # noqa: N801
                 data['excs'].append(doc_instance.data)
             elif isinstance(doc_instance, returns):
                 data['return'] = doc_instance.data
+            elif isinstance(doc_instance, header):
+                if 'headers' not in data:
+                    data['headers'] = []
+
+                data['headers'].append(doc_instance.data)
             else:
                 raise APIDocException('Unknown API documentation decorator')
             doc_instance = doc_instance.inner_dec
@@ -298,10 +303,11 @@ class route(APIDocBase):  # noqa: N801
         return data
 
 
-class arg(APIDocBase):  # noqa: N801
+class arg(APIDocBase):
     """
     Decorate an API method to display an argument's information on the doc
     page specified by @route above.
+
     Args:
         name: the argument's name. MUST match the method argument's name to
         create the example request URL.
@@ -318,6 +324,34 @@ class arg(APIDocBase):  # noqa: N801
             'default': default
         }
         self.inner_dec = None
+
+    def __call__(self, f):
+        @wraps(f)
+        def arg_fun(*args, outer_decorator=None, **kwargs):
+            kwargs['outer_decorator'] = outer_decorator
+            return self.maintain_stack(f, args, kwargs)
+        return arg_fun
+
+    @property
+    def data(self):
+        return self.doc_dict
+
+
+class header(APIDocBase):
+    """
+    Decorate an API method to display header information the api can
+    potentially return in the response.
+
+    Args:
+        name: the header name
+        doc: the information about that header
+
+    """
+    def __init__(self, name, doc):
+        self.doc_dict = {
+            'name': name,
+            'doc': doc,
+        }
 
     def __call__(self, f):
         @wraps(f)

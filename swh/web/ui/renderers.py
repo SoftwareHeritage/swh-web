@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -155,6 +155,11 @@ class SWHMultiResponse(Response, SWHFilterEnricher,
                               indent=4, separators=(',', ': '))
             env = g.get('doc_env', {})
             env['response_data'] = data
+
+            env['headers_data'] = None
+            if options and 'headers' in options:
+                env['headers_data'] = options['headers']
+
             env['request'] = request
             rv = Response(render_template('apidoc.html', **env),
                           content_type='text/html',
@@ -190,9 +195,34 @@ def error_response(error_code, error):
                                                         options=error_opts)
 
 
-def urlize_api_links(content):
-    """Utility function for decorating api links in browsable api."""
-    return re.sub(r'"(/api/.*|/browse/.*)"', r'"<a href="\1">\1</a>"', content)
+def urlize_api_links(text):
+    """Utility function for decorating api links in browsable api.
+
+    Args:
+        text: whose content matching links should be transformed into
+        contextual API or Browse html links.
+
+    Returns
+        The text transformed if any link is found.
+        The text as is otherwise.
+
+    """
+    return re.sub(r'"(/api/.*|/browse/.*)"', r'"<a href="\1">\1</a>"', text)
+
+
+def urlize_header_links(text):
+    """Utility function for decorating headers links in browsable api.
+
+    Args
+        text: Text whose content contains Link header value
+
+    Returns:
+        The text transformed with html link if any link is found.
+        The text as is otherwise.
+
+    """
+    return re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
+                  text)
 
 
 class NoHeaderHTMLTranslator(HTMLTranslator):
