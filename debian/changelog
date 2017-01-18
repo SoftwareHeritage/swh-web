@@ -1,3 +1,10 @@
+swh-web (0.0.56-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.56
+  * Add abilities to display multiple examples on each doc endpoint.
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 18 Jan 2017 14:43:58 +0100
+
 swh-web (0.0.55-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.55
