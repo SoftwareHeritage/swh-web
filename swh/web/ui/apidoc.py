@@ -180,6 +180,10 @@ class route(APIDocBase):  # noqa: N801
                 is requested. Default to False
         hidden: set to True to remove the endpoint from being listed
                 in the /api endpoints. Default to False.
+        tags: Further information on api endpoints. Two values are
+              possibly expected:
+              - hidden: remove the entry points from the listing
+              - upcoming: display the entry point but it is not followable
 
     """
     def __init__(self, route, noargs=False, tags=[]):
