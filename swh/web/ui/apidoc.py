@@ -229,13 +229,21 @@ class route(APIDocBase):  # noqa: N801
             example based on default parameter value if any
 
         """
+        s = set()
+        r = []
         for data_url in urls:
             url = data_url['rule']
             defaults = {arg['name']: arg['default']
                         for arg in args
                         if arg['name'] in url}
             if defaults:
-                yield url_for(f.__name__, **defaults)
+                url = url_for(f.__name__, **defaults)
+                if url in s:
+                    continue
+                s.add(url)
+                r.append(url)
+
+        return r
 
     def compute_return(self, f, rv):
         """Build documentation"""
@@ -252,8 +260,8 @@ class route(APIDocBase):  # noqa: N801
                         self.filter_api_url(url, route_re, data['noargs'])]
 
         if 'args' in data:
-            data['examples'] = list(
-                self.build_examples(f, data['urls'], data['args']))
+            data['examples'] = self.build_examples(
+                f, data['urls'], data['args'])
 
         # Prepare and send to mimetype selector if it's not a doc request
         if re.match(route_re, request.url) and not data['noargs'] \
