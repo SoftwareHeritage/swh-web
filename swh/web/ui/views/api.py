@@ -427,7 +427,7 @@ def _revision_directory_by(revision, path, request_path,
          argdoc="""Optional timestamp (default to the nearest time
          crawl of timestamp)""")
 @doc.arg('path',
-         default='.',
+         default='Dockerfile',
          argtype=doc.argtypes.path,
          argdoc='The path to the directory or file to display')
 @doc.raises(exc=doc.excs.notfound,
@@ -572,7 +572,7 @@ def api_revision_raw_message(sha1_git):
          argtype=doc.argtypes.sha1_git,
          argdoc="The revision's sha1_git identifier.")
 @doc.arg('dir_path',
-         default='.',
+         default='Documentation/BUG-HUNTING',
          argtype=doc.argtypes.path,
          argdoc='The path from the top level directory')
 @doc.raises(exc=doc.excs.badinput,
@@ -750,7 +750,7 @@ def api_revision_log_by(origin_id,
          argtype=doc.argtypes.sha1_git,
          argdoc="The queried directory's corresponding sha1_git hash")
 @doc.arg('path',
-         default='.',
+         default='codec/demux',
          argtype=doc.argtypes.path,
          argdoc="A path relative to the queried directory's top level")
 @doc.raises(exc=doc.excs.badinput,
@@ -758,11 +758,11 @@ def api_revision_log_by(origin_id,
 @doc.raises(exc=doc.excs.notfound,
             doc='Raised if a directory matching sha1_git was not found in SWH')
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata and contents of the release identified by
+             retdoc="""The metadata and contents of the directory identified by
              sha1_git""")
 def api_directory(sha1_git,
                   path=None):
-    """Return information about release with id sha1_git.
+    """Return information about directory with id sha1_git.
 
     """
     if path:

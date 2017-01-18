@@ -71,13 +71,15 @@
   </dl>
 </div>
 {% endif %}
-{% if example %}
+{% if examples %}
 <div class="doc-example">
-  <h2> Example </h2>
+  <h2> Examples </h2>
   <dl class="doc-example dl-horizontal">
+  {% for example in examples %}
     <dd>
       <a href="{{ example }}">{{ example }}</a>
     </dd>
+  {% endfor %}
   </dl>
 </div>
 {% endif %}
