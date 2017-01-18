@@ -160,7 +160,7 @@ def person_get(person_id):
     """Return information about the person with id person_id.
 
     Args:
-        person_id: person's identifier.v
+        person_id: person's identifier.
 
     Returns:
         Person information as dict.

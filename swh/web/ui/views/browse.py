@@ -193,7 +193,7 @@ def search_content():
         q = data.get('q')
 
     try:
-        search = api.api_search(q)
+        search = api.api_check_content_known(q)
         search_res = search['search_res']
         search_stats = search['search_stats']
     except BadInputExc as e:
