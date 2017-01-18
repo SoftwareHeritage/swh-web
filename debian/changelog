@@ -1,8 +1,14 @@
-swh-web (0.0.54-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.55-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.55
+  * api /content/search/ to /content/known/
+  * Adapt return values to empty list/dict instead of null
+  * Remove empty values when mono-values are null
+  * Fix broken entity endpoint
+  * Update upcoming endpoints
+  * apidoc: Remove hard-coded example and provide links to follow
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 16 Jan 2017 17:18:21 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 18 Jan 2017 11:27:45 +0100
 
 swh-web (0.0.54-1~swh1) unstable-swh; urgency=medium
 

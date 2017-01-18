@@ -34,68 +34,30 @@ Api access is over https and accessed through [https://archive.softwareheritage.
 
 Data is sent and received as json by default.
 
-Example:
-``` shell
-$ curl -i https://archive.softwareheritage.org/api/1/stat/counters/
-HTTP/1.1 200 OK
-Date: Mon, 16 Jan 2017 10:57:56 GMT
-Server: Apache
-Content-Type: application/json
-Content-Length: 395
-Vary: Accept-Encoding
-Access-Control-Allow-Origin: *
-Connection: close
+Examples:
 
-{
-  "directory_entry_rev": 3039473,
-  "person": 13903080,
-  "entity": 7103795,
-  "skipped_content": 17864,
-  "entity_history": 7147753,
-  "revision_history": 720840448,
-  "revision": 703277184,
-  "directory": 2616883200,
-  "release": 5692900,
-  "origin": 49938216,
-  "directory_entry_dir": 2140887552,
-  "occurrence_history": 254274832,
-  "occurrence": 241899344,
-  "content": 3155739136,
-  "directory_entry_file": 3173807104
-}
+- [/api/1/stat/counters/](/api/1/stat/counters/)
+
+- From the command line:
+
+``` shell
+curl -i https://archive.softwareheritage.org/api/1/stat/counters/
 ```
+
 
 #### Mimetype override
 
 The response output can be sent as yaml provided the client specifies
 it using the header field.
 
-For example:
+Examples:
+
+- From your favorite REST client API, execute the same request as
+  before with the request header 'Accept' set the 'application/yaml'.
+
+- From the command line:
 ``` shell
 curl -i -H 'Accept: application/yaml' https://archive.softwareheritage.org/api/1/stat/counters/
-HTTP/1.1 200 OK
-Date: Mon, 16 Jan 2017 12:31:50 GMT
-Server: Apache
-Content-Type: application/yaml
-Content-Length: 372
-Access-Control-Allow-Origin: *
-Connection: close
-
-{content: 3155758336,
- directory: 2616955136,
- directory_entry_dir: 2140925824,
- directory_entry_file: 3173833984,
- directory_entry_rev: 3039473,
- entity: 7103741,
- entity_history: 7148121,
- occurrence: 241887488,
- occurrence_history: 254277584,
- origin: 49939848,
- person: 13898394,
- release: 5693922,
- revision: 703275840,
- revision_history: 720842176,
- skipped_content: 17864}
 ```
 
 ### Parameters
@@ -122,13 +84,13 @@ to filter the output fields per key.
 For example, to only list the number of contents, revisions,
 directories on the statistical endpoints, one uses:
 
+Examples:
+
+- [/api/1/stat/counters/\?fields\=content,directory,revision](/api/1/stat/counters/?fields=content,directory,revision)
+
+- From the command line:
 ``` shell
-$ curl https://archive.softwareheritage.org/api/1/stat/counters/\?fields\=content,directory,revision | jq
-{
-  "content": 3155739136,
-  "revision": 703277184,
-  "directory": 2616883200
-}
+curl https://archive.softwareheritage.org/api/1/stat/counters/\?fields\=content,directory,revision
 ```
 
 Note: If the keys provided to filter on do not exist, they are
@@ -138,50 +100,44 @@ ignored.
 
 There are 2 kinds of error.
 
-In that case, the http error code will reflect that error and a json
-response is sent with the detailed error.
+In that case, the http error code will reflect.  Furthermore, the
+response is a dictionary with one key 'error' detailing the problem.
 
 #### Bad request
 
 This means that the input is incorrect.
 
 Example:
+
+- [/api/1/content/1/](/api/1/content/1/)
+
+- From the command line:
 ``` shell
 curl -i https://archive.softwareheritage.org/api/1/content/1/
-HTTP/1.1 400 BAD REQUEST
-Date: Mon, 16 Jan 2017 11:28:08 GMT
-Server: Apache
-Content-Type: application/json
-Content-Length: 44
-Connection: close
-
-{"error": "Invalid checksum query string 1"}
 ```
 
-Here, the api content expects an hash identifier.
+The api content expects an hash identifier so the error will mention
+that an hash identifier is expected.
 
 #### Not found
 
 This means that the request is ok but we do not found the information
 the user requests.
 
-Example:
+Examples:
 
+- [/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/](/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/)
+
+- From the command line:
 ``` shell
 curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/
-HTTP/1.1 404 NOT FOUND
-Date: Mon, 16 Jan 2017 11:31:46 GMT
-Server: Apache
-Content-Type: application/json
-Content-Length: 77
-Connection: close
-
-{"error": "Content with 04740277a81c5be6c16f6c9da488ca073b770d7f not found."}
 ```
+
+The hash identifier is ok but nothing is found for that identifier.
 
 ### Terminology
 
-You will find below the terminology the project swh uses.
+You will find below the terminology the project SWH uses.
 More details can be found
 on
 [swh's wiki glossary page](https://wiki.softwareheritage.org/index.php?title=Glossary).

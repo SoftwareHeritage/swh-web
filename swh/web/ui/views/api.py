@@ -24,7 +24,7 @@ def api_stats():
 
 
 @app.route('/api/1/origin/<int:origin_id>/visits/')
-@doc.route('/api/1/origin/visits/', tags=['upcoming'])
+@doc.route('/api/1/origin/visits/')
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
@@ -154,9 +154,9 @@ def api_content_symbol(q=None):
     return result
 
 
-@app.route('/api/1/content/search/', methods=['POST'])
-@app.route('/api/1/content/search/<string:q>/')
-@doc.route('/api/1/content/search/')
+@app.route('/api/1/content/known/', methods=['POST'])
+@app.route('/api/1/content/known/<string:q>/')
+@doc.route('/api/1/content/known/')
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
@@ -172,7 +172,7 @@ def api_content_symbol(q=None):
              - search_stats: a dict containing number of files searched and
                percentage of files found
              """)
-def api_search(q=None):
+def api_check_content_known(q=None):
     """Search a content per hash.
 
     This may take the form of:
