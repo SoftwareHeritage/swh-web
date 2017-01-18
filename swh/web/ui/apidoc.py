@@ -217,6 +217,26 @@ class route(APIDocBase):  # noqa: N801
                 return False
         return True
 
+    def build_examples(self, f, urls, args):
+        """Build example documentation.
+
+        Args:
+            f: function
+            urls: information relative to url for that function
+            args: information relative to arguments for that function
+
+        Yields:
+            example based on default parameter value if any
+
+        """
+        for data_url in urls:
+            url = data_url['rule']
+            defaults = {arg['name']: arg['default']
+                        for arg in args
+                        if arg['name'] in url}
+            if defaults:
+                yield url_for(f.__name__, **defaults)
+
     def compute_return(self, f, rv):
         """Build documentation"""
         data = self.data
@@ -228,15 +248,12 @@ class route(APIDocBase):  # noqa: N801
 
         route_re = re.compile('.*%s$' % data['route'])
         endpoint_list = APIUrls.get_method_endpoints(f.__name__)
-        other_urls = [url for url in endpoint_list if
-                      self.filter_api_url(url, route_re, data['noargs'])]
-        data['urls'] = other_urls
+        data['urls'] = [url for url in endpoint_list if
+                        self.filter_api_url(url, route_re, data['noargs'])]
 
-        # Build example endpoint URL
         if 'args' in data:
-            defaults = {arg['name']: arg['default'] for arg in data['args']}
-            example = url_for(f.__name__, **defaults)
-            data['example'] = re.sub(r'(.*)\?.*', r'\1', example)
+            data['examples'] = list(
+                self.build_examples(f, data['urls'], data['args']))
 
         # Prepare and send to mimetype selector if it's not a doc request
         if re.match(route_re, request.url) and not data['noargs'] \
