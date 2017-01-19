@@ -763,6 +763,12 @@ Defaults to 'refs/heads/master'.""")
          default='2000-01-17T11:23:54+00:00',
          argtype=doc.argtypes.ts,
          argdoc="""(Optional) A time or timestamp string to parse""")
+@doc.header('Link',
+            doc="""Optional 'Link' header proposed to the api consumer
+                   for navigation purpose. Possible value is 'next'.""")
+@doc.param('per_page', default=10,
+           doc="""Default parameter used to group result by page of the specified
+number.""")
 @doc.raises(exc=doc.excs.notfound,
             doc="""Raised if a revision matching the given criteria was not
             found in SWH""")
@@ -776,18 +782,17 @@ def api_revision_log_by(origin_id,
     by the origin_id provided and optionally a branch name or/and a
     timestamp.
 
-    The result is paginated. To browse the following revisions, use
-    the link mentioned in the 'next_revs_url' key.
+    The result is paginated.  To browse for the following revisions,
+    follow the link mentioned in the responder header 'Link'.
 
     """
-    limit = app.config['conf']['max_log_revs']
-    response = {'revisions': None, 'next_revs_url': None}
-    next_revs_url = None
+    result = {}
+    per_page = int(request.args.get('per_page', '10'))
 
     if ts:
         ts = utils.parse_timestamp(ts)
 
-    def lookup_revision_log_by_with_limit(o_id, br, ts, limit=limit+1):
+    def lookup_revision_log_by_with_limit(o_id, br, ts, limit=per_page+1):
         return service.lookup_revision_log_by(o_id, br, ts, limit)
 
     error_msg = 'No revision matching origin %s ' % origin_id
@@ -800,16 +805,26 @@ def api_revision_log_by(origin_id,
                           utils.enrich_revision,
                           branch_name,
                           ts)
-    if len(rev_get) == limit+1:
+    l = len(rev_get)
+    if l == per_page+1:
         revisions = rev_get[:-1]
-        next_revs_url = url_for('api_revision_log',
-                                sha1_git=rev_get[-1]['id'])
+        url = url_for('api_revision_log_by', sha1_git=rev_get[-1]['id'])
+
+        nb_per_page = request.args.get('per_page')
+        params = []
+        if nb_per_page:
+            params.append(('per_page', per_page))
+
+        headers = {}
+        headers['link-next'] = utils.to_url(url, params)
+        result['headers'] = headers
+
     else:
         revisions = rev_get
-    response['revisions'] = revisions
-    response['next_revs_url'] = next_revs_url
 
-    return response
+    result.update({'results': revisions})
+
+    return result
 
 
 @app.route('/api/1/directory/<string:sha1_git>/')

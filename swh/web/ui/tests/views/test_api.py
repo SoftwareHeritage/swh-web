@@ -1905,11 +1905,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'synthetic': True,
         }]
 
-        expected_result = {
-            'revisions': expected_revisions,
-            'next_revs_url': None
-        }
-
         # when
         rv = self.app.get('/api/1/revision/origin/1/log/')
 
@@ -1918,10 +1913,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, expected_result)
+        self.assertEquals(response_data, expected_revisions)
+        self.assertEquals(rv.headers.get('Link'), None)
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
-            1, 'refs/heads/master', None, 26)
+            1, 'refs/heads/master', None, 11)
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -1938,20 +1934,18 @@ class ApiTestCase(test_app.SWHApiTestCase):
             e['url'] = '/api/1/revision/%s/' % e['id']
             e['history_url'] = '/api/1/revision/%s/log/' % e['id']
 
-        expected_response = {
-            'revisions': expected_revisions,
-            'next_revs_url': '/api/1/revision/25/log/'
-        }
-
         # when
-        rv = self.app.get('/api/1/revision/origin/1/log/')
+        rv = self.app.get('/api/1/revision/origin/1/log/?per_page=25')
 
         # then
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
+        self.assertEquals(
+            rv.headers['Link'],
+            "</api/1/revision/origin/log/?sha1_git=25&per_page=25>; rel=\"next\"")  # noqa
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, expected_response)
+        self.assertEquals(response_data, expected_revisions)
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
             1, 'refs/heads/master', None, 26)
@@ -1969,12 +1963,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
+        self.assertIsNone(rv.headers.get('Link'))
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {'error': 'No revision'})
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
-            1, 'refs/heads/master', None, 26)
+            1, 'refs/heads/master', None, 11)
 
     @patch('swh.web.ui.views.api.service')
     @istest
