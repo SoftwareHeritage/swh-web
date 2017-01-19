@@ -1,3 +1,10 @@
+swh-web (0.0.57-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.57
+  * Improve documentation information on api endpoints
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 19 Jan 2017 13:32:56 +0100
+
 swh-web (0.0.56-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.56
