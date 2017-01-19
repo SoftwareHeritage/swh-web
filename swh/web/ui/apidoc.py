@@ -296,6 +296,11 @@ class route(APIDocBase):  # noqa: N801
                     data['headers'] = []
 
                 data['headers'].append(doc_instance.data)
+            elif isinstance(doc_instance, param):
+                if 'params' not in data:
+                    data['params'] = []
+
+                data['params'].append(doc_instance.data)
             else:
                 raise APIDocException('Unknown API documentation decorator')
             doc_instance = doc_instance.inner_dec
@@ -303,7 +308,27 @@ class route(APIDocBase):  # noqa: N801
         return data
 
 
-class arg(APIDocBase):
+class BaseDescribeDocBase(APIDocBase):
+    """Base description of optional input/output setup for a route.
+
+    """
+    def __init__(self):
+        self.doc_dict = None
+        self.inner_dec = None
+
+    def __call__(self, f):
+        @wraps(f)
+        def arg_fun(*args, outer_decorator=None, **kwargs):
+            kwargs['outer_decorator'] = outer_decorator
+            return self.maintain_stack(f, args, kwargs)
+        return arg_fun
+
+    @property
+    def data(self):
+        return self.doc_dict
+
+
+class arg(BaseDescribeDocBase):
     """
     Decorate an API method to display an argument's information on the doc
     page specified by @route above.
@@ -323,21 +348,9 @@ class arg(APIDocBase):
             'doc': argdoc,
             'default': default
         }
-        self.inner_dec = None
-
-    def __call__(self, f):
-        @wraps(f)
-        def arg_fun(*args, outer_decorator=None, **kwargs):
-            kwargs['outer_decorator'] = outer_decorator
-            return self.maintain_stack(f, args, kwargs)
-        return arg_fun
-
-    @property
-    def data(self):
-        return self.doc_dict
 
 
-class header(APIDocBase):
+class header(BaseDescribeDocBase):
     """
     Decorate an API method to display header information the api can
     potentially return in the response.
@@ -348,21 +361,30 @@ class header(APIDocBase):
 
     """
     def __init__(self, name, doc):
+        super().__init__()
         self.doc_dict = {
             'name': name,
             'doc': doc,
         }
 
-    def __call__(self, f):
-        @wraps(f)
-        def arg_fun(*args, outer_decorator=None, **kwargs):
-            kwargs['outer_decorator'] = outer_decorator
-            return self.maintain_stack(f, args, kwargs)
-        return arg_fun
 
-    @property
-    def data(self):
-        return self.doc_dict
+class param(BaseDescribeDocBase):
+    """Decorate an API method to display query parameter information the
+    api can potentially accept.
+
+    Args:
+        name: the parameter name
+        default: default value
+        doc: the information about that header
+
+    """
+    def __init__(self, name, default, doc):
+        super().__init__()
+        self.doc_dict = {
+            'name': name,
+            'default': default,
+            'doc': doc,
+        }
 
 
 class raises(APIDocBase):  # noqa: N801

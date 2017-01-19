@@ -97,6 +97,8 @@ class APIDocTestCase(SWHApidocTestCase):
                 default=67,
                 argtype=apidoc.argtypes.int,
                 argdoc='my arg')
+    @apidoc.param('limit', default=10, doc='Result limitation')
+    @apidoc.header('Link', doc='Header link returns for pagination purpose')
     @apidoc.raises(exc=apidoc.excs.badinput, doc='Oops')
     @apidoc.returns(rettype=apidoc.rettypes.dict,
                     retdoc='sum of args')

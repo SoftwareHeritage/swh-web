@@ -99,9 +99,15 @@ def api_origin_visit(origin_id, visit_id):
          default='hello',
          argtype=doc.argtypes.str,
          argdoc="""An expression string to lookup in swh's raw content""")
-@doc.header('Link', doc="""Optional 'Link' header proposed to the api consumer
-                           for navigation purpose. possible are 'next'
-                           or 'previous' page.""")
+@doc.header('Link',
+            doc="""Optional 'Link' header proposed to the api consumer
+                   for navigation purpose. possible are 'next'
+                   or 'previous' page.""")
+@doc.param('per_page', default=10,
+           doc="""Optional parameter which permits
+                  to limit the number of data to retrieve on a per request
+                  basis.
+                  The default is 10, up to 50 max.""")
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""A list of dict whose content matches the expression.
              Each dict has the following keys:
