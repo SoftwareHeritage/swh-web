@@ -7,6 +7,8 @@ import os
 
 from . import main
 
+MAX_LIMIT = 50  # Top limit the users can ask for
+
 
 def content_get(sha1_bin):
     """Lookup the content designed by {algo: hash_bin}.
@@ -80,7 +82,7 @@ def content_ctags_search(expression, last_sha1, limit=10):
         sha1 whose indexed content match the expression
 
     """
-    limit = min(limit, 50)
+    limit = min(limit, MAX_LIMIT)
     return main.storage().content_ctags_search(expression,
                                                last_sha1=last_sha1,
                                                limit=limit)
@@ -293,17 +295,22 @@ def stat_counters():
     return main.storage().stat_counters()
 
 
-def lookup_origin_visits(origin_id):
+def lookup_origin_visits(origin_id, last_visit=None, limit=10):
     """Yields the origin origin_ids' visits.
 
     Args:
-        origin_id: origin to list visits for
+        origin_id (int): origin to list visits for
+        last_visit (int): last visit to lookup from
+        limit (int): Number of elements max to display
 
     Yields:
        Dictionaries of origin_visit for that origin
 
     """
-    yield from main.storage().origin_visit_get(origin_id)
+    limit = min(limit, MAX_LIMIT)
+    print(last_visit, limit)
+    yield from main.storage().origin_visit_get(
+        origin_id, last_visit=last_visit, limit=limit)
 
 
 def lookup_origin_visit(origin_id, visit_id):
