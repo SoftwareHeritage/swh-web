@@ -15,6 +15,8 @@ def to_url(url, params):
     """Compute a url with a new param.
 
     """
+    if not params:
+        return url
     end_url = urlencode(params)
     if '?' in url:
         return '%s&%s' % (url, end_url)
