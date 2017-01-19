@@ -1,3 +1,11 @@
+swh-web (0.0.59-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.59
+  * Unify pagination on /revision/log/ and /revision/origin/log/
+    endpoints
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 19 Jan 2017 15:59:06 +0100
+
 swh-web (0.0.58-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.58
