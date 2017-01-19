@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 9),
                python3-nose,
                python3-setuptools,
                python3-swh.core (>= 0.0.20~),
-               python3-swh.storage (>= 0.0.74~),
+               python3-swh.storage (>= 0.0.77~),
                python3-vcversioner,
                python3-yaml,
                python3-pygments
@@ -29,7 +29,7 @@ Depends: libjs-cryptojs,
          libjs-jquery-flot-tooltip,
          libjs-jquery-datatables,
          python3-swh.core (>= 0.0.20~),
-         python3-swh.storage (>= 0.0.74~),
+         python3-swh.storage (>= 0.0.77~),
          ${misc:Depends},
          ${python3:Depends}
 Description: Software Heritage Web UI

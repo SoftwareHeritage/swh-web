@@ -866,7 +866,8 @@ class BackendTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(list(actual_origin_visits), expected_origin_visits)
 
-        self.storage.origin_visit_get.assert_called_with(5)
+        self.storage.origin_visit_get.assert_called_with(
+            5, last_visit=None, limit=10)
 
     @istest
     def lookup_origin_visit(self):
