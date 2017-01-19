@@ -62,16 +62,13 @@ class SWHComputeLinkHeader:
             options (dict): the initial dict to update with result if any
 
         Returns:
-            Dict 'options' updated with headers 'Link' containing
-            the 'link-next' and 'link-prev' headers.
-
-            Otherwise, options is returned unchanged
+            Dict with optional keys 'link-next' and 'link-prev'.
 
         """
         link_headers = []
 
         if 'headers' not in rv:
-            return options
+            return {}
 
         rv_headers = rv['headers']
 
@@ -88,10 +85,9 @@ class SWHComputeLinkHeader:
             headers.update({
                 'Link': link_header_str
             })
-            options['headers'] = headers
-            return options
+            return headers
 
-        return options
+        return {}
 
 
 class SWHTransformProcessor:
@@ -127,6 +123,7 @@ class SWHMultiResponse(Response, SWHFilterEnricher,
 
     @classmethod
     def make_response_from_mimetype(cls, rv, options={}):
+        options = options.copy()
         if not (isinstance(rv, list) or isinstance(rv, dict)):
             return rv
 
@@ -144,7 +141,8 @@ class SWHMultiResponse(Response, SWHFilterEnricher,
         acc_mime = ['application/json', 'application/yaml', 'text/html']
         best_match = request.accept_mimetypes.best_match(acc_mime)
 
-        options = cls.compute_link_header(rv, options)
+        options['headers'] = cls.compute_link_header(rv, options)
+
         rv = cls.transform(rv)
 
         if wants_html(best_match):

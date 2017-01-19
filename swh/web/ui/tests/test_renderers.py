@@ -24,12 +24,12 @@ class SWHComputeLinkHeaderTest(unittest.TestCase):
         options = {}
 
         # when
-        _options = renderers.SWHComputeLinkHeader.compute_link_header(
+        headers = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_options, {'headers': {
+        self.assertEquals(headers, {
             'Link': '<foo>; rel="next",<bar>; rel="previous"',
-        }})
+        })
 
     @istest
     def compute_link_header_nothing_changed(self):
@@ -37,10 +37,10 @@ class SWHComputeLinkHeaderTest(unittest.TestCase):
         options = {}
 
         # when
-        _options = renderers.SWHComputeLinkHeader.compute_link_header(
+        headers = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_options, {})
+        self.assertEquals(headers, {})
 
     @istest
     def compute_link_header_nothing_changed_2(self):
@@ -48,10 +48,10 @@ class SWHComputeLinkHeaderTest(unittest.TestCase):
         options = {}
 
         # when
-        _options = renderers.SWHComputeLinkHeader.compute_link_header(
+        headers = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_options, {})
+        self.assertEquals(headers, {})
 
 
 class SWHTransformProcessorTest(unittest.TestCase):
@@ -109,9 +109,7 @@ class RendererTestCase(unittest.TestCase):
             'my_key': 'my_display_value',
             'response_data': json.dumps(data),
             'request': mock_request,
-            'headers_data': {
-                'Link': '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03>; rel="next"'  # noqa
-            }
+            'headers_data': {},
         }
 
         def mock_mimetypes(key):
