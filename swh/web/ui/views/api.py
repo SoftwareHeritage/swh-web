@@ -669,6 +669,12 @@ def api_revision_directory(sha1_git,
          argtype=doc.argtypes.path,
          argdoc="""(Optional) Navigation breadcrumbs (descendant revisions
 previously visited).  If multiple values, use / as delimiter.  """)
+@doc.header('Link',
+            doc="""Optional 'Link' header proposed to the api consumer
+                   for navigation purpose. Possible value is 'next'.""")
+@doc.param('per_page', default=10,
+           doc="""Default parameter used to group result by page of the specified
+number.""")
 @doc.raises(exc=doc.excs.badinput,
             doc='Raised if sha1_git or prev_sha1s is not well formed')
 @doc.raises(exc=doc.excs.notfound,
@@ -678,21 +684,18 @@ previously visited).  If multiple values, use / as delimiter.  """)
              sha1_git, completed with the navigation breadcrumbs,
              if any""")
 def api_revision_log(sha1_git, prev_sha1s=None):
-    """Show all revisions (~git log) starting from sha1_git.
-    The first element returned is the given sha1_git, or the first
-    breadcrumb, if any.
+    """Return all revisions (~git log) starting from sha1_git.  The first
+    element returned is the given sha1_git, or the first breadcrumb,
+    if any.
 
     The result is paginated.  To browse for the following revisions,
-    use the link mentioned in the 'next_revs_url' key.
+    follow the link mentioned in the responder header 'Link'.
 
     """
-    limit = app.config['conf']['max_log_revs']
+    result = {}
+    per_page = int(request.args.get('per_page', '10'))
 
-    response = {'revisions': None, 'next_revs_url': None}
-    revisions = None
-    next_revs_url = None
-
-    def lookup_revision_log_with_limit(s, limit=limit+1):
+    def lookup_revision_log_with_limit(s, limit=per_page+1):
         return service.lookup_revision_log(s, limit)
 
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
@@ -701,10 +704,19 @@ def api_revision_log(sha1_git, prev_sha1s=None):
                           error_msg_if_not_found=error_msg,
                           enrich_fn=utils.enrich_revision)
 
-    if len(rev_get) == limit+1:
+    l = len(rev_get)
+    if l == per_page+1:
         rev_backward = rev_get[:-1]
-        next_revs_url = url_for('api_revision_log',
-                                sha1_git=rev_get[-1]['id'])
+        url = url_for('api_revision_log', sha1_git=rev_get[-1]['id'])
+
+        nb_per_page = request.args.get('per_page')
+        params = []
+        if nb_per_page:
+            params.append(('per_page', per_page))
+
+        headers = {}
+        headers['link-next'] = utils.to_url(url, params)
+        result['headers'] = headers
     else:
         rev_backward = rev_get
 
@@ -719,10 +731,10 @@ def api_revision_log(sha1_git, prev_sha1s=None):
                                   enrich_fn=utils.enrich_revision)
         revisions = rev_forward + rev_backward
 
-    response['revisions'] = revisions
-    response['next_revs_url'] = next_revs_url
-
-    return response
+    result.update({
+        'results': revisions
+    })
+    return result
 
 
 @app.route('/api/1/revision'
