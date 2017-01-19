@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -291,6 +291,16 @@ class route(APIDocBase):  # noqa: N801
                 data['excs'].append(doc_instance.data)
             elif isinstance(doc_instance, returns):
                 data['return'] = doc_instance.data
+            elif isinstance(doc_instance, header):
+                if 'headers' not in data:
+                    data['headers'] = []
+
+                data['headers'].append(doc_instance.data)
+            elif isinstance(doc_instance, param):
+                if 'params' not in data:
+                    data['params'] = []
+
+                data['params'].append(doc_instance.data)
             else:
                 raise APIDocException('Unknown API documentation decorator')
             doc_instance = doc_instance.inner_dec
@@ -298,25 +308,12 @@ class route(APIDocBase):  # noqa: N801
         return data
 
 
-class arg(APIDocBase):  # noqa: N801
+class BaseDescribeDocBase(APIDocBase):
+    """Base description of optional input/output setup for a route.
+
     """
-    Decorate an API method to display an argument's information on the doc
-    page specified by @route above.
-    Args:
-        name: the argument's name. MUST match the method argument's name to
-        create the example request URL.
-        default: the argument's default value
-        argtype: the argument's type as an Enum value from apidoc.argtypes
-        argdoc: the argument's documentation string
-    """
-    def __init__(self, name, default, argtype, argdoc):
-        super().__init__()
-        self.doc_dict = {
-            'name': name,
-            'type': argtype.value,
-            'doc': argdoc,
-            'default': default
-        }
+    def __init__(self):
+        self.doc_data = None
         self.inner_dec = None
 
     def __call__(self, f):
@@ -328,57 +325,97 @@ class arg(APIDocBase):  # noqa: N801
 
     @property
     def data(self):
-        return self.doc_dict
+        return self.doc_data
 
 
-class raises(APIDocBase):  # noqa: N801
+class arg(BaseDescribeDocBase):
     """
-    Decorate an API method to display information pertaining to an exception
+    Decorate an API method to display an argument's information on the doc
+    page specified by @route above.
+
+    Args:
+        name: the argument's name. MUST match the method argument's name to
+        create the example request URL.
+        default: the argument's default value
+        argtype: the argument's type as an Enum value from apidoc.argtypes
+        argdoc: the argument's documentation string
+    """
+    def __init__(self, name, default, argtype, argdoc):
+        super().__init__()
+        self.doc_data = {
+            'name': name,
+            'type': argtype.value,
+            'doc': argdoc,
+            'default': default
+        }
+
+
+class header(BaseDescribeDocBase):
+    """
+    Decorate an API method to display header information the api can
+    potentially return in the response.
+
+    Args:
+        name: the header name
+        doc: the information about that header
+
+    """
+    def __init__(self, name, doc):
+        super().__init__()
+        self.doc_data = {
+            'name': name,
+            'doc': doc,
+        }
+
+
+class param(BaseDescribeDocBase):
+    """Decorate an API method to display query parameter information the
+    api can potentially accept.
+
+    Args:
+        name: the parameter name
+        default: default value
+        doc: the information about that header
+
+    """
+    def __init__(self, name, default, doc):
+        super().__init__()
+        self.doc_data = {
+            'name': name,
+            'default': default,
+            'doc': doc,
+        }
+
+
+class raises(BaseDescribeDocBase):
+    """Decorate an API method to display information pertaining to an exception
     that can be raised by this method.
+
     Args:
         exc: the exception name as an Enum value from apidoc.excs
         doc: the exception's documentation string
+
     """
     def __init__(self, exc, doc):
         super().__init__()
-        self.exc_dict = {
+        self.doc_data = {
             'exc': exc.value,
             'doc': doc
         }
 
-    def __call__(self, f):
-        @wraps(f)
-        def exc_fun(*args, outer_decorator=None, **kwargs):
-            kwargs['outer_decorator'] = outer_decorator
-            return self.maintain_stack(f, args, kwargs)
-        return exc_fun
 
-    @property
-    def data(self):
-        return self.exc_dict
+class returns(BaseDescribeDocBase):
+    """Decorate an API method to display information about its return value.
 
-
-class returns(APIDocBase):  # noqa: N801
-    """
-    Decorate an API method to display information about its return value.
     Args:
-        rettype: the return value's type as an Enum value from apidoc.rettypes
-        retdoc: the return value's documentation string
+        rettype: the return value's type as an Enum value from
+        apidoc.rettypes retdoc: the return value's documentation
+        string
+
     """
     def __init__(self, rettype=None, retdoc=None):
         super().__init__()
-        self.return_dict = {
+        self.doc_data = {
             'type': rettype.value,
             'doc': retdoc
         }
-
-    def __call__(self, f):
-        @wraps(f)
-        def ret_fun(*args, outer_decorator=None, **kwargs):
-            kwargs['outer_decorator'] = outer_decorator
-            return self.maintain_stack(f, args, kwargs)
-        return ret_fun
-
-    @property
-    def data(self):
-        return self.return_dict

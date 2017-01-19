@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -78,9 +78,10 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
 
     new_dict = {}
     for key, value in dict_swh.items():
-        if key in blacklist:
+        if key in blacklist or (key in removables_if_empty and not value):
             continue
-        elif key in dates:
+
+        if key in dates:
             new_dict[key] = convert_date(value)
         elif isinstance(value, dict):
             new_dict[key] = from_swh(value,
@@ -102,8 +103,6 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
                 new_dict[key] = utils.fmap(decode_with_escape, value)
         elif key in convert:
             new_dict[key] = convert_fn(value)
-        elif key in removables_if_empty and not value:
-            continue
         elif key in empty_dict and not value:
             new_dict[key] = {}
         elif key in empty_list and not value:
@@ -261,6 +260,8 @@ def from_directory_entry(dir_entry):
     return from_swh(dir_entry,
                     hashess={'dir_id', 'sha1_git', 'sha1', 'sha256', 'target'},
                     bytess={'name'},
+                    removables_if_empty={
+                        'sha1', 'sha1_git', 'sha256', 'status'},
                     convert={'status'},
                     convert_fn=lambda v: 'absent' if v == 'hidden' else v)
 
