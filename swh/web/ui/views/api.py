@@ -29,6 +29,13 @@ def api_stats():
          default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin identifier')
+@doc.header('Link',
+            doc="""Optional 'Link' header proposed to the api consumer
+                   for navigation purpose. Possible value is 'next'.""")
+@doc.param('last_visit', default=None,
+           doc="""Last visit from which starting the next result page.""")
+@doc.param('per_page', default=10,
+           doc="""Return the number of results for one page.""")
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""All instances of visits of the origin pointed by
              origin_id as POSIX time since epoch (if visit_id is not defined)
@@ -39,6 +46,18 @@ def api_origin_visits(origin_id):
        target_type, status, ...
 
     """
+    result = {}
+    per_page = int(request.args.get('per_page', '10'))
+    last_visit = request.args.get('last_visit')
+    if last_visit:
+        last_visit = int(last_visit)
+
+    def _lookup_origin_visits(
+            origin_id, last_visit=last_visit, per_page=per_page):
+        print(origin_id, last_visit, per_page)
+        return service.lookup_origin_visits(
+            origin_id, last_visit=last_visit, per_page=per_page)
+
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()
         ov['origin_visit_url'] = url_for('api_origin_visit',
@@ -46,11 +65,33 @@ def api_origin_visits(origin_id):
                                          visit_id=ov['visit'])
         return ov
 
-    return _api_lookup(
+    r = _api_lookup(
         origin_id,
-        service.lookup_origin_visits,
+        _lookup_origin_visits,
         error_msg_if_not_found='No origin %s found' % origin_id,
         enrich_fn=_enrich_origin_visit)
+
+    if r:
+        l = len(r)
+        url = url_for('api_origin_visits', origin_id=origin_id)
+
+        headers = {}
+        if l == per_page:
+            new_last_visit = r[-1]['visit']
+            params = [('last_visit', new_last_visit)]
+
+            nb_per_page = request.args.get('per_page')
+            if nb_per_page:
+                params.append(('per_page', nb_per_page))
+            headers['link-next'] = utils.to_url(url, params)
+
+            result['headers'] = headers
+
+    result.update({
+        'results': r
+    })
+
+    return result
 
 
 @app.route('/api/1/origin/<int:origin_id>/visit/<int:visit_id>/')
