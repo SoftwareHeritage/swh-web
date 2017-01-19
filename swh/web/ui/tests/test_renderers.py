@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -24,12 +24,12 @@ class SWHComputeLinkHeaderTest(unittest.TestCase):
         options = {}
 
         # when
-        _options = renderers.SWHComputeLinkHeader.compute_link_header(
+        headers = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_options, {'headers': {
+        self.assertEquals(headers, {
             'Link': '<foo>; rel="next",<bar>; rel="previous"',
-        }})
+        })
 
     @istest
     def compute_link_header_nothing_changed(self):
@@ -37,10 +37,10 @@ class SWHComputeLinkHeaderTest(unittest.TestCase):
         options = {}
 
         # when
-        _options = renderers.SWHComputeLinkHeader.compute_link_header(
+        headers = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_options, {})
+        self.assertEquals(headers, {})
 
     @istest
     def compute_link_header_nothing_changed_2(self):
@@ -48,10 +48,10 @@ class SWHComputeLinkHeaderTest(unittest.TestCase):
         options = {}
 
         # when
-        _options = renderers.SWHComputeLinkHeader.compute_link_header(
+        headers = renderers.SWHComputeLinkHeader.compute_link_header(
             rv, options)
 
-        self.assertEquals(_options, {})
+        self.assertEquals(headers, {})
 
 
 class SWHTransformProcessorTest(unittest.TestCase):
@@ -108,7 +108,8 @@ class RendererTestCase(unittest.TestCase):
         expected_env = {
             'my_key': 'my_display_value',
             'response_data': json.dumps(data),
-            'request': mock_request
+            'request': mock_request,
+            'headers_data': {},
         }
 
         def mock_mimetypes(key):
@@ -277,6 +278,19 @@ class RendererTestCase(unittest.TestCase):
         other_content = '{"url": "/something/api/1/other"}'
         self.assertEquals(renderers.urlize_api_links(other_content),
                           other_content)
+
+    @istest
+    def urlize_header_links(self):
+        # update api link with html links content with links
+        content = """</api/1/abc/>; rel="next"
+</api/1/def/>; rel="prev"
+"""
+        expected_content = """<<a href="/api/1/abc/">/api/1/abc/</a>>; rel="next"
+<<a href="/api/1/def/">/api/1/def/</a>>; rel="prev"
+"""
+
+        self.assertEquals(renderers.urlize_header_links(content),
+                          expected_content)
 
     @istest
     def revision_id_from_url(self):

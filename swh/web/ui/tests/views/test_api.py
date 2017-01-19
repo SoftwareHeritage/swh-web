@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -270,44 +270,34 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_content_symbol_2(self, mock_service):
         stub_ctag = [{
-            'sha1': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+            'sha1': '12371b8614fcd89ccd17ca2b1d9e66c5b00a6456',
             'name': 'foobar',
             'kind': 'Haskell',
+            'line': 10,
+        }, {
+            'sha1': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6678',
+            'name': 'foo',
+            'kind': 'Lisp',
             'line': 10,
         }]
         mock_service.lookup_expression.return_value = stub_ctag
 
         # when
         rv = self.app.get(
-            '/api/1/content/symbol/foo/?last_sha1=prev-sha1&per_page=1')
+            '/api/1/content/symbol/foo/?last_sha1=prev-sha1&per_page=2')
 
         # then
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, [{
-            'sha1': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'name': 'foobar',
-            'kind': 'Haskell',
-            'line': 10,
-            'content_url': '/api/1/content/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'data_url': '/api/1/content/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
-            'license_url': '/api/1/license/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'language_url': '/api/1/language/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'filetype_url': '/api/1/filetype/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-        }])
+        self.assertEquals(response_data, stub_ctag)
         actual_headers = dict(rv.headers)
         self.assertEquals(
             actual_headers['Link'],
-            '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03>; rel="next"')  # noqa
+            '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6678&per_page=2>; rel="next"')  # noqa
 
         mock_service.lookup_expression.assert_called_once_with(
-            'foo', 'prev-sha1', 1)
+            'foo', 'prev-sha1', 2)
 
     @patch('swh.web.ui.views.api.service')
     # @istest

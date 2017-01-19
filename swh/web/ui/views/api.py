@@ -99,6 +99,16 @@ def api_origin_visit(origin_id, visit_id):
          default='hello',
          argtype=doc.argtypes.str,
          argdoc="""An expression string to lookup in swh's raw content""")
+@doc.header('Link',
+            doc="""Optional 'Link' header proposed to the api consumer
+                   for navigation purpose. possible are 'next'
+                   or 'previous' page.""")
+@doc.param('last_sha1', default=None,
+           doc="""Optional parameter to start returning page results from.""")
+@doc.param('per_page', default=10,
+           doc="""Optional parameter to limit the number of data per page
+                  to retrieve on a per request basis.
+                  The default is 10, up to 50 max.""")
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""A list of dict whose content matches the expression.
              Each dict has the following keys:
@@ -108,9 +118,9 @@ def api_origin_visit(origin_id, visit_id):
              - lang (text): Language for that entry
              - line (int): Number line for the symbol
 
-             The result is paginated by page of 10 results.  The
-             'Link' header gives the relation to follow for the next
-             and eventually the previous page.
+             The result is paginated by page of 10 results by default.
+             The 'Link' header gives the link to follow for the next
+             page.
 
              """)
 def api_content_symbol(q=None):
@@ -141,10 +151,13 @@ def api_content_symbol(q=None):
         headers = {}
         if l == per_page:
             new_last_sha1 = symbols[-1]['sha1']
-            headers['link-next'] = utils.to_url(
-                        url, (('last_sha1', new_last_sha1), ))
+            params = [('last_sha1', new_last_sha1)]
 
-        if headers:
+            nb_per_page = request.args.get('per_page')
+            if nb_per_page:
+                params.append(('per_page', nb_per_page))
+            headers['link-next'] = utils.to_url(url, params)
+
             result['headers'] = headers
 
     result.update({
@@ -162,6 +175,10 @@ def api_content_symbol(q=None):
          argtype=doc.argtypes.algo_and_hash,
          argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
          sha1_git or sha256 and hash is the hash to search for in SWH""")
+@doc.param('q', default=None,
+           doc="""(POST request) An algo_hash:hash string, where algo_hash
+                  is one of sha1, sha1_git or sha256 and hash is the hash to
+                  search for in SWH""")
 @doc.raises(exc=doc.excs.badinput,
             doc='Raised if q is not well formed')
 @doc.returns(rettype=doc.rettypes.dict,
