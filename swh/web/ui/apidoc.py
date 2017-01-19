@@ -313,7 +313,7 @@ class BaseDescribeDocBase(APIDocBase):
 
     """
     def __init__(self):
-        self.doc_dict = None
+        self.doc_data = None
         self.inner_dec = None
 
     def __call__(self, f):
@@ -325,7 +325,7 @@ class BaseDescribeDocBase(APIDocBase):
 
     @property
     def data(self):
-        return self.doc_dict
+        return self.doc_data
 
 
 class arg(BaseDescribeDocBase):
@@ -342,7 +342,7 @@ class arg(BaseDescribeDocBase):
     """
     def __init__(self, name, default, argtype, argdoc):
         super().__init__()
-        self.doc_dict = {
+        self.doc_data = {
             'name': name,
             'type': argtype.value,
             'doc': argdoc,
@@ -362,7 +362,7 @@ class header(BaseDescribeDocBase):
     """
     def __init__(self, name, doc):
         super().__init__()
-        self.doc_dict = {
+        self.doc_data = {
             'name': name,
             'doc': doc,
         }
@@ -380,61 +380,42 @@ class param(BaseDescribeDocBase):
     """
     def __init__(self, name, default, doc):
         super().__init__()
-        self.doc_dict = {
+        self.doc_data = {
             'name': name,
             'default': default,
             'doc': doc,
         }
 
 
-class raises(APIDocBase):  # noqa: N801
-    """
-    Decorate an API method to display information pertaining to an exception
+class raises(BaseDescribeDocBase):
+    """Decorate an API method to display information pertaining to an exception
     that can be raised by this method.
+
     Args:
         exc: the exception name as an Enum value from apidoc.excs
         doc: the exception's documentation string
+
     """
     def __init__(self, exc, doc):
         super().__init__()
-        self.exc_dict = {
+        self.doc_data = {
             'exc': exc.value,
             'doc': doc
         }
 
-    def __call__(self, f):
-        @wraps(f)
-        def exc_fun(*args, outer_decorator=None, **kwargs):
-            kwargs['outer_decorator'] = outer_decorator
-            return self.maintain_stack(f, args, kwargs)
-        return exc_fun
 
-    @property
-    def data(self):
-        return self.exc_dict
+class returns(BaseDescribeDocBase):
+    """Decorate an API method to display information about its return value.
 
-
-class returns(APIDocBase):  # noqa: N801
-    """
-    Decorate an API method to display information about its return value.
     Args:
-        rettype: the return value's type as an Enum value from apidoc.rettypes
-        retdoc: the return value's documentation string
+        rettype: the return value's type as an Enum value from
+        apidoc.rettypes retdoc: the return value's documentation
+        string
+
     """
     def __init__(self, rettype=None, retdoc=None):
         super().__init__()
-        self.return_dict = {
+        self.doc_data = {
             'type': rettype.value,
             'doc': retdoc
         }
-
-    def __call__(self, f):
-        @wraps(f)
-        def ret_fun(*args, outer_decorator=None, **kwargs):
-            kwargs['outer_decorator'] = outer_decorator
-            return self.maintain_stack(f, args, kwargs)
-        return ret_fun
-
-    @property
-    def data(self):
-        return self.return_dict
