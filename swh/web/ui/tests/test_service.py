@@ -652,7 +652,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # then
         self.assertEqual(list(actual_origin_visits), expected_origin_visits)
 
-        mock_backend.lookup_origin_visits.assert_called_once_with(6)
+        mock_backend.lookup_origin_visits.assert_called_once_with(
+            6, last_visit=None, limit=10)
 
     @patch('swh.web.ui.service.backend')
     @istest

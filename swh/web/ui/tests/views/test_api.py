@@ -906,11 +906,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # given
         stub_visits = [
             {
-                'date': 1104616800.0,
-                'origin': 1,
-                'visit': 1
-            },
-            {
                 'date': 1293919200.0,
                 'origin': 1,
                 'visit': 2
@@ -925,18 +920,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
         mock_service.lookup_origin_visits.return_value = stub_visits
 
         # when
-        rv = self.app.get('/api/1/origin/2/visits/')
+        rv = self.app.get('/api/1/origin/2/visits/?per_page=2&last_visit=1')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, [
-            {
-                'date': 1104616800.0,
-                'origin': 1,
-                'visit': 1,
-                'origin_visit_url': '/api/1/origin/1/visit/1/',
-            },
             {
                 'date': 1293919200.0,
                 'origin': 1,
@@ -951,7 +940,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
             }
         ])
 
-        mock_service.lookup_origin_visits.assert_called_once_with(2)
+        mock_service.lookup_origin_visits.assert_called_once_with(
+            2, last_visit=1, per_page=2)
 
     @patch('swh.web.ui.views.api.service')
     @istest

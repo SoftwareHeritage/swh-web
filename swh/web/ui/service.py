@@ -653,7 +653,7 @@ def stat_counters():
     return backend.stat_counters()
 
 
-def lookup_origin_visits(origin_id):
+def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
     """Yields the origin origin_ids' visits.
 
     Args:
@@ -663,7 +663,8 @@ def lookup_origin_visits(origin_id):
        Dictionaries of origin_visit for that origin
 
     """
-    visits = backend.lookup_origin_visits(origin_id)
+    visits = backend.lookup_origin_visits(
+        origin_id, last_visit=last_visit, limit=per_page)
     for visit in visits:
         yield converters.from_origin_visit(visit)
 
