@@ -59,16 +59,13 @@ class SWHComputeLinkHeader:
                 - 'headers': potential headers with 'link-next'
                   and 'link-prev' keys
                 - 'results': containing the result to return
+            options (dict): the initial dict to update with result if any
 
         Returns:
-            tuple rv, options:
+            Dict 'options' updated with headers 'Link' containing
+            the 'link-next' and 'link-prev' headers.
 
-            If link-headers are present, rv is the returned value
-            present in the 'results' key. Also, options is updated
-            with headers 'Link' containing the 'link-next' and
-            'link-prev' headers.
-
-            Otherwise, rv, options stays the same as the input.
+            Otherwise, options is returned unchanged
 
         """
         link_headers = []
