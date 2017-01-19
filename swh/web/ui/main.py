@@ -11,7 +11,7 @@ from swh.core import config
 
 from swh.web.ui.renderers import urlize_api_links, safe_docstring_display
 from swh.web.ui.renderers import revision_id_from_url, highlight_source
-from swh.web.ui.renderers import SWHMultiResponse
+from swh.web.ui.renderers import SWHMultiResponse, urlize_header_links
 from swh.storage import get_storage
 
 
@@ -30,13 +30,19 @@ DEFAULT_CONFIG = {
     'max_log_revs': ('int', 25),
 }
 
-# api's definition
-app = Flask(__name__)
-app.response_class = SWHMultiResponse
-app.jinja_env.filters['urlize_api_links'] = urlize_api_links
-app.jinja_env.filters['safe_docstring_display'] = safe_docstring_display
-app.jinja_env.filters['revision_id_from_url'] = revision_id_from_url
-app.jinja_env.filters['highlight_source'] = highlight_source
+class SWHFlask(Flask):
+    """SWH's flask application.
+
+    """
+    response_class = SWHMultiResponse
+
+
+app = SWHFlask(__name__)
+app.add_template_filter(urlize_api_links)
+app.add_template_filter(urlize_header_links)
+app.add_template_filter(safe_docstring_display)
+app.add_template_filter(revision_id_from_url)
+app.add_template_filter(highlight_source)
 
 
 def read_config(config_file):

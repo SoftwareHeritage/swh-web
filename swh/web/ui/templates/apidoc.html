@@ -14,6 +14,17 @@
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
   <h2> Result </h2>
   <pre>{% autoescape off %}{{ response_data | urlize_api_links }}{% endautoescape %}</pre>
+  {% if headers_data and headers_data is not none %}
+  <h2> Headers </h2>
+  <div class="doc-headers">
+    <dl class="doc-headers dl-horizontal">
+      {% for header_name, header_value in headers_data.items() %}
+      <dt> {{ header_name }} </dt>
+      <dd> {{ header_value | urlize_header_links | safe }} </dd>
+      {% endfor %}
+    </dl>
+  </div>
+  {% endif %}
 </div>
 {% endif %}
 <hr/>
@@ -51,6 +62,17 @@
   </dl>
  </div>
 {% endif %}
+{% if params and params|length > 0 %}
+<div class="doc-params">
+  <h2> Params </h2>
+  <dl class="doc-paramslist dl-horizontal">
+    {% for param in params %}
+    <dt> {{ param['name'] }}: string </dt>
+    <dd> {% autoescape off %} {{ param['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    {% endfor %}
+  </dl>
+ </div>
+{% endif %}
 {% if excs and excs|length > 0 %}
 <div class="doc-excs">
   <h2> Raises </h2>
@@ -58,6 +80,17 @@
     {% for exc in excs %}
     <dt> {{ exc['exc'] }} </dt>
     <dd> {% autoescape off %} {{ exc['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    {% endfor %}
+  </dl>
+</div>
+{% endif %}
+{% if headers %}
+<div class="doc-headers">
+  <h2> Headers </h2>
+  <dl class="doc-headers dl-horizontal">
+    {% for header in headers %}
+    <dt> {{ header['name'] }}: string </dt>
+    <dd> {% autoescape off %} {{ header['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
     {% endfor %}
   </dl>
 </div>
