@@ -144,10 +144,13 @@ def api_content_symbol(q=None):
         headers = {}
         if l == per_page:
             new_last_sha1 = symbols[-1]['sha1']
-            headers['link-next'] = utils.to_url(
-                        url, (('last_sha1', new_last_sha1), ))
+            params = [('last_sha1', new_last_sha1)]
 
-        if headers:
+            nb_per_page = request.args.get('per_page')
+            if nb_per_page:
+                params.append(('per_page', nb_per_page))
+            headers['link-next'] = utils.to_url(url, params)
+
             result['headers'] = headers
 
     result.update({
