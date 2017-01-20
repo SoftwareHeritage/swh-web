@@ -18,8 +18,8 @@
       <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
     {% endfor %}
   {% endif %}
-  <h2> Result </h2>
-  <pre>{{ response_data | urlize_api_links | safe }}</pre>
+    <h2> Result </h2>
+    <pre>{{ response_data | escape_author_fields | urlize_api_links | safe }}</pre>
 </div>
 {% endif %}
 <hr/>
