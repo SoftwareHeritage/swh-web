@@ -1,8 +1,9 @@
-swh-web (0.0.61-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.62-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * Release swh-web-ui v0.0.62
+  * Add flask-limiter to dependencies and wire it in
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 20 Jan 2017 15:26:37 +0100
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Fri, 20 Jan 2017 16:29:48 +0100
 
 swh-web (0.0.61-1~swh1) unstable-swh; urgency=medium
 

@@ -884,7 +884,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         self.storage.origin_visit_get_by.assert_called_with(10, 1)
 
     @istest
-    def lookup_origin_visit_None(self):
+    def lookup_origin_visit_none(self):
         # given
         self.storage.origin_visit_get_by = MagicMock(
             return_value=None)
