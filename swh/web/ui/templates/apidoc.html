@@ -5,7 +5,7 @@
 {% if docstring %}
 <div class="docstring">
   <h2> Overview </h2>
-  {% autoescape off %} {{ docstring | safe_docstring_display }} {% endautoescape %}
+  {{ docstring | safe_docstring_display | safe }}
 </div>
 {% endif %}
 {% if response_data and response_data is not none %}
@@ -13,7 +13,7 @@
   <h2> Request </h2>
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
   <h2> Result </h2>
-  <pre>{% autoescape off %}{{ response_data | urlize_api_links }}{% endautoescape %}</pre>
+  <pre>{{ response_data | urlize_api_links | safe }}</pre>
   {% if headers_data and headers_data is not none %}
   <h2> Headers </h2>
   <div class="doc-headers">
@@ -57,7 +57,7 @@
   <dl class="doc-argslist dl-horizontal">
     {% for arg in args %}
     <dt> {{ arg['name'] }}: {{ arg['type'] }} </dt>
-    <dd> {% autoescape off %} {{ arg['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    <dd> {{ arg['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
  </div>
@@ -68,7 +68,7 @@
   <dl class="doc-paramslist dl-horizontal">
     {% for param in params %}
     <dt> {{ param['name'] }}: string </dt>
-    <dd> {% autoescape off %} {{ param['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    <dd> {{ param['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
  </div>
@@ -79,7 +79,7 @@
   <dl class="doc-excslist dl-horizontal">
     {% for exc in excs %}
     <dt> {{ exc['exc'] }} </dt>
-    <dd> {% autoescape off %} {{ exc['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    <dd> {{ exc['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
 </div>
@@ -90,7 +90,7 @@
   <dl class="doc-headers dl-horizontal">
     {% for header in headers %}
     <dt> {{ header['name'] }}: string </dt>
-    <dd> {% autoescape off %} {{ header['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    <dd> {{ header['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
 </div>
@@ -100,7 +100,7 @@
   <h2> Returns </h2>
   <dl class="doc-return dl-horizontal">
     <dt> {{ return['type'] }} </dt>
-    <dd> {% autoescape off %} {{ return['doc'] | safe_docstring_display }} {% endautoescape %} </dd>
+    <dd> {{ return['doc'] | safe_docstring_display | safe }} </dd>
   </dl>
 </div>
 {% endif %}
