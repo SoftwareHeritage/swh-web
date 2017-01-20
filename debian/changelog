@@ -1,3 +1,10 @@
+swh-web (0.0.62-1~swh1) unstable-swh; urgency=medium
+
+  * Release swh-web-ui v0.0.62
+  * Add flask-limiter to dependencies and wire it in
+
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Fri, 20 Jan 2017 16:29:48 +0100
+
 swh-web (0.0.61-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.61
