@@ -101,7 +101,7 @@ def prepare_limiter():
     limiter = Limiter(
         app,
         key_func=get_remote_address,
-        **app.config['conf']['limiter'],
+        **app.config['conf']['limiter']
     )
     app.limiter = limiter
 
