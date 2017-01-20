@@ -328,7 +328,7 @@ class BaseDescribeDocBase(APIDocBase):
         return self.doc_data
 
 
-class arg(BaseDescribeDocBase):
+class arg(BaseDescribeDocBase):  # noqa: N801
     """
     Decorate an API method to display an argument's information on the doc
     page specified by @route above.
@@ -350,7 +350,7 @@ class arg(BaseDescribeDocBase):
         }
 
 
-class header(BaseDescribeDocBase):
+class header(BaseDescribeDocBase):  # noqa: N801
     """
     Decorate an API method to display header information the api can
     potentially return in the response.
@@ -368,7 +368,7 @@ class header(BaseDescribeDocBase):
         }
 
 
-class param(BaseDescribeDocBase):
+class param(BaseDescribeDocBase):  # noqa: N801
     """Decorate an API method to display query parameter information the
     api can potentially accept.
 
@@ -387,7 +387,7 @@ class param(BaseDescribeDocBase):
         }
 
 
-class raises(BaseDescribeDocBase):
+class raises(BaseDescribeDocBase):  # noqa: N801
     """Decorate an API method to display information pertaining to an exception
     that can be raised by this method.
 
@@ -404,7 +404,7 @@ class raises(BaseDescribeDocBase):
         }
 
 
-class returns(BaseDescribeDocBase):
+class returns(BaseDescribeDocBase):  # noqa: N801
     """Decorate an API method to display information about its return value.
 
     Args:
