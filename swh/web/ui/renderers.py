@@ -202,7 +202,13 @@ def urlize_api_links(text):
         The text as is otherwise.
 
     """
-    return re.sub(r'"(/api/.*|/browse/.*)"', r'"<a href="\1">\1</a>"', text)
+    return re.sub(r'(/api/.*/|/browse/.*/)',
+                  r'<a href="\1">\1</a>',
+                  text)
+
+
+def escape_author_fields(text):
+    return re.sub(r'<(.*)>', r'&lt;\1&gt;', text)
 
 
 def urlize_header_links(text):

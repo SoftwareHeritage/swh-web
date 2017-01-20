@@ -308,7 +308,6 @@ def lookup_origin_visits(origin_id, last_visit=None, limit=10):
 
     """
     limit = min(limit, MAX_LIMIT)
-    print(last_visit, limit)
     yield from main.storage().origin_visit_get(
         origin_id, last_visit=last_visit, limit=limit)
 

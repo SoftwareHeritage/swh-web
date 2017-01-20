@@ -54,7 +54,6 @@ def api_origin_visits(origin_id):
 
     def _lookup_origin_visits(
             origin_id, last_visit=last_visit, per_page=per_page):
-        print(origin_id, last_visit, per_page)
         return service.lookup_origin_visits(
             origin_id, last_visit=last_visit, per_page=per_page)
 
