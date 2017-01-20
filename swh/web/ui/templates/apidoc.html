@@ -12,19 +12,14 @@
 <div class="response-data">
   <h2> Request </h2>
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
-  <h2> Result </h2>
-  <pre>{{ response_data | urlize_api_links | safe }}</pre>
   {% if headers_data and headers_data is not none %}
   <h2> Headers </h2>
-  <div class="doc-headers">
-    <dl class="doc-headers dl-horizontal">
-      {% for header_name, header_value in headers_data.items() %}
-      <dt> {{ header_name }} </dt>
-      <dd> {{ header_value | urlize_header_links | safe }} </dd>
-      {% endfor %}
-    </dl>
-  </div>
+    {% for header_name, header_value in headers_data.items() %}
+      <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
+    {% endfor %}
   {% endif %}
+  <h2> Result </h2>
+  <pre>{{ response_data | urlize_api_links | safe }}</pre>
 </div>
 {% endif %}
 <hr/>
