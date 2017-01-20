@@ -1,8 +1,9 @@
-swh-web (0.0.60-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.61-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.61
+  * Fix revision's metadata field limitation
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 20 Jan 2017 12:21:22 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Fri, 20 Jan 2017 15:26:37 +0100
 
 swh-web (0.0.60-1~swh1) unstable-swh; urgency=medium
 

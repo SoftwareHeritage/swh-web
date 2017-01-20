@@ -33,8 +33,9 @@ class ConvertersTestCase(unittest.TestCase):
                 'm': 'dont care'
             },
             'o': 'something',
-            'p': 'bar',
-            'q': 'intact',
+            'p': b'foo',
+            'q': {'extra-headers': [['a', b'intact']]},
+            'w': None,
             'r': {'p': 'also intact',
                   'q': 'bar'},
             's': {
@@ -61,27 +62,26 @@ class ConvertersTestCase(unittest.TestCase):
                 }
             },
             'p': 'foo',
-            'q': 'intact',
+            'q': {'extra-headers': [['a', 'intact']]},
+            'w': {},
             'r': {'p': 'also intact',
-                  'q': 'foo'},
+                  'q': 'bar'},
             's': '1969-12-31T17:00:42-07:00',
             'u': {},
             'v': [],
         }
 
-        def test_convert_fn(v):
-            return 'foo' if v == 'bar' else v
-
-        actual_output = converters.from_swh(some_input,
-                                            hashess={'d', 'o'},
-                                            bytess={'c', 'e', 'g', 'l'},
-                                            dates={'s'},
-                                            blacklist={'h', 'm', 'n', 'o'},
-                                            removables_if_empty={'t'},
-                                            empty_dict={'u'},
-                                            empty_list={'v'},
-                                            convert={'p', 'q'},
-                                            convert_fn=test_convert_fn)
+        actual_output = converters.from_swh(
+            some_input,
+            hashess={'d', 'o'},
+            bytess={'c', 'e', 'g', 'l'},
+            dates={'s'},
+            blacklist={'h', 'm', 'n', 'o'},
+            removables_if_empty={'t'},
+            empty_dict={'u'},
+            empty_list={'v'},
+            convert={'p', 'q', 'w'},
+            convert_fn=converters.convert_revision_metadata)
 
         self.assertEquals(expected_output, actual_output)
 
@@ -330,6 +330,7 @@ class ConvertersTestCase(unittest.TestCase):
                     '123546353ed3480476f032475e7c244eff7371d5'),
             ],
             'metadata': {
+                'extra_headers': [['gpgsig', b'some-signature']],
                 'original_artifact': [{
                     'archive_type': 'tar',
                     'name': 'webbase-5.7.0.tar.gz',
@@ -368,6 +369,7 @@ class ConvertersTestCase(unittest.TestCase):
             'type': 'tar',
             'synthetic': True,
             'metadata': {
+                'extra_headers': [['gpgsig', 'some-signature']],
                 'original_artifact': [{
                     'archive_type': 'tar',
                     'name': 'webbase-5.7.0.tar.gz',
