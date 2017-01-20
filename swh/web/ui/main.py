@@ -113,19 +113,20 @@ def run_from_webserver(environ, start_response):
     effects here!
     """
 
-    load_controllers()
+    if 'conf' not in app.config:
+        load_controllers()
 
-    config_path = '/etc/softwareheritage/webapp/webapp.yml'
+        config_path = '/etc/softwareheritage/webapp/webapp.yml'
 
-    conf = read_config(config_path)
+        conf = read_config(config_path)
 
-    app.secret_key = conf['secret_key']
-    app.config['conf'] = conf
+        app.secret_key = conf['secret_key']
+        app.config['conf'] = conf
 
-    prepare_limiter()
+        prepare_limiter()
 
-    logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
-                        level=logging.INFO)
+        logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
+                            level=logging.INFO)
 
     return app(environ, start_response)
 
