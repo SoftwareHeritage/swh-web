@@ -65,7 +65,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'synthetic': False,
             'type': 'git',
             'parents': [],
-            'metadata': [],
+            'metadata': {},
             'merge': False
         }
         self.SAMPLE_REVISION_RAW = {
@@ -1473,7 +1473,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
                 'synthetic': False,
                 'type': 'git',
                 'parents': [],
-                'metadata': [],
+                'metadata': {},
                 'merge': False
             }
         ])
