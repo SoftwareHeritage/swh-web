@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import datetime
+import json
 
 from swh.core import hashutil
 from swh.core.utils import decode_with_escape
@@ -83,11 +84,15 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
 
         if key in dates:
             new_dict[key] = convert_date(value)
+        elif key in convert:
+            new_dict[key] = convert_fn(value)
         elif isinstance(value, dict):
             new_dict[key] = from_swh(value,
                                      hashess=hashess, bytess=bytess,
                                      dates=dates, blacklist=blacklist,
                                      removables_if_empty=removables_if_empty,
+                                     empty_dict=empty_dict,
+                                     empty_list=empty_list,
                                      convert=convert,
                                      convert_fn=convert_fn)
         elif key in hashess:
@@ -101,8 +106,6 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
                 else:
                     new_dict['decoding_failures'].append(key)
                 new_dict[key] = utils.fmap(decode_with_escape, value)
-        elif key in convert:
-            new_dict[key] = convert_fn(value)
         elif key in empty_dict and not value:
             new_dict[key] = {}
         elif key in empty_list and not value:
@@ -168,6 +171,28 @@ def from_release(release):
     )
 
 
+class SWHMetadataEncoder(json.JSONEncoder):
+    """Special json encoder for metadata field which can contain bytes
+    encoded value.
+
+    """
+    def default(self, obj):
+        if isinstance(obj, bytes):
+            return obj.decode('utf-8')
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
+
+def convert_revision_metadata(metadata):
+    """Convert json specific dict to a json serializable one.
+
+    """
+    if not metadata:
+        return {}
+
+    return json.loads(json.dumps(metadata, cls=SWHMetadataEncoder))
+
+
 def from_revision(revision):
     """Convert from an SWH revision to a json serializable revision dictionary.
 
@@ -198,7 +223,8 @@ def from_revision(revision):
     revision = from_swh(revision,
                         hashess={'id', 'directory', 'parents', 'children'},
                         bytess={'name', 'fullname', 'email'},
-                        empty_list={'metadata'},
+                        convert={'metadata'},
+                        convert_fn=convert_revision_metadata,
                         dates={'date', 'committer_date'})
 
     if revision:
