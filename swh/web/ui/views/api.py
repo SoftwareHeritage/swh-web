@@ -807,10 +807,15 @@ def api_revision_log_by(origin_id,
     l = len(rev_get)
     if l == per_page+1:
         revisions = rev_get[:-1]
-        url = url_for('api_revision_log_by', sha1_git=rev_get[-1]['id'])
+        url = url_for('api_revision_log_by',
+                      origin_id=origin_id,
+                      branch_name=branch_name,
+                      ts=ts)
 
+        last_sha1_git = rev_get[-1]['id']
         nb_per_page = request.args.get('per_page')
-        params = []
+
+        params = [('sha1_git', last_sha1_git)]
         if nb_per_page:
             params.append(('per_page', per_page))
 

@@ -47,14 +47,25 @@ def create_app(base_url='https://somewhere.org:4321'):
     storage = _init_mock_storage(base_url)
 
     # inject the mock data
-    conf = {'storage': storage,
-            'max_log_revs': 25}
+    conf = {
+        'storage': storage,
+        'max_log_revs': 25,
+        'limiter': {
+            'global_limits': ['10 per minute'],
+            'headers_enabled': True,
+            'strategy': 'moving-window',
+            'storage_uri': 'memory://',
+            'storage_options': {},
+            'in_memory_fallback': ['10 per minute'],
+        },
+    }
 
     main.app.config.update({'conf': conf})
 
     if not main.app.config['TESTING']:  # HACK: install controllers only once!
         main.app.config['TESTING'] = True
         main.load_controllers()
+        main.prepare_limiter()
 
     return main.app.test_client(), main.app.config, storage, main.app
 

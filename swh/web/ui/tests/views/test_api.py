@@ -1942,7 +1942,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         self.assertEquals(
             rv.headers['Link'],
-            "</api/1/revision/origin/log/?sha1_git=25&per_page=25>; rel=\"next\"")  # noqa
+            "</api/1/revision/origin/1/branch/refs/heads/master/log/?sha1_git=25&per_page=25>; rel=\"next\"")  # noqa
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, expected_revisions)
