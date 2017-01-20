@@ -606,7 +606,7 @@ class ConvertersTestCase(unittest.TestCase):
         self.assertEqual(actual_revision, expected_revision)
 
     @istest
-    def from_content_None(self):
+    def from_content_none(self):
         self.assertIsNone(converters.from_content(None))
 
     @istest

@@ -38,6 +38,7 @@ class APIDocTestCase(SWHApidocTestCase):
             'doc': 'a dict with amazing properties'
         }
 
+    @staticmethod
     @apidoc.route('/my/nodoc/url/')
     @nottest
     def apidoc_nodoc_tester(arga, argb):
@@ -64,6 +65,7 @@ class APIDocTestCase(SWHApidocTestCase):
                 """
                 return foo + bar
 
+    @staticmethod
     @app.route('/some/<int:myarg>/<int:myotherarg>/')
     @apidoc.route('/some/doc/route/')
     @nottest
@@ -91,6 +93,7 @@ class APIDocTestCase(SWHApidocTestCase):
         # then
         self.assertEqual(rv.status_code, 200)
 
+    @staticmethod
     @app.route('/some/full/<int:myarg>/<int:myotherarg>/')
     @apidoc.route('/some/complete/doc/route/')
     @apidoc.arg('myarg',

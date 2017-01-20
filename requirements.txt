@@ -4,11 +4,14 @@
 
 # Runtime dependencies
 Flask
+Flask_Limiter
 swh.core >= 0.0.20
 swh.storage >= 0.0.77
 dateutil
 docutils
 pygments
+redis
+hiredis
 
 # Test dependencies
 #Flask-Testing

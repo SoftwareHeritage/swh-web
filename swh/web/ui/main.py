@@ -7,6 +7,9 @@ import logging
 import os
 
 from flask import Flask
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from swh.core import config
 
 from swh.web.ui.renderers import urlize_api_links, safe_docstring_display
@@ -29,6 +32,14 @@ DEFAULT_CONFIG = {
     'port': ('int', 6543),
     'secret_key': ('string', 'development key'),
     'max_log_revs': ('int', 25),
+    'limiter': ('dict', {
+        'global_limits': ['1 per minute'],
+        'headers_enabled': True,
+        'strategy': 'moving-window',
+        'storage_uri': 'memory://',
+        'storage_options': {},
+        'in_memory_fallback': ['1 per minute'],
+    }),
 }
 
 class SWHFlask(Flask):
@@ -56,7 +67,6 @@ def read_config(config_file):
     conf['storage'] = get_storage(**conf['storage'])
 
     return conf
-
 
 def load_controllers():
     """Load the controllers for the application.
@@ -86,6 +96,15 @@ def storage():
     """
     return app.config['conf']['storage']
 
+def prepare_limiter():
+    """Prepare Flask Limiter from configuration and App configuration"""
+    limiter = Limiter(
+        app,
+        key_func=get_remote_address,
+        **app.config['conf']['limiter']
+    )
+    app.limiter = limiter
+
 
 def run_from_webserver(environ, start_response):
     """Run the WSGI app from the webserver, loading the configuration.
@@ -102,6 +121,8 @@ def run_from_webserver(environ, start_response):
 
     app.secret_key = conf['secret_key']
     app.config['conf'] = conf
+
+    prepare_limiter()
 
     logging.basicConfig(filename=os.path.join(conf['log_dir'], 'web-ui.log'),
                         level=logging.INFO)
@@ -140,6 +161,8 @@ def run_debug_from(config_path, verbose=False):
     host = conf.get('host', '127.0.0.1')
     port = conf.get('port')
     debug = conf.get('debug')
+
+    prepare_limiter()
 
     log_file = os.path.join(conf['log_dir'], 'web-ui.log')
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO,
