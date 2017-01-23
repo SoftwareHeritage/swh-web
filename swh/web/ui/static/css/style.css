@@ -31,11 +31,13 @@ img.swh-logo {
 
 .jumbotron {
     padding: 0;
+    background-color: rgba(0, 0, 0, 0);
 }
 
 .jumbotron h1 {
     font-size: 1.8em;
     color: #e20026;
+    border-bottom-style: none;
 }
 
 #swh-navbar-collapse {
