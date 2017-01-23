@@ -13,7 +13,7 @@ def homepage():
     """Home page
 
     """
-    return flask.redirect(flask.url_for('browse'))
+    return flask.redirect(flask.url_for('browse_api_doc'))
 
 
 @app.route('/about/')
