@@ -39,7 +39,6 @@ Examples:
 - [/api/1/stat/counters/](/api/1/stat/counters/)
 
 - From the command line:
-
 ``` shell
 curl -i https://archive.softwareheritage.org/api/1/stat/counters/
 ```
