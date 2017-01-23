@@ -32,7 +32,7 @@ Current version is [1](/api/1/).
 
 Api access is over https and accessed through [https://archive.softwareheritage.org/api/1/](/api/1/).
 
-Data is sent and received as json by default.
+Data is sent and received in json by default.
 
 Examples:
 
