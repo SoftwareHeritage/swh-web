@@ -1,3 +1,10 @@
+swh-web (0.0.63-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.63
+  * Unify rendering style with www.s.o - pass 1
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Mon, 23 Jan 2017 16:06:30 +0100
+
 swh-web (0.0.62-1~swh1) unstable-swh; urgency=medium
 
   * Release swh-web-ui v0.0.62
