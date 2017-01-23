@@ -20,6 +20,7 @@
 
   </head>
   <body>
+    <a id="top"></a>
     <div class="jumbotron">
       <nav class="navbar navbar-default" id="swh-navbar-collapse">
         <div class="navbar-header">
@@ -71,6 +72,9 @@
       <div class="container content">
         {% block content %}{% endblock %}
       </div>
-     </div>
+    </div>
+    <div id="back-to-top">
+      <a href="#top"><img alt="back to top" src="{{ url_for('static', filename='img/arrow-up-small.png') }}" /></a>
+    </div>
   </body>
 </html>
