@@ -35,6 +35,7 @@ img.swh-logo {
 
 .jumbotron h1 {
     font-size: 1.8em;
+    color: #e20026;
 }
 
 #swh-navbar-collapse {
@@ -43,8 +44,10 @@ img.swh-logo {
     width: 100%;
 }
 
-a, h1, h2       { color: #377ba8; }
-h1, h2          { margin: 0; }
+a               { color: #377ba8; }
+h1, h2, h3, h4  { margin: 0;
+                  color: #e20026;
+                }
 h1              { border-bottom: 2px solid #eee; font-size: 1.25em; }
 h2              { font-size: 1.2em; }
 
