@@ -48,6 +48,29 @@ h1, h2          { margin: 0; }
 h1              { border-bottom: 2px solid #eee; font-size: 1.25em; }
 h2              { font-size: 1.2em; }
 
+a               {
+                  color: rgba(0, 0, 0, 0.75);
+                  border-bottom-style: dotted;
+                  border-bottom-width: 1px;
+                  border-bottom-color: rgb(91, 94, 111);
+                }
+
+a:hover         {
+                  color: black;
+                }
+
+ul.dropdown-menu > li > a,
+ul.dropdown-menu > li > ul > li > a,
+.navbar-header > a,
+ul.navbar-nav > li > a { /* No decoration on links in dropdown menu */
+                  border-bottom-style: none;
+                }
+
+ul.dropdown-menu > li,
+ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown menu */
+                  list-style-type: none;
+                }
+
 .page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
                   padding: 0.8em; background: white; }
 .entries        { list-style: none; margin: 0; padding: 0; }
