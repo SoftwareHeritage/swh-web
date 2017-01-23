@@ -29,9 +29,13 @@ img.swh-logo {
     max-height: 40px;
 }
 
+.jumbotron h1 {
+    font-size: 1.8em;
+}
+
 a, h1, h2       { color: #377ba8; }
 h1, h2          { margin: 0; }
-h1              { border-bottom: 2px solid #eee; }
+h1              { border-bottom: 2px solid #eee; font-size: 1.25em; }
 h2              { font-size: 1.2em; }
 
 .page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
