@@ -22,7 +22,6 @@
   <body>
     <div class="jumbotron">
       <div class="container">
-        <h1>{{ self.title() }}</h1>
         <nav class="navbar navbar-default">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed"
@@ -39,7 +38,7 @@
 
           <div class="collapse navbar-collapse" id="swh-navbar-collapse">
             <ul class="nav navbar-nav">
-              <li><a href="https://www.softwareheritage.org">Main site</a></li>
+              <li><a href="https://www.softwareheritage.org">Software Heritage</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="{{ url_for('browse') }}">Browse</a></li>
               <li role="separator" class="divider"></li>
@@ -54,6 +53,7 @@
             </ul>
           </div>
         </nav>
+        <h1>{{ self.title() }}</h1>
       </div>
     </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
