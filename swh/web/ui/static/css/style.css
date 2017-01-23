@@ -49,7 +49,7 @@ img.swh-logo {
     float: right;
 }
 
-h3[id] {  /* avoid in-page links covered by navbar */
+h3[id], h4[id] {  /* avoid in-page links covered by navbar */
     padding-top: 65px;
     margin-top: -65px;
     display: inline-block; /* webkit compatibility */
