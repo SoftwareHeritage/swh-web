@@ -25,6 +25,9 @@ body {
     font-size: 0.7em;
 }
 
+img.swh-logo {
+    max-height: 40px;
+}
 
 a, h1, h2       { color: #377ba8; }
 h1, h2          { margin: 0; }
