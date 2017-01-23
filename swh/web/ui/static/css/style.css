@@ -66,6 +66,30 @@ ul.navbar-nav > li > a { /* No decoration on links in dropdown menu */
                   border-bottom-style: none;
                 }
 
+.navbar-header > a,
+ul.navbar-nav > li > a {
+    color: #323232;
+    font-weight: 700;
+}
+
+.navbar-header > a:hover,
+ul.navbar-nav > li > a:hover {
+    color: #8f8f8f;
+}
+
+.sitename .first-word, .sitename .second-word {
+    font-weight: normal;
+    font-size: 1.8rem;
+}
+
+.sitename .first-word {
+    font-family: 'Alegreya Sans', sans-serif;
+}
+
+.sitename .second-word {
+    font-family: 'Alegreya', serif;
+}
+
 ul.dropdown-menu > li,
 ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown menu */
                   list-style-type: none;
