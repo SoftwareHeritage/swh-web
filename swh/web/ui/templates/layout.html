@@ -41,7 +41,12 @@
               <li role="separator" class="divider"></li>
               <li><a href="{{ url_for('browse') }}">Browse</a></li>
               <li role="separator" class="divider"></li>
-              <li><a href="{{ url_for('browse_api_doc') }}">API</a></li>
+              <li><a href="{{ url_for('browse_api_doc') }}" class="dropdown-toggle" data-toggle="dropdown"
+                     role="button" aria-haspopup="true" aria-expanded="false">API <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  {% include 'includes/apidoc-header-toc.html' %}
+                  </ul>
+              </li>
               <li role="separator" class="divider"></li>
               <li><a href="{{ url_for('about') }}">About</a></li>
             </ul>
