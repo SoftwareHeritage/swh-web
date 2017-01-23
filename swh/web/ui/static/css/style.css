@@ -7,11 +7,96 @@ website:   softwareheritage.org
 version history: /style.css
 */
 
-body            { font-family: sans-serif; background: #eee; }
-a, h1, h2       { color: #377ba8; }
-h1, h2          { font-family: 'Georgia', serif; margin: 0; }
-h1              { border-bottom: 2px solid #eee; }
+@import url(https://fonts.googleapis.com/css?family=Alegreya:400,400italic,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Alegreya+Sans:400,400italic,500,500italic,700,700italic,100,300,100italic,300italic);
+
+body {
+    font-family: 'Alegreya Sans', sans-serif;
+    font-size: 1.6rem;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.heading {
+    font-family: 'Alegreya', serif;
+}
+
+.shell, .text {
+    font-size: 0.7em;
+}
+
+img.swh-logo {
+    max-height: 40px;
+}
+
+.jumbotron {
+    padding: 0;
+}
+
+.jumbotron h1 {
+    font-size: 1.8em;
+    color: #e20026;
+}
+
+#swh-navbar-collapse {
+    border-bottom: 5px solid;
+    border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
+    width: 100%;
+}
+
+a               { color: #377ba8; }
+h1, h2, h3, h4  { margin: 0;
+                  color: #e20026;
+                }
+h1              { border-bottom: 2px solid #eee; font-size: 1.25em; }
 h2              { font-size: 1.2em; }
+
+a               {
+                  color: rgba(0, 0, 0, 0.75);
+                  border-bottom-style: dotted;
+                  border-bottom-width: 1px;
+                  border-bottom-color: rgb(91, 94, 111);
+                }
+
+a:hover         {
+                  color: black;
+                }
+
+ul.dropdown-menu > li > a,
+ul.dropdown-menu > li > ul > li > a,
+.navbar-header > a,
+ul.navbar-nav > li > a { /* No decoration on links in dropdown menu */
+                  border-bottom-style: none;
+                }
+
+.navbar-header > a,
+ul.navbar-nav > li > a {
+    color: #323232;
+    font-weight: 700;
+}
+
+.navbar-header > a:hover,
+ul.navbar-nav > li > a:hover {
+    color: #8f8f8f;
+}
+
+.sitename .first-word, .sitename .second-word {
+    font-weight: normal;
+    font-size: 1.8rem;
+}
+
+.sitename .first-word {
+    font-family: 'Alegreya Sans', sans-serif;
+}
+
+.sitename .second-word {
+    font-family: 'Alegreya', serif;
+}
+
+ul.dropdown-menu > li,
+ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown menu */
+                  list-style-type: none;
+                }
 
 .page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
                   padding: 0.8em; background: white; }
