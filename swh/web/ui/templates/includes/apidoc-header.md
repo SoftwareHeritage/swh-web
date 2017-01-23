@@ -53,7 +53,8 @@ it using the header field.
 Examples:
 
 - From your favorite REST client API, execute the same request as
-  before with the request header 'Accept' set the 'application/yaml'.
+  before with the request header 'Accept' set to the
+  'application/yaml'.
 
 - From the command line:
 ``` shell
