@@ -18,7 +18,7 @@ class MainViewTestCase(test_app.SWHViewTestCase):
 
         # then
         self.assertEquals(rv.status_code, 302)
-        self.assertRedirects(rv, '/browse/')
+        self.assertRedirects(rv, '/api/')
 
     @istest
     def info(self):
