@@ -33,6 +33,12 @@ img.swh-logo {
     font-size: 1.8em;
 }
 
+#swh-navbar-collapse {
+    border-bottom: 5px solid;
+    border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
+    width: 100%;
+}
+
 a, h1, h2       { color: #377ba8; }
 h1, h2          { margin: 0; }
 h1              { border-bottom: 2px solid #eee; font-size: 1.25em; }
