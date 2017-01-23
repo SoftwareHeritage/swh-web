@@ -29,6 +29,10 @@ img.swh-logo {
     max-height: 40px;
 }
 
+.jumbotron {
+    padding: 0;
+}
+
 .jumbotron h1 {
     font-size: 1.8em;
 }
