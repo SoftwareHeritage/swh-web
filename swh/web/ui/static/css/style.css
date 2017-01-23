@@ -32,12 +32,20 @@ img.swh-logo {
 .jumbotron {
     padding: 0;
     background-color: rgba(0, 0, 0, 0);
+    position: fixed;
+    top: 0;
+    width: 100%;
 }
 
 #swh-navbar-collapse {
+    border-top-style: none;
     border-bottom: 5px solid;
     border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
     width: 100%;
+}
+
+.nav-horizontal {
+    float: right;
 }
 
 a               { color: #377ba8; }
