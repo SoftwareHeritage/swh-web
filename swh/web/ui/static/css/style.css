@@ -10,8 +10,16 @@ version history: /style.css
 @import url(https://fonts.googleapis.com/css?family=Alegreya:400,400italic,700,700italic);
 @import url(https://fonts.googleapis.com/css?family=Alegreya+Sans:400,400italic,500,500italic,700,700italic,100,300,100italic,300italic);
 
-body { font-family: 'Alegreya Sans', sans-serif; }
-.heading { font-family: 'Alegreya', serif; }
+body {
+    font-family: 'Alegreya Sans', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.55);
+}
+.heading {
+    font-family: 'Alegreya', serif;
+}
+
 
 a, h1, h2       { color: #377ba8; }
 h1, h2          { margin: 0; }
