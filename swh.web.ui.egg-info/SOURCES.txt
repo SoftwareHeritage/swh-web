@@ -44,6 +44,7 @@ swh/web/ui/static/css/bootstrap-responsive.min.css
 swh/web/ui/static/css/jquery.dataTables.min.css
 swh/web/ui/static/css/pygment.css
 swh/web/ui/static/css/style.css
+swh/web/ui/static/img/arrow-up-small.png
 swh/web/ui/static/img/swh-logo.png
 swh/web/ui/static/js/calendar.js
 swh/web/ui/static/js/search.js
