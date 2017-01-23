@@ -44,6 +44,7 @@ swh/web/ui/static/css/bootstrap-responsive.min.css
 swh/web/ui/static/css/jquery.dataTables.min.css
 swh/web/ui/static/css/pygment.css
 swh/web/ui/static/css/style.css
+swh/web/ui/static/img/swh-logo.png
 swh/web/ui/static/js/calendar.js
 swh/web/ui/static/js/search.js
 swh/web/ui/static/lib/README
@@ -69,6 +70,7 @@ swh/web/ui/templates/revision-log.html
 swh/web/ui/templates/revision.html
 swh/web/ui/templates/search.html
 swh/web/ui/templates/symbols.html
+swh/web/ui/templates/includes/apidoc-header-toc.html
 swh/web/ui/templates/includes/apidoc-header.html
 swh/web/ui/templates/includes/apidoc-header.md
 swh/web/ui/templates/includes/home-content.html
