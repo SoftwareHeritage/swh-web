@@ -15,6 +15,7 @@ body {
     font-size: 1.6rem;
     line-height: 1.5;
     color: rgba(0, 0, 0, 0.55);
+    padding-top: 65px;  /* avoid fixed bootstrap navbar covers content */
 }
 
 .heading {
@@ -46,6 +47,12 @@ img.swh-logo {
 
 .nav-horizontal {
     float: right;
+}
+
+h3[id] {  /* avoid in-page links covered by navbar */
+    padding-top: 65px;
+    margin-top: -65px;
+    display: inline-block; /* webkit compatibility */
 }
 
 a               { color: #377ba8; }
