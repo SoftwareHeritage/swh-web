@@ -468,7 +468,7 @@ def _revision_directory_by(revision, path, request_path,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/directory/<path:path>/')
-@doc.route('/api/1/revision/origin/directory/')
+@doc.route('/api/1/revision/origin/directory/', tags=['hidden'])
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
@@ -599,7 +599,7 @@ def api_revision(sha1_git, context=None):
 
 
 @app.route('/api/1/revision/<string:sha1_git>/raw/')
-@doc.route('/api/1/revision/raw/')
+@doc.route('/api/1/revision/raw/', tags=['hidden'])
 @doc.arg('sha1_git',
          default='ec72c666fb345ea5f21359b7bc063710ce558e39',
          argtype=doc.argtypes.sha1_git,
