@@ -171,11 +171,11 @@ ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown 
     float: right;
 }
 
-.api-doc-route-upcoming h4 {
+tr.api-doc-route-upcoming > td {
     color: orange;
 }
 
-.api-doc-route-deprecated h4 {
+tr.api-doc-route-deprecated > td {
     color: red;
 }
 
