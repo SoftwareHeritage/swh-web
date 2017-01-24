@@ -704,7 +704,7 @@ specified number.""")
              sha1_git, completed with the navigation breadcrumbs,
              if any""")
 def api_revision_log(sha1_git, prev_sha1s=None):
-    """Return all revisions (~git log) starting from sha1_git.  The first
+    """Return all revisions (~ git log) starting from sha1_git.  The first
     element returned is the given sha1_git, or the first breadcrumb,
     if any.
 
@@ -798,7 +798,7 @@ number.""")
 def api_revision_log_by(origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
-    """Show all revisions (~git log) starting from the revision targeted
+    """Show all revisions (~ git log) starting from the revision targeted
     by the origin_id provided and optionally a branch name or/and a
     timestamp.
 
