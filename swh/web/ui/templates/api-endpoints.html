@@ -1,20 +1,19 @@
 {% extends "layout.html" %}
-{% block title %}API Overview{% endblock %}
+{% block title %}API endpoints overview{% endblock %}
 {% block content %}
 
+<nav class="bread-crumbs">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li>/</li>
+    <li>endpoints</li>
+  </ul>
+</nav>
 <div class="api-doc">
-  <p>This lists the current API endpoints for version 1.</p>
+  This lists the current API endpoints for version 1. For a more general description, please refer
+  to <a href="/api/">the main documentation</a>.
 
-  <p>
-    For a more general description, please refer
-    to <a href="/api/">the main documentation</a>.
-  </p>
-
-  <p>
-  The currently opened endpoints are blue. You can follow them for a
-  more detailed description.  The other endpoints are upcoming and are
-  not followable for now.
-  </p>
+  <noscript>
   <p>
     <ul>
     {% for route, doc in doc_routes %}
@@ -22,21 +21,40 @@
     {% endfor %}
     </ul>
   </p>
+  </noscript>
 </div>
 
-<div class="api-doc">
-  <!-- List api endpoints -->
-  {% for route, doc in doc_routes %}
-    {% if 'tags' in doc and doc['tags'] is not none %}
-  <div class="api-doc-route{% for tag in doc['tags'] %} api-doc-route-{{ tag }}{% endfor %}">
-    <h4 id="{{ route }}"> {{ route }} </h4>
-    ({{ ', '.join(doc['tags']) }})
-    {% else %}
-  <div class="api-doc-route">
-    <h4 id="{{ route }}"> <a href="{{ route }}">{{ route }}</a> </h4>
-    {% endif %}
-    {% autoescape off %}{{ doc['docstring'] | safe_docstring_display }}{% endautoescape %}
-  </div>
-  {% endfor %}
+<div class="api-doc table-responsive">
+  <table class="table table-striped search-res swhtable">
+    <thead class="thead-default">
+      <th>Route</th>
+      <th>Status</th>
+      <th>Description</th>
+    </thead>
+    <tbody>
+      {% for route, doc in doc_routes %}
+      <tr class="api-doc-route{% for tag in doc['tags'] %} api-doc-route-{{ tag }} {% endfor %}">
+        <td id="{{ route }}"><a href="{{ route }}">{{ route }}</a></td>
+        {% if 'tags' in doc and doc['tags'] is not none %}
+        <td>{{ ', '.join(doc['tags']) }}</td>
+        {% else %}
+        <td>opened</td>
+        {% endif %}
+        <td>{{ doc['docstring'] | safe_docstring_display | safe }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('table.swhtable').DataTable({
+         "paging": false,
+         "info": false,
+         "order": [[1, "asc"]]
+      });
+    $(".dataTables_filter input").addClass("form-control")
+
+  });
+</script>
 {% endblock %}

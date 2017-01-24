@@ -40,6 +40,8 @@ img.swh-logo {
 
 #swh-navbar-collapse {
     border-top-style: none;
+    border-left-style: none;
+    border-right-style: none;
     border-bottom: 5px solid;
     border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
     width: 100%;
@@ -49,13 +51,12 @@ img.swh-logo {
     float: right;
 }
 
-h3[id] {  /* avoid in-page links covered by navbar */
+h3[id], h4[id] {  /* avoid in-page links covered by navbar */
     padding-top: 65px;
     margin-top: -65px;
     display: inline-block; /* webkit compatibility */
 }
 
-a               { color: #377ba8; }
 h1, h2, h3, h4  { margin: 0;
                   color: #e20026;
                 }
@@ -169,11 +170,11 @@ ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown 
     float: right;
 }
 
-.api-doc-route-upcoming h4 {
+tr.api-doc-route-upcoming > td, tr.api-doc-route-upcoming > td > a {
     color: orange;
 }
 
-.api-doc-route-deprecated h4 {
+tr.api-doc-route-deprecated > td, tr.api-doc-route-deprecated > td > a {
     color: red;
 }
 
@@ -192,4 +193,56 @@ ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown 
   background-size: 32px 32px;
   text-indent: -999px;
   overflow: hidden;
+}
+
+.table > thead > tr > th {
+    border-bottom: 1px solid #e20026;
+}
+
+.table > tbody > tr > td {
+    border-style: none;
+}
+
+pre {
+    border: 1px dashed black;
+    border-radius: 10px;
+    background-color: hsl(47, 99%, 75%);
+}
+
+.dataTables_wrapper {
+    position: static;
+}
+
+/* breadcrumbs */
+
+.bread-crumbs{
+    display: inline-block;
+    margin: 0 0 15px;
+    overflow: hidden;
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 1.2rem;
+}
+
+bread-crumbs ul {
+    list-style-type: none;
+}
+
+.bread-crumbs li {
+    float: left;
+    margin-right: 10px;
+    list-style-type: none;
+}
+
+.bread-crumbs a {
+    color: rgba(0, 0, 0, 0.75);
+    border-bottom-style: none;
+}
+
+.bread-crumbs a:hover {
+    color: rgba(0, 0, 0, 0.85);
+    text-decoration: underline;
+}
+
+.title-small .bread-crumbs{
+    margin: -30px 0 25px;
 }

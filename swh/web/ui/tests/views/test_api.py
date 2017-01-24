@@ -1222,8 +1222,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
             ],
             'parent_urls': [
-                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
-                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
+                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1248,7 +1247,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, expected_revision)
+        self.assertEquals(expected_revision, response_data)
 
         mock_service.lookup_revision.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
@@ -1682,8 +1681,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
             ],
             'parent_urls': [
-                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
-                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
             ],
             'type': 'tar',
             'synthetic': True,
@@ -1812,8 +1810,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'committer_date_offset': 0,
                 'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
                 'parent_urls': [
-                    '/api/1/revision/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
-                    '/prev/7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/'
+                    '/api/1/revision/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc/'
                 ],
                 'type': 'tar',
                 'synthetic': True,
@@ -1836,8 +1833,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'committer_date_offset': 0,
                 'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
                 'parent_urls': [
-                    '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
-                    '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
+                    '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
                 ],
                 'type': 'tar',
                 'synthetic': True,
@@ -1851,7 +1847,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, expected_revisions)
+        self.assertEquals(expected_revisions, response_data)
         self.assertIsNone(rv.headers.get('Link'))
 
         mock_service.lookup_revision_log.assert_called_once_with(
@@ -1898,8 +1894,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
             ],
             'parent_urls': [
-                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
-                '/prev/18d8be353ed3480476f032475e7c233eff7371d5/'
+                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
             ],
             'type': 'tar',
             'synthetic': True,
