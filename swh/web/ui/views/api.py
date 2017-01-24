@@ -468,7 +468,7 @@ def _revision_directory_by(revision, path, request_path,
            '/branch/<path:branch_name>'
            '/ts/<string:ts>'
            '/directory/<path:path>/')
-@doc.route('/api/1/revision/origin/directory/')
+@doc.route('/api/1/revision/origin/directory/', tags=['hidden'])
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
@@ -568,9 +568,8 @@ def api_revision_with_origin(origin_id,
         ts)
 
 
-@app.route('/api/1/revision/<string:sha1_git>/')
 @app.route('/api/1/revision/<string:sha1_git>/prev/<path:context>/')
-@doc.route('/api/1/revision/')
+@doc.route('/api/1/revision/prev/', tags=['hidden'])
 @doc.arg('sha1_git',
          default='ec72c666fb345ea5f21359b7bc063710ce558e39',
          argtype=doc.argtypes.sha1_git,
@@ -585,7 +584,7 @@ def api_revision_with_origin(origin_id,
             doc='Raised if a revision matching sha1_git was not found in SWH')
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the revision identified by sha1_git')
-def api_revision(sha1_git, context=None):
+def api_revision_with_context(sha1_git, context):
     """Return information about revision with id sha1_git.
     """
     def _enrich_revision(revision, context=context):
@@ -598,8 +597,30 @@ def api_revision(sha1_git, context=None):
         _enrich_revision)
 
 
+@app.route('/api/1/revision/<string:sha1_git>/')
+@doc.route('/api/1/revision/')
+@doc.arg('sha1_git',
+         default='ec72c666fb345ea5f21359b7bc063710ce558e39',
+         argtype=doc.argtypes.sha1_git,
+         argdoc="The revision's sha1_git identifier")
+@doc.raises(exc=doc.excs.badinput,
+            doc='Raised if sha1_git is not well formed')
+@doc.raises(exc=doc.excs.notfound,
+            doc='Raised if a revision matching sha1_git was not found in SWH')
+@doc.returns(rettype=doc.rettypes.dict,
+             retdoc='The metadata of the revision identified by sha1_git')
+def api_revision(sha1_git):
+    """Return information about revision with id sha1_git.
+    """
+    return _api_lookup(
+        sha1_git,
+        service.lookup_revision,
+        'Revision with sha1_git %s not found.' % sha1_git,
+        utils.enrich_revision)
+
+
 @app.route('/api/1/revision/<string:sha1_git>/raw/')
-@doc.route('/api/1/revision/raw/')
+@doc.route('/api/1/revision/raw/', tags=['hidden'])
 @doc.arg('sha1_git',
          default='ec72c666fb345ea5f21359b7bc063710ce558e39',
          argtype=doc.argtypes.sha1_git,
@@ -672,8 +693,8 @@ previously visited).  If multiple values, use / as delimiter.  """)
             doc="""Optional 'Link' header proposed to the api consumer
                    for navigation purpose. Possible value is 'next'.""")
 @doc.param('per_page', default=10,
-           doc="""Default parameter used to group result by page of the specified
-number.""")
+           doc="""Default parameter used to group result by page of the
+specified number.""")
 @doc.raises(exc=doc.excs.badinput,
             doc='Raised if sha1_git or prev_sha1s is not well formed')
 @doc.raises(exc=doc.excs.notfound,
@@ -683,7 +704,7 @@ number.""")
              sha1_git, completed with the navigation breadcrumbs,
              if any""")
 def api_revision_log(sha1_git, prev_sha1s=None):
-    """Return all revisions (~git log) starting from sha1_git.  The first
+    """Return all revisions (~ git log) starting from sha1_git.  The first
     element returned is the given sha1_git, or the first breadcrumb,
     if any.
 
@@ -777,7 +798,7 @@ number.""")
 def api_revision_log_by(origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
-    """Show all revisions (~git log) starting from the revision targeted
+    """Show all revisions (~ git log) starting from the revision targeted
     by the origin_id provided and optionally a branch name or/and a
     timestamp.
 

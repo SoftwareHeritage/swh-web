@@ -683,7 +683,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_url': '/api/revision/rev-id/log/',
             'history_context_url': '/api/revision/rev-id/prev/prev-rev/log/',
             'parents': ['123'],
-            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
+            'parent_urls': ['/api/revision/123/'],
             'children': ['456'],
             'children_urls': ['/api/revision/456/',
                               '/api/revision/prev-rev/'],
@@ -703,8 +703,7 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='rev-id',
                   prev_sha1s='prev-rev'),
              call('api_revision',
-                  sha1_git='123',
-                  context='prev-rev/rev-id'),
+                  sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
 
@@ -726,7 +725,7 @@ class UtilsTestCase(unittest.TestCase):
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
             'parents': ['123'],
-            'parent_urls': ['/api/revision/123/prev/rev-id/'],
+            'parent_urls': ['/api/revision/123/'],
             'children': ['456'],
             'children_urls': ['/api/revision/456/']
         }
@@ -740,8 +739,7 @@ class UtilsTestCase(unittest.TestCase):
              call('api_revision_log',
                   sha1_git='rev-id'),
              call('api_revision',
-                  sha1_git='123',
-                  context='rev-id'),
+                  sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
 
@@ -759,7 +757,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev-rev/log/'),
             'parents': ['123'],
-            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
+            'parent_urls': ['/api/revision/123/'],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
@@ -783,8 +781,7 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='rev-id',
                   prev_sha1s='prev-rev'),
              call('api_revision',
-                  sha1_git='123',
-                  context='prev-rev/rev-id'),
+                  sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
 
@@ -802,8 +799,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev1-rev/prev0-rev/log/'),
             'parents': ['123'],
-            'parent_urls': ['/api/revision/123/prev/'
-                            'prev1-rev/prev0-rev/rev-id/'],
+            'parent_urls': ['/api/revision/123/'],
             'children': ['456'],
             'children_urls': ['/api/revision/456/',
                               '/api/revision/prev0-rev/prev/prev1-rev/'],
@@ -828,8 +824,7 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='rev-id',
                   prev_sha1s='prev1-rev/prev0-rev'),
              call('api_revision',
-                  sha1_git='123',
-                  context='prev1-rev/prev0-rev/rev-id'),
+                  sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
 
@@ -865,7 +860,7 @@ class UtilsTestCase(unittest.TestCase):
                                     'prev/prev-rev/log/'),
             'message': None,
             'parents': ['123'],
-            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
+            'parent_urls': ['/api/revision/123/'],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
@@ -891,8 +886,7 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='rev-id',
                   prev_sha1s='prev-rev'),
              call('api_revision',
-                  sha1_git='123',
-                  context='prev-rev/rev-id'),
+                  sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
 
@@ -921,7 +915,7 @@ class UtilsTestCase(unittest.TestCase):
             'message_decoding_failed': True,
             'message_url': '/api/revision/rev-id/raw/',
             'parents': ['123'],
-            'parent_urls': ['/api/revision/123/prev/prev-rev/rev-id/'],
+            'parent_urls': ['/api/revision/123/'],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
@@ -940,8 +934,7 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='rev-id',
                   prev_sha1s='prev-rev'),
              call('api_revision',
-                  sha1_git='123',
-                  context='prev-rev/rev-id'),
+                  sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
 
