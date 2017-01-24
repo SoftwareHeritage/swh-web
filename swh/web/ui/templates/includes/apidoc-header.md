@@ -62,7 +62,7 @@ curl -i -H 'Accept: application/yaml' https://archive.softwareheritage.org/api/1
 
 ### Parameters
 
-Some API endpoints can be used with with local parameters. The url
+Some API endpoints can be used with local parameters. The url
 then needs to be adapted accordingly.
 
 For example:
