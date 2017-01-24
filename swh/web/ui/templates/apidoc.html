@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Software Heritage API{% endblock %}
+{% block title %} {{ request.path }} overview {% endblock %}
 {% block content %}
 <nav class="bread-crumbs">
   <ul>
@@ -13,7 +13,7 @@
 
 {% if docstring %}
 <div class="docstring">
-  <h2> Overview </h2>
+  <h2> Description </h2>
   {{ docstring | safe_docstring_display | safe }}
 </div>
 {% endif %}
