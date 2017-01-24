@@ -195,3 +195,11 @@ ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown 
   text-indent: -999px;
   overflow: hidden;
 }
+
+.table > thead > tr > th {
+    border-bottom: 1px solid #e20026;
+}
+
+.table > tbody > tr > td {
+    border-style: none;
+}
