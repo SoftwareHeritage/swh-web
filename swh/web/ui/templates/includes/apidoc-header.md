@@ -206,4 +206,4 @@ Examples:
 
 ### Opened endpoints
 
-Open api endpoints is accessed at [https://archive.softwareheritage.org/api/1/](/api/1/).
+Accessible through [https://archive.softwareheritage.org/api/1/](/api/1/).
