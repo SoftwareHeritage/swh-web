@@ -1,6 +1,15 @@
 {% extends "layout.html" %}
 {% block title %}Software Heritage API{% endblock %}
 {% block content %}
+<nav class="bread-crumbs">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li>/</li>
+    <li><a href="/api/1/">endpoints</a></li>
+    <li>/</li>
+    <li>{{ request.path }}</li>
+  </ul>
+</nav>
 
 {% if docstring %}
 <div class="docstring">

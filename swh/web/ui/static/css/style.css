@@ -213,3 +213,37 @@ pre {
 .dataTables_wrapper {
     position: static;
 }
+
+/* breadcrumbs */
+
+.bread-crumbs{
+    display: inline-block;
+    margin: 0 0 15px;
+    overflow: hidden;
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 1.2rem;
+}
+
+bread-crumbs ul {
+    list-style-type: none;
+}
+
+.bread-crumbs li {
+    float: left;
+    margin-right: 10px;
+    list-style-type: none;
+}
+
+.bread-crumbs a {
+    color: rgba(0, 0, 0, 0.75);
+    border-bottom-style: none;
+}
+
+.bread-crumbs a:hover {
+    color: rgba(0, 0, 0, 0.85);
+    text-decoration: underline;
+}
+
+.title-small .bread-crumbs{
+    margin: -30px 0 25px;
+}
