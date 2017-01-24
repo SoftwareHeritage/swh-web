@@ -203,3 +203,9 @@ ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown 
 .table > tbody > tr > td {
     border-style: none;
 }
+
+pre {
+    border: 1px dashed black;
+    border-radius: 10px;
+    background-color: hsl(47, 99%, 75%);
+}
