@@ -209,3 +209,7 @@ pre {
     border-radius: 10px;
     background-color: hsl(47, 99%, 75%);
 }
+
+.dataTables_wrapper {
+    position: static;
+}
