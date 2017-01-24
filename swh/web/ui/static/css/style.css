@@ -57,7 +57,6 @@ h3[id], h4[id] {  /* avoid in-page links covered by navbar */
     display: inline-block; /* webkit compatibility */
 }
 
-a               { color: #377ba8; }
 h1, h2, h3, h4  { margin: 0;
                   color: #e20026;
                 }
