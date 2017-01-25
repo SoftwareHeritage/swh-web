@@ -8,19 +8,6 @@ import flask
 import re
 
 from dateutil import parser
-from urllib.parse import urlencode
-
-
-def to_url(url, params):
-    """Compute a url with a new param.
-
-    """
-    if not params:
-        return url
-    end_url = urlencode(params)
-    if '?' in url:
-        return '%s&%s' % (url, end_url)
-    return '%s?%s' % (url, end_url)
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):

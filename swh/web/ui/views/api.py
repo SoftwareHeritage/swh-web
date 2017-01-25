@@ -72,19 +72,19 @@ def api_origin_visits(origin_id):
 
     if r:
         l = len(r)
-        url = url_for('api_origin_visits', origin_id=origin_id)
-
-        headers = {}
         if l == per_page:
             new_last_visit = r[-1]['visit']
-            params = [('last_visit', new_last_visit)]
+            params = {
+                'origin_id': origin_id,
+                'last_visit': new_last_visit
+            }
 
-            nb_per_page = request.args.get('per_page')
-            if nb_per_page:
-                params.append(('per_page', nb_per_page))
-            headers['link-next'] = utils.to_url(url, params)
+            if request.args.get('per_page'):
+                params['per_page'] = per_page
 
-            result['headers'] = headers
+            result['headers'] = {
+                'link-next': url_for('api_origin_visits', **params)
+            }
 
     result.update({
         'results': r
@@ -186,19 +186,20 @@ def api_content_symbol(q=None):
 
     if symbols:
         l = len(symbols)
-        url = url_for('api_content_symbol', q=q)
 
-        headers = {}
         if l == per_page:
             new_last_sha1 = symbols[-1]['sha1']
-            params = [('last_sha1', new_last_sha1)]
+            params = {
+                'q': q,
+                'last_sha1': new_last_sha1,
+            }
 
-            nb_per_page = request.args.get('per_page')
-            if nb_per_page:
-                params.append(('per_page', nb_per_page))
-            headers['link-next'] = utils.to_url(url, params)
+            if request.args.get('per_page'):
+                params['per_page'] = per_page
 
-            result['headers'] = headers
+            result['headers'] = {
+                'link-next': url_for('api_content_symbol', **params),
+            }
 
     result.update({
         'results': symbols
@@ -727,16 +728,18 @@ def api_revision_log(sha1_git, prev_sha1s=None):
     l = len(rev_get)
     if l == per_page+1:
         rev_backward = rev_get[:-1]
-        url = url_for('api_revision_log', sha1_git=rev_get[-1]['id'])
+        new_last_sha1 = rev_get[-1]['id']
+        params = {
+            'sha1_git': new_last_sha1,
+        }
 
-        nb_per_page = request.args.get('per_page')
-        params = []
-        if nb_per_page:
-            params.append(('per_page', per_page))
+        if request.args.get('per_page'):
+            params['per_page'] = per_page
 
-        headers = {}
-        headers['link-next'] = utils.to_url(url, params)
-        result['headers'] = headers
+        result['headers'] = {
+            'link-next': url_for('api_revision_log', **params)
+        }
+
     else:
         rev_backward = rev_get
 
@@ -828,21 +831,21 @@ def api_revision_log_by(origin_id,
     l = len(rev_get)
     if l == per_page+1:
         revisions = rev_get[:-1]
-        url = url_for('api_revision_log_by',
-                      origin_id=origin_id,
-                      branch_name=branch_name,
-                      ts=ts)
-
         last_sha1_git = rev_get[-1]['id']
-        nb_per_page = request.args.get('per_page')
 
-        params = [('sha1_git', last_sha1_git)]
-        if nb_per_page:
-            params.append(('per_page', per_page))
+        params = {
+            'origin_id': origin_id,
+            'branch_name': branch_name,
+            'ts': ts,
+            'sha1_git': last_sha1_git,
+        }
 
-        headers = {}
-        headers['link-next'] = utils.to_url(url, params)
-        result['headers'] = headers
+        if request.args.get('per_page'):
+            params['per_page'] = per_page
+
+        result['headers'] = {
+            'link-next': url_for('api_revision_log_by', **params),
+        }
 
     else:
         revisions = rev_get

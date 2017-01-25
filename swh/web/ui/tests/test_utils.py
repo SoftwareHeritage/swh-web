@@ -937,18 +937,3 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
-
-    @istest
-    def to_url(self):
-        self.assertEquals(utils.to_url('some-url?foo=bar', (('param', 10),)),
-                          'some-url?foo=bar&param=10')
-        self.assertEquals(utils.to_url('some-url', (('foo', 'bar'),
-                                                    ('bar', 'barfoo'),)),
-                          'some-url?foo=bar&bar=barfoo')
-
-    @istest
-    def to_url_no_param(self):
-        self.assertEquals(utils.to_url('some-url?foo=bar', None),
-                          'some-url?foo=bar')
-        self.assertEquals(utils.to_url('some-url', None),
-                          'some-url')
