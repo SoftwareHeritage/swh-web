@@ -34,10 +34,11 @@
     <tbody>
       {% for route, doc in doc_routes %}
       <tr class="api-doc-route{% for tag in doc['tags'] %} api-doc-route-{{ tag }} {% endfor %}">
-        <td id="{{ route }}"><a href="{{ route }}">{{ route }}</a></td>
         {% if 'tags' in doc and doc['tags'] is not none %}
+        <td id="{{ route }}">{{ route }}</td>
         <td>{{ ', '.join(doc['tags']) }}</td>
         {% else %}
+        <td id="{{ route }}"><a href="{{ route }}">{{ route }}</a></td>
         <td>opened</td>
         {% endif %}
         <td>{{ doc['docstring'] | safe_docstring_display | safe }}</td>
