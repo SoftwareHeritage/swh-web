@@ -141,8 +141,7 @@ def api_origin_visit(origin_id, visit_id):
          argdoc="""An expression string to lookup in swh's raw content""")
 @doc.header('Link',
             doc="""Optional 'Link' header proposed to the api consumer
-                   for navigation purpose. possible are 'next'
-                   or 'previous' page.""")
+                   for navigation purpose to the next page.""")
 @doc.param('last_sha1', default=None,
            doc="""Optional parameter to start returning page results from.""")
 @doc.param('per_page', default=10,
@@ -159,15 +158,14 @@ def api_origin_visit(origin_id, visit_id):
              - line (int): Number line for the symbol
 
              The result is paginated by page of 10 results by default.
-             The 'Link' header gives the link to follow for the next
-             page.
+             The 'Link' header gives the link to the next page of results.
 
              """)
 def api_content_symbol(q=None):
     """Search symbol in indexed content's data.
 
-    The result is paginated and and Link header will give the next and
-    previous link to have the next result.
+    The result is paginated and Link header will give the next page
+    link.
 
     """
     result = {}
