@@ -34,7 +34,7 @@
           <a class="navbar-brand" style="padding:5px" href="{{ url_for('homepage') }}"> <!-- logo -->
             <img alt="SWH Archive" src="{{ url_for('static', filename='img/swh-logo.png') }}" class="swh-logo" />
           </a>
-          <a class="navbar-brand sitename" href="https://www.softwareheritage.org">
+          <a class="navbar-brand sitename" href="{{ url_for('homepage') }}">
             <span class="first-word">Software</span> <span class="second-word">Heritage</span>
           </a>
         </div>
