@@ -15,7 +15,7 @@ body {
     font-size: 1.6rem;
     line-height: 1.5;
     color: rgba(0, 0, 0, 0.55);
-    padding-top: 65px;  /* avoid fixed bootstrap navbar covers content */
+    padding-top: 70px;  /* avoid fixed bootstrap navbar covers content */
 }
 
 .heading {
@@ -27,7 +27,7 @@ body {
 }
 
 img.swh-logo {
-    max-height: 40px;
+    max-height: 45px;
 }
 
 .jumbotron {
@@ -45,15 +45,16 @@ img.swh-logo {
     border-bottom: 5px solid;
     border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
     width: 100%;
+    padding-bottom: 10px;
 }
 
 .nav-horizontal {
     float: right;
 }
 
-h3[id], h4[id] {  /* avoid in-page links covered by navbar */
-    padding-top: 65px;
-    margin-top: -65px;
+h3[id], h4[id], a[id] {  /* avoid in-page links covered by navbar */
+    padding-top: 70px;
+    margin-top: -70px;
     display: inline-block; /* webkit compatibility */
 }
 
