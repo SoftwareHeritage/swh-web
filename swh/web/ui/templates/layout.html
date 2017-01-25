@@ -34,7 +34,7 @@
           <a class="navbar-brand" style="padding:5px" href="{{ url_for('homepage') }}"> <!-- logo -->
             <img alt="SWH Archive" src="{{ url_for('static', filename='img/swh-logo.png') }}" class="swh-logo" />
           </a>
-          <a class="navbar-brand sitename" href="https://www.softwareheritage.org">
+          <a class="navbar-brand sitename" href="{{ url_for('homepage') }}">
             <span class="first-word">Software</span> <span class="second-word">Heritage</span>
           </a>
         </div>
@@ -42,8 +42,6 @@
         <nav class="nav nav-horizontal">
           <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-              <li role="separator" class="divider"></li>
-              <li><a href="{{ url_for('browse') }}">Browse</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="{{ url_for('browse_api_doc') }}" class="dropdown-toggle" data-toggle="dropdown"
                      role="button" aria-haspopup="true" aria-expanded="false">API <span class="caret"></span></a>
