@@ -33,12 +33,12 @@ DEFAULT_CONFIG = {
     'secret_key': ('string', 'development key'),
     'max_log_revs': ('int', 25),
     'limiter': ('dict', {
-        'global_limits': ['1 per minute'],
+        'global_limits': ['60 per minute'],
         'headers_enabled': True,
         'strategy': 'moving-window',
         'storage_uri': 'memory://',
         'storage_options': {},
-        'in_memory_fallback': ['1 per minute'],
+        'in_memory_fallback': ['60 per minute'],
     }),
 }
 
