@@ -10,7 +10,7 @@ import json
 from docutils.core import publish_parts
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 from inspect import cleandoc
-from jinja2 import Markup
+from jinja2 import escape, Markup
 from flask import request, Response, render_template
 from flask import g
 from pygments import highlight
@@ -204,7 +204,7 @@ def urlize_api_links(text):
     """
     return re.sub(r'(/api/.*/|/browse/.*/)',
                   r'<a href="\1">\1</a>',
-                  text)
+                  str(escape(text)))
 
 
 def escape_author_fields(text):
