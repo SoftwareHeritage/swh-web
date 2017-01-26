@@ -207,10 +207,6 @@ def urlize_api_links(text):
                   str(escape(text)))
 
 
-def escape_author_fields(text):
-    return re.sub(r'<(.*)>', r'&lt;\1&gt;', text)
-
-
 def urlize_header_links(text):
     """Utility function for decorating headers links in browsable api.
 

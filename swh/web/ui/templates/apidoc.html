@@ -28,7 +28,7 @@
     {% endfor %}
   {% endif %}
     <h2> Result </h2>
-    <pre>{{ response_data | escape_author_fields | urlize_api_links | safe }}</pre>
+    <pre>{{ response_data | urlize_api_links | safe }}</pre>
 </div>
 {% endif %}
 <hr/>
