@@ -235,9 +235,11 @@ def api_content_symbol(q=None):
                percentage of files found
              """)
 def api_check_content_known(q=None):
-    """Search a content per hash.
+    """Check whether some content (AKA "blob") is present in the archive
 
-    This may take the form of:
+    **TODO** pending review
+
+    Lookup can be performed by various means:
 
     - a GET request with many hashes (limited to the size of parameter
       we can pass in url) a POST request with many hashes, with the
@@ -865,21 +867,32 @@ def api_revision_log_by(origin_id,
 @doc.arg('sha1_git',
          default='1bd0e65f7d2ff14ae994de17a1e7fe65111dcad8',
          argtype=doc.argtypes.sha1_git,
-         argdoc="The queried directory's corresponding sha1_git hash")
+         argdoc='directory identifier')
 @doc.arg('path',
          default='codec/demux',
          argtype=doc.argtypes.path,
-         argdoc="A path relative to the queried directory's top level")
+         argdoc='path relative to directory identified by SHA1_GIT')
 @doc.raises(exc=doc.excs.badinput,
-            doc='Raised if sha1_git is not well formed')
+            doc='SHA1_GIT is not a syntactically valid directory identifier')
 @doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a directory matching sha1_git was not found in SWH')
+            doc='no directory [entry] identified by SHA1_GIT/PATH was found')
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata and contents of the directory identified by
-             sha1_git""")
+             retdoc="""either a list of directory entries with their metadata,
+             or the metadata of a single directory entry""")
 def api_directory(sha1_git,
                   path=None):
-    """Return information about directory with id sha1_git.
+    """Get information about directory or directory entry objects.
+
+    Directories are identified by SHA1 checksums, compatible with Git directory
+    identifiers. See ``directory_identifier`` in our `data model module
+    <https://forge.softwareheritage.org/source/swh-model/browse/master/swh/model/identifiers.py>`_
+    for details about how they are computed.
+
+    When given only a directory identifier, this endpoint returns information
+    about the directory itself, returning its content (usually a list of
+    directory entries). When given a directory identifier and a path, this
+    endpoint returns information about the directory entry pointed by the
+    relative path, starting path resolution from the given directory.
 
     """
     if path:
@@ -1085,14 +1098,13 @@ def api_content_raw(q):
          argtype=doc.argtypes.algo_and_hash,
          argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
-            doc='Raised if q is not well formed')
+            doc='q is not a syntactically valid content identifier')
 @doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a content matching q was not found in SWH')
+            doc='no content identified by q was found')
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata of the content identified by q. If content
-             decoding was successful, it also returns the data""")
+             retdoc="""known metadata for content identified by q""")
 def api_content_metadata(q):
-    """Get information about a content (AKA "blob") object
+    """Get information about a content (AKA "blob") object.
 
     """
     return _api_lookup(
