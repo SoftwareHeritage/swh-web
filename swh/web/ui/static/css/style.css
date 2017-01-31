@@ -58,30 +58,31 @@ h3[id], h4[id], a[id] {  /* avoid in-page links covered by navbar */
     display: inline-block; /* webkit compatibility */
 }
 
-h1, h2, h3, h4  { margin: 0;
-                  color: #e20026;
-		  padding-bottom: 10px;
-                }
-h1              { font-size: 1.8em; }
-h2              { font-size: 1.2em; }
+h1, h2, h3, h4  {
+    margin: 0;
+    color: #e20026;
+    padding-bottom: 10px;
+}
+h1 { font-size: 1.8em; }
+h2 { font-size: 1.2em; }
 
-a               {
-                  color: rgba(0, 0, 0, 0.75);
-                  border-bottom-style: dotted;
-                  border-bottom-width: 1px;
-                  border-bottom-color: rgb(91, 94, 111);
-                }
+a {
+    color: rgba(0, 0, 0, 0.75);
+    border-bottom-style: dotted;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(91, 94, 111);
+}
 
-a:hover         {
-                  color: black;
-                }
+a:hover {
+    color: black;
+}
 
 ul.dropdown-menu > li > a,
 ul.dropdown-menu > li > ul > li > a,
 .navbar-header > a,
 ul.navbar-nav > li > a { /* No decoration on links in dropdown menu */
-                  border-bottom-style: none;
-                }
+    border-bottom-style: none;
+}
 
 .navbar-header > a,
 ul.navbar-nav > li > a {
@@ -109,24 +110,57 @@ ul.navbar-nav > li > a:hover {
 
 ul.dropdown-menu > li,
 ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown menu */
-                  list-style-type: none;
-                }
+    list-style-type: none;
+}
 
-.page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
-                  padding: 0.8em; background: white; }
-.entries        { list-style: none; margin: 0; padding: 0; }
-.entries li     { margin: 0.8em 1.2em; }
-.entries li h2  { margin-left: -1em; }
-.add-entry      { font-size: 0.9em; border-bottom: 1px solid #ccc; }
-.add-entry dl   { font-weight: bold; }
-.metanav        { text-align: right; font-size: 0.8em; padding: 0.3em;
-                  margin-bottom: 1em; background: #fafafa; }
-.flash          { background: #cee5F5; padding: 0.5em;
-                  border: 1px solid #aacbe2; }
-.error          { background: #f0d6d6; padding: 0.5em; }
+.page {
+    margin: 2em auto;
+    width: 35em;
+    border: 5px solid #ccc;
+    padding: 0.8em;
+    background: white;
+}
+.entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.entries li {
+    margin: 0.8em 1.2em;
+}
+.entries li h2 {
+    margin-left: -1em;
+}
+.add-entry {
+    font-size: 0.9em;
+    border-bottom: 1px solid #ccc;
+}
+.add-entry dl {
+    font-weight: bold;
+}
+.metanav {
+    text-align: right;
+    font-size: 0.8em;
+    padding: 0.3em;
+    margin-bottom: 1em;
+    background: #fafafa;
+}
+.flash {
+    background: #cee5F5;
+    padding: 0.5em;
+    border: 1px solid #aacbe2;
+}
+.error {
+    background: #f0d6d6;
+    padding: 0.5em;
+}
 
-.file-found     { color: #23BA49; }
-.file-notfound  { color: #FF4747; }
+.file-found {
+    color: #23BA49;
+}
+.file-notfound {
+    color: #FF4747;
+}
 
 /* Bootstrap custom styling to correctly render multiple
  * form-controls in an input-group:
