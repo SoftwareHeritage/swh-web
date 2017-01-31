@@ -207,7 +207,7 @@ ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown 
 }
 
 tr.api-doc-route-upcoming > td, tr.api-doc-route-upcoming > td > a {
-    color: orange;
+    font-size: 90%;
 }
 
 tr.api-doc-route-deprecated > td, tr.api-doc-route-deprecated > td > a {
