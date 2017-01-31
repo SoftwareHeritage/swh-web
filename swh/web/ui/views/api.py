@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,13 @@ from flask import request, url_for
 from swh.web.ui import service, utils, apidoc as doc
 from swh.web.ui.exc import NotFoundExc
 from swh.web.ui.main import app
+
+
+# canned doc string snippets that are used in several doc strings
+
+_doc_arg_content_id = """A "[HASH_TYPE:]HASH" content identifier, where
+   HASH_TYPE is one of "sha1" (the default), "sha1_git", "sha256", and HASH is
+   a checksum obtained with the HASH_TYPE hashing algorithm."""
 
 
 @app.route('/api/1/stat/counters/')
@@ -212,8 +219,7 @@ def api_content_symbol(q=None):
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
-         sha1_git or sha256 and hash is the hash to search for in SWH""")
+         argdoc=_doc_arg_content_id)
 @doc.param('q', default=None,
            doc="""(POST request) An algo_hash:hash string, where algo_hash
                   is one of sha1, sha1_git or sha256 and hash is the hash to
@@ -899,8 +905,7 @@ def api_directory(sha1_git,
 @doc.arg('q',
          default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
+         argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
             doc="""Raised if hash algorithm is incorrect  or if the hash
  value is badly formatted.""")
@@ -941,8 +946,7 @@ def api_content_provenance(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
+         argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
             doc="""Raised if hash algorithm is incorrect or if the hash
  value is badly formatted.""")
@@ -969,8 +973,7 @@ def api_content_filetype(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
+         argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
             doc="""Raised if hash algorithm is incorrect or if the hash
  value is badly formatted.""")
@@ -997,8 +1000,7 @@ def api_content_language(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
+         argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
             doc="""Raised if hash algorithm is incorrect or if the hash
  value is badly formatted.""")
@@ -1025,8 +1027,7 @@ def api_content_license(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
+         argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
             doc="""Raised if hash algorithm is incorrect or if the hash
  value is badly formatted.""")
@@ -1053,10 +1054,7 @@ def api_content_ctags(q):
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
-         sha1_git or sha256 and hash is the hash to search for in SWH. Defaults
-         to sha1 in the case of a missing algo_hash
-         """)
+         argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
             doc='Raised if q is not well formed')
 @doc.raises(exc=doc.excs.notfound,
@@ -1085,10 +1083,7 @@ def api_content_raw(q):
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
-         sha1_git or sha256 and hash is the hash to search for in SWH. Defaults
-         to sha1 in the case of a missing algo_hash
-         """)
+         argdoc=_doc_arg_content_id)
 @doc.raises(exc=doc.excs.badinput,
             doc='Raised if q is not well formed')
 @doc.raises(exc=doc.excs.notfound,
@@ -1097,7 +1092,7 @@ def api_content_raw(q):
              retdoc="""The metadata of the content identified by q. If content
              decoding was successful, it also returns the data""")
 def api_content_metadata(q):
-    """Return content information if content is found.
+    """Get information about a content (AKA "blob") object
 
     """
     return _api_lookup(
