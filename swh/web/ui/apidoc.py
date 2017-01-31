@@ -26,7 +26,7 @@ class argtypes(Enum):  # noqa: N801
     sha1 = 'sha1'
     uuid = 'uuid'
     sha1_git = 'sha1_git'
-    algo_and_hash = 'algo_hash:hash'
+    algo_and_hash = 'hash_type:hash'
 
 
 class rettypes(Enum):  # noqa: N801
