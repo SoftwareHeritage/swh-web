@@ -137,13 +137,13 @@ class SWHMultiResponse(Response, SWHFilterEnricher,
                 request.accept_mimetypes[best_match] > \
                 request.accept_mimetypes['application/json']
 
-        rv = cls.filter_by_fields(rv)
         acc_mime = ['application/json', 'application/yaml', 'text/html']
         best_match = request.accept_mimetypes.best_match(acc_mime)
 
         options['headers'] = cls.compute_link_header(rv, options)
 
         rv = cls.transform(rv)
+        rv = cls.filter_by_fields(rv)
 
         if wants_html(best_match):
             data = json.dumps(rv, sort_keys=True,
