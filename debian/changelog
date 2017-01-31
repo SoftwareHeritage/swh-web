@@ -1,3 +1,10 @@
+swh-web (0.0.69-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.69
+  * Improve documentation information and rendering
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 31 Jan 2017 14:31:19 +0100
+
 swh-web (0.0.68-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.68
