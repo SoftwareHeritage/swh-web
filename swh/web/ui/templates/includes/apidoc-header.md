@@ -148,29 +148,20 @@ curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6
 
 ### Pagination
 
-Some requests which return multiple items will be paginated to 10
-items by default. You can specify further results per page with the
-`?per_page` parameter (up to 50 results per page).
+Requests that might potentially return many items will be paginated.
 
-Example:
+Page size is set to a default (usually: 10 items), but might be overridden with
+the `per_page` query parameter up to a maximum (usually: 50 items). Example:
 
 ``` shell
 curl https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2
 ```
 
-#### Link Header
+To navigate through paginated results, a `Link` HTTP response header is
+available to link the current result page to the next one. Example:
 
-To navigate through results, a 'Link' header is returned in the
-response.  That Link header includes pagination information.
-
-Example:
-
-``` text
-Link: </api/1/origin/1/visits/?last_visit=2&per_page=2>; rel="next",
-```
-
-The possible 'rel' value is 'next' to indicate the immediate next page
-of results.
+    curl -i https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2 | grep ^Link:
+    Link: </api/1/origin/1/visits/?last_visit=2&per_page=2>; rel="next",
 
 
 ### Rate limiting
@@ -192,9 +183,7 @@ that apply to your current rate limiting bucket:
 
 Example:
 
-- from the command line:
-
-        curl -i https://archive.softwareheritage.org/api/1/stat/counters/ | grep ^X-RateLimit
-        X-RateLimit-Limit: 60
-        X-RateLimit-Remaining: 54
-        X-RateLimit-Reset: 1485794532
+    curl -i https://archive.softwareheritage.org/api/1/stat/counters/ | grep ^X-RateLimit
+    X-RateLimit-Limit: 60
+    X-RateLimit-Remaining: 54
+    X-RateLimit-Reset: 1485794532
