@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,16 @@ from flask import request, url_for
 from swh.web.ui import service, utils, apidoc as doc
 from swh.web.ui.exc import NotFoundExc
 from swh.web.ui.main import app
+
+
+# canned doc string snippets that are used in several doc strings
+
+_doc_arg_content_id = """A "[HASH_TYPE:]HASH" content identifier, where
+   HASH_TYPE is one of "sha1" (the default), "sha1_git", "sha256", and HASH is
+   a checksum obtained with the HASH_TYPE hashing algorithm."""
+
+_doc_exc_bad_id = 'syntax error in the given identifier(s)'
+_doc_exc_id_not_found = 'no object matching the given criteria could be found'
 
 
 @app.route('/api/1/stat/counters/')
@@ -72,19 +82,19 @@ def api_origin_visits(origin_id):
 
     if r:
         l = len(r)
-        url = url_for('api_origin_visits', origin_id=origin_id)
-
-        headers = {}
         if l == per_page:
             new_last_visit = r[-1]['visit']
-            params = [('last_visit', new_last_visit)]
+            params = {
+                'origin_id': origin_id,
+                'last_visit': new_last_visit
+            }
 
-            nb_per_page = request.args.get('per_page')
-            if nb_per_page:
-                params.append(('per_page', nb_per_page))
-            headers['link-next'] = utils.to_url(url, params)
+            if request.args.get('per_page'):
+                params['per_page'] = per_page
 
-            result['headers'] = headers
+            result['headers'] = {
+                'link-next': url_for('api_origin_visits', **params)
+            }
 
     result.update({
         'results': r
@@ -103,8 +113,7 @@ def api_origin_visits(origin_id):
          default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin visit identifier')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if no visit that match the query is found')
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""The single instance visit visit_id of the origin pointed
              by origin_id as POSIX time since epoch""")
@@ -141,8 +150,7 @@ def api_origin_visit(origin_id, visit_id):
          argdoc="""An expression string to lookup in swh's raw content""")
 @doc.header('Link',
             doc="""Optional 'Link' header proposed to the api consumer
-                   for navigation purpose. possible are 'next'
-                   or 'previous' page.""")
+                   for navigation purpose to the next page.""")
 @doc.param('last_sha1', default=None,
            doc="""Optional parameter to start returning page results from.""")
 @doc.param('per_page', default=10,
@@ -159,15 +167,14 @@ def api_origin_visit(origin_id, visit_id):
              - line (int): Number line for the symbol
 
              The result is paginated by page of 10 results by default.
-             The 'Link' header gives the link to follow for the next
-             page.
+             The 'Link' header gives the link to the next page of results.
 
              """)
 def api_content_symbol(q=None):
     """Search symbol in indexed content's data.
 
-    The result is paginated and and Link header will give the next and
-    previous link to have the next result.
+    The result is paginated and Link header will give the next page
+    link.
 
     """
     result = {}
@@ -186,19 +193,20 @@ def api_content_symbol(q=None):
 
     if symbols:
         l = len(symbols)
-        url = url_for('api_content_symbol', q=q)
 
-        headers = {}
         if l == per_page:
             new_last_sha1 = symbols[-1]['sha1']
-            params = [('last_sha1', new_last_sha1)]
+            params = {
+                'q': q,
+                'last_sha1': new_last_sha1,
+            }
 
-            nb_per_page = request.args.get('per_page')
-            if nb_per_page:
-                params.append(('per_page', nb_per_page))
-            headers['link-next'] = utils.to_url(url, params)
+            if request.args.get('per_page'):
+                params['per_page'] = per_page
 
-            result['headers'] = headers
+            result['headers'] = {
+                'link-next': url_for('api_content_symbol', **params),
+            }
 
     result.update({
         'results': symbols
@@ -213,14 +221,12 @@ def api_content_symbol(q=None):
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
-         sha1_git or sha256 and hash is the hash to search for in SWH""")
+         argdoc=_doc_arg_content_id)
 @doc.param('q', default=None,
            doc="""(POST request) An algo_hash:hash string, where algo_hash
                   is one of sha1, sha1_git or sha256 and hash is the hash to
                   search for in SWH""")
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if q is not well formed')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""A dict with keys:
 
@@ -230,9 +236,11 @@ def api_content_symbol(q=None):
                percentage of files found
              """)
 def api_check_content_known(q=None):
-    """Search a content per hash.
+    """Check whether some content (AKA "blob") is present in the archive
 
-    This may take the form of:
+    **TODO** pending review
+
+    Lookup can be performed by various means:
 
     - a GET request with many hashes (limited to the size of parameter
       we can pass in url) a POST request with many hashes, with the
@@ -334,8 +342,7 @@ def _api_lookup(criteria,
          default='https://github.com/hylang/hy',
          argtype=doc.argtypes.path,
          argdoc="The origin's URL.")
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if origin_id does not correspond to an origin in SWH')
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the origin identified by origin_id')
 def api_origin(origin_id=None, origin_type=None, origin_url=None):
@@ -379,8 +386,7 @@ def api_origin(origin_id=None, origin_type=None, origin_url=None):
          default=1,
          argtype=doc.argtypes.int,
          argdoc="The person's SWH identifier")
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if person_id does not correspond to an origin in SWH')
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the person identified by person_id')
 def api_person(person_id):
@@ -397,10 +403,8 @@ def api_person(person_id):
          default='97d8dcd0c589b1d94a5d26cf0c1e8f2f44b92bfd',
          argtype=doc.argtypes.sha1_git,
          argdoc="The release's sha1_git identifier")
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if the argument is not a sha1')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if sha1_git does not correspond to a release in SWH')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the release identified by sha1_git')
 def api_release(sha1_git):
@@ -487,9 +491,7 @@ def _revision_directory_by(revision, path, request_path,
          default='Dockerfile',
          argtype=doc.argtypes.path,
          argdoc='The path to the directory or file to display')
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a revision matching the passed criteria was
-            not found""")
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""The metadata of the revision corresponding to the
              passed criteria""")
@@ -541,9 +543,7 @@ def api_directory_through_revision_origin(origin_id,
          default='2000-01-17T11:23:54+00:00',
          argtype=doc.argtypes.ts,
          argdoc="The time at which the queried revision should be constrained")
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a revision matching given criteria was not found
-            in SWH""")
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""The metadata of the revision identified by the given
              criteria""")
@@ -578,10 +578,8 @@ def api_revision_with_origin(origin_id,
          default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
          argtype=doc.argtypes.path,
          argdoc='The navigation breadcrumbs -- use at your own risk')
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if sha1_git is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a revision matching sha1_git was not found in SWH')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the revision identified by sha1_git')
 def api_revision_with_context(sha1_git, context):
@@ -603,10 +601,8 @@ def api_revision_with_context(sha1_git, context):
          default='ec72c666fb345ea5f21359b7bc063710ce558e39',
          argtype=doc.argtypes.sha1_git,
          argdoc="The revision's sha1_git identifier")
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if sha1_git is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a revision matching sha1_git was not found in SWH')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the revision identified by sha1_git')
 def api_revision(sha1_git):
@@ -625,10 +621,8 @@ def api_revision(sha1_git):
          default='ec72c666fb345ea5f21359b7bc063710ce558e39',
          argtype=doc.argtypes.sha1_git,
          argdoc="The queried revision's sha1_git identifier")
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if sha1_git is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a revision matching sha1_git was not found in SWH')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.octet_stream,
              retdoc="""The message of the revision identified by sha1_git
              as a downloadable octet stream""")
@@ -653,11 +647,8 @@ def api_revision_raw_message(sha1_git):
          default='Documentation/BUG-HUNTING',
          argtype=doc.argtypes.path,
          argdoc='The path from the top level directory')
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if sha1_git is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a revision matching sha1_git was not found in SWH
-            , or if the path specified does not exist""")
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""The metadata of the directory pointed by revision id
              sha1-git and dir_path""")
@@ -695,10 +686,8 @@ previously visited).  If multiple values, use / as delimiter.  """)
 @doc.param('per_page', default=10,
            doc="""Default parameter used to group result by page of the
 specified number.""")
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if sha1_git or prev_sha1s is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a revision matching sha1_git was not found in SWH')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""The log data starting at the revision identified by
              sha1_git, completed with the navigation breadcrumbs,
@@ -727,16 +716,18 @@ def api_revision_log(sha1_git, prev_sha1s=None):
     l = len(rev_get)
     if l == per_page+1:
         rev_backward = rev_get[:-1]
-        url = url_for('api_revision_log', sha1_git=rev_get[-1]['id'])
+        new_last_sha1 = rev_get[-1]['id']
+        params = {
+            'sha1_git': new_last_sha1,
+        }
 
-        nb_per_page = request.args.get('per_page')
-        params = []
-        if nb_per_page:
-            params.append(('per_page', per_page))
+        if request.args.get('per_page'):
+            params['per_page'] = per_page
 
-        headers = {}
-        headers['link-next'] = utils.to_url(url, params)
-        result['headers'] = headers
+        result['headers'] = {
+            'link-next': url_for('api_revision_log', **params)
+        }
+
     else:
         rev_backward = rev_get
 
@@ -789,9 +780,7 @@ Defaults to 'refs/heads/master'.""")
 @doc.param('per_page', default=10,
            doc="""Default parameter used to group result by page of the specified
 number.""")
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a revision matching the given criteria was not
-            found in SWH""")
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""The metadata of the revision log starting at the revision
              matching the given criteria.""")
@@ -828,21 +817,21 @@ def api_revision_log_by(origin_id,
     l = len(rev_get)
     if l == per_page+1:
         revisions = rev_get[:-1]
-        url = url_for('api_revision_log_by',
-                      origin_id=origin_id,
-                      branch_name=branch_name,
-                      ts=ts)
-
         last_sha1_git = rev_get[-1]['id']
-        nb_per_page = request.args.get('per_page')
 
-        params = [('sha1_git', last_sha1_git)]
-        if nb_per_page:
-            params.append(('per_page', per_page))
+        params = {
+            'origin_id': origin_id,
+            'branch_name': branch_name,
+            'ts': ts,
+            'sha1_git': last_sha1_git,
+        }
 
-        headers = {}
-        headers['link-next'] = utils.to_url(url, params)
-        result['headers'] = headers
+        if request.args.get('per_page'):
+            params['per_page'] = per_page
+
+        result['headers'] = {
+            'link-next': url_for('api_revision_log_by', **params),
+        }
 
     else:
         revisions = rev_get
@@ -858,21 +847,30 @@ def api_revision_log_by(origin_id,
 @doc.arg('sha1_git',
          default='1bd0e65f7d2ff14ae994de17a1e7fe65111dcad8',
          argtype=doc.argtypes.sha1_git,
-         argdoc="The queried directory's corresponding sha1_git hash")
+         argdoc='directory identifier')
 @doc.arg('path',
          default='codec/demux',
          argtype=doc.argtypes.path,
-         argdoc="A path relative to the queried directory's top level")
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if sha1_git is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a directory matching sha1_git was not found in SWH')
+         argdoc='path relative to directory identified by SHA1_GIT')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata and contents of the directory identified by
-             sha1_git""")
+             retdoc="""either a list of directory entries with their metadata,
+             or the metadata of a single directory entry""")
 def api_directory(sha1_git,
                   path=None):
-    """Return information about directory with id sha1_git.
+    """Get information about directory or directory entry objects.
+
+    Directories are identified by SHA1 checksums, compatible with Git directory
+    identifiers. See ``directory_identifier`` in our `data model module
+    <https://forge.softwareheritage.org/source/swh-model/browse/master/swh/model/identifiers.py>`_
+    for details about how they are computed.
+
+    When given only a directory identifier, this endpoint returns information
+    about the directory itself, returning its content (usually a list of
+    directory entries). When given a directory identifier and a path, this
+    endpoint returns information about the directory entry pointed by the
+    relative path, starting path resolution from the given directory.
 
     """
     if path:
@@ -898,14 +896,9 @@ def api_directory(sha1_git,
 @doc.arg('q',
          default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
-@doc.raises(exc=doc.excs.badinput,
-            doc="""Raised if hash algorithm is incorrect  or if the hash
- value is badly formatted.""")
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a content matching the hash was not found
- in SWH""")
+         argdoc=_doc_arg_content_id)
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""List of provenance information (dict) for the matched
 content.""")
@@ -940,14 +933,9 @@ def api_content_provenance(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
-@doc.raises(exc=doc.excs.badinput,
-            doc="""Raised if hash algorithm is incorrect or if the hash
- value is badly formatted.""")
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a content matching the hash was not found
- in SWH""")
+         argdoc=_doc_arg_content_id)
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""Filetype information (dict) for the matched
 content.""")
@@ -968,14 +956,9 @@ def api_content_filetype(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
-@doc.raises(exc=doc.excs.badinput,
-            doc="""Raised if hash algorithm is incorrect or if the hash
- value is badly formatted.""")
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a content matching the hash was not found
- in SWH""")
+         argdoc=_doc_arg_content_id)
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""Language information (dict) for the matched
 content.""")
@@ -996,14 +979,9 @@ def api_content_language(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
-@doc.raises(exc=doc.excs.badinput,
-            doc="""Raised if hash algorithm is incorrect or if the hash
- value is badly formatted.""")
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a content matching the hash was not found
- in SWH""")
+         argdoc=_doc_arg_content_id)
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""License information (dict) for the matched
 content.""")
@@ -1024,14 +1002,9 @@ def api_content_license(q):
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""The queried content's corresponding hash (supported hash
- algorithms: sha1_git, sha1, sha256)""")
-@doc.raises(exc=doc.excs.badinput,
-            doc="""Raised if hash algorithm is incorrect or if the hash
- value is badly formatted.""")
-@doc.raises(exc=doc.excs.notfound,
-            doc="""Raised if a content matching the hash was not found
- in SWH""")
+         argdoc=_doc_arg_content_id)
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""Ctags symbol (dict) for the matched
 content.""")
@@ -1048,22 +1021,17 @@ def api_content_ctags(q):
 
 
 @app.route('/api/1/content/<string:q>/raw/')
-@doc.route('/api/1/content/raw/', tags=['hidden'])
+@doc.route('/api/1/content/raw/', tags=['upcoming'])
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
-         sha1_git or sha256 and hash is the hash to search for in SWH. Defaults
-         to sha1 in the case of a missing algo_hash
-         """)
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if q is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a content matching q was not found in SWH')
+         argdoc=_doc_arg_content_id)
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.octet_stream,
              retdoc='The raw content data as an octet stream')
 def api_content_raw(q):
-    """Return content's raw data if content is found.
+    """Get the raw content of a content object (AKA "blob"), as a byte sequence
 
     """
     def generate(content):
@@ -1084,19 +1052,13 @@ def api_content_raw(q):
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
-         argdoc="""An algo_hash:hash string, where algo_hash is one of sha1,
-         sha1_git or sha256 and hash is the hash to search for in SWH. Defaults
-         to sha1 in the case of a missing algo_hash
-         """)
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if q is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if a content matching q was not found in SWH')
+         argdoc=_doc_arg_content_id)
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata of the content identified by q. If content
-             decoding was successful, it also returns the data""")
+             retdoc="""known metadata for content identified by q""")
 def api_content_metadata(q):
-    """Return content information if content is found.
+    """Get information about a content (AKA "blob") object.
 
     """
     return _api_lookup(
@@ -1112,10 +1074,8 @@ def api_content_metadata(q):
          default='5f4d4c51-498a-4e28-88b3-b3e4e8396cba',
          argtype=doc.argtypes.uuid,
          argdoc="The entity's uuid identifier")
-@doc.raises(exc=doc.excs.badinput,
-            doc='Raised if uuid is not well formed')
-@doc.raises(exc=doc.excs.notfound,
-            doc='Raised if an entity matching uuid was not found in SWH')
+@doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
+@doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the entity identified by uuid')
 def api_entity_by_uuid(uuid):

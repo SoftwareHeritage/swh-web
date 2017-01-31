@@ -208,40 +208,6 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(actual_res, [{'directory': 1}, {'dir': 1}])
 
     @istest
-    def filter_field_keys_complex_1(self):
-        actual_res = utils.filter_field_keys(
-            {
-                'list': [
-                    {'directory': 1, 'file': 2, 'link': 3},
-                    {'dir': 1, 'fil': 2, 'lin': 3}
-                ]
-            },
-            {'list', 'directory', 'dir'})
-        # then
-        self.assertEqual(actual_res,
-                         {'list': [{'directory': 1}, {'dir': 1}]})
-
-    @istest
-    def filter_field_keys_complex_2(self):
-        actual_res = utils.filter_field_keys(
-            {
-                'list': [
-                    [{'directory': 1, 'file': 2, 'link': 3}],
-                    [{'dir': 1, 'fil': 2, 'lin': 3}],
-                ]
-            },
-            {'list', 'directory', 'dir'})
-        # then
-        self.assertEqual(
-            actual_res,
-            {
-                'list': [
-                    [{'directory': 1}],
-                    [{'dir': 1}]
-                ]
-            })
-
-    @istest
     def filter_field_keys_other(self):
         # given
         input_set = {1, 2}
@@ -937,18 +903,3 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
-
-    @istest
-    def to_url(self):
-        self.assertEquals(utils.to_url('some-url?foo=bar', (('param', 10),)),
-                          'some-url?foo=bar&param=10')
-        self.assertEquals(utils.to_url('some-url', (('foo', 'bar'),
-                                                    ('bar', 'barfoo'),)),
-                          'some-url?foo=bar&bar=barfoo')
-
-    @istest
-    def to_url_no_param(self):
-        self.assertEquals(utils.to_url('some-url?foo=bar', None),
-                          'some-url?foo=bar')
-        self.assertEquals(utils.to_url('some-url', None),
-                          'some-url')
