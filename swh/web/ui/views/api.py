@@ -328,7 +328,7 @@ def _api_lookup(criteria,
 
 
 @app.route('/api/1/origin/<int:origin_id>/')
-@app.route('/api/1/origin/<string:origin_type>/url/<path:origin_url>/')
+@app.route('/api/1/origin/<string:origin_type>/url/<path:origin_url>')
 @doc.route('/api/1/origin/')
 @doc.arg('origin_id',
          default=1,
