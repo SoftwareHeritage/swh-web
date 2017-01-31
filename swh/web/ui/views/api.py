@@ -1063,7 +1063,7 @@ def api_content_ctags(q):
 
 
 @app.route('/api/1/content/<string:q>/raw/')
-@doc.route('/api/1/content/raw/', tags=['hidden'])
+@doc.route('/api/1/content/raw/', tags=['upcoming'])
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
