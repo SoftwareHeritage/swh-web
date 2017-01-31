@@ -1,209 +1,189 @@
-Welcome to Software Heritage project's API documentation.
+This document describes the <strong>Software Heritage Web API</strong>.
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
-**Table of Contents**
+<ul>
+  <li><a href="{{ url_for('browse_api_doc') }}#endpoint-index">Endpoint index</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#data-model">Data model</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#version">Version</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#schema">Schema</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#parameters">Parameters</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#errors">Errors</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#pagination">Pagination</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#errors">Rate limiting</a></li>
+</ul>
 
-- [Version](#version)
-- [Schema](#schema)
-- [Mimetype override](#mimetype-override)
-- [Parameters](#parameters)
-    - [Global parameter](#global-parameter)
-- [Client errors](#client-errors)
-    - [Bad request](#bad-request)
-    - [Not found](#not-found)
-- [Terminology](#terminology)
-    - [Content](#content)
-    - [(Cryptographic) hash](#cryptographic-hash)
-    - [Directory](#directory)
-    - [Origin](#origin)
-    - [Project](#project)
-    - [Release](#release)
-    - [Revision](#revision)
-- [Opened endpoints](#opened-endpoints)
+### Endpoint index
 
-<!-- markdown-toc end -->
+You can jump directly to the <strong><a href="/api/1/">endpoint
+index</a></strong>, which lists all available API functionalities, or read on
+for more general information about the API.
+
+
+### Data model
+
+The [Software Heritage](https://www.softwareheritage.org/) project harvests
+publicly available source code by tracking software distribution channels such
+as version control systems, tarball releases, and distribution packages.
+
+All retrieved source code and related metadata are stored in the Software
+Heritage archive, that is conceptually
+a [Merkle DAG](https://en.wikipedia.org/wiki/Merkle_tree). All nodes in the
+graph are content-addressable, i.e., their node identifiers are computed by
+hashing their content and, transitively, that of all nodes reachable from them;
+and no node or edge is ever removed from the graph: the Software Heritage
+archive is an append-only data structure.
+
+The following types of objects (i.e., graph nodes) can be found in the Software
+Heritage archive <small>(for more information see
+the
+[Software Heritage glossary](https://wiki.softwareheritage.org/index.php?title=Glossary))</small>:
+
+- **Content**: a specific version of a file stored in the archive, identified
+  by its cryptographic hashes (currently: SHA1, Git-like "salted" SHA1,
+  SHA256). Note that content objects are nameless; their names are
+  context-dependent and stored as part of directory entries (see below).<br />
+  *Also known as:* "blob"
+- **Directory**: a list of directory entries, where each entry can point to
+  content objects ("file entries"), revisions ("revision entries"), or
+  transitively to other directories ("directory entries"). All entries are
+  associated to the local name of the entry (i.e., a relative path without any
+  path separator) and permission metadata (e.g., chmod value or equivalent).
+- **Revision**: a point in time snapshot of the content of a directory,
+  together with associated development metadata (e.g., author, timestamp, log
+  message, etc).<br />
+  *Also known as:* "commit".
+- **Release**: a revision that has been marked as noteworthy with a specific
+  name (e.g., a version number), together with associated development metadata
+  (e.g., author, timestamp, etc).<br />
+  *Also known as:* "tag"
+- **Origin**: an Internet-based location from which a coherent set of objects
+  (contents, revisions, releases, etc.) archived by Software Heritage has been
+  obtained. Origins are currently identified by URLs.
+- **Visit**: the passage of Software Heritage on a given origin, to retrieve
+  all source code and metadata available there at the time. A visit object
+  stores the state of all visible branches (if any) available at the origin at
+  visit time; each of them points to a revision object in the archive. Future
+  visits of the same origin will create new visit objects, without removing
+  previous ones.
 
 
 ### Version
 
-Current version is [1](/api/1/).
+The current version of the API is **v1**.
+
 
 ### Schema
 
-Api access is over https and accessed through [https://archive.softwareheritage.org/api/1/](/api/1/).
+API access is over HTTPS.
 
-Data is sent and received in json by default.
+All API endpoints are rooted at <https://archive.softwareheritage.org/api/1/>.
 
-Examples:
+Data is sent and received as JSON by default.
 
-- [/api/1/stat/counters/](/api/1/stat/counters/)
+Example:
 
-- From the command line:
+- from the command line:
 ``` shell
 curl -i https://archive.softwareheritage.org/api/1/stat/counters/
 ```
 
+#### Response format override
 
-#### Mimetype override
+The response format can be overridden using the `Accept` request header. In
+particular, `Accept: text/html` (that web browsers send by default) requests
+HTML pretty-printing, whereas `Accept: application/yaml` requests YAML-encoded
+responses.
 
-The response output can be sent as yaml provided the client specifies
-it using the header field.
+Example:
 
-Examples:
-
-- From your favorite REST client API, execute the same request as
-  before with the request header 'Accept' set to the
-  'application/yaml'.
-
-- From the command line:
+- [/api/1/stat/counters/](/api/1/stat/counters/)
+- from the command line:
 ``` shell
 curl -i -H 'Accept: application/yaml' https://archive.softwareheritage.org/api/1/stat/counters/
 ```
 
 ### Parameters
 
-Some API endpoints can be used with local parameters. The url
-then needs to be adapted accordingly.
+Some API endpoints can be tweaked by passing optional parameters. For GET
+requests, optional parameters can be passed as an HTTP query string.
 
-For example:
-
-``` text
-https://archive.softwareheritage.org/api/1/<endpoint-name>?<field0>=<value0>&<field1>=<value1>
-```
-
-where:
-
-- field0 is an appropriate field for the <endpoint-name> and value0
-- field1 is an appropriate field for the <endpoint-name> and value1
-
-#### Global parameter
-
-One parameter is defined for all api endpoints `fields`.  It permits
-to filter the output fields per key.
-
-For example, to only list the number of contents, revisions,
-directories on the statistical endpoints, one uses:
-
-Examples:
-
-- [/api/1/stat/counters/\?fields\=content,directory,revision](/api/1/stat/counters/?fields=content,directory,revision)
-
-- From the command line:
-``` shell
-curl https://archive.softwareheritage.org/api/1/stat/counters/\?fields\=content,directory,revision
-```
-
-Note: If the keys provided to filter on do not exist, they are
-ignored.
-
-### Client errors
-
-There are 2 kinds of error.
-
-In that case, the http error code will reflect.  Furthermore, the
-response is a dictionary with one key 'error' detailing the problem.
-
-#### Bad request
-
-This means that the input is incorrect.
+The optional parameter `fields` is accepted by all endpoints that return
+dictionaries and can be used to restrict the list of fields returned by the
+API, in case you are not interested in all of them. By default, all available
+fields are returned.
 
 Example:
 
-- [/api/1/content/1/](/api/1/content/1/)
-
-- From the command line:
+- [/api/1/stat/counters/\?fields\=content,directory,revision](/api/1/stat/counters/?fields=content,directory,revision)
+- from the command line:
 ``` shell
-curl -i https://archive.softwareheritage.org/api/1/content/1/
+curl https://archive.softwareheritage.org/api/1/stat/counters/?fields=content,directory,revision
 ```
 
-The api content expects an hash identifier so the error will mention
-that an hash identifier is expected.
 
-#### Not found
+### Errors
 
-This means that the request is ok but we do not found the information
-the user requests.
+While API endpoints will return different kinds of errors depending on their
+own semantics, some error patterns are common across all endpoints.
 
-Examples:
+Sending malformed data, including syntactically incorrect object identifiers,
+will result in a `400 Bad Request` HTTP response. Example:
 
-- [/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/](/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/)
+- [/api/1/content/deadbeef/](/api/1/content/deadbeef/) (client error:
+  "deadbeef" is too short to be a syntactically valid object identifier)
+- from the command line:
+``` shell
+curl -i https://archive.softwareheritage.org/api/1/content/deadbeef/
+```
 
-- From the command line:
+Requesting non existent resources will result in a `404 Not Found` HTTP
+response. Example:
+
+- [/api/1/content/0123456789abcdef0123456789abcdef01234567/](/api/1/content/0123456789abcdef0123456789abcdef01234567/)
+  (error: no object with that identifier is available [yet?])
+- from the command line:
 ``` shell
 curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/
 ```
 
-The hash identifier is ok but nothing is found for that identifier.
 
-### Terminology
+### Pagination
 
-You will find below the terminology the project SWH uses.
-More details can be found
-on
-[swh's wiki glossary page](https://wiki.softwareheritage.org/index.php?title=Glossary).
+Requests that might potentially return many items will be paginated.
 
-#### Content
+Page size is set to a default (usually: 10 items), but might be overridden with
+the `per_page` query parameter up to a maximum (usually: 50 items). Example:
 
-A (specific version of a) file stored in the archive, identified by
-its cryptographic hashes (SHA1, "git-like" SHA1, SHA256) and its size.
+``` shell
+curl https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2
+```
 
-Also known as: Blob Note.
+To navigate through paginated results, a `Link` HTTP response header is
+available to link the current result page to the next one. Example:
 
-#### (Cryptographic) hash
+    curl -i https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2 | grep ^Link:
+    Link: </api/1/origin/1/visits/?last_visit=2&per_page=2>; rel="next",
 
-A fixed-size "summary" of a stream of bytes that is easy to compute,
-and hard to reverse.
 
-Also known as: Checksum, Digest.
+### Rate limiting
 
-#### Directory
+Due to limited resource availability on the back end side, API usage is
+currently rate limited.  Furthermore, as API usage is currently entirely
+anonymous (i.e., without any authentication), API "users" are currently
+identified by their origin IP address.
 
-A set of named pointers to contents (file entries), directories
-(directory entries) and revisions (revision entries).
+Three HTTP response fields will inform you about the current state of limits
+that apply to your current rate limiting bucket:
 
-#### Origin
+- `X-RateLimit-Limit`: maximum number of permitted requests per hour
+- `X-RateLimit-Remaining`: number of permitted requests remaining before the
+  next reset
+- `X-RateLimit-Reset`: the time (expressed
+  in [Unix time](https://en.wikipedia.org/wiki/Unix_time) seconds) at which the
+  current rate limiting will expire, resetting to a fresh `X-RateLimit-Limit`
 
-A location from which a coherent set of sources has been obtained.
+Example:
 
-Also known as: Data source.
-
-Examples:
-
-- a Git repository
-- a directory containing tarballs
-- the history of a Debian package on snapshot.debian.org.
-
-#### Project
-
-An organized effort to develop a software product.
-
-Projects might be nested following organizational structures
-(sub-project, sub-sub-project), are associated to a number of
-human-meaningful metadata, and release software products via Origins.
-
-#### Release
-
-A revision that has been marked by a project as noteworthy with a
-specific, usually mnemonic, name (for instance, a version number).
-
-Also known as: Tag (Git-specific terminology).
-
-Examples:
-
-- a Git tag with its name
-- a tarball with its name
-- a Debian source package with its version number.
-
-#### Revision
-
-A "point in time" snapshot in the development history of a project.
-
-Also known as: Commit
-
-Examples:
-
-- a Git commit
-
-### Opened endpoints
-
-Accessible through [https://archive.softwareheritage.org/api/1/](/api/1/).
+    curl -i https://archive.softwareheritage.org/api/1/stat/counters/ | grep ^X-RateLimit
+    X-RateLimit-Limit: 60
+    X-RateLimit-Remaining: 54
+    X-RateLimit-Reset: 1485794532

@@ -138,18 +138,16 @@ def search_symbol():
                 result = utils.prepare_data_for_view(result['results'])
                 env['result'] = result
                 if headers:
-                    url = url_for('search_symbol')
                     if 'link-next' in headers:
                         next_last_sha1 = result[-1]['sha1']
+                        params = {
+                            'q': q,
+                            'last_sha1': next_last_sha1,
+                        }
                         if per_page:
-                            params = (('q', q),
-                                      ('last_sha1', next_last_sha1),
-                                      ('per_page', per_page))
-                        else:
-                            params = (('q', q),
-                                      ('last_sha1', next_last_sha1))
+                            params['per_page'] = per_page
 
-                        env['linknext'] = utils.to_url(url, params)
+                        env['linknext'] = url_for('search_symbol', **params)
 
         except BadInputExc as e:
             env['message'] = str(e)

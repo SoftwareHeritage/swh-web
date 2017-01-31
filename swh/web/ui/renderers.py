@@ -10,7 +10,7 @@ import json
 from docutils.core import publish_parts
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 from inspect import cleandoc
-from jinja2 import Markup
+from jinja2 import escape, Markup
 from flask import request, Response, render_template
 from flask import g
 from pygments import highlight
@@ -137,13 +137,13 @@ class SWHMultiResponse(Response, SWHFilterEnricher,
                 request.accept_mimetypes[best_match] > \
                 request.accept_mimetypes['application/json']
 
-        rv = cls.filter_by_fields(rv)
         acc_mime = ['application/json', 'application/yaml', 'text/html']
         best_match = request.accept_mimetypes.best_match(acc_mime)
 
         options['headers'] = cls.compute_link_header(rv, options)
 
         rv = cls.transform(rv)
+        rv = cls.filter_by_fields(rv)
 
         if wants_html(best_match):
             data = json.dumps(rv, sort_keys=True,
@@ -204,11 +204,7 @@ def urlize_api_links(text):
     """
     return re.sub(r'(/api/.*/|/browse/.*/)',
                   r'<a href="\1">\1</a>',
-                  text)
-
-
-def escape_author_fields(text):
-    return re.sub(r'<(.*)>', r'&lt;\1&gt;', text)
+                  str(escape(text)))
 
 
 def urlize_header_links(text):

@@ -258,19 +258,22 @@ class RendererTestCase(unittest.TestCase):
                                                              {'a', 'c'})
 
     @istest
-    def urlize_api_links(self):
+    def urlize_api_links_api(self):
         # update api link with html links content with links
         content = '{"url": "/api/1/abc/"}'
-        expected_content = '{"url": "<a href=\"/api/1/abc/\">/api/1/abc/</a>"}'
+        expected_content = ('{&#34;url&#34;: '
+                            '&#34;<a href="/api/1/abc/">/api/1/abc/</a>&#34;}')
 
         self.assertEquals(renderers.urlize_api_links(content),
                           expected_content)
 
+    @istest
+    def urlize_api_links_browse(self):
         # update /browse link with html links content with links
         content = '{"url": "/browse/def/"}'
-        expected_content = '{"url": "<a href=\"/browse/def/\">' \
-                           '/browse/def/</a>"}'
-
+        expected_content = ('{&#34;url&#34;: '
+                            '&#34;<a href="/browse/def/">'
+                            '/browse/def/</a>&#34;}')
         self.assertEquals(renderers.urlize_api_links(content),
                           expected_content)
 

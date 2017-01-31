@@ -8,19 +8,6 @@ import flask
 import re
 
 from dateutil import parser
-from urllib.parse import urlencode
-
-
-def to_url(url, params):
-    """Compute a url with a new param.
-
-    """
-    if not params:
-        return url
-    end_url = urlencode(params)
-    if '?' in url:
-        return '%s&%s' % (url, end_url)
-    return '%s?%s' % (url, end_url)
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
@@ -120,8 +107,7 @@ def filter_field_keys(data, field_keys):
     if isinstance(data, list):
         return [filter_field_keys(x, field_keys) for x in data]
     if isinstance(data, dict):
-        return {k: filter_field_keys(v, field_keys)
-                for (k, v) in data.items() if k in field_keys}
+        return {k: v for (k, v) in data.items() if k in field_keys}
     return data
 
 

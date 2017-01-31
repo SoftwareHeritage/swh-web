@@ -15,7 +15,6 @@ from swh.core import config
 from swh.web.ui.renderers import urlize_api_links, safe_docstring_display
 from swh.web.ui.renderers import revision_id_from_url, highlight_source
 from swh.web.ui.renderers import SWHMultiResponse, urlize_header_links
-from swh.web.ui.renderers import escape_author_fields
 from swh.storage import get_storage
 
 
@@ -33,12 +32,12 @@ DEFAULT_CONFIG = {
     'secret_key': ('string', 'development key'),
     'max_log_revs': ('int', 25),
     'limiter': ('dict', {
-        'global_limits': ['1 per minute'],
+        'global_limits': ['60 per minute'],
         'headers_enabled': True,
         'strategy': 'moving-window',
         'storage_uri': 'memory://',
         'storage_options': {},
-        'in_memory_fallback': ['1 per minute'],
+        'in_memory_fallback': ['60 per minute'],
     }),
 }
 
@@ -55,7 +54,6 @@ app.add_template_filter(urlize_header_links)
 app.add_template_filter(safe_docstring_display)
 app.add_template_filter(revision_id_from_url)
 app.add_template_filter(highlight_source)
-app.add_template_filter(escape_author_fields)
 
 def read_config(config_file):
     """Read the configuration file `config_file`, update the app with
