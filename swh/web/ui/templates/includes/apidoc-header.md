@@ -58,6 +58,12 @@ the
 - **Origin**: an Internet-based location from which a coherent set of objects
   (contents, revisions, releases, etc.) archived by Software Heritage has been
   obtained. Origins are currently identified by URLs.
+- **Visit**: the passage of Software Heritage on a given origin, to retrieve
+  all source code and metadata available there at the time. A visit object
+  stores the state of all visible branches (if any) available at the origin at
+  visit time; each of them points to a revision object in the archive. Future
+  visits of the same origin will create new visit objects, without removing
+  previous ones.
 
 
 ### Version
