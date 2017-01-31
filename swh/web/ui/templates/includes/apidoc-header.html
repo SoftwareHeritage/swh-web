@@ -81,7 +81,14 @@
 <pre class="shell"><code>curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/</code></pre></li>
 </ul>
 <h3 id="pagination">Pagination</h3>
-<p>Foo bar</p>
+<p>Some requests which return multiple items will be paginated to 10 items by default. You can specify further results per page with the <code>?per_page</code> parameter (up to 50 results per page).</p>
+<p>Example:</p>
+<pre class="shell"><code>curl https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2</code></pre>
+<h4 id="link-header">Link Header</h4>
+<p>To navigate through results, a 'Link' header is returned in the response. That Link header includes pagination information.</p>
+<p>Example:</p>
+<pre class="text"><code>Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel=&quot;next&quot;,</code></pre>
+<p>The possible 'rel' value is 'next' to indicate the immediate next page of results.</p>
 <h3 id="rate-limiting">Rate limiting</h3>
 <p>Due to limited resource availability on the back end side, API usage is currently rate limited. Furthermore, as API usage is currently entirely anonymous (i.e., without any authentication), API &quot;users&quot; are currently identified by their origin IP address.</p>
 <p>Three HTTP response fields will inform you about the current state of limits that apply to your current rate limiting bucket:</p>

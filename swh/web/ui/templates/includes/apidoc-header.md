@@ -142,7 +142,29 @@ curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6
 
 ### Pagination
 
-Foo bar
+Some requests which return multiple items will be paginated to 10
+items by default. You can specify further results per page with the
+`?per_page` parameter (up to 50 results per page).
+
+Example:
+
+``` shell
+curl https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2
+```
+
+#### Link Header
+
+To navigate through results, a 'Link' header is returned in the
+response.  That Link header includes pagination information.
+
+Example:
+
+``` text
+Link: </api/1/origin/1/visits/?last_visit=2&per_page=2>; rel="next",
+```
+
+The possible 'rel' value is 'next' to indicate the immediate next page
+of results.
 
 
 ### Rate limiting
