@@ -166,15 +166,10 @@ def api_origin_visit(origin_id, visit_id):
              - lang (text): Language for that entry
              - line (int): Number line for the symbol
 
-             The result is paginated by page of 10 results by default.
-             The 'Link' header gives the link to the next page of results.
-
              """)
 def api_content_symbol(q=None):
-    """Search symbol in indexed content's data.
-
-    The result is paginated and Link header will give the next page
-    link.
+    """Search content objects by `Ctags <http://ctags.sourceforge.net/>`_-style
+    symbol (e.g., function name, data type, method, etc.)
 
     """
     result = {}
@@ -697,9 +692,6 @@ def api_revision_log(sha1_git, prev_sha1s=None):
     element returned is the given sha1_git, or the first breadcrumb,
     if any.
 
-    The result is paginated.  To browse for the following revisions,
-    follow the link mentioned in the responder header 'Link'.
-
     """
     result = {}
     per_page = int(request.args.get('per_page', '10'))
@@ -790,9 +782,6 @@ def api_revision_log_by(origin_id,
     """Show all revisions (~ git log) starting from the revision targeted
     by the origin_id provided and optionally a branch name or/and a
     timestamp.
-
-    The result is paginated.  To browse for the following revisions,
-    follow the link mentioned in the responder header 'Link'.
 
     """
     result = {}
@@ -940,7 +929,7 @@ def api_content_provenance(q):
              retdoc="""Filetype information (dict) for the matched
 content.""")
 def api_content_filetype(q):
-    """Return content's filetype information if any.
+    """Get information about the detected MIME type of a content object
 
     """
     return _api_lookup(
@@ -963,7 +952,8 @@ def api_content_filetype(q):
              retdoc="""Language information (dict) for the matched
 content.""")
 def api_content_language(q):
-    """Return content's language information if any.
+    """Get information about the detected (programming) language of a content
+    object
 
     """
     return _api_lookup(
@@ -986,7 +976,7 @@ def api_content_language(q):
              retdoc="""License information (dict) for the matched
 content.""")
 def api_content_license(q):
-    """Return content's license information if any.
+    """Get information about the detected license of a content object
 
     """
     return _api_lookup(
@@ -1009,7 +999,8 @@ def api_content_license(q):
              retdoc="""Ctags symbol (dict) for the matched
 content.""")
 def api_content_ctags(q):
-    """Return content's ctags symbols if any.
+    """Get information about all `Ctags <http://ctags.sourceforge.net/>`_-style
+    symbols defined in a content object
 
     """
     return _api_lookup(
