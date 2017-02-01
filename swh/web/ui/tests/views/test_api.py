@@ -649,8 +649,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         expected_result = {
             'search_stats': {'nbfiles': 1, 'pct': 100},
-            'search_res': [{'filename': None,
-                            'sha1': 'sha1:blah',
+            'search_res': [{'sha1': 'sha1:blah',
                             'found': True}]
         }
 
@@ -680,11 +679,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         expected_result = {
             'search_stats': {'nbfiles': 2, 'pct': 50},
-            'search_res': [{'filename': None,
-                            'sha1': 'sha1:halb',
+            'search_res': [{'sha1': 'sha1:halb',
                             'found': True},
-                           {'filename': None,
-                            'sha1': 'sha1_git:hello',
+                           {'sha1': 'sha1_git:hello',
                             'found': False}]
         }
 
@@ -706,8 +703,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_check_content_known_post_as_yaml(self, mock_service):
         # given
-        stub_result = [{'filename': None,
-                        'sha1': '7e62b1fe10c88a3eddbba930b156bee2956b2435',
+        stub_result = [{'sha1': '7e62b1fe10c88a3eddbba930b156bee2956b2435',
                         'found': True},
                        {'filename': 'filepath',
                         'sha1': '8e62b1fe10c88a3eddbba930b156bee2956b2435',
@@ -742,13 +738,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_check_content_known_not_found(self, mock_service):
         # given
-        stub_result = [{'filename': None,
-                        'sha1': 'sha1:halb',
+        stub_result = [{'sha1': 'sha1:halb',
                         'found': False}]
         mock_service.lookup_multiple_hashes.return_value = stub_result
 
         expected_result = {
-            'search_stats': {'nbfiles': 1, 'pct': 0},
+            'search_stats': {'nbfiles': 1, 'pct': 0.0},
             'search_res': stub_result
         }
 

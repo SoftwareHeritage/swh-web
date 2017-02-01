@@ -277,7 +277,7 @@ def api_check_content_known(q=None):
         for el in lookup:
             res_d = {'sha1': el['sha1'],
                      'found': el['found']}
-            if el['filename']:
+            if 'filename' in el and el['filename']:
                 res_d['filename'] = el['filename']
             result.append(res_d)
             search_res = result
