@@ -222,7 +222,7 @@ def api_content_symbol(q=None):
 
 @app.route('/api/1/content/known/', methods=['POST'])
 @app.route('/api/1/content/known/<string:q>/')
-@doc.route('/api/1/content/known/')
+@doc.route('/api/1/content/known/', tags=['hidden'])
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.sha1,
