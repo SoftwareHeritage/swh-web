@@ -296,6 +296,8 @@ bread-crumbs ul {
 }
 
 #footer {
+    background-color: #262626;
+    color: hsl(0, 0%, 100%);
     font-size: 1.2rem;
     text-align: center;
     padding-top: 20px;
@@ -305,10 +307,10 @@ bread-crumbs ul {
     left: 0;
     right: 0;
 }
+#footer a,
 #footer a:visited {
     color: hsl(0, 0%, 100%);
 }
 #footer a:hover {
-    color: white;
     text-decoration: underline;
 }
