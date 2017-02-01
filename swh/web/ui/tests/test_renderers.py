@@ -112,7 +112,7 @@ class RendererTestCase(unittest.TestCase):
             'response_data': json.dumps(data),
             'request': mock_request,
             'headers_data': {},
-            'short_path': 'my_short_path',
+            'heading': 'my_short_path',
             'status_code': 200,
         }
 

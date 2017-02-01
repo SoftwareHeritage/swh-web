@@ -263,6 +263,8 @@ class route(APIDocBase):  # noqa: N801
             data['examples'] = self.build_examples(
                 f, data['urls'], data['args'])
 
+        data['heading'] = '%s Documentation' % data['route']
+
         # Prepare and send to mimetype selector if it's not a doc request
         if re.match(route_re, request.url) and not data['noargs'] \
            and request.method == 'GET':
