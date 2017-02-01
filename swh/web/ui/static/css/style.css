@@ -55,7 +55,6 @@ img.swh-logo {
 h3[id], h4[id], a[id] {  /* avoid in-page links covered by navbar */
     padding-top: 80px;
     margin-top: -70px;
-    display: inline-block; /* webkit compatibility */
 }
 
 h1, h2, h3, h4  {
@@ -202,6 +201,10 @@ ul.dropdown-menu > li > ul > li { /* No decoration on bullet points in dropdown 
   padding: 0;
 }
 
+.dataTables_filter {
+    margin-top: 15px;
+}
+
 .dataTables_filter input {
     width: 70%;
     float: right;
@@ -282,4 +285,21 @@ bread-crumbs ul {
 
 .title-small .bread-crumbs{
     margin: -30px 0 25px;
+}
+
+#footer {
+    background-color: #262626;
+    color: hsl(0, 0%, 100%);
+    font-size: 1.2rem;
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+#footer a:visited {
+    color: hsl(0, 0%, 100%);
+}
+#footer a:hover {
+    color: white;
+    text-decoration: underline;
 }

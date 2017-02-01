@@ -905,3 +905,53 @@ class UtilsTestCase(unittest.TestCase):
                   sha1_git='123'),
              call('api_revision',
                   sha1_git='456')])
+
+    @istest
+    def shorten_path_noop(self):
+        noops = [
+            '/api/',
+            '/browse/',
+            '/content/symbol/foobar/'
+        ]
+
+        for noop in noops:
+            self.assertEqual(
+                utils.shorten_path(noop),
+                noop
+            )
+
+    @istest
+    def shorten_path_sha1(self):
+        sha1 = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
+        short_sha1 = sha1[:8] + '...'
+
+        templates = [
+            '/api/1/content/sha1:%s/',
+            '/api/1/content/sha1_git:%s/',
+            '/api/1/directory/%s/',
+            '/api/1/content/sha1:%s/ctags/',
+        ]
+
+        for template in templates:
+            self.assertEqual(
+                utils.shorten_path(template % sha1),
+                template % short_sha1
+            )
+
+    @istest
+    def shorten_path_sha256(self):
+        sha256 = ('aafb16d69fd30ff58afdd69036a26047'
+                  '213add102934013a014dfca031c41aef')
+        short_sha256 = sha256[:8] + '...'
+
+        templates = [
+            '/api/1/content/sha256:%s/',
+            '/api/1/directory/%s/',
+            '/api/1/content/sha256:%s/filetype/',
+        ]
+
+        for template in templates:
+            self.assertEqual(
+                utils.shorten_path(template % sha256),
+                template % short_sha256
+            )
