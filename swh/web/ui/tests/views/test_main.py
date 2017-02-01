@@ -20,11 +20,11 @@ class MainViewTestCase(test_app.SWHViewTestCase):
         self.assertEquals(rv.status_code, 302)
         self.assertRedirects(rv, '/api/')
 
-    @istest
-    def info(self):
-        # when
-        rv = self.client.get('/about/')
+    # @istest
+    # def info(self):
+    #     # when
+    #     rv = self.client.get('/about/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assert_template_used('about.html')
-        self.assertIn(b'About', rv.data)
+    #     self.assertEquals(rv.status_code, 200)
+    #     self.assert_template_used('about.html')
+    #     self.assertIn(b'About', rv.data)
