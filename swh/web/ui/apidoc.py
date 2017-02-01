@@ -373,9 +373,9 @@ class param(BaseDescribeDocBase):  # noqa: N801
     api can potentially accept.
 
     Args:
-        name: the parameter name
-        default: default value
-        argtype: the parameter's type as an Enum value from apidoc.argtypes
+        name: parameter's name
+        default: parameter's default value
+        argtype: parameter's type as an Enum value from apidoc.argtypes
         doc: the information about that header
 
     """

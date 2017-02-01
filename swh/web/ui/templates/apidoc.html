@@ -72,7 +72,7 @@
   <h2> Params </h2>
   <dl class="doc-paramslist dl-horizontal">
     {% for param in params %}
-    <dt> {{ param['name'] }}: string </dt>
+    <dt> {{ param['name'] }}: {{ param['type'] }} </dt>
     <dd> {{ param['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
