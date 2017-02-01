@@ -28,7 +28,7 @@
 <div class="api-doc table-responsive">
   <table class="table table-striped search-res swhtable">
     <thead class="thead-default">
-      <th>Route</th>
+      <th>Endpoint</th>
       <th>Status</th>
       <th>Description</th>
     </thead>
@@ -40,9 +40,10 @@
         <td>{{ ', '.join(doc['tags']) }}</td>
         {% else %}
         <td id="{{ route }}"><a href="{{ route }}">{{ route }}</a></td>
-        <td>opened</td>
+        <td>available</td>
         {% endif %}
-        <td>{{ doc['docstring'] | safe_docstring_display | safe }}</td>
+        {% set doc_intro = doc['docstring'].split('\n\n')[0] %}
+        <td>{{ doc_intro | safe_docstring_display | safe }}</td>
       </tr>
       {% endfor %}
     </tbody>
