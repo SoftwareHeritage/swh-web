@@ -21,6 +21,7 @@
 <div class="response-data">
   <h2>Request</h2>
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
+  <hr/>
   <h2>Response</h2>
   {% if status_code != 200 %}
   <h3>Status Code</h3>
@@ -71,7 +72,8 @@
     <dd> {{ arg['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
- </div>
+</div>
+<hr/>
 {% endif %}
 {% if params and params|length > 0 %}
 <div class="doc-params">
@@ -82,7 +84,8 @@
     <dd> {{ param['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
- </div>
+</div>
+<hr/>
 {% endif %}
 {% if excs and excs|length > 0 %}
 <div class="doc-excs">
@@ -94,6 +97,7 @@
     {% endfor %}
   </dl>
 </div>
+<hr/>
 {% endif %}
 {% if headers %}
 <div class="doc-headers">
@@ -105,6 +109,7 @@
     {% endfor %}
   </dl>
 </div>
+<hr/>
 {% endif %}
 {% if return %}
 <div class="doc-return">
@@ -114,6 +119,7 @@
     <dd> {{ return['doc'] | safe_docstring_display | safe }} </dd>
   </dl>
 </div>
+<hr/>
 {% endif %}
 {% if examples %}
 <div class="doc-example">
