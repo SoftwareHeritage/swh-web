@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dataTables.min.css') }}">
     <script src="{{ url_for('static', filename='lib/jquery.dataTables.min.js') }}"></script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="icon" href="{{ url_for('static', filename='img/icons/swh-logo-32x32.png') }}" sizes="32x32" />
+    <link rel="icon" href="{{ url_for('static', filename='img/icons/swh-logo-archive-192x192.png') }}" sizes="192x192" />
+    <link rel="apple-touch-icon-precomposed" href="{{ url_for('static', filename='img/icons/swh-logo-archive-180x180.png') }}" />
+    <meta name="msapplication-TileImage" content="{{ url_for('static', filename='img/icons/swh-logo-archive-270x270.png') }}" />
     <script>document.domain = "softwareheritage.org";</script>
 
   </head>
@@ -33,7 +37,7 @@
           </button>
           <div class="logo">
             <a class="navbar-brand" href="{{ url_for('homepage') }}"> <!-- logo -->
-              <img alt="SWH Archive" src="{{ url_for('static', filename='img/swh-logo.png') }}" class="swh-logo" />
+              <img alt="SWH Archive" src="{{ url_for('static', filename='img/swh-logo-archive.png') }}" class="swh-logo" />
             </a>
             <a class="navbar-brand sitename" href="{{ url_for('homepage') }}">
               <span class="first-word">Software</span> <span class="second-word">Heritage</span>
