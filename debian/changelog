@@ -1,3 +1,10 @@
+swh-web (0.0.73-1~swh1) unstable-swh; urgency=medium
+
+  * Deploy swh.web.ui v0.0.73
+  * Add a bazillion of style fixes.
+
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Wed, 01 Feb 2017 22:44:10 +0100
+
 swh-web (0.0.72-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.72
