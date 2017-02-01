@@ -225,36 +225,28 @@ def api_content_symbol(q=None):
 @doc.route('/api/1/content/known/')
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
-         argtype=doc.argtypes.algo_and_hash,
-         argdoc=_doc_arg_content_id)
-@doc.param('q', default=None,
-           argtype=doc.argtypes.str,
-           doc="""(POST request) An algo_hash:hash string, where algo_hash
-                  is one of sha1, sha1_git or sha256 and hash is the hash to
-                  search for in SWH""")
+         argtype=doc.argtypes.sha1,
+         argdoc='content identifier as a sha1 checksum')
+# @doc.param('q', default=None,
+#            argtype=doc.argtypes.str,
+#            doc="""(POST request) An algo_hash:hash string, where algo_hash
+#                   is one of sha1, sha1_git or sha256 and hash is the hash to
+#                   search for in SWH""")
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""A dict with keys:
-
-             - search_res: a list of dicts corresponding to queried content
-               with key 'found' to True if found, 'False' if not
-             - search_stats: a dict containing number of files searched and
-               percentage of files found
-             """)
+             retdoc="""a dictionary with results (found/not found for each given
+             identifier) and statistics about how many identifiers were
+             found""")
 def api_check_content_known(q=None):
     """Check whether some content (AKA "blob") is present in the archive.
 
-    **TODO** pending review
-
     Lookup can be performed by various means:
 
-    - a GET request with many hashes (limited to the size of parameter
-      we can pass in url) a POST request with many hashes, with the
-    - request body containing identifiers (typically filenames) as
-    - keys and corresponding hashes as values.
+    - a GET request with one or several hashes, separated by ','
+    - a POST request with one or several hashes, passed as (multiple) values
+      for parameter 'q'
 
     """
-
     response = {'search_res': None,
                 'search_stats': None}
     search_stats = {'nbfiles': 0, 'pct': 0}
@@ -283,9 +275,11 @@ def api_check_content_known(q=None):
         result = []
         l = len(queries)
         for el in lookup:
-            result.append({'filename': el['filename'],
-                           'sha1': el['sha1'],
-                           'found': el['found']})
+            res_d = {'sha1': el['sha1'],
+                     'found': el['found']}
+            if el['filename']:
+                res_d['filename'] = el['filename']
+            result.append(res_d)
             search_res = result
             nbfound = len([x for x in lookup if x['found']])
             search_stats['nbfiles'] = l
