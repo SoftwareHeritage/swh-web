@@ -1,3 +1,16 @@
+swh-web (0.0.70-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.70
+  * apidoc: Review documentation for
+  * endpoints (person/release/revision/visit-related/upcoming methods)
+  * apidoc: List only method docstring's first paragraph in endpoint
+    index
+  * apidoc: Render type annotation for optional parameter
+  * apidoc: Improve rendering issues
+  * api: Fix problem in origin visit by type and url lookup
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 01 Feb 2017 11:28:32 +0100
+
 swh-web (0.0.69-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.69
