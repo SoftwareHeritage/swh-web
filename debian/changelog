@@ -1,8 +1,9 @@
-swh-web (0.0.72-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.73-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * Deploy swh.web.ui v0.0.73
+  * Add a bazillion of style fixes.
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 01 Feb 2017 18:34:57 +0100
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Wed, 01 Feb 2017 22:44:10 +0100
 
 swh-web (0.0.72-1~swh1) unstable-swh; urgency=medium
 
