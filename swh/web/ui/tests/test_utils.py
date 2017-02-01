@@ -243,6 +243,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def parse_timestamp(self):
         input_timestamps = [
+            None,
             '2016-01-12',
             '2016-01-12T09:19:12+0100',
             'Today is January 1, 2047 at 8:21:00AM',
@@ -250,10 +251,11 @@ class UtilsTestCase(unittest.TestCase):
         ]
 
         output_dates = [
-            datetime.datetime(2016, 1, 12, 0, 0, tzinfo=datetime.timezone.utc),
+            None,
+            datetime.datetime(2016, 1, 12, 0, 0),
             datetime.datetime(2016, 1, 12, 9, 19, 12,
                               tzinfo=dateutil.tz.tzoffset(None, 3600)),
-            datetime.datetime(2047, 1, 1, 8, 21, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2047, 1, 1, 8, 21),
             datetime.datetime(2016, 1, 12, 9, 39, 2,
                               tzinfo=datetime.timezone.utc),
         ]

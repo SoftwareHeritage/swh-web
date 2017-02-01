@@ -8,7 +8,7 @@ This document describes the <strong>Software Heritage Web API</strong>.
   <li><a href="{{ url_for('browse_api_doc') }}#parameters">Parameters</a></li>
   <li><a href="{{ url_for('browse_api_doc') }}#errors">Errors</a></li>
   <li><a href="{{ url_for('browse_api_doc') }}#pagination">Pagination</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#errors">Rate limiting</a></li>
+  <li><a href="{{ url_for('browse_api_doc') }}#rate-limiting">Rate limiting</a></li>
 </ul>
 
 ### Endpoint index

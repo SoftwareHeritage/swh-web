@@ -40,7 +40,7 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         """v is supposedly a hash as bytes, returns it converted in hex.
 
         """
-        if v and isinstance(v, bytes):
+        if isinstance(v, bytes):
             return hashutil.hash_to_hex(v)
         return v
 
@@ -51,7 +51,7 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         If not utf-8, break!
 
         """
-        if v and isinstance(v, bytes):
+        if isinstance(v, bytes):
             return v.decode('utf-8')
         return v
 

@@ -1,8 +1,16 @@
-swh-web (0.0.70-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.71-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.71
+  * add static/robots.txt, disabling crawling of /api/
+  * re-root content-specific endpoints under /api/1/content/
+  * fix not converted empty bytes string
+  * /revision/origin/: Make the timestamp default to the most recent
+    visit
+  * api: simplify HTML layout by dropping redundant nav and about page
+  * apidoc: document correctly endpoints /content/known/,
+  * /revision/{origin,origin/log}/ and /stat/counters/
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 01 Feb 2017 11:28:32 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 01 Feb 2017 16:23:56 +0100
 
 swh-web (0.0.70-1~swh1) unstable-swh; urgency=medium
 

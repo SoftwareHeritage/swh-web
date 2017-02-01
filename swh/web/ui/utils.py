@@ -1,13 +1,16 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import datetime
+
 import flask
 import re
 
+from datetime import datetime, timezone
 from dateutil import parser
+
+from .exc import BadInputExc
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
@@ -55,7 +58,7 @@ def fmap(f, data):
         The same data-structure with modified values by the f function.
 
     """
-    if not data:
+    if data is None:
         return data
     if isinstance(data, map):
         return map(lambda y: fmap(f, y), (x for x in data))
@@ -122,24 +125,27 @@ def parse_timestamp(timestamp):
     """Given a time or timestamp (as string), parse the result as datetime.
 
     Returns:
-        a timezone-aware datetime representing the parsed value. If the parsed
-        value doesn't specify a timezone, UTC is assumed.
+        a timezone-aware datetime representing the parsed value.
+        None if the parsing fails.
 
     Samples:
         - 2016-01-12
         - 2016-01-12T09:19:12+0100
         - Today is January 1, 2047 at 8:21:00AM
         - 1452591542
+
     """
-    default_timestamp = datetime.datetime.utcfromtimestamp(0).replace(
-        tzinfo=datetime.timezone.utc)
+    if not timestamp:
+        return None
+
     try:
-        res = parser.parse(timestamp, ignoretz=False, fuzzy=True,
-                           default=default_timestamp)
+        return parser.parse(timestamp, ignoretz=False, fuzzy=True)
     except:
-        res = datetime.datetime.utcfromtimestamp(float(timestamp)).replace(
-            tzinfo=datetime.timezone.utc)
-    return res
+        try:
+            return datetime.utcfromtimestamp(float(timestamp)).replace(
+                tzinfo=timezone.utc)
+        except (ValueError, OverflowError) as e:
+            raise BadInputExc(e)
 
 
 def enrich_object(object):
