@@ -91,21 +91,16 @@ a:hover {
     color: black;
 }
 
-ul.dropdown-menu > li > a,
-ul.dropdown-menu > li > ul > li > a,
-.navbar-header > a,
-ul.navbar-nav > li > a { /* No decoration on links in dropdown menu */
+ul.dropdown-menu a,
+.navbar-header a,
+ul.navbar-nav a { /* No decoration on links in dropdown menu */
     border-bottom-style: none;
-}
-
-.navbar-header > a,
-ul.navbar-nav > li > a {
     color: #323232;
     font-weight: 700;
 }
 
-.navbar-header > a:hover,
-ul.navbar-nav > li > a:hover {
+.navbar-header a:hover,
+ul.navbar-nav a:hover {
     color: #8f8f8f;
 }
 
