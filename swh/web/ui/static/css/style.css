@@ -34,8 +34,14 @@ body {
     font-size: 0.7em;
 }
 
-img.swh-logo {
-    max-height: 45px;
+.logo img {
+    max-height: 40px;
+}
+.logo .navbar-brand {
+    padding: 5px;
+}
+.logo .sitename {
+    padding: 15px 5px;
 }
 
 .jumbotron {
@@ -53,7 +59,7 @@ img.swh-logo {
     border-bottom: 5px solid;
     border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
     width: 100%;
-    padding-bottom: 10px;
+    padding: 5px;
 }
 
 .nav-horizontal {
