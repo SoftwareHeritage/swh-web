@@ -136,8 +136,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/filetype/'
-            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+            '/api/1/content/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/filetype/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -162,7 +162,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/filetype/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/'
+            'filetype/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -187,8 +188,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/language/'
-            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+            '/api/1/content/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/language/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -212,7 +213,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/language/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/language/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -253,12 +255,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
             'data_url': '/api/1/content/'
             'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
-            'license_url': '/api/1/license/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'language_url': '/api/1/language/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'filetype_url': '/api/1/filetype/'
-            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'license_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/license/',
+            'language_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/language/',
+            'filetype_url': '/api/1/content/'
+            'sha1:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/filetype/',
         }])
         actual_headers = dict(rv.headers)
         self.assertFalse('Link' in actual_headers)
@@ -326,12 +328,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
             'data_url': '/api/1/content/'
             'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
-            'license_url': '/api/1/license/'
-            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'language_url': '/api/1/language/'
-            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'filetype_url': '/api/1/filetype/'
-            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'license_url': '/api/1/content/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/license/',
+            'language_url': '/api/1/content/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/language/',
+            'filetype_url': '/api/1/content/'
+            'sha1:67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03/filetype/',
         }])
         actual_headers = dict(rv.headers)
         self.assertEquals(
@@ -372,8 +374,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/ctags/'
-            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+            '/api/1/content/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/ctags/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -401,8 +403,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/license/'
-            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/')
+            '/api/1/content/'
+            'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/license/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -427,7 +429,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/license/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/'
+            'license/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -455,8 +458,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/provenance/'
-            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/content/'
+            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/provenance/')
 
         # then
         self.assertEquals(rv.status_code, 200)
@@ -488,7 +491,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         rv = self.app.get(
-            '/api/1/provenance/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/'
+            'provenance/')
 
         # then
         self.assertEquals(rv.status_code, 404)
@@ -525,12 +529,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, {
             'data_url': '/api/1/content/'
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
-            'filetype_url': '/api/1/filetype/'
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'language_url': '/api/1/language/'
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'license_url': '/api/1/license/'
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
+            'filetype_url': '/api/1/content/'
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/filetype/',
+            'language_url': '/api/1/content/'
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/language/',
+            'license_url': '/api/1/content/'
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/license/',
             'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
             'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
@@ -649,8 +653,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         expected_result = {
             'search_stats': {'nbfiles': 1, 'pct': 100},
-            'search_res': [{'filename': None,
-                            'sha1': 'sha1:blah',
+            'search_res': [{'sha1': 'sha1:blah',
                             'found': True}]
         }
 
@@ -680,11 +683,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         expected_result = {
             'search_stats': {'nbfiles': 2, 'pct': 50},
-            'search_res': [{'filename': None,
-                            'sha1': 'sha1:halb',
+            'search_res': [{'sha1': 'sha1:halb',
                             'found': True},
-                           {'filename': None,
-                            'sha1': 'sha1_git:hello',
+                           {'sha1': 'sha1_git:hello',
                             'found': False}]
         }
 
@@ -706,8 +707,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_check_content_known_post_as_yaml(self, mock_service):
         # given
-        stub_result = [{'filename': None,
-                        'sha1': '7e62b1fe10c88a3eddbba930b156bee2956b2435',
+        stub_result = [{'sha1': '7e62b1fe10c88a3eddbba930b156bee2956b2435',
                         'found': True},
                        {'filename': 'filepath',
                         'sha1': '8e62b1fe10c88a3eddbba930b156bee2956b2435',
@@ -742,13 +742,12 @@ class ApiTestCase(test_app.SWHApiTestCase):
     @istest
     def api_check_content_known_not_found(self, mock_service):
         # given
-        stub_result = [{'filename': None,
-                        'sha1': 'sha1:halb',
+        stub_result = [{'sha1': 'sha1:halb',
                         'found': False}]
         mock_service.lookup_multiple_hashes.return_value = stub_result
 
         expected_result = {
-            'search_stats': {'nbfiles': 1, 'pct': 0},
+            'search_stats': {'nbfiles': 1, 'pct': 0.0},
             'search_res': stub_result
         }
 

@@ -14,12 +14,21 @@ from swh.web.ui.main import app
 
 # canned doc string snippets that are used in several doc strings
 
-_doc_arg_content_id = """A "[HASH_TYPE:]HASH" content identifier, where
-   HASH_TYPE is one of "sha1" (the default), "sha1_git", "sha256", and HASH is
-   a checksum obtained with the HASH_TYPE hashing algorithm."""
+_doc_arg_content_id = """A "[hash_type:]hash" content identifier, where
+   hash_type is one of "sha1" (the default), "sha1_git", "sha256", and hash is
+   a checksum obtained with the hash_type hashing algorithm."""
+_doc_arg_last_elt = 'element to start listing from, for pagination purposes'
+_doc_arg_per_page = 'number of elements to list, for pagination purposes'
 
 _doc_exc_bad_id = 'syntax error in the given identifier(s)'
 _doc_exc_id_not_found = 'no object matching the given criteria could be found'
+
+_doc_ret_revision_meta = 'metadata of the revision identified by sha1_git'
+_doc_ret_revision_log = """list of dictionaries representing the metadata of
+    each revision found in the commit log heading to revision sha1_git.
+    For each commit at least the following information are returned:
+    author/committer, authoring/commit timestamps, revision id, commit message,
+    parent (i.e., immediately preceding) commits, "root" directory id."""
 
 _doc_header_link = """indicates that a subsequent result page is available,
     pointing to it"""
@@ -28,9 +37,10 @@ _doc_header_link = """indicates that a subsequent result page is available,
 @app.route('/api/1/stat/counters/')
 @doc.route('/api/1/stat/counters/', noargs=True)
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="A dictionary of SWH's most important statistics")
+             retdoc="""dictionary mapping object types to the amount of
+             corresponding objects currently available in the archive""")
 def api_stats():
-    """Return statistics on SWH storage.
+    """Get statistics about the content of the archive.
 
     """
     return service.stat_counters()
@@ -45,10 +55,10 @@ def api_stats():
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('last_visit', default=None,
            argtype=doc.argtypes.int,
-           doc='visit to start listing from, for pagination purposes')
+           doc=_doc_arg_last_elt)
 @doc.param('per_page', default=10,
            argtype=doc.argtypes.int,
-           doc='number of visits to list, for pagination purposes')
+           doc=_doc_arg_per_page)
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""a list of dictionaries describing individual visits.
              For each visit, its identifier, timestamp (as UNIX time), outcome,
@@ -153,12 +163,10 @@ def api_origin_visit(origin_id, visit_id):
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('last_sha1', default=None,
            argtype=doc.argtypes.str,
-           doc="""Optional parameter to start returning page results from.""")
+           doc=_doc_arg_last_elt)
 @doc.param('per_page', default=10,
            argtype=doc.argtypes.int,
-           doc="""Optional parameter to limit the number of data per page
-                  to retrieve on a per request basis.
-                  The default is 10, up to 50 max.""")
+           doc=_doc_arg_per_page)
 @doc.returns(rettype=doc.rettypes.list,
              retdoc="""A list of dict whose content matches the expression.
              Each dict has the following keys:
@@ -171,7 +179,7 @@ def api_origin_visit(origin_id, visit_id):
              """)
 def api_content_symbol(q=None):
     """Search content objects by `Ctags <http://ctags.sourceforge.net/>`_-style
-    symbol (e.g., function name, data type, method, etc.)
+    symbol (e.g., function name, data type, method, ...).
 
     """
     result = {}
@@ -217,36 +225,28 @@ def api_content_symbol(q=None):
 @doc.route('/api/1/content/known/')
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
-         argtype=doc.argtypes.algo_and_hash,
-         argdoc=_doc_arg_content_id)
-@doc.param('q', default=None,
-           argtype=doc.argtypes.str,
-           doc="""(POST request) An algo_hash:hash string, where algo_hash
-                  is one of sha1, sha1_git or sha256 and hash is the hash to
-                  search for in SWH""")
+         argtype=doc.argtypes.sha1,
+         argdoc='content identifier as a sha1 checksum')
+# @doc.param('q', default=None,
+#            argtype=doc.argtypes.str,
+#            doc="""(POST request) An algo_hash:hash string, where algo_hash
+#                   is one of sha1, sha1_git or sha256 and hash is the hash to
+#                   search for in SWH""")
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""A dict with keys:
-
-             - search_res: a list of dicts corresponding to queried content
-               with key 'found' to True if found, 'False' if not
-             - search_stats: a dict containing number of files searched and
-               percentage of files found
-             """)
+             retdoc="""a dictionary with results (found/not found for each given
+             identifier) and statistics about how many identifiers were
+             found""")
 def api_check_content_known(q=None):
     """Check whether some content (AKA "blob") is present in the archive.
 
-    **TODO** pending review
-
     Lookup can be performed by various means:
 
-    - a GET request with many hashes (limited to the size of parameter
-      we can pass in url) a POST request with many hashes, with the
-    - request body containing identifiers (typically filenames) as
-    - keys and corresponding hashes as values.
+    - a GET request with one or several hashes, separated by ','
+    - a POST request with one or several hashes, passed as (multiple) values
+      for parameter 'q'
 
     """
-
     response = {'search_res': None,
                 'search_stats': None}
     search_stats = {'nbfiles': 0, 'pct': 0}
@@ -275,9 +275,11 @@ def api_check_content_known(q=None):
         result = []
         l = len(queries)
         for el in lookup:
-            result.append({'filename': el['filename'],
-                           'sha1': el['sha1'],
-                           'found': el['found']})
+            res_d = {'sha1': el['sha1'],
+                     'found': el['found']}
+            if 'filename' in el and el['filename']:
+                res_d['filename'] = el['filename']
+            result.append(res_d)
             search_res = result
             nbfound = len([x for x in lookup if x['found']])
             search_stats['nbfiles'] = l
@@ -345,7 +347,7 @@ def _api_lookup(criteria,
              retdoc="""The metadata of the origin corresponding to the given
              criteria""")
 def api_origin(origin_id=None, origin_type=None, origin_url=None):
-    """Get information about a software origin
+    """Get information about a software origin.
 
     Software origins might be looked up by origin type and canonical URL (e.g.,
     "git" + a "git clone" URL), or by their unique (but otherwise meaningless)
@@ -382,7 +384,7 @@ def api_origin(origin_id=None, origin_type=None, origin_url=None):
 @app.route('/api/1/person/<int:person_id>/')
 @doc.route('/api/1/person/')
 @doc.arg('person_id',
-         default=1,
+         default=42,
          argtype=doc.argtypes.int,
          argdoc='person identifier')
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
@@ -400,7 +402,7 @@ def api_person(person_id):
 @app.route('/api/1/release/<string:sha1_git>/')
 @doc.route('/api/1/release/')
 @doc.arg('sha1_git',
-         default='97d8dcd0c589b1d94a5d26cf0c1e8f2f44b92bfd',
+         default='7045404f3d1c54e6473c71bbb716529fbad4be24',
          argtype=doc.argtypes.sha1_git,
          argdoc='release identifier')
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
@@ -539,29 +541,31 @@ def api_directory_through_revision_origin(origin_id,
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc="The queried revision's origin identifier in SWH")
+         argdoc='software origin identifier')
 @doc.arg('branch_name',
          default='refs/heads/master',
          argtype=doc.argtypes.path,
-         argdoc="""The optional branch for the given origin (default
-         to master)""")
+         argdoc="""(optional) fully-qualified branch name, e.g.,
+         "refs/heads/master". Defaults to the master branch.""")
 @doc.arg('ts',
-         default='2000-01-17T11:23:54+00:00',
+         default=None,
          argtype=doc.argtypes.ts,
-         argdoc="The time at which the queried revision should be constrained")
+         argdoc="""(optional) timestamp close to which the revision pointed by
+         the given branch should be looked up. Defaults to now.""")
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata of the revision identified by the given
-             criteria""")
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_meta)
 def api_revision_with_origin(origin_id,
                              branch_name="refs/heads/master",
                              ts=None):
-    """Display revision information through its identification by
-    origin/branch/timestamp.
-    """
-    if ts:
-        ts = utils.parse_timestamp(ts)
+    """Get information about a revision, searching for it based on software
+    origin, branch name, and/or visit timestamp.
 
+    This endpoint behaves like ``/revision``, but operates on the revision that
+    has been found at a given software origin, close to a given point in time,
+    pointed by a given branch.
+
+    """
+    ts = utils.parse_timestamp(ts)
     return _api_lookup(
         origin_id,
         service.lookup_revision_by,
@@ -604,13 +608,12 @@ def api_revision_with_context(sha1_git, context):
 @app.route('/api/1/revision/<string:sha1_git>/')
 @doc.route('/api/1/revision/')
 @doc.arg('sha1_git',
-         default='ec72c666fb345ea5f21359b7bc063710ce558e39',
+         default='aafb16d69fd30ff58afdd69036a26047f3aebdc6',
          argtype=doc.argtypes.sha1_git,
-         argdoc="The revision's sha1_git identifier")
+         argdoc="revision identifier")
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc='The metadata of the revision identified by sha1_git')
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_meta)
 def api_revision(sha1_git):
     """Get information about a revision.
 
@@ -654,22 +657,26 @@ def api_revision_raw_message(sha1_git):
 @doc.arg('sha1_git',
          default='ec72c666fb345ea5f21359b7bc063710ce558e39',
          argtype=doc.argtypes.sha1_git,
-         argdoc="The revision's sha1_git identifier.")
+         argdoc='revision identifier')
 @doc.arg('dir_path',
          default='Documentation/BUG-HUNTING',
          argtype=doc.argtypes.path,
-         argdoc='The path from the top level directory')
+         argdoc="""path relative to the root directory of revision identifier by
+         sha1_git""")
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata of the directory pointed by revision id
-             sha1-git and dir_path""")
+             retdoc="""either a list of directory entries with their metadata,
+             or the metadata of a single directory entry""")
 def api_revision_directory(sha1_git,
                            dir_path=None,
                            with_data=False):
-    """Return information on directory pointed by revision with sha1_git.
-    If dir_path is not provided, display top level directory.
-    Otherwise, display the directory pointed by dir_path (if it exists).
+    """Get information about directory (entry) objects associated to revisions.
+
+    Each revision is associated to a single "root" directory. This endpoint
+    behaves like ``/directory/``, but operates on the root directory associated
+    to a given revision.
+
     """
     return _revision_directory_by(
         {
@@ -684,29 +691,24 @@ def api_revision_directory(sha1_git,
 @app.route('/api/1/revision/<string:sha1_git>/prev/<path:prev_sha1s>/log/')
 @doc.route('/api/1/revision/log/')
 @doc.arg('sha1_git',
-         default='ec72c666fb345ea5f21359b7bc063710ce558e39',
+         default='37fc9e08d0c4b71807a4f1ecb06112e78d91c283',
          argtype=doc.argtypes.sha1_git,
-         argdoc="The revision's identifier queried")
-@doc.arg('prev_sha1s',
-         default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
-         argtype=doc.argtypes.path,
-         argdoc="""(Optional) Navigation breadcrumbs (descendant revisions
-previously visited).  If multiple values, use / as delimiter.  """)
+         argdoc='revision identifier')
+# @doc.arg('prev_sha1s',
+#          default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
+#          argtype=doc.argtypes.path,
+#          argdoc="""(Optional) Navigation breadcrumbs (descendant revisions
+# previously visited).  If multiple values, use / as delimiter.  """)
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('per_page', default=10,
            argtype=doc.argtypes.int,
-           doc="""Default parameter used to group result by page of the
-specified number.""")
+           doc=_doc_arg_per_page)
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The log data starting at the revision identified by
-             sha1_git, completed with the navigation breadcrumbs,
-             if any""")
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_log)
 def api_revision_log(sha1_git, prev_sha1s=None):
-    """Return all revisions (~ git log) starting from sha1_git.  The first
-    element returned is the given sha1_git, or the first breadcrumb,
-    if any.
+    """Get a list of all revisions heading to a given one, i.e., show the
+    commit log.
 
     """
     result = {}
@@ -785,19 +787,18 @@ Defaults to 'refs/heads/master'.""")
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('per_page', default=10,
            argtype=doc.argtypes.int,
-           doc="""Default parameter used to group result by page of the specified
-number.""")
+           doc=_doc_arg_per_page)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata of the revision log starting at the revision
-             matching the given criteria.""")
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_log)
 def api_revision_log_by(origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
-    """Show all revisions (~ git log) starting from the revision targeted
-    by the origin_id provided and optionally a branch name or/and a
-    timestamp.
+    """Show the commit log for a revision, searching for it based on software
+    origin, branch name, and/or visit timestamp.
 
+    This endpoint behaves like ``/log``, but operates on the revision that
+    has been found at a given software origin, close to a given point in time,
+    pointed by a given branch.
     """
     result = {}
     per_page = int(request.args.get('per_page', '10'))
@@ -855,7 +856,7 @@ def api_revision_log_by(origin_id,
 @doc.arg('path',
          default='codec/demux',
          argtype=doc.argtypes.path,
-         argdoc='path relative to directory identified by SHA1_GIT')
+         argdoc='path relative to directory identified by sha1_git')
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
@@ -895,8 +896,8 @@ def api_directory(sha1_git,
             utils.enrich_directory)
 
 
-@app.route('/api/1/provenance/<string:q>/')
-@doc.route('/api/1/provenance/', tags=['hidden'])
+@app.route('/api/1/content/<string:q>/provenance/')
+@doc.route('/api/1/content/provenance/', tags=['hidden'])
 @doc.arg('q',
          default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
          argtype=doc.argtypes.algo_and_hash,
@@ -932,8 +933,8 @@ def api_content_provenance(q):
         enrich_fn=_enrich_revision)
 
 
-@app.route('/api/1/filetype/<string:q>/')
-@doc.route('/api/1/filetype/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/filetype/')
+@doc.route('/api/1/content/filetype/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -944,7 +945,7 @@ def api_content_provenance(q):
              retdoc="""Filetype information (dict) for the matched
 content.""")
 def api_content_filetype(q):
-    """Get information about the detected MIME type of a content object
+    """Get information about the detected MIME type of a content object.
 
     """
     return _api_lookup(
@@ -955,8 +956,8 @@ def api_content_filetype(q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@app.route('/api/1/language/<string:q>/')
-@doc.route('/api/1/language/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/language/')
+@doc.route('/api/1/content/language/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -968,7 +969,7 @@ def api_content_filetype(q):
 content.""")
 def api_content_language(q):
     """Get information about the detected (programming) language of a content
-    object
+    object.
 
     """
     return _api_lookup(
@@ -979,8 +980,8 @@ def api_content_language(q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@app.route('/api/1/license/<string:q>/')
-@doc.route('/api/1/license/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/license/')
+@doc.route('/api/1/content/license/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -991,7 +992,7 @@ def api_content_language(q):
              retdoc="""License information (dict) for the matched
 content.""")
 def api_content_license(q):
-    """Get information about the detected license of a content object
+    """Get information about the detected license of a content object.
 
     """
     return _api_lookup(
@@ -1002,8 +1003,8 @@ def api_content_license(q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@app.route('/api/1/ctags/<string:q>/')
-@doc.route('/api/1/ctags/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/ctags/')
+@doc.route('/api/1/content/ctags/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -1015,7 +1016,7 @@ def api_content_license(q):
 content.""")
 def api_content_ctags(q):
     """Get information about all `Ctags <http://ctags.sourceforge.net/>`_-style
-    symbols defined in a content object
+    symbols defined in a content object.
 
     """
     return _api_lookup(
@@ -1037,7 +1038,7 @@ def api_content_ctags(q):
 @doc.returns(rettype=doc.rettypes.octet_stream,
              retdoc='The raw content data as an octet stream')
 def api_content_raw(q):
-    """Get the raw content of a content object (AKA "blob"), as a byte sequence
+    """Get the raw content of a content object (AKA "blob"), as a byte sequence.
 
     """
     def generate(content):
