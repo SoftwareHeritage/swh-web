@@ -27,7 +27,7 @@ class ConvertersTestCase(unittest.TestCase):
             'i': {'e': b'something'},
             'j': {
                 'k': {
-                    'l': [b'bytes thing', b'another thingy'],
+                    'l': [b'bytes thing', b'another thingy', b''],
                     'n': 'dont care either'
                 },
                 'm': 'dont care'
@@ -46,6 +46,7 @@ class ConvertersTestCase(unittest.TestCase):
             't': None,
             'u': None,
             'v': None,
+            'x': None,
         }
 
         expected_output = {
@@ -58,7 +59,7 @@ class ConvertersTestCase(unittest.TestCase):
             'i': {'e': 'something'},
             'j': {
                 'k': {
-                    'l': ['bytes thing', 'another thingy']
+                    'l': ['bytes thing', 'another thingy', '']
                 }
             },
             'p': 'foo',
@@ -69,11 +70,12 @@ class ConvertersTestCase(unittest.TestCase):
             's': '1969-12-31T17:00:42-07:00',
             'u': {},
             'v': [],
+            'x': None,
         }
 
         actual_output = converters.from_swh(
             some_input,
-            hashess={'d', 'o'},
+            hashess={'d', 'o', 'x'},
             bytess={'c', 'e', 'g', 'l'},
             dates={'s'},
             blacklist={'h', 'm', 'n', 'o'},
