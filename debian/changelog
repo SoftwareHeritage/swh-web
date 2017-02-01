@@ -1,3 +1,15 @@
+swh-web (0.0.72-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.72
+  * apidoc rendering: Improvments
+  * apidoc: add usual copyright/license/contact footer
+  * apidoc: show status code if != 200
+  * apidoc: hide /content/known/ from the doc
+  * apidoc: document upcoming v. available in endpoint index
+  * apidoc: vertically distantiate jquery search box and preceding text
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 01 Feb 2017 18:34:56 +0100
+
 swh-web (0.0.71-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.71
