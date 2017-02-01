@@ -55,7 +55,6 @@ img.swh-logo {
 h3[id], h4[id], a[id] {  /* avoid in-page links covered by navbar */
     padding-top: 80px;
     margin-top: -70px;
-    display: inline-block; /* webkit compatibility */
 }
 
 h1, h2, h3, h4  {
