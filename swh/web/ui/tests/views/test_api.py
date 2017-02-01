@@ -1048,7 +1048,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(response_data, expected_origin)
 
         mock_service.lookup_origin.assert_called_with(
-            {'url': 'ftp://some/url/to/origin/0',
+            {'url': 'ftp://some/url/to/origin/0/',
              'type': 'ftp'})
 
     @patch('swh.web.ui.views.api.service')

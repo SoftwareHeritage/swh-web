@@ -19,15 +19,16 @@
 {% endif %}
 {% if response_data and response_data is not none %}
 <div class="response-data">
-  <h2> Request </h2>
+  <h2>Request</h2>
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
   {% if headers_data and headers_data is not none %}
-  <h2> Headers </h2>
+  <h2>Response</h2>
+  <h3>Headers</h3>
     {% for header_name, header_value in headers_data.items() %}
       <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
     {% endfor %}
   {% endif %}
-    <h2> Result </h2>
+    <h3>Body</h3>
     <pre>{{ response_data | urlize_api_links | safe }}</pre>
 </div>
 {% endif %}
@@ -71,7 +72,7 @@
   <h2> Params </h2>
   <dl class="doc-paramslist dl-horizontal">
     {% for param in params %}
-    <dt> {{ param['name'] }}: string </dt>
+    <dt> {{ param['name'] }}: {{ param['type'] }} </dt>
     <dd> {{ param['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
