@@ -37,6 +37,7 @@
 </div>
 {% endif %}
 <hr/>
+{% if urls and urls|length > 0 %}
 <div class="doc-urls">
   <table class="m-x-auto table">
     <thead>
@@ -60,6 +61,7 @@
   </table>
 </div>
 <hr/>
+{% endif %}
 {% if args and args|length > 0 %}
 <div class="doc-args">
   <h2> Args </h2>
