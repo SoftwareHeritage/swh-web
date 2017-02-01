@@ -41,20 +41,20 @@ def api_stats():
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc='The requested SWH origin identifier')
+         argdoc='A software origin identifier')
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('last_visit', default=None,
-           doc="""Last visit from which starting the next result page.""")
+           argtype=doc.argtypes.int,
+           doc='visit to start listing from, for pagination purposes')
 @doc.param('per_page', default=10,
-           doc="""Return the number of results for one page.""")
+           argtype=doc.argtypes.int,
+           doc='number of visits to list, for pagination purposes')
 @doc.returns(rettype=doc.rettypes.list,
-             retdoc="""All instances of visits of the origin pointed by
-             origin_id as POSIX time since epoch (if visit_id is not defined)
-""")
+             retdoc="""a list of dictionaries describing individual visits.
+             For each visit, its identifier, timestamp (as UNIX time), outcome,
+             and visit-specific URL for more information are given.""")
 def api_origin_visits(origin_id):
-    """Return a list of origin visit (dict) for that particular origin
-       including date (visit date as posix timestamp), target,
-       target_type, status, ...
+    """Get information about all visits of a given software origin.
 
     """
     result = {}
@@ -109,19 +109,19 @@ def api_origin_visits(origin_id):
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc='The requested SWH origin identifier')
+         argdoc='A software origin identifier')
 @doc.arg('visit_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc='The requested SWH origin visit identifier')
+         argdoc='A visit identifier, for origin identified by ORIGIN_ID')
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.list,
-             retdoc="""The single instance visit visit_id of the origin pointed
-             by origin_id as POSIX time since epoch""")
+             retdoc="""A dictionary containing both metadata for the entire
+             visit (e.g., timestamp as UNIX time, visit outcome, etc.) and what
+             was at the software origin during the visit (i.e., a mapping from
+             branches to other archive objects""")
 def api_origin_visit(origin_id, visit_id):
-    """Return origin visit (dict) for that particular origin including
-       (but not limited to) date (visit date as posix timestamp),
-       target, target_type, status, ...
+    """Get information about a specific visit of a software origin.
 
     """
     def _enrich_origin_visit(origin_visit):
@@ -151,8 +151,10 @@ def api_origin_visit(origin_id, visit_id):
          argdoc="""An expression string to lookup in swh's raw content""")
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('last_sha1', default=None,
+           argtype=doc.argtypes.str,
            doc="""Optional parameter to start returning page results from.""")
 @doc.param('per_page', default=10,
+           argtype=doc.argtypes.int,
            doc="""Optional parameter to limit the number of data per page
                   to retrieve on a per request basis.
                   The default is 10, up to 50 max.""")
@@ -217,6 +219,7 @@ def api_content_symbol(q=None):
          argtype=doc.argtypes.algo_and_hash,
          argdoc=_doc_arg_content_id)
 @doc.param('q', default=None,
+           argtype=doc.argtypes.str,
            doc="""(POST request) An algo_hash:hash string, where algo_hash
                   is one of sha1, sha1_git or sha256 and hash is the hash to
                   search for in SWH""")
@@ -327,25 +330,26 @@ def _api_lookup(criteria,
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc="The origin's SWH origin_id.")
+         argdoc='A origin identifier (when looking up by ID)')
 @doc.arg('origin_type',
          default='git',
          argtype=doc.argtypes.str,
-         argdoc="The origin's type (git, svn..)")
+         argdoc='A origin type (when looking up by type+URL)')
 @doc.arg('origin_url',
          default='https://github.com/hylang/hy',
          argtype=doc.argtypes.path,
-         argdoc="The origin's URL.")
+         argdoc='A origin URL (when looking up by type+URL')
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
-             retdoc='The metadata of the origin identified by origin_id')
+             retdoc="""The metadata of the origin corresponding to the given
+             criteria""")
 def api_origin(origin_id=None, origin_type=None, origin_url=None):
-    """Return information about the origin matching the passed criteria.
+    """Get information about a software origin
 
-    Criteria may be:
-      - An SWH-specific ID, if you already know it
-      - An origin type and its URL, if you do not have the origin's SWH
-        identifier
+    Software origins might be looked up by origin type and canonical URL (e.g.,
+    "git" + a "git clone" URL), or by their unique (but otherwise meaningless)
+    identifier.
+
     """
     ori_dict = {
         'id': origin_id,
@@ -488,7 +492,7 @@ def _revision_directory_by(revision, path, request_path,
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""The metadata of the revision corresponding to the
-             passed criteria""")
+             given criteria""")
 def api_directory_through_revision_origin(origin_id,
                                           branch_name="refs/heads/master",
                                           ts=None,
@@ -676,6 +680,7 @@ def api_revision_directory(sha1_git,
 previously visited).  If multiple values, use / as delimiter.  """)
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('per_page', default=10,
+           argtype=doc.argtypes.int,
            doc="""Default parameter used to group result by page of the
 specified number.""")
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
@@ -765,6 +770,7 @@ Defaults to 'refs/heads/master'.""")
          argdoc="""(Optional) A time or timestamp string to parse""")
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('per_page', default=10,
+           argtype=doc.argtypes.int,
            doc="""Default parameter used to group result by page of the specified
 number.""")
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
