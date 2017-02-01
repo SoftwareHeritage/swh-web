@@ -375,13 +375,15 @@ class param(BaseDescribeDocBase):  # noqa: N801
     Args:
         name: the parameter name
         default: default value
+        argtype: the parameter's type as an Enum value from apidoc.argtypes
         doc: the information about that header
 
     """
-    def __init__(self, name, default, doc):
+    def __init__(self, name, default, argtype, doc):
         super().__init__()
         self.doc_data = {
             'name': name,
+            'type': argtype.value,
             'default': default,
             'doc': doc,
         }
