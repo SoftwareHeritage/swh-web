@@ -113,6 +113,7 @@ class RendererTestCase(unittest.TestCase):
             'request': mock_request,
             'headers_data': {},
             'short_path': 'my_short_path',
+            'status_code': 200,
         }
 
         def mock_mimetypes(key):

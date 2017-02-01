@@ -22,6 +22,10 @@
   <h2>Request</h2>
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
   <h2>Response</h2>
+  {% if status_code != 200 %}
+  <h3>Status Code</h3>
+  <pre class="error">{{ status_code }}</pre>
+  {% endif %}
   {% if headers_data and headers_data is not none %}
   <h3>Headers</h3>
     {% for header_name, header_value in headers_data.items() %}

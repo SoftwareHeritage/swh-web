@@ -157,6 +157,7 @@ class SWHMultiResponse(Response, SWHFilterEnricher,
 
             env['request'] = request
             env['short_path'] = utils.shorten_path(str(request.path))
+            env['status_code'] = options.get('status', 200)
             rv = Response(render_template('apidoc.html', **env),
                           content_type='text/html',
                           **options)
