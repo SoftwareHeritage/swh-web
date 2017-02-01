@@ -252,8 +252,6 @@ tr.api-doc-route-deprecated > td, tr.api-doc-route-deprecated > td > a {
 }
 
 pre {
-    border: 1px dashed black;
-    border-radius: 10px;
     background-color: hsl(47, 99%, 75%);
 }
 
