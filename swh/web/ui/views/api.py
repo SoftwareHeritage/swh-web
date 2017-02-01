@@ -548,7 +548,7 @@ def api_directory_through_revision_origin(origin_id,
          argdoc="""(optional) fully-qualified branch name, e.g.,
          "refs/heads/master". Defaults to the master branch.""")
 @doc.arg('ts',
-         default='2000-01-17T11:23:54+00:00',
+         default=None,
          argtype=doc.argtypes.ts,
          argdoc="""(optional) timestamp close to which the revision pointed by
          the given branch should be looked up. Defaults to now.""")
@@ -565,9 +565,7 @@ def api_revision_with_origin(origin_id,
     pointed by a given branch.
 
     """
-    if ts:
-        ts = utils.parse_timestamp(ts)
-
+    ts = utils.parse_timestamp(ts)
     return _api_lookup(
         origin_id,
         service.lookup_revision_by,
