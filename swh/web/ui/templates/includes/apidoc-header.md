@@ -64,6 +64,9 @@ the
   visit time; each of them points to a revision object in the archive. Future
   visits of the same origin will create new visit objects, without removing
   previous ones.
+- **Person**: an entity referenced by a revision as either the author or the
+  committer of the corresponding change. A person is associated to a full name
+  and/or an email address.
 
 
 ### Version

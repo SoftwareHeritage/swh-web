@@ -41,7 +41,7 @@ def api_stats():
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc='A software origin identifier')
+         argdoc='software origin identifier')
 @doc.header('Link', doc=_doc_header_link)
 @doc.param('last_visit', default=None,
            argtype=doc.argtypes.int,
@@ -109,14 +109,15 @@ def api_origin_visits(origin_id):
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc='A software origin identifier')
+         argdoc='software origin identifier')
 @doc.arg('visit_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc='A visit identifier, for origin identified by ORIGIN_ID')
+         argdoc="""visit identifier, relative to the origin identified by
+         origin_id""")
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.list,
-             retdoc="""A dictionary containing both metadata for the entire
+@doc.returns(rettype=doc.rettypes.dict,
+             retdoc="""dictionary containing both metadata for the entire
              visit (e.g., timestamp as UNIX time, visit outcome, etc.) and what
              was at the software origin during the visit (i.e., a mapping from
              branches to other archive objects""")
@@ -233,7 +234,7 @@ def api_content_symbol(q=None):
                percentage of files found
              """)
 def api_check_content_known(q=None):
-    """Check whether some content (AKA "blob") is present in the archive
+    """Check whether some content (AKA "blob") is present in the archive.
 
     **TODO** pending review
 
@@ -330,15 +331,15 @@ def _api_lookup(criteria,
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc='A origin identifier (when looking up by ID)')
+         argdoc='origin identifier (when looking up by ID)')
 @doc.arg('origin_type',
          default='git',
          argtype=doc.argtypes.str,
-         argdoc='A origin type (when looking up by type+URL)')
+         argdoc='origin type (when looking up by type+URL)')
 @doc.arg('origin_url',
          default='https://github.com/hylang/hy',
          argtype=doc.argtypes.path,
-         argdoc='A origin URL (when looking up by type+URL')
+         argdoc='origin URL (when looking up by type+URL')
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc="""The metadata of the origin corresponding to the given
@@ -383,12 +384,13 @@ def api_origin(origin_id=None, origin_type=None, origin_url=None):
 @doc.arg('person_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc="The person's SWH identifier")
+         argdoc='person identifier')
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the person identified by person_id')
 def api_person(person_id):
-    """Return information about person with identifier person_id.
+    """Get information about a person.
+
     """
     return _api_lookup(
         person_id, lookup_fn=service.lookup_person,
@@ -400,13 +402,19 @@ def api_person(person_id):
 @doc.arg('sha1_git',
          default='97d8dcd0c589b1d94a5d26cf0c1e8f2f44b92bfd',
          argtype=doc.argtypes.sha1_git,
-         argdoc="The release's sha1_git identifier")
+         argdoc='release identifier')
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the release identified by sha1_git')
 def api_release(sha1_git):
-    """Return information about release with id sha1_git.
+    """Get information about a release.
+
+    Releases are identified by SHA1 checksums, compatible with Git tag
+    identifiers. See ``release_identifier`` in our `data model module
+    <https://forge.softwareheritage.org/source/swh-model/browse/master/swh/model/identifiers.py>`_
+    for details about how they are computed.
+
     """
     error_msg = 'Release with sha1_git %s not found.' % sha1_git
     return _api_lookup(
@@ -604,7 +612,13 @@ def api_revision_with_context(sha1_git, context):
 @doc.returns(rettype=doc.rettypes.dict,
              retdoc='The metadata of the revision identified by sha1_git')
 def api_revision(sha1_git):
-    """Return information about revision with id sha1_git.
+    """Get information about a revision.
+
+    Revisions are identified by SHA1 checksums, compatible with Git commit
+    identifiers. See ``revision_identifier`` in our `data model module
+    <https://forge.softwareheritage.org/source/swh-model/browse/master/swh/model/identifiers.py>`_
+    for details about how they are computed.
+
     """
     return _api_lookup(
         sha1_git,
