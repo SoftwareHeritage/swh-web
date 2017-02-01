@@ -93,8 +93,9 @@ class RendererTestCase(unittest.TestCase):
     @patch('swh.web.ui.renderers.request')
     @patch('swh.web.ui.renderers.render_template')
     @patch('swh.web.ui.renderers.SWHMultiResponse.filter_by_fields')
+    @patch('swh.web.ui.utils.shorten_path')
     @istest
-    def swh_multi_response_mimetype_html(self, mock_filter,
+    def swh_multi_response_mimetype_html(self, mock_shorten_path, mock_filter,
                                          mock_render, mock_request, mock_json,
                                          mock_g):
         # given
@@ -105,11 +106,13 @@ class RendererTestCase(unittest.TestCase):
         mock_g.get.return_value = {'my_key': 'my_display_value'}
         # mock_enricher.return_value = (data, {})
         mock_filter.return_value = data
+        mock_shorten_path.return_value = 'my_short_path'
         expected_env = {
             'my_key': 'my_display_value',
             'response_data': json.dumps(data),
             'request': mock_request,
             'headers_data': {},
+            'short_path': 'my_short_path',
         }
 
         def mock_mimetypes(key):
