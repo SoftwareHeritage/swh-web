@@ -23,6 +23,13 @@ _doc_arg_per_page = 'number of elements to list, for pagination purposes'
 _doc_exc_bad_id = 'syntax error in the given identifier(s)'
 _doc_exc_id_not_found = 'no object matching the given criteria could be found'
 
+_doc_ret_revision_meta = 'metadata of the revision identified by sha1_git'
+_doc_ret_revision_log = """list of dictionaries representing the metadata of
+    each revision found in the commit log heading to revision sha1_git.
+    For each commit at least the following information are returned:
+    author/committer, authoring/commit timestamps, revision id, commit message,
+    parent (i.e., immediately preceding) commits, "root" directory id."""
+
 _doc_header_link = """indicates that a subsequent result page is available,
     pointing to it"""
 
@@ -33,7 +40,7 @@ _doc_header_link = """indicates that a subsequent result page is available,
              retdoc="""dictionary mapping object types to the amount of
              corresponding objects currently available in the archive""")
 def api_stats():
-    """Get statistics about archive content.
+    """Get statistics about the content of the archive.
 
     """
     return service.stat_counters()
@@ -540,25 +547,29 @@ def api_directory_through_revision_origin(origin_id,
 @doc.arg('origin_id',
          default=1,
          argtype=doc.argtypes.int,
-         argdoc="The queried revision's origin identifier in SWH")
+         argdoc='software origin identifier')
 @doc.arg('branch_name',
          default='refs/heads/master',
          argtype=doc.argtypes.path,
-         argdoc="""The optional branch for the given origin (default
-         to master)""")
+         argdoc="""(optional) fully-qualified branch name, e.g.,
+         "refs/heads/master". Defaults to the master branch.""")
 @doc.arg('ts',
          default='2000-01-17T11:23:54+00:00',
          argtype=doc.argtypes.ts,
-         argdoc="The time at which the queried revision should be constrained")
+         argdoc="""(optional) timestamp close to which the revision pointed by
+         the given branch should be looked up. Defaults to now.""")
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata of the revision identified by the given
-             criteria""")
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_meta)
 def api_revision_with_origin(origin_id,
                              branch_name="refs/heads/master",
                              ts=None):
-    """Display revision information through its identification by
-    origin/branch/timestamp.
+    """Get information about a revision, searching for it based on software
+    origin, branch name, and/or visit timestamp.
+
+    This endpoint behaves like ``/revision``, but operates on the revision that
+    has been found at a given software origin, close to a given point in time,
+    pointed by a given branch.
+
     """
     if ts:
         ts = utils.parse_timestamp(ts)
@@ -610,8 +621,7 @@ def api_revision_with_context(sha1_git, context):
          argdoc="revision identifier")
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc='The metadata of the revision identified by sha1_git')
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_meta)
 def api_revision(sha1_git):
     """Get information about a revision.
 
@@ -703,13 +713,7 @@ def api_revision_directory(sha1_git,
            doc=_doc_arg_per_page)
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""List of dictionaries representing the metadata of each
-             revision found in the commit log heading to revision sha1_git.
-             For each commit at least the following information are returned:
-             author/committer, authoring/commit timestamps, revision id,
-             commit message, parent (i.e., immediately preceding) commits,
-             "root" directory id.""")
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_log)
 def api_revision_log(sha1_git, prev_sha1s=None):
     """Get a list of all revisions heading to a given one, i.e., show the
     commit log.
@@ -793,16 +797,16 @@ Defaults to 'refs/heads/master'.""")
            argtype=doc.argtypes.int,
            doc=_doc_arg_per_page)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
-@doc.returns(rettype=doc.rettypes.dict,
-             retdoc="""The metadata of the revision log starting at the revision
-             matching the given criteria.""")
+@doc.returns(rettype=doc.rettypes.dict, retdoc=_doc_ret_revision_log)
 def api_revision_log_by(origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
-    """Show all revisions (~ git log) starting from the revision targeted
-    by the origin_id provided and optionally a branch name or/and a
-    timestamp.
+    """Show the commit log for a revision, searching for it based on software
+    origin, branch name, and/or visit timestamp.
 
+    This endpoint behaves like ``/log``, but operates on the revision that
+    has been found at a given software origin, close to a given point in time,
+    pointed by a given branch.
     """
     result = {}
     per_page = int(request.args.get('per_page', '10'))
