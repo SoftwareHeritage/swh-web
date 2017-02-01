@@ -896,8 +896,8 @@ def api_directory(sha1_git,
             utils.enrich_directory)
 
 
-@app.route('/api/1/provenance/<string:q>/')
-@doc.route('/api/1/provenance/', tags=['hidden'])
+@app.route('/api/1/content/<string:q>/provenance/')
+@doc.route('/api/1/content/provenance/', tags=['hidden'])
 @doc.arg('q',
          default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
          argtype=doc.argtypes.algo_and_hash,
@@ -933,8 +933,8 @@ def api_content_provenance(q):
         enrich_fn=_enrich_revision)
 
 
-@app.route('/api/1/filetype/<string:q>/')
-@doc.route('/api/1/filetype/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/filetype/')
+@doc.route('/api/1/content/filetype/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -956,8 +956,8 @@ def api_content_filetype(q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@app.route('/api/1/language/<string:q>/')
-@doc.route('/api/1/language/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/language/')
+@doc.route('/api/1/content/language/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -980,8 +980,8 @@ def api_content_language(q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@app.route('/api/1/license/<string:q>/')
-@doc.route('/api/1/license/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/license/')
+@doc.route('/api/1/content/license/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
@@ -1003,8 +1003,8 @@ def api_content_license(q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@app.route('/api/1/ctags/<string:q>/')
-@doc.route('/api/1/ctags/', tags=['upcoming'])
+@app.route('/api/1/content/<string:q>/ctags/')
+@doc.route('/api/1/content/ctags/', tags=['upcoming'])
 @doc.arg('q',
          default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
          argtype=doc.argtypes.algo_and_hash,
