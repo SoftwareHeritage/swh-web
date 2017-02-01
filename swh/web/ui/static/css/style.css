@@ -19,7 +19,7 @@ body {
     font-size: 1.7rem;
     line-height: 1.5;
     color: rgba(0, 0, 0, 0.55);
-    padding-top: 70px;  /* avoid fixed bootstrap navbar covers content */
+    padding-top: 80px;  /* avoid fixed bootstrap navbar covers content */
     padding-bottom: 120px;
     min-height: 100%;
     margin: 0;
