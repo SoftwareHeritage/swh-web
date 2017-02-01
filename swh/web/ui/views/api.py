@@ -21,6 +21,9 @@ _doc_arg_content_id = """A "[HASH_TYPE:]HASH" content identifier, where
 _doc_exc_bad_id = 'syntax error in the given identifier(s)'
 _doc_exc_id_not_found = 'no object matching the given criteria could be found'
 
+_doc_header_link = """indicates that a subsequent result page is available,
+    pointing to it"""
+
 
 @app.route('/api/1/stat/counters/')
 @doc.route('/api/1/stat/counters/', noargs=True)
@@ -39,9 +42,7 @@ def api_stats():
          default=1,
          argtype=doc.argtypes.int,
          argdoc='The requested SWH origin identifier')
-@doc.header('Link',
-            doc="""Optional 'Link' header proposed to the api consumer
-                   for navigation purpose. Possible value is 'next'.""")
+@doc.header('Link', doc=_doc_header_link)
 @doc.param('last_visit', default=None,
            doc="""Last visit from which starting the next result page.""")
 @doc.param('per_page', default=10,
@@ -148,9 +149,7 @@ def api_origin_visit(origin_id, visit_id):
          default='hello',
          argtype=doc.argtypes.str,
          argdoc="""An expression string to lookup in swh's raw content""")
-@doc.header('Link',
-            doc="""Optional 'Link' header proposed to the api consumer
-                   for navigation purpose to the next page.""")
+@doc.header('Link', doc=_doc_header_link)
 @doc.param('last_sha1', default=None,
            doc="""Optional parameter to start returning page results from.""")
 @doc.param('per_page', default=10,
@@ -675,9 +674,7 @@ def api_revision_directory(sha1_git,
          argtype=doc.argtypes.path,
          argdoc="""(Optional) Navigation breadcrumbs (descendant revisions
 previously visited).  If multiple values, use / as delimiter.  """)
-@doc.header('Link',
-            doc="""Optional 'Link' header proposed to the api consumer
-                   for navigation purpose. Possible value is 'next'.""")
+@doc.header('Link', doc=_doc_header_link)
 @doc.param('per_page', default=10,
            doc="""Default parameter used to group result by page of the
 specified number.""")
@@ -766,9 +763,7 @@ Defaults to 'refs/heads/master'.""")
          default='2000-01-17T11:23:54+00:00',
          argtype=doc.argtypes.ts,
          argdoc="""(Optional) A time or timestamp string to parse""")
-@doc.header('Link',
-            doc="""Optional 'Link' header proposed to the api consumer
-                   for navigation purpose. Possible value is 'next'.""")
+@doc.header('Link', doc=_doc_header_link)
 @doc.param('per_page', default=10,
            doc="""Default parameter used to group result by page of the specified
 number.""")
