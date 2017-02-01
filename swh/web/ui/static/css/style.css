@@ -10,12 +10,20 @@ version history: /style.css
 @import url(https://fonts.googleapis.com/css?family=Alegreya:400,400italic,700,700italic);
 @import url(https://fonts.googleapis.com/css?family=Alegreya+Sans:400,400italic,500,500italic,700,700italic,100,300,100italic,300italic);
 
+html {
+    height: 100%;
+}
+
 body {
     font-family: 'Alegreya Sans', sans-serif;
     font-size: 1.7rem;
     line-height: 1.5;
     color: rgba(0, 0, 0, 0.55);
     padding-top: 70px;  /* avoid fixed bootstrap navbar covers content */
+    padding-bottom: 120px;
+    min-height: 100%;
+    margin: 0;
+    position: relative;
 }
 
 .heading {
@@ -292,9 +300,12 @@ bread-crumbs ul {
     color: hsl(0, 0%, 100%);
     font-size: 1.2rem;
     text-align: center;
-    margin-top: 50px;
     padding-top: 20px;
     padding-bottom: 20px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 #footer a:visited {
     color: hsl(0, 0%, 100%);
