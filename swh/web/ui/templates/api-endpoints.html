@@ -42,7 +42,8 @@
         <td id="{{ route }}"><a href="{{ route }}">{{ route }}</a></td>
         <td>available</td>
         {% endif %}
-        <td>{{ doc['docstring'] | safe_docstring_display | safe }}</td>
+        {% set doc_intro = doc['docstring'].split('\n\n')[0] %}
+        <td>{{ doc_intro | safe_docstring_display | safe }}</td>
       </tr>
       {% endfor %}
     </tbody>
