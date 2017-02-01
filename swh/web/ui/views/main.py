@@ -16,6 +16,6 @@ def homepage():
     return flask.redirect(flask.url_for('browse_api_doc'))
 
 
-@app.route('/about/')
-def about():
-    return flask.render_template('about.html')
+# @app.route('/about/')
+# def about():
+#     return flask.render_template('about.html')
