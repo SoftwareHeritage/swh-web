@@ -388,3 +388,14 @@ def enrich_revision(revision, context=None):
             sha1_git=revision['id'])
 
     return revision
+
+
+def shorten_path(path):
+    """Shorten the given path: for each hash present, only return the first
+    8 characters followed by an ellipsis"""
+
+    sha256_re = r'([0-9a-f]{8})[0-9a-z]{56}'
+    sha1_re = r'([0-9a-f]{8})[0-9a-f]{32}'
+
+    ret = re.sub(sha256_re, r'\1...', path)
+    return re.sub(sha1_re, r'\1...', ret)
