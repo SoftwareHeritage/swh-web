@@ -1,3 +1,11 @@
+swh-web (0.0.76-1~swh1) unstable-swh; urgency=medium
+
+  * Release swh.web.ui v0.0.76
+  * Refactor APIDoc to be more sensible
+  * Share rate limits between all the api_ queries
+
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Thu, 02 Feb 2017 17:32:57 +0100
+
 swh-web (0.0.75-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.75
