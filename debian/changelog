@@ -1,3 +1,11 @@
+swh-web (0.0.74-1~swh1) unstable-swh; urgency=medium
+
+  * Release swh.web.ui v0.0.74
+  * Various interface cleanups for API documentation
+  * Return Error types in API error return values
+
+ -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Thu, 02 Feb 2017 11:03:56 +0100
+
 swh-web (0.0.73-1~swh1) unstable-swh; urgency=medium
 
   * Deploy swh.web.ui v0.0.73
