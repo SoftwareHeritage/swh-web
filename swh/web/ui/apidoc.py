@@ -205,7 +205,7 @@ class route(APIDocBase):  # noqa: N801
             rv = self.process_rv(f, args, kwargs)
             return self.compute_return(f, rv)
 
-        route_name = f.__name__.replace('api_', 'api_doc_')
+        route_name = 'doc_for_%s' % f.__name__
 
         if not self.noargs:
             app.add_url_rule(self.route, route_name, doc_func)
