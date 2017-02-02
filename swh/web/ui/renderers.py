@@ -186,7 +186,10 @@ def error_response(error_code, error):
 
     """
     error_opts = {'status': error_code}
-    error_data = {'error': str(error)}
+    error_data = {
+        'exception': error.__class__.__name__,
+        'reason': str(error),
+    }
 
     return SWHMultiResponse.make_response_from_mimetype(error_data,
                                                         options=error_opts)

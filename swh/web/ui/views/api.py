@@ -130,7 +130,7 @@ def api_origin_visits(origin_id):
              retdoc="""dictionary containing both metadata for the entire
              visit (e.g., timestamp as UNIX time, visit outcome, etc.) and what
              was at the software origin during the visit (i.e., a mapping from
-             branches to other archive objects""")
+             branches to other archive objects)""")
 def api_origin_visit(origin_id, visit_id):
     """Get information about a specific visit of a software origin.
 
