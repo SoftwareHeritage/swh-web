@@ -4,10 +4,6 @@ Section: python
 Priority: optional
 Build-Depends: debhelper (>= 9),
                dh-python,
-               libjs-cryptojs,
-               libjs-jquery-datatables,
-               libjs-jquery-flot,
-               libjs-jquery-flot-tooltip,
                python3-all,
                python3-blinker,
                python3-docutils,
@@ -27,11 +23,7 @@ Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
 Package: python3-swh.web.ui
 Architecture: all
-Depends: libjs-cryptojs,
-         libjs-jquery-datatables,
-         libjs-jquery-flot,
-         libjs-jquery-flot-tooltip,
-         python3-swh.core (>= 0.0.20~),
+Depends: python3-swh.core (>= 0.0.20~),
          python3-swh.storage (>= 0.0.77~),
          ${misc:Depends},
          ${python3:Depends}

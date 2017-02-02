@@ -8,7 +8,7 @@ from flask import render_template, request, url_for, redirect
 
 from swh.core.hashutil import ALGORITHMS
 from swh.core.utils import grouper
-from .. import service, utils, apidoc
+from .. import service, utils
 from ..exc import BadInputExc, NotFoundExc
 from ..main import app
 from . import api
@@ -208,27 +208,6 @@ def browse():
     """Render the user-facing browse view
     """
     return render_template('browse.html')
-
-
-@app.route('/api/1/')
-def browse_api_endpoints():
-    """Display the list of opened api endpoints.
-
-    """
-    routes = apidoc.APIUrls.get_app_endpoints()
-    # Return a list of routes with consistent ordering
-    env = {
-        'doc_routes': sorted(routes.items())
-    }
-    return render_template('api-endpoints.html', **env)
-
-
-@app.route('/api/')
-def browse_api_doc():
-    """Display the API's documentation.
-
-    """
-    return render_template('api.html')
 
 
 @app.route('/browse/content/<string:q>/')
