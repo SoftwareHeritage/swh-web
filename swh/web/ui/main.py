@@ -96,6 +96,9 @@ def storage():
 
 def prepare_limiter():
     """Prepare Flask Limiter from configuration and App configuration"""
+    if hasattr(app, 'limiter'):
+        return
+
     limiter = Limiter(
         app,
         key_func=get_remote_address,
