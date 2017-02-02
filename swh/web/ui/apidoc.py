@@ -5,10 +5,11 @@
 
 import re
 
+from collections import defaultdict
 from functools import wraps
 from enum import Enum
 
-from flask import request, render_template, url_for
+from flask import render_template, url_for
 from flask import g
 
 from swh.web.ui.main import app
@@ -105,67 +106,7 @@ class APIDocException(Exception):
     """
 
 
-class APIDocBase(object):
-    """
-    The API documentation decorator base class, responsible for the
-    operations that link the decorator stack together:
-
-    * manages the _inner_dec property, which represents the
-      decorator directly below self in the decorator tower
-    * contains the logic used to return appropriately if self is the last
-      decorator to be applied to the API function
-    """
-
-    def __init__(self):
-        self._inner_dec = None
-
-    @property
-    def inner_dec(self):
-        return self._inner_dec
-
-    @inner_dec.setter
-    def inner_dec(self, instance):
-        self._inner_dec = instance
-
-    @property
-    def data(self):
-        raise NotImplementedError
-
-    def process_rv(self, f, args, kwargs):
-        """
-        From the arguments f has, determine whether or not it is the last
-        decorator in the stack, and return the appropriate call to f.
-        """
-
-        rv = None
-        if 'outer_decorator' in f.__code__.co_varnames:
-            rv = f(*args, **kwargs)
-        else:
-            nargs = {k: v for k, v in kwargs.items() if k != 'outer_decorator'}
-            try:
-                rv = f(*args, **nargs)
-            except (TypeError, KeyError):  # documentation call
-                rv = None
-        return rv
-
-    def maintain_stack(self, f, args, kwargs):
-        """
-        From the arguments f is called with, determine whether or not the
-        stack link was made by @apidoc.route, and maintain the linking for
-        the next call to f.
-        """
-
-        if 'outer_decorator' not in kwargs:
-            raise APIDocException('Apidoc %s: expected an apidoc'
-                                  ' route decorator first'
-                                  % self.__class__.__name__)
-        kwargs['outer_decorator'].inner_dec = self
-        kwargs['outer_decorator'] = self
-
-        return self.process_rv(f, args, kwargs)
-
-
-class route(APIDocBase):  # noqa: N801
+class route(object):  # noqa: N801
     """Decorate an API method to register it in the API doc route index
     and create the corresponding Flask route.
 
@@ -192,25 +133,35 @@ class route(APIDocBase):  # noqa: N801
         self.noargs = noargs
         self.tags = set(tags)
 
+    # @apidoc.route() Decorator call
     def __call__(self, f):
-        options = {}
+        # If the route is not hidden, add it to the index
         if 'hidden' not in self.tags:
-            if self.tags:
-                options['tags'] = self.tags
-            APIUrls.index_add_route(self.route, f.__doc__, **options)
+            APIUrls.index_add_route(self.route, f.__doc__, tags=self.tags)
 
-        @wraps(f)
-        def doc_func(*args, **kwargs):
-            kwargs['outer_decorator'] = self
-            rv = self.process_rv(f, args, kwargs)
-            return self.compute_return(f, rv)
-
-        route_name = 'doc_for_%s' % f.__name__
-
+        # If the decorated route has arguments, we create a specific
+        # documentation view
         if not self.noargs:
-            app.add_url_rule(self.route, route_name, doc_func)
+            doc_route_name = 'doc_for_%s' % f.__name__
 
-        return doc_func
+            def doc_view():
+                doc_data = self.get_doc_data(f)
+                return app.response_class(
+                    render_template('apidoc.html', **doc_data),
+                    content_type='text/html')
+
+            app.add_url_rule(self.route, doc_route_name, doc_view,
+                             methods=['GET'])
+
+        # The documented view only adds the documentation data to the global
+        # context
+        @wraps(f)
+        def documented_view(*args, **kwargs):
+            g.doc_env = self.get_doc_data(f)  # Store for response processing
+            rv = f(*args, **kwargs)
+            return rv
+
+        return documented_view
 
     def filter_api_url(self, endpoint, route_re, noargs):
         doc_methods = {'GET', 'HEAD', 'OPTIONS'}
@@ -247,9 +198,15 @@ class route(APIDocBase):  # noqa: N801
 
         return r
 
-    def compute_return(self, f, rv):
-        """Build documentation"""
-        data = self.data
+    def get_doc_data(self, f):
+        """Build documentation data for the decorated function"""
+        data = {
+            'route': self.route,
+            'noargs': self.noargs,
+        }
+
+        data.update(getattr(f, 'doc_data', {}))
+
         if not f.__doc__:
             raise APIDocException('Apidoc %s: expected a docstring'
                                   ' for function %s'
@@ -267,72 +224,28 @@ class route(APIDocBase):  # noqa: N801
 
         data['heading'] = '%s Documentation' % data['route']
 
-        # Prepare and send to mimetype selector if it's not a doc request
-        if re.match(route_re, request.url) and not data['noargs'] \
-           and request.method == 'GET':
-            return app.response_class(
-                render_template('apidoc.html', **data),
-                content_type='text/html')
-
-        g.doc_env = data  # Store for response processing
-        return rv
-
-    @property
-    def data(self):
-        data = {'route': self.route, 'noargs': self.noargs}
-
-        doc_instance = self.inner_dec
-        while doc_instance:
-            if isinstance(doc_instance, arg):
-                if 'args' not in data:
-                    data['args'] = []
-
-                data['args'].append(doc_instance.data)
-            elif isinstance(doc_instance, raises):
-                if 'excs' not in data:
-                    data['excs'] = []
-
-                data['excs'].append(doc_instance.data)
-            elif isinstance(doc_instance, returns):
-                data['return'] = doc_instance.data
-            elif isinstance(doc_instance, header):
-                if 'headers' not in data:
-                    data['headers'] = []
-
-                data['headers'].append(doc_instance.data)
-            elif isinstance(doc_instance, param):
-                if 'params' not in data:
-                    data['params'] = []
-
-                data['params'].append(doc_instance.data)
-            else:
-                raise APIDocException('Unknown API documentation decorator')
-            doc_instance = doc_instance.inner_dec
-
         return data
 
 
-class BaseDescribeDocBase(APIDocBase):
+class DocData(object):
     """Base description of optional input/output setup for a route.
 
     """
+    destination = None
+
     def __init__(self):
-        self.doc_data = None
-        self.inner_dec = None
+        self.doc_data = {}
 
     def __call__(self, f):
-        @wraps(f)
-        def arg_fun(*args, outer_decorator=None, **kwargs):
-            kwargs['outer_decorator'] = outer_decorator
-            return self.maintain_stack(f, args, kwargs)
-        return arg_fun
+        if not hasattr(f, 'doc_data'):
+            f.doc_data = defaultdict(list)
 
-    @property
-    def data(self):
-        return self.doc_data
+        f.doc_data[self.destination].append(self.doc_data)
+
+        return f
 
 
-class arg(BaseDescribeDocBase):  # noqa: N801
+class arg(DocData):  # noqa: N801
     """
     Decorate an API method to display an argument's information on the doc
     page specified by @route above.
@@ -344,6 +257,8 @@ class arg(BaseDescribeDocBase):  # noqa: N801
         argtype: the argument's type as an Enum value from apidoc.argtypes
         argdoc: the argument's documentation string
     """
+    destination = 'args'
+
     def __init__(self, name, default, argtype, argdoc):
         super().__init__()
         self.doc_data = {
@@ -354,7 +269,7 @@ class arg(BaseDescribeDocBase):  # noqa: N801
         }
 
 
-class header(BaseDescribeDocBase):  # noqa: N801
+class header(DocData):  # noqa: N801
     """
     Decorate an API method to display header information the api can
     potentially return in the response.
@@ -364,6 +279,8 @@ class header(BaseDescribeDocBase):  # noqa: N801
         doc: the information about that header
 
     """
+    destination = 'headers'
+
     def __init__(self, name, doc):
         super().__init__()
         self.doc_data = {
@@ -372,7 +289,7 @@ class header(BaseDescribeDocBase):  # noqa: N801
         }
 
 
-class param(BaseDescribeDocBase):  # noqa: N801
+class param(DocData):  # noqa: N801
     """Decorate an API method to display query parameter information the
     api can potentially accept.
 
@@ -383,6 +300,8 @@ class param(BaseDescribeDocBase):  # noqa: N801
         doc: the information about that header
 
     """
+    destination = 'params'
+
     def __init__(self, name, default, argtype, doc):
         super().__init__()
         self.doc_data = {
@@ -393,7 +312,7 @@ class param(BaseDescribeDocBase):  # noqa: N801
         }
 
 
-class raises(BaseDescribeDocBase):  # noqa: N801
+class raises(DocData):  # noqa: N801
     """Decorate an API method to display information pertaining to an exception
     that can be raised by this method.
 
@@ -402,6 +321,8 @@ class raises(BaseDescribeDocBase):  # noqa: N801
         doc: the exception's documentation string
 
     """
+    destination = 'excs'
+
     def __init__(self, exc, doc):
         super().__init__()
         self.doc_data = {
@@ -410,7 +331,7 @@ class raises(BaseDescribeDocBase):  # noqa: N801
         }
 
 
-class returns(BaseDescribeDocBase):  # noqa: N801
+class returns(DocData):  # noqa: N801
     """Decorate an API method to display information about its return value.
 
     Args:
@@ -419,6 +340,8 @@ class returns(BaseDescribeDocBase):  # noqa: N801
         string
 
     """
+    destination = 'returns'
+
     def __init__(self, rettype=None, retdoc=None):
         super().__init__()
         self.doc_data = {

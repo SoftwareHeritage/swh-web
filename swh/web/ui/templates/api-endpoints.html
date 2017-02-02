@@ -41,7 +41,7 @@
     <tbody>
       {% for route, doc in doc_routes %}
       <tr class="api-doc-route{% for tag in doc['tags'] %} api-doc-route-{{ tag }} {% endfor %}">
-        {% if 'tags' in doc and doc['tags'] is not none %}
+        {% if doc['tags']|length > 0 %}
         <td id="{{ route }}">{{ route }}</td>
         <td>{{ ', '.join(doc['tags']) }}</td>
         {% else %}
