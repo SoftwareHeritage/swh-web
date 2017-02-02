@@ -1,14 +1,14 @@
 This document describes the <strong>Software Heritage Web API</strong>.
 
 <ul>
-  <li><a href="{{ url_for('browse_api_doc') }}#endpoint-index">Endpoint index</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#data-model">Data model</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#version">Version</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#schema">Schema</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#parameters">Parameters</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#errors">Errors</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#pagination">Pagination</a></li>
-  <li><a href="{{ url_for('browse_api_doc') }}#rate-limiting">Rate limiting</a></li>
+  <li><a href="#endpoint-index">Endpoint index</a></li>
+  <li><a href="#data-model">Data model</a></li>
+  <li><a href="#version">Version</a></li>
+  <li><a href="#schema">Schema</a></li>
+  <li><a href="#parameters">Parameters</a></li>
+  <li><a href="#errors">Errors</a></li>
+  <li><a href="#pagination">Pagination</a></li>
+  <li><a href="#rate-limiting">Rate limiting</a></li>
 </ul>
 
 ### Endpoint index
