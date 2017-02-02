@@ -99,12 +99,21 @@ def prepare_limiter():
     if hasattr(app, 'limiter'):
         return
 
+    global_limits = app.config['conf']['limiter']['global_limits']
     limiter = Limiter(
         app,
         key_func=get_remote_address,
         **app.config['conf']['limiter']
     )
     app.limiter = limiter
+
+    for key in sorted(app.view_functions):
+        if key.startswith('api_'):
+            view_func = app.view_functions[key]
+            app.view_functions[key] = limiter.shared_limit(
+                ','.join(global_limits),
+                'swh_api',
+            )(view_func)
 
 
 def run_from_webserver(environ, start_response):
