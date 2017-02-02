@@ -1,28 +1,28 @@
 <p>This document describes the <strong>Software Heritage Web API</strong>.</p>
 <ul>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#endpoint-index">Endpoint index</a>
+<a href="#endpoint-index">Endpoint index</a>
 </li>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#data-model">Data model</a>
+<a href="#data-model">Data model</a>
 </li>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#version">Version</a>
+<a href="#version">Version</a>
 </li>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#schema">Schema</a>
+<a href="#schema">Schema</a>
 </li>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#parameters">Parameters</a>
+<a href="#parameters">Parameters</a>
 </li>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#errors">Errors</a>
+<a href="#errors">Errors</a>
 </li>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#pagination">Pagination</a>
+<a href="#pagination">Pagination</a>
 </li>
 <li>
-<a href="{{ url_for('browse_api_doc') }}#rate-limiting">Rate limiting</a>
+<a href="#rate-limiting">Rate limiting</a>
 </li>
 </ul>
 <h3 id="endpoint-index">Endpoint index</h3>
@@ -82,6 +82,7 @@
 <li><p>from the command line:</p>
 <pre class="shell"><code>curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/</code></pre></li>
 </ul>
+<p>Unavailability of the underlying storage backend will result in a <code>503 Service Unavailable</code> HTTP response.</p>
 <h3 id="pagination">Pagination</h3>
 <p>Requests that might potentially return many items will be paginated.</p>
 <p>Page size is set to a default (usually: 10 items), but might be overridden with the <code>per_page</code> query parameter up to a maximum (usually: 50 items). Example:</p>
