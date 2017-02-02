@@ -1,3 +1,12 @@
+swh-web (0.0.75-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.75
+  * Remove build dependency on libjs-cryptojs, libjs-jquery-flot*,
+  * libjs-jquery-datatables
+  * views/browse,api: move main apidoc views to views/api
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 02 Feb 2017 15:03:20 +0100
+
 swh-web (0.0.74-1~swh1) unstable-swh; urgency=medium
 
   * Release swh.web.ui v0.0.74
