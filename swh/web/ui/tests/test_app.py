@@ -51,12 +51,12 @@ def create_app(base_url='https://somewhere.org:4321'):
         'storage': storage,
         'max_log_revs': 25,
         'limiter': {
-            'global_limits': ['10 per minute'],
+            'global_limits': ['10000 per hour'],
             'headers_enabled': True,
             'strategy': 'moving-window',
             'storage_uri': 'memory://',
             'storage_options': {},
-            'in_memory_fallback': ['10 per minute'],
+            'in_memory_fallback': ['10000 per hour'],
         },
     }
 

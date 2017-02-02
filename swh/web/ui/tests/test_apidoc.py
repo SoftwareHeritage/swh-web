@@ -49,22 +49,6 @@ class APIDocTestCase(SWHApidocTestCase):
         with self.assertRaises(Exception):
             self.client.get('/my/nodoc/url/')
 
-    @istest
-    def apidoc_badorder_failure(self):
-        with self.assertRaises(AssertionError):
-            @app.route('/my/badorder/url/<int:foo>/')
-            @apidoc.arg('foo',
-                        default=True,
-                        argtype=apidoc.argtypes.int,
-                        argdoc='It\'s so fluffy!')
-            @apidoc.route('/my/badorder/url/')
-            @nottest
-            def apidoc_badorder_tester(foo, bar=0):
-                """
-                Some irrelevant doc since the decorators are bad
-                """
-                return foo + bar
-
     @staticmethod
     @app.route('/some/<int:myarg>/<int:myotherarg>/')
     @apidoc.route('/some/doc/route/')
@@ -100,6 +84,10 @@ class APIDocTestCase(SWHApidocTestCase):
                 default=67,
                 argtype=apidoc.argtypes.int,
                 argdoc='my arg')
+    @apidoc.arg('myotherarg',
+                default=42,
+                argtype=apidoc.argtypes.int,
+                argdoc='my other arg')
     @apidoc.param('limit', argtype=apidoc.argtypes.int, default=10,
                   doc='Result limitation')
     @apidoc.header('Link', doc='Header link returns for pagination purpose')
