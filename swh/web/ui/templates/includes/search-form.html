@@ -62,10 +62,11 @@
 <br />
 
 <!-- Required JS -->
-{% for fname in ['lib/core.js', 'lib/lib-typedarrays.js', 'lib/sha1.js', 'lib/sha256.js', 'js/search.js'] %}
-<script language="javascript" type="text/javascript" src="{{ url_for('static', filename=fname) }}"></script>
-{% endfor %}
-
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core-min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/lib-typedarrays-min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/sha1-min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/sha256-min.js"></script>
+<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/search.js') }}"></script>
 <!-- Script setup -->
 <script>
   var sfc = new SearchFormController($('#text-hash-form'), $('#file-hash-form'), $('#search-message'));

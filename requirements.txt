@@ -16,9 +16,3 @@ hiredis
 # Test dependencies
 #Flask-Testing
 #blinker
-
-# Non-Python dependencies
-#libjs-cryptojs
-#libjs-jquery-flot
-#libjs-jquery-flot-tooltip
-#libjs-jquery-datatables

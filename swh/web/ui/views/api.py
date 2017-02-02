@@ -5,7 +5,7 @@
 
 from types import GeneratorType
 
-from flask import request, url_for
+from flask import render_template, request, url_for
 
 from swh.web.ui import service, utils, apidoc as doc
 from swh.web.ui.exc import NotFoundExc
@@ -32,6 +32,27 @@ _doc_ret_revision_log = """list of dictionaries representing the metadata of
 
 _doc_header_link = """indicates that a subsequent result page is available,
     pointing to it"""
+
+
+@app.route('/api/1/')
+def api_endpoints():
+    """Display the list of opened api endpoints.
+
+    """
+    routes = doc.APIUrls.get_app_endpoints()
+    # Return a list of routes with consistent ordering
+    env = {
+        'doc_routes': sorted(routes.items())
+    }
+    return render_template('api-endpoints.html', **env)
+
+
+@app.route('/api/')
+def api_doc():
+    """Display the API's documentation.
+
+    """
+    return render_template('api.html')
 
 
 @app.route('/api/1/stat/counters/')
