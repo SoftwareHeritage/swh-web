@@ -148,6 +148,9 @@ response. Example:
 curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/
 ```
 
+Unavailability of the underlying storage backend will result in a `503 Service
+Unavailable` HTTP response.
+
 
 ### Pagination
 

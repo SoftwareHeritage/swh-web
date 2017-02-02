@@ -82,6 +82,7 @@
 <li><p>from the command line:</p>
 <pre class="shell"><code>curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/</code></pre></li>
 </ul>
+<p>Unavailability of the underlying storage backend will result in a <code>503 Service Unavailable</code> HTTP response.</p>
 <h3 id="pagination">Pagination</h3>
 <p>Requests that might potentially return many items will be paginated.</p>
 <p>Page size is set to a default (usually: 10 items), but might be overridden with the <code>per_page</code> query parameter up to a maximum (usually: 50 items). Example:</p>
