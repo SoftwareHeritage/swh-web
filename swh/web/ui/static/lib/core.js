@@ -1,1 +1,0 @@
-/usr/share/javascript/cryptojs/core.js

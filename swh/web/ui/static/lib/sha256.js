@@ -1,1 +1,0 @@
-/usr/share/javascript/cryptojs/sha256.js
