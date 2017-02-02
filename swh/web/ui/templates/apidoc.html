@@ -21,6 +21,7 @@
 <div class="response-data">
   <h2>Request</h2>
   <pre><strong>{{ request.method }}</strong> {{ request.url }}</pre>
+  <hr/>
   <h2>Response</h2>
   {% if status_code != 200 %}
   <h3>Status Code</h3>
@@ -37,6 +38,7 @@
 </div>
 {% endif %}
 <hr/>
+{% if urls and urls|length > 0 %}
 <div class="doc-urls">
   <table class="m-x-auto table">
     <thead>
@@ -60,38 +62,30 @@
   </table>
 </div>
 <hr/>
+{% endif %}
 {% if args and args|length > 0 %}
 <div class="doc-args">
-  <h2> Args </h2>
+  <h2> Arguments </h2>
   <dl class="doc-argslist dl-horizontal">
     {% for arg in args %}
     <dt> {{ arg['name'] }}: {{ arg['type'] }} </dt>
     <dd> {{ arg['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
- </div>
+</div>
+<hr/>
 {% endif %}
 {% if params and params|length > 0 %}
 <div class="doc-params">
-  <h2> Params </h2>
+  <h2> Parameters </h2>
   <dl class="doc-paramslist dl-horizontal">
     {% for param in params %}
     <dt> {{ param['name'] }}: {{ param['type'] }} </dt>
     <dd> {{ param['doc'] | safe_docstring_display | safe }} </dd>
     {% endfor %}
   </dl>
- </div>
-{% endif %}
-{% if excs and excs|length > 0 %}
-<div class="doc-excs">
-  <h2> Raises </h2>
-  <dl class="doc-excslist dl-horizontal">
-    {% for exc in excs %}
-    <dt> {{ exc['exc'] }} </dt>
-    <dd> {{ exc['doc'] | safe_docstring_display | safe }} </dd>
-    {% endfor %}
-  </dl>
 </div>
+<hr/>
 {% endif %}
 {% if headers %}
 <div class="doc-headers">
@@ -103,6 +97,7 @@
     {% endfor %}
   </dl>
 </div>
+<hr/>
 {% endif %}
 {% if return %}
 <div class="doc-return">
@@ -112,6 +107,19 @@
     <dd> {{ return['doc'] | safe_docstring_display | safe }} </dd>
   </dl>
 </div>
+<hr/>
+{% endif %}
+{% if excs and excs|length > 0 %}
+<div class="doc-excs">
+    <h2> Errors </h2>
+    <dl class="doc-excslist dl-horizontal">
+        {% for exc in excs %}
+        <dt> {{ exc['exc'] }} </dt>
+        <dd> {{ exc['doc'] | safe_docstring_display | safe }} </dd>
+        {% endfor %}
+    </dl>
+</div>
+<hr/>
 {% endif %}
 {% if examples %}
 <div class="doc-example">

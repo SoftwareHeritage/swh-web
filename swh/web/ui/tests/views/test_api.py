@@ -170,7 +170,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No filetype information found for content '
+            'exception': 'NotFoundExc',
+            'reason': 'No filetype information found for content '
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
         })
 
@@ -221,7 +222,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No language information found for content '
+            'exception': 'NotFoundExc',
+            'reason': 'No language information found for content '
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
         })
 
@@ -355,7 +357,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No indexed raw content match expression \'bar\'.'
+            'exception': 'NotFoundExc',
+            'reason': 'No indexed raw content match expression \'bar\'.'
         })
         actual_headers = dict(rv.headers)
         self.assertFalse('Link' in actual_headers)
@@ -437,7 +440,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No license information found for content '
+            'exception': 'NotFoundExc',
+            'reason': 'No license information found for content '
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
         })
 
@@ -499,7 +503,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
+            'exception': 'NotFoundExc',
+            'reason': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 not found.'
         })
 
@@ -562,7 +567,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
+            'exception': 'NotFoundExc',
+            'reason': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
             '68b3be4735637006560c not found.'
         })
 
@@ -589,7 +595,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = yaml.load(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
+            'exception': 'NotFoundExc',
+            'reason': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
             '68b3be4735637006560c not found.'
         })
 
@@ -613,7 +620,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
+            'exception': 'NotFoundExc',
+            'reason': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 not found.'
         })
 
@@ -775,7 +783,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'voluntary error to check the bad request middleware.'})
+            'exception': 'ValueError',
+            'reason': 'voluntary error to check the bad request middleware.'})
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -790,7 +799,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error':
+            'exception': 'StorageDBError',
+            'reason':
             'An unexpected error occurred in the backend: '
             'SWH Storage exploded! Will be back online shortly!'})
 
@@ -808,7 +818,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error':
+            'exception': 'StorageAPIError',
+            'reason':
             'An unexpected error occurred in the api backend: '
             'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
         })
@@ -859,7 +870,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'voluntary error to check the bad request middleware.'})
+            'exception': 'ValueError',
+            'reason': 'voluntary error to check the bad request middleware.'})
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -875,7 +887,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error':
+            'exception': 'StorageDBError',
+            'reason':
             'An unexpected error occurred in the backend: '
             'SWH Storage exploded! Will be back online shortly!'})
 
@@ -894,7 +907,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error':
+            'exception': 'StorageAPIError',
+            'reason':
             'An unexpected error occurred in the api backend: '
             'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
         })
@@ -993,7 +1007,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No visit 1000 for origin 1 found'
+            'exception': 'NotFoundExc',
+            'reason': 'No visit 1000 for origin 1 found'
         })
 
         mock_service.lookup_origin_visit.assert_called_once_with(1, 1000)
@@ -1064,7 +1079,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Origin with id 4321 not found.'
+            'exception': 'NotFoundExc',
+            'reason': 'Origin with id 4321 not found.'
         })
 
         mock_service.lookup_origin.assert_called_with({'id': 4321})
@@ -1169,7 +1185,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Release with sha1_git release-0 not found.'
+            'exception': 'NotFoundExc',
+            'reason': 'Release with sha1_git release-0 not found.'
         })
 
     @patch('swh.web.ui.views.api.service')
@@ -1266,7 +1283,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Revision with sha1_git revision-0 not found.'})
+            'exception': 'NotFoundExc',
+            'reason': 'Revision with sha1_git revision-0 not found.'})
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -1304,7 +1322,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No message for revision'})
+            'exception': 'NotFoundExc',
+            'reason': 'No message for revision'})
 
         self.assertEquals
         mock_service.lookup_revision_message.assert_called_once_with(
@@ -1327,7 +1346,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'No revision found'})
+            'exception': 'NotFoundExc',
+            'reason': 'No revision found'})
 
         mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
@@ -1344,8 +1364,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertIn('Revision with (origin_id: 123', response_data['error'])
-        self.assertIn('not found', response_data['error'])
+        self.assertIn('Revision with (origin_id: 123', response_data['reason'])
+        self.assertIn('not found', response_data['reason'])
+        self.assertEqual('NotFoundExc', response_data['exception'])
 
         mock_service.lookup_revision_by.assert_called_once_with(
             123,
@@ -1605,7 +1626,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEqual(response_data, {
-            'error': 'not found'})
+            'exception': 'NotFoundExc',
+            'reason': 'not found'})
 
         mock_rev_dir.assert_called_once_with(
             {'origin_id': 10,
@@ -1748,7 +1770,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Revision with sha1_git'
+            'exception': 'NotFoundExc',
+            'reason': 'Revision with sha1_git'
             ' 8834ef7e7c357ce2af928115c6c6a42b7e2a44e6 not found.'})
         self.assertIsNone(rv.headers.get('Link'))
 
@@ -1958,7 +1981,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertIsNone(rv.headers.get('Link'))
 
         response_data = json.loads(rv.data.decode('utf-8'))
-        self.assertEquals(response_data, {'error': 'No revision'})
+        self.assertEquals(response_data, {'exception': 'NotFoundExc',
+                                          'reason': 'No revision'})
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
             1, 'refs/heads/master', None, 11)
@@ -2016,7 +2040,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         self.assertEquals(rv.mimetype, 'application/json')
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Not found'})
+            'exception': 'NotFoundExc',
+            'reason': 'Not found'})
 
         mock_rev_dir.assert_called_once_with(
             {'sha1_git': '999'},
@@ -2132,7 +2157,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Person with id 666 not found.'})
+            'exception': 'NotFoundExc',
+            'reason': 'Person with id 666 not found.'})
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -2198,7 +2224,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'Directory with sha1_git '
+            'exception': 'NotFoundExc',
+            'reason': 'Directory with sha1_git '
             '66618d8be353ed3480476f032475e7c233eff737 not found.'})
 
     @patch('swh.web.ui.views.api.service')
@@ -2249,10 +2276,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': (('Entry with path %s relative to '
-                       'directory with sha1_git '
-                       '66618d8be353ed3480476f032475e7c233eff737 not found.')
-                      % path)})
+            'exception': 'NotFoundExc',
+            'reason': (('Entry with path %s relative to '
+                        'directory with sha1_git '
+                        '66618d8be353ed3480476f032475e7c233eff737 not found.')
+                       % path)})
 
     @patch('swh.web.ui.views.api.service')
     @istest
@@ -2269,7 +2297,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error':
+            'exception': 'NotFoundExc',
+            'reason':
             "Entity with uuid '5f4d4c51-498a-4e28-88b3-b3e4e8396cba' not " +
             "found."})
 
@@ -2291,7 +2320,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
-            'error': 'bad input: uuid malformed!'})
+            'exception': 'BadInputExc',
+            'reason': 'bad input: uuid malformed!'})
         mock_service.lookup_entity_by_uuid.assert_called_once_with(
             'uuid malformed')
 
