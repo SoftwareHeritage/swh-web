@@ -7,7 +7,7 @@ Flask
 Flask_Limiter
 swh.core >= 0.0.20
 swh.storage >= 0.0.77
-dateutil
+python-dateutil
 docutils
 pygments
 redis
