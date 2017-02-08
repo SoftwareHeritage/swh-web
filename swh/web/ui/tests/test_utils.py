@@ -677,8 +677,7 @@ class UtilsTestCase(unittest.TestCase):
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
             'history_context_url': '/api/revision/rev-id/prev/prev-rev/log/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/',
                               '/api/revision/prev-rev/'],
@@ -719,8 +718,7 @@ class UtilsTestCase(unittest.TestCase):
             'id': 'rev-id',
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/']
         }
@@ -751,8 +749,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_url': '/api/revision/rev-id/log/',
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev-rev/log/'),
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
@@ -793,8 +790,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_url': '/api/revision/rev-id/log/',
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev1-rev/prev0-rev/log/'),
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/',
                               '/api/revision/prev0-rev/prev/prev1-rev/'],
@@ -854,8 +850,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev-rev/log/'),
             'message': None,
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
@@ -909,8 +904,7 @@ class UtilsTestCase(unittest.TestCase):
             'message': None,
             'message_decoding_failed': True,
             'message_url': '/api/revision/rev-id/raw/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }

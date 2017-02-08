@@ -374,9 +374,13 @@ def enrich_revision(revision, context=None):
     if 'parents' in revision:
         parents = []
         for parent in revision['parents']:
-            parents.append(flask.url_for('api_revision',
-                                         sha1_git=parent))
-        revision['parent_urls'] = parents
+            parents.append({
+                'id': parent,
+                'url': flask.url_for('api_revision',
+                                     sha1_git=parent)
+            })
+
+        revision['parents'] = parents
 
     if 'children' in revision:
         children = _make_child_url(revision['children'], context)
