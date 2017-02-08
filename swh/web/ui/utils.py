@@ -179,6 +179,11 @@ def enrich_object(object):
             obj['target_url'] = flask.url_for('api_directory',
                                               q=obj['target'])
 
+    if 'author' in obj:
+        author = obj['author']
+        obj['author_url'] = flask.url_for('api_person',
+                                          person_id=author['id'])
+
     return obj
 
 

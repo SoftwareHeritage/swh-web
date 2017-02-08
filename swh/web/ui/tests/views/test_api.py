@@ -1096,6 +1096,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
             'author': {
+                'id': 10,
                 'name': 'author release name',
                 'email': 'author@email',
             },
@@ -1108,7 +1109,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'target_url': '/api/1/revision/revision-sha1/',
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
+            'author_url': '/api/1/person/10/',
             'author': {
+                'id': 10,
                 'name': 'author release name',
                 'email': 'author@email',
             },
@@ -1139,6 +1142,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
             'author': {
+                'id': 9,
                 'name': 'author release name',
                 'email': 'author@email',
             },
@@ -1150,7 +1154,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'target': 'other-stuff-checksum',
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
+            'author_url': '/api/1/person/9/',
             'author': {
+                'id': 9,
                 'name': 'author release name',
                 'email': 'author@email',
             },
