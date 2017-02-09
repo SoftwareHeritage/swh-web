@@ -1,5 +1,6 @@
 include Makefile
 include requirements.txt
+include requirements-swh.txt
 include version.txt
 recursive-include swh/web/ui/static *
 recursive-include swh/web/ui/templates *
