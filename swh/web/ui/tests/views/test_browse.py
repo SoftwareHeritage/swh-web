@@ -856,8 +856,8 @@ class OriginView(test_app.SWHViewTestCase):
         def url_for_test(fn, **args):
             if fn == 'browse_revision_with_origin':
                 return '/browse/revision/origin/%s/' % args['origin_id']
-            elif fn == 'api_origin_visits':
-                return '/api/1/stat/visits/%s/' % args['origin_id']
+            elif fn == 'browse_origin_visits':
+                return '/browse/visits/%s/' % args['origin_id']
 
         self.url_for_test = url_for_test
 
@@ -922,7 +922,7 @@ class OriginView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('browse_url'),
                          '/browse/revision/origin/426/')
         self.assertEqual(self.get_context_variable('visit_url'),
-                         '/api/1/stat/visits/426/')
+                         '/browse/visits/426/')
 
         mock_api.api_origin.assert_called_once_with(426, None, None)
 
@@ -946,7 +946,7 @@ class OriginView(test_app.SWHViewTestCase):
         self.assertEqual(self.get_context_variable('browse_url'),
                          '/browse/revision/origin/426/')
         self.assertEqual(self.get_context_variable('visit_url'),
-                         '/api/1/stat/visits/426/')
+                         '/browse/visits/426/')
 
         mock_api.api_origin.assert_called_once_with(None, 'git',
                                                     'rsync://some/url')

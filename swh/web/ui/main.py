@@ -113,6 +113,7 @@ def prepare_limiter():
             app.view_functions[key] = limiter.shared_limit(
                 ','.join(global_limits),
                 'swh_api',
+                key_func=get_remote_address,
             )(view_func)
 
 

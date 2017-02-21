@@ -1,8 +1,14 @@
-swh-web (0.0.76-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.77-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.77
+  * API doc: add warning about API instability
+  * API: Unify remaining dates as iso8601 string
+  * /api/1/revision/: Merge 'parents' key into a dict list
+  * /api/1/release/: Enrich output with author_url if author mentioned
+  * packaging: split internal and external requirements in separate
+    files
 
- -- Nicolas Dandrimont <nicolas@dandrimont.eu>  Thu, 02 Feb 2017 17:32:56 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 21 Feb 2017 11:37:19 +0100
 
 swh-web (0.0.76-1~swh1) unstable-swh; urgency=medium
 

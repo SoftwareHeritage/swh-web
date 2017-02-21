@@ -1096,6 +1096,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
             'author': {
+                'id': 10,
                 'name': 'author release name',
                 'email': 'author@email',
             },
@@ -1108,7 +1109,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'target_url': '/api/1/revision/revision-sha1/',
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
+            'author_url': '/api/1/person/10/',
             'author': {
+                'id': 10,
                 'name': 'author release name',
                 'email': 'author@email',
             },
@@ -1139,6 +1142,7 @@ class ApiTestCase(test_app.SWHApiTestCase):
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
             'author': {
+                'id': 9,
                 'name': 'author release name',
                 'email': 'author@email',
             },
@@ -1150,7 +1154,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'target': 'other-stuff-checksum',
             "date": "Mon, 10 Mar 1997 08:00:00 GMT",
             "synthetic": True,
+            'author_url': '/api/1/person/9/',
             'author': {
+                'id': 9,
                 'name': 'author release name',
                 'email': 'author@email',
             },
@@ -1234,12 +1240,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'message': 'synthetic revision message',
             'date_offset': 0,
             'committer_date_offset': 0,
-            'parents': [
-                '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'
-            ],
-            'parent_urls': [
-                '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'
-            ],
+            'parents': [{
+                'id': '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7',
+                 'url': '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'  # noqa
+            }],
             'type': 'tar',
             'synthetic': True,
             'metadata': {
@@ -1698,12 +1702,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'message': 'synthetic revision message',
             'date_offset': 0,
             'committer_date_offset': 0,
-            'parents': [
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
-            ],
-            'parent_urls': [
-                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
-            ],
+            'parents': [{
+                'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a4345',
+                'url': '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/',  # noqa
+            }],
             'type': 'tar',
             'synthetic': True,
         }]
@@ -1830,10 +1832,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'message': 'amazing revision message',
                 'date_offset': 0,
                 'committer_date_offset': 0,
-                'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
-                'parent_urls': [
-                    '/api/1/revision/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc/'
-                ],
+                'parents': [{
+                    'id': 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+                    'url': '/api/1/revision/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc/',  # noqa
+                }],
                 'type': 'tar',
                 'synthetic': True,
             },
@@ -1853,10 +1855,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
                 'message': 'synthetic revision message',
                 'date_offset': 0,
                 'committer_date_offset': 0,
-                'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
-                'parent_urls': [
-                    '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
-                ],
+                'parents': [{
+                    'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a4345',
+                    'url': '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/',  # noqa
+                }],
                 'type': 'tar',
                 'synthetic': True,
             }]
@@ -1912,12 +1914,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'message': 'synthetic revision message',
             'date_offset': 0,
             'committer_date_offset': 0,
-            'parents': [
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a4345'
-            ],
-            'parent_urls': [
-                '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'
-            ],
+            'parents': [{
+                'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a4345',
+                 'url': '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'  # noqa
+            }],
             'type': 'tar',
             'synthetic': True,
         }]
@@ -2020,7 +2020,6 @@ class ApiTestCase(test_app.SWHApiTestCase):
             'children_urls': ['/api/1/revision/777/',
                               '/api/1/revision/999/'],
             'parents': [],
-            'parent_urls': [],
             'directory': '272',
             'directory_url': '/api/1/directory/272/'
         })

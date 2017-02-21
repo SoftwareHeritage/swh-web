@@ -7,6 +7,7 @@ Makefile.local
 README
 README-dev.md
 README-uri-scheme.md
+requirements-swh.txt
 requirements.txt
 setup.py
 version.txt
