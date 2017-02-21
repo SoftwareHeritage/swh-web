@@ -56,15 +56,27 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         return v
 
     def convert_date(v):
-        """v is a dict with three keys:
-           timestamp
-           offset
-           negative_utc
+        """v is either:
+            - a dict with three keys:
+              - timestamp (dict or integer timestamp)
+              - offset
+              - negative_utc
+            - a datetime
 
-           We convert it to a human-readable string
+            We convert it to a human-readable string
+
         """
+        if isinstance(v, datetime.datetime):
+            return v.isoformat()
+
         tz = datetime.timezone(datetime.timedelta(minutes=v['offset']))
-        date = datetime.datetime.fromtimestamp(v['timestamp'], tz=tz)
+        swh_timestamp = v['timestamp']
+        if isinstance(swh_timestamp, dict):
+            date = datetime.datetime.fromtimestamp(
+                swh_timestamp['seconds'], tz=tz)
+        else:
+            date = datetime.datetime.fromtimestamp(
+                swh_timestamp, tz=tz)
 
         datestr = date.isoformat()
 
@@ -266,9 +278,8 @@ def from_origin_visit(visit):
     ov = from_swh(visit,
                   hashess={'target'},
                   bytess={'branch'},
-                  convert={'date'},
-                  empty_dict={'metadata'},
-                  convert_fn=lambda d: d.timestamp())
+                  dates={'date'},
+                  empty_dict={'metadata'})
 
     if ov and 'occurrences' in ov:
         ov['occurrences'] = {

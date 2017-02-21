@@ -630,11 +630,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         # when
         expected_origin_visits = [{
-            'date': self.origin_visit1['date'].timestamp(),
+            'date': self.origin_visit1['date'].isoformat(),
             'origin': self.origin_visit1['origin'],
             'visit': self.origin_visit1['visit']
         }, {
-            'date': date_origin_visit2.timestamp(),
+            'date': date_origin_visit2.isoformat(),
             'origin': 1,
             'visit': 2,
             'target': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
@@ -642,7 +642,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'target_type': 'release',
             'metadata': {},
         }, {
-            'date': date_origin_visit3.timestamp(),
+            'date': date_origin_visit3.isoformat(),
             'origin': 1,
             'visit': 3
         }]
@@ -663,7 +663,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         mock_backend.lookup_origin_visit.return_value = stub_result
 
         expected_origin_visit = {
-            'date': self.origin_visit1['date'].timestamp(),
+            'date': self.origin_visit1['date'].isoformat(),
             'origin': self.origin_visit1['origin'],
             'visit': self.origin_visit1['visit']
         }

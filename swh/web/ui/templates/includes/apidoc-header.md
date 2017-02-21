@@ -73,6 +73,10 @@ the
 
 The current version of the API is **v1**.
 
+**Warning:** this version of the API is not to be considered stable yet.
+Non-backward compatible changes might happen even without changing the API
+version number.
+
 
 ### Schema
 
