@@ -1,7 +1,9 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+import dateutil.parser
 
 from encodings.aliases import aliases
 from flask import render_template, request, url_for, redirect
@@ -427,13 +429,21 @@ def browse_origin(origin_id=None, origin_type=None, origin_url=None):
         env['origin'] = origin
         env['browse_url'] = url_for('browse_revision_with_origin',
                                     origin_id=origin['id'])
-        env['visit_url'] = url_for('api_origin_visits',
+        env['visit_url'] = url_for('browse_origin_visits',
                                    origin_id=origin['id'])
 
     except (NotFoundExc, BadInputExc) as e:
         env['message'] = str(e)
 
     return render_template('origin.html', **env)
+
+
+@app.route('/browse/origin/<int:origin_id>/visits/')
+def browse_origin_visits(origin_id):
+    origin = api.api_origin_visits(origin_id)['results']
+    for v in origin:
+        v['date'] = dateutil.parser.parse(v['date']).timestamp()
+    return origin
 
 
 @app.route('/browse/person/<int:person_id>/')

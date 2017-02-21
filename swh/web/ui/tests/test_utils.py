@@ -275,21 +275,48 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_release_1(self, mock_flask):
         # given
-        mock_flask.url_for.return_value = '/api/1/content/sha1_git:123/'
+
+        def url_for_test_context(url, **kwargs):
+            if url == 'api_content_metadata':
+                id = kwargs['q']
+                return '/api/1/content/%s/' % id
+            elif url == 'api_person':
+                id = kwargs['person_id']
+                return '/api/1/person/%s/' % id
+            else:
+                raise ValueError(
+                    'This should not happened so fail if it does.')
+
+        mock_flask.url_for.side_effect = url_for_test_context
 
         # when
-        actual_release = utils.enrich_release({'target': '123',
-                                               'target_type': 'content'})
+        actual_release = utils.enrich_release({
+            'target': '123',
+            'target_type': 'content',
+            'author': {
+                'id': 100,
+                'name': 'author release name',
+                'email': 'author@email',
+            },
+        })
 
         # then
         self.assertEqual(actual_release, {
             'target': '123',
             'target_type': 'content',
-            'target_url': '/api/1/content/sha1_git:123/'
+            'target_url': '/api/1/content/sha1_git:123/',
+            'author_url': '/api/1/person/100/',
+            'author': {
+                'id': 100,
+                'name': 'author release name',
+                'email': 'author@email',
+            },
         })
 
-        mock_flask.url_for.assert_called_once_with('api_content_metadata',
-                                                   q='sha1_git:123')
+        mock_flask.url_for.assert_has_calls([
+                call('api_content_metadata', q='sha1_git:123'),
+                call('api_person', person_id=100)
+        ])
 
     @patch('swh.web.ui.utils.flask')
     @istest
@@ -650,8 +677,7 @@ class UtilsTestCase(unittest.TestCase):
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
             'history_context_url': '/api/revision/rev-id/prev/prev-rev/log/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/',
                               '/api/revision/prev-rev/'],
@@ -692,8 +718,7 @@ class UtilsTestCase(unittest.TestCase):
             'id': 'rev-id',
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/']
         }
@@ -724,8 +749,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_url': '/api/revision/rev-id/log/',
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev-rev/log/'),
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
@@ -766,8 +790,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_url': '/api/revision/rev-id/log/',
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev1-rev/prev0-rev/log/'),
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/',
                               '/api/revision/prev0-rev/prev/prev1-rev/'],
@@ -827,8 +850,7 @@ class UtilsTestCase(unittest.TestCase):
             'history_context_url': ('/api/revision/rev-id/'
                                     'prev/prev-rev/log/'),
             'message': None,
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
@@ -882,8 +904,7 @@ class UtilsTestCase(unittest.TestCase):
             'message': None,
             'message_decoding_failed': True,
             'message_url': '/api/revision/rev-id/raw/',
-            'parents': ['123'],
-            'parent_urls': ['/api/revision/123/'],
+            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
             'children_urls': ['/api/revision/456/', '/api/revision/prev-rev/'],
         }
