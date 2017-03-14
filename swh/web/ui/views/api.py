@@ -1068,15 +1068,19 @@ def api_content_raw(q):
     def generate(content):
         yield content['data']
 
-    content = service.lookup_content_raw(q)
-    if not content:
-        raise NotFoundExc('Content with %s not found.' % q)
+    content_raw = service.lookup_content_raw(q)
+    if not content_raw:
+        raise NotFoundExc('Content %s is not found.' % q)
+
+    content_filetype = service.lookup_content_filetype(q)
+    if not content_filetype or 'text/' not in content_filetype['mimetype']:
+        raise NotFoundExc('Content %s is not available for download.' % q)
 
     filename = request.args.get('filename')
     if not filename:
         filename = 'content_%s_raw' % q.replace(':', '_')
 
-    return app.response_class(generate(content),
+    return app.response_class(generate(content_raw),
                               headers={'Content-disposition': 'attachment;'
                                        'filename=%s' % filename},
                               mimetype='application/octet-stream')
