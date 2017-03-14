@@ -644,6 +644,40 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/octet-stream')
+        headers = dict(rv.headers)
+        self.assertEquals(
+            headers['Content-disposition'],
+            'attachment;filename=content_sha1_'
+            '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03_raw')
+        self.assertEquals(
+            headers['Content-Type'], 'application/octet-stream')
+        self.assertEquals(rv.data, stub_content['data'])
+
+        mock_service.lookup_content_raw.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_raw_with_filename(self, mock_service):
+        # given
+        stub_content = {'data': b'some content data'}
+        mock_service.lookup_content_raw.return_value = stub_content
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/raw/?filename=filename.txt',
+            headers={'Content-type': 'application/octet-stream',
+                     'Content-disposition': 'attachment'})
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/octet-stream')
+        headers = dict(rv.headers)
+        self.assertEquals(
+            headers['Content-disposition'],
+            'attachment;filename=filename.txt')
+        self.assertEquals(
+            headers['Content-Type'], 'application/octet-stream')
         self.assertEquals(rv.data, stub_content['data'])
 
         mock_service.lookup_content_raw.assert_called_once_with(
