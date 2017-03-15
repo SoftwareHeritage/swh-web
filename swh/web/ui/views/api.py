@@ -1076,8 +1076,13 @@ def api_content_raw(q):
         raise NotFoundExc('Content %s is not found.' % q)
 
     content_filetype = service.lookup_content_filetype(q)
-    if not content_filetype or 'text/' not in content_filetype['mimetype']:
+    if not content_filetype:
         raise NotFoundExc('Content %s is not available for download.' % q)
+
+    mimetype = content_filetype['mimetype']
+    if 'text/' not in mimetype:
+        raise NotFoundExc('Only textual content is available for download. '
+                          'Actual content mimetype is %s' % mimetype)
 
     filename = request.args.get('filename')
     if not filename:
