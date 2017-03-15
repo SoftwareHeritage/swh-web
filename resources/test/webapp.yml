@@ -1,7 +1,7 @@
 storage:
   cls: remote
   args:
-    url: http://localhost:5000/
+    url: http://localhost:5002/
 
 # where to log information
 log_dir: /tmp/swh/web-ui/log
@@ -13,7 +13,7 @@ debug: true
 host: 127.0.0.1
 
 # its port
-port: 6543
+port: 5004
 
 # Max revisions shown in a log
 max_log_revs: 25

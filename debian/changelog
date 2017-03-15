@@ -2,4 +2,4 @@ swh-web-ui (0.0.1-1) unstable; urgency=low
 
   * Import initial source package.
 
- -- Antoine R. Dumont <antoine.romain.dumont@gmail.com>  Wed, 30 Sep 2015 16:24:02 +0200
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 30 Sep 2015 16:24:02 +0200

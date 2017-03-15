@@ -621,8 +621,8 @@ class ApiTestCase(test_app.SWHApiTestCase):
         response_data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(response_data, {
             'exception': 'NotFoundExc',
-            'reason': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
-            '6c5b00a6d03 not found.'
+            'reason': 'Content sha1:40e71b8614fcd89ccd17ca2b1d9e6'
+            '6c5b00a6d03 is not found.'
         })
 
         mock_service.lookup_content_raw.assert_called_once_with(
@@ -630,10 +630,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
     @patch('swh.web.ui.views.api.service')
     @istest
-    def api_content_raw(self, mock_service):
+    def api_content_raw_text(self, mock_service):
         # given
         stub_content = {'data': b'some content data'}
         mock_service.lookup_content_raw.return_value = stub_content
+        mock_service.lookup_content_filetype.return_value = {
+            'mimetype': 'text/html'
+        }
 
         # when
         rv = self.app.get(
@@ -644,9 +647,76 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv.mimetype, 'application/octet-stream')
+        headers = dict(rv.headers)
+        self.assertEquals(
+            headers['Content-disposition'],
+            'attachment;filename=content_sha1_'
+            '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03_raw')
+        self.assertEquals(
+            headers['Content-Type'], 'application/octet-stream')
         self.assertEquals(rv.data, stub_content['data'])
 
         mock_service.lookup_content_raw.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        mock_service.lookup_content_filetype.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_raw_text_with_filename(self, mock_service):
+        # given
+        stub_content = {'data': b'some content data'}
+        mock_service.lookup_content_raw.return_value = stub_content
+        mock_service.lookup_content_filetype.return_value = {
+            'mimetype': 'text/html'
+        }
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/raw/?filename=filename.txt',
+            headers={'Content-type': 'application/octet-stream',
+                     'Content-disposition': 'attachment'})
+
+        self.assertEquals(rv.status_code, 200)
+        self.assertEquals(rv.mimetype, 'application/octet-stream')
+        headers = dict(rv.headers)
+        self.assertEquals(
+            headers['Content-disposition'],
+            'attachment;filename=filename.txt')
+        self.assertEquals(
+            headers['Content-Type'], 'application/octet-stream')
+        self.assertEquals(rv.data, stub_content['data'])
+
+        mock_service.lookup_content_raw.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        mock_service.lookup_content_filetype.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_raw_no_mimetype_text_is_not_available_for_download(
+            self, mock_service):
+        # given
+        stub_content = {'data': b'some content data'}
+        mock_service.lookup_content_raw.return_value = stub_content
+        mock_service.lookup_content_filetype.return_value = {
+            'mimetype': 'application/octet-stream'
+        }
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/raw/',
+            headers={'Content-type': 'application/octet-stream',
+                     'Content-disposition': 'attachment'})
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+
+        mock_service.lookup_content_raw.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        mock_service.lookup_content_filetype.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.ui.views.api.service')

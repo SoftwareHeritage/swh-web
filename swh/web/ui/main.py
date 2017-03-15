@@ -28,7 +28,7 @@ DEFAULT_CONFIG = {
     'log_dir': ('string', '/tmp/swh/log'),
     'debug': ('bool', None),
     'host': ('string', '127.0.0.1'),
-    'port': ('int', 6543),
+    'port': ('int', 5004),
     'secret_key': ('string', 'development key'),
     'max_log_revs': ('int', 25),
     'limiter': ('dict', {
@@ -154,7 +154,7 @@ def run_debug_from(config_path, verbose=False):
         - 'content_storage_dir' revisions/directories/contents storage on disk
         - 'host'   to override the default 127.0.0.1 to open or not the server
         to the world
-        - 'port'   to override the default of 5000 (from the underlying layer:
+        - 'port'   to override the default of 5004 (from the underlying layer:
         flask)
         - 'debug'  activate the verbose logs
         - 'secret_key' the flask secret key
