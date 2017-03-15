@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ import unittest
 
 from nose.tools import istest
 
-from swh.core import hashutil
+from swh.model import hashutil
 from swh.web.ui import converters
 
 
@@ -19,7 +19,7 @@ class ConvertersTestCase(unittest.TestCase):
             'a': 'something',
             'b': 'someone',
             'c': b'sharp-0.3.4.tgz',
-            'd': hashutil.hex_to_hash(
+            'd': hashutil.hash_to_bytes(
                 'b04caf10e9535160d90e874b45aa426de762f19f'),
             'e': b'sharp.html/doc_002dS_005fISREG.html',
             'g': [b'utf-8-to-decode', b'another-one'],
@@ -162,9 +162,9 @@ class ConvertersTestCase(unittest.TestCase):
         input_provenance = {
             'origin': 10,
             'visit': 1,
-            'content': hashutil.hex_to_hash(
+            'content': hashutil.hash_to_bytes(
                 '321caf10e9535160d90e874b45aa426de762f19f'),
-            'revision': hashutil.hex_to_hash(
+            'revision': hashutil.hash_to_bytes(
                 '123caf10e9535160d90e874b45aa426de762f19f'),
             'path': b'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
         }
@@ -209,9 +209,9 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_release(self):
         release_input = {
-            'id': hashutil.hex_to_hash(
+            'id': hashutil.hash_to_bytes(
                 'aad23fa492a0c5fed0708a6703be875448c86884'),
-            'target': hashutil.hex_to_hash(
+            'target': hashutil.hash_to_bytes(
                 '5e46d564378afc44b31bb89f99d5675195fbdf67'),
             'target_type': 'revision',
             'date': {
@@ -256,7 +256,7 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_release_no_revision(self):
         release_input = {
-            'id': hashutil.hex_to_hash(
+            'id': hashutil.hash_to_bytes(
                 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e'),
             'target': None,
             'date': {
@@ -300,9 +300,9 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_revision(self):
         revision_input = {
-            'id': hashutil.hex_to_hash(
+            'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hashutil.hex_to_hash(
+            'directory': hashutil.hash_to_bytes(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'Software Heritage',
@@ -332,13 +332,13 @@ class ConvertersTestCase(unittest.TestCase):
             'synthetic': True,
             'type': 'tar',
             'parents': [
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '29d8be353ed3480476f032475e7c244eff7371d5'),
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '30d8be353ed3480476f032475e7c244eff7371d5')
             ],
             'children': [
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '123546353ed3480476f032475e7c244eff7371d5'),
             ],
             'metadata': {
@@ -403,10 +403,10 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_revision_nomerge(self):
         revision_input = {
-            'id': hashutil.hex_to_hash(
+            'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
             'parents': [
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '29d8be353ed3480476f032475e7c244eff7371d5')
             ]
         }
@@ -428,9 +428,9 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_revision_noparents(self):
         revision_input = {
-            'id': hashutil.hex_to_hash(
+            'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hashutil.hex_to_hash(
+            'directory': hashutil.hash_to_bytes(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'Software Heritage',
@@ -460,7 +460,7 @@ class ConvertersTestCase(unittest.TestCase):
             'synthetic': True,
             'type': 'tar',
             'children': [
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '123546353ed3480476f032475e7c244eff7371d5'),
             ],
             'metadata': {
@@ -518,9 +518,9 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_revision_invalid(self):
         revision_input = {
-            'id': hashutil.hex_to_hash(
+            'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
-            'directory': hashutil.hex_to_hash(
+            'directory': hashutil.hash_to_bytes(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'Software Heritage',
@@ -550,13 +550,13 @@ class ConvertersTestCase(unittest.TestCase):
             'synthetic': True,
             'type': 'tar',
             'parents': [
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '29d8be353ed3480476f032475e7c244eff7371d5'),
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '30d8be353ed3480476f032475e7c244eff7371d5')
             ],
             'children': [
-                hashutil.hex_to_hash(
+                hashutil.hash_to_bytes(
                     '123546353ed3480476f032475e7c244eff7371d5'),
             ],
             'metadata': {
@@ -624,12 +624,13 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_content(self):
         content_input = {
-            'sha1': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
-                                         '2ebda5'),
-            'sha256': hashutil.hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                           'e76c98930e7e0afa4d2747d3bf96c926'),
-            'sha1_git': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                             'c5b00a6d03'),
+            'sha1': hashutil.hash_to_bytes(
+                '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),
+            'sha256': hashutil.hash_to_bytes(
+                '39007420ca5de7cb3cfc15196335507e'
+                'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hashutil.hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
             'ctime': 'something-which-is-filtered-out',
             'data': b'data in bytes',
             'length': 10,
@@ -680,16 +681,17 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_directory_entries(self):
         dir_entries_input = {
-            'sha1': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
-                                         '2ebda5'),
-            'sha256': hashutil.hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                           'e76c98930e7e0afa4d2747d3bf96c926'),
-            'sha1_git': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                             'c5b00a6d03'),
-            'target': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                           'c5b00a6d03'),
-            'dir_id': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                           'c5b00a6d03'),
+            'sha1': hashutil.hash_to_bytes(
+                '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),
+            'sha256': hashutil.hash_to_bytes(
+                '39007420ca5de7cb3cfc15196335507e'
+                'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hashutil.hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
+            'target': hashutil.hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
+            'dir_id': hashutil.hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
             'name': b'bob',
             'type': 10,
             'status': 'hidden',
@@ -716,8 +718,8 @@ class ConvertersTestCase(unittest.TestCase):
     @istest
     def from_filetype(self):
         content_filetype = {
-            'id': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebd'
-                                       'a5'),
+            'id': hashutil.hash_to_bytes(
+                '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),
             'encoding': b'utf-8',
             'mimetype': b'text/plain',
         }
