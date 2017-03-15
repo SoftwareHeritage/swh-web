@@ -1,11 +1,11 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from collections import defaultdict
 
-from swh.core import hashutil
+from swh.model import hashutil
 from swh.web.ui import converters, query, backend
 from swh.web.ui.exc import NotFoundExc
 
@@ -21,7 +21,7 @@ def lookup_multiple_hashes(hashes):
         the hash is present in storage, elem['found'] = false if not.
 
     """
-    hashlist = [hashutil.hex_to_hash(elem['sha1']) for elem in hashes]
+    hashlist = [hashutil.hash_to_bytes(elem['sha1']) for elem in hashes]
     content_missing = backend.content_missing_per_sha1(hashlist)
     missing = [hashutil.hash_to_hex(x) for x in content_missing]
     for x in hashes:
