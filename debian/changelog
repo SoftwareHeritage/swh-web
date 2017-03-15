@@ -1,8 +1,11 @@
-swh-web (0.0.78-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.79-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.79
+  * /api/1/content/raw/: Improve error msg when content not available
+  * /api/1/content/raw/: Open endpoint documentation in api endpoints
+  * index
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 15 Mar 2017 10:48:21 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 15 Mar 2017 11:43:00 +0100
 
 swh-web (0.0.78-1~swh1) unstable-swh; urgency=medium
 
