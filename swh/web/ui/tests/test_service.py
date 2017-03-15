@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ import datetime
 from nose.tools import istest
 from unittest.mock import MagicMock, patch, call
 
-from swh.core.hashutil import hex_to_hash, hash_to_hex
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.web.ui import service
 from swh.web.ui.exc import BadInputExc, NotFoundExc
 from swh.web.ui.tests import test_app
@@ -18,14 +18,14 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
     def setUp(self):
         self.SHA1_SAMPLE = '18d8be353ed3480476f032475e7c233eff7371d5'
-        self.SHA1_SAMPLE_BIN = hex_to_hash(self.SHA1_SAMPLE)
+        self.SHA1_SAMPLE_BIN = hash_to_bytes(self.SHA1_SAMPLE)
         self.SHA256_SAMPLE = ('39007420ca5de7cb3cfc15196335507e'
                               'e76c98930e7e0afa4d2747d3bf96c926')
-        self.SHA256_SAMPLE_BIN = hex_to_hash(self.SHA256_SAMPLE)
+        self.SHA256_SAMPLE_BIN = hash_to_bytes(self.SHA256_SAMPLE)
         self.SHA1GIT_SAMPLE = '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-        self.SHA1GIT_SAMPLE_BIN = hex_to_hash(self.SHA1GIT_SAMPLE)
+        self.SHA1GIT_SAMPLE_BIN = hash_to_bytes(self.SHA1GIT_SAMPLE)
         self.DIRECTORY_ID = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
-        self.DIRECTORY_ID_BIN = hex_to_hash(self.DIRECTORY_ID)
+        self.DIRECTORY_ID_BIN = hash_to_bytes(self.DIRECTORY_ID)
         self.AUTHOR_ID_BIN = {
             'name': b'author',
             'email': b'author@company.org',
@@ -135,7 +135,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     def lookup_multiple_hashes_some_missing(self, mock_backend):
         # given
         mock_backend.content_missing_per_sha1 = MagicMock(return_value=[
-            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+            hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')
         ])
 
         # when
@@ -172,14 +172,15 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # check the function has been called with parameters
         mock_backend.content_find.assert_called_with(
             'sha1_git',
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
     def lookup_hash_exist(self, mock_backend):
         # given
         stub_content = {
-                'sha1': hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+                'sha1': hash_to_bytes(
+                    '456caf10e9535160d90e874b45aa426de762f19f')
             }
         mock_backend.content_find = MagicMock(return_value=stub_content)
 
@@ -193,7 +194,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_backend.content_find.assert_called_with(
             'sha1',
-            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'),
+            hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f'),
         )
 
     @patch('swh.web.ui.service.backend')
@@ -212,14 +213,15 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # check the function has been called with parameters
         mock_backend.content_find.assert_called_with(
             'sha1_git',
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
     def search_hash_exist(self, mock_backend):
         # given
         stub_content = {
-                'sha1': hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+                'sha1': hash_to_bytes(
+                    '456caf10e9535160d90e874b45aa426de762f19f')
             }
         mock_backend.content_find = MagicMock(return_value=stub_content)
 
@@ -232,7 +234,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_backend.content_find.assert_called_with(
             'sha1',
-            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'),
+            hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f'),
         )
 
     @patch('swh.web.ui.service.backend')
@@ -241,7 +243,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_ctags_get = MagicMock(
             return_value=[{
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'line': 100,
                 'name': 'hello',
@@ -266,7 +268,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_ctags, expected_ctags)
 
         mock_backend.content_ctags_get.assert_called_with(
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -284,7 +286,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_ctags, [])
 
         mock_backend.content_find.assert_called_once_with(
-            'sha1_git', hex_to_hash(
+            'sha1_git', hash_to_bytes(
                 '123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
@@ -293,7 +295,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_filetype_get = MagicMock(
             return_value={
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'mimetype': b'text/x-c++',
                 'encoding': b'us-ascii',
@@ -312,7 +314,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_filetype, expected_filetype)
 
         mock_backend.content_filetype_get.assert_called_with(
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -320,13 +322,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_find = MagicMock(
             return_value={
-                'sha1': hex_to_hash(
+                'sha1': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f')
             }
         )
         mock_backend.content_filetype_get = MagicMock(
             return_value={
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'mimetype': b'text/x-python',
                 'encoding': b'us-ascii',
@@ -346,10 +348,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_filetype, expected_filetype)
 
         mock_backend.content_find(
-            'sha1_git', hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+            'sha1_git', hash_to_bytes(
+                '456caf10e9535160d90e874b45aa426de762f19f')
         )
         mock_backend.content_filetype_get.assert_called_with(
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -357,7 +360,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_language_get = MagicMock(
             return_value={
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'lang': 'python',
             })
@@ -374,7 +377,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_language, expected_language)
 
         mock_backend.content_language_get.assert_called_with(
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -382,13 +385,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_find = MagicMock(
             return_value={
-                'sha1': hex_to_hash(
+                'sha1': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f')
             }
         )
         mock_backend.content_language_get = MagicMock(
             return_value={
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'lang': 'haskell',
             }
@@ -406,10 +409,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_language, expected_language)
 
         mock_backend.content_find(
-            'sha1_git', hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+            'sha1_git', hash_to_bytes(
+                '456caf10e9535160d90e874b45aa426de762f19f')
         )
         mock_backend.content_language_get.assert_called_with(
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -417,7 +421,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_ctags_search = MagicMock(
             return_value=[{
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'name': 'foobar',
                 'kind': 'variable',
@@ -466,7 +470,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_license_get = MagicMock(
             return_value={
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'lang': 'python',
             })
@@ -483,7 +487,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_license, expected_license)
 
         mock_backend.content_license_get.assert_called_with(
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -491,13 +495,13 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_find = MagicMock(
             return_value={
-                'sha1': hex_to_hash(
+                'sha1': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f')
             }
         )
         mock_backend.content_license_get = MagicMock(
             return_value={
-                'id': hex_to_hash(
+                'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
                 'lang': 'haskell',
             }
@@ -515,10 +519,11 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_license, expected_license)
 
         mock_backend.content_find(
-            'sha1_git', hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f')
+            'sha1_git', hash_to_bytes(
+                '456caf10e9535160d90e874b45aa426de762f19f')
         )
         mock_backend.content_license_get.assert_called_with(
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -526,9 +531,9 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         mock_backend.content_find_provenance = MagicMock(
             return_value=(p for p in [{
-                'content': hex_to_hash(
+                'content': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
-                'revision': hex_to_hash(
+                'revision': hash_to_bytes(
                     '456caf10e9535160d90e874b45aa426de762f19f'),
                 'origin': 100,
                 'visit': 1,
@@ -551,7 +556,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_backend.content_find_provenance.assert_called_with(
             'sha1_git',
-            hex_to_hash('123caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -568,7 +573,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         mock_backend.content_find_provenance.assert_called_with(
             'sha1_git',
-            hex_to_hash('456caf10e9535160d90e874b45aa426de762f19f'))
+            hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f'))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -617,7 +622,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'date': date_origin_visit2,
             'origin': 1,
             'visit': 2,
-            'target': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
+            'target': hash_to_bytes(
+                '65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
             'branch': b'master',
             'target_type': 'release',
             'metadata': None,
@@ -764,7 +770,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
     def lookup_release(self, mock_backend):
         # given
         mock_backend.release_get = MagicMock(return_value={
-            'id': hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
+            'id': hash_to_bytes('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
             'target': None,
             'date': {
                 'timestamp': datetime.datetime(
@@ -793,7 +799,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         })
 
         mock_backend.release_get.assert_called_with(
-            hex_to_hash('65a55bbdf3629f916219feb3dcc7393ded1bc8db'))
+            hash_to_bytes('65a55bbdf3629f916219feb3dcc7393ded1bc8db'))
 
     @istest
     def lookup_revision_with_context_ko_not_a_sha1_1(self):
@@ -828,7 +834,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
 
-        sha1_git_bin = hex_to_hash(sha1_git)
+        sha1_git_bin = hash_to_bytes(sha1_git)
 
         mock_backend.revision_get.return_value = None
 
@@ -850,8 +856,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
 
-        sha1_git_root_bin = hex_to_hash(sha1_git_root)
-        sha1_git_bin = hex_to_hash(sha1_git)
+        sha1_git_root_bin = hash_to_bytes(sha1_git_root)
+        sha1_git_bin = hash_to_bytes(sha1_git)
 
         mock_backend.revision_get.side_effect = ['foo', None]
 
@@ -1411,7 +1417,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         stub_revisions = [
             self.SAMPLE_REVISION_RAW,
             {
-                'id': hex_to_hash(sha1_other),
+                'id': hash_to_bytes(sha1_other),
                 'directory': 'abcdbe353ed3480476f032475e7c233eff7371d5',
                 'author': {
                     'name': b'name',
@@ -1480,8 +1486,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         self.assertEqual(
             list(mock_backend.revision_get_multiple.call_args[0][0]),
-            [hex_to_hash(sha1),
-             hex_to_hash(sha1_other)])
+            [hash_to_bytes(sha1),
+             hash_to_bytes(sha1_other)])
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1500,8 +1506,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
 
         self.assertEqual(
             list(mock_backend.revision_get_multiple.call_args[0][0]),
-            [hex_to_hash(self.SHA1_SAMPLE),
-             hex_to_hash(sha1_other)])
+            [hash_to_bytes(self.SHA1_SAMPLE),
+             hash_to_bytes(sha1_other)])
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1519,7 +1525,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(list(actual_revision), [self.SAMPLE_REVISION])
 
         mock_backend.revision_log.assert_called_with(
-            hex_to_hash('abcdbe353ed3480476f032475e7c233eff7371d5'), 25)
+            hash_to_bytes('abcdbe353ed3480476f032475e7c233eff7371d5'), 25)
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1566,7 +1572,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertIsNone(actual_content)
 
         mock_backend.content_find.assert_called_with(
-            'sha1', hex_to_hash(self.SHA1_SAMPLE))
+            'sha1', hash_to_bytes(self.SHA1_SAMPLE))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1621,7 +1627,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         self.assertEqual(actual_content, self.SAMPLE_CONTENT)
 
         mock_backend.content_find.assert_called_with(
-            'sha1', hex_to_hash(self.SHA1_SAMPLE))
+            'sha1', hash_to_bytes(self.SHA1_SAMPLE))
 
     @patch('swh.web.ui.service.backend')
     @istest
@@ -1717,8 +1723,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
             'sha1': self.SHA1_SAMPLE_BIN,
             'sha256': self.SHA256_SAMPLE_BIN,
             'sha1_git': self.SHA1GIT_SAMPLE_BIN,
-            'target': hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                  'c5b00a6d03'),
+            'target': hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
             'dir_id': self.DIRECTORY_ID_BIN,
             'name': b'bob',
             'type': 10,
@@ -1786,7 +1792,7 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_rev = self.SAMPLE_REVISION_RAW
         stub_rev['parents'] = [
-                hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')]
+                hash_to_bytes('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')]
 
         expected_rev = self.SAMPLE_REVISION
         expected_rev['parents'] = ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc']
@@ -1806,8 +1812,8 @@ class ServiceTestCase(test_app.SWHApiTestCase):
         # given
         stub_rev = self.SAMPLE_REVISION_RAW
         stub_rev['parents'] = [
-            hex_to_hash('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'),
-            hex_to_hash('ffff3b19e793491b1c6db0fd8b46cd9f32e592fc')
+            hash_to_bytes('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'),
+            hash_to_bytes('ffff3b19e793491b1c6db0fd8b46cd9f32e592fc')
         ]
 
         expected_rev = self.SAMPLE_REVISION

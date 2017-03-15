@@ -6,7 +6,7 @@
 import datetime
 import json
 
-from swh.core import hashutil
+from swh.model import hashutil
 from swh.core.utils import decode_with_escape
 from swh.web.ui import utils
 

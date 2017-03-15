@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ import datetime
 from nose.tools import istest
 from unittest.mock import MagicMock
 
-from swh.core import hashutil
+from swh.model import hashutil
 from swh.web.ui import backend
 from swh.web.ui.tests import test_app
 
@@ -27,7 +27,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_get_ko_not_found_1(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f777')
         self.storage.content_get = MagicMock(return_value=None)
 
@@ -43,7 +43,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_get_ko_not_found_empty_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_get = MagicMock(return_value=[])
 
@@ -104,7 +104,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '123caf10e9535160d90e874b45aa426de762f19f')
         stub_contents = [{
             'sha1': sha1_bin,
@@ -124,7 +124,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_find_ko_no_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '123caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_find = MagicMock(return_value=None)
 
@@ -140,7 +140,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_find(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_find = MagicMock(return_value=(1, 2, 3))
 
@@ -156,7 +156,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_find_provenance_ko_no_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '123caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_find_provenance = MagicMock(
             return_value=(x for x in []))
@@ -173,7 +173,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_ctags_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_ctags_get = MagicMock(
             return_value=[1, 2, 3])
@@ -190,7 +190,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_ctags_get_no_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_ctags_get = MagicMock(
             return_value=[])
@@ -207,7 +207,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_filetype_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_mimetype_get = MagicMock(
             return_value=[1, 2, 3])
@@ -224,7 +224,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_filetype_get_no_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_mimetype_get = MagicMock(
             return_value=[])
@@ -241,7 +241,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_language_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_language_get = MagicMock(
             return_value=[1, 2, 3])
@@ -258,7 +258,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_language_get_no_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_language_get = MagicMock(
             return_value=[])
@@ -275,7 +275,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_license_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_fossology_license_get = MagicMock(
             return_value=[1, 2, 3])
@@ -292,7 +292,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_license_get_no_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_fossology_license_get = MagicMock(
             return_value=[])
@@ -309,7 +309,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_find_provenance(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f')
         self.storage.content_find_provenance = MagicMock(
             return_value=(x for x in (1, 2, 3)))
@@ -327,9 +327,9 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_missing_per_sha1_none(self):
         # given
-        sha1s_bin = [hashutil.hex_to_hash(
+        sha1s_bin = [hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f'),
-                     hashutil.hex_to_hash(
+                     hashutil.hash_to_bytes(
             '745bab676c8f3cec8016e0c39ea61cf57e518865'
                      )]
         self.storage.content_missing_per_sha1 = MagicMock(return_value=[])
@@ -344,13 +344,13 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def content_missing_per_sha1_some(self):
         # given
-        sha1s_bin = [hashutil.hex_to_hash(
+        sha1s_bin = [hashutil.hash_to_bytes(
             '456caf10e9535160d90e874b45aa426de762f19f'),
-                     hashutil.hex_to_hash(
+                     hashutil.hash_to_bytes(
             '745bab676c8f3cec8016e0c39ea61cf57e518865'
                      )]
         self.storage.content_missing_per_sha1 = MagicMock(return_value=[
-            hashutil.hex_to_hash(
+            hashutil.hash_to_bytes(
                 '745bab676c8f3cec8016e0c39ea61cf57e518865'
             )])
 
@@ -358,7 +358,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
         actual_content = backend.content_missing_per_sha1(sha1s_bin)
 
         # then
-        self.assertEquals(actual_content, [hashutil.hex_to_hash(
+        self.assertEquals(actual_content, [hashutil.hash_to_bytes(
             '745bab676c8f3cec8016e0c39ea61cf57e518865'
             )])
         self.storage.content_missing_per_sha1.assert_called_with(sha1s_bin)
@@ -429,7 +429,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def directory_get_not_found(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
         self.storage.directory_get = MagicMock(return_value=None)
 
@@ -444,9 +444,9 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def directory_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '51f71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-        sha1_bin2 = hashutil.hex_to_hash(
+        sha1_bin2 = hashutil.hash_to_bytes(
             '62071b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
         stub_dir = {'id': sha1_bin, 'revision': b'sha1-blah'}
         stub_dir2 = {'id': sha1_bin2, 'revision': b'sha1-foobar'}
@@ -464,7 +464,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def directory_ls_empty_result(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
         self.storage.directory_ls = MagicMock(return_value=[])
 
@@ -479,19 +479,20 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def directory_ls(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
         stub_dir_entries = [{
-            'sha1': hashutil.hex_to_hash('5c6f0e2750f48fa0bd0c4cf5976ba0b9e0'
-                                         '2ebda5'),
-            'sha256': hashutil.hex_to_hash('39007420ca5de7cb3cfc15196335507e'
-                                           'e76c98930e7e0afa4d2747d3bf96c926'),
-            'sha1_git': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                             'c5b00a6d03'),
-            'target': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                           'c5b00a6d03'),
-            'dir_id': hashutil.hex_to_hash('40e71b8614fcd89ccd17ca2b1d9e66'
-                                           'c5b00a6d03'),
+            'sha1': hashutil.hash_to_bytes(
+                '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),
+            'sha256': hashutil.hash_to_bytes(
+                '39007420ca5de7cb3cfc15196335507e'
+                'e76c98930e7e0afa4d2747d3bf96c926'),
+            'sha1_git': hashutil.hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
+            'target': hashutil.hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
+            'dir_id': hashutil.hash_to_bytes(
+                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
             'name': b'bob',
             'type': 10,
         }]
@@ -510,7 +511,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def release_get_not_found(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '65a55bbdf3629f916219feb3dcc7393ded1bc8db')
 
         self.storage.release_get = MagicMock(return_value=[])
@@ -525,7 +526,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def release_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '65a55bbdf3629f916219feb3dcc7393ded1bc8db')
 
         stub_releases = [{
@@ -580,7 +581,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_get_not_found(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
         self.storage.revision_get = MagicMock(return_value=[])
@@ -596,12 +597,12 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_get(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
         stub_revisions = [{
             'id': sha1_bin,
-            'directory': hashutil.hex_to_hash(
+            'directory': hashutil.hash_to_bytes(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'bill & boule',
@@ -634,15 +635,15 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_get_multiple(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '18d8be353ed3480476f032475e7c233eff7371d5')
-        sha1_other = hashutil.hex_to_hash(
+        sha1_other = hashutil.hash_to_bytes(
             'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')
 
         stub_revisions = [
             {
                 'id': sha1_bin,
-                'directory': hashutil.hex_to_hash(
+                'directory': hashutil.hash_to_bytes(
                     '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
                 'author': {
                     'name': b'bill & boule',
@@ -664,7 +665,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
             },
             {
                 'id': sha1_other,
-                'directory': hashutil.hex_to_hash(
+                'directory': hashutil.hash_to_bytes(
                     '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
                 'author': {
                     'name': b'name',
@@ -700,9 +701,9 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_get_multiple_none_found(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '18d8be353ed3480476f032475e7c233eff7371d5')
-        sha1_other = hashutil.hex_to_hash(
+        sha1_other = hashutil.hash_to_bytes(
             'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')
 
         self.storage.revision_get = MagicMock(
@@ -720,11 +721,11 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_log(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '28d8be353ed3480476f032475e7c233eff7371d5')
         stub_revision_log = [{
             'id': sha1_bin,
-            'directory': hashutil.hex_to_hash(
+            'directory': hashutil.hash_to_bytes(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'bill & boule',
@@ -757,11 +758,11 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_log_by(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '28d8be353ed3480476f032475e7c233eff7371d5')
         stub_revision_log = [{
             'id': sha1_bin,
-            'directory': hashutil.hex_to_hash(
+            'directory': hashutil.hash_to_bytes(
                 '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'),
             'author': {
                 'name': b'bill & boule',
@@ -796,7 +797,7 @@ class BackendTestCase(test_app.SWHApiTestCase):
     @istest
     def revision_log_by_norev(self):
         # given
-        sha1_bin = hashutil.hex_to_hash(
+        sha1_bin = hashutil.hash_to_bytes(
             '28d8be353ed3480476f032475e7c233eff7371d5')
 
         self.storage.revision_log_by = MagicMock(return_value=None)

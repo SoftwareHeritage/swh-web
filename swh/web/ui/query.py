@@ -1,4 +1,4 @@
-# Copyright (C) 2015  The Software Heritage developers
+# Copyright (C) 2015-2017  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ import re
 
 from uuid import UUID
 
-from swh.core.hashutil import ALGORITHMS, hex_to_hash
+from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.ui.exc import BadInputExc
 
 
@@ -22,7 +22,7 @@ def parse_hash(q):
     Args:
         query string with the following format: "[HASH_TYPE:]HEX_CHECKSUM",
         where HASH_TYPE is optional, defaults to "sha1", and can be one of
-        swh.core.hashutil.ALGORITHMS
+        swh.model.hashutil.ALGORITHMS
 
     Returns:
         A pair (hash_algorithm, byte hash value)
@@ -57,7 +57,7 @@ def parse_hash(q):
     if algo not in ALGORITHMS:
         raise BadInputExc('Unknown hash algorithm %s' % algo)
 
-    return (algo, hex_to_hash(parts[1]))
+    return (algo, hash_to_bytes(parts[1]))
 
 
 def parse_hash_with_algorithms_or_throws(q, accepted_algo, error_msg):
@@ -67,7 +67,7 @@ def parse_hash_with_algorithms_or_throws(q, accepted_algo, error_msg):
     Args:
         - q: query string with the following format: "[HASH_TYPE:]HEX_CHECKSUM"
         where HASH_TYPE is optional, defaults to "sha1", and can be one of
-        swh.core.hashutil.ALGORITHMS.
+        swh.model.hashutil.ALGORITHMS.
         - accepted_algo: array of strings representing the names of accepted
         algorithms.
         - error_msg: error message to raise as BadInputExc if the algo of
