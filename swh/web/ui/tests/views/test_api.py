@@ -707,12 +707,44 @@ class ApiTestCase(test_app.SWHApiTestCase):
         # when
         rv = self.app.get(
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-            '/raw/',
-            headers={'Content-type': 'application/octet-stream',
-                     'Content-disposition': 'attachment'})
+            '/raw/')
 
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv.mimetype, 'application/json')
+        data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(data, {
+            'exception': 'NotFoundExc',
+            'reason': 'Only textual content is available for download. '
+                      'Actual content mimetype is application/octet-stream'
+        })
+
+        mock_service.lookup_content_raw.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+        mock_service.lookup_content_filetype.assert_called_once_with(
+            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
+
+    @patch('swh.web.ui.views.api.service')
+    @istest
+    def api_content_raw_no_mimetype_found_so_not_available_for_download(
+            self, mock_service):
+        # given
+        stub_content = {'data': b'some content data'}
+        mock_service.lookup_content_raw.return_value = stub_content
+        mock_service.lookup_content_filetype.return_value = None
+
+        # when
+        rv = self.app.get(
+            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+            '/raw/')
+
+        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.mimetype, 'application/json')
+        data = json.loads(rv.data.decode('utf-8'))
+        self.assertEquals(data, {
+            'exception': 'NotFoundExc',
+            'reason': 'Content sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03 '
+                      'is not available for download.'
+        })
 
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')

@@ -1049,20 +1049,23 @@ def api_content_ctags(q):
 
 
 @app.route('/api/1/content/<string:q>/raw/')
-@doc.route('/api/1/content/raw/', tags=['upcoming'])
+@doc.route('/api/1/content/raw/')
 @doc.arg('q',
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
          argdoc=_doc_arg_content_id)
 @doc.param('filename', default=None,
            argtype=doc.argtypes.str,
-           doc='User\'s desired filename.')
+           doc='User\'s desired filename. If provided, the downloaded'
+               ' content will get that filename.')
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.octet_stream,
              retdoc='The raw content data as an octet stream')
 def api_content_raw(q):
-    """Get the raw content of a content object (AKA "blob"), as a byte sequence.
+    """Get the raw content of a content object (AKA "blob"), as a byte
+    sequence.  Only textual contents are served, others are considered
+    unavailable.
 
     """
     def generate(content):
@@ -1073,8 +1076,13 @@ def api_content_raw(q):
         raise NotFoundExc('Content %s is not found.' % q)
 
     content_filetype = service.lookup_content_filetype(q)
-    if not content_filetype or 'text/' not in content_filetype['mimetype']:
+    if not content_filetype:
         raise NotFoundExc('Content %s is not available for download.' % q)
+
+    mimetype = content_filetype['mimetype']
+    if 'text/' not in mimetype:
+        raise NotFoundExc('Only textual content is available for download. '
+                          'Actual content mimetype is %s' % mimetype)
 
     filename = request.args.get('filename')
     if not filename:
