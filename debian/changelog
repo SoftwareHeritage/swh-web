@@ -1,8 +1,12 @@
-swh-web (0.0.77-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.78-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.78
+  * /api/1/content/raw/: Open endpoint to download only text-ish
+  * contents (other contents are deemed unavailable)
+  * /api/1/content/raw/: Permit the user to provide a 'filename'
+  * parameter to name the downloaded contents as they see fit.
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 21 Feb 2017 11:37:19 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 15 Mar 2017 10:48:21 +0100
 
 swh-web (0.0.77-1~swh1) unstable-swh; urgency=medium
 

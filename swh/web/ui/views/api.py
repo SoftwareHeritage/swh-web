@@ -1054,6 +1054,9 @@ def api_content_ctags(q):
          default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
          argtype=doc.argtypes.algo_and_hash,
          argdoc=_doc_arg_content_id)
+@doc.param('filename', default=None,
+           argtype=doc.argtypes.str,
+           doc='User\'s desired filename.')
 @doc.raises(exc=doc.excs.badinput, doc=_doc_exc_bad_id)
 @doc.raises(exc=doc.excs.notfound, doc=_doc_exc_id_not_found)
 @doc.returns(rettype=doc.rettypes.octet_stream,
@@ -1065,13 +1068,21 @@ def api_content_raw(q):
     def generate(content):
         yield content['data']
 
-    content = service.lookup_content_raw(q)
-    if not content:
-        raise NotFoundExc('Content with %s not found.' % q)
+    content_raw = service.lookup_content_raw(q)
+    if not content_raw:
+        raise NotFoundExc('Content %s is not found.' % q)
 
-    return app.response_class(generate(content),
+    content_filetype = service.lookup_content_filetype(q)
+    if not content_filetype or 'text/' not in content_filetype['mimetype']:
+        raise NotFoundExc('Content %s is not available for download.' % q)
+
+    filename = request.args.get('filename')
+    if not filename:
+        filename = 'content_%s_raw' % q.replace(':', '_')
+
+    return app.response_class(generate(content_raw),
                               headers={'Content-disposition': 'attachment;'
-                                       'filename=content_%s_raw' % q},
+                                       'filename=%s' % filename},
                               mimetype='application/octet-stream')
 
 
