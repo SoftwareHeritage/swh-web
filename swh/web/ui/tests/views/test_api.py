@@ -709,13 +709,13 @@ class ApiTestCase(test_app.SWHApiTestCase):
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
             '/raw/')
 
-        self.assertEquals(rv.status_code, 404)
+        self.assertEquals(rv.status_code, 403)
         self.assertEquals(rv.mimetype, 'application/json')
         data = json.loads(rv.data.decode('utf-8'))
         self.assertEquals(data, {
-            'exception': 'NotFoundExc',
+            'exception': 'ForbiddenExc',
             'reason': 'Only textual content is available for download. '
-                      'Actual content mimetype is application/octet-stream'
+                      'Actual content mimetype is application/octet-stream.'
         })
 
         mock_service.lookup_content_raw.assert_called_once_with(
