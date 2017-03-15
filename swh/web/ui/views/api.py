@@ -8,7 +8,7 @@ from types import GeneratorType
 from flask import render_template, request, url_for
 
 from swh.web.ui import service, utils, apidoc as doc
-from swh.web.ui.exc import NotFoundExc
+from swh.web.ui.exc import NotFoundExc, ForbiddenExc
 from swh.web.ui.main import app
 
 
@@ -1064,8 +1064,7 @@ def api_content_ctags(q):
              retdoc='The raw content data as an octet stream')
 def api_content_raw(q):
     """Get the raw content of a content object (AKA "blob"), as a byte
-    sequence.  Only textual contents are served, others are considered
-    unavailable.
+    sequence.
 
     """
     def generate(content):
@@ -1081,8 +1080,8 @@ def api_content_raw(q):
 
     mimetype = content_filetype['mimetype']
     if 'text/' not in mimetype:
-        raise NotFoundExc('Only textual content is available for download. '
-                          'Actual content mimetype is %s' % mimetype)
+        raise ForbiddenExc('Only textual content is available for download. '
+                           'Actual content mimetype is %s.' % mimetype)
 
     filename = request.args.get('filename')
     if not filename:
