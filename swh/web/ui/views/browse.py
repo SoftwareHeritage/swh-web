@@ -9,14 +9,10 @@ from encodings.aliases import aliases
 from flask import render_template, request, url_for, redirect
 
 from swh.core.utils import grouper
-from swh.model.hashutil import ALGORITHMS
 from .. import service, utils
 from ..exc import BadInputExc, NotFoundExc
 from ..main import app
 from . import api
-
-
-hash_filter_keys = ALGORITHMS
 
 
 def api_lookup(api_fn, query):
