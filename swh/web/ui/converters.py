@@ -257,7 +257,7 @@ def from_content(content):
 
     """
     return from_swh(content,
-                    hashess={'sha1', 'sha1_git', 'sha256'},
+                    hashess={'sha1', 'sha1_git', 'sha256', 'blake2s256'},
                     blacklist={'ctime'},
                     convert={'status'},
                     convert_fn=lambda v: 'absent' if v == 'hidden' else v)

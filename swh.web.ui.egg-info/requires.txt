@@ -6,5 +6,5 @@ pygments
 python-dateutil
 redis
 swh.core>=0.0.20
-swh.model>=0.0.14
-swh.storage>=0.0.77
+swh.model>=0.0.15
+swh.storage>=0.0.83
