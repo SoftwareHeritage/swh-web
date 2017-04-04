@@ -629,6 +629,9 @@ class ConvertersTestCase(unittest.TestCase):
             'sha256': hashutil.hash_to_bytes(
                 '39007420ca5de7cb3cfc15196335507e'
                 'e76c98930e7e0afa4d2747d3bf96c926'),
+            'blake2s256': hashutil.hash_to_bytes(
+                '49007420ca5de7cb3cfc15196335507e'
+                'e76c98930e7e0afa4d2747d3bf96c926'),
             'sha1_git': hashutil.hash_to_bytes(
                 '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
             'ctime': 'something-which-is-filtered-out',
@@ -641,7 +644,9 @@ class ConvertersTestCase(unittest.TestCase):
         expected_content = {
             'sha1': '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5',
             'sha256': '39007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d274'
-            '7d3bf96c926',
+                      '7d3bf96c926',
+            'blake2s256': '49007420ca5de7cb3cfc15196335507ee76c98930e7e0afa4d2'
+                          '747d3bf96c926',
             'sha1_git': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'data': b'data in bytes',
             'length': 10,
