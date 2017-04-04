@@ -1,8 +1,9 @@
-swh-web (0.0.81-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.82-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.83
+  * Add new blake2s256 data column on content
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 15 Mar 2017 16:26:42 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 04 Apr 2017 16:54:25 +0200
 
 swh-web (0.0.81-1~swh1) unstable-swh; urgency=medium
 
