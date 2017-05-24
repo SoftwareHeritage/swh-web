@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import ipaddress
 import logging
 import os
 
@@ -99,7 +100,21 @@ def prepare_limiter():
     if hasattr(app, 'limiter'):
         return
 
-    global_limits = app.config['conf']['limiter']['global_limits']
+    shared_limits = app.config['conf']['limiter'].pop('shared_limits', {})
+    for name, shared_limit in shared_limits.items():
+        if not shared_limit.get('exempted_networks'):
+            shared_limit['exempt_when'] = lambda: False
+            continue
+
+        networks = [ipaddress.ip_network(network)
+                    for network in shared_limit['exempted_networks']]
+
+        def exempt(exempted=networks):
+            remote_address = ipaddress.ip_address(get_remote_address())
+            return any(remote_address in network for network in exempted)
+
+        shared_limit['exempt_when'] = exempt
+
     limiter = Limiter(
         app,
         key_func=get_remote_address,
@@ -107,14 +122,16 @@ def prepare_limiter():
     )
     app.limiter = limiter
 
-    for key in sorted(app.view_functions):
-        if key.startswith('api_'):
-            view_func = app.view_functions[key]
-            app.view_functions[key] = limiter.shared_limit(
-                ','.join(global_limits),
-                'swh_api',
-                key_func=get_remote_address,
-            )(view_func)
+    for view_name in sorted(app.view_functions):
+        for limit_name, shared_limit in shared_limits.items():
+            if view_name.startswith(shared_limit['prefix']):
+                view_func = app.view_functions[view_name]
+                app.view_functions[view_name] = limiter.shared_limit(
+                    ','.join(shared_limit['limits']),
+                    limit_name,
+                    key_func=get_remote_address,
+                    exempt_when=shared_limit['exempt_when'],
+                )(view_func)
 
 
 def run_from_webserver(environ, start_response):
