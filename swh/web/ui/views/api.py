@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import functools
+
 from types import GeneratorType
 
 from flask import render_template, request, url_for
@@ -32,6 +34,41 @@ _doc_ret_revision_log = """list of dictionaries representing the metadata of
 
 _doc_header_link = """indicates that a subsequent result page is available,
     pointing to it"""
+
+
+def _api_lookup(lookup_fn, *args,
+                notfound_msg='Object not found',
+                enrich_fn=lambda x: x):
+    """Capture a redundant behavior of:
+    - looking up the backend with a criteria (be it an identifier or checksum)
+    passed to the function lookup_fn
+    - if nothing is found, raise an NotFoundExc exception with error
+    message notfound_msg.
+    - Otherwise if something is returned:
+        - either as list, map or generator, map the enrich_fn function to it
+        and return the resulting data structure as list.
+        - either as dict and pass to enrich_fn and return the dict enriched.
+
+    Args:
+        - criteria: discriminating criteria to lookup
+        - lookup_fn: function expects one criteria and optional supplementary
+        *args.
+        - notfound_msg: if nothing matching the criteria is found,
+        raise NotFoundExc with this error message.
+        - enrich_fn: Function to use to enrich the result returned by
+        lookup_fn. Default to the identity function if not provided.
+        - *args: supplementary arguments to pass to lookup_fn.
+
+    Raises:
+        NotFoundExp or whatever `lookup_fn` raises.
+
+    """
+    res = lookup_fn(*args)
+    if not res:
+        raise NotFoundExc(notfound_msg)
+    if isinstance(res, (map, list, GeneratorType)):
+        return [enrich_fn(x) for x in res]
+    return enrich_fn(res)
 
 
 @app.route('/api/1/')
@@ -107,9 +144,8 @@ def api_origin_visits(origin_id):
         return ov
 
     r = _api_lookup(
-        origin_id,
-        _lookup_origin_visits,
-        error_msg_if_not_found='No origin %s found' % origin_id,
+        _lookup_origin_visits, origin_id,
+        notfound_msg='No origin {} found'.format(origin_id),
         enrich_fn=_enrich_origin_visit)
 
     if r:
@@ -167,11 +203,10 @@ def api_origin_visit(origin_id, visit_id):
         return ov
 
     return _api_lookup(
-        origin_id,
-        service.lookup_origin_visit,
-        'No visit %s for origin %s found' % (visit_id, origin_id),
-        _enrich_origin_visit,
-        visit_id)
+        service.lookup_origin_visit, origin_id, visit_id,
+        notfound_msg=('No visit {} for origin {} found'
+                      .format(visit_id, origin_id)),
+        enrich_fn=_enrich_origin_visit)
 
 
 @app.route('/api/1/content/symbol/', methods=['POST'])
@@ -211,11 +246,9 @@ def api_content_symbol(q=None):
         return service.lookup_expression(exp, last_sha1, per_page)
 
     symbols = _api_lookup(
-        q,
-        lookup_fn=lookup_exp,
-        error_msg_if_not_found='No indexed raw content match expression \''
-        '%s\'.' % q,
-        enrich_fn=lambda x: utils.enrich_content(x, top_url=True))
+        lookup_exp, q,
+        notfound_msg="No indexed raw content match expression '{}'.".format(q),
+        enrich_fn=functools.partial(utils.enrich_content, top_url=True))
 
     if symbols:
         l = len(symbols)
@@ -311,43 +344,6 @@ def api_check_content_known(q=None):
     return response
 
 
-def _api_lookup(criteria,
-                lookup_fn,
-                error_msg_if_not_found,
-                enrich_fn=lambda x: x,
-                *args):
-    """Capture a redundant behavior of:
-    - looking up the backend with a criteria (be it an identifier or checksum)
-    passed to the function lookup_fn
-    - if nothing is found, raise an NotFoundExc exception with error
-    message error_msg_if_not_found.
-    - Otherwise if something is returned:
-        - either as list, map or generator, map the enrich_fn function to it
-        and return the resulting data structure as list.
-        - either as dict and pass to enrich_fn and return the dict enriched.
-
-    Args:
-        - criteria: discriminating criteria to lookup
-        - lookup_fn: function expects one criteria and optional supplementary
-        *args.
-        - error_msg_if_not_found: if nothing matching the criteria is found,
-        raise NotFoundExc with this error message.
-        - enrich_fn: Function to use to enrich the result returned by
-        lookup_fn. Default to the identity function if not provided.
-        - *args: supplementary arguments to pass to lookup_fn.
-
-    Raises:
-        NotFoundExp or whatever `lookup_fn` raises.
-
-    """
-    res = lookup_fn(criteria, *args)
-    if not res:
-        raise NotFoundExc(error_msg_if_not_found)
-    if isinstance(res, (map, list, GeneratorType)):
-        return [enrich_fn(x) for x in res]
-    return enrich_fn(res)
-
-
 @app.route('/api/1/origin/<int:origin_id>/')
 @app.route('/api/1/origin/<string:origin_type>/url/<path:origin_url>')
 @doc.route('/api/1/origin/')
@@ -397,8 +393,8 @@ def api_origin(origin_id=None, origin_type=None, origin_url=None):
         return origin
 
     return _api_lookup(
-        ori_dict, lookup_fn=service.lookup_origin,
-        error_msg_if_not_found=error_msg,
+        service.lookup_origin, ori_dict,
+        notfound_msg=error_msg,
         enrich_fn=_enrich_origin)
 
 
@@ -416,8 +412,8 @@ def api_person(person_id):
 
     """
     return _api_lookup(
-        person_id, lookup_fn=service.lookup_person,
-        error_msg_if_not_found='Person with id %s not found.' % person_id)
+        service.lookup_person, person_id,
+        notfound_msg='Person with id {} not found.'.format(person_id))
 
 
 @app.route('/api/1/release/<string:sha1_git>/')
@@ -441,9 +437,8 @@ def api_release(sha1_git):
     """
     error_msg = 'Release with sha1_git %s not found.' % sha1_git
     return _api_lookup(
-        sha1_git,
-        lookup_fn=service.lookup_release,
-        error_msg_if_not_found=error_msg,
+        service.lookup_release, sha1_git,
+        notfound_msg=error_msg,
         enrich_fn=utils.enrich_release)
 
 
@@ -588,15 +583,11 @@ def api_revision_with_origin(origin_id,
     """
     ts = utils.parse_timestamp(ts)
     return _api_lookup(
-        origin_id,
-        service.lookup_revision_by,
-        'Revision with (origin_id: %s, branch_name: %s'
-        ', ts: %s) not found.' % (origin_id,
-                                  branch_name,
-                                  ts),
-        utils.enrich_revision,
-        branch_name,
-        ts)
+        service.lookup_revision_by, origin_id, branch_name, ts,
+        notfound_msg=('Revision with (origin_id: {}, branch_name: {}'
+                      ', ts: {}) not found.'.format(origin_id,
+                                                    branch_name, ts)),
+        enrich_fn=utils.enrich_revision)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/prev/<path:context>/')
@@ -620,10 +611,9 @@ def api_revision_with_context(sha1_git, context):
         return utils.enrich_revision(revision, context)
 
     return _api_lookup(
-        sha1_git,
-        service.lookup_revision,
-        'Revision with sha1_git %s not found.' % sha1_git,
-        _enrich_revision)
+        service.lookup_revision, sha1_git,
+        notfound_msg='Revision with sha1_git %s not found.' % sha1_git,
+        enrich_fn=_enrich_revision)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/')
@@ -645,10 +635,9 @@ def api_revision(sha1_git):
 
     """
     return _api_lookup(
-        sha1_git,
-        service.lookup_revision,
-        'Revision with sha1_git %s not found.' % sha1_git,
-        utils.enrich_revision)
+        service.lookup_revision, sha1_git,
+        notfound_msg='Revision with sha1_git {} not found.'.format(sha1_git),
+        enrich_fn=utils.enrich_revision)
 
 
 @app.route('/api/1/revision/<string:sha1_git>/raw/')
@@ -739,9 +728,8 @@ def api_revision_log(sha1_git, prev_sha1s=None):
         return service.lookup_revision_log(s, limit)
 
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-    rev_get = _api_lookup(sha1_git,
-                          lookup_fn=lookup_revision_log_with_limit,
-                          error_msg_if_not_found=error_msg,
+    rev_get = _api_lookup(lookup_revision_log_with_limit, sha1_git,
+                          notfound_msg=error_msg,
                           enrich_fn=utils.enrich_revision)
 
     l = len(rev_get)
@@ -767,10 +755,10 @@ def api_revision_log(sha1_git, prev_sha1s=None):
 
     else:
         rev_forward_ids = prev_sha1s.split('/')
-        rev_forward = _api_lookup(rev_forward_ids,
-                                  lookup_fn=service.lookup_revision_multiple,
-                                  error_msg_if_not_found=error_msg,
-                                  enrich_fn=utils.enrich_revision)
+        rev_forward = _api_lookup(
+            service.lookup_revision_multiple, rev_forward_ids,
+            notfound_msg=error_msg,
+            enrich_fn=utils.enrich_revision)
         revisions = rev_forward + rev_backward
 
     result.update({
@@ -834,12 +822,10 @@ def api_revision_log_by(origin_id,
     error_msg += ', branch name %s' % branch_name
     error_msg += (' and time stamp %s.' % ts) if ts else '.'
 
-    rev_get = _api_lookup(origin_id,
-                          lookup_revision_log_by_with_limit,
-                          error_msg,
-                          utils.enrich_revision,
-                          branch_name,
-                          ts)
+    rev_get = _api_lookup(
+        lookup_revision_log_by_with_limit, origin_id, branch_name, ts,
+        notfound_msg=error_msg,
+        enrich_fn=utils.enrich_revision)
     l = len(rev_get)
     if l == per_page+1:
         revisions = rev_get[:-1]
@@ -903,18 +889,15 @@ def api_directory(sha1_git,
         error_msg_path = ('Entry with path %s relative to directory '
                           'with sha1_git %s not found.') % (path, sha1_git)
         return _api_lookup(
-            sha1_git,
-            service.lookup_directory_with_path,
-            error_msg_path,
-            utils.enrich_directory,
-            path)
+            service.lookup_directory_with_path, sha1_git, path,
+            notfound_msg=error_msg_path,
+            enrich_fn=utils.enrich_directory)
     else:
         error_msg_nopath = 'Directory with sha1_git %s not found.' % sha1_git
         return _api_lookup(
-            sha1_git,
-            service.lookup_directory,
-            error_msg_nopath,
-            utils.enrich_directory)
+            service.lookup_directory, sha1_git,
+            notfound_msg=error_msg_nopath,
+            enrich_fn=utils.enrich_directory)
 
 
 @app.route('/api/1/content/<string:q>/provenance/')
@@ -948,9 +931,8 @@ def api_content_provenance(q):
         return p
 
     return _api_lookup(
-        q,
-        lookup_fn=service.lookup_content_provenance,
-        error_msg_if_not_found='Content with %s not found.' % q,
+        service.lookup_content_provenance, q,
+        notfound_msg='Content with {} not found.'.format(q),
         enrich_fn=_enrich_revision)
 
 
@@ -970,10 +952,8 @@ def api_content_filetype(q):
 
     """
     return _api_lookup(
-        q,
-        lookup_fn=service.lookup_content_filetype,
-        error_msg_if_not_found='No filetype information found '
-        'for content %s.' % q,
+        service.lookup_content_filetype, q,
+        notfound_msg='No filetype information found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
@@ -994,10 +974,8 @@ def api_content_language(q):
 
     """
     return _api_lookup(
-        q,
-        lookup_fn=service.lookup_content_language,
-        error_msg_if_not_found='No language information found '
-        'for content %s.' % q,
+        service.lookup_content_language, q,
+        notfound_msg='No language information found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
@@ -1017,10 +995,8 @@ def api_content_license(q):
 
     """
     return _api_lookup(
-        q,
-        lookup_fn=service.lookup_content_license,
-        error_msg_if_not_found='No license information found '
-        'for content %s.' % q,
+        service.lookup_content_license, q,
+        notfound_msg='No license information found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
@@ -1041,10 +1017,8 @@ def api_content_ctags(q):
 
     """
     return _api_lookup(
-        q,
-        lookup_fn=service.lookup_content_ctags,
-        error_msg_if_not_found='No ctags symbol found '
-        'for content %s.' % q,
+        service.lookup_content_ctags, q,
+        notfound_msg='No ctags symbol found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
@@ -1108,9 +1082,8 @@ def api_content_metadata(q):
 
     """
     return _api_lookup(
-        q,
-        lookup_fn=service.lookup_content,
-        error_msg_if_not_found='Content with %s not found.' % q,
+        service.lookup_content, q,
+        notfound_msg='Content with {} not found.'.format(q),
         enrich_fn=utils.enrich_content)
 
 
@@ -1129,7 +1102,6 @@ def api_entity_by_uuid(uuid):
 
     """
     return _api_lookup(
-        uuid,
-        lookup_fn=service.lookup_entity_by_uuid,
-        error_msg_if_not_found="Entity with uuid '%s' not found." % uuid,
+        service.lookup_entity_by_uuid, uuid,
+        notfound_msg="Entity with uuid '%s' not found." % uuid,
         enrich_fn=utils.enrich_entity)
