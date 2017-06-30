@@ -40,16 +40,16 @@ class ApiTestCase(test_app.SWHApiTestCase):
     def generic_api_lookup_nothing_is_found(self):
         # given
         def test_generic_lookup_fn(sha1, another_unused_arg):
-            assert another_unused_arg == 'unused arg'
+            assert another_unused_arg == 'unused_arg'
             assert sha1 == 'sha1'
             return None
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
-            api._api_lookup('sha1', test_generic_lookup_fn,
-                            'This will be raised because None is returned.',
-                            lambda x: x,
-                            'unused arg')
+            api._api_lookup(
+                test_generic_lookup_fn, 'sha1', 'unused_arg',
+                notfound_msg='This will be raised because None is returned.')
+
             self.assertIn('This will be raised because None is returned.',
                           cm.exception.args[0])
 
@@ -62,12 +62,11 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_result = api._api_lookup(
-            'something',
-            test_generic_lookup_fn_1,
-            'This is not the error message you are looking for. Move along.',
-            lambda x: x * 2,
-            'some param 0',
-            'some param 1')
+            test_generic_lookup_fn_1, 'something', 'some param 0',
+            'some param 1',
+            notfound_msg=('This is not the error message you are looking for. '
+                          'Move along.'),
+            enrich_fn=lambda x: x * 2)
 
         self.assertEqual(actual_result, [4, 6, 8])
 
@@ -80,11 +79,10 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_result = api._api_lookup(
-            'something',
-            test_generic_lookup_fn_2,
-            'Not the error message you are looking for, it is. '
-            'Along, you move!',
-            lambda x: ''. join(['=', x, '=']))
+            test_generic_lookup_fn_2, 'something',
+            notfound_msg=('Not the error message you are looking for, it is. '
+                          'Along, you move!'),
+            enrich_fn=lambda x: ''. join(['=', x, '=']))
 
         self.assertEqual(actual_result, ['=a=', '=b=', '=c='])
 
@@ -97,10 +95,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_result = api._api_lookup(
-            'crit',
-            test_generic_lookup_fn_3,
-            'Move!',
-            lambda x: x - 1)
+            test_generic_lookup_fn_3, 'crit',
+            notfound_msg='Move!',
+            enrich_fn=lambda x: x - 1)
 
         self.assertEqual(actual_result, [3, 4, 5])
 
@@ -117,10 +114,9 @@ class ApiTestCase(test_app.SWHApiTestCase):
 
         # when
         actual_result = api._api_lookup(
-            '123',
-            test_generic_lookup_fn_4,
-            'Nothing to do',
-            test_enrich_data)
+            test_generic_lookup_fn_4, '123',
+            notfound_msg='Nothing to do',
+            enrich_fn=test_enrich_data)
 
         self.assertEqual(actual_result, {'a': 100})
 
@@ -2476,9 +2472,9 @@ class ApiUtils(unittest.TestCase):
     def api_lookup_not_found(self):
         # when
         with self.assertRaises(exc.NotFoundExc) as e:
-            api._api_lookup('something',
-                            lambda x: None,
-                            'this is the error message raised as it is None')
+            api._api_lookup(
+                lambda x: None, 'something',
+                notfound_msg='this is the error message raised as it is None')
 
         self.assertEqual(e.exception.args[0],
                          'this is the error message raised as it is None')
@@ -2486,19 +2482,17 @@ class ApiUtils(unittest.TestCase):
     @istest
     def api_lookup_with_result(self):
         # when
-        actual_result = api._api_lookup('something',
-                                        lambda x: x + '!',
-                                        'this is the error which won\'t be '
-                                        'used here')
+        actual_result = api._api_lookup(
+            lambda x: x + '!', 'something',
+            notfound_msg='this is the error which won\'t be used here')
 
         self.assertEqual(actual_result, 'something!')
 
     @istest
     def api_lookup_with_result_as_map(self):
         # when
-        actual_result = api._api_lookup([1, 2, 3],
-                                        lambda x: map(lambda y: y+1, x),
-                                        'this is the error which won\'t be '
-                                        'used here')
+        actual_result = api._api_lookup(
+            lambda x: map(lambda y: y+1, x), [1, 2, 3],
+            notfound_msg='this is the error which won\'t be used here')
 
         self.assertEqual(actual_result, [2, 3, 4])
