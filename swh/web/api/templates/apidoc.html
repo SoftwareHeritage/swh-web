@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+{% load api_extras %}
+{% block title %}{{ heading }} &ndash; Software Heritage API {% endblock %}
+{% block content %}
+<nav class="bread-crumbs">
+  <ul>
+    <li><a href="/api/">API</a></li>
+    <li>/</li>
+    <li><a href="/api/1/">endpoints</a></li>
+    <li>/</li>
+    <li>{{ request.path }}</li>
+  </ul>
+</nav>
+
+{% if docstring %}
+<div class="docstring">
+  <h2> Description </h2>
+  {{ docstring | safe_docstring_display | safe }}
+</div>
+{% endif %}
+{% if response_data and response_data is not none %}
+<div class="response-data">
+  <h2>Request</h2>
+  <pre><strong>{{ request.method }}</strong> {{ request.build_absolute_uri }}</pre>
+  <hr/>
+  <h2>Response</h2>
+  {% if status_code != 200 %}
+  <h3>Status Code</h3>
+  <pre class="error">{{ status_code }}</pre>
+  {% endif %}
+  {% if headers_data and headers_data is not none %}
+  <h3>Headers</h3>
+    {% for header_name, header_value in headers_data.items %}
+      <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
+    {% endfor %}
+  {% endif %}
+    <h3>Body</h3>
+    {{ response_data | highlight_json | urlize_api_links | safe }}
+</div>
+{% endif %}
+<hr/>
+{% if urls and urls|length > 0 %}
+<div class="doc-urls">
+  <table class="m-x-auto table">
+    <thead>
+      <tr>
+	<th>URL</th>
+	<th>Allowed Methods</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for url in urls %}
+      <tr>
+	<td>
+	  {{ url.rule }}
+	</td>
+	<td>
+	  {{ url.methods | dictsort:0 | join:', ' }}
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<hr/>
+{% endif %}
+{% if args and args|length > 0 %}
+<div class="doc-args">
+  <h2> Arguments </h2>
+  <dl class="doc-argslist dl-horizontal">
+    {% for arg in args %}
+    <dt> {{ arg.name }}: {{ arg.type }} </dt>
+    <dd> {{ arg.doc | safe_docstring_display | safe }} </dd>
+    {% endfor %}
+  </dl>
+</div>
+<hr/>
+{% endif %}
+{% if params and params|length > 0 %}
+<div class="doc-params">
+  <h2> Parameters </h2>
+  <dl class="doc-paramslist dl-horizontal">
+    {% for param in params %}
+    <dt> {{ param.name }}: {{ param.type }} </dt>
+    <dd> {{ param.doc | safe_docstring_display | safe }} </dd>
+    {% endfor %}
+  </dl>
+</div>
+<hr/>
+{% endif %}
+{% if headers %}
+<div class="doc-headers">
+  <h2> Headers </h2>
+  <dl class="doc-headers dl-horizontal">
+    {% for header in headers %}
+    <dt> {{ header.name }}: string </dt>
+    <dd> {{ header.doc | safe_docstring_display | safe }} </dd>
+    {% endfor %}
+  </dl>
+</div>
+<hr/>
+{% endif %}
+{% if return %}
+<div class="doc-return">
+  <h2> Returns </h2>
+  <dl class="doc-return dl-horizontal">
+    <dt> {{ return.type }} </dt>
+    <dd> {{ return.doc | safe_docstring_display | safe }} </dd>
+  </dl>
+</div>
+<hr/>
+{% endif %}
+{% if excs and excs|length > 0 %}
+<div class="doc-excs">
+    <h2> Errors </h2>
+    <dl class="doc-excslist dl-horizontal">
+        {% for exc in excs %}
+        <dt> {{ exc.exc }} </dt>
+        <dd> {{ exc.doc | safe_docstring_display | safe }} </dd>
+        {% endfor %}
+    </dl>
+</div>
+<hr/>
+{% endif %}
+{% if examples %}
+<div class="doc-example">
+  <h2> Examples </h2>
+  <dl class="doc-example dl-horizontal">
+  {% for example in examples %}
+    <dd>
+      <a href="{{ example }}">{{ example }}</a>
+    </dd>
+  {% endfor %}
+  </dl>
+</div>
+{% endif %}
+{% endblock %}
