@@ -136,7 +136,7 @@ INTERNAL_IPS = ['127.0.0.1']
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework_yaml.renderers.YAMLRenderer',
+        'swh.web.api.renderers.YAMLRenderer',
         'rest_framework.renderers.TemplateHTMLRenderer'
     ),
     'DEFAULT_THROTTLE_CLASSES': (
