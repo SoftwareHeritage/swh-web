@@ -1,32 +1,29 @@
-Source: swh-web-ui
+Source: swh-web
 Maintainer: Software Heritage developers <swh-devel@inria.fr>
 Section: python
 Priority: optional
 Build-Depends: debhelper (>= 9),
                dh-python,
                python3-all,
-               python3-blinker,
                python3-docutils,
-               python3-flask-limiter,
-               python3-flask-testing,
-               python3-hiredis,
                python3-nose,
+               python3-django,
+               python3-djangorestframework,
+               python3-djangorestframework-extensions,
                python3-pygments,
-               python3-redis,
                python3-setuptools,
                python3-swh.core (>= 0.0.20~),
                python3-swh.model (>= 0.0.15~),
                python3-swh.storage (>= 0.0.83~),
-               python3-vcversioner,
                python3-yaml
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
-Package: python3-swh.web.ui
+Package: python3-swh.web
 Architecture: all
 Depends: python3-swh.core (>= 0.0.20~),
          python3-swh.model (>= 0.0.15~),
          python3-swh.storage (>= 0.0.83~),
          ${misc:Depends},
          ${python3:Depends}
-Description: Software Heritage Web UI
+Description: Software Heritage Web Applications

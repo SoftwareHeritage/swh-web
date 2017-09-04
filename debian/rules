@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-export PYBUILD_NAME=swh-web-ui
+export PYBUILD_NAME=swh-web
 TEST_DIRS := $(shell find swh -name tests -type d)
 
 %:
