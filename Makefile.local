@@ -1,5 +1,5 @@
 SWH_WEB_UI=./bin/swh-web-dev
-FLAG=-v
+FLAG=
 NOSEFLAGS=-v -s
 TOOL=pandoc
 
