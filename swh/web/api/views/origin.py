@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.http import QueryDict
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from swh.web.api import service, utils
 from swh.web.api import apidoc as api_doc
@@ -93,8 +93,8 @@ def api_origin_visits(request, origin_id):
 
     """
     result = {}
-    per_page = int(request.query_params.get('per_page', '10'))
-    last_visit = request.query_params.get('last_visit')
+    per_page = int(utils.get_query_params(request).get('per_page', '10'))
+    last_visit = utils.get_query_params(request).get('last_visit')
     if last_visit:
         last_visit = int(last_visit)
 
@@ -122,7 +122,7 @@ def api_origin_visits(request, origin_id):
             query_params = QueryDict('', mutable=True)
             query_params['last_visit'] = new_last_visit
 
-            if request.query_params.get('per_page'):
+            if utils.get_query_params(request).get('per_page'):
                 query_params['per_page'] = per_page
 
             result['headers'] = {

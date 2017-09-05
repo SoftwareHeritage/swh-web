@@ -154,11 +154,11 @@ class RendererTestCase(unittest.TestCase):
         # then
         self.assertEquals(actual_data, input_data)
 
-    @patch('swh.web.api.apiresponse.utils')
+    @patch('swh.web.api.apiresponse.utils.filter_field_keys')
     @istest
-    def swh_filter_renderer_do_filter(self, mock_utils):
+    def swh_filter_renderer_do_filter(self, mock_ffk):
         # given
-        mock_utils.filter_field_keys.return_value = {'a': 'some-data'}
+        mock_ffk.return_value = {'a': 'some-data'}
 
         request = api_request_factory.get('/api/test/path/',
                                           data={'fields': 'a,c'})
@@ -173,5 +173,4 @@ class RendererTestCase(unittest.TestCase):
         # then
         self.assertEquals(actual_data, {'a': 'some-data'})
 
-        mock_utils.filter_field_keys.assert_called_once_with(input_data,
-                                                             {'a', 'c'})
+        mock_ffk.assert_called_once_with(input_data, {'a', 'c'})

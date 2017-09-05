@@ -9,7 +9,7 @@ from collections import defaultdict
 from functools import wraps
 from enum import Enum
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from rest_framework.decorators import api_view
 
 from swh.web.api.apiurls import APIUrls
@@ -95,7 +95,7 @@ class route(object):  # noqa: N801
         # documentation view
         if not self.noargs:
 
-            @api_view()
+            @api_view(['GET', 'HEAD'])
             def doc_view(request):
                 doc_data = self.get_doc_data(f)
                 return make_api_response(request, None, doc_data)

@@ -9,6 +9,7 @@ django_extensions
 python-dateutil
 docutils
 pygments
+yaml
 
 # Test dependencies
 

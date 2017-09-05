@@ -5,7 +5,7 @@
 
 import re
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from datetime import datetime, timezone
 from dateutil import parser
 
@@ -398,3 +398,14 @@ def shorten_path(path):
 
     ret = re.sub(sha256_re, r'\1...', path)
     return re.sub(sha1_re, r'\1...', ret)
+
+
+def get_query_params(request):
+    """Utility functions for retrieving query parameters from a DRF request
+    object. Its purpose is to handle multiple versions of DRF."""
+    if hasattr(request, 'query_params'):
+        # DRF >= 3.0 uses query_params attribute
+        return request.query_params
+    else:
+        # while DRF < 3.0 uses QUERY_PARAMS attribute
+        return request.QUERY_PARAMS

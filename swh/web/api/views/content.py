@@ -6,7 +6,7 @@
 import functools
 
 from django.http import QueryDict
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 
 from swh.web.api import service, utils
@@ -179,7 +179,7 @@ def api_content_raw(request, q):
         raise ForbiddenExc('Only textual content is available for download. '
                            'Actual content mimetype is %s.' % mimetype)
 
-    filename = request.query_params.get('filename')
+    filename = utils.get_query_params(request).get('filename')
     if not filename:
         filename = 'content_%s_raw' % q.replace(':', '_')
 
@@ -218,8 +218,8 @@ def api_content_symbol(request, q=None):
 
     """
     result = {}
-    last_sha1 = request.query_params.get('last_sha1', None)
-    per_page = int(request.query_params.get('per_page', '10'))
+    last_sha1 = utils.get_query_params(request).get('last_sha1', None)
+    per_page = int(utils.get_query_params(request).get('per_page', '10'))
 
     def lookup_exp(exp, last_sha1=last_sha1, per_page=per_page):
         return service.lookup_expression(exp, last_sha1, per_page)
@@ -236,7 +236,7 @@ def api_content_symbol(request, q=None):
             query_params = QueryDict('', mutable=True)
             new_last_sha1 = symbols[-1]['sha1']
             query_params['last_sha1'] = new_last_sha1
-            if request.query_params.get('per_page'):
+            if utils.get_query_params(request).get('per_page'):
                 query_params['per_page'] = per_page
 
             result['headers'] = {

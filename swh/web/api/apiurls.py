@@ -43,7 +43,7 @@ class APIUrls(object):
             endpoint = urlp.callback.__name__
             if endpoint != f.__name__:
                 continue
-            method_names = urlp.callback.view_class.http_method_names
+            method_names = urlp.callback.http_method_names
             url_rule = urlp.regex.pattern.replace('^', '/').replace('$', '')
             url_rule_params = re.findall('\([^)]+\)', url_rule)
             for param in url_rule_params:
@@ -115,8 +115,9 @@ class api_route(object):  # noqa: N801
         @api_view(self.methods)
         def api_view_f(*args, **kwargs):
             return f(*args, **kwargs)
-        # small hack for correctly generating API endpoints index doc
+        # small hacks for correctly generating API endpoints index doc
         api_view_f.__name__ = f.__name__
+        api_view_f.http_method_names = self.methods
 
         # register the route and its view in the endpoints index
         APIUrls.index_add_url_pattern(self.url_pattern, api_view_f,

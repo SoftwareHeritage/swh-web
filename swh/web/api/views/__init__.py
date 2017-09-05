@@ -69,7 +69,7 @@ def _api_lookup(lookup_fn, *args,
     return enrich_fn(res)
 
 
-@api_view()
+@api_view(['GET', 'HEAD'])
 def api_home(request):
     return Response({}, template_name='api.html')
 
