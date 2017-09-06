@@ -3,7 +3,7 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from throttling_test_settings import (
+from swh.web.tests import (
     scope1_limiter_rate, scope2_limiter_rate
 )
 

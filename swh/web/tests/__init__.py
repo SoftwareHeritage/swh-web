@@ -13,6 +13,10 @@ swh_web_config = get_config()
 swh_web_config['debug'] = False
 
 swh_web_config['limiters'] = {
+    'swh_api': {
+        'limiter_rate': '60/min',
+        'exempted_networks': ['127.0.0.0/8']
+    },
     'scope1': {
         'limiter_rate': '3/min'
     },

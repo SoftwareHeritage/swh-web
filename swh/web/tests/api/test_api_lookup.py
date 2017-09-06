@@ -5,7 +5,7 @@
 
 from nose.tools import istest
 
-from ..swh_api_testcase import SWHApiTestCase
+from .swh_api_testcase import SWHApiTestCase
 from swh.web.api.exc import NotFoundExc
 from swh.web.api import views
 

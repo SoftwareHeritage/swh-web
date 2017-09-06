@@ -137,7 +137,6 @@ throttle_rates = {}
 for limiter_scope, limiter_conf in swh_web_config['limiters'].items():
     throttle_rates[limiter_scope] = None if DEBUG else limiter_conf['limiter_rate'] # noqa
 
-
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',

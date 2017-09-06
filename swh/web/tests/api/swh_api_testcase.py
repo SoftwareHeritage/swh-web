@@ -5,7 +5,7 @@
 
 # Functions defined here are NOT DESIGNED FOR PRODUCTION
 
-from django.test import TestCase
+from rest_framework.test import APITestCase
 
 from swh.storage.api.client import RemoteStorage as Storage
 
@@ -55,7 +55,7 @@ def create_config(base_url='https://somewhere.org:4321'):
     return swh_config
 
 
-class SWHApiTestCase(TestCase):
+class SWHApiTestCase(APITestCase):
     """Testing API class.
 
     """

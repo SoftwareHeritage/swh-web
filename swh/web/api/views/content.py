@@ -189,7 +189,6 @@ def api_content_raw(request, q):
     return response
 
 
-@api_route(r'/content/symbol/search/', 'content-symbol', methods=['POST'])
 @api_route(r'/content/symbol/(?P<q>.+)/', 'content-symbol')
 @api_doc.route('/content/symbol/', tags=['upcoming'])
 @api_doc.arg('q',

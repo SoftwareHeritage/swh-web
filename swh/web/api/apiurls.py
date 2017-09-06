@@ -109,7 +109,7 @@ class api_route(object):  # noqa: N801
     """
 
     def __init__(self, url_pattern=None, view_name=None,
-                 methods=['GET', 'HEAD'], api_version='1'):
+                 methods=['GET', 'HEAD', 'OPTIONS'], api_version='1'):
         super().__init__()
         self.url_pattern = '^' + api_version + url_pattern + '$'
         self.view_name = view_name
