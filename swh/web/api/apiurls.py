@@ -64,7 +64,7 @@ class APIUrls(object):
                             param, '<' +
                             f.doc_data['args'][param_index]['name'] +
                             ': ' + f.doc_data['args'][param_index]['type'] +
-                            '>')
+                            '>').replace('.*', '')
             rule_dict = {'rule': '/api' + url_rule,
                          'name': urlp.name,
                          'methods': {method.upper() for method in method_names}
