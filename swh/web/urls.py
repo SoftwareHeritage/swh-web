@@ -29,8 +29,16 @@ Examples:
 from django.conf.urls import url, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
+from django.shortcuts import redirect
+
+
+def default_view(request):
+    return redirect('api_homepage')
+
+
 urlpatterns = [
     url(r'^api/', include('swh.web.api.urls')),
+    url(r'^$', default_view),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

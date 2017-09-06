@@ -74,7 +74,7 @@ def api_home(request):
     return Response({}, template_name='api.html')
 
 
-APIUrls.urlpatterns.append(url(r'^$', api_home, name='homepage'))
+APIUrls.urlpatterns.append(url(r'^$', api_home, name='api_homepage'))
 
 
 @api_route(r'/', 'endpoints')
