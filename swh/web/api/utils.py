@@ -4,12 +4,26 @@
 # See top-level LICENSE file for more information
 
 import re
+import urllib
 
-from django.core.urlresolvers import reverse
+from django.core import urlresolvers
 from datetime import datetime, timezone
 from dateutil import parser
 
 from .exc import BadInputExc
+
+
+# override django reverse function in order to get
+# the same result on debian jessie and stretch
+# (see https://code.djangoproject.com/ticket/22223)
+def reverse(viewname, urlconf=None, args=None,
+            kwargs=None, current_app=None):
+    return urllib.parse.unquote(
+        urlresolvers.reverse(
+            viewname, urlconf=urlconf, args=args,
+            kwargs=kwargs, current_app=current_app
+        )
+    )
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):

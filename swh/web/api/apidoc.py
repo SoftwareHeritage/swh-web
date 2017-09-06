@@ -9,9 +9,9 @@ from collections import defaultdict
 from functools import wraps
 from enum import Enum
 
-from django.core.urlresolvers import reverse
 from rest_framework.decorators import api_view
 
+from swh.web.api.utils import reverse
 from swh.web.api.apiurls import APIUrls
 from swh.web.api.apiresponse import make_api_response, error_response
 

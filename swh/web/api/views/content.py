@@ -6,9 +6,9 @@
 import functools
 
 from django.http import QueryDict
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 
+from swh.web.api.utils import reverse
 from swh.web.api import service, utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.exc import NotFoundExc, ForbiddenExc

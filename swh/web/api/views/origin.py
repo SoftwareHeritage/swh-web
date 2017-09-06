@@ -4,8 +4,8 @@
 # See top-level LICENSE file for more information
 
 from django.http import QueryDict
-from django.core.urlresolvers import reverse
 
+from swh.web.api.utils import reverse
 from swh.web.api import service, utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
