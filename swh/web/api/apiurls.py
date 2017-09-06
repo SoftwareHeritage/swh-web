@@ -8,6 +8,8 @@ import re
 from django.conf.urls import url
 from rest_framework.decorators import api_view
 
+from swh.web.common.throttling import throttle_scope
+
 
 class APIUrls(object):
     """
@@ -117,6 +119,7 @@ class api_route(object):  # noqa: N801
 
         # create a DRF view from the wrapped function
         @api_view(self.methods)
+        @throttle_scope('swh_api')
         def api_view_f(*args, **kwargs):
             return f(*args, **kwargs)
         # small hacks for correctly generating API endpoints index doc

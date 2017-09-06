@@ -18,7 +18,12 @@ DEFAULT_CONFIG = {
     'host': ('string', '127.0.0.1'),
     'port': ('int', 8000),
     'secret_key': ('string', 'development key'),
-    'limiter_rate': ('string', '60/min')
+    'limiters': ('dict', {
+        'swh_api': {
+            'limiter_rate': '60/min',
+            'exempted_networks': ['127.0.0.0/8']
+        }
+    })
 }
 
 swhweb_config = None

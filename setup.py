@@ -21,7 +21,7 @@ setup(
     author='Software Heritage developers',
     author_email='swh-devel@inria.fr',
     url='https://forge.softwareheritage.org/diffusion/DWUI/',
-    packages=['swh.web', 'swh.web.api',
+    packages=['swh.web', 'swh.web.common', 'swh.web.api',
               'swh.web.api.views', 'swh.web.api.tests',
               'swh.web.api.templatetags'],
     scripts=[],

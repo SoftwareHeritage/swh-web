@@ -132,6 +132,12 @@ STATICFILES_DIRS = [
 
 INTERNAL_IPS = ['127.0.0.1']
 
+throttle_rates = {}
+
+for limiter_scope, limiter_conf in swh_web_config['limiters'].items():
+    throttle_rates[limiter_scope] = None if DEBUG else limiter_conf['limiter_rate'] # noqa
+
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -139,11 +145,9 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.TemplateHTMLRenderer'
     ),
     'DEFAULT_THROTTLE_CLASSES': (
-        'rest_framework.throttling.AnonRateThrottle',
+        'swh.web.common.throttling.SwhWebRateThrottle',
     ),
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': None if DEBUG else swh_web_config['limiter_rate'],
-    }
+    'DEFAULT_THROTTLE_RATES': throttle_rates
 }
 
 LOGGING = {
