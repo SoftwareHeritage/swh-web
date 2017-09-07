@@ -47,6 +47,9 @@ def _revision_directory_by(revision, path, request_path,
     return result
 
 
+@api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
+           r'/branch/(?P<branch_name>.+)/log/',
+           'revision-origin-log')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/log/',
            'revision-origin-log')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
@@ -55,9 +58,6 @@ def _revision_directory_by(revision, path, request_path,
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)'
            r'/ts/(?P<ts>.+)/log/',
-           'revision-origin-log')
-@api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
-           r'/branch/(?P<branch_name>.+)/log/',
            'revision-origin-log')
 @api_doc.route('/revision/origin/log/')
 @api_doc.arg('origin_id',
