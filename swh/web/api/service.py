@@ -3,13 +3,26 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import os
+
 from collections import defaultdict
 
 from swh.model import hashutil
 
 from swh.web.api import converters
-from swh.web.api import query, backend
+from swh.web.api import query
 from swh.web.api.exc import NotFoundExc
+from swh.web import config
+
+storage = config.storage()
+
+MAX_LIMIT = 50  # Top limit the users can ask for
+
+
+def _first_element(l):
+    """Returns the first element in the provided list or None
+    if it is empty or None"""
+    return next(iter(l or []), None)
 
 
 def lookup_multiple_hashes(hashes):
@@ -24,7 +37,7 @@ def lookup_multiple_hashes(hashes):
 
     """
     hashlist = [hashutil.hash_to_bytes(elem['sha1']) for elem in hashes]
-    content_missing = backend.content_missing_per_sha1(hashlist)
+    content_missing = storage.content_missing_per_sha1(hashlist)
     missing = [hashutil.hash_to_hex(x) for x in content_missing]
     for x in hashes:
         x.update({'found': True})
@@ -47,7 +60,13 @@ def lookup_expression(expression, last_sha1, per_page):
         List of ctags whose content match the expression
 
     """
-    for ctag in backend.content_ctags_search(expression, last_sha1, per_page):
+
+    limit = min(per_page, MAX_LIMIT)
+    ctags = storage.content_ctags_search(expression,
+                                         last_sha1=last_sha1,
+                                         limit=limit)
+
+    for ctag in ctags:
         ctag = converters.from_swh(ctag, hashess={'id'})
         ctag['sha1'] = ctag['id']
         ctag.pop('id')
@@ -64,7 +83,7 @@ def lookup_hash(q):
 
     """
     algo, hash = query.parse_hash(q)
-    found = backend.content_find(algo, hash)
+    found = storage.content_find({algo: hash})
     return {'found': found,
             'algo': algo}
 
@@ -79,7 +98,7 @@ def search_hash(q):
 
     """
     algo, hash = query.parse_hash(q)
-    found = backend.content_find(algo, hash)
+    found = storage.content_find({algo: hash})
     return {'found': found is not None}
 
 
@@ -94,7 +113,7 @@ def lookup_content_provenance(q):
 
     """
     algo, hash = query.parse_hash(q)
-    provenances = backend.content_find_provenance(algo, hash)
+    provenances = storage.content_find_provenance({algo: hash})
     if not provenances:
         return None
     return (converters.from_provenance(p) for p in provenances)
@@ -112,7 +131,7 @@ def _lookup_content_sha1(q):
     """
     algo, hash = query.parse_hash(q)
     if algo != 'sha1':
-        hashes = backend.content_find(algo, hash)
+        hashes = storage.content_find({algo: hash})
         if not hashes:
             return None
         return hashes['sha1']
@@ -130,10 +149,11 @@ def lookup_content_ctags(q):
 
     """
     sha1 = _lookup_content_sha1(q)
+
     if not sha1:
         return None
 
-    ctags = backend.content_ctags_get(sha1)
+    ctags = list(storage.content_ctags_get([sha1]))
     if not ctags:
         return None
 
@@ -154,7 +174,7 @@ def lookup_content_filetype(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    filetype = backend.content_filetype_get(sha1)
+    filetype = _first_element(list(storage.content_mimetype_get([sha1])))
     if not filetype:
         return None
     return converters.from_filetype(filetype)
@@ -173,7 +193,7 @@ def lookup_content_language(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    lang = backend.content_language_get(sha1)
+    lang = _first_element(list(storage.content_language_get([sha1])))
     if not lang:
         return None
     return converters.from_swh(lang, hashess={'id'})
@@ -192,7 +212,7 @@ def lookup_content_license(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    lang = backend.content_license_get(sha1)
+    lang = _first_element(storage.content_fossology_license_get([sha1]))
     if not lang:
         return None
     return converters.from_swh(lang, hashess={'id'})
@@ -209,7 +229,7 @@ def lookup_origin(origin):
         origin information as dict.
 
     """
-    return converters.from_origin(backend.origin_get(origin))
+    return converters.from_origin(storage.origin_get(origin))
 
 
 def lookup_person(person_id):
@@ -222,7 +242,7 @@ def lookup_person(person_id):
         person information as dict.
 
     """
-    person = backend.person_get(person_id)
+    person = _first_element(storage.person_get([person_id]))
     return converters.from_person(person)
 
 
@@ -241,11 +261,11 @@ def lookup_directory(sha1_git):
         ['sha1'],  # HACK: sha1_git really
         'Only sha1_git is supported.')
 
-    dir = backend.directory_get(sha1_git_bin)
+    dir = _first_element(storage.directory_get([sha1_git_bin]))
     if not dir:
         return None
 
-    directory_entries = backend.directory_ls(sha1_git_bin)
+    directory_entries = storage.directory_ls(sha1_git_bin) or []
     return map(converters.from_directory_entry, directory_entries)
 
 
@@ -267,8 +287,9 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    queried_dir = backend.directory_entry_get_by_path(
-        sha1_git_bin, path_string)
+    paths = path_string.strip(os.path.sep).split(os.path.sep)
+    queried_dir = storage.directory_entry_get_by_path(
+        sha1_git_bin, list(map(lambda p: p.encode('utf-8'), paths)))
 
     if not queried_dir:
         raise NotFoundExc(('Directory entry with path %s from %s not found') %
@@ -294,7 +315,7 @@ def lookup_release(release_sha1_git):
         release_sha1_git,
         ['sha1'],
         'Only sha1_git is supported.')
-    res = backend.release_get(sha1_git_bin)
+    res = _first_element(storage.release_get([sha1_git_bin]))
     return converters.from_release(res)
 
 
@@ -315,8 +336,7 @@ def lookup_revision(rev_sha1_git):
         rev_sha1_git,
         ['sha1'],
         'Only sha1_git is supported.')
-
-    revision = backend.revision_get(sha1_git_bin)
+    revision = _first_element(storage.revision_get([sha1_git_bin]))
     return converters.from_revision(revision)
 
 
@@ -341,7 +361,7 @@ def lookup_revision_multiple(sha1_git_list):
         return sha1_git_bin
 
     sha1_bin_list = (to_sha1_bin(x) for x in sha1_git_list)
-    revisions = backend.revision_get_multiple(sha1_bin_list)
+    revisions = storage.revision_get(sha1_bin_list) or []
     return (converters.from_revision(x) for x in revisions)
 
 
@@ -364,7 +384,7 @@ def lookup_revision_message(rev_sha1_git):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    revision = backend.revision_get(sha1_git_bin)
+    revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
         raise NotFoundExc('Revision with sha1_git %s not found.'
                           % rev_sha1_git)
@@ -393,7 +413,10 @@ def lookup_revision_by(origin_id,
         The revisions matching the criterions.
 
     """
-    res = backend.revision_get_by(origin_id, branch_name, timestamp)
+    res = _first_element(storage.revision_get_by(origin_id,
+                                                 branch_name,
+                                                 timestamp=timestamp,
+                                                 limit=1))
     return converters.from_revision(res)
 
 
@@ -416,7 +439,7 @@ def lookup_revision_log(rev_sha1_git, limit):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    revision_entries = backend.revision_log(sha1_git_bin, limit)
+    revision_entries = storage.revision_log([sha1_git_bin], limit)
     return map(converters.from_revision, revision_entries)
 
 
@@ -437,10 +460,10 @@ def lookup_revision_log_by(origin_id, branch_name, timestamp, limit):
         NotFoundExc if the corresponding revision has no log
 
     """
-    revision_entries = backend.revision_log_by(origin_id,
+    revision_entries = storage.revision_log_by(origin_id,
                                                branch_name,
                                                timestamp,
-                                               limit)
+                                               limit=limit)
     if not revision_entries:
         return None
     return map(converters.from_revision, revision_entries)
@@ -473,7 +496,10 @@ def lookup_revision_with_context_by(origin_id, branch_name, ts, sha1_git,
         ancestor of sha1_git_root.
 
     """
-    rev_root = backend.revision_get_by(origin_id, branch_name, ts)
+    rev_root = _first_element(storage.revision_get_by(origin_id,
+                                                      branch_name,
+                                                      timestamp=ts,
+                                                      limit=1))
     if not rev_root:
         raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
                           ', ts: %s) not found.' % (origin_id,
@@ -511,7 +537,7 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    revision = backend.revision_get(sha1_git_bin)
+    revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
 
@@ -521,13 +547,13 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
             ['sha1'],
             'Only sha1_git is supported.')
 
-        revision_root = backend.revision_get(sha1_git_root_bin)
+        revision_root = _first_element(storage.revision_get([sha1_git_root_bin])) # noqa
         if not revision_root:
             raise NotFoundExc('Revision root %s not found' % sha1_git_root)
     else:
         sha1_git_root_bin = sha1_git_root['id']
 
-    revision_log = backend.revision_log(sha1_git_root_bin, limit)
+    revision_log = storage.revision_log([sha1_git_root_bin], limit)
 
     parents = {}
     children = defaultdict(list)
@@ -575,15 +601,16 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         ['sha1'],
         'Only sha1_git is supported.')
 
-    revision = backend.revision_get(sha1_git_bin)
+    revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
 
     dir_sha1_git_bin = revision['directory']
 
     if dir_path:
-        entity = backend.directory_entry_get_by_path(dir_sha1_git_bin,
-                                                     dir_path)
+        paths = dir_path.strip(os.path.sep).split(os.path.sep)
+        entity = storage.directory_entry_get_by_path(
+            dir_sha1_git_bin, list(map(lambda p: p.encode('utf-8'), paths)))
 
         if not entity:
             raise NotFoundExc(
@@ -593,7 +620,7 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         entity = {'type': 'dir', 'target': dir_sha1_git_bin}
 
     if entity['type'] == 'dir':
-        directory_entries = backend.directory_ls(entity['target'])
+        directory_entries = storage.directory_ls(entity['target']) or []
 
         return {'type': 'dir',
                 'path': '.' if not dir_path else dir_path,
@@ -601,9 +628,10 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
                 'content': map(converters.from_directory_entry,
                                directory_entries)}
     elif entity['type'] == 'file':  # content
-        content = backend.content_find('sha1_git', entity['target'])
+        content = storage.content_find({'sha1_git': entity['target']})
         if with_data:
-            content['data'] = backend.content_get(content['sha1'])['data']
+            c = _first_element(storage.content_get([content['sha1']]))
+            content['data'] = c['data']
 
         return {'type': 'file',
                 'path': '.' if not dir_path else dir_path,
@@ -622,7 +650,7 @@ def lookup_content(q):
 
     """
     algo, hash = query.parse_hash(q)
-    c = backend.content_find(algo, hash)
+    c = storage.content_find({algo: hash})
     return converters.from_content(c)
 
 
@@ -638,11 +666,10 @@ def lookup_content_raw(q):
 
     """
     algo, hash = query.parse_hash(q)
-    c = backend.content_find(algo, hash)
+    c = storage.content_find({algo: hash})
     if not c:
         return None
-
-    content = backend.content_get(c['sha1'])
+    content = _first_element(storage.content_get([c['sha1']]))
     return converters.from_content(content)
 
 
@@ -652,7 +679,24 @@ def stat_counters():
     Returns:
         A dict mapping textual labels to integer values.
     """
-    return backend.stat_counters()
+    return storage.stat_counters()
+
+
+def _lookup_origin_visits(origin_id, last_visit=None, limit=10):
+    """Yields the origin origin_ids' visits.
+
+    Args:
+        origin_id (int): origin to list visits for
+        last_visit (int): last visit to lookup from
+        limit (int): Number of elements max to display
+
+    Yields:
+       Dictionaries of origin_visit for that origin
+
+    """
+    limit = min(limit, MAX_LIMIT)
+    yield from storage.origin_visit_get(
+        origin_id, last_visit=last_visit, limit=limit)
 
 
 def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
@@ -665,8 +709,8 @@ def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
        Dictionaries of origin_visit for that origin
 
     """
-    visits = backend.lookup_origin_visits(
-        origin_id, last_visit=last_visit, limit=per_page)
+    visits = _lookup_origin_visits(origin_id, last_visit=last_visit,
+                                   limit=per_page)
     for visit in visits:
         yield converters.from_origin_visit(visit)
 
@@ -682,7 +726,7 @@ def lookup_origin_visit(origin_id, visit_id):
        The dict origin_visit concerned
 
     """
-    visit = backend.lookup_origin_visit(origin_id, visit_id)
+    visit = storage.origin_visit_get_by(origin_id, visit_id)
     return converters.from_origin_visit(visit)
 
 
@@ -697,7 +741,7 @@ def lookup_entity_by_uuid(uuid):
 
     """
     uuid = query.parse_uuid4(uuid)
-    for entity in backend.entity_get(uuid):
+    for entity in storage.entity_get(uuid):
         entity = converters.from_swh(entity,
                                      convert={'last_seen', 'uuid'},
                                      convert_fn=lambda x: str(x))

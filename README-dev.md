@@ -23,14 +23,12 @@ Folder swh/web/api/:
 
 - views          main api endpoints definitions (html browsable + json + yaml)
 - service        Orchestration layer used by views module.
-                 In charge of communication with `backend` to retrieve
+                 In charge of communication with swh storage to retrieve
                  information and conversion for the upper layer.
-- backend        Lower layer in charge of communication with swh storage.
-                 Used by `service` module.
 
 In short:
-1. views -depends-> service -depends-> backend     ----asks----> swh-storage
-2. views <- service <- backend                     <----rets---- swh-storage
+1. views -depends-> service ----asks----> swh-storage
+2. views <- service <----rets---- swh-storage
 
 ## Utilities
 
