@@ -753,11 +753,11 @@ def lookup_directory_through_revision(revision, path=None,
     Args:
         revision: dictionary of criterion representing a revision to lookup
         path: directory's path to lookup.
-        limit: optional query parameter to limit the revisions log.
-        (default to 100). For now, note that this limit could impede the
-        transitivity conclusion about sha1_git not being an ancestor of.
+        limit: optional query parameter to limit the revisions log (default to
+            100). For now, note that this limit could impede the transitivity
+            conclusion about sha1_git not being an ancestor of.
         with_data: indicate to retrieve the content's raw data if path resolves
-        to a content.
+            to a content.
 
     Returns:
         The directory pointing to by the revision criterions at path.
