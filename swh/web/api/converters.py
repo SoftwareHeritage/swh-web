@@ -18,22 +18,22 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
     serializable.
 
     Args:
-        - dict_swh: the origin dictionary needed to be transformed
-        - hashess: list/set of keys representing hashes values (sha1, sha256,
-        sha1_git, etc...) as bytes. Those need to be transformed in hexadecimal
-        string
-        - bytess: list/set of keys representing bytes values which needs to
-        be decoded
-        - blacklist: set of keys to filter out from the conversion
-        - convert: set of keys whose associated values need to be converted
-        using convert_fn
-        - convert_fn: the conversion function to apply on the value of key
-        in 'convert'
+        dict_swh: the origin dictionary needed to be transformed
+        hashess: list/set of keys representing hashes values (sha1, sha256,
+            sha1_git, etc...) as bytes. Those need to be transformed in
+            hexadecimal string
+        bytess: list/set of keys representing bytes values which needs to be
+            decoded
+        blacklist: set of keys to filter out from the conversion
+        convert: set of keys whose associated values need to be converted using
+            convert_fn
+        convert_fn: the conversion function to apply on the value of key in
+            'convert'
 
-        The remaining keys are copied as is in the output.
+    The remaining keys are copied as is in the output.
 
     Returns:
-        dictionary equivalent as dict_swh only with its keys `converted`.
+        dictionary equivalent as dict_swh only with its keys converted.
 
     """
     def convert_hashes_bytes(v):
@@ -56,12 +56,17 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         return v
 
     def convert_date(v):
-        """v is either:
-            - a dict with three keys:
-              - timestamp (dict or integer timestamp)
-              - offset
-              - negative_utc
-            - a datetime
+        """
+        Args:
+            v (dict or datatime): either:
+
+                - a dict with three keys:
+
+                  - timestamp (dict or integer timestamp)
+                  - offset
+                  - negative_utc
+
+                - or, a datetime
 
             We convert it to a human-readable string
 
@@ -132,12 +137,13 @@ def from_provenance(provenance):
     """Convert from a provenance information to a provenance dictionary.
 
     Args:
-        provenance: Dictionary with the following keys:
-          content (sha1_git)  : the content's identifier
-          revision (sha1_git) : the revision the content was seen
-          origin (int)        : the origin the content was seen
-          visit (int)         : the visit it occurred
-          path (bytes)        : the path the content was seen at
+        provenance (dict): Dictionary with the following keys:
+            - content (sha1_git): the content's identifier
+            - revision (sha1_git): the revision the content was seen
+            - origin (int): the origin the content was seen
+            - visit (int): the visit it occurred
+            - path (bytes): the path the content was seen at
+
     """
     return from_swh(provenance,
                     hashess={'content', 'revision'},
@@ -156,17 +162,20 @@ def from_release(release):
     """Convert from an SWH release to a json serializable release dictionary.
 
     Args:
-        release: Dict with the following keys
-        - id: identifier of the revision (sha1 in bytes)
-        - revision: identifier of the revision the release points to (sha1 in
-        bytes)
-        - comment: release's comment message (bytes)
-        - name: release's name (string)
-        - author: release's author identifier (swh's id)
-        - synthetic: the synthetic property (boolean)
+        release (dict): dictionary with keys:
+
+            - id: identifier of the revision (sha1 in bytes)
+            - revision: identifier of the revision the release points to (sha1
+              in bytes)
+
+        comment: release's comment message (bytes)
+        name: release's name (string)
+        author: release's author identifier (swh's id)
+        synthetic: the synthetic property (boolean)
 
     Returns:
-        Release dictionary with the following keys:
+        dict: Release dictionary with the following keys:
+
         - id: hexadecimal sha1 (string)
         - revision: hexadecimal sha1 (string)
         - comment: release's comment message (string)
@@ -209,27 +218,31 @@ def from_revision(revision):
     """Convert from an SWH revision to a json serializable revision dictionary.
 
     Args:
-        revision: Dict with the following keys
-        - id: identifier of the revision (sha1 in bytes)
-        - directory: identifier of the directory the revision points to (sha1
-        in bytes)
-        - author_name, author_email: author's revision name and email
-        - committer_name, committer_email: committer's revision name and email
-        - message: revision's message
-        - date, date_offset: revision's author date
-        - committer_date, committer_date_offset: revision's commit date
-        - parents: list of parents for such revision
-        - synthetic: revision's property nature
-        - type: revision's type (git, tar or dsc at the moment)
-        - metadata: if the revision is synthetic, this can reference dynamic
-        properties.
+        revision (dict): dict with keys:
+
+            - id: identifier of the revision (sha1 in bytes)
+            - directory: identifier of the directory the revision points to
+              (sha1 in bytes)
+            - author_name, author_email: author's revision name and email
+            - committer_name, committer_email: committer's revision name and
+              email
+            - message: revision's message
+            - date, date_offset: revision's author date
+            - committer_date, committer_date_offset: revision's commit date
+            - parents: list of parents for such revision
+            - synthetic: revision's property nature
+            - type: revision's type (git, tar or dsc at the moment)
+            - metadata: if the revision is synthetic, this can reference
+              dynamic properties.
 
     Returns:
-        Revision dictionary with the same keys as inputs, only:
+        dict: Revision dictionary with the same keys as inputs, except:
+
         - sha1s are in hexadecimal strings (id, directory)
         - bytes are decoded in string (author_name, committer_name,
-        author_email, committer_email)
-        - remaining keys are left as is
+          author_email, committer_email)
+
+        Remaining keys are left as is
 
     """
     revision = from_swh(revision,

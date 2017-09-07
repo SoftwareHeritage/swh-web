@@ -12,9 +12,11 @@ from rest_framework.decorators import api_view
 class APIUrls(object):
     """
     Class to manage API documentation URLs.
-      * Indexes all routes documented using apidoc's decorators.
-      * Tracks endpoint/request processing method relationships for use
-        in generating related urls in API documentation
+
+    - Indexes all routes documented using apidoc's decorators.
+    - Tracks endpoint/request processing method relationships for use in
+      generating related urls in API documentation
+
     """
     apidoc_routes = {}
     method_endpoints = {}
@@ -34,9 +36,11 @@ class APIUrls(object):
     def group_routes_by_method(cls, f):
         """
         Group URL endpoints according to their processing method.
+
         Returns:
-            A dict where keys are the processing method names, and values
-            are the routes that are bound to the key method.
+            A dict where keys are the processing method names, and values are
+            the routes that are bound to the key method.
+
         """
         rules = []
         for urlp in cls.urlpatterns:
@@ -96,8 +100,8 @@ class api_route(object):  # noqa: N801
 
     Args:
         url_pattern: the url pattern used by DRF to identify the API route
-        view_name: the name of the API view associated to the route
-                   used to reverse the url
+        view_name: the name of the API view associated to the route used to
+           reverse the url
         methods: array of HTTP methods supported by the API route
 
     """

@@ -16,19 +16,17 @@ from swh.web.api.exc import NotFoundExc, ForbiddenExc
 def compute_link_header(rv, options):
     """Add Link header in returned value results.
 
-    Expects rv to be a dict with 'results' and 'headers' key:
-        'results': the returned value expected to be shown
-        'headers': dictionary with link-next and link-prev
-
     Args:
-        rv (dict): with keys:
-            - 'headers': potential headers with 'link-next'
-                and 'link-prev' keys
-            - 'results': containing the result to return
+        rv (dict): dictionary with keys:
+
+            - headers: potential headers with 'link-next' and 'link-prev'
+              keys
+            - results: containing the result to return
+
         options (dict): the initial dict to update with result if any
 
     Returns:
-        Dict with optional keys 'link-next' and 'link-prev'.
+        dict: dictionary with optional keys 'link-next' and 'link-prev'
 
     """
     link_headers = []
@@ -57,10 +55,10 @@ def compute_link_header(rv, options):
 
 
 def filter_by_fields(request, data):
-    """Extract a request parameter 'fields' if it exists to permit the
-        filtering on the data dict's keys.
+    """Extract a request parameter 'fields' if it exists to permit the filtering on
+    he data dict's keys.
 
-        If such field is not provided, returns the data as is.
+    If such field is not provided, returns the data as is.
 
     """
     fields = utils.get_query_params(request).get('fields')
@@ -94,14 +92,14 @@ def transform(rv):
 def make_api_response(request, data, doc_data={}, options={}):
     """Generates an API response based on the requested mimetype.
 
-        Args:
-            request: a DRF Request object
-            data: raw data to return in the API response
-            doc_data: documentation data for HTML response
-            options: optionnal data that can be used to generate the response
+    Args:
+        request: a DRF Request object
+        data: raw data to return in the API response
+        doc_data: documentation data for HTML response
+        options: optionnal data that can be used to generate the response
 
-        Returns:
-            a DRF Response a object
+    Returns:
+        a DRF Response a object
 
     """
     if data:
@@ -148,10 +146,11 @@ def make_api_response(request, data, doc_data={}, options={}):
 def error_response(request, error, doc_data):
     """Private function to create a custom error response.
 
-        Args:
-            request: a DRF Request object
-            error: the exception that caused the error
-            doc_data: documentation data for HTML response
+    Args:
+        request: a DRF Request object
+        error: the exception that caused the error
+        doc_data: documentation data for HTML response
+
     """
     error_code = 400
     if isinstance(error, NotFoundExc):
