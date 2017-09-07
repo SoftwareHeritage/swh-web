@@ -10,13 +10,17 @@ import argparse
 import django
 import os
 
-from django.core import management
+# need to setup django settings before importing django modules
+# with django 1.7 (debian jessie)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings") # noqa
 
-from django.core.management.commands.runserver import (
+from django.core import management # noqa
+
+from django.core.management.commands.runserver import ( # noqa
     Command as runserver
 )
 
-from swh.web import config
+from swh.web import config # noqa
 
 # Default configuration file
 DEFAULT_CONF_FILE = '~/.config/swh/webapp.yml'
@@ -40,6 +44,5 @@ if __name__ == '__main__':
     swh_web_config = config.get_config(config_path)
     runserver.default_port = swh_web_config['port']
     runserver.default_addr = swh_web_config['host']
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings")
     django.setup()
     management.call_command('runserver')

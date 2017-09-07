@@ -18,7 +18,7 @@
   {{ docstring | safe_docstring_display | safe }}
 </div>
 {% endif %}
-{% if response_data and response_data is not none %}
+{% if response_data  %}
 <div class="response-data">
   <h2>Request</h2>
   <pre><strong>{{ request.method }}</strong> {{ request.build_absolute_uri }}</pre>
@@ -28,7 +28,7 @@
   <h3>Status Code</h3>
   <pre class="error">{{ status_code }}</pre>
   {% endif %}
-  {% if headers_data and headers_data is not none %}
+  {% if headers_data %}
   <h3>Headers</h3>
     {% for header_name, header_value in headers_data.items %}
       <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
