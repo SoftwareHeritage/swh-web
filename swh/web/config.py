@@ -14,7 +14,7 @@ DEFAULT_CONFIG = {
         },
     }),
     'log_dir': ('string', '/tmp/swh/log'),
-    'debug': ('bool', True),
+    'debug': ('bool', False),
     'host': ('string', '127.0.0.1'),
     'port': ('int', 8000),
     'secret_key': ('string', 'development key'),
@@ -29,15 +29,15 @@ DEFAULT_CONFIG = {
 swhweb_config = None
 
 
-def get_config(config_file=None):
+def get_config(config_file='webapp'):
     """Read the configuration file `config_file`, update the app with
        parameters (secret_key, conf) and return the parsed configuration as a
        dict. If no configuration file is provided, return a default
        configuration."""
 
     global swhweb_config
-    if not swhweb_config or config_file:
-        swhweb_config = config.read(config_file, DEFAULT_CONFIG)
+    if not swhweb_config:
+        swhweb_config = config.load_named_config(config_file, DEFAULT_CONFIG)
         config.prepare_folders(swhweb_config, 'log_dir')
         swhweb_config['storage'] = get_storage(**swhweb_config['storage'])
     return swhweb_config
