@@ -18,12 +18,4 @@ port: 5004
 # Max revisions shown in a log
 max_log_revs: 25
 
-limiter:
-  global_limits:
-    - '1000 per minute'
-  headers_enabled: True
-  strategy: 'moving-window'
-  storage_uri: 'memory://'
-  storage_options: {}
-  in_memory_fallback:
-    - '1000 per minute'
+limiter_rate: '1000/min'
