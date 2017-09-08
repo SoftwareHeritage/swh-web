@@ -16,12 +16,16 @@ def parse_requirements():
 
 
 setup(
-    name='swh.web.ui',
+    name='swh.web',
     description='Software Heritage Web UI',
     author='Software Heritage developers',
     author_email='swh-devel@inria.fr',
     url='https://forge.softwareheritage.org/diffusion/DWUI/',
-    packages=['swh.web.ui', 'swh.web.ui.views', 'swh.web.ui.tests'],
+    packages=['swh.web', 'swh.web.common',
+              'swh.web.api', 'swh.web.api.views',
+              'swh.web.api.templatetags', 'swh.web.tests',
+              'swh.web.tests.api', 'swh.web.tests.api.views',
+              'swh.web.tests.common'],
     scripts=[],
     install_requires=parse_requirements(),
     setup_requires=['vcversioner'],

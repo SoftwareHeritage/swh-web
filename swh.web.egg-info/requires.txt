@@ -1,0 +1,10 @@
+django
+django_extensions
+django_rest_framework
+docutils
+pygments
+python-dateutil
+swh.core>=0.0.20
+swh.model>=0.0.15
+swh.storage>=0.0.83
+yaml
