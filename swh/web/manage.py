@@ -10,9 +10,6 @@ import sys
 
 from swh.web import config
 
-# Default configuration file
-DEFAULT_CONF_FILE = '~/.config/swh/webapp.yml'
-
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings")
     try:
@@ -33,7 +30,7 @@ if __name__ == "__main__":
                 "forget to activate a virtual environment?"
             )
         raise
-    swh_web_config = config.get_config(DEFAULT_CONF_FILE)
+    swh_web_config = config.get_config()
     runserver.default_port = swh_web_config['port']
     runserver.default_addr = swh_web_config['host']
     execute_from_command_line(sys.argv)
