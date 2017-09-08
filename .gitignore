@@ -8,5 +8,5 @@
 resources/test/
 __pycache__
 version.txt
-swh.web.ui.egg-info
+swh.web.egg-info
 docs/build/

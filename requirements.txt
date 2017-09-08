@@ -3,14 +3,13 @@
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
 # Runtime dependencies
-Flask
-Flask_Limiter
+django
+django_rest_framework
+django_extensions
 python-dateutil
 docutils
 pygments
-redis
-hiredis
+yaml
 
 # Test dependencies
-#Flask-Testing
-#blinker
+

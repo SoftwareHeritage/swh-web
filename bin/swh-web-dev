@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2015  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+
+
+import argparse
+import django
+import os
+
+# need to setup django settings before importing django modules
+# with django 1.7 (debian jessie)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings") # noqa
+
+from django.core import management # noqa
+
+from django.core.management.commands.runserver import ( # noqa
+    Command as runserver
+)
+
+from swh.web import config # noqa
+
+# Default configuration file
+DEFAULT_CONF_FILE = '~/.config/swh/webapp.yml'
+
+
+def parse_args():
+    """Parse the configuration for the cli.
+    """
+    cli = argparse.ArgumentParser(description="SWH's web ui.")
+
+    cli.add_argument('--config', '-c', help='configuration file path')
+
+    args = cli.parse_args()
+
+    return args
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    config_path = args.config or DEFAULT_CONF_FILE
+    swh_web_config = config.get_config(config_path)
+    runserver.default_port = swh_web_config['port']
+    runserver.default_addr = swh_web_config['host']
+    django.setup()
+    management.call_command('runserver')
