@@ -1,3 +1,9 @@
+swh-web (0.0.85-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.85
+
+ -- Antoine Lambert <antoine.lambert@inria.fr>  Fri, 08 Sep 2017 10:55:50 +0200
+
 swh-web (0.0.84-1~swh1) unstable-swh; urgency=medium
 
   * Release swh.web.ui v0.0.84
