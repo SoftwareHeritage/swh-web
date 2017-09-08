@@ -15,6 +15,8 @@ from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory
 from rest_framework.decorators import api_view
 
+from nose.tools import istest
+
 from swh.web.common.throttling import (
     SwhWebRateThrottle, throttle_scope
 )
@@ -42,7 +44,8 @@ class ThrottlingTests(TestCase):
         cache.clear()
         self.factory = APIRequestFactory()
 
-    def test_scope1_requests_are_throttled(self):
+    @istest
+    def scope1_requests_are_throttled(self):
         """
         Ensure request rate is limited in scope1
         """
@@ -51,7 +54,8 @@ class ThrottlingTests(TestCase):
             response = MockView.as_view()(request)
         assert response.status_code == 429
 
-    def test_scope2_requests_are_throttled(self):
+    @istest
+    def scope2_requests_are_throttled(self):
         """
         Ensure request rate is not limited in scope2 as
         requests coming from localhost are exempted from rate limit.

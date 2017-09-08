@@ -12,7 +12,7 @@ from ..swh_api_testcase import SWHApiTestCase
 class ContentApiTestCase(SWHApiTestCase):
     @patch('swh.web.api.views.content.service')
     @istest
-    def test_api_content_filetype(self, mock_service):
+    def api_content_filetype(self, mock_service):
         stub_filetype = {
             'accepted_media_type': 'application/xml',
             'encoding': 'ascii',
@@ -686,7 +686,7 @@ class ContentApiTestCase(SWHApiTestCase):
 
         # when
         rv = self.client.post(
-            '/api/1/content/known/search/',
+            '/api/1/content/known/search',
             data=dict(
                 q='7e62b1fe10c88a3eddbba930b156bee2956b2435',
                 filepath='8e62b1fe10c88a3eddbba930b156bee2956b2435',
