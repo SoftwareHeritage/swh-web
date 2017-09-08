@@ -1,13 +1,7 @@
-SWH_WEB_UI=./bin/swh-web-dev
-FLAG=
-NOSEFLAGS=-v -s
 TOOL=pandoc
 
-run-dev:
-	$(SWH_WEB_UI) $(FLAG) --config ./resources/test/webapp.yml
-
 run: # works with the default ~/.config/swh/webapp.yml file
-	$(SWH_WEB_UI) $(FLAG)
+	cd swh/web && python3 manage.py runserver
 
 doc:
 	cd swh/web/api/templates/includes/ && pandoc -o apidoc-header.html apidoc-header.md
