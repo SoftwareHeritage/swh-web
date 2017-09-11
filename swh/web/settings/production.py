@@ -5,10 +5,11 @@
 
 
 from .common import *  # noqa
+from .common import swh_web_config
 
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
+        'LOCATION': swh_web_config['limiters']['cache_uri'],
     }
 }

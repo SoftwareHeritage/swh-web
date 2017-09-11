@@ -134,8 +134,10 @@ INTERNAL_IPS = ['127.0.0.1']
 
 throttle_rates = {}
 
-for limiter_scope, limiter_conf in swh_web_config['limiters'].items():
-    throttle_rates[limiter_scope] = None if DEBUG else limiter_conf['limiter_rate'] # noqa
+limiters = swh_web_config['limiters']
+for limiter_scope, limiter_conf in limiters['limits'].items():
+    limiter_rate = None if DEBUG else limiter_conf['limiter_rate']
+    throttle_rates[limiter_scope] = limiter_rate
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (

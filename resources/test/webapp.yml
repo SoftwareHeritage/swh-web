@@ -18,4 +18,12 @@ port: 5004
 # Max revisions shown in a log
 max_log_revs: 25
 
-limiter_rate: '1000/min'
+limiters:
+  cache_uri: http://127.0.0.1:11211
+  limits:
+    swh_api:
+      limiter_rate: 1/m
+      exempted_networks:
+        - 127.0.0.0/8
+    another_api:
+      limiter_rate: 2/m

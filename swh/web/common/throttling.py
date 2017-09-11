@@ -38,7 +38,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     def __init__(self):
         super().__init__()
         self.exempted_networks = None
-        limiters = get_config()['limiters']
+        limiters = get_config()['limiters']['limits']
         if self.scope in limiters:
             networks = limiters[self.scope].get('exempted_networks')
             if networks:
