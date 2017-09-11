@@ -127,7 +127,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(PROJECT_DIR, "static")
+    os.path.join(PROJECT_DIR, "../static")
 ]
 
 INTERNAL_IPS = ['127.0.0.1']

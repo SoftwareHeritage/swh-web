@@ -11,6 +11,7 @@ from swh.web.config import get_config
 swh_web_config = get_config()
 
 swh_web_config['debug'] = False
+swh_web_config['secret_key'] = 'test'
 
 swh_web_config['limiters'] = {
     'swh_api': {
@@ -26,7 +27,7 @@ swh_web_config['limiters'] = {
     }
 }
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings.development")
 django.setup()
 
 scope1_limiter_rate = 3
