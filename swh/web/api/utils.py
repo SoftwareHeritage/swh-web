@@ -7,6 +7,7 @@ import re
 import urllib
 
 from django.core import urlresolvers
+from django.http import QueryDict
 from datetime import datetime, timezone
 from dateutil import parser
 
@@ -17,13 +18,19 @@ from .exc import BadInputExc
 # the same result on debian jessie and stretch
 # (see https://code.djangoproject.com/ticket/22223)
 def reverse(viewname, urlconf=None, args=None,
-            kwargs=None, current_app=None):
-    return urllib.parse.unquote(
+            kwargs=None, current_app=None, query_params=None):
+    url = urllib.parse.unquote(
         urlresolvers.reverse(
             viewname, urlconf=urlconf, args=args,
             kwargs=kwargs, current_app=current_app
         )
     )
+    if query_params and len(query_params) > 0:
+        query_dict = QueryDict('', mutable=True)
+        for k, v in query_params.items():
+            query_dict[k] = v
+        url += ('?' + query_dict.urlencode())
+    return url
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):

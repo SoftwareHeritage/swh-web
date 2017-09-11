@@ -5,7 +5,6 @@
 
 import functools
 
-from django.http import QueryDict
 from django.http import HttpResponse
 
 from swh.web.api.utils import reverse
@@ -232,15 +231,15 @@ def api_content_symbol(request, q=None):
         l = len(symbols)
 
         if l == per_page:
-            query_params = QueryDict('', mutable=True)
+            query_params = {}
             new_last_sha1 = symbols[-1]['sha1']
             query_params['last_sha1'] = new_last_sha1
             if utils.get_query_params(request).get('per_page'):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('content-symbol', kwargs={'q': q}) + '?' +
-                query_params.urlencode()
+                'link-next': reverse('content-symbol', kwargs={'q': q},
+                                     query_params=query_params)
             }
 
     result.update({
