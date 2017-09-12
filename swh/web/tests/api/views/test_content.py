@@ -686,7 +686,7 @@ class ContentApiTestCase(SWHApiTestCase):
 
         # when
         rv = self.client.post(
-            '/api/1/content/known/search',
+            '/api/1/content/known/search/',
             data=dict(
                 q='7e62b1fe10c88a3eddbba930b156bee2956b2435',
                 filepath='8e62b1fe10c88a3eddbba930b156bee2956b2435',
