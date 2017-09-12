@@ -1,3 +1,15 @@
+swh-web (0.0.87-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.87
+  * throttling: permit the use to define cache server
+  * throttling: improve configuration intent
+  * configuration: Clarify config keys intent and improve config
+  * management
+  * docs: change content example to ls.c from GNU corutils
+  * packaging: Fix dependency requirements
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Tue, 12 Sep 2017 14:11:10 +0200
+
 swh-web (0.0.86-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.86
