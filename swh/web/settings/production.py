@@ -10,6 +10,6 @@ from .common import swh_web_config
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': swh_web_config['limiters']['cache_uri'],
+        'LOCATION': swh_web_config['throttling']['cache_uri'],
     }
 }

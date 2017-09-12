@@ -18,10 +18,10 @@ DEFAULT_CONFIG = {
     'host': ('string', '127.0.0.1'),  # development property
     'port': ('int', 5003),            # development property
     'secret_key': ('string', 'development key'),
-    'limiters': ('dict', {
+    'throttling': ('dict', {
         'cache_uri': None,  # production: memcached as cache (127.0.0.1:11211)
                             # development: in-memory cache so None
-        'limits': {
+        'scopes': {
             'swh_api': [{
                 'limiter_rate': '120/h',
                 'exempted_networks': ['127.0.0.0/8']

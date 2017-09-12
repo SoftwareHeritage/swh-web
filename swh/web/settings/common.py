@@ -134,8 +134,8 @@ INTERNAL_IPS = ['127.0.0.1']
 
 throttle_rates = {}
 
-limiters = swh_web_config['limiters']
-for limiter_scope, limiter_conf in limiters['limits'].items():
+throttling = swh_web_config['throttling']
+for limiter_scope, limiter_conf in throttling['scopes'].items():
     limiter_rate = None if DEBUG else limiter_conf['limiter_rate']
     throttle_rates[limiter_scope] = limiter_rate
 
