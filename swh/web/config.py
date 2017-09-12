@@ -19,10 +19,11 @@ DEFAULT_CONFIG = {
     'port': ('int', 8000),
     'secret_key': ('string', 'development key'),
     'limiters': ('dict', {
-        'swh_api': {
-            'cache_uri': None,
-            'limits': [{
-                'limiter_rate': '60/min',
+        'cache_uri': None,  # production: memcached as cache (127.0.0.1:11211)
+                            # development: in-memory cache so None
+        'limits': {
+            'swh_api': [{
+                'limiter_rate': '120/h',
                 'exempted_networks': ['127.0.0.0/8']
             }]
         }
