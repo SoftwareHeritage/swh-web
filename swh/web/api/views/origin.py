@@ -4,8 +4,9 @@
 # See top-level LICENSE file for more information
 
 
-from swh.web.api.utils import reverse
-from swh.web.api import service, utils
+from swh.web.common import service
+from swh.web.common.utils import reverse
+from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views import (

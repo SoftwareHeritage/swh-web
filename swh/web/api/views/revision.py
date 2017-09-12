@@ -5,8 +5,10 @@
 
 from django.http import HttpResponse
 
-from swh.web.api.utils import reverse
-from swh.web.api import service, utils
+from swh.web.common import service
+from swh.web.common.utils import reverse
+from swh.web.common.utils import parse_timestamp
+from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views import (
@@ -92,7 +94,7 @@ def api_revision_log_by(request, origin_id,
     per_page = int(utils.get_query_params(request).get('per_page', '10'))
 
     if ts:
-        ts = utils.parse_timestamp(ts)
+        ts = parse_timestamp(ts)
 
     def lookup_revision_log_by_with_limit(o_id, br, ts, limit=per_page+1):
         return service.lookup_revision_log_by(o_id, br, ts, limit)
@@ -183,7 +185,7 @@ def api_directory_through_revision_origin(request, origin_id,
     by origin/branch/timestamp.
     """
     if ts:
-        ts = utils.parse_timestamp(ts)
+        ts = parse_timestamp(ts)
 
     return _revision_directory_by({'origin_id': origin_id,
                                    'branch_name': branch_name,
@@ -231,7 +233,7 @@ def api_revision_with_origin(request, origin_id,
     pointed by a given branch.
 
     """
-    ts = utils.parse_timestamp(ts)
+    ts = parse_timestamp(ts)
     return _api_lookup(
         service.lookup_revision_by, origin_id, branch_name, ts,
         notfound_msg=('Revision with (origin_id: {}, branch_name: {}'

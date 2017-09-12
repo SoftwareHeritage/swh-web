@@ -12,7 +12,6 @@ from inspect import cleandoc
 from django import template
 from django.utils.safestring import mark_safe
 
-
 from pygments import highlight
 from pygments.lexers import JsonLexer
 from pygments.formatters import HtmlFormatter

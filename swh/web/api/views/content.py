@@ -7,10 +7,11 @@ import functools
 
 from django.http import HttpResponse
 
-from swh.web.api.utils import reverse
-from swh.web.api import service, utils
+from swh.web.common import service
+from swh.web.common.utils import reverse
+from swh.web.common.exc import NotFoundExc, ForbiddenExc
 from swh.web.api import apidoc as api_doc
-from swh.web.api.exc import NotFoundExc, ForbiddenExc
+from swh.web.api import utils
 from swh.web.api.apiurls import api_route
 from swh.web.api.views import (
     _api_lookup, _doc_exc_id_not_found, _doc_header_link,

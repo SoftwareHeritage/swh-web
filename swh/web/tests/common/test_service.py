@@ -4,18 +4,18 @@
 # See top-level LICENSE file for more information
 
 import datetime
+import unittest
 
 from nose.tools import istest
 from unittest.mock import MagicMock, patch, call
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 
-from .swh_api_testcase import SWHApiTestCase
-from swh.web.api import service
-from swh.web.api.exc import BadInputExc, NotFoundExc
+from swh.web.common import service
+from swh.web.common.exc import BadInputExc, NotFoundExc
 
 
-class ServiceTestCase(SWHApiTestCase):
+class ServiceTestCase(unittest.TestCase):
 
     def setUp(self):
         self.SHA1_SAMPLE = '18d8be353ed3480476f032475e7c233eff7371d5'
@@ -108,7 +108,7 @@ class ServiceTestCase(SWHApiTestCase):
             'visit': 1
         }
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_multiple_hashes_ball_missing(self, mock_storage):
         # given
@@ -131,7 +131,7 @@ class ServiceTestCase(SWHApiTestCase):
              'found': True}
         ])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_multiple_hashes_some_missing(self, mock_storage):
         # given
@@ -156,7 +156,7 @@ class ServiceTestCase(SWHApiTestCase):
              'found': True}
         ])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_hash_does_not_exist(self, mock_storage):
         # given
@@ -175,7 +175,7 @@ class ServiceTestCase(SWHApiTestCase):
             {'sha1_git':
              hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_hash_exist(self, mock_storage):
         # given
@@ -198,7 +198,7 @@ class ServiceTestCase(SWHApiTestCase):
              hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')}
         )
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def search_hash_does_not_exist(self, mock_storage):
         # given
@@ -216,7 +216,7 @@ class ServiceTestCase(SWHApiTestCase):
             {'sha1_git':
              hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def search_hash_exist(self, mock_storage):
         # given
@@ -238,7 +238,7 @@ class ServiceTestCase(SWHApiTestCase):
              hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')},
         )
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_ctags(self, mock_storage):
         # given
@@ -271,7 +271,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_ctags_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_ctags_no_hash(self, mock_storage):
         # given
@@ -290,7 +290,7 @@ class ServiceTestCase(SWHApiTestCase):
             {'sha1_git': hash_to_bytes(
                 '123caf10e9535160d90e874b45aa426de762f19f')})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_filetype(self, mock_storage):
         # given
@@ -317,7 +317,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_mimetype_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_filetype_2(self, mock_storage):
         # given
@@ -355,7 +355,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_mimetype_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_language(self, mock_storage):
         # given
@@ -380,7 +380,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_language_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_language_2(self, mock_storage):
         # given
@@ -416,7 +416,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_language_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_expression(self, mock_storage):
         # given
@@ -447,7 +447,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_ctags_search.assert_called_with(
             'foobar', last_sha1='hash', limit=10)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_expression_no_result(self, mock_storage):
         # given
@@ -465,7 +465,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_ctags_search.assert_called_with(
             'barfoo', last_sha1='hash', limit=10)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_license(self, mock_storage):
         # given
@@ -490,7 +490,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_fossology_license_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_license_2(self, mock_storage):
         # given
@@ -526,7 +526,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_fossology_license_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_provenance(self, mock_storage):
         # given
@@ -559,7 +559,7 @@ class ServiceTestCase(SWHApiTestCase):
             {'sha1_git':
              hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_provenance_not_found(self, mock_storage):
         # given
@@ -576,7 +576,7 @@ class ServiceTestCase(SWHApiTestCase):
             {'sha1_git':
              hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def stat_counters(self, mock_storage):
         # given
@@ -608,7 +608,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         mock_storage.stat_counters.assert_called_with()
 
-    @patch('swh.web.api.service._lookup_origin_visits')
+    @patch('swh.web.common.service._lookup_origin_visits')
     @istest
     def lookup_origin_visits(self, mock_lookup_visits):
         # given
@@ -662,7 +662,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_lookup_visits.assert_called_once_with(
             6, last_visit=None, limit=10)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_origin_visit(self, mock_storage):
         # given
@@ -683,7 +683,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         mock_storage.origin_visit_get_by.assert_called_once_with(1, 1)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_origin(self, mock_storage):
         # given
@@ -706,7 +706,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         mock_storage.origin_get.assert_called_with({'id': 'origin-id'})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_release_ko_id_checksum_not_ok_because_not_a_sha1(self,
                                                                 mock_storage):
@@ -720,7 +720,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         mock_storage.release_get.called = False
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_release_ko_id_checksum_ok_but_not_a_sha1(self, mock_storage):
         # given
@@ -735,7 +735,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         mock_storage.release_get.called = False
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_directory_with_path_not_found(self, mock_storage):
         # given
@@ -749,7 +749,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         self.assertIsNone(actual_directory)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_directory_with_path_found(self, mock_storage):
         # given
@@ -766,7 +766,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         self.assertEqual(entry, actual_directory)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_release(self, mock_storage):
         # given
@@ -826,7 +826,7 @@ class ServiceTestCase(SWHApiTestCase):
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
             self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_with_context_ko_sha1_git_does_not_exist(
             self,
@@ -848,7 +848,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_get.assert_called_once_with(
             [sha1_git_bin])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
             self,
@@ -871,8 +871,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_get.assert_has_calls([call([sha1_git_bin]),
                                                     call([sha1_git_root_bin])])
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_revision_with_context(self, mock_query, mock_storage):
         # given
@@ -950,8 +950,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_log.assert_called_with(
             [sha1_git_root_bin], 100)
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_revision_with_context_sha1_git_root_already_retrieved_as_dict(
             self, mock_query, mock_storage):
@@ -1024,8 +1024,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_log.assert_called_with(
             [sha1_git_root_bin], 100)
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_with_revision_ko_revision_not_found(self,
                                                              mock_query,
@@ -1044,8 +1044,8 @@ class ServiceTestCase(SWHApiTestCase):
         ('123', ['sha1'], 'Only sha1_git is supported.')
         mock_storage.revision_get.assert_called_once_with([b'123'])
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_with_revision_ko_revision_with_path_to_nowhere(
             self,
@@ -1077,8 +1077,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.directory_entry_get_by_path.assert_called_once_with(
             b'dir-id-as-sha1', [b'path', b'to', b'something', b'unknown'])
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_with_revision_ko_type_not_implemented(
             self,
@@ -1122,8 +1122,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.directory_entry_get_by_path.assert_called_once_with(
             b'dir-id-as-sha1', [b'some', b'path', b'to', b'rev'])
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_with_revision_revision_without_path(self,
                                                              mock_query,
@@ -1160,8 +1160,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_get.assert_called_once_with([b'123'])
         mock_storage.directory_ls.assert_called_once_with(dir_id)
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_with_revision_revision_with_path_to_dir(self,
                                                                  mock_query,
@@ -1209,8 +1209,8 @@ class ServiceTestCase(SWHApiTestCase):
             [b'some', b'path'])
         mock_storage.directory_ls.assert_called_once_with(b'456')
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_with_revision_revision_with_path_to_file_without_data(
             self,
@@ -1256,8 +1256,8 @@ class ServiceTestCase(SWHApiTestCase):
             b'dir-id-as-sha1', [b'some', b'path', b'to', b'file'])
         mock_storage.content_find.assert_called_once_with({'sha1_git': b'789'})
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_with_revision_revision_with_path_to_file_with_data(
             self,
@@ -1316,7 +1316,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_find.assert_called_once_with({'sha1_git': b'789'})
         mock_storage.content_get.assert_called_once_with([b'content-sha1'])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision(self, mock_storage):
         # given
@@ -1333,7 +1333,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_get.assert_called_with(
             [self.SHA1_SAMPLE_BIN])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_invalid_msg(self, mock_storage):
         # given
@@ -1355,7 +1355,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_get.assert_called_with(
             [self.SHA1_SAMPLE_BIN])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_msg_ok(self, mock_storage):
         # given
@@ -1370,7 +1370,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_get.assert_called_with(
             [self.SHA1_SAMPLE_BIN])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_msg_absent(self, mock_storage):
         # given
@@ -1390,7 +1390,7 @@ class ServiceTestCase(SWHApiTestCase):
                              'with sha1_git '
                              '18d8be353ed3480476f032475e7c233eff7371d5.')
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_msg_norev(self, mock_storage):
         # given
@@ -1408,7 +1408,7 @@ class ServiceTestCase(SWHApiTestCase):
                              '18d8be353ed3480476f032475e7c233eff7371d5 '
                              'not found.')
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_multiple(self, mock_storage):
         # given
@@ -1490,7 +1490,7 @@ class ServiceTestCase(SWHApiTestCase):
             [hash_to_bytes(sha1),
              hash_to_bytes(sha1_other)])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_multiple_none_found(self, mock_storage):
         # given
@@ -1510,7 +1510,7 @@ class ServiceTestCase(SWHApiTestCase):
             [hash_to_bytes(self.SHA1_SAMPLE),
              hash_to_bytes(sha1_other)])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_log(self, mock_storage):
         # given
@@ -1528,7 +1528,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_log.assert_called_with(
             [hash_to_bytes('abcdbe353ed3480476f032475e7c233eff7371d5')], 25)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_log_by(self, mock_storage):
         # given
@@ -1545,7 +1545,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_log_by.assert_called_with(
             1, 'refs/heads/master', None, limit=100)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_log_by_nolog(self, mock_storage):
         # given
@@ -1559,7 +1559,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.revision_log_by.assert_called_with(
             1, 'refs/heads/master', None, limit=100)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_raw_not_found(self, mock_storage):
         # given
@@ -1575,7 +1575,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_find.assert_called_with(
             {'sha1': hash_to_bytes(self.SHA1_SAMPLE)})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_raw(self, mock_storage):
         # given
@@ -1597,7 +1597,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_get.assert_called_once_with(
             [self.SHA1_SAMPLE])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_not_found(self, mock_storage):
         # given
@@ -1613,7 +1613,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_find.assert_called_with(
             {'sha1': self.SHA1_SAMPLE_BIN})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_with_sha1(self, mock_storage):
         # given
@@ -1630,7 +1630,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_find.assert_called_with(
             {'sha1': hash_to_bytes(self.SHA1_SAMPLE)})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_content_with_sha256(self, mock_storage):
         # given
@@ -1652,7 +1652,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.content_find.assert_called_with(
             {'sha256': self.SHA256_SAMPLE_BIN})
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_person(self, mock_storage):
         # given
@@ -1674,7 +1674,7 @@ class ServiceTestCase(SWHApiTestCase):
 
         mock_storage.person_get.assert_called_with(['person_id'])
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_directory_bad_checksum(self, mock_storage):
         # given
@@ -1687,8 +1687,8 @@ class ServiceTestCase(SWHApiTestCase):
         # then
         mock_storage.directory_ls.called = False
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory_not_found(self, mock_query, mock_storage):
         # given
@@ -1708,8 +1708,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.directory_get.assert_called_with(['directory-id-bin'])
         mock_storage.directory_ls.called = False
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_directory(self, mock_query, mock_storage):
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
@@ -1755,7 +1755,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_storage.directory_ls.assert_called_with(
             'directory-sha1-bin')
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_by_nothing_found(self, mock_storage):
         # given
@@ -1771,7 +1771,7 @@ class ServiceTestCase(SWHApiTestCase):
                                                         limit=1,
                                                         timestamp=None)
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_by(self, mock_storage):
         # given
@@ -1791,7 +1791,7 @@ class ServiceTestCase(SWHApiTestCase):
                                                         limit=1,
                                                         timestamp='some-ts')
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_by_nomerge(self, mock_storage):
         # given
@@ -1813,7 +1813,7 @@ class ServiceTestCase(SWHApiTestCase):
                                                         limit=1,
                                                         timestamp='some-ts')
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_by_merge(self, mock_storage):
         # given
@@ -1842,7 +1842,7 @@ class ServiceTestCase(SWHApiTestCase):
                                                         limit=1,
                                                         timestamp='some-ts')
 
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_with_context_by_ko(self, mock_storage):
         # given
@@ -1865,8 +1865,8 @@ class ServiceTestCase(SWHApiTestCase):
             mock_storage.revision_get_by.assert_called_once_with(
                 origin_id, branch_name, ts)
 
-    @patch('swh.web.api.service.lookup_revision_with_context')
-    @patch('swh.web.api.service.storage')
+    @patch('swh.web.common.service.lookup_revision_with_context')
+    @patch('swh.web.common.service.storage')
     @istest
     def lookup_revision_with_context_by(self, mock_storage,
                                         mock_lookup_revision_with_context):
@@ -1893,8 +1893,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_lookup_revision_with_context.assert_called_once_with(
             stub_root_rev, sha1_git, 100)
 
-    @patch('swh.web.api.service.storage')
-    @patch('swh.web.api.service.query')
+    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.query')
     @istest
     def lookup_entity_by_uuid(self, mock_query, mock_storage):
         # given
@@ -1921,7 +1921,7 @@ class ServiceTestCase(SWHApiTestCase):
                 'something-unknown': 10,
             })
 
-    @patch('swh.web.api.service.lookup_revision_with_context_by')
+    @patch('swh.web.common.service.lookup_revision_with_context_by')
     @istest
     def lookup_revision_through_with_context_by(self, mock_lookup):
         # given
@@ -1942,7 +1942,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_lookup.assert_called_once_with(
             1, 'master', None, 'sha1-git', 1000)
 
-    @patch('swh.web.api.service.lookup_revision_by')
+    @patch('swh.web.common.service.lookup_revision_by')
     @istest
     def lookup_revision_through_with_revision_by(self, mock_lookup):
         # given
@@ -1962,7 +1962,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_lookup.assert_called_once_with(
             2, 'master2', 'some-ts')
 
-    @patch('swh.web.api.service.lookup_revision_with_context')
+    @patch('swh.web.common.service.lookup_revision_with_context')
     @istest
     def lookup_revision_through_with_context(self, mock_lookup):
         # given
@@ -1981,7 +1981,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_lookup.assert_called_once_with(
             'some-sha1-root', 'some-sha1', 100)
 
-    @patch('swh.web.api.service.lookup_revision')
+    @patch('swh.web.common.service.lookup_revision')
     @istest
     def lookup_revision_through_with_revision(self, mock_lookup):
         # given
@@ -1999,7 +1999,7 @@ class ServiceTestCase(SWHApiTestCase):
         mock_lookup.assert_called_once_with(
             'some-sha1')
 
-    @patch('swh.web.api.service.lookup_revision_through')
+    @patch('swh.web.common.service.lookup_revision_through')
     @istest
     def lookup_directory_through_revision_ko_not_found(
             self, mock_lookup_rev):
@@ -2013,8 +2013,8 @@ class ServiceTestCase(SWHApiTestCase):
 
         mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
 
-    @patch('swh.web.api.service.lookup_revision_through')
-    @patch('swh.web.api.service.lookup_directory_with_revision')
+    @patch('swh.web.common.service.lookup_revision_through')
+    @patch('swh.web.common.service.lookup_directory_with_revision')
     @istest
     def lookup_directory_through_revision_ok_with_data(
             self, mock_lookup_dir, mock_lookup_rev):
@@ -2034,8 +2034,8 @@ class ServiceTestCase(SWHApiTestCase):
         mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
         mock_lookup_dir.assert_called_once_with('rev-id', 'some/path', False)
 
-    @patch('swh.web.api.service.lookup_revision_through')
-    @patch('swh.web.api.service.lookup_directory_with_revision')
+    @patch('swh.web.common.service.lookup_revision_through')
+    @patch('swh.web.common.service.lookup_directory_with_revision')
     @istest
     def lookup_directory_through_revision_ok_with_content(
             self, mock_lookup_dir, mock_lookup_rev):

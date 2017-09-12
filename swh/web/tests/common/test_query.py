@@ -10,8 +10,8 @@ from nose.tools import istest
 
 from swh.model import hashutil
 
-from swh.web.api import query
-from swh.web.api.exc import BadInputExc
+from swh.web.common import query
+from swh.web.common.exc import BadInputExc
 
 
 class QueryTestCase(unittest.TestCase):
@@ -76,7 +76,7 @@ class QueryTestCase(unittest.TestCase):
         with self.assertRaises(BadInputExc):
             query.parse_hash('sha2:1234567890987654')
 
-    @patch('swh.web.api.query.parse_hash')
+    @patch('swh.web.common.query.parse_hash')
     @istest
     def parse_hash_with_algorithms_or_throws_bad_query(self, mock_hash):
         # given
@@ -92,7 +92,7 @@ class QueryTestCase(unittest.TestCase):
 
         mock_hash.assert_called_once_with('sha1:blah')
 
-    @patch('swh.web.api.query.parse_hash')
+    @patch('swh.web.common.query.parse_hash')
     @istest
     def parse_hash_with_algorithms_or_throws_bad_algo(self, mock_hash):
         # given
@@ -108,7 +108,7 @@ class QueryTestCase(unittest.TestCase):
 
         mock_hash.assert_called_once_with('sha1:431')
 
-    @patch('swh.web.api.query.parse_hash')
+    @patch('swh.web.common.query.parse_hash')
     @istest
     def parse_hash_with_algorithms(self, mock_hash):
         # given

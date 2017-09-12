@@ -11,7 +11,7 @@ from enum import Enum
 
 from rest_framework.decorators import api_view
 
-from swh.web.api.utils import reverse
+from swh.web.common.utils import reverse
 from swh.web.api.apiurls import APIUrls
 from swh.web.api.apiresponse import make_api_response, error_response
 

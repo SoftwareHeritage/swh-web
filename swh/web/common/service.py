@@ -9,9 +9,9 @@ from collections import defaultdict
 
 from swh.model import hashutil
 
-from swh.web.api import converters
-from swh.web.api import query
-from swh.web.api.exc import NotFoundExc
+from swh.web.common import converters
+from swh.web.common import query
+from swh.web.common.exc import NotFoundExc
 from swh.web import config
 
 storage = config.storage()

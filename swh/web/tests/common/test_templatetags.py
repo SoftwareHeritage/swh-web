@@ -10,7 +10,7 @@ from nose.tools import istest
 from swh.web.common import swh_templatetags
 
 
-class SWHApiTemplateTagsTest(unittest.TestCase):
+class SWHTemplateTagsTest(unittest.TestCase):
     @istest
     def urlize_api_links_api(self):
         # update api link with html links content with links

@@ -10,7 +10,7 @@ from nose.tools import istest
 
 from swh.model import hashutil
 
-from swh.web.api import converters
+from swh.web.common import converters
 
 
 class ConvertersTestCase(unittest.TestCase):
