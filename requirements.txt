@@ -4,8 +4,7 @@
 
 # Runtime dependencies
 django
-django_rest_framework
-django_extensions
+djangorestframework
 python-dateutil
 docutils
 pygments

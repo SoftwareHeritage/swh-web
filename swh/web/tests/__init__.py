@@ -10,23 +10,28 @@ from swh.web.config import get_config
 
 swh_web_config = get_config()
 
-swh_web_config['debug'] = False
-
-swh_web_config['limiters'] = {
-    'swh_api': {
-        'limiter_rate': '60/min',
-        'exempted_networks': ['127.0.0.0/8']
-    },
-    'scope1': {
-        'limiter_rate': '3/min'
-    },
-    'scope2': {
-        'limiter_rate': '5/min',
-        'exempted_networks': ['127.0.0.0/8']
+swh_web_config.update({
+    'debug': False,
+    'secret_key': 'test',
+    'throttling': {
+        'cache_uri': None,
+        'scopes': {
+            'swh_api': {
+                'limiter_rate': '60/min',
+                'exempted_networks': ['127.0.0.0/8']
+            },
+            'scope1': {
+                'limiter_rate': '3/min'
+            },
+            'scope2': {
+                'limiter_rate': '5/min',
+                'exempted_networks': ['127.0.0.0/8']
+            }
+        }
     }
-}
+})
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings.development")
 django.setup()
 
 scope1_limiter_rate = 3

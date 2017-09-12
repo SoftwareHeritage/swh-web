@@ -1,6 +1,5 @@
 django
-django_extensions
-django_rest_framework
+djangorestframework
 docutils
 pygments
 python-dateutil
