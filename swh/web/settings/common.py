@@ -127,15 +127,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(PROJECT_DIR, "static")
+    os.path.join(PROJECT_DIR, "../static")
 ]
 
 INTERNAL_IPS = ['127.0.0.1']
 
 throttle_rates = {}
 
-for limiter_scope, limiter_conf in swh_web_config['limiters'].items():
-    throttle_rates[limiter_scope] = None if DEBUG else limiter_conf['limiter_rate'] # noqa
+throttling = swh_web_config['throttling']
+for limiter_scope, limiter_conf in throttling['scopes'].items():
+    throttle_rates[limiter_scope] = limiter_conf['limiter_rate']
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (

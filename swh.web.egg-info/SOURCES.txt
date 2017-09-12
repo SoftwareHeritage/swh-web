@@ -23,16 +23,13 @@ docs/conf.py
 docs/index.rst
 docs/_static/.placeholder
 docs/_templates/.placeholder
-resources/test/webapp.yml
 swh.web.egg-info/PKG-INFO
 swh.web.egg-info/SOURCES.txt
 swh.web.egg-info/dependency_links.txt
 swh.web.egg-info/requires.txt
 swh.web.egg-info/top_level.txt
 swh/web/config.py
-swh/web/db.sqlite3
 swh/web/manage.py
-swh/web/settings.py
 swh/web/urls.py
 swh/web/wsgi.py
 swh/web/api/__init__.py
@@ -86,6 +83,9 @@ swh/web/api/views/revision.py
 swh/web/api/views/stat.py
 swh/web/common/__init__.py
 swh/web/common/throttling.py
+swh/web/settings/common.py
+swh/web/settings/development.py
+swh/web/settings/production.py
 swh/web/static/robots.txt
 swh/web/static/css/bootstrap-responsive.min.css
 swh/web/static/css/pygment.css

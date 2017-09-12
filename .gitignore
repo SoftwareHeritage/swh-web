@@ -10,3 +10,4 @@ __pycache__
 version.txt
 swh.web.egg-info
 docs/build/
+db.sqlite3

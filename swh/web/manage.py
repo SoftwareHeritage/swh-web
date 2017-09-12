@@ -11,7 +11,8 @@ import sys
 from swh.web import config
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE",
+                          "swh.web.settings.development")
     try:
         from django.core.management.commands.runserver import (
             Command as runserver
