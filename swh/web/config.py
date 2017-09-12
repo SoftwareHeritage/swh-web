@@ -15,8 +15,8 @@ DEFAULT_CONFIG = {
     }),
     'log_dir': ('string', '/tmp/swh/log'),
     'debug': ('bool', False),
-    'host': ('string', '127.0.0.1'),
-    'port': ('int', 8000),
+    'host': ('string', '127.0.0.1'),  # development property
+    'port': ('int', 5003),            # development property
     'secret_key': ('string', 'development key'),
     'limiters': ('dict', {
         'cache_uri': None,  # production: memcached as cache (127.0.0.1:11211)
