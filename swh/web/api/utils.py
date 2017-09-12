@@ -17,8 +17,26 @@ from .exc import BadInputExc
 # override django reverse function in order to get
 # the same result on debian jessie and stretch
 # (see https://code.djangoproject.com/ticket/22223)
-def reverse(viewname, urlconf=None, args=None,
-            kwargs=None, current_app=None, query_params=None):
+def reverse(viewname, args=None, kwargs=None, query_params=None,
+            current_app=None,  urlconf=None):
+    """An override of django reverse function supporting multiple
+    django versions (from 1.7 to current) and query parameters.
+
+    Args:
+        viewname: the name of the django view from which to compute
+                  a url
+        args: list of url arguments ordered according to their position it
+        kwargs: dictionnary of url arguments indexed by their names
+        query_params: dictionnary of query parameters to append to the
+                      reversed url
+        current_app: the name of the django app tighted to the view
+        urlconf: url configuration module
+
+    Returns:
+        The url of the requested view with processed arguments and
+        query parameters
+    """
+
     url = urllib.parse.unquote(
         urlresolvers.reverse(
             viewname, urlconf=urlconf, args=args,
