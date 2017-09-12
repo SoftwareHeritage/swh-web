@@ -136,8 +136,7 @@ throttle_rates = {}
 
 throttling = swh_web_config['throttling']
 for limiter_scope, limiter_conf in throttling['scopes'].items():
-    limiter_rate = None if DEBUG else limiter_conf['limiter_rate']
-    throttle_rates[limiter_scope] = limiter_rate
+    throttle_rates[limiter_scope] = limiter_conf['limiter_rate']
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
