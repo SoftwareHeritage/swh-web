@@ -323,7 +323,7 @@ def api_check_content_known(request, q=None):
 @api_route(r'/content/(?P<q>.+)/', 'content')
 @api_doc.route('/content/')
 @api_doc.arg('q',
-             default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+             default='dc2830a9e72f23c1dfebef4413003221baa5fb62',
              argtype=api_doc.argtypes.algo_and_hash,
              argdoc=_doc_arg_content_id)
 @api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)

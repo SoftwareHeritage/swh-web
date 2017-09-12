@@ -26,11 +26,12 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     60 requests per minute for the 'swh_api' scope while exempting those
     comming from the 127.0.0.0/8 ip network.
 
-    limiters:
-        swh_api:
-            limiter_rate: 60/min
-            exempted_networks:
-                - 127.0.0.0/8
+    throttling:
+        scopes:
+            swh_api:
+                limiter_rate: 60/min
+                exempted_networks:
+                    - 127.0.0.0/8
     """
 
     scope = None
@@ -38,9 +39,10 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     def __init__(self):
         super().__init__()
         self.exempted_networks = None
-        limiters = get_config()['limiters']
-        if self.scope in limiters:
-            networks = limiters[self.scope].get('exempted_networks')
+        scopes = get_config()['throttling']['scopes']
+        scope = scopes.get(self.scope)
+        if scope:
+            networks = scope.get('exempted_networks')
             if networks:
                 self.exempted_networks = [ipaddress.ip_network(network)
                                           for network in networks]

@@ -12,7 +12,7 @@ from ..swh_api_testcase import SWHApiTestCase
 class ContentApiTestCase(SWHApiTestCase):
     @patch('swh.web.api.views.content.service')
     @istest
-    def test_api_content_filetype(self, mock_service):
+    def api_content_filetype(self, mock_service):
         stub_filetype = {
             'accepted_media_type': 'application/xml',
             'encoding': 'ascii',
