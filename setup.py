@@ -23,7 +23,7 @@ setup(
     url='https://forge.softwareheritage.org/diffusion/DWUI/',
     packages=['swh.web', 'swh.web.common',
               'swh.web.api', 'swh.web.api.views',
-              'swh.web.api.templatetags', 'swh.web.tests',
+              'swh.web.api.templatetags', 'swh.web.settings', 'swh.web.tests',
               'swh.web.tests.api', 'swh.web.tests.api.views',
               'swh.web.tests.common'],
     scripts=[],
