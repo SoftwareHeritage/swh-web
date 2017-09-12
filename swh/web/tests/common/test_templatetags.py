@@ -7,7 +7,7 @@ import unittest
 
 from nose.tools import istest
 
-from swh.web.api.templatetags import api_extras
+from swh.web.common import swh_templatetags
 
 
 class SWHApiTemplateTagsTest(unittest.TestCase):
@@ -17,7 +17,7 @@ class SWHApiTemplateTagsTest(unittest.TestCase):
         content = '{"url": "/api/1/abc/"}'
         expected_content = ('{"url": "<a href="/api/1/abc/">/api/1/abc/</a>"}')
 
-        self.assertEquals(api_extras.urlize_api_links(content),
+        self.assertEquals(swh_templatetags.urlize_api_links(content),
                           expected_content)
 
     @istest
@@ -26,7 +26,7 @@ class SWHApiTemplateTagsTest(unittest.TestCase):
         content = '{"url": "/browse/def/"}'
         expected_content = ('{"url": "<a href="/browse/def/">'
                             '/browse/def/</a>"}')
-        self.assertEquals(api_extras.urlize_api_links(content),
+        self.assertEquals(swh_templatetags.urlize_api_links(content),
                           expected_content)
 
     @istest
@@ -39,7 +39,7 @@ class SWHApiTemplateTagsTest(unittest.TestCase):
 <<a href="/api/1/def/">/api/1/def/</a>>; rel="prev"
 """
 
-        self.assertEquals(api_extras.urlize_header_links(content),
+        self.assertEquals(swh_templatetags.urlize_header_links(content),
                           expected_content)
 
     @istest
@@ -62,5 +62,5 @@ line right here</li>
 <p>Here is something that is not part of the list</p>
 """
 
-        self.assertEquals(api_extras.safe_docstring_display(docstring),
+        self.assertEquals(swh_templatetags.safe_docstring_display(docstring),
                           expected_docstring)

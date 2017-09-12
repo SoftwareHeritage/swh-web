@@ -4,4 +4,4 @@ include requirements-swh.txt
 include version.txt
 include swh/web/db.sqlite3
 recursive-include swh/web/static *
-recursive-include swh/web/api/templates *
+recursive-include swh/web/templates *
