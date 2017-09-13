@@ -22,10 +22,10 @@ DEFAULT_CONFIG = {
         'cache_uri': None,  # production: memcached as cache (127.0.0.1:11211)
                             # development: in-memory cache so None
         'scopes': {
-            'swh_api': [{
+            'swh_api': {
                 'limiter_rate': '120/h',
                 'exempted_networks': ['127.0.0.0/8']
-            }]
+            }
         }
     })
 }
@@ -33,7 +33,7 @@ DEFAULT_CONFIG = {
 swhweb_config = None
 
 
-def get_config(config_file='webapp'):
+def get_config(config_file='webapp/webapp'):
     """Read the configuration file `config_file`, update the app with
        parameters (secret_key, conf) and return the parsed configuration as a
        dict. If no configuration file is provided, return a default
