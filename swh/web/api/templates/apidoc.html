@@ -88,7 +88,7 @@
 </div>
 <hr/>
 {% endif %}
-{% if headers %}
+{% if headers and headers|length > 0 %}
 <div class="doc-headers">
   <h2> Headers </h2>
   <dl class="doc-headers dl-horizontal">
@@ -100,12 +100,14 @@
 </div>
 <hr/>
 {% endif %}
-{% if return %}
+{% if returns and returns|length > 0 %}
 <div class="doc-return">
   <h2> Returns </h2>
   <dl class="doc-return dl-horizontal">
+    {% for return in returns %}
     <dt> {{ return.type }} </dt>
     <dd> {{ return.doc | safe_docstring_display | safe }} </dd>
+    {% endfor %}
   </dl>
 </div>
 <hr/>
@@ -122,7 +124,7 @@
 </div>
 <hr/>
 {% endif %}
-{% if examples %}
+{% if examples and examples|length > 0 %}
 <div class="doc-example">
   <h2> Examples </h2>
   <dl class="doc-example dl-horizontal">

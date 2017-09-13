@@ -83,6 +83,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 @api_doc.param('per_page', default=10,
                argtype=api_doc.argtypes.int,
                doc=_doc_arg_per_page)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.list,
                  retdoc="""a list of dictionaries describing individual visits.
                  For each visit, its identifier, timestamp (as UNIX time),
