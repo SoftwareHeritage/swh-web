@@ -1,3 +1,13 @@
+swh-web (0.0.88-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.88
+  * Fix default webapp configuration file lookup
+  * Fix templating errors
+  * Fix wrong default configuration
+  * Add missing endpoint information about error (origin visit endpoint)
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 13 Sep 2017 15:02:24 +0200
+
 swh-web (0.0.87-1~swh1) unstable-swh; urgency=medium
 
   * v0.0.87
