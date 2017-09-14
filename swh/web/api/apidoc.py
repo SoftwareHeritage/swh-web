@@ -157,8 +157,17 @@ class route(object):  # noqa: N801
     def get_doc_data(self, f):
         """Build documentation data for the decorated function"""
         data = {
+            'docstring': None,
+            'response_data': None,
+            'urls': None,
+            'args': None,
+            'params': None,
+            'headers': None,
+            'returns': None,
+            'excs': None,
+            'examples': None,
             'route': self.route,
-            'noargs': self.noargs,
+            'noargs': self.noargs
         }
 
         data.update(getattr(f, 'doc_data', {}))
