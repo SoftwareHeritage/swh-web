@@ -55,7 +55,7 @@ class APIUrls(object):
             for param in url_rule_params:
                 param_name = re.findall('<(.*)>', param)
                 param_name = param_name[0] if len(param_name) > 0 else None
-                if param_name and hasattr(f, 'doc_data') and 'args' in f.doc_data: # noqa
+                if param_name and hasattr(f, 'doc_data') and f.doc_data['args']: # noqa
                     param_index = \
                         next(i for (i, d) in enumerate(f.doc_data['args'])
                              if d['name'] == param_name)

@@ -183,7 +183,7 @@ class route(object):  # noqa: N801
         data['urls'] = [url for url in endpoint_list if
                         self.filter_api_url(url, route_re, data['noargs'])]
 
-        if 'args' in data:
+        if data['args']:
             data['examples'] = self.build_examples(data['urls'], data['args'])
 
         data['heading'] = '%s Documentation' % data['route']
