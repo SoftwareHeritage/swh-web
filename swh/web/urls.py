@@ -42,7 +42,9 @@ def default_view(request):
 urlpatterns = [
     url(r'^favicon\.ico$', favicon_view),
     url(r'^api/', include('swh.web.api.urls')),
+    url(r'^browse/', include('swh.web.browse.urls')),
     url(r'^$', default_view),
 ]
+
 
 urlpatterns += staticfiles_urlpatterns()

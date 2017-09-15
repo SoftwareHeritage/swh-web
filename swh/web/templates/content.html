@@ -1,53 +1,37 @@
 {% extends "layout.html" %}
-{% block title %}Content information{% endblock %}
+{% block title %}Content display{% endblock %}
 
 {% block content %}
-  {% if message is not none %}
-    <p>{{ message }}</p>
-  {% endif %}
-  {% if content is not none %}
-    {% for key in ['sha1', 'sha256', 'sha1_git', 'status', 'length', 'ctime',
-                   'licenses', 'language', 'mimetype', 'encoding'] %}
-    <div class="row">
-       <div class="col-md-2">{{ key }}</div>
-       <div class="col-md-6">{{ content[key] }}</div>
-    </div>
-    {% endfor %}
-    {% if content['data_url'] is not none %}
-    <div class="row">
-       <div class="col-md-2">data_url</div>
-       <div class="col-md-10"><a href="{{ content['data_url'] }}">Download data</a></pre></div>
-    </div>
-    {% endif %}
-
-    {% if content['ctags'] is not none %}
-    <div class="row">
-       <div class="col-md-2">ctags</div>
-       <div class="col-md-10">
-         <table>
-           {% for ctag_row in content['ctags'] %}
-           <tr>
-             {% for ctag in ctag_row %}
-             <td>{{ ctag | safe }}&nbsp;</td>
-             {% endfor %}
-           </tr>
-         {% endfor %}
-         </table>
-       </div>
-    </div>
-    {% endif %}
-
-    {% if content['data'] is not none %}
-    <div class="row">
-       <div class="col-md-2">data</div>
-       <div class="col-md-10">{{ content['data'] | highlight_source }}</div>
-    </div>
-    {% endif %}
-
-    {% if 'decoding_failures' in content %}
-    <div class="row">
-      <div class="col-md-10">(some decoding errors)</div>
-    </div>
-    {% endif %}
-  {% endif %}
+{% if root_dir %}
+<nav class="bread-crumbs">
+  <ul>
+    <li class="swh-path"><a href="{% url 'browse-directory' root_dir %}">{{ root_dir|slice:':7' }}</a></li>
+    <li>/</li>
+    {% for pi in path_info %}
+      <li class="swh-path"><a href="{% url 'browse-directory' root_dir pi.path %}">{{pi.name}}</a></li>
+      <li>/</li>
+     {% endfor %}
+    <li>{{ filename }}</li>  
+  </ul>
+</nav>
+{% endif %}
+<div class="well well-sm">
+  <b>Content mime type:</b> {{ mime_type }}
+  <a href="{% url 'browse-content-raw' content_sha1 %}?filename={{ filename | urlencode }}" class="btn btn-link btn-xs navbar-right" role="button">Raw File</a>
+</div>
+<div class="well well-sm">
+{% if "text/" in mime_type or "inode/x-empty" == mime_type %}
+  <div class="highlightjs">
+    <pre>
+      <code class="{{ language }}">
+{{ content }}
+      </code>
+    </pre>
+  </div>
+{% elif "image/" in mime_type and content %}
+  <img src="data:{{ mime_type }};base64,{{ content }}"/>
+{% else %}
+Content with mime type {{ mime_type }} can not be displayed
+{% endif %}
+</div>
 {% endblock %}

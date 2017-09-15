@@ -11,7 +11,7 @@ from swh.web.config import get_config
 swh_web_config = get_config()
 
 swh_web_config.update({
-    'debug': False,
+    'debug': True,
     'secret_key': 'test',
     'throttling': {
         'cache_uri': None,

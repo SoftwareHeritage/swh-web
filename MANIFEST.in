@@ -2,6 +2,6 @@ include Makefile
 include requirements.txt
 include requirements-swh.txt
 include version.txt
-include swh/web/db.sqlite3
 recursive-include swh/web/static *
 recursive-include swh/web/templates *
+include swh/web/tests/browse/views/data/swh-logo.png

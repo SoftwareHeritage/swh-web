@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'swh.web.api'
+    'swh.web.api',
+    'swh.web.browse'
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,8 @@ TEMPLATES = [
         },
     },
 ]
+
+TEMPLATE_DIRS = TEMPLATES[0]['DIRS']
 
 WSGI_APPLICATION = 'swh.web.wsgi.application'
 
@@ -186,4 +189,4 @@ LOGGING = {
     },
 }
 
-SILENCED_SYSTEM_CHECKS = ['1_7.W001']
+SILENCED_SYSTEM_CHECKS = ['1_7.W001', '1_8.W001']

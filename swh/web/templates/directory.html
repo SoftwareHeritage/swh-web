@@ -1,15 +1,49 @@
 {% extends "layout.html" %}
-{% block title %}Browse directory{% endblock %}
+{% block title %}Directory browse{% endblock %}
 {% block content %}
-{{ message }}
-{% if ls is not none %}
-  {% for e in files %}
-<div>
-  <p>
-    <a class="link{{e.type}}" href="{{e.target_url}}">{{ e.name }}</a>
-    {% if 'decoding_failures' in e %}(some decoding errors){% endif %}
-  </p>
+
+<nav class="bread-crumbs">
+  <ul>
+    <li class="swh-path"><a href="{% url 'browse-directory' root_dir %}">{{ root_dir|slice:':7' }}</a></li>
+    <li>/</li>
+      {% for pi in path_info %}
+        <li class="swh-path"><a href="{% url 'browse-directory' root_dir pi.path %}">{{pi.name}}</a></li>
+        <li>/</li>
+      {% endfor %}
+  </ul>
+</nav>
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Sha1</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in dirs %}
+      <tr>
+        <td class="swh-directory">
+          <i class="fa fa-folder fa-fw" aria-hidden="true"></i>
+          {% with path|add:d.name as dir_path %}
+          <a href="{% url 'browse-directory' root_dir dir_path %}">{{d.name}}</a>
+          {% endwith %}
+        </td>
+        <td>{{d.target}}</td>
+      </tr>
+      {% endfor %}
+      {% for f in files %}
+      <tr>
+        <td class="swh-content">
+          <i class="fa fa-file-text fa-fw" aria-hidden="true"></i>
+          {% with root_dir|add:'/'|add:path|add:f.name as file_path %}
+          <a href="{% url 'browse-content' f.target %}?path={{file_path}}">{{f.name}}</a>
+          {% endwith %}
+        </td>
+        <td>{{f.target}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
-  {% endfor %}
-{% endif %}
 {% endblock %}

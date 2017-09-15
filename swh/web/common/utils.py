@@ -49,7 +49,7 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
         query_dict = QueryDict('', mutable=True)
         for k, v in query_params.items():
             query_dict[k] = v
-        url += ('?' + query_dict.urlencode())
+        url += ('?' + query_dict.urlencode(safe='/'))
     return url
 
 
