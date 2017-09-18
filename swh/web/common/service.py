@@ -621,7 +621,6 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
 
     if entity['type'] == 'dir':
         directory_entries = storage.directory_ls(entity['target']) or []
-
         return {'type': 'dir',
                 'path': '.' if not dir_path else dir_path,
                 'revision': sha1_git,
@@ -632,7 +631,6 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         if with_data:
             c = _first_element(storage.content_get([content['sha1']]))
             content['data'] = c['data']
-
         return {'type': 'file',
                 'path': '.' if not dir_path else dir_path,
                 'revision': sha1_git,

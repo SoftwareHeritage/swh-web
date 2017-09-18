@@ -18,12 +18,15 @@ from swh.web.common.exc import BadInputExc, NotFoundExc
 class ServiceTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.SHA1_SAMPLE = '18d8be353ed3480476f032475e7c233eff7371d5'
+        self.BLAKE2S256_SAMPLE = ('685395c5dc57cada459364f0946d3dd45b'
+                                  'ad5fcbabc1048edb44380f1d31d0aa')
+        self.BLAKE2S256_SAMPLE_BIN = hash_to_bytes(self.BLAKE2S256_SAMPLE)
+        self.SHA1_SAMPLE = '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
         self.SHA1_SAMPLE_BIN = hash_to_bytes(self.SHA1_SAMPLE)
-        self.SHA256_SAMPLE = ('39007420ca5de7cb3cfc15196335507e'
-                              'e76c98930e7e0afa4d2747d3bf96c926')
+        self.SHA256_SAMPLE = ('8abb0aa566452620ecce816eecdef4792d77a'
+                              '293ad8ea82a4d5ecb4d36f7e560')
         self.SHA256_SAMPLE_BIN = hash_to_bytes(self.SHA256_SAMPLE)
-        self.SHA1GIT_SAMPLE = '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
+        self.SHA1GIT_SAMPLE = '25d1a2e8f32937b0f498a5ca87f823d8df013c01'
         self.SHA1GIT_SAMPLE_BIN = hash_to_bytes(self.SHA1GIT_SAMPLE)
         self.DIRECTORY_ID = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
         self.DIRECTORY_ID_BIN = hash_to_bytes(self.DIRECTORY_ID)
@@ -84,13 +87,17 @@ class ServiceTestCase(unittest.TestCase):
         }
 
         self.SAMPLE_CONTENT = {
-            'sha1': self.SHA1_SAMPLE,
-            'sha256': self.SHA256_SAMPLE,
-            'sha1_git': self.SHA1GIT_SAMPLE,
+            'checksums': {
+                'blake2s256': self.BLAKE2S256_SAMPLE,
+                'sha1': self.SHA1_SAMPLE,
+                'sha256': self.SHA256_SAMPLE,
+                'sha1_git': self.SHA1GIT_SAMPLE,
+            },
             'length': 190,
             'status': 'absent'
         }
         self.SAMPLE_CONTENT_RAW = {
+            'blake2s256': self.BLAKE2S256_SAMPLE_BIN,
             'sha1': self.SHA1_SAMPLE_BIN,
             'sha256': self.SHA256_SAMPLE_BIN,
             'sha1_git': self.SHA1GIT_SAMPLE_BIN,
@@ -1292,7 +1299,9 @@ class ServiceTestCase(unittest.TestCase):
 
         expected_content = {
             'status': 'visible',
-            'sha1': hash_to_hex(b'content-sha1'),
+            'checksums': {
+                'sha1': hash_to_hex(b'content-sha1'),
+            },
             'data': b'some raw data'
         }
 
@@ -1567,7 +1576,7 @@ class ServiceTestCase(unittest.TestCase):
 
         # when
         actual_content = service.lookup_content_raw(
-            'sha1:18d8be353ed3480476f032475e7c233eff7371d5')
+            'sha1:' + self.SHA1_SAMPLE)
 
         # then
         self.assertIsNone(actual_content)
@@ -1724,6 +1733,7 @@ class ServiceTestCase(unittest.TestCase):
             'sha1': self.SHA1_SAMPLE_BIN,
             'sha256': self.SHA256_SAMPLE_BIN,
             'sha1_git': self.SHA1GIT_SAMPLE_BIN,
+            'blake2s256': self.BLAKE2S256_SAMPLE_BIN,
             'target': hash_to_bytes(
                 '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
             'dir_id': self.DIRECTORY_ID_BIN,
@@ -1732,9 +1742,12 @@ class ServiceTestCase(unittest.TestCase):
         }]
 
         expected_dir_entries = [{
-            'sha1': self.SHA1_SAMPLE,
-            'sha256': self.SHA256_SAMPLE,
-            'sha1_git': self.SHA1GIT_SAMPLE,
+            'checksums': {
+                'sha1': self.SHA1_SAMPLE,
+                'sha256': self.SHA256_SAMPLE,
+                'sha1_git': self.SHA1GIT_SAMPLE,
+                'blake2s256': self.BLAKE2S256_SAMPLE
+            },
             'target': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'dir_id': self.DIRECTORY_ID,
             'name': 'bob',

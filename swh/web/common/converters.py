@@ -11,6 +11,20 @@ from swh.core.utils import decode_with_escape
 from swh.web.api import utils
 
 
+def _group_checksums(data):
+    """Groups checksums values computed from hash functions used in swh
+    and stored in data dict under a single entry 'checksums'
+    """
+    if data:
+        checksums = {}
+        for hash in hashutil.ALGORITHMS:
+            if hash in data and data[hash]:
+                checksums[hash] = data[hash]
+                del data[hash]
+        if len(checksums) > 0:
+            data['checksums'] = checksums
+
+
 def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
              removables_if_empty={}, empty_dict={}, empty_list={},
              convert={}, convert_fn=lambda x: x):
@@ -129,6 +143,8 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
             new_dict[key] = []
         else:
             new_dict[key] = value
+
+    _group_checksums(new_dict)
 
     return new_dict
 
@@ -308,10 +324,11 @@ def from_directory_entry(dir_entry):
 
     """
     return from_swh(dir_entry,
-                    hashess={'dir_id', 'sha1_git', 'sha1', 'sha256', 'target'},
+                    hashess={'dir_id', 'sha1_git', 'sha1', 'sha256',
+                             'blake2s256', 'target'},
                     bytess={'name'},
                     removables_if_empty={
-                        'sha1', 'sha1_git', 'sha256', 'status'},
+                        'sha1', 'sha1_git', 'sha256', 'blake2s256', 'status'},
                     convert={'status'},
                     convert_fn=lambda v: 'absent' if v == 'hidden' else v)
 

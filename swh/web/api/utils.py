@@ -6,6 +6,7 @@
 import re
 
 from swh.web.common.utils import reverse, fmap
+from swh.web.common.query import parse_hash
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
@@ -158,25 +159,43 @@ def enrich_metadata_endpoint(content):
     return c
 
 
-def enrich_content(content, top_url=False):
+def enrich_content(content, top_url=False, query_string=None):
     """Enrich content with links to:
         - data_url: its raw data
         - filetype_url: its filetype information
+        - language_url: its programming language information
+        - license_url: its licensing information
+
+    Args:
+        content: dict of data associated to a swh content object
+        top_url: whether or not to include the content url in
+            the enriched data
+        query_string: optional query string of type '<algo>:<hash>'
+            used when requesting the content, it acts as a hint
+            for picking the same hash method when computing
+            the url listed above
+
+    Returns:
+        An enriched content dict filled with additional urls
 
     """
-    for h in ['sha1', 'sha1_git', 'sha256']:
-        if h in content:
-            q = '%s:%s' % (h, content[h])
-            if top_url:
-                content['content_url'] = reverse('content', kwargs={'q': q})
-            content['data_url'] = reverse('content-raw', kwargs={'q': q})
-            content['filetype_url'] = reverse('content-filetype',
-                                              kwargs={'q': q})
-            content['language_url'] = reverse('content-language',
-                                              kwargs={'q': q})
-            content['license_url'] = reverse('content-license',
-                                             kwargs={'q': q})
-            break
+    checksums = content
+    if 'checksums' in content:
+        checksums = content['checksums']
+    hash_algo = 'sha1'
+    if query_string:
+        hash_algo = parse_hash(query_string)[0]
+    if hash_algo in checksums:
+        q = '%s:%s' % (hash_algo, checksums[hash_algo])
+        if top_url:
+            content['content_url'] = reverse('content', kwargs={'q': q})
+        content['data_url'] = reverse('content-raw', kwargs={'q': q})
+        content['filetype_url'] = reverse('content-filetype',
+                                          kwargs={'q': q})
+        content['language_url'] = reverse('content-language',
+                                          kwargs={'q': q})
+        content['license_url'] = reverse('content-license',
+                                         kwargs={'q': q})
 
     return content
 

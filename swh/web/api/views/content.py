@@ -337,4 +337,4 @@ def api_content_metadata(request, q):
     return _api_lookup(
         service.lookup_content, q,
         notfound_msg='Content with {} not found.'.format(q),
-        enrich_fn=utils.enrich_content)
+        enrich_fn=functools.partial(utils.enrich_content, query_string=q))

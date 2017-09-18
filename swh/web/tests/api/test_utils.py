@@ -29,6 +29,14 @@ class UtilsTestCase(unittest.TestCase):
                         dict(rule='/other2',
                              methods=set([]),
                              endpoint=None)]
+        self.sample_content_hashes = {
+            'blake2s256': ('791e07fcea240ade6dccd0a9309141673'
+                           'c31242cae9c237cf3855e151abc78e9'),
+            'sha1': 'dc2830a9e72f23c1dfebef4413003221baa5fb62',
+            'sha1_git': 'fe95a46679d128ff167b7c55df5d02356c5a1ae1',
+            'sha256': ('b5c7fe0536f44ef60c8780b6065d30bca74a5cd06'
+                       'd78a4a71ba1ad064770f0c9')
+        }
 
     @istest
     def filter_endpoints_1(self):
@@ -449,41 +457,44 @@ class UtilsTestCase(unittest.TestCase):
     @patch('swh.web.api.utils.reverse')
     @istest
     def enrich_content_with_hashes(self, mock_django_reverse):
-        for h in ['sha1', 'sha256', 'sha1_git']:
+
+        for algo, hash in self.sample_content_hashes.items():
+
+            query_string = '%s:%s' % (algo, hash)
+
             # given
             mock_django_reverse.side_effect = [
-                '/api/content/%s:123/raw/' % h,
-                '/api/filetype/%s:123/' % h,
-                '/api/language/%s:123/' % h,
-                '/api/license/%s:123/' % h,
+                '/api/content/%s/raw/' % query_string,
+                '/api/filetype/%s/' % query_string,
+                '/api/language/%s/' % query_string,
+                '/api/license/%s/' % query_string
                 ]
 
             # when
             enriched_content = utils.enrich_content(
                 {
-                    'id': '123',
-                    h: 'blahblah'
-                }
+                    algo: hash,
+                },
+                query_string=query_string
             )
 
             # then
             self.assertEqual(
                 enriched_content,
                 {
-                    'id': '123',
-                    h: 'blahblah',
-                    'data_url': '/api/content/%s:123/raw/' % h,
-                    'filetype_url': '/api/filetype/%s:123/' % h,
-                    'language_url': '/api/language/%s:123/' % h,
-                    'license_url': '/api/license/%s:123/' % h,
+                    algo: hash,
+                    'data_url': '/api/content/%s/raw/' % query_string,
+                    'filetype_url': '/api/filetype/%s/' % query_string,
+                    'language_url': '/api/language/%s/' % query_string,
+                    'license_url': '/api/license/%s/' % query_string,
                 }
             )
 
             mock_django_reverse.assert_has_calls([
-                call('content-raw', kwargs={'q': '%s:blahblah' % h}),
-                call('content-filetype', kwargs={'q': '%s:blahblah' % h}),
-                call('content-language', kwargs={'q': '%s:blahblah' % h}),
-                call('content-license', kwargs={'q': '%s:blahblah' % h}),
+                call('content-raw', kwargs={'q': query_string}),
+                call('content-filetype', kwargs={'q': query_string}),
+                call('content-language', kwargs={'q': query_string}),
+                call('content-license', kwargs={'q': query_string}),
             ])
 
             mock_django_reverse.reset()
@@ -492,45 +503,48 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_content_with_hashes_and_top_level_url(self,
                                                      mock_django_reverse):
-        for h in ['sha1', 'sha256', 'sha1_git']:
+
+        for algo, hash in self.sample_content_hashes.items():
+
+            query_string = '%s:%s' % (algo, hash)
+
             # given
             mock_django_reverse.side_effect = [
-                '/api/content/%s:123/' % h,
-                '/api/content/%s:123/raw/' % h,
-                '/api/filetype/%s:123/' % h,
-                '/api/language/%s:123/' % h,
-                '/api/license/%s:123/' % h,
+                '/api/content/%s/' % query_string,
+                '/api/content/%s/raw/' % query_string,
+                '/api/filetype/%s/' % query_string,
+                '/api/language/%s/' % query_string,
+                '/api/license/%s/' % query_string,
                 ]
 
             # when
             enriched_content = utils.enrich_content(
                 {
-                    'id': '123',
-                    h: 'blahblah'
+                    algo: hash
                 },
-                top_url=True
+                top_url=True,
+                query_string=query_string
             )
 
             # then
             self.assertEqual(
                 enriched_content,
                 {
-                    'id': '123',
-                    h: 'blahblah',
-                    'content_url': '/api/content/%s:123/' % h,
-                    'data_url': '/api/content/%s:123/raw/' % h,
-                    'filetype_url': '/api/filetype/%s:123/' % h,
-                    'language_url': '/api/language/%s:123/' % h,
-                    'license_url': '/api/license/%s:123/' % h,
+                    algo: hash,
+                    'content_url': '/api/content/%s/' % query_string,
+                    'data_url': '/api/content/%s/raw/' % query_string,
+                    'filetype_url': '/api/filetype/%s/' % query_string,
+                    'language_url': '/api/language/%s/' % query_string,
+                    'license_url': '/api/license/%s/' % query_string,
                 }
             )
 
             mock_django_reverse.assert_has_calls([
-                call('content', kwargs={'q': '%s:blahblah' % h}),
-                call('content-raw', kwargs={'q': '%s:blahblah' % h}),
-                call('content-filetype', kwargs={'q': '%s:blahblah' % h}),
-                call('content-language', kwargs={'q': '%s:blahblah' % h}),
-                call('content-license', kwargs={'q': '%s:blahblah' % h}),
+                call('content', kwargs={'q': query_string}),
+                call('content-raw', kwargs={'q': query_string}),
+                call('content-filetype', kwargs={'q': query_string}),
+                call('content-language', kwargs={'q': query_string}),
+                call('content-license', kwargs={'q': query_string}),
             ])
 
             mock_django_reverse.reset()
