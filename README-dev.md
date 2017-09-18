@@ -4,15 +4,34 @@ README-dev
 # Run server
 
 Either use the django manage script directly (useful in development mode as it offers various commands).
-The configuration will be taken from the default configuration file: '~/.config/swh/webapp.yml'.
+The configuration will be taken from the default configuration file: '~/.config/swh/webapp/webapp.yml'.
+
 ```
 python3 -m swh.web.manage runserver
 ```
 
-or use the following command:
+or use the following shortcut:
 
 ```
-./bin/swh-web-dev --config <path_to_config_file>
+make run
+```
+
+# Sample configuration
+
+The following inroduces a default configuration file:
+```
+storage:
+  cls: remote
+  args:
+    url: http://localhost:5002
+debug: false
+throttling:
+  cache_uri: None
+  scopes:
+    swh_api:
+      limiter_rate: 120/h
+      exempted_networks:
+        - 127.0.0.0/8
 ```
 
 # modules' description
