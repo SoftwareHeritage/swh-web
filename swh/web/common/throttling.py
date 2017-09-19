@@ -24,14 +24,17 @@ class SwhWebRateThrottle(ScopedRateThrottle):
 
     For instance, the following YAML configuration section sets a rate of
     60 requests per minute for the 'swh_api' scope while exempting those
-    comming from the 127.0.0.0/8 ip network.
+    comming from the 127.0.0.0/8 ip network
 
-    throttling:
-        scopes:
-            swh_api:
-                limiter_rate: 60/min
-                exempted_networks:
-                    - 127.0.0.0/8
+    .. code-block:: yaml
+
+        throttling:
+            scopes:
+                swh_api:
+                    limiter_rate: 60/min
+                    exempted_networks:
+                        - 127.0.0.0/8
+
     """
 
     scope = None
@@ -70,12 +73,13 @@ class SwhWebRateThrottle(ScopedRateThrottle):
 
 def throttle_scope(scope):
     """Decorator that allows the throttle scope of a DRF
-    function based view to be set:
+    function based view to be set::
 
-    @api_view(['GET', ])
-    @throttle_scope('scope')
-    def view(request):
-         ...
+        @api_view(['GET', ])
+        @throttle_scope('scope')
+        def view(request):
+            ...
+
     """
     def decorator(func):
         SwhScopeRateThrottle = type(
