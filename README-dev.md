@@ -1,7 +1,8 @@
-README-dev
-==========
+Developers Information
+======================
 
-# Run server
+Run server
+----------
 
 Either use the django manage script directly (useful in development mode as it offers various commands).
 The configuration will be taken from the default configuration file: '~/.config/swh/webapp/webapp.yml'.
@@ -16,9 +17,10 @@ or use the following shortcut:
 make run
 ```
 
-# Sample configuration
+Sample configuration
+--------------------
 
-The following inroduces a default configuration file:
+The following introduces a default configuration file:
 ```
 storage:
   cls: remote
@@ -34,9 +36,10 @@ throttling:
         - 127.0.0.0/8
 ```
 
-# modules' description
+modules' description
+--------------------
 
-## Layers
+### Layers
 
 Folder swh/web/api/:
 
@@ -49,7 +52,7 @@ In short:
 1. views -depends-> service ----asks----> swh-storage
 2. views <- service <----rets---- swh-storage
 
-## Utilities
+### Utilities
 
 Folder swh/web/api/:
 
@@ -71,6 +74,3 @@ tower should be @apidoc.route(). Apidoc raises an exception if this
 decorator is missing, and flask raises an exception if it is present
 but not at the top of the tower.
 
-## Graphics summary
-
-    ![Summary dependencies](./docs/dependencies.png)
