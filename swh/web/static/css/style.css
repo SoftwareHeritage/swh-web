@@ -326,3 +326,12 @@ bread-crumbs ul {
     white-space: pre;
 }
     
+.scrollable-menu {
+    max-height: 180px;
+    overflow-x: hidden;
+}
+
+.browse-bread-crumbs {
+    font-size: inherit;
+}
+

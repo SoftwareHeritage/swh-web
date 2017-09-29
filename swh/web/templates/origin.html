@@ -1,12 +1,9 @@
 {% extends "layout.html" %}
-{% block title %}Origin{% endblock %}
+{% load static %}
+{% load swh_templatetags %}
+
+{% block title %}Origin information{% endblock %}
 {% block content %}
-
-{% if message is not none %}
-{{ message }}
-{% endif %}
-
-{% if origin is not none %}
 
 <!-- Flot plugin dependencies -->
 
@@ -14,38 +11,61 @@
 <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>
 <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.selection.min.js"></script>
 <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot.tooltip/0.9.0/jquery.flot.tooltip.min.js"></script>
-<script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+<script language="javascript" type="text/javascript" src="{% static 'js/calendar.js' %}"></script>
+
+<!-- Data result -->
+<h2>Origin information</h2>
+<table class="table">
+{% for key, val in origin.items|dictsort:0 %}
+  <tr>
+    <td>{{ key }}</td>
+    <td>{{ val | safe | urlize_api_links | safe }}</td>
+  </tr>
+{% endfor %}
+</table>
 
 <!-- Timeline result -->
 <h2>Origin visit history</h2>
+<h3>Calendar</h3>
 <div class="timeline">
   <div id="swh-calendar-window" style="height: 200px">
     <div id="cal-zoom-window" style="height: 60%"></div>
     <div id="cal-static-window" style="height: 40%"></div>
   </div>
-  <button id="cal-clear">Reset</button>
+  <button class="btn btn-primary btn-sm pull-right" id="cal-clear">Reset zoom</button>
 </div>
 
-<!-- Data result -->
-<h2>Origin information</h2>
-<div> Details on origin {{ origin['id'] }}:
-  {% for key in ['type', 'lister', 'project', 'url'] %}
-  {% if origin[key] is not none %}
-  <div class="row">
-    <div class="col-md-2">{{ key }}</div>
-    <div class="col-md-6">{{ origin[key] }}</div>
-  </div>
-  {% endif %}
-  {% endfor %}
-  {% if 'decoding_failures' in content %}
-  <div class="row">
-    <div class="col-md-10">(some decoding errors)</div>
-  </div>
-  {% endif %}
+<h3>Visit list</h3>
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Visit id</th>
+        <th>Visit date</th>
+        <th>Visit status</th>
+        <th>Browse revision url</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in visits %}
+      <tr class="swh-origin-visit">
+        <td>{{ v.visit }}</td>
+        <td>{{ v.date }}</td>
+        <td>{{ v.status }}</td>
+        <td><a href="{{ v.browse_url }}">{{ v.browse_url }}</a></td>
+      </tr>
+      {% endfor %}
+    <tbody>
+  </table>  
 </div>
 
 <!-- Flot calendar setup -->
-<script>$(function(){var cal = new Calendar('{{ browse_url }}', '{{ visit_url }}', {{ origin['id'] }}, $('#cal-zoom-window'),  $('#cal-static-window'),  $('#cal-clear'));});</script>
-{% endif %}
+<script>
+$(function(){
+  var cal = new Calendar('{{ browse_url_base }}', {{ origin_visits_data | safe }}, 
+                         {{ origin.id }}, $('#cal-zoom-window'), 
+                         $('#cal-static-window'),  $('#cal-clear'));
+});
+</script>
 
 {% endblock %}

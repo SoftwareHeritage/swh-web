@@ -1707,11 +1707,12 @@ class ServiceTestCase(unittest.TestCase):
         mock_storage.directory_get.return_value = None
 
         # when
-        actual_dir = service.lookup_directory('directory_id')
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_directory('directory_id')
+            self.assertIn('Directory with sha1_git directory_id not found',
+                          cm.exception.args[0])
 
         # then
-        self.assertIsNone(actual_dir)
-
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
             'directory_id', ['sha1'], 'Only sha1_git is supported.')
         mock_storage.directory_get.assert_called_with(['directory-id-bin'])

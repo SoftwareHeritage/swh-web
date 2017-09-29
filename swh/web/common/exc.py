@@ -3,6 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import traceback
+
+from django.http import (
+    HttpResponseBadRequest, HttpResponseNotFound
+)
+
+from swh.web.config import get_config
+
 
 class BadInputExc(ValueError):
     """Wrong request to the api.
@@ -32,3 +40,15 @@ class ForbiddenExc(Exception):
 
     """
     pass
+
+
+def handle_view_exception(exc):
+    content_type = None
+    content = str(exc)
+    if get_config()['debug']:
+        content_type = 'text/plain'
+        content = traceback.format_exc()
+    if isinstance(exc, NotFoundExc):
+        return HttpResponseNotFound(content, content_type=content_type)
+    else:
+        return HttpResponseBadRequest(content, content_type=content_type)

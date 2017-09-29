@@ -14,7 +14,7 @@
  *     reset: the element that should reset the zoom level on click
  */
 
-var Calendar = function(browse_url, visit_url, origin_id,
+var Calendar = function(browse_url, data, origin_id,
                         zoomw, staticw, reset) {
 
     /** Constants **/
@@ -49,15 +49,6 @@ var Calendar = function(browse_url, visit_url, origin_id,
      *  Otherwise, 'this' changes to represent current function caller scope
      */
     var self = this;
-
-    /** Start AJAX call **/
-    $.ajax({
-        type: 'GET',
-        url: visit_url,
-        success: function(data) {
-            self.calendar(data);
-        }
-    });
 
     /**
      *  Group the plot's base data according to the grouping ratio and the
@@ -180,11 +171,11 @@ var Calendar = function(browse_url, visit_url, origin_id,
                 var tooltip_text = group_options.group_data[floor_index].map(
                     function(elem) {
                         var date = new Date(elem);
-                        var year = (date.getYear() + 1900).toString();
-                        var month = self.month_names[date.getMonth()];
-                        var day = date.getDate();
-                        var hr = date.getHours();
-                        var min = date.getMinutes();
+                        var year = date.getUTCFullYear();
+                        var month = self.month_names[date.getUTCMonth()];
+                        var day = date.getUTCDate();
+                        var hr = date.getUTCHours();
+                        var min = date.getUTCMinutes();
                         if (min < 10) min = '0'+min;
                         return [day,
                                 month,
@@ -342,7 +333,7 @@ var Calendar = function(browse_url, visit_url, origin_id,
         function redirect_to_revision(event, pos, item) {
             if (item) {
                 var ts = Math.floor(item.datapoint[0] / 1000); // POSIX ts
-                var url = browse_url + 'ts/' + ts + '/';
+                var url = browse_url + 'ts/' + ts + '/directory/';
                 window.location.href = url;
             }
         }
@@ -370,4 +361,5 @@ var Calendar = function(browse_url, visit_url, origin_id,
 
         bindClick();
     };
+    self.calendar(data);
 };

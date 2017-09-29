@@ -1,0 +1,28 @@
+
+<div>
+  {% if branches %}
+    <div class="dropdown" style="float: left;">
+      <button class="btn btn-md dropdown-toggle" type="button" data-toggle="dropdown">{{ branch }}
+      <span class="caret"></span></button>
+      <ul class="scrollable-menu dropdown-menu">
+        {% for b in branches %}
+          <li class="swh-branch"><a href="{{ b.url }}">{{ b.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </div> 
+  {% endif %}
+
+  <nav class="bread-crumbs browse-bread-crumbs">
+    <ul>
+      {% for bc in breadcrumbs %}
+        {% if bc.url %}
+          <li class="swh-path"><a href="{{ bc.url }}">{{ bc.name }}</a></li>
+          <li>/</li>
+        {% else %}
+          <li>{{ bc.name }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </nav>
+</div>
+  

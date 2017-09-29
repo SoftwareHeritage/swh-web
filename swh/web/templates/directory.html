@@ -2,22 +2,18 @@
 {% block title %}Directory browse{% endblock %}
 {% block content %}
 
-<nav class="bread-crumbs">
-  <ul>
-    <li class="swh-path"><a href="{% url 'browse-directory' root_dir %}">{{ root_dir|slice:':7' }}</a></li>
-    <li>/</li>
-      {% for pi in path_info %}
-        <li class="swh-path"><a href="{% url 'browse-directory' root_dir pi.path %}">{{pi.name}}</a></li>
-        <li>/</li>
-      {% endfor %}
-  </ul>
-</nav>
+<div class="well well-sm">
+    <b>Directory sha1 git:</b> {{ dir_sha1_git }}
+</div>
+
+{% include "content-directory-top-navigation.html" %}
+
 <div class="table-responsive">
   <table class="table">
     <thead>
       <tr>
         <th>File</th>
-        <th>Sha1</th>
+        <th>Sha1 git</th>
       </tr>
     </thead>
     <tbody>
@@ -25,22 +21,18 @@
       <tr>
         <td class="swh-directory">
           <i class="fa fa-folder fa-fw" aria-hidden="true"></i>
-          {% with path|add:d.name as dir_path %}
-          <a href="{% url 'browse-directory' root_dir dir_path %}">{{d.name}}</a>
-          {% endwith %}
+          <a href="{{ d.url }}">{{ d.name }}</a>
         </td>
-        <td>{{d.target}}</td>
+        <td>{{ d.target }}</td>
       </tr>
       {% endfor %}
       {% for f in files %}
       <tr>
         <td class="swh-content">
           <i class="fa fa-file-text fa-fw" aria-hidden="true"></i>
-          {% with root_dir|add:'/'|add:path|add:f.name as file_path %}
-          <a href="{% url 'browse-content' f.target %}?path={{file_path}}">{{f.name}}</a>
-          {% endwith %}
+          <a href="{{ f.url }}">{{ f.name }}</a>
         </td>
-        <td>{{f.target}}</td>
+        <td>{{ f.target }}</td>
       </tr>
       {% endfor %}
     </tbody>

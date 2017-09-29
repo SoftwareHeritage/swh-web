@@ -229,7 +229,15 @@ def lookup_origin(origin):
         origin information as dict.
 
     """
-    return converters.from_origin(storage.origin_get(origin))
+    origin_info = storage.origin_get(origin)
+    if not origin_info:
+        if 'id' in origin and origin['id']:
+            msg = 'Origin with id %s not found!' % origin['id']
+        else:
+            msg = 'Origin of type %s and url %s not found!' % \
+                (origin['type'], origin['url'])
+        raise NotFoundExc(msg)
+    return converters.from_origin(origin_info)
 
 
 def lookup_person(person_id):
@@ -263,7 +271,7 @@ def lookup_directory(sha1_git):
 
     dir = _first_element(storage.directory_get([sha1_git_bin]))
     if not dir:
-        return None
+        raise NotFoundExc('Directory with sha1_git %s not found' % sha1_git)
 
     directory_entries = storage.directory_ls(sha1_git_bin) or []
     return map(converters.from_directory_entry, directory_entries)
@@ -725,6 +733,9 @@ def lookup_origin_visit(origin_id, visit_id):
 
     """
     visit = storage.origin_visit_get_by(origin_id, visit_id)
+    if not visit:
+        raise NotFoundExc('Origin with id %s or its visit '
+                          'with id %s not found!' % (origin_id, visit_id))
     return converters.from_origin_visit(visit)
 
 
