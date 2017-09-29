@@ -21,6 +21,8 @@ from .data.content_test_data import (
     stub_content_text_path_with_root_dir,
     stub_content_text_path, stub_content_bin_data,
     stub_content_bin_sha1, stub_content_bin_filename,
+    stub_content_text_no_highlight_sha1,
+    stub_content_text_no_highlight_data,
     stub_content_origin_id, stub_content_origin_visit_id,
     stub_content_origin_visit_ts, stub_content_origin_branch,
     stub_content_origin_visits, stub_content_origin_branches
@@ -51,6 +53,30 @@ class SwhBrowseContentViewTest(TestCase):
 
         self.assertContains(resp, '<code class="cpp">')
         self.assertContains(resp, escape(stub_content_text_data['data']))
+        self.assertContains(resp, url_raw)
+
+    @patch('swh.web.browse.views.content.service')
+    @istest
+    def content_view_text_no_highlight(self, mock_service):
+        mock_service.lookup_content_raw.return_value =\
+            stub_content_text_no_highlight_data
+
+        mock_service.lookup_content_filetype.return_value =\
+            {'mimetype': 'text/plain'}
+
+        url = reverse('browse-content',
+                      kwargs={'sha1_git': stub_content_text_no_highlight_sha1})
+
+        url_raw = reverse('browse-content-raw',
+                          kwargs={'sha1_git': stub_content_text_no_highlight_sha1}) # noqa
+
+        resp = self.client.get(url)
+
+        self.assertEquals(resp.status_code, 200)
+        self.assertTemplateUsed('content.html')
+
+        self.assertContains(resp, '<code class="nohighlight-swh">')
+        self.assertContains(resp, escape(stub_content_text_no_highlight_data['data'])) # noqa
         self.assertContains(resp, url_raw)
 
     @patch('swh.web.browse.views.content.service')
