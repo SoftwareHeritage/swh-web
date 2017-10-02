@@ -670,11 +670,15 @@ def lookup_content_raw(q):
         dict with 'sha1' and 'data' keys.
         data representing its raw data decoded.
 
+    Raises:
+        NotFoundExc if the requested content is not found
+
     """
     algo, hash = query.parse_hash(q)
     c = storage.content_find({algo: hash})
     if not c:
-        return None
+        raise NotFoundExc('Content with %s checksum equals to %s not found!' %
+                          (algo, hashutil.hash_to_hex(hash)))
     content = _first_element(storage.content_get([c['sha1']]))
     return converters.from_content(content)
 

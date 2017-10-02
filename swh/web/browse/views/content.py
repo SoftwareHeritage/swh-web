@@ -9,7 +9,9 @@ from django.http import HttpResponse
 
 from django.shortcuts import render
 
-from swh.web.common import service, highlightjs
+from swh.model.hashutil import hash_to_hex
+
+from swh.web.common import service, highlightjs, query
 from swh.web.common.utils import reverse
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
@@ -23,8 +25,7 @@ _browsers_supported_image_mimes = set(['image/gif', 'image/png',
                                        'image/webp'])
 
 
-def _request_content(sha1_git):
-    query_string = 'sha1_git:' + sha1_git
+def _request_content(query_string):
     content_raw = service.lookup_content_raw(query_string)
     mime_type = service.lookup_content_filetype(query_string)
     if mime_type:
@@ -57,37 +58,18 @@ def _prepare_content_for_display(content_data, mime_type, path):
             'mime_type': mime_type}
 
 
-def content_display(request, sha1_git):
-    """Django view that produces an HTML display of a swh content identified
-    by its sha1_git value.
+def content_display(request, query_string):
+    """Django view that produces an HTML display of a SWH content identified
+    by its hash value.
 
-    The url that points to it is /browse/content/<sha1_git>/[?path=<path>]
-
-    In the context of a navigation coming from a directory view,
-    the path query parameter will be used and filled with the path
-    of the file relative to a root directory.
-
-    If the content to display is textual, it will be highlighted client-side
-    if possible using highlight.js. In order for that operation to be
-    performed, a programming language must first be associated to the content.
-    The following procedure is used in order to find the language:
-
-        1) First try to find a language from the content's filename
-           (provided as query parameter when navigating from a directory view).
-
-        2) If no language has been found from the filename,
-           try to find one from the content's mime type.
-           The mime type is retrieved from the content metadata stored
-           in the swh archive or is computed server-side using Python
-           magic module.
-
-    When that view is called in the context of a navigation coming from
-    a directory view, a breadcrumb will be displayed on top of the rendered
-    content in order to easily navigate up to the associated root directory.
+    See :ref:`Content browsing URI scheme <browse_content>` for more details.
 
     Args:
         request: input django http request
-        sha1_git: swh sha1_git identifier of the content to display
+        query_string: a string of the form "[ALGO_HASH:]HASH" where
+            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
+            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
+            representation of the hash value
 
     Returns:
         The HTML rendering of the requested content.
@@ -95,7 +77,9 @@ def content_display(request, sha1_git):
     """
 
     try:
-        content_data, mime_type = _request_content(sha1_git)
+        algo, checksum = query.parse_hash(query_string)
+        checksum = hash_to_hex(checksum)
+        content_data, mime_type = _request_content(query_string)
     except Exception as exc:
         return handle_view_exception(exc)
 
@@ -128,12 +112,17 @@ def content_display(request, sha1_git):
         breadcrumbs.append({'name': filename,
                             'url': None})
 
+    query_params = None
+    if filename:
+        query_params = {'filename': filename}
+
     content_raw_url = reverse('browse-content-raw',
-                              kwargs={'sha1_git': sha1_git},
-                              query_params={'filename': filename})
+                              kwargs={'query_string': query_string},
+                              query_params=query_params)
 
     return render(request, 'content.html',
-                  {'content_sha1_git': sha1_git,
+                  {'content_hash_algo': algo,
+                   'content_checksum': checksum,
                    'content': content_display_data['content_data'],
                    'content_raw_url': content_raw_url,
                    'mime_type': content_display_data['mime_type'],
@@ -143,25 +132,18 @@ def content_display(request, sha1_git):
                    'branch': None})
 
 
-def content_raw(request, sha1_git):
-    """Django view that produces a raw display of a swh content identified
-    by its sha1_git value.
+def content_raw(request, query_string):
+    """Django view that produces a raw display of a SWH content identified
+    by its hash value.
 
-    The url that points to it is /browse/content/<sha1_git>/raw/[?filename=<filename>]
-
-    The behaviour of that view depends on the mime type of the requested content.
-    If the mime type is from the text family, the view will return a response whose
-    content type is 'text/plain' that will be rendered by the browser. Otherwise,
-    the view will return a response whose content type is 'application/octet-stream'
-    and the browser will then offer to download the file.
-
-    In the context of a navigation coming from a directory view, the filename query
-    parameter will be used in order to provide the real name of the file when
-    one wants to save it locally.
+    See :ref:`Raw content browsing URI scheme <browse_content_raw>` for more details.
 
     Args:
         request: input django http request
-        sha1_git: swh sha1_git identifier of the requested content
+        query_string: a string of the form "[ALGO_HASH:]HASH" where
+            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
+            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
+            representation of the hash value
 
     Returns:
         The raw bytes of the content.
@@ -170,13 +152,15 @@ def content_raw(request, sha1_git):
     """ # noqa
 
     try:
-        content_data, mime_type = _request_content(sha1_git)
+        algo, checksum = query.parse_hash(query_string)
+        checksum = hash_to_hex(checksum)
+        content_data, mime_type = _request_content(query_string)
     except Exception as exc:
         return handle_view_exception(exc)
 
     filename = request.GET.get('filename', None)
     if not filename:
-        filename = sha1_git
+        filename = '%s_%s' % (algo, checksum)
 
     mime_type = get_mimetype_for_content(content_data)
     if mime_type.startswith('text/'):
@@ -193,36 +177,7 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
     """Django view that produces an HTML display of a swh content
     associated to an origin for a given visit.
 
-    The url scheme that points to it is:
-
-        * /browse/origin/<origin_id>/content/<path>/[?branch=<branch_name>]
-
-        * /browse/origin/<origin_id>/visit/<visit_id>/content/<path>/[?branch=<branch_name>]
-
-        * /browse/origin/<origin_id>/ts/<ts>/content/<path>/[?branch=<branch_name>]
-
-    If the content to display is textual, it will be highlighted client-side
-    if possible using highlight.js. In order for that operation to be
-    performed, a programming language must first be associated to the content.
-    The following procedure is used in order to find the language:
-
-        1) First try to find a language from the content's filename
-           (provided as query parameter when navigating from a directory view).
-
-        2) If no language has been found from the filename,
-           try to find one from the content's mime type.
-           The mime type is retrieved from the content metadata stored
-           in the swh archive or is computed server-side using Python
-           magic module.
-
-    The view displays a breadcrumb on top of the rendered
-    content in order to easily navigate up to the origin root directory.
-
-    The view also enables to easily switch between the origin branches
-    through a dropdown menu.
-
-    The origin branch (default to master) from which to retrieve the content
-    can also be specified by using the branch query parameter.
+    See :ref:`Origin content browsing URI scheme <browse_origin_content>` for more details.
 
     Args:
         request: input django http request
@@ -283,7 +238,8 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
 
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
-        content_data, mime_type = _request_content(sha1_git)
+        query_string = 'sha1_git:' + sha1_git
+        content_data, mime_type = _request_content(query_string)
 
     except Exception as exc:
         return handle_view_exception(exc)
@@ -316,11 +272,12 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
                         'url': None})
 
     content_raw_url = reverse('browse-content-raw',
-                              kwargs={'sha1_git': sha1_git},
+                              kwargs={'query_string': query_string},
                               query_params={'filename': filename})
 
     return render(request, 'content.html',
-                  {'content_sha1_git': sha1_git,
+                  {'content_hash_algo': 'sha1_git',
+                   'content_checksum': sha1_git,
                    'content': content_display_data['content_data'],
                    'content_raw_url': content_raw_url,
                    'mime_type': content_display_data['mime_type'],

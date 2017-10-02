@@ -18,13 +18,7 @@ def origin_browse(request, origin_id=None, origin_type=None,
     """Django view that produces an HTML display of a swh origin identified
     by its id or its url.
 
-    The url scheme that points to it is the following:
-
-        * /browse/origin/<origin_id>/
-        * /browse/origin/<origin_type>/url/<origin_url>/
-
-    The view displays the origin metadata and contains links
-    for browsing its directories and contents for each swh visit.
+    See :ref:`Origin browsing URI scheme <browse_origin>` for more details.
 
     Args:
         request: input django http request

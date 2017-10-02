@@ -24,22 +24,11 @@ def _get_directory_entries(sha1_git):
 
 
 def directory_browse(request, sha1_git, path=None):
-    """Django view for browsing the content of a swh directory identified
+    """Django view for browsing the content of a SWH directory identified
     by its sha1_git value.
 
-    The url scheme that points to that view is the following:
-
-        * /browse/directory/<sha1_git>/
-
-        * /browse/directory/<sha1_git>/<path>/
-
-    The content of the directory is first sorted in lexicographical order
-    and the sub-directories are displayed before the regular files.
-
-    The view enables to navigate from the provided root directory to
-    directories reachable from it in a recursive way.
-    A breadcrumb located in the top part of the view allows
-    to keep track of the paths navigated so far.
+    See :ref:`Directory browsing URI scheme <browse_directory>` for
+    more details.
 
     Args:
         request: input django http request
@@ -80,8 +69,9 @@ def directory_browse(request, sha1_git, path=None):
                                    'path': path + d['name']})
 
     for f in files:
+        query_string = 'sha1_git:' + f['target']
         f['url'] = reverse('browse-content',
-                           kwargs={'sha1_git': f['target']},
+                           kwargs={'query_string': query_string},
                            query_params={'path': root_sha1_git + '/' +
                                          path + f['name']})
 
@@ -99,36 +89,8 @@ def origin_directory_browse(request, origin_id, visit_id=None, ts=None,
     """Django view for browsing the content of a swh directory associated
     to an origin for a given visit.
 
-    The url scheme that points to that view is the following:
-
-        * /browse/origin/<origin_id>/directory/[?branch=<branch_name>]
-
-        * /browse/origin/<origin_id>/directory/<path>/[?branch=<branch_name>]
-
-        * /browse/origin/<origin_id>/visit/<visit_id>/directory/[?branch=<branch_name>]
-
-        * /browse/origin/<origin_id>/visit/<visit_id>/directory/<path>/[?branch=<branch_name>]
-
-        * /browse/origin/<origin_id>/ts/<ts>/directory/[?branch=<branch_name>]
-
-        * /browse/origin/<origin_id>/ts/<ts>/directory/<path>/[?branch=<branch_name>]
-
-    For the first two urls, the displayed directory will correspond to
-    the one associated to the latest swh visit.
-
-    The content of the directory is first sorted in lexicographical order
-    and the sub-directories are displayed before the regular files.
-
-    The view enables to navigate from the origin root directory to
-    directories reachable from it in a recursive way.
-    A breadcrumb located in the top part of the view allows
-    to keep track of the paths navigated so far.
-
-    The view also enables to easily switch between the origin branches
-    through a dropdown menu.
-
-    The origin branch (default to master) from which to retrieve the directory 
-    content can also be specified by using the branch query parameter.
+    See :ref:`Origin's directory browsing URI scheme <browse_origin_directory>` for
+    more details.
 
     Args:
         request: input django http request

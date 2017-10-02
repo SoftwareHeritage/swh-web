@@ -66,8 +66,9 @@ class SwhBrowseDirectoryViewTest(TestCase):
             file_path = "%s/%s" % (root_directory_sha1, f['name'])
             if path:
                 file_path = "%s/%s/%s" % (root_directory_sha1, path, f['name'])
+            query_string = 'sha1_git:' + f['target']
             file_url = reverse('browse-content',
-                               kwargs={'sha1_git': f['target']},
+                               kwargs={'query_string': query_string},
                                query_params={'path': file_path})
             self.assertContains(resp, file_url)
 

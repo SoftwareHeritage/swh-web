@@ -10,5 +10,10 @@ docutils
 pygments
 yaml
 python-magic
+
+#Doc dependencies
+sphinx
+sphinxcontrib-httpdomain
+
 # Test dependencies
 

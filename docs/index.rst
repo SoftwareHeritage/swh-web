@@ -6,7 +6,7 @@ Software Heritage Web Applications - Development Documentation
    :caption: Contents:
 
    dev-info.md
-   uri-scheme.md
+   uri-scheme
 
 
 Indices and tables

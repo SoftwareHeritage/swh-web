@@ -37,10 +37,10 @@ urlpatterns = [
     url(r'^directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/$',
         directory.directory_browse, name='browse-directory'),
 
-    url(r'^content/(?P<sha1_git>[0-9a-f]+)/$',
-        content.content_display, name='browse-content'),
-    url(r'^content/(?P<sha1_git>[0-9a-f]+)/raw/$',
+    url(r'^content/(?P<query_string>.+)/raw/$',
         content.content_raw, name='browse-content-raw'),
+    url(r'^content/(?P<query_string>.+)/$',
+        content.content_display, name='browse-content'),
 
     url(r'^origin/(?P<origin_id>[0-9]+)/$', origin.origin_browse,
         name='browse-origin'),

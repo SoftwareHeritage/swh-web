@@ -41,10 +41,10 @@ class SwhBrowseContentViewTest(TestCase):
             None
 
         url = reverse('browse-content',
-                      kwargs={'sha1_git': stub_content_text_sha1})
+                      kwargs={'query_string': stub_content_text_sha1})
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'sha1_git': stub_content_text_sha1})
+                          kwargs={'query_string': stub_content_text_sha1})
 
         resp = self.client.get(url)
 
@@ -65,10 +65,10 @@ class SwhBrowseContentViewTest(TestCase):
             {'mimetype': 'text/plain'}
 
         url = reverse('browse-content',
-                      kwargs={'sha1_git': stub_content_text_no_highlight_sha1})
+                      kwargs={'query_string': stub_content_text_no_highlight_sha1}) # noqa
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'sha1_git': stub_content_text_no_highlight_sha1}) # noqa
+                          kwargs={'query_string': stub_content_text_no_highlight_sha1}) # noqa
 
         resp = self.client.get(url)
 
@@ -91,10 +91,10 @@ class SwhBrowseContentViewTest(TestCase):
             {'mimetype': mime_type}
 
         url = reverse('browse-content',
-                      kwargs={'sha1_git': stub_content_bin_sha1})
+                      kwargs={'query_string': stub_content_bin_sha1})
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'sha1_git': stub_content_bin_sha1})
+                          kwargs={'query_string': stub_content_bin_sha1})
 
         resp = self.client.get(url)
 
@@ -118,7 +118,7 @@ class SwhBrowseContentViewTest(TestCase):
             {'mimetype': 'text/x-c++'}
 
         url = reverse('browse-content',
-                      kwargs={'sha1_git': stub_content_text_sha1},
+                      kwargs={'query_string': stub_content_text_sha1},
                       query_params={'path': stub_content_text_path_with_root_dir}) # noqa
 
         resp = self.client.get(url)
@@ -157,7 +157,7 @@ class SwhBrowseContentViewTest(TestCase):
         self.assertContains(resp, '<li>' + filename + '</li>')
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'sha1_git': stub_content_text_sha1},
+                          kwargs={'query_string': stub_content_text_sha1},
                           query_params={'filename': filename})
         self.assertContains(resp, url_raw)
 
@@ -168,20 +168,20 @@ class SwhBrowseContentViewTest(TestCase):
             stub_content_text_data
 
         url = reverse('browse-content-raw',
-                      kwargs={'sha1_git': stub_content_text_sha1})
+                      kwargs={'query_string': stub_content_text_sha1})
 
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'text/plain')
         self.assertEqual(resp['Content-disposition'],
-                         'filename=%s' % stub_content_text_sha1)
+                         'filename=%s_%s' % ('sha1', stub_content_text_sha1))
         self.assertEqual(resp.content, stub_content_text_data['data'])
 
         filename = stub_content_text_path_with_root_dir.split('/')[-1]
 
         url = reverse('browse-content-raw',
-                      kwargs={'sha1_git': stub_content_text_sha1},
+                      kwargs={'query_string': stub_content_text_sha1},
                       query_params={'filename': filename})
 
         resp = self.client.get(url)
@@ -199,18 +199,19 @@ class SwhBrowseContentViewTest(TestCase):
             stub_content_bin_data
 
         url = reverse('browse-content-raw',
-                      kwargs={'sha1_git': stub_content_bin_sha1})
+                      kwargs={'query_string': stub_content_bin_sha1})
 
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/octet-stream')
         self.assertEqual(resp['Content-disposition'],
-                         'attachment; filename=%s' % stub_content_bin_sha1)
+                         'attachment; filename=%s_%s' %
+                         ('sha1', stub_content_bin_sha1))
         self.assertEqual(resp.content, stub_content_bin_data['data'])
 
         url = reverse('browse-content-raw',
-                      kwargs={'sha1_git': stub_content_bin_sha1},
+                      kwargs={'query_string': stub_content_bin_sha1},
                       query_params={'filename': stub_content_bin_filename})
 
         resp = self.client.get(url)
@@ -278,8 +279,10 @@ class SwhBrowseContentViewTest(TestCase):
 
         self.assertContains(resp, '<li>%s</li>' % filename)
 
+        query_string = 'sha1_git:' + content_sha1
+
         url_raw = reverse('browse-content-raw',
-                          kwargs={'sha1_git': content_sha1},
+                          kwargs={'query_string': query_string},
                           query_params={'filename': filename})
         self.assertContains(resp, url_raw)
 
