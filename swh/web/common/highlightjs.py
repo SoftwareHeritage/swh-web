@@ -223,24 +223,22 @@ _mime_type_to_hljs_language = {
 
 
 # function to fill the above dictionnaries
-def _build_pygments_to_hljs_map():
-    for lexer in get_all_lexers():
-        lexer_name = lexer[0]
-        lang_aliases = lexer[1]
-        lang_mime_types = lexer[3]
-        lang = None
-        for lang_alias in lang_aliases:
-            if lang_alias in _hljs_languages:
-                lang = lang_alias
-                _pygments_lexer_to_hljs_language[lexer_name] = lang_alias
-                break
+def _init_pygments_to_hljs_map():
+    if len(_pygments_lexer_to_hljs_language) == 0:
+        for lexer in get_all_lexers():
+            lexer_name = lexer[0]
+            lang_aliases = lexer[1]
+            lang_mime_types = lexer[3]
+            lang = None
+            for lang_alias in lang_aliases:
+                if lang_alias in _hljs_languages:
+                    lang = lang_alias
+                    _pygments_lexer_to_hljs_language[lexer_name] = lang_alias
+                    break
 
-        if lang:
-            for lang_mime_type in lang_mime_types:
-                _mime_type_to_hljs_language[lang_mime_type] = lang
-
-
-_build_pygments_to_hljs_map()
+            if lang:
+                for lang_mime_type in lang_mime_types:
+                    _mime_type_to_hljs_language[lang_mime_type] = lang
 
 
 def get_hljs_language_from_filename(filename):
@@ -253,6 +251,7 @@ def get_hljs_language_from_filename(filename):
     Returns:
         highlight.js language id or None if no correspondance has been found
     """
+    _init_pygments_to_hljs_map()
     if filename:
         exts = filename.split('.')
         # check if file extension matches an hljs language
@@ -294,6 +293,7 @@ def get_hljs_language_from_mime_type(mime_type):
     Returns:
         highlight.js language id or None if no correspondance has been found
     """
+    _init_pygments_to_hljs_map()
     if mime_type and mime_type in _mime_type_to_hljs_language:
         return _mime_type_to_hljs_language[mime_type]
     return None
