@@ -42,10 +42,6 @@ def gen_path_info(path):
     return path_info
 
 
-_mime_magic = magic.open(magic.MAGIC_MIME_TYPE)
-_mime_magic.load()
-
-
 def get_mimetype_for_content(content):
     """Function that returns the mime type associated to
     a content buffer using the magic module under the hood.
@@ -57,7 +53,11 @@ def get_mimetype_for_content(content):
         The mime type (e.g. text/plain) associated to the provided content.
 
     """
-    return _mime_magic.buffer(content)
+    # for old api version of magic module
+    if hasattr(magic, 'detect_from_content'):
+        return magic.detect_from_content(content).mime_type
+    else:
+        return magic.from_buffer(content, True)
 
 
 def get_origin_visits(origin_id):

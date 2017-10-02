@@ -9,6 +9,6 @@ python-dateutil
 docutils
 pygments
 yaml
-magic
+python-magic
 # Test dependencies
 
