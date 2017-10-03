@@ -48,35 +48,35 @@ urlpatterns = [
         origin.origin_browse, name='browse-origin'),
 
     url(r'^origin/(?P<origin_id>[0-9]+)/directory/$',
-        directory.origin_directory_browse,
+        origin.origin_directory_browse,
         name='browse-origin-directory'),
     url(r'^origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/$',
-        directory.origin_directory_browse,
+        origin.origin_directory_browse,
         name='browse-origin-directory'),
     url(r'^origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/$', # noqa
-        directory.origin_directory_browse,
+        origin.origin_directory_browse,
         name='browse-origin-directory'),
     url(r'^origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)'
         r'/directory/(?P<path>.+)/$',
-        directory.origin_directory_browse,
+        origin.origin_directory_browse,
         name='browse-origin-directory'),
     url(r'^origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/directory/$', # noqa
-        directory.origin_directory_browse,
+        origin.origin_directory_browse,
         name='browse-origin-directory'),
     url(r'^origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)'
         r'/directory/(?P<path>.+)/$',
-        directory.origin_directory_browse,
+        origin.origin_directory_browse,
         name='browse-origin-directory'),
 
     url(r'^origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/$',
-        content.origin_content_display,
+        origin.origin_content_display,
         name='browse-origin-content'),
     url(r'^origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)'
         r'/content/(?P<path>.+)/$',
-        content.origin_content_display,
+        origin.origin_content_display,
         name='browse-origin-content'),
     url(r'^origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)'
         r'/content/(?P<path>.+)/$',
-        content.origin_content_display,
+        origin.origin_content_display,
         name='browse-origin-content'),
 ]

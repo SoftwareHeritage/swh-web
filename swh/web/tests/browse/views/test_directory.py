@@ -15,16 +15,8 @@ from .data.directory_test_data import (
     stub_sub_directory_path, stub_sub_directory_data
 )
 
-from .data.origin_directory_test_data import (
-    stub_origin_id, stub_visit_id,
-    stub_origin_visits, stub_origin_branches,
-    stub_origin_root_directory_entries, stub_origin_master_branch,
-    stub_origin_root_directory_sha1, stub_origin_sub_directory_path,
-    stub_origin_sub_directory_entries, stub_visit_ts
-)
 
-
-class SwhBrowseDirectoryViewTest(TestCase):
+class SwhBrowseDirectoryTest(TestCase):
 
     @nottest
     def directory_view(self, root_directory_sha1, directory_entries,
@@ -86,7 +78,7 @@ class SwhBrowseDirectoryViewTest(TestCase):
             self.assertContains(resp, '<a href="%s">%s</a>' %
                                       (dir_url, p['name']))
 
-    @patch('swh.web.browse.views.directory.service')
+    @patch('swh.web.browse.utils.service')
     @istest
     def root_directory_view(self, mock_service):
         mock_service.lookup_directory.return_value = \
@@ -94,170 +86,14 @@ class SwhBrowseDirectoryViewTest(TestCase):
 
         self.directory_view(stub_root_directory_sha1, stub_root_directory_data)
 
+    @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.directory.service')
     @istest
-    def sub_directory_view(self, mock_service):
-        mock_service.lookup_directory.return_value = \
+    def sub_directory_view(self, mock_directory_service, mock_utils_service):
+        mock_utils_service.lookup_directory.return_value = \
             stub_sub_directory_data
+        mock_directory_service.lookup_directory_with_path.return_value = \
+            {'target': '120c39eeb566c66a77ce0e904d29dfde42228adc'}
 
         self.directory_view(stub_root_directory_sha1, stub_sub_directory_data,
                             stub_sub_directory_path)
-
-    @nottest
-    def origin_directory_view(self, origin_id, origin_visits,
-                              origin_branches, origin_branch,
-                              root_directory_sha1, directory_entries,
-                              visit_id=None, ts=None, path=None):
-
-        dirs = [e for e in directory_entries
-                if e['type'] == 'dir']
-        files = [e for e in directory_entries
-                 if e['type'] == 'file']
-
-        if not visit_id:
-            visit_id = origin_visits[-1]['visit']
-
-        url_args = {'origin_id': origin_id}
-
-        if ts:
-            url_args['ts'] = ts
-        else:
-            url_args['visit_id'] = visit_id
-
-        if path:
-            url_args['path'] = path
-
-        url = reverse('browse-origin-directory',
-                      kwargs=url_args)
-
-        resp = self.client.get(url)
-
-        self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('directory.html')
-        self.assertContains(resp, '<td class="swh-directory">',
-                            count=len(dirs))
-        self.assertContains(resp, '<td class="swh-content">',
-                            count=len(files))
-
-        for d in dirs:
-            dir_path = d['name']
-            if path:
-                dir_path = "%s/%s" % (path, d['name'])
-            dir_url_args = dict(url_args)
-            dir_url_args['path'] = dir_path
-            dir_url = reverse('browse-origin-directory',
-                              kwargs=dir_url_args,
-                              query_params={'branch': origin_branch}) # noqa
-            self.assertContains(resp, dir_url)
-
-        for f in files:
-            file_path = f['name']
-            if path:
-                file_path = "%s/%s" % (path, f['name'])
-            file_url_args = dict(url_args)
-            file_url_args['path'] = file_path
-            file_url = reverse('browse-origin-content',
-                               kwargs=file_url_args,
-                               query_params={'branch': origin_branch}) # noqa
-            self.assertContains(resp, file_url)
-
-        if 'path' in url_args:
-            del url_args['path']
-
-        root_dir_branch_url = \
-            reverse('browse-origin-directory',
-                    kwargs=url_args,
-                    query_params={'branch': origin_branch})
-
-        nb_bc_paths = 1
-        if path:
-            nb_bc_paths = len(path.split('/')) + 1
-
-        self.assertContains(resp, '<li class="swh-path">', count=nb_bc_paths)
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (root_dir_branch_url,
-                                   root_directory_sha1[:7]))
-
-        self.assertContains(resp, '<li class="swh-branch">',
-                            count=len(origin_branches))
-
-        if path:
-            url_args['path'] = path
-
-        for branch in origin_branches:
-            root_dir_branch_url = \
-                reverse('browse-origin-directory',
-                        kwargs=url_args,
-                        query_params={'branch': branch['name']})
-
-            self.assertContains(resp, '<a href="%s">%s</a>' %
-                                (root_dir_branch_url, branch['name']))
-
-    @patch('swh.web.browse.views.directory.get_origin_visits')
-    @patch('swh.web.browse.views.directory.get_origin_visit_branches')
-    @patch('swh.web.browse.views.directory.service')
-    @istest
-    def origin_root_directory_view(self, mock_service,
-                                   mock_get_origin_visit_branches,
-                                   mock_get_origin_visits):
-
-        mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.return_value = stub_origin_branches
-        mock_service.lookup_directory.return_value = \
-            stub_origin_root_directory_entries
-
-        self.origin_directory_view(stub_origin_id, stub_origin_visits,
-                                   stub_origin_branches,
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries)
-
-        self.origin_directory_view(stub_origin_id, stub_origin_visits,
-                                   stub_origin_branches,
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   visit_id=stub_visit_id)
-
-        self.origin_directory_view(stub_origin_id, stub_origin_visits,
-                                   stub_origin_branches,
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   ts=stub_visit_ts)
-
-    @patch('swh.web.browse.views.directory.get_origin_visits')
-    @patch('swh.web.browse.views.directory.get_origin_visit_branches')
-    @patch('swh.web.browse.views.directory.service')
-    @istest
-    def origin_sub_directory_view(self, mock_service,
-                                  mock_get_origin_visit_branches,
-                                  mock_get_origin_visits):
-
-        mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.return_value = stub_origin_branches
-        mock_service.lookup_directory.return_value = \
-            stub_origin_sub_directory_entries
-
-        self.origin_directory_view(stub_origin_id, stub_origin_visits,
-                                   stub_origin_branches,
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   path=stub_origin_sub_directory_path)
-
-        self.origin_directory_view(stub_origin_id, stub_origin_visits,
-                                   stub_origin_branches,
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   visit_id=stub_visit_id,
-                                   path=stub_origin_sub_directory_path)
-
-        self.origin_directory_view(stub_origin_id, stub_origin_visits,
-                                   stub_origin_branches,
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   ts=stub_visit_ts,
-                                   path=stub_origin_sub_directory_path)

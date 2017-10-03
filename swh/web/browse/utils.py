@@ -3,14 +3,39 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import base64
 import dateutil
 import magic
 import math
 
 from django.core.cache import cache
 
-from swh.web.common import service
+from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc
+
+
+def get_directory_entries(sha1_git):
+    """Function that retrieves the content of a SWH directory
+    from the SWH archive.
+
+    The directories entries are first sorted in lexicographical order.
+    Sub-directories and regular files are then extracted.
+
+    Args:
+        sha1_git: sha1_git identifier of the directory
+
+    Returns:
+        A tuple whose first member corresponds to the sub-directories list
+        and second member the regular files list
+
+    Raises:
+        NotFoundExc if the directory is not found
+    """
+    entries = list(service.lookup_directory(sha1_git))
+    entries = sorted(entries, key=lambda e: e['name'])
+    dirs = [e for e in entries if e['type'] == 'dir']
+    files = [e for e in entries if e['type'] == 'file']
+    return dirs, files
 
 
 def gen_path_info(path):
@@ -58,6 +83,84 @@ def get_mimetype_for_content(content):
         return magic.detect_from_content(content).mime_type
     else:
         return magic.from_buffer(content, True)
+
+
+def request_content(query_string):
+    """Function that retrieves a SWH content from the SWH archive.
+
+    Raw bytes content is first retrieved, then the content mime type.
+    If the mime type is not stored in the archive, it will be computed
+    using Python magic module.
+
+    Args:
+        query_string: a string of the form "[ALGO_HASH:]HASH" where
+            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
+            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
+            representation of the hash value
+
+    Returns:
+        A tuple whose first member corresponds to the content raw bytes
+        and second member the content mime type
+
+    Raises:
+        NotFoundExc if the content is not found
+    """
+    content_raw = service.lookup_content_raw(query_string)
+    content_data = content_raw['data']
+    mime_type = service.lookup_content_filetype(query_string)
+    if mime_type:
+        mime_type = mime_type['mimetype']
+    else:
+        mime_type = get_mimetype_for_content(content_data)
+    return content_data, mime_type
+
+
+_browsers_supported_image_mimes = set(['image/gif', 'image/png',
+                                       'image/jpeg', 'image/bmp',
+                                       'image/webp'])
+
+
+def prepare_content_for_display(content_data, mime_type, path):
+    """Function that prepares a content for HTML display.
+
+    The function tries to associate a programming language to a
+    content in order to perform syntax highlighting client-side
+    using highlightjs. The language is determined using either
+    the content filename or its mime type.
+    If the mime type corresponds to an image format supported
+    by web browsers, the content will be encoded in base64
+    for displaying the image.
+
+    Args:
+        content_data (bytes): raw bytes of the content
+        mime_type (string): mime type of the content
+        path (string): path of the content including filename
+
+    Returns:
+        A dict containing the content bytes (possibly different from the one
+        provided as parameter if it is an image) under the key 'content_data
+        and the corresponding highlightjs language class under the
+        key 'language'.
+    """
+
+    language = highlightjs.get_hljs_language_from_filename(path)
+
+    if not language:
+        language = highlightjs.get_hljs_language_from_mime_type(mime_type)
+
+    if not language:
+        language = 'nohighlight-swh'
+    elif mime_type.startswith('application/'):
+        mime_type = mime_type.replace('application/', 'text/')
+
+    if mime_type.startswith('image/'):
+        if mime_type in _browsers_supported_image_mimes:
+            content_data = base64.b64encode(content_data)
+        else:
+            content_data = None
+
+    return {'content_data': content_data,
+            'language': language}
 
 
 def get_origin_visits(origin_id):

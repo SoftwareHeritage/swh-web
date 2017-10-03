@@ -134,6 +134,9 @@ Directory
 Origin
 ^^^^^^
 
+Origin metadata
+"""""""""""""""
+
 .. _browse_origin:
 
 .. http:get:: /browse/origin/(origin_id)/
@@ -161,6 +164,9 @@ Origin
     :type origin_url: string
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
+
+Origin directory
+""""""""""""""""
 
 .. _browse_origin_directory:
 
@@ -349,6 +355,9 @@ Origin
     :statuscode 404: requested origin can not be found in the SWH archive,
         requested visit timestamp does not exist or the provided path does 
         not exist from the origin root directory
+
+Origin content
+""""""""""""""
 
 .. _browse_origin_content:
 
