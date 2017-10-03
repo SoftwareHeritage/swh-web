@@ -18,8 +18,8 @@
     <script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
     <!-- END: bootstrap -->
 
-    <script src="{% static 'js/highlight/highlight.pack.js' %}"></script>
-    <script src="{% static 'js/highlight/highlightjs-line-numbers.min.js' %}"></script>
+    <script src="{% static 'js/highlightjs/dist/highlight.pack.js' %}"></script>
+    <script src="{% static 'js/highlightjs-line-numbers/dist/highlightjs-line-numbers.min.js' %}"></script>
     <script>
       // empty hljs language definition
       function no_highlight(hljs) {
@@ -31,7 +31,7 @@
       hljs.initHighlightingOnLoad();
       hljs.initLineNumbersOnLoad();
     </script>
-    <link rel="stylesheet" href="{% static 'css/highlight/github.css' %}">
+    <link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">
     <link rel="stylesheet" href="{% static 'css/pygment.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
     <link rel="icon" href="{% static 'img/icons/swh-logo-32x32.png' %}" sizes="32x32" />
