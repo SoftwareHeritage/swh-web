@@ -9,8 +9,9 @@ from rest_framework.response import Response
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
+from swh.web.common.exc import NotFoundExc, ForbiddenExc
+from swh.web.common.utils import shorten_path
 from swh.web.api import utils
-from swh.web.api.exc import NotFoundExc, ForbiddenExc
 
 
 def compute_link_header(rv, options):
@@ -130,7 +131,7 @@ def make_api_response(request, data, doc_data={}, options={}):
                               separators=(',', ': '))
         doc_env['response_data'] = data
         doc_env['request'] = request
-        doc_env['heading'] = utils.shorten_path(str(request.path))
+        doc_env['heading'] = shorten_path(str(request.path))
 
         response_args['data'] = doc_env
         response_args['template_name'] = 'apidoc.html'

@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import datetime
-import dateutil
 import unittest
 
 from unittest.mock import patch, call
@@ -31,6 +29,14 @@ class UtilsTestCase(unittest.TestCase):
                         dict(rule='/other2',
                              methods=set([]),
                              endpoint=None)]
+        self.sample_content_hashes = {
+            'blake2s256': ('791e07fcea240ade6dccd0a9309141673'
+                           'c31242cae9c237cf3855e151abc78e9'),
+            'sha1': 'dc2830a9e72f23c1dfebef4413003221baa5fb62',
+            'sha1_git': 'fe95a46679d128ff167b7c55df5d02356c5a1ae1',
+            'sha256': ('b5c7fe0536f44ef60c8780b6065d30bca74a5cd06'
+                       'd78a4a71ba1ad064770f0c9')
+        }
 
     @istest
     def filter_endpoints_1(self):
@@ -242,29 +248,6 @@ class UtilsTestCase(unittest.TestCase):
                          'raboof <foo@bar>')
 
     @istest
-    def parse_timestamp(self):
-        input_timestamps = [
-            None,
-            '2016-01-12',
-            '2016-01-12T09:19:12+0100',
-            'Today is January 1, 2047 at 8:21:00AM',
-            '1452591542',
-        ]
-
-        output_dates = [
-            None,
-            datetime.datetime(2016, 1, 12, 0, 0),
-            datetime.datetime(2016, 1, 12, 9, 19, 12,
-                              tzinfo=dateutil.tz.tzoffset(None, 3600)),
-            datetime.datetime(2047, 1, 1, 8, 21),
-            datetime.datetime(2016, 1, 12, 9, 39, 2,
-                              tzinfo=datetime.timezone.utc),
-        ]
-
-        for ts, exp_date in zip(input_timestamps, output_dates):
-            self.assertEquals(utils.parse_timestamp(ts), exp_date)
-
-    @istest
     def enrich_release_0(self):
         # when
         actual_release = utils.enrich_release({})
@@ -474,41 +457,44 @@ class UtilsTestCase(unittest.TestCase):
     @patch('swh.web.api.utils.reverse')
     @istest
     def enrich_content_with_hashes(self, mock_django_reverse):
-        for h in ['sha1', 'sha256', 'sha1_git']:
+
+        for algo, hash in self.sample_content_hashes.items():
+
+            query_string = '%s:%s' % (algo, hash)
+
             # given
             mock_django_reverse.side_effect = [
-                '/api/content/%s:123/raw/' % h,
-                '/api/filetype/%s:123/' % h,
-                '/api/language/%s:123/' % h,
-                '/api/license/%s:123/' % h,
+                '/api/content/%s/raw/' % query_string,
+                '/api/filetype/%s/' % query_string,
+                '/api/language/%s/' % query_string,
+                '/api/license/%s/' % query_string
                 ]
 
             # when
             enriched_content = utils.enrich_content(
                 {
-                    'id': '123',
-                    h: 'blahblah'
-                }
+                    algo: hash,
+                },
+                query_string=query_string
             )
 
             # then
             self.assertEqual(
                 enriched_content,
                 {
-                    'id': '123',
-                    h: 'blahblah',
-                    'data_url': '/api/content/%s:123/raw/' % h,
-                    'filetype_url': '/api/filetype/%s:123/' % h,
-                    'language_url': '/api/language/%s:123/' % h,
-                    'license_url': '/api/license/%s:123/' % h,
+                    algo: hash,
+                    'data_url': '/api/content/%s/raw/' % query_string,
+                    'filetype_url': '/api/filetype/%s/' % query_string,
+                    'language_url': '/api/language/%s/' % query_string,
+                    'license_url': '/api/license/%s/' % query_string,
                 }
             )
 
             mock_django_reverse.assert_has_calls([
-                call('content-raw', kwargs={'q': '%s:blahblah' % h}),
-                call('content-filetype', kwargs={'q': '%s:blahblah' % h}),
-                call('content-language', kwargs={'q': '%s:blahblah' % h}),
-                call('content-license', kwargs={'q': '%s:blahblah' % h}),
+                call('content-raw', kwargs={'q': query_string}),
+                call('content-filetype', kwargs={'q': query_string}),
+                call('content-language', kwargs={'q': query_string}),
+                call('content-license', kwargs={'q': query_string}),
             ])
 
             mock_django_reverse.reset()
@@ -517,45 +503,48 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def enrich_content_with_hashes_and_top_level_url(self,
                                                      mock_django_reverse):
-        for h in ['sha1', 'sha256', 'sha1_git']:
+
+        for algo, hash in self.sample_content_hashes.items():
+
+            query_string = '%s:%s' % (algo, hash)
+
             # given
             mock_django_reverse.side_effect = [
-                '/api/content/%s:123/' % h,
-                '/api/content/%s:123/raw/' % h,
-                '/api/filetype/%s:123/' % h,
-                '/api/language/%s:123/' % h,
-                '/api/license/%s:123/' % h,
+                '/api/content/%s/' % query_string,
+                '/api/content/%s/raw/' % query_string,
+                '/api/filetype/%s/' % query_string,
+                '/api/language/%s/' % query_string,
+                '/api/license/%s/' % query_string,
                 ]
 
             # when
             enriched_content = utils.enrich_content(
                 {
-                    'id': '123',
-                    h: 'blahblah'
+                    algo: hash
                 },
-                top_url=True
+                top_url=True,
+                query_string=query_string
             )
 
             # then
             self.assertEqual(
                 enriched_content,
                 {
-                    'id': '123',
-                    h: 'blahblah',
-                    'content_url': '/api/content/%s:123/' % h,
-                    'data_url': '/api/content/%s:123/raw/' % h,
-                    'filetype_url': '/api/filetype/%s:123/' % h,
-                    'language_url': '/api/language/%s:123/' % h,
-                    'license_url': '/api/license/%s:123/' % h,
+                    algo: hash,
+                    'content_url': '/api/content/%s/' % query_string,
+                    'data_url': '/api/content/%s/raw/' % query_string,
+                    'filetype_url': '/api/filetype/%s/' % query_string,
+                    'language_url': '/api/language/%s/' % query_string,
+                    'license_url': '/api/license/%s/' % query_string,
                 }
             )
 
             mock_django_reverse.assert_has_calls([
-                call('content', kwargs={'q': '%s:blahblah' % h}),
-                call('content-raw', kwargs={'q': '%s:blahblah' % h}),
-                call('content-filetype', kwargs={'q': '%s:blahblah' % h}),
-                call('content-language', kwargs={'q': '%s:blahblah' % h}),
-                call('content-license', kwargs={'q': '%s:blahblah' % h}),
+                call('content', kwargs={'q': query_string}),
+                call('content-raw', kwargs={'q': query_string}),
+                call('content-filetype', kwargs={'q': query_string}),
+                call('content-language', kwargs={'q': query_string}),
+                call('content-license', kwargs={'q': query_string}),
             ])
 
             mock_django_reverse.reset()
@@ -889,53 +878,3 @@ class UtilsTestCase(unittest.TestCase):
              call('revision', kwargs={'sha1_git': '123'}),
              call('revision', kwargs={'sha1_git': '456'}),
              call('revision-raw-message', kwargs={'sha1_git': 'rev-id'})])
-
-    @istest
-    def shorten_path_noop(self):
-        noops = [
-            '/api/',
-            '/browse/',
-            '/content/symbol/foobar/'
-        ]
-
-        for noop in noops:
-            self.assertEqual(
-                utils.shorten_path(noop),
-                noop
-            )
-
-    @istest
-    def shorten_path_sha1(self):
-        sha1 = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
-        short_sha1 = sha1[:8] + '...'
-
-        templates = [
-            '/api/1/content/sha1:%s/',
-            '/api/1/content/sha1_git:%s/',
-            '/api/1/directory/%s/',
-            '/api/1/content/sha1:%s/ctags/',
-        ]
-
-        for template in templates:
-            self.assertEqual(
-                utils.shorten_path(template % sha1),
-                template % short_sha1
-            )
-
-    @istest
-    def shorten_path_sha256(self):
-        sha256 = ('aafb16d69fd30ff58afdd69036a26047'
-                  '213add102934013a014dfca031c41aef')
-        short_sha256 = sha256[:8] + '...'
-
-        templates = [
-            '/api/1/content/sha256:%s/',
-            '/api/1/directory/%s/',
-            '/api/1/content/sha256:%s/filetype/',
-        ]
-
-        for template in templates:
-            self.assertEqual(
-                utils.shorten_path(template % sha256),
-                template % short_sha256
-            )

@@ -33,6 +33,7 @@ SECRET_KEY = swh_web_config['secret_key']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = swh_web_config['debug']
+DEBUG_PROPAGATE_EXCEPTIONS = swh_web_config['debug']
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
@@ -46,7 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'swh.web.api'
+    'swh.web.api',
+    'swh.web.browse'
 ]
 
 MIDDLEWARE = [
@@ -64,7 +66,7 @@ ROOT_URLCONF = 'swh.web.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(PROJECT_DIR, "../templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -73,9 +75,14 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'swh_templatetags': 'swh.web.common.swh_templatetags',
+            },
         },
     },
 ]
+
+TEMPLATE_DIRS = TEMPLATES[0]['DIRS']
 
 WSGI_APPLICATION = 'swh.web.wsgi.application'
 
@@ -163,12 +170,12 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'filters': ['require_debug_false'],
             'class': 'logging.FileHandler',
             'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
@@ -177,10 +184,10 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': True,
-        },
+        }
     },
 }
 
-SILENCED_SYSTEM_CHECKS = ['1_7.W001']
+SILENCED_SYSTEM_CHECKS = ['1_7.W001', '1_8.W001']

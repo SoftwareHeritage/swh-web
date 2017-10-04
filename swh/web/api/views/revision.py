@@ -3,11 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.http import QueryDict
 from django.http import HttpResponse
 
-from swh.web.api.utils import reverse
-from swh.web.api import service, utils
+from swh.web.common import service
+from swh.web.common.utils import reverse
+from swh.web.common.utils import parse_timestamp
+from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views import (
@@ -93,7 +94,7 @@ def api_revision_log_by(request, origin_id,
     per_page = int(utils.get_query_params(request).get('per_page', '10'))
 
     if ts:
-        ts = utils.parse_timestamp(ts)
+        ts = parse_timestamp(ts)
 
     def lookup_revision_log_by_with_limit(o_id, br, ts, limit=per_page+1):
         return service.lookup_revision_log_by(o_id, br, ts, limit)
@@ -116,15 +117,15 @@ def api_revision_log_by(request, origin_id,
                                     'ts': ts,
                                     }.items() if v is not None}
 
-        query_params = QueryDict('', mutable=True)
+        query_params = {}
         query_params['sha1_git'] = last_sha1_git
 
         if utils.get_query_params(request).get('per_page'):
             query_params['per_page'] = per_page
 
         result['headers'] = {
-            'link-next': reverse('revision-origin-log', kwargs=params) +
-            (('?' + query_params.urlencode()) if len(query_params) > 0 else '')
+            'link-next': reverse('revision-origin-log', kwargs=params,
+                                 query_params=query_params)
         }
 
     else:
@@ -184,7 +185,7 @@ def api_directory_through_revision_origin(request, origin_id,
     by origin/branch/timestamp.
     """
     if ts:
-        ts = utils.parse_timestamp(ts)
+        ts = parse_timestamp(ts)
 
     return _revision_directory_by({'origin_id': origin_id,
                                    'branch_name': branch_name,
@@ -232,7 +233,7 @@ def api_revision_with_origin(request, origin_id,
     pointed by a given branch.
 
     """
-    ts = utils.parse_timestamp(ts)
+    ts = parse_timestamp(ts)
     return _api_lookup(
         service.lookup_revision_by, origin_id, branch_name, ts,
         notfound_msg=('Revision with (origin_id: {}, branch_name: {}'
@@ -389,15 +390,15 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
     if l == per_page+1:
         rev_backward = rev_get[:-1]
         new_last_sha1 = rev_get[-1]['id']
-        query_params = QueryDict('', mutable=True)
+        query_params = {}
 
         if utils.get_query_params(request).get('per_page'):
             query_params['per_page'] = per_page
 
         result['headers'] = {
             'link-next': reverse('revision-log',
-                                 kwargs={'sha1_git': new_last_sha1}) +
-            (('?' + query_params.urlencode()) if len(query_params) > 0 else '')
+                                 kwargs={'sha1_git': new_last_sha1},
+                                 query_params=query_params)
         }
 
     else:

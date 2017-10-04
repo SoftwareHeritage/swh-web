@@ -6,7 +6,7 @@
 from nose.tools import istest
 from unittest.mock import patch
 
-from swh.web.api.exc import BadInputExc
+from swh.web.common.exc import BadInputExc
 
 from ..swh_api_testcase import SWHApiTestCase
 

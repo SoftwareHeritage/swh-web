@@ -5,13 +5,13 @@
 
 import functools
 
-from django.http import QueryDict
 from django.http import HttpResponse
 
-from swh.web.api.utils import reverse
-from swh.web.api import service, utils
+from swh.web.common import service
+from swh.web.common.utils import reverse
+from swh.web.common.exc import NotFoundExc, ForbiddenExc
 from swh.web.api import apidoc as api_doc
-from swh.web.api.exc import NotFoundExc, ForbiddenExc
+from swh.web.api import utils
 from swh.web.api.apiurls import api_route
 from swh.web.api.views import (
     _api_lookup, _doc_exc_id_not_found, _doc_header_link,
@@ -232,15 +232,15 @@ def api_content_symbol(request, q=None):
         l = len(symbols)
 
         if l == per_page:
-            query_params = QueryDict('', mutable=True)
+            query_params = {}
             new_last_sha1 = symbols[-1]['sha1']
             query_params['last_sha1'] = new_last_sha1
             if utils.get_query_params(request).get('per_page'):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('content-symbol', kwargs={'q': q}) + '?' +
-                query_params.urlencode()
+                'link-next': reverse('content-symbol', kwargs={'q': q},
+                                     query_params=query_params)
             }
 
     result.update({
@@ -337,4 +337,4 @@ def api_content_metadata(request, q):
     return _api_lookup(
         service.lookup_content, q,
         notfound_msg='Content with {} not found.'.format(q),
-        enrich_fn=utils.enrich_content)
+        enrich_fn=functools.partial(utils.enrich_content, query_string=q))

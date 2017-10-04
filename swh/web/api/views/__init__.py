@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view
 
 from types import GeneratorType
 
-from swh.web.api.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc
 from swh.web.api.apiurls import APIUrls, api_route
 
 # canned doc string snippets that are used in several doc strings

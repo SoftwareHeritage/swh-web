@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Content display{% endblock %}
+
+{% block content %}
+
+<div class="well well-sm">
+  <b>Content mime type:</b> {{ mime_type }} , <b>Hashing algorithm:</b> {{ content_hash_algo}} , <b>Content checksum:</b> {{ content_checksum }} 
+  <a href="{{ content_raw_url }}" class="btn btn-link btn-xs navbar-right" role="button">Raw File</a>
+</div>
+
+{% include "content-directory-top-navigation.html" %}
+
+<div class="well well-sm">
+{% if "inode/x-empty" == mime_type %}
+<i>File is empty</i>
+{% elif "text/" in mime_type %}
+<div class="highlightjs">
+  <pre>
+    <code class="{{ language }}">{{ content }}</code>
+  </pre>
+</div>
+{% elif "image/" in mime_type and content %}
+  <img src="data:{{ mime_type }};base64,{{ content }}"/>
+{% else %}
+Content with mime type {{ mime_type }} can not be displayed
+{% endif %}
+</div>
+
+{% endblock %}

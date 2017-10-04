@@ -4,26 +4,9 @@
 # See top-level LICENSE file for more information
 
 import re
-import urllib
 
-from django.core import urlresolvers
-from datetime import datetime, timezone
-from dateutil import parser
-
-from .exc import BadInputExc
-
-
-# override django reverse function in order to get
-# the same result on debian jessie and stretch
-# (see https://code.djangoproject.com/ticket/22223)
-def reverse(viewname, urlconf=None, args=None,
-            kwargs=None, current_app=None):
-    return urllib.parse.unquote(
-        urlresolvers.reverse(
-            viewname, urlconf=urlconf, args=args,
-            kwargs=kwargs, current_app=current_app
-        )
-    )
+from swh.web.common.utils import reverse, fmap
+from swh.web.common.query import parse_hash
 
 
 def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
@@ -51,35 +34,6 @@ def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
             out[rule] = {'methods': sorted(map(str, r['methods'])),
                          'endpoint': r['endpoint']}
     return out
-
-
-def fmap(f, data):
-    """Map f to data at each level.
-
-    This must keep the origin data structure type:
-    - map -> map
-    - dict -> dict
-    - list -> list
-    - None -> None
-
-    Args:
-        f: function that expects one argument.
-        data: data to traverse to apply the f function.
-              list, map, dict or bare value.
-
-    Returns:
-        The same data-structure with modified values by the f function.
-
-    """
-    if data is None:
-        return data
-    if isinstance(data, map):
-        return map(lambda y: fmap(f, y), (x for x in data))
-    if isinstance(data, list):
-        return [fmap(f, x) for x in data]
-    if isinstance(data, dict):
-        return {k: fmap(f, v) for (k, v) in data.items()}
-    return f(data)
 
 
 def prepare_data_for_view(data, encoding='utf-8'):
@@ -132,33 +86,6 @@ def person_to_string(person):
 
     """
     return ''.join([person['name'], ' <', person['email'], '>'])
-
-
-def parse_timestamp(timestamp):
-    """Given a time or timestamp (as string), parse the result as datetime.
-
-    Returns:
-        a timezone-aware datetime representing the parsed value.
-        None if the parsing fails.
-
-    Samples:
-        - 2016-01-12
-        - 2016-01-12T09:19:12+0100
-        - Today is January 1, 2047 at 8:21:00AM
-        - 1452591542
-
-    """
-    if not timestamp:
-        return None
-
-    try:
-        return parser.parse(timestamp, ignoretz=False, fuzzy=True)
-    except:
-        try:
-            return datetime.utcfromtimestamp(float(timestamp)).replace(
-                tzinfo=timezone.utc)
-        except (ValueError, OverflowError) as e:
-            raise BadInputExc(e)
 
 
 def enrich_object(object):
@@ -232,25 +159,43 @@ def enrich_metadata_endpoint(content):
     return c
 
 
-def enrich_content(content, top_url=False):
+def enrich_content(content, top_url=False, query_string=None):
     """Enrich content with links to:
         - data_url: its raw data
         - filetype_url: its filetype information
+        - language_url: its programming language information
+        - license_url: its licensing information
+
+    Args:
+        content: dict of data associated to a swh content object
+        top_url: whether or not to include the content url in
+            the enriched data
+        query_string: optional query string of type '<algo>:<hash>'
+            used when requesting the content, it acts as a hint
+            for picking the same hash method when computing
+            the url listed above
+
+    Returns:
+        An enriched content dict filled with additional urls
 
     """
-    for h in ['sha1', 'sha1_git', 'sha256']:
-        if h in content:
-            q = '%s:%s' % (h, content[h])
-            if top_url:
-                content['content_url'] = reverse('content', kwargs={'q': q})
-            content['data_url'] = reverse('content-raw', kwargs={'q': q})
-            content['filetype_url'] = reverse('content-filetype',
-                                              kwargs={'q': q})
-            content['language_url'] = reverse('content-language',
-                                              kwargs={'q': q})
-            content['license_url'] = reverse('content-license',
-                                             kwargs={'q': q})
-            break
+    checksums = content
+    if 'checksums' in content:
+        checksums = content['checksums']
+    hash_algo = 'sha1'
+    if query_string:
+        hash_algo = parse_hash(query_string)[0]
+    if hash_algo in checksums:
+        q = '%s:%s' % (hash_algo, checksums[hash_algo])
+        if top_url:
+            content['content_url'] = reverse('content', kwargs={'q': q})
+        content['data_url'] = reverse('content-raw', kwargs={'q': q})
+        content['filetype_url'] = reverse('content-filetype',
+                                          kwargs={'q': q})
+        content['language_url'] = reverse('content-language',
+                                          kwargs={'q': q})
+        content['license_url'] = reverse('content-license',
+                                         kwargs={'q': q})
 
     return content
 
@@ -401,17 +346,6 @@ def enrich_revision(revision, context=None):
                                           kwargs={'sha1_git': revision['id']})
 
     return revision
-
-
-def shorten_path(path):
-    """Shorten the given path: for each hash present, only return the first
-    8 characters followed by an ellipsis"""
-
-    sha256_re = r'([0-9a-f]{8})[0-9a-z]{56}'
-    sha1_re = r'([0-9a-f]{8})[0-9a-f]{32}'
-
-    ret = re.sub(sha256_re, r'\1...', path)
-    return re.sub(sha1_re, r'\1...', ret)
 
 
 def get_query_params(request):

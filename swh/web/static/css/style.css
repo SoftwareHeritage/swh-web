@@ -314,3 +314,46 @@ bread-crumbs ul {
 #footer a:hover {
     text-decoration: underline;
 }
+
+.highlightjs pre {
+    background-color: transparent;
+    border-radius: 0px;
+    border-color: transparent;
+}
+
+.hljs {
+    background-color: transparent;
+    white-space: pre;
+}
+    
+.scrollable-menu {
+    max-height: 180px;
+    overflow-x: hidden;
+}
+
+.browse-bread-crumbs {
+    font-size: inherit;
+}
+
+/* for block of numbers */
+td.hljs-ln-numbers {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+	text-align: center;
+	color: #ccc;
+	border-right: 1px solid #CCC;
+	vertical-align: top;
+	padding-right: 5px;
+
+	/* your custom style here */
+}
+
+/* for block of code */
+td.hljs-ln-code {
+	padding-left: 10px;
+}

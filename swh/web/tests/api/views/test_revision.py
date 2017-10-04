@@ -6,7 +6,7 @@
 from nose.tools import istest
 from unittest.mock import patch
 
-from swh.web.api.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc
 from swh.web.api.views.revision import (
     _revision_directory_by
 )
@@ -254,12 +254,14 @@ class ReleaseApiTestCase(SWHApiTestCase):
             'refs/origin/dev',
             None)
 
+    @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision.service')
     @patch('swh.web.api.views.revision.utils')
     @istest
     def api_revision_with_origin_and_branch_name_and_timestamp(self,
                                                                mock_utils,
-                                                               mock_service):
+                                                               mock_service,
+                                                               mock_parse_timestamp): # noqa
         mock_revision = {
             'id': '123',
             'directory': '456',
@@ -278,7 +280,7 @@ class ReleaseApiTestCase(SWHApiTestCase):
             'type': 'tar',
         }
 
-        mock_utils.parse_timestamp.return_value = 'parsed-date'
+        mock_parse_timestamp.return_value = 'parsed-date'
         mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.client.get('/api/1/revision'
@@ -295,17 +297,19 @@ class ReleaseApiTestCase(SWHApiTestCase):
             '1',
             'refs/origin/dev',
             'parsed-date')
-        mock_utils.parse_timestamp.assert_called_once_with('1452591542')
+        mock_parse_timestamp.assert_called_once_with('1452591542')
         mock_utils.enrich_revision.assert_called_once_with(
             mock_revision)
 
+    @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision.service')
     @patch('swh.web.api.views.revision.utils')
     @istest
     def api_revision_with_origin_and_branch_name_and_timestamp_with_escapes(
             self,
             mock_utils,
-            mock_service):
+            mock_service,
+            mock_parse_timestamp):
         mock_revision = {
             'id': '999',
         }
@@ -317,7 +321,7 @@ class ReleaseApiTestCase(SWHApiTestCase):
             'history_url': '/api/1/revision/999/log/',
         }
 
-        mock_utils.parse_timestamp.return_value = 'parsed-date'
+        mock_parse_timestamp.return_value = 'parsed-date'
         mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.client.get('/api/1/revision'
@@ -335,7 +339,7 @@ class ReleaseApiTestCase(SWHApiTestCase):
             '1',
             'refs/origin/dev',
             'parsed-date')
-        mock_utils.parse_timestamp.assert_called_once_with(
+        mock_parse_timestamp.assert_called_once_with(
             'Today is January 1, 2047 at 8:21:00AM')
         mock_utils.enrich_revision.assert_called_once_with(
             mock_revision)
@@ -418,14 +422,16 @@ class ReleaseApiTestCase(SWHApiTestCase):
             {'sha1_git': 'sha1'},
             'some/path', limit=1000, with_data=True)
 
+    @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision._revision_directory_by')
     @patch('swh.web.api.views.revision.utils')
     @istest
     def api_directory_through_revision_origin_ko_not_found(self,
                                                            mock_utils,
-                                                           mock_rev_dir):
+                                                           mock_rev_dir,
+                                                           mock_parse_timestamp): # noqa
         mock_rev_dir.side_effect = NotFoundExc('not found')
-        mock_utils.parse_timestamp.return_value = '2012-10-20 00:00:00'
+        mock_parse_timestamp.return_value = '2012-10-20 00:00:00'
 
         rv = self.client.get('/api/1/revision'
                              '/origin/10'
