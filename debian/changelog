@@ -1,8 +1,8 @@
-swh-web (0.0.88-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.89-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * version 0.0.89
 
- -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Wed, 13 Sep 2017 15:02:24 +0200
+ -- Antoine Lambert <antoine.lambert@inria.fr>  Wed, 04 Oct 2017 10:42:11 +0200
 
 swh-web (0.0.88-1~swh1) unstable-swh; urgency=medium
 

@@ -91,7 +91,7 @@ class RendererTestCase(unittest.TestCase):
 
     @patch('swh.web.api.apiresponse.json')
     @patch('swh.web.api.apiresponse.filter_by_fields')
-    @patch('swh.web.api.apiresponse.utils.shorten_path')
+    @patch('swh.web.api.apiresponse.shorten_path')
     @istest
     def swh_multi_response_mimetype(self, mock_shorten_path,
                                     mock_filter, mock_json):

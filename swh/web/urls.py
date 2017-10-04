@@ -28,8 +28,11 @@ Examples:
 """
 from django.conf.urls import url, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-
 from django.shortcuts import redirect
+from django.views.generic.base import RedirectView
+
+favicon_view = RedirectView.as_view(url='/static/img/icons/swh-logo-32x32.png',
+                                    permanent=True)
 
 
 def default_view(request):
@@ -37,8 +40,11 @@ def default_view(request):
 
 
 urlpatterns = [
+    url(r'^favicon\.ico$', favicon_view),
     url(r'^api/', include('swh.web.api.urls')),
+    url(r'^browse/', include('swh.web.browse.urls')),
     url(r'^$', default_view),
 ]
+
 
 urlpatterns += staticfiles_urlpatterns()

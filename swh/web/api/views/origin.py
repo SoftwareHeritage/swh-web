@@ -3,10 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.http import QueryDict
 
-from swh.web.api.utils import reverse
-from swh.web.api import service, utils
+from swh.web.common import service
+from swh.web.common.utils import reverse
+from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views import (
@@ -120,7 +120,7 @@ def api_origin_visits(request, origin_id):
         l = len(r)
         if l == per_page:
             new_last_visit = r[-1]['visit']
-            query_params = QueryDict('', mutable=True)
+            query_params = {}
             query_params['last_visit'] = new_last_visit
 
             if utils.get_query_params(request).get('per_page'):
@@ -128,8 +128,8 @@ def api_origin_visits(request, origin_id):
 
             result['headers'] = {
                 'link-next': reverse('origin-visits',
-                                     kwargs={'origin_id': origin_id}) +
-                '?' + query_params.urlencode()
+                                     kwargs={'origin_id': origin_id},
+                                     query_params=query_params)
             }
 
     result.update({

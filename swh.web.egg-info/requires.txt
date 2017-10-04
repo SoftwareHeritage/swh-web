@@ -3,6 +3,9 @@ djangorestframework
 docutils
 pygments
 python-dateutil
+python-magic
+sphinx
+sphinxcontrib-httpdomain
 swh.core>=0.0.20
 swh.model>=0.0.15
 swh.storage>=0.0.83
