@@ -11,7 +11,7 @@ from enum import Enum
 
 from rest_framework.decorators import api_view
 
-from swh.web.api.utils import reverse
+from swh.web.common.utils import reverse
 from swh.web.api.apiurls import APIUrls
 from swh.web.api.apiresponse import make_api_response, error_response
 
@@ -157,8 +157,17 @@ class route(object):  # noqa: N801
     def get_doc_data(self, f):
         """Build documentation data for the decorated function"""
         data = {
+            'docstring': None,
+            'response_data': None,
+            'urls': None,
+            'args': None,
+            'params': None,
+            'headers': None,
+            'returns': None,
+            'excs': None,
+            'examples': None,
             'route': self.route,
-            'noargs': self.noargs,
+            'noargs': self.noargs
         }
 
         data.update(getattr(f, 'doc_data', {}))
@@ -174,7 +183,7 @@ class route(object):  # noqa: N801
         data['urls'] = [url for url in endpoint_list if
                         self.filter_api_url(url, route_re, data['noargs'])]
 
-        if 'args' in data:
+        if data['args']:
             data['examples'] = self.build_examples(data['urls'], data['args'])
 
         data['heading'] = '%s Documentation' % data['route']

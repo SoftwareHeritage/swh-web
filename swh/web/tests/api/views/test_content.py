@@ -381,13 +381,17 @@ class ContentApiTestCase(SWHApiTestCase):
 
     @patch('swh.web.api.views.content.service')
     @istest
-    def api_content_metadata(self, mock_service):
+    def test_api_content_metadata(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
-            'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
-            'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560'
-            'cde9b067a4f',
+            'checksums': {
+                'blake2s256': '685395c5dc57cada459364f0946d3dd45bad5f'
+                              'cbabc1048edb44380f1d31d0aa',
+                'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+                'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
+                'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be47'
+                          '35637006560cde9b067a4f',
+            },
             'length': 17,
             'status': 'visible'
         }
@@ -399,6 +403,14 @@ class ContentApiTestCase(SWHApiTestCase):
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv['Content-Type'], 'application/json')
         self.assertEquals(rv.data, {
+            'checksums': {
+                'blake2s256': '685395c5dc57cada459364f0946d3dd45bad5f'
+                              'cbabc1048edb44380f1d31d0aa',
+                'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
+                'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
+                'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be47'
+                          '35637006560cde9b067a4f',
+            },
             'data_url': '/api/1/content/'
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/raw/',
             'filetype_url': '/api/1/content/'
@@ -407,10 +419,6 @@ class ContentApiTestCase(SWHApiTestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/language/',
             'license_url': '/api/1/content/'
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/license/',
-            'sha1': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'sha1_git': 'b4e8f472ffcb01a03875b26e462eb568739f6882',
-            'sha256': '83c0e67cc80f60caf1fcbec2d84b0ccd7968b3be4735637006560c'
-            'de9b067a4f',
             'length': 17,
             'status': 'visible'
         })
