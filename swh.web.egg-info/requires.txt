@@ -1,9 +1,9 @@
 django
 djangorestframework
 docutils
+file_magic
 pygments
 python-dateutil
-python-magic
 sphinx
 sphinxcontrib-httpdomain
 swh.core>=0.0.20

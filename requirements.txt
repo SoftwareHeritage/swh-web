@@ -9,7 +9,7 @@ python-dateutil
 docutils
 pygments
 yaml
-python-magic
+file_magic
 
 #Doc dependencies
 sphinx
