@@ -10,11 +10,6 @@ from docutils.writers.html4css1 import Writer, HTMLTranslator
 from inspect import cleandoc
 
 from django import template
-from django.utils.safestring import mark_safe
-
-from pygments import highlight
-from pygments.lexers import JsonLexer
-from pygments.formatters import HtmlFormatter
 
 register = template.Library()
 
@@ -85,8 +80,3 @@ def urlize_header_links(text):
     """
     return re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
                   text)
-
-
-@register.filter
-def highlight_json(text):
-    return mark_safe(highlight(text, JsonLexer(), HtmlFormatter()))

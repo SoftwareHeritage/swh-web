@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
 {% load swh_templatetags %}
+{% load static %}
 {% block title %}{{ heading }} &ndash; Software Heritage API {% endblock %}
+{% block header %}
+<script src="{% static 'js/highlightjs/dist/highlight.pack.js' %}"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+<link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">  
+{% endblock %}
 {% block content %}
 <nav class="bread-crumbs">
   <ul>
@@ -35,7 +43,9 @@
     {% endfor %}
   {% endif %}
     <h3>Body</h3>
-    {{ response_data | highlight_json | urlize_api_links | safe }}
+    <pre>
+      <code class="json">{{ response_data | urlize_api_links | safe }}</code>
+    </pre>
 </div>
 {% endif %}
 <hr/>
