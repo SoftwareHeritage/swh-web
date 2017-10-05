@@ -63,8 +63,11 @@ def urlize_api_links(text):
         The text as is otherwise.
 
     """
-    return re.sub(r'(/api/[^"<]*/|/browse/.*/|http.*$)',
+    text = re.sub(r'(/api/[^"<]*/|/browse/.*/|http.*$)',
                   r'<a href="\1">\1</a>',
+                  text)
+    return re.sub(r'([^ <>"]+@[^ <>"]+)',
+                  r'<a href="mailto:\1">\1</a>',
                   text)
 
 

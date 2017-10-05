@@ -469,6 +469,18 @@ Origin content
         requested visit timestamp does not exist or the provided content path does 
         not exist from the origin root directory
 
+Person
+^^^^^^
+
+.. http:get:: /browse/person/(person_id)/
+
+    HTML view that displays information regarding a SWH person.
+
+    :param person_id: the id of a SWH person
+    :type origin_id: int
+    :statuscode 200: no error
+    :statuscode 404: requested person can not be found in the SWH archive
+
 SWH Web API URLs
 ----------------
 

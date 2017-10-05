@@ -1,27 +1,16 @@
 {% extends "layout.html" %}
+{% load swh_templatetags %}
 {% block title %}Person{% endblock %}
 {% block content %}
 
-{% if message is not none %}
-  {{ message }}
-{% endif %}
-
-{% if person is not none %}
-<div> Details on person {{ person_id }}:
-    {% for key in ['name', 'email'] %}
-        {% if person[key] is not none %}
-            <div class="row">
-              <div class="col-md-2">{{ key }}</div>
-              <div class="col-md-6">{{ person[key] }}</div>
-            </div>
-        {% endif %}
-    {% endfor %}
-    {% if 'decoding_failures' in person %}
-    <div class="row">
-      <div class="col-md-10">(some decoding errors)</div>
-    </div>
-    {% endif %}
-</div>
-{% endif %}
+<h2>Person information</h2>
+<table class="table">
+  {% for key, val in person.items|dictsort:0 %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ val | safe | urlize_api_links | escape | safe }}</td>
+    </tr>
+  {% endfor %}
+</table>
 
 {% endblock %}
