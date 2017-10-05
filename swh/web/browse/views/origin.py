@@ -21,7 +21,10 @@ def origin_browse(request, origin_id=None, origin_type=None,
     """Django view that produces an HTML display of a swh origin identified
     by its id or its url.
 
-    See :ref:`Origin browsing URI scheme <browse_origin>` for more details.
+    The url scheme that points to it is the following:
+
+        * :http:get:`/browse/origin/(origin_id)/`
+        * :http:get:`/browse/origin/(origin_id)/directory/`
 
     Args:
         request: input django http request
@@ -75,8 +78,14 @@ def origin_directory_browse(request, origin_id, visit_id=None,
     """Django view for browsing the content of a swh directory associated
     to an origin for a given visit.
 
-    See :ref:`Origin's directory browsing URI scheme <browse_origin_directory>`
-    for more details.
+    The url scheme that points to it is the following:
+
+        * :http:get:`/browse/origin/(origin_id)/directory/`
+        * :http:get:`/browse/origin/(origin_id)/directory/(path)/`
+        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/directory/`
+        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/directory/(path)/`
+        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/directory/`
+        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/directory/(path)/`
 
     Args:
         request: input django http request
@@ -190,8 +199,11 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
     """Django view that produces an HTML display of a swh content
     associated to an origin for a given visit.
 
-    See :ref:`Origin content browsing URI scheme <browse_origin_content>` 
-    for more details.
+    The url scheme that points to it is the following:
+
+        * :http:get:`/browse/origin/(origin_id)/content/(path)/`
+        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/content/(path)/`
+        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/content/(path)/`
 
     Args:
         request: input django http request

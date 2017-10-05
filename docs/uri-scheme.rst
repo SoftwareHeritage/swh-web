@@ -12,8 +12,6 @@ please refer to the `SWH Web API URLs`_ instead.
 Content
 ^^^^^^^
 
-.. _browse_content:
-
 .. http:get:: /browse/content/[(algo_hash):](hash)/
 
     HTML view that displays a SWH content identified by its hash value.
@@ -53,8 +51,6 @@ Content
     :statuscode 400: an invalid query string has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-.. _browse_content_raw:
-
 .. http:get:: /browse/content/[(algo_hash):](hash)/raw/
 
     HTML view that produces a raw display of a SWH content identified by its hash value.
@@ -87,8 +83,6 @@ Content
 Directory
 ^^^^^^^^^
 
-.. _browse_directory:
-
 .. http:get:: /browse/directory/(sha1_git)/
 
     HTML view for browsing the content of a SWH directory identified
@@ -109,7 +103,7 @@ Directory
     :statuscode 404: requested directory can not be found in the SWH archive
 
 
-.. http:get:: /browse/directory/(sha1_git)/(path)
+.. http:get:: /browse/directory/(sha1_git)/(path)/
 
     HTML view for browsing the content of a SWH directory reachable from
     the provided root one identified by its `sha1_git` value.
@@ -136,8 +130,6 @@ Origin
 
 Origin metadata
 """""""""""""""
-
-.. _browse_origin:
 
 .. http:get:: /browse/origin/(origin_id)/
 
@@ -167,8 +159,6 @@ Origin metadata
 
 Origin directory
 """"""""""""""""
-
-.. _browse_origin_directory:
 
 .. http:get:: /browse/origin/(origin_id)/directory/
 
@@ -358,8 +348,6 @@ Origin directory
 
 Origin content
 """"""""""""""
-
-.. _browse_origin_content:
 
 .. http:get:: /browse/origin/(origin_id)/content/(path)/
 

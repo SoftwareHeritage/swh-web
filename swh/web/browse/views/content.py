@@ -22,7 +22,7 @@ def content_display(request, query_string):
     """Django view that produces an HTML display of a SWH content identified
     by its hash value.
 
-    See :ref:`Content browsing URI scheme <browse_content>` for more details.
+    The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/`
 
     Args:
         request: input django http request
@@ -34,7 +34,7 @@ def content_display(request, query_string):
     Returns:
         The HTML rendering of the requested content.
 
-    """
+    """ # noqa
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
@@ -95,7 +95,7 @@ def content_raw(request, query_string):
     """Django view that produces a raw display of a SWH content identified
     by its hash value.
 
-    See :ref:`Raw content browsing URI scheme <browse_content_raw>` for more details.
+    The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
 
     Args:
         request: input django http request
