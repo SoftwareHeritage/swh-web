@@ -7,9 +7,12 @@ from django.conf.urls import url
 from django.shortcuts import redirect
 
 from swh.web.common.utils import reverse
-from swh.web.browse.views import (
-    directory, content, origin
-)
+
+import swh.web.browse.views.directory # noqa
+import swh.web.browse.views.content # noqa
+import swh.web.browse.views.origin # noqa
+
+from swh.web.browse.browseurls import BrowseUrls
 
 
 def default_browse_view(request):
@@ -31,52 +34,7 @@ def default_browse_view(request):
 
 
 urlpatterns = [
-    url(r'^$', default_browse_view),
-    url(r'^directory/(?P<sha1_git>[0-9a-f]+)/$',
-        directory.directory_browse, name='browse-directory'),
-    url(r'^directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/$',
-        directory.directory_browse, name='browse-directory'),
-
-    url(r'^content/(?P<query_string>.+)/raw/$',
-        content.content_raw, name='browse-content-raw'),
-    url(r'^content/(?P<query_string>.+)/$',
-        content.content_display, name='browse-content'),
-
-    url(r'^origin/(?P<origin_id>[0-9]+)/$', origin.origin_browse,
-        name='browse-origin'),
-    url(r'^origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/$',
-        origin.origin_browse, name='browse-origin'),
-
-    url(r'^origin/(?P<origin_id>[0-9]+)/directory/$',
-        origin.origin_directory_browse,
-        name='browse-origin-directory'),
-    url(r'^origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/$',
-        origin.origin_directory_browse,
-        name='browse-origin-directory'),
-    url(r'^origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/$', # noqa
-        origin.origin_directory_browse,
-        name='browse-origin-directory'),
-    url(r'^origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)'
-        r'/directory/(?P<path>.+)/$',
-        origin.origin_directory_browse,
-        name='browse-origin-directory'),
-    url(r'^origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/directory/$', # noqa
-        origin.origin_directory_browse,
-        name='browse-origin-directory'),
-    url(r'^origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)'
-        r'/directory/(?P<path>.+)/$',
-        origin.origin_directory_browse,
-        name='browse-origin-directory'),
-
-    url(r'^origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/$',
-        origin.origin_content_display,
-        name='browse-origin-content'),
-    url(r'^origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)'
-        r'/content/(?P<path>.+)/$',
-        origin.origin_content_display,
-        name='browse-origin-content'),
-    url(r'^origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)'
-        r'/content/(?P<path>.+)/$',
-        origin.origin_content_display,
-        name='browse-origin-content'),
+    url(r'^$', default_browse_view)
 ]
+
+urlpatterns += BrowseUrls.get_url_patterns()

@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.conf.urls import url
-
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
@@ -74,7 +72,7 @@ def api_home(request):
     return Response({}, template_name='api.html')
 
 
-APIUrls.urlpatterns.append(url(r'^$', api_home, name='api_homepage'))
+APIUrls.add_url_pattern(r'^$', api_home, view_name='api_homepage')
 
 
 @api_route(r'/', 'endpoints')

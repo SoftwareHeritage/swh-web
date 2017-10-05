@@ -14,8 +14,12 @@ from swh.web.browse.utils import (
     gen_path_info, get_directory_entries, request_content,
     prepare_content_for_display
 )
+from swh.web.browse.browseurls import browse_route
 
 
+@browse_route(r'origin/(?P<origin_id>[0-9]+)/',
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
+              view_name='browse-origin')
 def origin_browse(request, origin_id=None, origin_type=None,
                   origin_url=None):
     """Django view that produces an HTML display of a swh origin identified
@@ -73,6 +77,13 @@ def origin_browse(request, origin_id=None, origin_type=None,
                    origin_id})
 
 
+@browse_route(r'origin/(?P<origin_id>[0-9]+)/directory/',
+              r'origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
+              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/directory/',
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/directory/(?P<path>.+)/', # noqa
+              view_name='browse-origin-directory')
 def origin_directory_browse(request, origin_id, visit_id=None,
                             ts=None, path=None):
     """Django view for browsing the content of a swh directory associated
@@ -195,6 +206,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'branch': branch})
 
 
+@browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
+              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/content/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/content/(?P<path>.+)/', # noqa
+              view_name='browse-origin-content')
 def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
     """Django view that produces an HTML display of a swh content
     associated to an origin for a given visit.
