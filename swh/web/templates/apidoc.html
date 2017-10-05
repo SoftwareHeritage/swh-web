@@ -44,7 +44,7 @@
   {% endif %}
     <h3>Body</h3>
     <pre>
-      <code class="json">{{ response_data | urlize_api_links | safe }}</code>
+      <code class="json">{{ response_data | urlize_links_and_mails | safe }}</code>
     </pre>
 </div>
 {% endif %}

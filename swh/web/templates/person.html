@@ -8,7 +8,7 @@
   {% for key, val in person.items|dictsort:0 %}
     <tr>
       <td>{{ key }}</td>
-      <td>{{ val | safe | urlize_api_links | escape | safe }}</td>
+      <td>{{ val | safe | urlize_links_and_mails | escape | safe }}</td>
     </tr>
   {% endfor %}
 </table>

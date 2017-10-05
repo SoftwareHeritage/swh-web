@@ -46,7 +46,7 @@ def safe_docstring_display(docstring):
 
 
 @register.filter
-def urlize_api_links(text):
+def urlize_links_and_mails(text):
     """Utility function for decorating api links in browsable api.
 
     Args:
