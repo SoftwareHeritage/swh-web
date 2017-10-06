@@ -7,6 +7,7 @@ import base64
 import dateutil
 import magic
 import math
+import stat
 
 from django.core.cache import cache
 
@@ -31,10 +32,21 @@ def get_directory_entries(sha1_git):
     Raises:
         NotFoundExc if the directory is not found
     """
+    cache_entry_id = 'directory_entries_%s' % sha1_git
+    cache_entry = cache.get(cache_entry_id)
+
+    if cache_entry:
+        return cache_entry
+
     entries = list(service.lookup_directory(sha1_git))
     entries = sorted(entries, key=lambda e: e['name'])
+    for entry in entries:
+        entry['perms'] = stat.filemode(entry['perms'])
     dirs = [e for e in entries if e['type'] == 'dir']
     files = [e for e in entries if e['type'] == 'file']
+
+    cache.set(cache_entry_id, (dirs, files))
+
     return dirs, files
 
 
