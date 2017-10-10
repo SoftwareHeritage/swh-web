@@ -73,7 +73,7 @@ def origin_browse(request, origin_id=None, origin_type=None,
                   {'origin': origin_info,
                    'origin_visits_data': origin_visits_data,
                    'visits': origin_visits,
-                   'browse_url_base': '/browse/revision/origin/%s/' %
+                   'browse_url_base': '/browse/origin/%s/' %
                    origin_id})
 
 
