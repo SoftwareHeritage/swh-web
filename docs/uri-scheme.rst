@@ -481,6 +481,49 @@ Person
     :statuscode 200: no error
     :statuscode 404: requested person can not be found in the SWH archive
 
+Revision
+^^^^^^^^
+
+.. http:get:: /browse/revision/(revision_id)/
+
+    HTML view that displays the metadata associated to a SWH revision.
+    It notably shows the revision date and message but also offers 
+    links to get more details on:
+
+        * the author
+        * the committer
+        * the directory that revision points to
+        * the history log reachable from that revision
+
+    :param revision_id: the sha1_git identifier of a SWH revision 
+    :type revision_id: hexadecimal representation of that hash value
+    :statuscode 200: no error
+    :statuscode 404: requested revision can not be found in the SWH archive
+
+.. http:get:: /browse/revision/(revision_id)/log/
+
+    HTML view that displays the list of revisions heading to 
+    a given one. In other words, it shows a commit log.
+    The following data are displayed for each log entry:
+
+        * author of the revision
+        * link to the revision metadata
+        * message for the revision
+        * date of the revision
+        * link to browse the associated source tree
+
+    :param revision_id: the sha1_git identifier of a SWH revision 
+    :type revision_id: hexadecimal representation of that hash value
+    :query revs_breadcrumb: query parameter used internally to store 
+        the navigation breadcrumbs (i.e. the list of descendant revisions
+        visited so far). It must be a string in the form 
+        "<rev_1>[/<rev_2>/.../<rev_n>]"
+    :query per_page: the number of log entries to display per page 
+        (default is 20, max is 50)
+    :statuscode 200: no error
+    :statuscode 404: requested revision can not be found in the SWH archive
+
+
 SWH Web API URLs
 ----------------
 

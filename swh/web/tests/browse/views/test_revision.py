@@ -1,0 +1,159 @@
+# Copyright (C) 2017  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+
+from unittest.mock import patch
+from nose.tools import istest
+from django.test import TestCase
+from django.utils.html import escape
+
+from swh.web.common.utils import reverse, format_utc_iso_date
+
+from .data.revision_test_data import (
+    revision_id_test, revision_metadata_test,
+    revision_history_log_test
+)
+
+
+class SwhBrowseRevisionTest(TestCase):
+
+    @patch('swh.web.browse.views.revision.service')
+    @istest
+    def test_revision_browse(self, mock_service):
+        mock_service.lookup_revision.return_value = revision_metadata_test
+
+        url = reverse('browse-revision',
+                      kwargs={'sha1_git': revision_id_test})
+
+        author_id = revision_metadata_test['author']['id']
+        author_name = revision_metadata_test['author']['name']
+        committer_id = revision_metadata_test['committer']['id']
+        committer_name = revision_metadata_test['committer']['name']
+        dir_id = revision_metadata_test['directory']
+
+        author_url = reverse('browse-person',
+                             kwargs={'person_id': author_id})
+        committer_url = reverse('browse-person',
+                                kwargs={'person_id': committer_id})
+
+        directory_url = reverse('browse-directory',
+                                kwargs={'sha1_git': dir_id})
+
+        history_url = reverse('browse-revision-log',
+                              kwargs={'sha1_git': revision_id_test})
+
+        resp = self.client.get(url)
+
+        self.assertEquals(resp.status_code, 200)
+        self.assertTemplateUsed('revision.html')
+        self.assertContains(resp, '<a href="%s">%s</a>' %
+                                  (author_url, author_name))
+        self.assertContains(resp, '<a href="%s">%s</a>' %
+                                  (committer_url, committer_name))
+        self.assertContains(resp, '<a href="%s">%s</a>' %
+                                  (directory_url, dir_id))
+        self.assertContains(resp, '<a href="%s">%s</a>' %
+                                  (history_url, history_url))
+
+        for parent in revision_metadata_test['parents']:
+            parent_url = reverse('browse-revision',
+                                 kwargs={'sha1_git': parent})
+            self.assertContains(resp, '<a href="%s">%s</a>' %
+                                (parent_url, parent))
+
+        author_date = revision_metadata_test['date']
+        committer_date = revision_metadata_test['committer_date']
+        message = revision_metadata_test['message']
+
+        self.assertContains(resp, format_utc_iso_date(author_date))
+        self.assertContains(resp, format_utc_iso_date(committer_date))
+        self.assertContains(resp, message)
+
+    @patch('swh.web.browse.views.revision.service')
+    @istest
+    def test_revision_log_browse(self, mock_service):
+        per_page = 10
+        mock_service.lookup_revision_log.return_value = \
+            revision_history_log_test[:per_page+1]
+
+        url = reverse('browse-revision-log',
+                      kwargs={'sha1_git': revision_id_test},
+                      query_params={'per_page': per_page})
+
+        resp = self.client.get(url)
+
+        prev_rev = revision_history_log_test[per_page]['id']
+        next_page_url = reverse('browse-revision-log',
+                                kwargs={'sha1_git': prev_rev},
+                                query_params={'revs_breadcrumb': revision_id_test, # noqa
+                                              'per_page': per_page})
+
+        self.assertEquals(resp.status_code, 200)
+        self.assertTemplateUsed('revision-log.html')
+        self.assertContains(resp, '<tr class="swh-revision-log-entry">',
+                            count=per_page)
+        self.assertContains(resp, '<li class="disabled"><a>Newer</a></li>')
+        self.assertContains(resp, '<li><a href="%s">Older</a></li>' %
+                            escape(next_page_url))
+
+        for log in revision_history_log_test[:per_page]:
+            author_url = reverse('browse-person',
+                                 kwargs={'person_id': log['author']['id']})
+            revision_url = reverse('browse-revision',
+                                   kwargs={'sha1_git': log['id']})
+            directory_url = reverse('browse-directory',
+                                    kwargs={'sha1_git': log['directory']})
+            self.assertContains(resp, '<a href="%s">%s</a>' %
+                                (author_url, log['author']['name']))
+            self.assertContains(resp, '<a href="%s">%s</a>' %
+                                (revision_url, log['id'][:7]))
+            self.assertContains(resp, '<a href="%s">%s</a>' %
+                                (directory_url, 'Tree'))
+
+        mock_service.lookup_revision_log.return_value = \
+            revision_history_log_test[per_page:2*per_page+1]
+
+        resp = self.client.get(next_page_url)
+
+        prev_prev_rev = revision_history_log_test[2*per_page]['id']
+        prev_page_url = reverse('browse-revision-log',
+                                kwargs={'sha1_git': revision_id_test},
+                                query_params={'per_page': per_page})
+        next_page_url = reverse('browse-revision-log',
+                                kwargs={'sha1_git': prev_prev_rev},
+                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev, # noqa
+                                              'per_page': per_page})
+
+        self.assertEquals(resp.status_code, 200)
+        self.assertTemplateUsed('revision-log.html')
+        self.assertContains(resp, '<tr class="swh-revision-log-entry">',
+                            count=per_page)
+        self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
+                            escape(prev_page_url))
+        self.assertContains(resp, '<li><a href="%s">Older</a></li>' %
+                            escape(next_page_url))
+
+        mock_service.lookup_revision_log.return_value = \
+            revision_history_log_test[2*per_page:3*per_page+1]
+
+        resp = self.client.get(next_page_url)
+
+        prev_prev_prev_rev = revision_history_log_test[3*per_page]['id']
+        prev_page_url = reverse('browse-revision-log',
+                                kwargs={'sha1_git': prev_rev},
+                                query_params={'revs_breadcrumb': revision_id_test, # noqa
+                                              'per_page': per_page})
+        next_page_url = reverse('browse-revision-log',
+                                kwargs={'sha1_git': prev_prev_prev_rev},
+                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev + '/' + prev_prev_rev, # noqa
+                                              'per_page': per_page})
+
+        self.assertEquals(resp.status_code, 200)
+        self.assertTemplateUsed('revision-log.html')
+        self.assertContains(resp, '<tr class="swh-revision-log-entry">',
+                            count=per_page)
+        self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
+                            escape(prev_page_url))
+        self.assertContains(resp, '<li><a href="%s">Older</a></li>' %
+                            escape(next_page_url))

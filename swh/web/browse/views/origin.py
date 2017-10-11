@@ -7,7 +7,7 @@ import dateutil
 
 from django.shortcuts import render
 from swh.web.common import service
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
     get_origin_visits, get_origin_visit_branches,
@@ -62,7 +62,7 @@ def origin_browse(request, origin_id=None, origin_type=None,
     origin_visits_data = []
     for visit in origin_visits:
         visit_date = dateutil.parser.parse(visit['date'])
-        visit['date'] = visit_date.strftime('%d %B %Y, %H:%M UTC')
+        visit['date'] = format_utc_iso_date(visit['date'])
         visit['browse_url'] = reverse('browse-origin-directory',
                                       kwargs={'origin_id': origin_id,
                                               'visit_id': visit['visit']})
