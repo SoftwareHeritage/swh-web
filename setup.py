@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def parse_requirements():
@@ -21,13 +21,7 @@ setup(
     author='Software Heritage developers',
     author_email='swh-devel@inria.fr',
     url='https://forge.softwareheritage.org/diffusion/DWUI/',
-    packages=['swh.web', 'swh.web.common', 'swh.web.settings',
-              'swh.web.api', 'swh.web.api.views',
-              'swh.web.tests', 'swh.web.tests.api',
-              'swh.web.tests.api.views',
-              'swh.web.tests.common', 'swh.web.browse',
-              'swh.web.browse.views', 'swh.web.tests.browse',
-              'swh.web.tests.browse.views', 'swh.web.tests.browse.views.data'],
+    packages=find_packages(),
     scripts=[],
     install_requires=parse_requirements(),
     setup_requires=['vcversioner'],
