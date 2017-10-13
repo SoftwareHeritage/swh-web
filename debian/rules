@@ -2,6 +2,7 @@
 
 export PYBUILD_NAME=swh.web
 export PYBUILD_TEST_ARGS=--with-doctest -sv -a !db,!fs
+export DJANGO_SETTINGS_MODULE=swh.web.settings.tests
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
