@@ -191,3 +191,7 @@ LOGGING = {
 }
 
 SILENCED_SYSTEM_CHECKS = ['1_7.W001', '1_8.W001']
+
+# Setup support for proxy headers
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
