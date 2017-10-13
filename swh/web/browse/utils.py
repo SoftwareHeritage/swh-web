@@ -8,11 +8,14 @@ import dateutil
 import magic
 import math
 import stat
+import textwrap
 
 from django.core.cache import cache
+from django.utils.safestring import mark_safe
 
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc
+from swh.web.common.utils import reverse, format_utc_iso_date
 
 
 def get_directory_entries(sha1_git):
@@ -292,3 +295,130 @@ def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
     cache.set(cache_entry_id, branches)
 
     return branches
+
+
+def gen_link(url, link_text):
+    """
+    Utility function for generating an HTML link to insert
+    in Django templates.
+
+    Args:
+        url (str): an url
+        link_text (str): the text for the produced link
+
+    Returns:
+        An HTML link in the form '<a href="url">link_text</a>'
+
+    """
+    link = '<a href="%s">%s</a>' % (url, link_text)
+    return mark_safe(link)
+
+
+def gen_person_link(person_id, person_name):
+    """
+    Utility function for generating a link to a SWH person HTML view
+    to insert in Django templates.
+
+    Args:
+        person_id (int): a SWH person id
+        person_name (str): the associated person name
+
+    Returns:
+        An HTML link in the form '<a href="person_view_url">person_name</a>'
+
+    """
+    person_url = reverse('browse-person', kwargs={'person_id': person_id})
+    return gen_link(person_url, person_name)
+
+
+def gen_revision_link(revision_id, shorten_id=False):
+    """
+    Utility function for generating a link to a SWH revision HTML view
+    to insert in Django templates.
+
+    Args:
+        revision_id (int): a SWH revision id
+        shorten_id (boolean): wheter to shorten the revision id to 7
+            characters for the link text
+
+    Returns:
+        An HTML link in the form '<a href="revision_view_url">revision_id</a>'
+
+    """
+    revision_url = reverse('browse-revision',
+                           kwargs={'sha1_git': revision_id})
+    if shorten_id:
+        return gen_link(revision_url, revision_id[:7])
+    else:
+        return gen_link(revision_url, revision_id)
+
+
+def _format_log_entries(revision_log, per_page):
+    revision_log_data = []
+    for i, log in enumerate(revision_log):
+        if i == per_page:
+            break
+        revision_log_data.append(
+            {'author': gen_person_link(log['author']['id'],
+                                       log['author']['name']),
+             'revision': gen_revision_link(log['id'], True),
+             'message': log['message'],
+             'message_shorten': textwrap.shorten(log['message'],
+                                                 width=80,
+                                                 placeholder='...'),
+             'date': format_utc_iso_date(log['date']),
+             'directory': log['directory']})
+    return revision_log_data
+
+
+def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
+                                     origin_context=False):
+    """
+    Utility functions that process raw revision log data for HTML display.
+    Its purpose is to:
+
+        * add links to relevant SWH browse views
+        * format date in human readable format
+        * truncate the message log
+
+    It also computes the data needed to generate the links for navigating back
+    and forth in the history log.
+
+    Args:
+        revision_log (list): raw revision log as returned by the SWH web api
+        per_page (int): number of log entries per page
+        revs_breadcrumb (str): breadcrumbs of revisions navigated so far,
+            in the form 'rev1[/rev2/../revN]'. Each revision corresponds to
+            the first one displayed in the HTML view for history log.
+        origin_context (boolean): wheter or not the revision log is browsed
+            from an origin view.
+
+
+    """
+    current_rev = revision_log[0]['id']
+    next_rev = None
+    prev_rev = None
+    next_revs_breadcrumb = None
+    prev_revs_breadcrumb = None
+    if len(revision_log) == per_page + 1:
+        prev_rev = revision_log[-1]['id']
+
+    prev_rev_bc = current_rev
+    if origin_context:
+        prev_rev_bc = prev_rev
+
+    if revs_breadcrumb:
+        revs = revs_breadcrumb.split('/')
+        next_rev = revs[-1]
+        if len(revs) > 1:
+            next_revs_breadcrumb = '/'.join(revs[:-1])
+        if len(revision_log) == per_page + 1:
+            prev_revs_breadcrumb = revs_breadcrumb + '/' + prev_rev_bc
+    else:
+        prev_revs_breadcrumb = prev_rev_bc
+
+    return {'revision_log_data': _format_log_entries(revision_log, per_page),
+            'prev_rev': prev_rev,
+            'prev_revs_breadcrumb': prev_revs_breadcrumb,
+            'next_rev': next_rev,
+            'next_revs_breadcrumb': next_revs_breadcrumb}

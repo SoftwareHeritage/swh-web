@@ -133,4 +133,5 @@ def content_display(request, query_string):
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
                    'branches': None,
-                   'branch': None})
+                   'branch': None,
+                   'history_url': None})

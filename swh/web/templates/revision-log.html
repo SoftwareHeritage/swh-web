@@ -2,7 +2,7 @@
 {% block title %}Revision Log{% endblock %}
 {% block content %}
 
-<h2>Revision log</h2>
+{% include "includes/top-navigation.html" %}
 
 <table class="table">
   <thead>
@@ -28,13 +28,13 @@
 </table>
 
 <ul class="pager">
-  {% if next_rev_url %}
-    <li><a href="{{ next_rev_url }}">Newer</a></li>
+  {% if next_log_url %}
+    <li><a href="{{ next_log_url }}">Newer</a></li>
   {% else %}
     <li class="disabled"><a>Newer</a></li>
   {% endif %}
-  {% if prev_rev_url %}
-    <li><a href="{{ prev_rev_url }}">Older</a></li>
+  {% if prev_log_url %}
+    <li><a href="{{ prev_log_url }}">Older</a></li>
   {% else %}
     <li class="disabled"><a>Older</a></li>
   {% endif %}

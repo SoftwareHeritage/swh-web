@@ -46,7 +46,6 @@ Content
     :query path: optionnal parameter used to describe the path of the content
         relative to a root directory (used to add context aware navigation links
         when navigating from a directory view)
-    :type path: string
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
     :statuscode 404: requested content can not be found in the SWH archive
@@ -75,7 +74,6 @@ Content
     :query filename: optionnal parameter used to indicate the name of the file
         holding the requested content (used when one wants to save the content
         to a local file)
-    :type path: string
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
     :statuscode 404: requested content can not be found in the SWH archive
@@ -183,7 +181,8 @@ Origin directory
     :type origin_id: int
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the directory
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
@@ -213,7 +212,8 @@ Origin directory
     :type path: string
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the directory
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
         or the provided path does not exist from the origin root directory
@@ -243,7 +243,8 @@ Origin directory
     :type visit_id: int
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the directory
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
         or requested visit id does not exist
@@ -276,7 +277,8 @@ Origin directory
     :type path: string
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the directory
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
         requested visit id does not exist or the provided path does 
@@ -307,7 +309,8 @@ Origin directory
     :type ts: Unix timestamp
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the directory
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
         or requested visit timestamp does not exist
@@ -340,7 +343,8 @@ Origin directory
     :type path: string
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the directory
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
         requested visit timestamp does not exist or the provided path does 
@@ -351,7 +355,7 @@ Origin content
 
 .. http:get:: /browse/origin/(origin_id)/content/(path)/
 
-    HTML view that produces an HTML display of a SWH content
+    HTML view that produces a display of a SWH content
     associated to the latest visit of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
@@ -382,14 +386,15 @@ Origin content
     :type path: string
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the content
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the content
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
         or the provided content path does not exist from the origin root directory
 
 .. http:get:: /browse/origin/(origin_id)/visit/(visit_id)/content/(path)/
 
-    HTML view that produces an HTML display of a SWH content
+    HTML view that produces a display of a SWH content
     associated to a specific visit (identified by its id) of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
@@ -422,7 +427,8 @@ Origin content
     :type path: string
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the content
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the content
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
         requested visit id does not exist or the provided content path does 
@@ -430,7 +436,7 @@ Origin content
 
 .. http:get:: /browse/origin/(origin_id)/ts/(ts)/content/(path)/
 
-    HTML view that produces an HTML display of a SWH content
+    HTML view that produces a display of a SWH content
     associated to a specific visit (identified by its timestamp) of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
@@ -463,11 +469,152 @@ Origin content
     :type path: string
     :query branch: optional query parameter to specify the origin branch
         from which to retrieve the content
-    :type branch: string
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the content
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
         requested visit timestamp does not exist or the provided content path does 
         not exist from the origin root directory
+
+Origin history
+""""""""""""""
+
+.. http:get:: /browse/origin/(origin_id)/log/
+
+    HTML view that produces a display of revisions history heading
+    to the last revision found during the latest visit of a SWH origin.
+    In other words, it shows the commit log associated to the latest
+    visit of a SWH origin.
+
+    The following data are displayed for each log entry:
+
+        * author of the revision
+        * link to the revision metadata
+        * message associated the revision
+        * date of the revision
+        * link to browse the associated source tree in the origin context
+
+    N log entries are displayed per page (default is 20). In order to navigate
+    in a large history, two buttons are present at the bottom of the view:
+
+        * *Newer*: fetch and display if available the N more recent log entries
+          than the ones currently displayed
+        * *Older*: fetch and display if available the N older log entries
+          than the ones currently displayed
+
+    The view also enables to easily switch between the origin branches
+    through a dropdown menu.
+
+    The origin branch (default to master) from which to retrieve the content
+    can also be specified by using the branch query parameter.
+
+    :param origin_id: the id of a SWH origin
+    :type origin_id: int
+    :query revs_breadcrumb: query parameter used internally to store 
+        the navigation breadcrumbs (i.e. the list of descendant revisions
+        visited so far). It must be a string in the form 
+        "<rev_1>[/<rev_2>/.../<rev_n>]"
+    :query per_page: the number of log entries to display per page 
+        (default is 20, max is 50)
+    :query branch: optional query parameter to specify the origin branch
+        from which to retrieve the commit log
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the commit log
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the SWH archive
+
+.. http:get:: /browse/origin/(origin_id)/visit/(visit_id)/log/
+
+    HTML view that produces a display of revisions history heading
+    to the last revision found during a specific visit of a SWH origin.
+    In other words, it shows the commit log associated to a specific
+    visit of a SWH origin.
+
+    The following data are displayed for each log entry:
+
+        * author of the revision
+        * link to the revision metadata
+        * message associated the revision
+        * date of the revision
+        * link to browse the associated source tree in the origin context
+
+    N log entries are displayed per page (default is 20). In order to navigate
+    in a large history, two buttons are present at the bottom of the view:
+
+        * *Newer*: fetch and display if available the N more recent log entries
+          than the ones currently displayed
+        * *Older*: fetch and display if available the N older log entries
+          than the ones currently displayed
+
+    The view also enables to easily switch between the origin branches
+    through a dropdown menu.
+
+    The origin branch (default to master) from which to retrieve the content
+    can also be specified by using the branch query parameter.
+
+    :param origin_id: the id of a SWH origin
+    :type origin_id: int
+    :param visit_id: the id of the origin visit
+    :type visit_id: int
+    :query revs_breadcrumb: query parameter used internally to store 
+        the navigation breadcrumbs (i.e. the list of descendant revisions
+        visited so far). It must be a string in the form 
+        "<rev_1>[/<rev_2>/.../<rev_n>]"
+    :query per_page: the number of log entries to display per page 
+        (default is 20, max is 50)
+    :query branch: optional query parameter to specify the origin branch
+        from which to retrieve the commit log
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the commit log
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the SWH archive
+
+.. http:get:: /browse/origin/(origin_id)/ts/(ts)/log/
+
+    HTML view that produces a display of revisions history heading
+    to the last revision found during a specific visit (identified by its 
+    timestamp) of a SWH origin.
+    In other words, it shows the commit log associated to a specific
+    visit (identified by its timestamp) of a SWH origin.
+
+    The following data are displayed for each log entry:
+
+        * author of the revision
+        * link to the revision metadata
+        * message associated the revision
+        * date of the revision
+        * link to browse the associated source tree in the origin context
+
+    N log entries are displayed per page (default is 20). In order to navigate
+    in a large history, two buttons are present at the bottom of the view:
+
+        * *Newer*: fetch and display if available the N more recent log entries
+          than the ones currently displayed
+        * *Older*: fetch and display if available the N older log entries
+          than the ones currently displayed
+
+    The view also enables to easily switch between the origin branches
+    through a dropdown menu.
+
+    The origin branch (default to master) from which to retrieve the content
+    can also be specified by using the branch query parameter.
+
+    :param origin_id: the id of a SWH origin
+    :type origin_id: int
+    :param ts: the timestamp of the origin visit
+    :type ts: Unix timestamp
+    :query revs_breadcrumb: query parameter used internally to store 
+        the navigation breadcrumbs (i.e. the list of descendant revisions
+        visited so far). It must be a string in the form 
+        "<rev_1>[/<rev_2>/.../<rev_n>]"
+    :query per_page: the number of log entries to display per page 
+        (default is 20, max is 50)
+    :query branch: optional query parameter to specify the origin branch
+        from which to retrieve the commit log
+    :query revision: optional query parameter to specify the origin revision
+        from which to retrieve the commit log
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the SWH archive
 
 Person
 ^^^^^^
@@ -508,9 +655,17 @@ Revision
 
         * author of the revision
         * link to the revision metadata
-        * message for the revision
+        * message associated to the revision
         * date of the revision
         * link to browse the associated source tree
+
+    N log entries are displayed per page (default is 20). In order to navigate
+    in a large history, two buttons are present at the bottom of the view:
+
+        * *Newer*: fetch and display if available the N more recent log entries
+          than the ones currently displayed
+        * *Older*: fetch and display if available the N older log entries
+          than the ones currently displayed
 
     :param revision_id: the sha1_git identifier of a SWH revision 
     :type revision_id: hexadecimal representation of that hash value

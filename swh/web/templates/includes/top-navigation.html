@@ -12,6 +12,10 @@
     </div> 
   {% endif %}
 
+  {% if history_url %}
+    <a href="{{ history_url }}" class="btn btn-sm btn-swh pull-right" role="button">History</a>
+  {% endif %}
+
   <nav class="bread-crumbs browse-bread-crumbs">
     <ul>
       {% for bc in breadcrumbs %}

@@ -12,7 +12,8 @@ from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
     get_origin_visits, get_origin_visit_branches,
     gen_path_info, get_directory_entries, request_content,
-    prepare_content_for_display
+    prepare_content_for_display, gen_link,
+    prepare_revision_log_for_display
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -77,6 +78,31 @@ def origin_browse(request, origin_id=None, origin_type=None,
                    origin_id})
 
 
+def _get_origin_branches_and_url_args(origin_id, visit_id, ts):
+    if not visit_id and ts:
+        branches = get_origin_visit_branches(origin_id, visit_ts=ts)
+        url_args = {'origin_id': origin_id,
+                    'ts': ts}
+    else:
+        branches = get_origin_visit_branches(origin_id, visit_id)
+        url_args = {'origin_id': origin_id,
+                    'visit_id': visit_id}
+    return branches, url_args
+
+
+def _raise_exception_if_branch_not_found(origin_id, visit_id, ts, branch):
+    if visit_id:
+        raise NotFoundExc('Branch %s associated to visit with'
+                          ' id %s for origin with id %s'
+                          ' not found!' %
+                          (branch, visit_id, origin_id))
+    else:
+        raise NotFoundExc('Branch %s associated to visit with'
+                          ' timestamp %s for origin with id %s'
+                          ' not found!' %
+                          (branch, ts, origin_id))
+
+
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/directory/',
               r'origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/', # noqa
@@ -107,6 +133,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
             (the last one will be used by default)
         path: optionnal path parameter used to navigate in directories
               reachable from the origin root one
+        branch: optionnal query parameter that specifies the origin branch
+            from which to retrieve the directory
+        revision: optional query parameter to specify the origin revision
+            from which to retrieve the directory
 
     Returns:
         The HTML rendering for the content of the directory associated
@@ -120,32 +150,37 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                                            origin_visits[-1]['visit'],
                                            path=path)
 
-        if not visit_id and ts:
-            branches = get_origin_visit_branches(origin_id, visit_ts=ts)
-            url_args = {'origin_id': origin_id,
-                        'ts': ts}
-        else:
-            branches = get_origin_visit_branches(origin_id, visit_id)
-            url_args = {'origin_id': origin_id,
-                        'visit_id': visit_id}
+        branches, url_args = _get_origin_branches_and_url_args(origin_id,
+                                                               visit_id, ts)
 
-        branch = request.GET.get('branch', 'master')
-        filtered_branches = [b for b in branches if branch in b['name']]
+        for b in branches:
+            branch_url_args = dict(url_args)
+            if path:
+                b['path'] = path
+                branch_url_args['path'] = path
+            b['url'] = reverse('browse-origin-directory',
+                               kwargs=branch_url_args,
+                               query_params={'branch': b['name']})
 
-        if len(filtered_branches) > 0:
-            root_sha1_git = filtered_branches[0]['directory']
-            branch = filtered_branches[0]['name']
+        revision_id = request.GET.get('revision', None)
+
+        if revision_id:
+            revision = service.lookup_revision(revision_id)
+            root_sha1_git = revision['directory']
+            branches.append({'name': revision_id,
+                             'revision': revision_id,
+                             'directory': root_sha1_git})
+            branch = revision_id
         else:
-            if visit_id:
-                raise NotFoundExc('Branch %s associated to visit with'
-                                  ' id %s for origin with id %s'
-                                  ' not found!' %
-                                  (branch, visit_id, origin_id))
+            branch = request.GET.get('branch', 'master')
+            filtered_branches = [b for b in branches if branch in b['name']]
+
+            if len(filtered_branches) > 0:
+                root_sha1_git = filtered_branches[0]['directory']
+                branch = filtered_branches[0]['name']
             else:
-                raise NotFoundExc('Branch %s associated to visit with'
-                                  ' timestamp %s for origin with id %s'
-                                  ' not found!' %
-                                  (branch, ts, origin_id))
+                _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
+                                                     branch)
 
         sha1_git = root_sha1_git
         if path:
@@ -157,14 +192,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
     except Exception as exc:
         return handle_view_exception(exc)
 
-    for b in branches:
-        branch_url_args = dict(url_args)
-        if path:
-            b['path'] = path
-            branch_url_args['path'] = path
-        b['url'] = reverse('browse-origin-directory',
-                           kwargs=branch_url_args,
-                           query_params={'branch': b['name']})
+    if revision_id:
+        query_params = {'revision': revision_id}
+    else:
+        query_params = {'branch': branch}
 
     path_info = gen_path_info(path)
 
@@ -172,14 +203,14 @@ def origin_directory_browse(request, origin_id, visit_id=None,
     breadcrumbs.append({'name': root_sha1_git[:7],
                         'url': reverse('browse-origin-directory',
                                        kwargs=url_args,
-                                       query_params={'branch': branch})})
+                                       query_params=query_params)})
     for pi in path_info:
         bc_url_args = dict(url_args)
         bc_url_args['path'] = pi['path']
         breadcrumbs.append({'name': pi['name'],
                             'url': reverse('browse-origin-directory',
                                            kwargs=bc_url_args,
-                                           query_params={'branch': branch})})
+                                           query_params=query_params)})
 
     path = '' if path is None else (path + '/')
 
@@ -188,14 +219,18 @@ def origin_directory_browse(request, origin_id, visit_id=None,
         bc_url_args['path'] = path + d['name']
         d['url'] = reverse('browse-origin-directory',
                            kwargs=bc_url_args,
-                           query_params={'branch': branch})
+                           query_params=query_params)
 
     for f in files:
         bc_url_args = dict(url_args)
         bc_url_args['path'] = path + f['name']
         f['url'] = reverse('browse-origin-content',
                            kwargs=bc_url_args,
-                           query_params={'branch': branch})
+                           query_params=query_params)
+
+    history_url = reverse('browse-origin-log',
+                          kwargs=url_args,
+                          query_params=query_params)
 
     return render(request, 'directory.html',
                   {'dir_sha1_git': sha1_git,
@@ -203,7 +238,8 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'files': files,
                    'breadcrumbs': breadcrumbs,
                    'branches': branches,
-                   'branch': branch})
+                   'branch': branch,
+                   'history_url': history_url})
 
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
@@ -230,6 +266,8 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
             (the last one will be used by default)
         branch: optionnal query parameter that specifies the origin branch
             from which to retrieve the content
+        revision: optional query parameter to specify the origin revision
+            from which to retrieve the content
 
     Returns:
         The HTML rendering of the requested content associated to
@@ -243,39 +281,35 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
             return origin_content_display(request, origin_id, path,
                                           origin_visits[-1]['visit'])
 
-        if not visit_id and ts:
-            branches = get_origin_visit_branches(origin_id, visit_ts=ts)
-            kwargs = {'origin_id': origin_id,
-                      'ts': ts}
-        else:
-            branches = get_origin_visit_branches(origin_id, visit_id)
-            kwargs = {'origin_id': origin_id,
-                      'visit_id': visit_id}
+        branches, url_args = _get_origin_branches_and_url_args(origin_id,
+                                                               visit_id, ts)
 
         for b in branches:
-            bc_kwargs = dict(kwargs)
-            bc_kwargs['path'] = path
+            bc_url_args = dict(url_args)
+            bc_url_args['path'] = path
             b['url'] = reverse('browse-origin-content',
-                               kwargs=bc_kwargs,
+                               kwargs=bc_url_args,
                                query_params={'branch': b['name']})
 
-        branch = request.GET.get('branch', 'master')
-        filtered_branches = [b for b in branches if branch in b['name']]
+        revision_id = request.GET.get('revision', None)
 
-        if len(filtered_branches) > 0:
-            root_sha1_git = filtered_branches[0]['directory']
-            branch = filtered_branches[0]['name']
+        if revision_id:
+            revision = service.lookup_revision(revision_id)
+            root_sha1_git = revision['directory']
+            branches.append({'name': revision_id,
+                             'revision': revision_id,
+                             'directory': root_sha1_git})
+            branch = revision_id
         else:
-            if visit_id:
-                raise NotFoundExc('Branch %s associated to visit with'
-                                  ' id %s for origin with id %s'
-                                  ' not found!' %
-                                  (branch, visit_id, origin_id))
+            branch = request.GET.get('branch', 'master')
+            filtered_branches = [b for b in branches if branch in b['name']]
+
+            if len(filtered_branches) > 0:
+                root_sha1_git = filtered_branches[0]['directory']
+                branch = filtered_branches[0]['name']
             else:
-                raise NotFoundExc('Branch %s associated to visit with'
-                                  ' timestamp %s for origin with id %s'
-                                  ' not found!' %
-                                  (branch, ts, origin_id))
+                _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
+                                                     branch)
 
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
@@ -284,6 +318,11 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
 
     except Exception as exc:
         return handle_view_exception(exc)
+
+    if revision_id:
+        query_params = {'revision': revision_id}
+    else:
+        query_params = {'branch': branch}
 
     content_display_data = prepare_content_for_display(content_data,
                                                        mime_type, path)
@@ -299,15 +338,15 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
     path_info = gen_path_info(path)
     breadcrumbs.append({'name': root_sha1_git[:7],
                         'url': reverse('browse-origin-directory',
-                                       kwargs=kwargs,
-                                       query_params={'branch': branch})})
+                                       kwargs=url_args,
+                                       query_params=query_params)})
     for pi in path_info:
-        bc_kwargs = dict(kwargs)
-        bc_kwargs['path'] = pi['path']
+        bc_url_args = dict(url_args)
+        bc_url_args['path'] = pi['path']
         breadcrumbs.append({'name': pi['name'],
                             'url': reverse('browse-origin-directory',
-                                           kwargs=bc_kwargs,
-                                           query_params={'branch': branch})})
+                                           kwargs=bc_url_args,
+                                           query_params=query_params)})
 
     breadcrumbs.append({'name': filename,
                         'url': None})
@@ -325,4 +364,137 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
                    'branches': branches,
-                   'branch': branch})
+                   'branch': branch,
+                   'history_url': None})
+
+
+def _gen_directory_link(url_args, revision, link_text):
+    directory_url = reverse('browse-origin-directory',
+                            kwargs=url_args,
+                            query_params={'revision': revision})
+    return gen_link(directory_url, link_text)
+
+
+NB_LOG_ENTRIES = 20
+
+
+@browse_route(r'origin/(?P<origin_id>[0-9]+)/log/',
+              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/log/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/log/',
+              view_name='browse-origin-log')
+def origin_log_browse(request, origin_id, visit_id=None, ts=None):
+    """Django view that produces an HTML display of revisions history (aka 
+    the commit log) associated to a SWH origin.
+
+    The url scheme that points to it is the following:
+
+        * :http:get:`/browse/origin/(origin_id)/log/`
+        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/log/`
+        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/log/`
+
+    Args:
+        request: input django http request
+        origin_id: id of a swh origin
+        visit_id: optionnal visit id parameter
+            (the last one will be used by default)
+        ts: optionnal visit timestamp parameter
+            (the last one will be used by default)
+        revs_breadcrumb: query parameter used internally to store 
+            the navigation breadcrumbs (i.e. the list of descendant revisions
+            visited so far).
+        per_page: optionnal query parameter used to specify the number of
+            log entries per page
+        branch: optionnal query parameter that specifies the origin branch
+            from which to retrieve the content
+        revision: optional query parameter to specify the origin revision
+            from which to retrieve the directory
+
+    Returns:
+        The HTML rendering of revisions history for a given SWH visit.
+
+    """ # noqa
+    try:
+
+        if not visit_id and not ts:
+            origin_visits = get_origin_visits(origin_id)
+            return origin_log_browse(request, origin_id,
+                                     origin_visits[-1]['visit'])
+
+        branches, url_args = _get_origin_branches_and_url_args(origin_id,
+                                                               visit_id, ts)
+
+        for b in branches:
+            b['url'] = reverse('browse-origin-log',
+                               kwargs=url_args,
+                               query_params={'branch': b['name']})
+
+        revision_id = request.GET.get('revision', None)
+        revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
+        branch = request.GET.get('branch', 'master')
+
+        if revision_id:
+            revision = service.lookup_revision(revision_id)
+            branches.append({'name': revision_id,
+                             'revision': revision_id,
+                             'directory': revision['directory']})
+            revision = revision_id
+            branch = revision_id
+        elif revs_breadcrumb:
+            revs = revs_breadcrumb.split('/')
+            revision = revs[-1]
+        else:
+            filtered_branches = [b for b in branches if branch in b['name']]
+            if len(filtered_branches) > 0:
+                revision = filtered_branches[0]['revision']
+                branch = filtered_branches[0]['name']
+            else:
+                _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
+                                                     branch)
+
+        per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
+        revision_log = service.lookup_revision_log(revision,
+                                                   limit=per_page+1)
+        revision_log = list(revision_log)
+
+    except Exception as exc:
+        return handle_view_exception(exc)
+
+    revision_log_display_data = prepare_revision_log_for_display(
+        revision_log, per_page, revs_breadcrumb, origin_context=True)
+
+    prev_rev = revision_log_display_data['prev_rev']
+    prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
+    prev_log_url = None
+    if prev_rev:
+        prev_log_url = \
+            reverse('browse-origin-log',
+                    kwargs=url_args,
+                    query_params={'revs_breadcrumb': prev_revs_breadcrumb,
+                                  'per_page': per_page,
+                                  'branch': branch})
+
+    next_rev = revision_log_display_data['next_rev']
+    next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
+    next_log_url = None
+    if next_rev:
+        next_log_url = \
+            reverse('browse-origin-log',
+                    kwargs=url_args,
+                    query_params={'revs_breadcrumb': next_revs_breadcrumb,
+                                  'per_page': per_page,
+                                  'branch': branch})
+
+    revision_log_data = revision_log_display_data['revision_log_data']
+
+    for i, log in enumerate(revision_log_data):
+        log['directory'] = _gen_directory_link(url_args, revision_log[i]['id'],
+                                               'Tree')
+
+    return render(request, 'revision-log.html',
+                  {'revision_log': revision_log_data,
+                   'next_log_url': next_log_url,
+                   'prev_log_url': prev_log_url,
+                   'breadcrumbs': None,
+                   'branches': branches,
+                   'branch': branch,
+                   'history_url': None})

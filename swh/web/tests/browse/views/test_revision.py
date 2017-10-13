@@ -157,3 +157,21 @@ class SwhBrowseRevisionTest(TestCase):
                             escape(prev_page_url))
         self.assertContains(resp, '<li><a href="%s">Older</a></li>' %
                             escape(next_page_url))
+
+        mock_service.lookup_revision_log.return_value = \
+            revision_history_log_test[3*per_page:3*per_page+per_page//2]
+
+        resp = self.client.get(next_page_url)
+
+        prev_page_url = reverse('browse-revision-log',
+                                kwargs={'sha1_git': prev_prev_rev},
+                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev, # noqa
+                                              'per_page': per_page})
+
+        self.assertEquals(resp.status_code, 200)
+        self.assertTemplateUsed('revision-log.html')
+        self.assertContains(resp, '<tr class="swh-revision-log-entry">',
+                            count=per_page//2)
+        self.assertContains(resp, '<li class="disabled"><a>Older</a></li>')
+        self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
+                            escape(prev_page_url))
