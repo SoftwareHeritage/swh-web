@@ -3,7 +3,7 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.web.tests import (
+from swh.web.settings.tests import (
     scope1_limiter_rate, scope2_limiter_rate
 )
 

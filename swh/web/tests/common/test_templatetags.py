@@ -17,7 +17,7 @@ class SWHTemplateTagsTest(unittest.TestCase):
         content = '{"url": "/api/1/abc/"}'
         expected_content = ('{"url": "<a href="/api/1/abc/">/api/1/abc/</a>"}')
 
-        self.assertEquals(swh_templatetags.urlize_api_links(content),
+        self.assertEquals(swh_templatetags.urlize_links_and_mails(content),
                           expected_content)
 
     @istest
@@ -26,7 +26,7 @@ class SWHTemplateTagsTest(unittest.TestCase):
         content = '{"url": "/browse/def/"}'
         expected_content = ('{"url": "<a href="/browse/def/">'
                             '/browse/def/</a>"}')
-        self.assertEquals(swh_templatetags.urlize_api_links(content),
+        self.assertEquals(swh_templatetags.urlize_links_and_mails(content),
                           expected_content)
 
     @istest

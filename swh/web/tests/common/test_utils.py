@@ -85,3 +85,8 @@ class UtilsTestCase(unittest.TestCase):
 
         for ts, exp_date in zip(input_timestamps, output_dates):
             self.assertEquals(utils.parse_timestamp(ts), exp_date)
+
+    @istest
+    def format_utc_iso_date(self):
+        self.assertEqual(utils.format_utc_iso_date('2017-05-04T13:27:13+02:00'), # noqa
+                         '04 May 2017, 13:27 UTC')

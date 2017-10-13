@@ -357,3 +357,49 @@ td.hljs-ln-numbers {
 td.hljs-ln-code {
 	padding-left: 10px;
 }
+
+.btn-swh { 
+    color: #6C6C6C; 
+    background-color: #EAEAEA; 
+    border-color: #EAEAEA; 
+  } 
+   
+  .btn-swh:hover, 
+  .btn-swh:focus, 
+  .btn-swh:active, 
+  .btn-swh.active, 
+  .open .dropdown-toggle.btn-swh { 
+    color: #6C6C6C; 
+    background-color: #D4D4D4; 
+    border-color: #EAEAEA; 
+  } 
+   
+  .btn-swh:active, 
+  .btn-swh.active, 
+  .open .dropdown-toggle.btn-swh { 
+    background-image: none; 
+  } 
+   
+  .btn-swh.disabled, 
+  .btn-swh[disabled], 
+  fieldset[disabled] .btn-swh, 
+  .btn-swh.disabled:hover, 
+  .btn-swh[disabled]:hover, 
+  fieldset[disabled] .btn-swh:hover, 
+  .btn-swh.disabled:focus, 
+  .btn-swh[disabled]:focus, 
+  fieldset[disabled] .btn-swh:focus, 
+  .btn-swh.disabled:active, 
+  .btn-swh[disabled]:active, 
+  fieldset[disabled] .btn-swh:active, 
+  .btn-swh.disabled.active, 
+  .btn-swh[disabled].active, 
+  fieldset[disabled] .btn-swh.active { 
+    background-color: #EAEAEA; 
+    border-color: #EAEAEA; 
+  } 
+   
+  .btn-swh .badge { 
+    color: #EAEAEA; 
+    background-color: #6C6C6C; 
+  }

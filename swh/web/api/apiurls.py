@@ -5,13 +5,13 @@
 
 import re
 
-from django.conf.urls import url
 from rest_framework.decorators import api_view
 
+from swh.web.common.urlsindex import UrlsIndex
 from swh.web.common.throttling import throttle_scope
 
 
-class APIUrls(object):
+class APIUrls(UrlsIndex):
     """
     Class to manage API documentation URLs.
 
@@ -22,7 +22,7 @@ class APIUrls(object):
     """
     apidoc_routes = {}
     method_endpoints = {}
-    urlpatterns = []
+    scope = 'api'
 
     @classmethod
     def get_app_endpoints(cls):
@@ -45,7 +45,7 @@ class APIUrls(object):
 
         """
         rules = []
-        for urlp in cls.urlpatterns:
+        for urlp in cls.get_url_patterns():
             endpoint = urlp.callback.__name__
             if endpoint != f.__name__:
                 continue
@@ -74,7 +74,7 @@ class APIUrls(object):
         return rules
 
     @classmethod
-    def index_add_route(cls, route, docstring, **kwargs):
+    def add_route(cls, route, docstring, **kwargs):
         """
         Add a route to the self-documenting API reference
         """
@@ -85,14 +85,6 @@ class APIUrls(object):
             for k, v in kwargs.items():
                 d[k] = v
             cls.apidoc_routes[route] = d
-
-    @classmethod
-    def index_add_url_pattern(cls, url_pattern, view, view_name):
-        cls.urlpatterns.append(url(url_pattern, view, name=view_name))
-
-    @classmethod
-    def get_url_patterns(cls):
-        return cls.urlpatterns
 
 
 class api_route(object):  # noqa: N801
@@ -127,6 +119,6 @@ class api_route(object):  # noqa: N801
         api_view_f.http_method_names = self.methods
 
         # register the route and its view in the endpoints index
-        APIUrls.index_add_url_pattern(self.url_pattern, api_view_f,
-                                      self.view_name)
+        APIUrls.add_url_pattern(self.url_pattern, api_view_f,
+                                self.view_name)
         return f

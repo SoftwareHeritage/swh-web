@@ -19,7 +19,7 @@
 {% for key, val in origin.items|dictsort:0 %}
   <tr>
     <td>{{ key }}</td>
-    <td>{{ val | safe | urlize_api_links | safe }}</td>
+    <td>{{ val | safe | urlize_links_and_mails | safe }}</td>
   </tr>
 {% endfor %}
 </table>
@@ -32,7 +32,7 @@
     <div id="cal-zoom-window" style="height: 60%"></div>
     <div id="cal-static-window" style="height: 40%"></div>
   </div>
-  <button class="btn btn-primary btn-sm pull-right" id="cal-clear">Reset zoom</button>
+  <button class="btn btn-sm btn-swh pull-right" id="cal-clear">Reset zoom</button>
 </div>
 
 <h3>Visit list</h3>

@@ -89,7 +89,7 @@ class route(object):  # noqa: N801
     def __call__(self, f):
         # If the route is not hidden, add it to the index
         if 'hidden' not in self.tags:
-            APIUrls.index_add_route(self.route, f.__doc__, tags=self.tags)
+            APIUrls.add_route(self.route, f.__doc__, tags=self.tags)
 
         # If the decorated route has arguments, we create a specific
         # documentation view
@@ -101,7 +101,7 @@ class route(object):  # noqa: N801
                 return make_api_response(request, None, doc_data)
 
             view_name = self.route[1:-1].replace('/', '-')
-            APIUrls.index_add_url_pattern(self.urlpattern, doc_view, view_name)
+            APIUrls.add_url_pattern(self.urlpattern, doc_view, view_name)
 
         @wraps(f)
         def documented_view(request, **kwargs):
