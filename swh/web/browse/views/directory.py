@@ -12,14 +12,20 @@ from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
     gen_path_info, get_directory_entries
 )
+from swh.web.browse.browseurls import browse_route
 
 
+@browse_route(r'directory/(?P<sha1_git>[0-9a-f]+)/',
+              r'directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/',
+              view_name='browse-directory')
 def directory_browse(request, sha1_git, path=None):
     """Django view for browsing the content of a SWH directory identified
     by its sha1_git value.
 
-    See :ref:`Directory browsing URI scheme <browse_directory>` for
-    more details.
+    The url scheme that points to it is the following:
+
+        * :http:get:`/browse/directory/(sha1_git)/`
+        * :http:get:`/browse/directory/(sha1_git)/(path)/`
 
     Args:
         request: input django http request
@@ -72,4 +78,6 @@ def directory_browse(request, sha1_git, path=None):
                    'files': files,
                    'breadcrumbs': breadcrumbs,
                    'branches': None,
-                   'branch': None})
+                   'branch': None,
+                   'top_right_link': None,
+                   'top_right_link_text': None})

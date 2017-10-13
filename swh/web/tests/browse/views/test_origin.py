@@ -327,7 +327,7 @@ class SwhBrowseOriginTest(TestCase):
         mock_utils_service.lookup_directory.return_value = \
             stub_origin_sub_directory_entries
         mock_origin_service.lookup_directory_with_path.return_value = \
-            {'target': '120c39eeb566c66a77ce0e904d29dfde42228adc'}
+            {'target': '120c39eeb566c66a77ce0e904d29dfde42228adb'}
 
         self.origin_directory_view(stub_origin_id, stub_origin_visits,
                                    stub_origin_branches,

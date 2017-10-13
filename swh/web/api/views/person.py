@@ -6,7 +6,7 @@
 from swh.web.common import service
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
-from swh.web.api.views import (
+from swh.web.api.views.utils import (
     _api_lookup, _doc_exc_id_not_found,
 )
 

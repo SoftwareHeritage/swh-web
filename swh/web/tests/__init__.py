@@ -3,36 +3,11 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import os
+# this configuration is needed to successfully run the tests locally
+# when calling 'make test'
+
 import django
+import os
 
-from swh.web.config import get_config
-
-swh_web_config = get_config()
-
-swh_web_config.update({
-    'debug': True,
-    'secret_key': 'test',
-    'throttling': {
-        'cache_uri': None,
-        'scopes': {
-            'swh_api': {
-                'limiter_rate': '60/min',
-                'exempted_networks': ['127.0.0.0/8']
-            },
-            'scope1': {
-                'limiter_rate': '3/min'
-            },
-            'scope2': {
-                'limiter_rate': '5/min',
-                'exempted_networks': ['127.0.0.0/8']
-            }
-        }
-    }
-})
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swh.web.settings.development")
+os.environ["DJANGO_SETTINGS_MODULE"] = "swh.web.settings.tests"
 django.setup()
-
-scope1_limiter_rate = 3
-scope2_limiter_rate = 5

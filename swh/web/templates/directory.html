@@ -2,17 +2,16 @@
 {% block title %}Directory browse{% endblock %}
 {% block content %}
 
-<div class="well well-sm">
-    <b>Directory sha1 git:</b> {{ dir_sha1_git }}
-</div>
+{% include "includes/top-navigation.html" %}
 
-{% include "content-directory-top-navigation.html" %}
 
 <div class="table-responsive">
   <table class="table">
     <thead>
       <tr>
         <th>File</th>
+        <th>Mode</th>
+        <th>Size</th>
         <th>Sha1 git</th>
       </tr>
     </thead>
@@ -23,6 +22,8 @@
           <i class="fa fa-folder fa-fw" aria-hidden="true"></i>
           <a href="{{ d.url }}">{{ d.name }}</a>
         </td>
+        <td>{{ d.perms }}</td>
+        <td></td>
         <td>{{ d.target }}</td>
       </tr>
       {% endfor %}
@@ -32,6 +33,8 @@
           <i class="fa fa-file-text fa-fw" aria-hidden="true"></i>
           <a href="{{ f.url }}">{{ f.name }}</a>
         </td>
+        <td>{{ f.perms }}</td>
+        <td>{{ f.length }}</td>
         <td>{{ f.target }}</td>
       </tr>
       {% endfor %}

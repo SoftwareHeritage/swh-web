@@ -6,7 +6,7 @@
 import re
 
 from datetime import datetime, timezone
-from dateutil import parser
+from dateutil import parser as date_parser
 
 from swh.web.common.exc import BadInputExc
 
@@ -45,11 +45,16 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
             kwargs=kwargs, current_app=current_app
         )
     )
+
+    if query_params:
+        query_params = {k: v for k, v in query_params.items() if v is not None}
+
     if query_params and len(query_params) > 0:
         query_dict = QueryDict('', mutable=True)
         for k, v in query_params.items():
             query_dict[k] = v
         url += ('?' + query_dict.urlencode(safe='/'))
+
     return url
 
 
@@ -100,7 +105,7 @@ def parse_timestamp(timestamp):
         return None
 
     try:
-        return parser.parse(timestamp, ignoretz=False, fuzzy=True)
+        return date_parser.parse(timestamp, ignoretz=False, fuzzy=True)
     except:
         try:
             return datetime.utcfromtimestamp(float(timestamp)).replace(
@@ -118,3 +123,21 @@ def shorten_path(path):
 
     ret = re.sub(sha256_re, r'\1...', path)
     return re.sub(sha1_re, r'\1...', ret)
+
+
+def format_utc_iso_date(iso_date):
+    """Turns a string reprensation of an UTC iso date
+    into a more human readable one.
+
+    More precisely, from the following input
+    string: '2017-05-04T13:27:13+02:00' the following one
+    is returned: '04 May 2017, 13:27 UTC'.
+
+    Args:
+        iso_date (str): a string representation of an UTC iso date
+
+    Returns:
+        A human readable string representation of the input iso date
+    """
+    date = date_parser.parse(iso_date)
+    return date.strftime('%d %B %Y, %H:%M UTC')

@@ -147,7 +147,7 @@ class SwhBrowseContentTest(TestCase):
 
     @patch('swh.web.browse.views.content.request_content')
     @istest
-    def content_raw_text(self, mock_request_content):
+    def test_content_raw_text(self, mock_request_content):
         mock_request_content.return_value =\
             stub_content_text_data, 'text/plain'
 

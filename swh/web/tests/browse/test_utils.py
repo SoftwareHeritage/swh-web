@@ -10,6 +10,9 @@ from nose.tools import istest
 
 
 from swh.web.browse import utils
+from swh.web.common.utils import reverse
+
+from .views.data.revision_test_data import revision_history_log_test
 
 
 class SwhBrowseUtilsTestCase(unittest.TestCase):
@@ -101,3 +104,194 @@ class SwhBrowseUtilsTestCase(unittest.TestCase):
         origin_visit_branches = utils.get_origin_visit_branches(1, 1)
 
         self.assertEqual(origin_visit_branches, expected_result)
+
+    @istest
+    def gen_link(self):
+        self.assertEqual(utils.gen_link('https://www.softwareheritage.org/', 'SWH'), # noqa
+                         '<a href="https://www.softwareheritage.org/">SWH</a>')
+
+    @istest
+    def gen_person_link(self):
+        person_id = 8221896
+        person_name = 'Antoine Lambert'
+        person_url = reverse('browse-person', kwargs={'person_id': person_id})
+
+        self.assertEqual(utils.gen_person_link(person_id, person_name),
+                         '<a href="%s">%s</a>' % (person_url, person_name))
+
+    @istest
+    def gen_revision_link(self):
+        revision_id = '28a0bc4120d38a394499382ba21d6965a67a3703'
+        revision_url = reverse('browse-revision',
+                               kwargs={'sha1_git': revision_id})
+
+        self.assertEqual(utils.gen_revision_link(revision_id),
+                         '<a href="%s">%s</a>' % (revision_url, revision_id))
+        self.assertEqual(utils.gen_revision_link(revision_id, shorten_id=True),
+                         '<a href="%s">%s</a>' % (revision_url, revision_id[:7])) # noqa
+
+    @istest
+    def test_prepare_revision_log_for_display_no_contex(self):
+        per_page = 10
+        first_page_logs_data = revision_history_log_test[:per_page+1]
+        second_page_logs_data = revision_history_log_test[per_page:2*per_page+1] # noqa
+        third_page_logs_data = revision_history_log_test[2*per_page:3*per_page+1] # noqa
+        last_page_logs_data = revision_history_log_test[3*per_page:3*per_page+5] # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            first_page_logs_data, per_page, None)
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(first_page_logs_data,
+                                                   per_page))
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         first_page_logs_data[-1]['id'])
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         first_page_logs_data[0]['id'])
+
+        self.assertEqual(revision_log_display_data['next_rev'], None)
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         None)
+
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            second_page_logs_data, per_page, old_prev_revs_bc)
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(second_page_logs_data,
+                                                   per_page))
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         second_page_logs_data[-1]['id'])
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         old_prev_revs_bc + '/' + second_page_logs_data[0]['id']) # noqa
+
+        self.assertEqual(revision_log_display_data['next_rev'],
+                         old_prev_revs_bc)
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         None)
+
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            third_page_logs_data, per_page, old_prev_revs_bc)
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(third_page_logs_data, per_page)) # noqa
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         third_page_logs_data[-1]['id'])
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         old_prev_revs_bc + '/' + third_page_logs_data[0]['id']) # noqa
+
+        self.assertEqual(revision_log_display_data['next_rev'],
+                         old_prev_revs_bc.split('/')[-1])
+
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         '/'.join(old_prev_revs_bc.split('/')[:-1]))
+
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            last_page_logs_data, per_page, old_prev_revs_bc)
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(last_page_logs_data, per_page)) # noqa
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         None)
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         None) # noqa
+
+        self.assertEqual(revision_log_display_data['next_rev'], old_prev_revs_bc.split('/')[-1]) # noqa
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         '/'.join(old_prev_revs_bc.split('/')[:-1]))
+
+    @istest
+    def test_prepare_revision_log_for_display_origin_contex(self):
+        per_page = 10
+        first_page_logs_data = revision_history_log_test[:per_page+1]
+        second_page_logs_data = revision_history_log_test[per_page:2*per_page+1] # noqa
+        third_page_logs_data = revision_history_log_test[2*per_page:3*per_page+1] # noqa
+        last_page_logs_data = revision_history_log_test[3*per_page:3*per_page+5] # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            first_page_logs_data, per_page, None, origin_context=True)
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(first_page_logs_data,
+                                                   per_page))
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         first_page_logs_data[-1]['id'])
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         first_page_logs_data[-1]['id'])
+
+        self.assertEqual(revision_log_display_data['next_rev'], None)
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         None)
+
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            second_page_logs_data, per_page, old_prev_revs_bc, origin_context=True) # noqa
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(second_page_logs_data,
+                                                   per_page))
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         second_page_logs_data[-1]['id'])
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         old_prev_revs_bc + '/' + second_page_logs_data[-1]['id']) # noqa
+
+        self.assertEqual(revision_log_display_data['next_rev'],
+                         old_prev_revs_bc)
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         None)
+
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            third_page_logs_data, per_page, old_prev_revs_bc, origin_context=True) # noqa
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(third_page_logs_data, per_page)) # noqa
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         third_page_logs_data[-1]['id'])
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         old_prev_revs_bc + '/' + third_page_logs_data[-1]['id']) # noqa
+
+        self.assertEqual(revision_log_display_data['next_rev'],
+                         old_prev_revs_bc.split('/')[-1])
+
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         '/'.join(old_prev_revs_bc.split('/')[:-1]))
+
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+
+        revision_log_display_data = utils.prepare_revision_log_for_display(
+            last_page_logs_data, per_page, old_prev_revs_bc, origin_context=True) # noqa
+
+        self.assertEqual(revision_log_display_data['revision_log_data'],
+                         utils._format_log_entries(last_page_logs_data, per_page)) # noqa
+
+        self.assertEqual(revision_log_display_data['prev_rev'],
+                         None)
+
+        self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
+                         None) # noqa
+
+        self.assertEqual(revision_log_display_data['next_rev'], old_prev_revs_bc.split('/')[-1]) # noqa
+        self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
+                         '/'.join(old_prev_revs_bc.split('/')[:-1]))

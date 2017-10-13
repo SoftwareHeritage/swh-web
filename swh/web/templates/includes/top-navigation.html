@@ -2,7 +2,7 @@
 <div>
   {% if branches %}
     <div class="dropdown" style="float: left;">
-      <button class="btn btn-md dropdown-toggle" type="button" data-toggle="dropdown">{{ branch }}
+      <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">{{ branch }}
       <span class="caret"></span></button>
       <ul class="scrollable-menu dropdown-menu">
         {% for b in branches %}
@@ -10,6 +10,10 @@
         {% endfor %}
       </ul>
     </div> 
+  {% endif %}
+
+  {% if top_right_link %}
+    <a href="{{ top_right_link }}" class="btn btn-sm btn-swh pull-right" role="button">{{ top_right_link_text }}</a>
   {% endif %}
 
   <nav class="bread-crumbs browse-bread-crumbs">
