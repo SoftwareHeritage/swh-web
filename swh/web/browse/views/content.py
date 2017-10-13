@@ -16,13 +16,58 @@ from swh.web.browse.utils import (
     gen_path_info, request_content,
     prepare_content_for_display
 )
+from swh.web.browse.browseurls import browse_route
 
 
+@browse_route(r'content/(?P<query_string>.+)/raw/',
+              view_name='browse-content-raw')
+def content_raw(request, query_string):
+    """Django view that produces a raw display of a SWH content identified
+    by its hash value.
+
+    The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
+
+    Args:
+        request: input django http request
+        query_string: a string of the form "[ALGO_HASH:]HASH" where
+            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
+            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
+            representation of the hash value
+
+    Returns:
+        The raw bytes of the content.
+
+
+    """ # noqa
+
+    try:
+        algo, checksum = query.parse_hash(query_string)
+        checksum = hash_to_hex(checksum)
+        content_data, mime_type = request_content(query_string)
+    except Exception as exc:
+        return handle_view_exception(exc)
+
+    filename = request.GET.get('filename', None)
+    if not filename:
+        filename = '%s_%s' % (algo, checksum)
+
+    if mime_type.startswith('text/'):
+        response = HttpResponse(content_data, content_type="text/plain")
+        response['Content-disposition'] = 'filename=%s' % filename
+    else:
+        response = HttpResponse(content_data,
+                                content_type='application/octet-stream')
+        response['Content-disposition'] = 'attachment; filename=%s' % filename
+    return response
+
+
+@browse_route(r'content/(?P<query_string>.+)/',
+              view_name='browse-content')
 def content_display(request, query_string):
     """Django view that produces an HTML display of a SWH content identified
     by its hash value.
 
-    See :ref:`Content browsing URI scheme <browse_content>` for more details.
+    The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/`
 
     Args:
         request: input django http request
@@ -34,7 +79,7 @@ def content_display(request, query_string):
     Returns:
         The HTML rendering of the requested content.
 
-    """
+    """ # noqa
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
@@ -83,49 +128,10 @@ def content_display(request, query_string):
                   {'content_hash_algo': algo,
                    'content_checksum': checksum,
                    'content': content_display_data['content_data'],
-                   'content_raw_url': content_raw_url,
                    'mime_type': mime_type,
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
                    'branches': None,
-                   'branch': None})
-
-
-def content_raw(request, query_string):
-    """Django view that produces a raw display of a SWH content identified
-    by its hash value.
-
-    See :ref:`Raw content browsing URI scheme <browse_content_raw>` for more details.
-
-    Args:
-        request: input django http request
-        query_string: a string of the form "[ALGO_HASH:]HASH" where
-            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
-            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
-            representation of the hash value
-
-    Returns:
-        The raw bytes of the content.
-
-
-    """ # noqa
-
-    try:
-        algo, checksum = query.parse_hash(query_string)
-        checksum = hash_to_hex(checksum)
-        content_data, mime_type = request_content(query_string)
-    except Exception as exc:
-        return handle_view_exception(exc)
-
-    filename = request.GET.get('filename', None)
-    if not filename:
-        filename = '%s_%s' % (algo, checksum)
-
-    if mime_type.startswith('text/'):
-        response = HttpResponse(content_data, content_type="text/plain")
-        response['Content-disposition'] = 'filename=%s' % filename
-    else:
-        response = HttpResponse(content_data,
-                                content_type='application/octet-stream')
-        response['Content-disposition'] = 'attachment; filename=%s' % filename
-    return response
+                   'branch': None,
+                   'top_right_link': content_raw_url,
+                   'top_right_link_text': 'Raw File'})

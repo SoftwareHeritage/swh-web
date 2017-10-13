@@ -10,11 +10,6 @@ from docutils.writers.html4css1 import Writer, HTMLTranslator
 from inspect import cleandoc
 
 from django import template
-from django.utils.safestring import mark_safe
-
-from pygments import highlight
-from pygments.lexers import JsonLexer
-from pygments.formatters import HtmlFormatter
 
 register = template.Library()
 
@@ -51,7 +46,7 @@ def safe_docstring_display(docstring):
 
 
 @register.filter
-def urlize_api_links(text):
+def urlize_links_and_mails(text):
     """Utility function for decorating api links in browsable api.
 
     Args:
@@ -63,8 +58,11 @@ def urlize_api_links(text):
         The text as is otherwise.
 
     """
-    return re.sub(r'(/api/[^"<]*/|/browse/.*/|http.*$)',
+    text = re.sub(r'(/api/[^"<]*/|/browse/.*/|http.*$)',
                   r'<a href="\1">\1</a>',
+                  text)
+    return re.sub(r'([^ <>"]+@[^ <>"]+)',
+                  r'<a href="mailto:\1">\1</a>',
                   text)
 
 
@@ -82,8 +80,3 @@ def urlize_header_links(text):
     """
     return re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
                   text)
-
-
-@register.filter
-def highlight_json(text):
-    return mark_safe(highlight(text, JsonLexer(), HtmlFormatter()))
