@@ -79,4 +79,5 @@ def directory_browse(request, sha1_git, path=None):
                    'breadcrumbs': breadcrumbs,
                    'branches': None,
                    'branch': None,
-                   'history_url': None})
+                   'top_right_link': None,
+                   'top_right_link_text': None})

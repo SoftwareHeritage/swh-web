@@ -128,10 +128,10 @@ def content_display(request, query_string):
                   {'content_hash_algo': algo,
                    'content_checksum': checksum,
                    'content': content_display_data['content_data'],
-                   'content_raw_url': content_raw_url,
                    'mime_type': mime_type,
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
                    'branches': None,
                    'branch': None,
-                   'history_url': None})
+                   'top_right_link': content_raw_url,
+                   'top_right_link_text': 'Raw File'})

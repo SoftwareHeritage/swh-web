@@ -140,4 +140,5 @@ def revision_log_browse(request, sha1_git):
                    'breadcrumbs': None,
                    'branches': None,
                    'branch': None,
-                   'history_url': None})
+                   'top_right_link': None,
+                   'top_right_link_text': None})

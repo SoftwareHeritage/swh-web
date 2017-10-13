@@ -239,7 +239,8 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'breadcrumbs': breadcrumbs,
                    'branches': branches,
                    'branch': branch,
-                   'history_url': history_url})
+                   'top_right_link': history_url,
+                   'top_right_link_text': 'History'})
 
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
@@ -365,7 +366,8 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
                    'breadcrumbs': breadcrumbs,
                    'branches': branches,
                    'branch': branch,
-                   'history_url': None})
+                   'top_right_link': content_raw_url,
+                   'top_right_link_text': 'Raw File'})
 
 
 def _gen_directory_link(url_args, revision, link_text):
@@ -497,4 +499,5 @@ def origin_log_browse(request, origin_id, visit_id=None, ts=None):
                    'breadcrumbs': None,
                    'branches': branches,
                    'branch': branch,
-                   'history_url': None})
+                   'top_right_link': None,
+                   'top_right_link_text': None})
