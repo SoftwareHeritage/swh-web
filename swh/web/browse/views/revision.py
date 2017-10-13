@@ -60,6 +60,7 @@ def revision_browse(request, sha1_git):
     revision_data['directory'] = _gen_directory_link(revision['directory'],
                                                      revision['directory'])
     revision_data['history log'] = _gen_revision_log_link(sha1_git)
+    revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
     revision_data['message'] = revision['message']
 
