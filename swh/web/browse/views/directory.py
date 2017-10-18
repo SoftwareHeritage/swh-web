@@ -22,10 +22,7 @@ def directory_browse(request, sha1_git, path=None):
     """Django view for browsing the content of a SWH directory identified
     by its sha1_git value.
 
-    The url scheme that points to it is the following:
-
-        * :http:get:`/browse/directory/(sha1_git)/`
-        * :http:get:`/browse/directory/(sha1_git)/(path)/`
+    The url that points to it is :http:get:`/browse/directory/(sha1_git)/[(path)/]`
 
     Args:
         request: input django http request
@@ -35,7 +32,7 @@ def directory_browse(request, sha1_git, path=None):
 
     Returns:
         The HTML rendering for the content of the provided directory.
-    """
+    """ # noqa
     root_sha1_git = sha1_git
     try:
         if path:

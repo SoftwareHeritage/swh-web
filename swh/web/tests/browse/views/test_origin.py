@@ -81,7 +81,7 @@ class SwhBrowseOriginTest(TestCase):
             visit_id = origin_visits[-1]['visit']
 
         if ts:
-            url_args['ts'] = ts
+            url_args['timestamp'] = ts
         else:
             url_args['visit_id'] = visit_id
 
@@ -206,7 +206,7 @@ class SwhBrowseOriginTest(TestCase):
         url_args = {'origin_id': origin_id}
 
         if ts:
-            url_args['ts'] = ts
+            url_args['timestamp'] = ts
         else:
             url_args['visit_id'] = visit_id
 

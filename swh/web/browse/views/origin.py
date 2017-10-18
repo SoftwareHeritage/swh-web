@@ -26,10 +26,7 @@ def origin_browse(request, origin_id=None, origin_type=None,
     """Django view that produces an HTML display of a swh origin identified
     by its id or its url.
 
-    The url scheme that points to it is the following:
-
-        * :http:get:`/browse/origin/(origin_id)/`
-        * :http:get:`/browse/origin/(origin_id)/directory/`
+    The url scheme that points to it is :http:get:`/browse/origin/(origin_id)/`.
 
     Args:
         request: input django http request
@@ -39,7 +36,7 @@ def origin_browse(request, origin_id=None, origin_type=None,
 
     Returns:
         The HMTL rendering for the metadata of the provided origin.
-    """
+    """ # noqa
     try:
         if origin_id:
             origin_request_params = {
@@ -82,7 +79,7 @@ def _get_origin_branches_and_url_args(origin_id, visit_id, ts):
     if not visit_id and ts:
         branches = get_origin_visit_branches(origin_id, visit_ts=ts)
         url_args = {'origin_id': origin_id,
-                    'ts': ts}
+                    'timestamp': ts}
     else:
         branches = get_origin_visit_branches(origin_id, visit_id)
         url_args = {'origin_id': origin_id,
@@ -107,29 +104,26 @@ def _raise_exception_if_branch_not_found(origin_id, visit_id, ts, branch):
               r'origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/', # noqa
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/directory/',
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/directory/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/directory/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/directory/(?P<path>.+)/', # noqa
               view_name='browse-origin-directory')
 def origin_directory_browse(request, origin_id, visit_id=None,
-                            ts=None, path=None):
+                            timestamp=None, path=None):
     """Django view for browsing the content of a swh directory associated
     to an origin for a given visit.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/(origin_id)/directory/`
-        * :http:get:`/browse/origin/(origin_id)/directory/(path)/`
-        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/directory/`
-        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/directory/(path)/`
-        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/directory/`
-        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/directory/(path)/`
+        * :http:get:`/browse/origin/(origin_id)/directory/[(path)/]`
+        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/directory/[(path)/]`
+        * :http:get:`/browse/origin/(origin_id)/ts/(timestamp)/directory/[(path)/]`
 
     Args:
         request: input django http request
         origin_id: a swh origin id
         visit_id: optionnal visit id parameter
             (the last one will be used by default)
-        ts: optionnal visit timestamp parameter
+        timestamp: optionnal visit timestamp parameter
             (the last one will be used by default)
         path: optionnal path parameter used to navigate in directories
               reachable from the origin root one
@@ -144,14 +138,15 @@ def origin_directory_browse(request, origin_id, visit_id=None,
     """ # noqa
     try:
 
-        if not visit_id and not ts:
+        if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
             return origin_directory_browse(request, origin_id,
                                            origin_visits[-1]['visit'],
                                            path=path)
 
         branches, url_args = _get_origin_branches_and_url_args(origin_id,
-                                                               visit_id, ts)
+                                                               visit_id,
+                                                               timestamp)
 
         for b in branches:
             branch_url_args = dict(url_args)
@@ -179,8 +174,8 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                 root_sha1_git = filtered_branches[0]['directory']
                 branch = filtered_branches[0]['name']
             else:
-                _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
-                                                     branch)
+                _raise_exception_if_branch_not_found(origin_id, visit_id,
+                                                     timestamp, branch)
 
         sha1_git = root_sha1_git
         if path:
@@ -245,9 +240,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/content/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/content/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/content/(?P<path>.+)/', # noqa
               view_name='browse-origin-content')
-def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
+def origin_content_display(request, origin_id, path,
+                           visit_id=None, timestamp=None):
     """Django view that produces an HTML display of a swh content
     associated to an origin for a given visit.
 
@@ -255,7 +251,7 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
 
         * :http:get:`/browse/origin/(origin_id)/content/(path)/`
         * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/content/(path)/`
-        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/content/(path)/`
+        * :http:get:`/browse/origin/(origin_id)/ts/(timestamp)/content/(path)/`
 
     Args:
         request: input django http request
@@ -263,7 +259,7 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
         path: path of the content relative to the origin root directory
         visit_id: optionnal visit id parameter
             (the last one will be used by default)
-        ts: optionnal visit timestamp parameter
+        timestamp: optionnal visit timestamp parameter
             (the last one will be used by default)
         branch: optionnal query parameter that specifies the origin branch
             from which to retrieve the content
@@ -277,13 +273,14 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
     """ # noqa
     try:
 
-        if not visit_id and not ts:
+        if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
             return origin_content_display(request, origin_id, path,
                                           origin_visits[-1]['visit'])
 
         branches, url_args = _get_origin_branches_and_url_args(origin_id,
-                                                               visit_id, ts)
+                                                               visit_id,
+                                                               timestamp)
 
         for b in branches:
             bc_url_args = dict(url_args)
@@ -309,8 +306,8 @@ def origin_content_display(request, origin_id, path, visit_id=None, ts=None):
                 root_sha1_git = filtered_branches[0]['directory']
                 branch = filtered_branches[0]['name']
             else:
-                _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
-                                                     branch)
+                _raise_exception_if_branch_not_found(origin_id, visit_id,
+                                                     timestamp, branch)
 
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
@@ -382,9 +379,9 @@ NB_LOG_ENTRIES = 20
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/log/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/log/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>[0-9]+)/log/',
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/log/',
               view_name='browse-origin-log')
-def origin_log_browse(request, origin_id, visit_id=None, ts=None):
+def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
     """Django view that produces an HTML display of revisions history (aka 
     the commit log) associated to a SWH origin.
 
@@ -392,14 +389,14 @@ def origin_log_browse(request, origin_id, visit_id=None, ts=None):
 
         * :http:get:`/browse/origin/(origin_id)/log/`
         * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/log/`
-        * :http:get:`/browse/origin/(origin_id)/ts/(ts)/log/`
+        * :http:get:`/browse/origin/(origin_id)/ts/(timestamp)/log/`
 
     Args:
         request: input django http request
         origin_id: id of a swh origin
         visit_id: optionnal visit id parameter
             (the last one will be used by default)
-        ts: optionnal visit timestamp parameter
+        timestamp: optionnal visit timestamp parameter
             (the last one will be used by default)
         revs_breadcrumb: query parameter used internally to store 
             the navigation breadcrumbs (i.e. the list of descendant revisions
@@ -417,13 +414,14 @@ def origin_log_browse(request, origin_id, visit_id=None, ts=None):
     """ # noqa
     try:
 
-        if not visit_id and not ts:
+        if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
             return origin_log_browse(request, origin_id,
                                      origin_visits[-1]['visit'])
 
         branches, url_args = _get_origin_branches_and_url_args(origin_id,
-                                                               visit_id, ts)
+                                                               visit_id,
+                                                               timestamp)
 
         for b in branches:
             b['url'] = reverse('browse-origin-log',
@@ -450,8 +448,8 @@ def origin_log_browse(request, origin_id, visit_id=None, ts=None):
                 revision = filtered_branches[0]['revision']
                 branch = filtered_branches[0]['name']
             else:
-                _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
-                                                     branch)
+                _raise_exception_if_branch_not_found(origin_id, visit_id,
+                                                     timestamp, branch)
 
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
         revision_log = service.lookup_revision_log(revision,

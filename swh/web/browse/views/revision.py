@@ -34,7 +34,7 @@ def revision_browse(request, sha1_git):
     Django view that produces an HTML display of a SWH revision
     identified by its id.
 
-    The url that points to it is :http:get:`/browse/revision/(revision_id)/`.
+    The url that points to it is :http:get:`/browse/revision/(sha1_git)/`.
 
     Args:
         request: input django http request
@@ -86,7 +86,7 @@ def revision_log_browse(request, sha1_git):
     Django view that produces an HTML display of the history
     log for a SWH revision identified by its id.
 
-    The url that points to it is :http:get:`/browse/revision/(revision_id)/log/`.
+    The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`.
 
     Args:
         request: input django http request
