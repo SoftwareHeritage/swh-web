@@ -17,9 +17,9 @@ Information
     :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
     :>json string url: the origin canonical url
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
@@ -57,9 +57,9 @@ Information
     :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
     :>json string url: the origin canonical url
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
@@ -95,9 +95,9 @@ Visits
     :query int per_page: specify the number of visits to list, for pagination purposes
     :query int last_visit: visit to start listing from, for pagination purposes
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
     :resheader Link: indicates that a subsequent result page is available and contains
         the url pointing to it
 
@@ -150,9 +150,9 @@ Visits
     :param int origin_id: a SWH origin identifier
     :param int visit_id: a visit identifier
     
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
     
     :>json string date: ISO representation of the visit date (in UTC)
     :>json object occurrences: object containing all branches associated to the origin found 

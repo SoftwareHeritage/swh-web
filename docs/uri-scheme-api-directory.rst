@@ -17,9 +17,9 @@ Directory
     :param string path: optional parameter to get information about the directory entry
         pointed by that relative path
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :>json object checksums: object holding the computed checksum values for a directory entry
         (only for file entries)

@@ -14,9 +14,9 @@ Content
     :param string hash: hexadecimal representation of the checksum value computed with
         the specified hashing algorithm.
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :>json object checksums: object holding the computed checksum values for the requested content
     :>json string data_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/raw/` 
@@ -129,9 +129,9 @@ Content
     :>json string mimetype: the detected MIME type of the content
     :>json object tool: information about the tool used to detect the content filetype
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
@@ -182,9 +182,9 @@ Content
     :>json string lang: the detected programming language if any
     :>json object tool: information about the tool used to detect the programming language
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
@@ -237,9 +237,9 @@ Content
     :>json array licenses: array of strings containing the detected license names if any
     :>json object tool: information about the tool used to detect the license
 
-    :reqheader Accept: the response content type depends on :mailheader:`Accept` header:
+    :reqheader Accept: the requested response content type, 
         either *application/json* (default) or *application/yaml*
-    :resheader Content-Type: this depends on :mailheader:`Accept` header of request
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
