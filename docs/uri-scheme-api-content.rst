@@ -1,6 +1,59 @@
 Content
 -------
 
+.. http:get:: /api/1/content/known/(sha1)[,(sha1), ...,(sha1)]/
+
+    Check whether some content(s) (aka "blob(s)") is present in the SWH archive
+    based on its *sha1* checksum.
+
+    :param string sha1: hexadecimal representation of the *sha1* checksum value
+        of the content to check existence. Multiple values can be provided separated
+        by ','.
+
+    :reqheader Accept: the requested response content type, 
+        either *application/json* (default) or *application/yaml*
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+    :>json array search_res: array holding the search result for each provided *sha1*
+    :>json object search_stats: some statistics regarding the number of *sha1* provided
+        and the percentage of those found in the SWH archive
+
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+    :statuscode 200: no error
+    :statuscode 400: an invalid *sha1* has been provided
+
+    **Request:**
+
+    .. parsed-literal::
+
+        $ curl -i :swh_web_api:`content/known/dc2830a9e72f23c1dfebef4413003221baa5fb62,0c3f19cb47ebfbe643fb19fa94c874d18fa62d12/`
+
+    **Response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "search_res": [
+                {
+                    "found": true,
+                    "sha1": "dc2830a9e72f23c1dfebef4413003221baa5fb62"
+                },
+                {
+                    "found": true,
+                    "sha1": "0c3f19cb47ebfbe643fb19fa94c874d18fa62d12"
+                }
+            ],
+            "search_stats": {
+                "nbfiles": 2,
+                "pct": 100.0
+            }
+        }
+
+
 .. http:get:: /api/1/content/[(hash_type):](hash)/
 
     Get information about a content (aka a "blob") object. 
@@ -29,17 +82,19 @@ Content
     :>json string license_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/license/` 
         for getting information about the license of the content
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`content/sha1_git:fe95a46679d128ff167b7c55df5d02356c5a1ae1/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 
@@ -75,17 +130,19 @@ Content
 
     :resheader Content-Type: application/octet-stream
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/raw/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 
@@ -133,17 +190,19 @@ Content
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/filetype/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 
@@ -186,17 +245,19 @@ Content
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/language/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 
@@ -241,17 +302,19 @@ Content
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/license/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 

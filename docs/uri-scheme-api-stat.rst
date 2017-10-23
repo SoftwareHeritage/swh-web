@@ -31,15 +31,17 @@ Archive statistics
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`stat/counters/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 

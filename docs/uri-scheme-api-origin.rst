@@ -1,9 +1,6 @@
 Origin
 ------
 
-Information
-^^^^^^^^^^^
-
 .. http:get:: /api/1/origin/(origin_id)/
 
     Get information about a software origin from its unique (but otherwise meaningless)
@@ -24,13 +21,13 @@ Information
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`origin/1/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 
@@ -61,16 +58,18 @@ Information
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 
@@ -83,9 +82,6 @@ Information
             "type": "git",
             "url": "https://github.com/python/cpython"
         }
-
-Visits
-^^^^^^
 
 .. http:get:: /api/1/origin/(origin_id)/visits/
 
@@ -101,23 +97,25 @@ Visits
     :resheader Link: indicates that a subsequent result page is available and contains
         the url pointing to it
 
-    :>json string date: ISO representation of the visit date (in UTC)
-    :>json number id: the unique identifier of the origin
-    :>json string origin_visit_url: link to :http:get:`/api/1/origin/(origin_id)/visit/(visit_id)/`
+    :>jsonarr string date: ISO representation of the visit date (in UTC)
+    :>jsonarr number id: the unique identifier of the origin
+    :>jsonarr string origin_visit_url: link to :http:get:`/api/1/origin/(origin_id)/visit/(visit_id)/`
         in order to get information about the visit
-    :>json string status: status of the visit (either *full*, *partial* or *ongoing*)
-    :>json number visit: the unique identifier of the visit
+    :>jsonarr string status: status of the visit (either *full*, *partial* or *ongoing*)
+    :>jsonarr number visit: the unique identifier of the visit
+
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`origin/1/visits/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 
@@ -163,16 +161,18 @@ Visits
     :>json string status: status of the visit (either *full*, *partial* or *ongoing*)
     :>json number visit: the unique identifier of the visit
 
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
     :statuscode 200: no error
     :statuscode 404: requested origin or visit can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`origin/1500/visit/1/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 

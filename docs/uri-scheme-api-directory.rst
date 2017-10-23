@@ -21,29 +21,31 @@ Directory
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
-    :>json object checksums: object holding the computed checksum values for a directory entry
+    :>jsonarr object checksums: object holding the computed checksum values for a directory entry
         (only for file entries)
-    :>json string dir_id: *sha1_git* identifier of the requested directory
-    :>json number length: length of a directory entry in bytes (only for file entries)
+    :>jsonarr string dir_id: *sha1_git* identifier of the requested directory
+    :>jsonarr number length: length of a directory entry in bytes (only for file entries)
         for getting information about the content MIME type
-    :>json string name: the directory entry name
-    :>json number perms: permissions for the directory entry
-    :>json string target: *sha1_git* identifier of the directory entry
-    :>json string target_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/`
+    :>jsonarr string name: the directory entry name
+    :>jsonarr number perms: permissions for the directory entry
+    :>jsonarr string target: *sha1_git* identifier of the directory entry
+    :>jsonarr string target_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/`
         or :http:get:`/api/1/directory/(sha1_git)/[(path)/]` depending on the directory entry type
-    :>json string type: the type of the directory entry, can be either *dir*, *file* or *rev*
+    :>jsonarr string type: the type of the directory entry, can be either *dir*, *file* or *rev*
+
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
     :statuscode 200: no error
     :statuscode 400: an invalid *hash_type* or *hash* has been provided
     :statuscode 404: requested directory can not be found in the SWH archive
 
-    **Request**:
+    **Request:**
 
     .. parsed-literal::
 
         $ curl -i :swh_web_api:`directory/977fc4b98c0e85816348cebd3b12026407c368b6/`
 
-    **Response**:
+    **Response:**
 
     .. sourcecode:: http
 

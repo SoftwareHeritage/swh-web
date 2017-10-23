@@ -23,7 +23,7 @@ Directory
     :statuscode 400: an invalid *sha1_git* value has been provided
     :statuscode 404: requested directory can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 

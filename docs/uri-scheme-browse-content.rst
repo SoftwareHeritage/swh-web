@@ -37,7 +37,7 @@ Content
     :statuscode 400: an invalid query string has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -71,7 +71,7 @@ Content
     :statuscode 400: an invalid query string has been provided
     :statuscode 404: requested content can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 

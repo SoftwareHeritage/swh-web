@@ -15,7 +15,7 @@ Origin metadata
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -34,7 +34,7 @@ Origin metadata
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -75,7 +75,7 @@ Origin directory
     :statuscode 404: requested origin can not be found in the SWH archive
         or the provided path does not exist from the origin root directory
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -118,7 +118,7 @@ Origin directory
         requested visit id does not exist or the provided path does 
         not exist from the origin root directory
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -162,7 +162,7 @@ Origin directory
         requested visit timestamp does not exist or the provided path does 
         not exist from the origin root directory
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -183,17 +183,8 @@ Origin content
     associated to the latest visit of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
-    if possible using highlightjs_. In order for that operation to be
-    performed, a programming language must first be associated to the content.
-    The following procedure is used in order to find the language:
-
-        1) First try to find a language from the content filename
-
-        2) If no language has been found from the filename,
-           try to find one from the content mime type.
-           The mime type is retrieved from the content metadata stored
-           in the SWH archive or is computed server-side using Python
-           magic module.
+    if possible using highlightjs_. The procedure to perform that task is described
+    in :http:get:`/browse/content/[(algo_hash):](hash)/`.
 
     The view displays a breadcrumb on top of the rendered
     content in order to easily navigate up to the origin root directory.
@@ -214,7 +205,7 @@ Origin content
     :statuscode 404: requested origin can not be found in the SWH archive,
         or the provided content path does not exist from the origin root directory
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -228,17 +219,8 @@ Origin content
     associated to a specific visit (identified by its id) of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
-    if possible using highlightjs_. In order for that operation to be
-    performed, a programming language must first be associated to the content.
-    The following procedure is used in order to find the language:
-
-        1) First try to find a language from the content filename
-
-        2) If no language has been found from the filename,
-           try to find one from the content mime type.
-           The mime type is retrieved from the content metadata stored
-           in the SWH archive or is computed server-side using Python
-           magic module.
+    if possible using highlightjs_. The procedure to perform that task is described
+    in :http:get:`/browse/content/[(algo_hash):](hash)/`.
 
     The view displays a breadcrumb on top of the rendered
     content in order to easily navigate up to the origin root directory.
@@ -261,7 +243,7 @@ Origin content
         requested visit id does not exist or the provided content path does 
         not exist from the origin root directory
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -275,17 +257,8 @@ Origin content
     associated to a specific visit (identified by its timestamp) of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
-    if possible using highlightjs_. In order for that operation to be
-    performed, a programming language must first be associated to the content.
-    The following procedure is used in order to find the language:
-
-        1) First try to find a language from the content filename
-
-        2) If no language has been found from the filename,
-           try to find one from the content mime type.
-           The mime type is retrieved from the content metadata stored
-           in the SWH archive or is computed server-side using Python
-           magic module.
+    if possible using highlightjs_. The procedure to perform that task is described
+    in :http:get:`/browse/content/[(algo_hash):](hash)/`.
 
     The view displays a breadcrumb on top of the rendered
     content in order to easily navigate up to the origin root directory.
@@ -308,7 +281,7 @@ Origin content
         requested visit timestamp does not exist or the provided content path does 
         not exist from the origin root directory
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -363,7 +336,7 @@ Origin history
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -416,7 +389,7 @@ Origin history
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
@@ -470,7 +443,7 @@ Origin history
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
-    **Examples**:
+    **Examples:**
 
     .. parsed-literal::
 
