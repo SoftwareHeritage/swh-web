@@ -15,13 +15,14 @@ from .data.origin_test_data import (
     origin_info_test_data,
     origin_visits_test_data,
     stub_content_origin_id, stub_content_origin_visit_id,
-    stub_content_origin_visit_ts, stub_content_origin_branch,
+    stub_content_origin_visit_unix_ts, stub_content_origin_visit_iso_date,
+    stub_content_origin_branch,
     stub_content_origin_visits, stub_content_origin_branches,
     stub_origin_id, stub_visit_id,
     stub_origin_visits, stub_origin_branches,
     stub_origin_root_directory_entries, stub_origin_master_branch,
     stub_origin_root_directory_sha1, stub_origin_sub_directory_path,
-    stub_origin_sub_directory_entries, stub_visit_ts
+    stub_origin_sub_directory_entries, stub_visit_unix_ts, stub_visit_iso_date
 )
 
 from .data.content_test_data import (
@@ -187,7 +188,17 @@ class SwhBrowseOriginTest(TestCase):
                                       stub_content_text_sha1,
                                       stub_content_text_path,
                                       stub_content_text_data, 'cpp',
-                                      ts=stub_content_origin_visit_ts)
+                                      ts=stub_content_origin_visit_unix_ts)
+
+        self.origin_content_view_test(stub_content_origin_id,
+                                      stub_content_origin_visits,
+                                      stub_content_origin_branches,
+                                      stub_content_origin_branch,
+                                      stub_content_root_dir,
+                                      stub_content_text_sha1,
+                                      stub_content_text_path,
+                                      stub_content_text_data, 'cpp',
+                                      ts=stub_content_origin_visit_iso_date)
 
     @nottest
     def origin_directory_view(self, origin_id, origin_visits,
@@ -310,7 +321,14 @@ class SwhBrowseOriginTest(TestCase):
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_root_directory_entries,
-                                   ts=stub_visit_ts)
+                                   ts=stub_visit_unix_ts)
+
+        self.origin_directory_view(stub_origin_id, stub_origin_visits,
+                                   stub_origin_branches,
+                                   stub_origin_master_branch,
+                                   stub_origin_root_directory_sha1,
+                                   stub_origin_root_directory_entries,
+                                   ts=stub_visit_iso_date)
 
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.get_origin_visit_branches')
@@ -349,5 +367,13 @@ class SwhBrowseOriginTest(TestCase):
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_sub_directory_entries,
-                                   ts=stub_visit_ts,
+                                   ts=stub_visit_unix_ts,
+                                   path=stub_origin_sub_directory_path)
+
+        self.origin_directory_view(stub_origin_id, stub_origin_visits,
+                                   stub_origin_branches,
+                                   stub_origin_master_branch,
+                                   stub_origin_root_directory_sha1,
+                                   stub_origin_sub_directory_entries,
+                                   ts=stub_visit_iso_date,
                                    path=stub_origin_sub_directory_path)

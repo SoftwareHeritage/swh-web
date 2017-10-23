@@ -104,8 +104,8 @@ def _raise_exception_if_branch_not_found(origin_id, visit_id, ts, branch):
               r'origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/', # noqa
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/directory/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/directory/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/directory/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/directory/(?P<path>.+)/', # noqa
               view_name='browse-origin-directory')
 def origin_directory_browse(request, origin_id, visit_id=None,
                             timestamp=None, path=None):
@@ -240,7 +240,7 @@ def origin_directory_browse(request, origin_id, visit_id=None,
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/content/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/content/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/content/(?P<path>.+)/', # noqa
               view_name='browse-origin-content')
 def origin_content_display(request, origin_id, path,
                            visit_id=None, timestamp=None):
@@ -379,7 +379,7 @@ NB_LOG_ENTRIES = 20
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/log/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/log/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>[0-9]+)/log/',
+              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/log/',
               view_name='browse-origin-log')
 def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
     """Django view that produces an HTML display of revisions history (aka 

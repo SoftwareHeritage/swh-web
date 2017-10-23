@@ -126,7 +126,8 @@ origin_visits_test_data = [
 
 stub_origin_id = 7416001
 stub_visit_id = 10
-stub_visit_ts = 1493909263
+stub_visit_unix_ts = 1493909263
+stub_visit_iso_date = '2017-05-04T14:47:43+00:00'
 
 stub_origin_visits = [
 {'date': '2015-08-05T18:55:20.899865+00:00',
@@ -595,7 +596,8 @@ stub_content_origin_id = 10357753
 
 stub_content_origin_visit_id = 10
 
-stub_content_origin_visit_ts = 1494032350
+stub_content_origin_visit_unix_ts = 1494032350
+stub_content_origin_visit_iso_date = '2017-05-06T00:59:10+00:00'
 
 stub_content_origin_branch = 'refs/heads/master'
 

@@ -130,8 +130,9 @@ Origin directory
 
 .. http:get:: /browse/origin/(origin_id)/ts/(timestamp)/directory/[(path)/]
 
-    HTML view for browsing the content of a directory reachable from the root directory
-    (including itself) associated to a specific visit (identified by its timestamp) of a SWH origin. 
+    HTML view for browsing the content of a directory reachable from 
+    the root directory (including itself) associated to a visitof a SWH 
+    origin closest to a provided timestamp. 
 
     The content of the directory is first sorted in lexicographical order
     and the sub-directories are displayed before the regular files.
@@ -149,7 +150,8 @@ Origin directory
     content can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
-    :param int timestamp: the Unix timestamp of the origin visit
+    :param string timestamp: an ISO date string or Unix timestamp to parse
+        in order to find the closest SWH visit.
     :param path: optional parameter used to specify the path of a directory 
         reachable from the origin root one
     :type path: string
@@ -167,7 +169,7 @@ Origin directory
     .. parsed-literal::
 
         :swh_web_browse:`origin/2/ts/1493926809/directory/`
-        :swh_web_browse:`origin/2/ts/1493926809/directory/net/ethernet/`
+        :swh_web_browse:`origin/2/ts/2016-09-14T10:36:21+00:00/directory/net/ethernet/`
         :swh_web_browse:`origin/13706355/ts/1474620651/directory/`
         :swh_web_browse:`origin/13706355/ts/1474620651/directory/Python/`
         :swh_web_browse:`origin/13706355/ts/1474620651/directory/?branch=refs/heads/2.7`
@@ -253,8 +255,8 @@ Origin content
 
 .. http:get:: /browse/origin/(origin_id)/ts/(timestamp)/content/(path)/
 
-    HTML view that produces a display of a SWH content
-    associated to a specific visit (identified by its timestamp) of a SWH origin.
+    HTML view that produces a display of a SWH content associated to a
+    visit of a SWH origin closest to a provided timestamp.
 
     If the content to display is textual, it will be highlighted client-side
     if possible using highlightjs_. The procedure to perform that task is described
@@ -270,7 +272,8 @@ Origin content
     can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
-    :param int timestamp: the Unix timestamp of the origin visit
+    :param string timestamp: an ISO date string or Unix timestamp to parse in 
+        order to find the closest SWH visit.
     :param string path: path of a content reachable from the origin root directory
     :query string branch: specify the origin branch from which 
         to retrieve the content
@@ -286,8 +289,9 @@ Origin content
     .. parsed-literal::
 
         :swh_web_browse:`origin/723566/ts/1473933564/content/git.c/`
+        :swh_web_browse:`origin/723566/ts/2016-05-05T00:0:00+00:00/content/git.c/`
         :swh_web_browse:`origin/16297443/ts/1490126182/content/js/src/json.cpp/`
-        :swh_web_browse:`origin/723566/ts/1473933564/content/git.c/?branch=refs/heads/next`
+        :swh_web_browse:`origin/723566/ts/2017-09-15/content/git.c/?branch=refs/heads/next`
 
 Origin history
 """"""""""""""
@@ -400,10 +404,10 @@ Origin history
 .. http:get:: /browse/origin/(origin_id)/ts/(timestamp)/log/
 
     HTML view that produces a display of revisions history heading
-    to the last revision found during a specific visit (identified by its 
-    timestamp) of a SWH origin.
-    In other words, it shows the commit log associated to a specific
-    visit (identified by its timestamp) of a SWH origin.
+    to the last revision found during a visit of a SWH origin closest
+    to the provided timestamp.
+    In other words, it shows the commit log associated to a visit of
+    a SWH origin. closest to a provided timestamp.
 
     The following data are displayed for each log entry:
 
@@ -428,7 +432,8 @@ Origin history
     can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
-    :param int timestamp: the Unix timestamp of the origin visit
+    :param string timestamp: an ISO date string or Unix timestamp to parse
+        in order to find the closest SWH visit.
     :query string revs_breadcrumb: used internally to store 
         the navigation breadcrumbs (i.e. the list of descendant revisions
         visited so far). It must be a string in the form 
@@ -448,7 +453,8 @@ Origin history
     .. parsed-literal::
 
         :swh_web_browse:`origin/12215444/ts/1459651262/log/`
-        :swh_web_browse:`origin/12081083/ts/1438116814/log/`
+        :swh_web_browse:`origin/12081083/ts/2016-04-01/log/`
         :swh_web_browse:`origin/12081083/ts/1438116814/log/?branch=refs/heads/release`
+        :swh_web_browse:`origin/12081083/ts/2017-05-05T03:14:23/log/?branch=refs/heads/release`
 
 .. _highlightjs: https://highlightjs.org/

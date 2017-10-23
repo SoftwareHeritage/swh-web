@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import base64
-import dateutil
 import magic
 import math
 import stat
@@ -15,7 +14,9 @@ from django.utils.safestring import mark_safe
 
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse, format_utc_iso_date
+from swh.web.common.utils import (
+    reverse, format_utc_iso_date, parse_timestamp
+)
 
 
 def get_directory_entries(sha1_git):
@@ -227,7 +228,8 @@ def get_origin_visits(origin_id):
 def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
     """Function that returns the list of branches associated to
     a swh origin for a given visit.
-    The visit can be expressed by its id or its timestamp.
+    The visit can be expressed by its id or a timestamp. In the latter case,
+    the closest visit from the provided timestamp will be used.
     If no visit parameter is provided, it returns the list of branches
     found for the latest visit.
     That list is put in  cache in order to speedup the navigation
@@ -236,7 +238,7 @@ def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
     Args:
         origin_id (int): the id of the swh origin to fetch branches from
         visit_id (int): the id of the origin visit
-        visit_ts (Unix timestamp): the timestamp of the origin visit
+        visit_ts (int or str): an ISO date string or Unix timestamp to parse
 
     Returns:
         A list of dict describing the origin branches for the given visit::
@@ -253,12 +255,26 @@ def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
     """
 
     if not visit_id and visit_ts:
+        parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
         visits = get_origin_visits(origin_id)
-        for visit in visits:
-            ts = dateutil.parser.parse(visit['date']).timestamp()
-            ts = str(math.floor(ts))
-            if ts == visit_ts:
-                return get_origin_visit_branches(origin_id, visit['visit'])
+        for i, visit in enumerate(visits):
+            ts = math.floor(parse_timestamp(visit['date']).timestamp())
+            if i == 0:
+                if parsed_visit_ts <= ts:
+                    return get_origin_visit_branches(origin_id, visit['visit'])
+            elif i == len(visits) - 1:
+                if parsed_visit_ts >= ts:
+                    return get_origin_visit_branches(origin_id, visit['visit'])
+            else:
+                next_ts = math.floor(
+                    parse_timestamp(visits[i+1]['date']).timestamp())
+                if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
+                    if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
+                        return get_origin_visit_branches(origin_id,
+                                                         visit['visit'])
+                    else:
+                        return get_origin_visit_branches(origin_id,
+                                                         visits[i+1]['visit'])
         raise NotFoundExc(
             'Visit with timestamp %s for origin with id %s not found!' %
             (visit_ts, origin_id))
