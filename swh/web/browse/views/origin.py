@@ -70,7 +70,7 @@ def origin_browse(request, origin_id=None, origin_type=None,
     return render(request, 'origin.html',
                   {'origin': origin_info,
                    'origin_visits_data': origin_visits_data,
-                   'visits': origin_visits,
+                   'visits': list(reversed(origin_visits)),
                    'browse_url_base': '/browse/origin/%s/' %
                    origin_id})
 
