@@ -27,7 +27,7 @@ from .data.origin_test_data import (
 
 from .data.content_test_data import (
     stub_content_root_dir,
-    stub_content_text_data, stub_content_text_sha1,
+    stub_content_text_data,
     stub_content_text_path
 )
 
@@ -52,8 +52,8 @@ class SwhBrowseOriginTest(TestCase):
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('origin.html')
         self.assertContains(resp, '<td>%s</td>' % origin_info_test_data['id'])
-        self.assertContains(resp, '<td>%s</td>' % origin_info_test_data['type']) # noqa
-        self.assertContains(resp, '<td><a href="%s">%s</a></td>' %
+        self.assertContains(resp, '>%s</td>' % origin_info_test_data['type']) # noqa
+        self.assertContains(resp, '><a href="%s">%s</a></td>' %
                                   (origin_info_test_data['url'],
                                    origin_info_test_data['url']))
 
@@ -155,11 +155,12 @@ class SwhBrowseOriginTest(TestCase):
                             mock_get_origin_visit_branches,
                             mock_get_origin_visits):
 
+        stub_content_text_sha1 = stub_content_text_data['checksums']['sha1']
         mock_get_origin_visits.return_value = stub_content_origin_visits
         mock_get_origin_visit_branches.return_value = stub_content_origin_branches # noqa
         mock_service.lookup_directory_with_path.return_value = \
             {'target': stub_content_text_sha1}
-        mock_request_content.return_value = stub_content_text_data, 'text/x-c++' # noqa
+        mock_request_content.return_value = stub_content_text_data
 
         self.origin_content_view_test(stub_content_origin_id,
                                       stub_content_origin_visits,
@@ -168,7 +169,8 @@ class SwhBrowseOriginTest(TestCase):
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
                                       stub_content_text_path,
-                                      stub_content_text_data, 'cpp')
+                                      stub_content_text_data['raw_data'],
+                                      'cpp')
 
         self.origin_content_view_test(stub_content_origin_id,
                                       stub_content_origin_visits,
@@ -177,7 +179,8 @@ class SwhBrowseOriginTest(TestCase):
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
                                       stub_content_text_path,
-                                      stub_content_text_data, 'cpp',
+                                      stub_content_text_data['raw_data'],
+                                      'cpp',
                                       visit_id=stub_content_origin_visit_id)
 
         self.origin_content_view_test(stub_content_origin_id,
@@ -187,7 +190,8 @@ class SwhBrowseOriginTest(TestCase):
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
                                       stub_content_text_path,
-                                      stub_content_text_data, 'cpp',
+                                      stub_content_text_data['raw_data'],
+                                      'cpp',
                                       ts=stub_content_origin_visit_unix_ts)
 
         self.origin_content_view_test(stub_content_origin_id,
@@ -197,7 +201,8 @@ class SwhBrowseOriginTest(TestCase):
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
                                       stub_content_text_path,
-                                      stub_content_text_data, 'cpp',
+                                      stub_content_text_data['raw_data'],
+                                      'cpp',
                                       ts=stub_content_origin_visit_iso_date)
 
     @nottest

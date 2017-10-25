@@ -5,6 +5,7 @@
 
 
 from django.shortcuts import render
+from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
 from swh.web.common.utils import reverse
@@ -62,15 +63,31 @@ def directory_browse(request, sha1_git, path=None):
                            kwargs={'sha1_git': root_sha1_git,
                                    'path': path + d['name']})
 
+    sum_file_sizes = 0
+
     for f in files:
         query_string = 'sha1_git:' + f['target']
         f['url'] = reverse('browse-content',
                            kwargs={'query_string': query_string},
                            query_params={'path': root_sha1_git + '/' +
                                          path + f['name']})
+        sum_file_sizes += f['length']
+        f['length'] = filesizeformat(f['length'])
+
+    sum_file_sizes = filesizeformat(sum_file_sizes)
+
+    dir_metadata = {'id': sha1_git,
+                    'number of regular files': len(files),
+                    'number of subdirectories': len(dirs),
+                    'sum of regular file sizes': sum_file_sizes}
 
     return render(request, 'directory.html',
-                  {'dir_sha1_git': sha1_git,
+                  {'top_panel_visible': True,
+                   'top_panel_collapsible': True,
+                   'top_panel_text_left': 'SWH object: Directory',
+                   'top_panel_text_right': 'Sha1 git: ' + sha1_git,
+                   'swh_object_metadata': dir_metadata,
+                   'main_panel_visible': True,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs,

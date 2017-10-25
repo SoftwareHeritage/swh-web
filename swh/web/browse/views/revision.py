@@ -73,7 +73,14 @@ def revision_browse(request, sha1_git):
     revision_data['synthetic'] = revision['synthetic']
     revision_data['type'] = revision['type']
 
-    return render(request, 'revision.html', {'revision': revision_data})
+    return render(request, 'revision.html',
+                  {'top_panel_visible': False,
+                   'top_panel_collapsible': False,
+                   'top_panel_text_left': 'SWH object: Revision',
+                   'top_panel_text_right': 'Sha1 git: ' + sha1_git,
+                   'swh_object_metadata': None,
+                   'main_panel_visible': True,
+                   'revision': revision_data})
 
 
 NB_LOG_ENTRIES = 20
@@ -134,11 +141,18 @@ def revision_log_browse(request, sha1_git):
         log['directory'] = _gen_directory_link(log['directory'], 'Tree')
 
     return render(request, 'revision-log.html',
-                  {'revision_log': revision_log_data,
+                  {'top_panel_visible': False,
+                   'top_panel_collapsible': False,
+                   'top_panel_text_left': 'SWH object: Revision history',
+                   'top_panel_text_right': 'Sha1 git: ' + sha1_git,
+                   'swh_object_metadata': None,
+                   'main_panel_visible': True,
+                   'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
                    'branches': None,
                    'branch': None,
                    'top_right_link': None,
-                   'top_right_link_text': None})
+                   'top_right_link_text': None,
+                   'include_top_navigation': False})

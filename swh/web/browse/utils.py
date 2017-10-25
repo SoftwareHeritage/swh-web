@@ -117,14 +117,26 @@ def request_content(query_string):
     Raises:
         NotFoundExc if the content is not found
     """
+    content_data = service.lookup_content(query_string)
     content_raw = service.lookup_content_raw(query_string)
-    content_data = content_raw['data']
-    mime_type = service.lookup_content_filetype(query_string)
-    if mime_type:
-        mime_type = mime_type['mimetype']
+    content_data['raw_data'] = content_raw['data']
+    mimetype = service.lookup_content_filetype(query_string)
+    language = service.lookup_content_language(query_string)
+    license = service.lookup_content_license(query_string)
+    if mimetype:
+        mimetype = mimetype['mimetype']
     else:
-        mime_type = get_mimetype_for_content(content_data)
-    return content_data, mime_type
+        mimetype = get_mimetype_for_content(content_data['raw_data'])
+    content_data['mimetype'] = mimetype
+    if language:
+        content_data['language'] = language['lang']
+    else:
+        content_data['language'] = 'not detected'
+    if license:
+        content_data['licenses'] = ', '.join(license['licenses'])
+    else:
+        content_data['licenses'] = 'not detected'
+    return content_data
 
 
 _browsers_supported_image_mimes = set(['image/gif', 'image/png',

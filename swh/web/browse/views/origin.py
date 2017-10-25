@@ -6,6 +6,8 @@
 import dateutil
 
 from django.shortcuts import render
+from django.template.defaultfilters import filesizeformat
+
 from swh.web.common import service
 from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.common.exc import NotFoundExc, handle_view_exception
@@ -68,7 +70,12 @@ def origin_browse(request, origin_id=None, origin_type=None,
             {'date': visit_date.timestamp()})
 
     return render(request, 'origin.html',
-                  {'origin': origin_info,
+                  {'top_panel_visible': True,
+                   'top_panel_collapsible': True,
+                   'top_panel_text_left': 'SWH object: Origin',
+                   'top_panel_text_right': 'Url: ' + origin_info['url'],
+                   'swh_object_metadata': origin_info,
+                   'main_panel_visible': True,
                    'origin_visits_data': origin_visits_data,
                    'visits': list(reversed(origin_visits)),
                    'browse_url_base': '/browse/origin/%s/' %
@@ -144,6 +151,7 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                                            origin_visits[-1]['visit'],
                                            path=path)
 
+        origin_info = service.lookup_origin({'id': origin_id})
         branches, url_args = _get_origin_branches_and_url_args(origin_id,
                                                                visit_id,
                                                                timestamp)
@@ -164,7 +172,8 @@ def origin_directory_browse(request, origin_id, visit_id=None,
             root_sha1_git = revision['directory']
             branches.append({'name': revision_id,
                              'revision': revision_id,
-                             'directory': root_sha1_git})
+                             'directory': root_sha1_git,
+                             'url': None})
             branch = revision_id
         else:
             branch = request.GET.get('branch', 'master')
@@ -216,19 +225,39 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                            kwargs=bc_url_args,
                            query_params=query_params)
 
+    sum_file_sizes = 0
+
     for f in files:
         bc_url_args = dict(url_args)
         bc_url_args['path'] = path + f['name']
         f['url'] = reverse('browse-origin-content',
                            kwargs=bc_url_args,
                            query_params=query_params)
+        sum_file_sizes += f['length']
+        f['length'] = filesizeformat(f['length'])
 
     history_url = reverse('browse-origin-log',
                           kwargs=url_args,
                           query_params=query_params)
 
+    sum_file_sizes = filesizeformat(sum_file_sizes)
+
+    dir_metadata = {'id': sha1_git,
+                    'number of regular files': len(files),
+                    'number of subdirectories': len(dirs),
+                    'sum of regular file sizes': sum_file_sizes,
+                    'origin id': origin_info['id'],
+                    'origin type': origin_info['type'],
+                    'origin url': origin_info['url'],
+                    'path': '/' + path}
+
     return render(request, 'directory.html',
-                  {'dir_sha1_git': sha1_git,
+                  {'top_panel_visible': True,
+                   'top_panel_collapsible': True,
+                   'top_panel_text_left': 'SWH object: Directory',
+                   'top_panel_text_right': 'Origin: ' + origin_info['url'],
+                   'swh_object_metadata': dir_metadata,
+                   'main_panel_visible': True,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs,
@@ -278,6 +307,7 @@ def origin_content_display(request, origin_id, path,
             return origin_content_display(request, origin_id, path,
                                           origin_visits[-1]['visit'])
 
+        origin_info = service.lookup_origin({'id': origin_id})
         branches, url_args = _get_origin_branches_and_url_args(origin_id,
                                                                visit_id,
                                                                timestamp)
@@ -296,7 +326,8 @@ def origin_content_display(request, origin_id, path,
             root_sha1_git = revision['directory']
             branches.append({'name': revision_id,
                              'revision': revision_id,
-                             'directory': root_sha1_git})
+                             'directory': root_sha1_git,
+                             'url': None})
             branch = revision_id
         else:
             branch = request.GET.get('branch', 'master')
@@ -312,7 +343,7 @@ def origin_content_display(request, origin_id, path,
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
         query_string = 'sha1_git:' + sha1_git
-        content_data, mime_type = request_content(query_string)
+        content_data = request_content(query_string)
 
     except Exception as exc:
         return handle_view_exception(exc)
@@ -322,8 +353,8 @@ def origin_content_display(request, origin_id, path,
     else:
         query_params = {'branch': branch}
 
-    content_display_data = prepare_content_for_display(content_data,
-                                                       mime_type, path)
+    content_display_data = prepare_content_for_display(
+        content_data['raw_data'], content_data['mimetype'], path)
 
     filename = None
     path_info = None
@@ -353,12 +384,31 @@ def origin_content_display(request, origin_id, path,
                               kwargs={'query_string': query_string},
                               query_params={'filename': filename})
 
+    content_metadata = {
+        'sha1 checksum': content_data['checksums']['sha1'],
+        'sha1_git checksum': content_data['checksums']['sha1_git'],
+        'sha256 checksum': content_data['checksums']['sha256'],
+        'blake2s256 checksum': content_data['checksums']['blake2s256'],
+        'mime type': content_data['mimetype'],
+        'size': filesizeformat(content_data['length']),
+        'language': content_data['language'],
+        'licenses': content_data['licenses'],
+        'origin id': origin_info['id'],
+        'origin type': origin_info['type'],
+        'origin url': origin_info['url'],
+        'path': '/' + path,
+        'filename': filename
+    }
+
     return render(request, 'content.html',
-                  {'content_hash_algo': 'sha1_git',
-                   'content_checksum': sha1_git,
+                  {'top_panel_visible': True,
+                   'top_panel_collapsible': True,
+                   'top_panel_text_left': 'SWH object: Content',
+                   'top_panel_text_right': 'Origin: %s' % origin_info['url'],
+                   'swh_object_metadata': content_metadata,
+                   'main_panel_visible': True,
                    'content': content_display_data['content_data'],
-                   'content_raw_url': content_raw_url,
-                   'mime_type': mime_type,
+                   'mimetype': content_data['mimetype'],
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
                    'branches': branches,
@@ -491,11 +541,18 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                                                'Tree')
 
     return render(request, 'revision-log.html',
-                  {'revision_log': revision_log_data,
+                  {'top_panel_visible': False,
+                   'top_panel_collapsible': False,
+                   'top_panel_text_left': 'SWH object: Revision history',
+                   'top_panel_text_right': 'Sha1 git: ' + revision,
+                   'swh_object_metadata': None,
+                   'main_panel_visible': True,
+                   'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
                    'branches': branches,
                    'branch': branch,
                    'top_right_link': None,
-                   'top_right_link_text': None})
+                   'top_right_link_text': None,
+                   'include_top_navigation': True})
