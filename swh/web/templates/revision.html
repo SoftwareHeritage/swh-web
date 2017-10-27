@@ -1,15 +1,23 @@
-{% extends "layout.html" %}
-{% load swh_templatetags %}
+{% extends "browse.html" %}
 {% block title %}Revision{% endblock %}
-{% block content %}
 
-<h2>Revision information</h2>
+{% block swh-browse-main-panel-content %}
+<div class="panel-heading">
+  <div class="panel-title pull-left">
+      <h4>{{ top_panel_text_left }}</h4> 
+  </div>
+  <div class="panel-title pull-right">
+    <h4>{{ top_panel_text_right }}</h4>
+  </div>
+  <div class="clearfix"></div>
+      
+</div>
 
 <table class="table">
-  {% for key, val in revision.items|dictsort:0 %}
+  {% for key, val in revision.items|dictsort:"0.lower" %}
     <tr>
-      <td>{{ key }}</td>
-      <td>{{ val }}</td>
+      <th class="swh-metadata-table-row">{{ key }}</th>
+      <td class="swh-metadata-table-row">{{ val }}</td>
     </tr>
   {% endfor %}
 </table>

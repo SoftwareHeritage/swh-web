@@ -130,23 +130,53 @@ make it effectively proprietary.  To prevent this, the GPL assures that
 patents cannot be used to render the program non-free.
 """
 
-stub_content_text_sha1 = '5ecd9f37b7a2d2e9980d201acd6286116f2ba1f1'
+stub_content_text_data = {
+    'checksums': {
+        'sha1': '5ecd9f37b7a2d2e9980d201acd6286116f2ba1f1',
+        'sha1_git': '537b47f68469c1c916c1bfbc072599133bfcbb21',
+        'sha256': 'b3057544f04e5821ab0e2a007e2ceabd7de2dfb1d42a764f1de8d0d2eff80006',
+        'blake2s256': '25117fa9f124d5b771a0a7dfca9c7a57247d81f8343334b4b41c782c7f7ed64d'
+    },
+    'length': 1317,
+    'raw_data': str.encode(stub_content_text_file),
+    'mimetype': 'text/x-c++',
+    'language': 'c++',
+    'licenses': 'GPL'
+}
 
-stub_content_text_no_highlight_sha1 = '94a9ed024d3859793618152ea559a168bbcbb5e2'
+stub_content_text_no_highlight_data = {
+    'checksums': {
+        'sha1': '8624bcdae55baeef00cd11d5dfcfa60f68710a02',
+        'sha1_git': '94a9ed024d3859793618152ea559a168bbcbb5e2',
+        'sha256': '8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903',
+        'blake2s256': '38702b7168c7785bfe748b51b45d9856070ba90f9dc6d90f2ea75d4356411ffe'
+    },
+    'length': 35147,
+    'raw_data': str.encode(stub_content_text_file_no_highlight),
+    'mimetype': 'text/plain',
+    'language': 'not detected',
+    'licenses': 'GPL'
+}
 
 stub_content_text_path = 'kate/autotests/session_test.h'
 
 stub_content_text_path_with_root_dir = stub_content_root_dir + '/' + stub_content_text_path
 
-stub_content_text_data = str.encode(stub_content_text_file)
-
-stub_content_text_no_highlight_data = str.encode(stub_content_text_file_no_highlight)
-
 stub_content_bin_filename = 'swh-logo.png'
 
 png_file_path = os.path.dirname(__file__) + '/' + stub_content_bin_filename
 
-stub_content_bin_sha1 = '02328b91cfad800e1d2808cfb379511b79679ebc'
-
 with open(png_file_path, 'rb') as png_file:
-    stub_content_bin_data = png_file.read()
+    stub_content_bin_data = {
+        'checksums': {
+            'sha1': 'd0cec0fc2d795f0077c18d51578cdb228eaf6a99',
+            'sha1_git': '02328b91cfad800e1d2808cfb379511b79679ebc',
+            'sha256': 'e290592e2cfa9767497011bda4b7e273b4cf29e7695d72ecacbd723008a29144',
+            'blake2s256': '7177cad95407952e362ee326a800a9d215ccd619fdbdb735bb51039be81ab9ce'
+        },
+        'length': 18063,
+        'raw_data': png_file.read(),
+        'mimetype': 'image/png',
+        'language': 'not detected',
+        'licenses': 'not detected'
+    }

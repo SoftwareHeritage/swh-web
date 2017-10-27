@@ -1,43 +1,62 @@
-{% extends "layout.html" %}
+{% extends "browse.html" %}
 {% block title %}Revision Log{% endblock %}
-{% block content %}
 
+{% block swh-browse-main-panel-content %}
+
+<div class="panel-heading">
+  <div class="panel-title pull-left">
+      <h4>{{ top_panel_text_left }}</h4> 
+  </div>
+  <div class="panel-title pull-right">
+    <h4>{{ top_panel_text_right }}</h4>
+  </div>
+  <div class="clearfix"></div>
+      
+</div>
+
+{% if include_top_navigation %}
 {% include "includes/top-navigation.html" %}
+{% endif %}
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Author</th>
-      <th>Revision</th>
-      <th>Message</th>
-      <th>Date</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-      {% for log in revision_log %}
-        <tr class="swh-revision-log-entry">
-          <td>{{ log.author }}</td>
-          <td>{{ log.revision }}</td>
-          <td title="{{ log.message }}">{{ log.message_shorten }}</td>
-          <td>{{ log.date }}</td>
-          <td>{{ log.directory }}</td>
-        </tr>
-      {% endfor %}
-  </tbody>
-</table>
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th>Revision</th>
+        <th>Message</th>
+        <th>Date</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for log in revision_log %}
+          <tr class="swh-revision-log-entry">
+            <td>{{ log.author }}</td>
+            <td>{{ log.revision }}</td>
+            <td title="{{ log.message }}">{{ log.message_shorten }}</td>
+            <td>{{ log.date }}</td>
+            <td>{{ log.directory }}</td>
+          </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block swh-browse-after-panels %}
 
 <ul class="pager">
-  {% if next_log_url %}
-    <li><a href="{{ next_log_url }}">Newer</a></li>
-  {% else %}
-    <li class="disabled"><a>Newer</a></li>
-  {% endif %}
-  {% if prev_log_url %}
-    <li><a href="{{ prev_log_url }}">Older</a></li>
-  {% else %}
-    <li class="disabled"><a>Older</a></li>
-  {% endif %}
-</ul> 
+    {% if next_log_url %}
+      <li><a href="{{ next_log_url }}">Newer</a></li>
+    {% else %}
+      <li class="disabled"><a>Newer</a></li>
+    {% endif %}
+    {% if prev_log_url %}
+      <li><a href="{{ prev_log_url }}">Older</a></li>
+    {% else %}
+      <li class="disabled"><a>Older</a></li>
+    {% endif %}
+</ul>
 
 {% endblock %}

@@ -6,6 +6,7 @@
 from django.http import HttpResponse
 
 from django.shortcuts import render
+from django.template.defaultfilters import filesizeformat
 
 from swh.model.hashutil import hash_to_hex
 
@@ -43,7 +44,7 @@ def content_raw(request, query_string):
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
-        content_data, mime_type = request_content(query_string)
+        content_data = request_content(query_string)
     except Exception as exc:
         return handle_view_exception(exc)
 
@@ -51,11 +52,12 @@ def content_raw(request, query_string):
     if not filename:
         filename = '%s_%s' % (algo, checksum)
 
-    if mime_type.startswith('text/'):
-        response = HttpResponse(content_data, content_type="text/plain")
+    if content_data['mimetype'].startswith('text/'):
+        response = HttpResponse(content_data['raw_data'],
+                                content_type="text/plain")
         response['Content-disposition'] = 'filename=%s' % filename
     else:
-        response = HttpResponse(content_data,
+        response = HttpResponse(content_data['raw_data'],
                                 content_type='application/octet-stream')
         response['Content-disposition'] = 'attachment; filename=%s' % filename
     return response
@@ -83,14 +85,14 @@ def content_display(request, query_string):
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
-        content_data, mime_type = request_content(query_string)
+        content_data = request_content(query_string)
     except Exception as exc:
         return handle_view_exception(exc)
 
     path = request.GET.get('path', None)
 
-    content_display_data = prepare_content_for_display(content_data,
-                                                       mime_type, path)
+    content_display_data = prepare_content_for_display(
+        content_data['raw_data'], content_data['mimetype'], path)
 
     root_dir = None
     filename = None
@@ -124,11 +126,26 @@ def content_display(request, query_string):
                               kwargs={'query_string': query_string},
                               query_params=query_params)
 
+    content_metadata = {
+        'sha1 checksum': content_data['checksums']['sha1'],
+        'sha1_git checksum': content_data['checksums']['sha1_git'],
+        'sha256 checksum': content_data['checksums']['sha256'],
+        'blake2s256 checksum': content_data['checksums']['blake2s256'],
+        'mime type': content_data['mimetype'],
+        'size': filesizeformat(content_data['length']),
+        'language': content_data['language'],
+        'licenses': content_data['licenses']
+    }
+
     return render(request, 'content.html',
-                  {'content_hash_algo': algo,
-                   'content_checksum': checksum,
+                  {'top_panel_visible': True,
+                   'top_panel_collapsible': True,
+                   'top_panel_text_left': 'SWH object: Content',
+                   'top_panel_text_right': '%s: %s' % (algo, checksum),
+                   'swh_object_metadata': content_metadata,
+                   'main_panel_visible': True,
                    'content': content_display_data['content_data'],
-                   'mime_type': mime_type,
+                   'mimetype': content_data['mimetype'],
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
                    'branches': None,
