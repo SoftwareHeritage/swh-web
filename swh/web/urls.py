@@ -3,6 +3,8 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import django
+
 from django.conf.urls import url, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.shortcuts import redirect
@@ -25,3 +27,12 @@ urlpatterns = [
 
 
 urlpatterns += staticfiles_urlpatterns()
+
+# hack in order for our custom template tag library
+# to load on django 1.7 (debian jessie version)
+if django.VERSION < (1, 8):
+    from django.template.base import templatetags_modules # noqa
+    templatetags_modules += ['django.templatetags',
+                             'django.contrib.admin.templatetags',
+                             'django.contrib.staticfiles.templatetags',
+                             'rest_framework.templatetags', 'swh.web.common']

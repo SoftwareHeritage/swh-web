@@ -298,15 +298,18 @@ class SwhBrowseOriginTest(TestCase):
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.get_origin_visit_branches')
     @patch('swh.web.browse.utils.service')
+    @patch('swh.web.browse.views.origin.service')
     @istest
-    def origin_root_directory_view(self, mock_service,
+    def origin_root_directory_view(self, mock_origin_service,
+                                   mock_utils_service,
                                    mock_get_origin_visit_branches,
                                    mock_get_origin_visits):
 
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_branches.return_value = stub_origin_branches
-        mock_service.lookup_directory.return_value = \
+        mock_utils_service.lookup_directory.return_value = \
             stub_origin_root_directory_entries
+        mock_origin_service.lookup_origin.return_value = origin_info_test_data
 
         self.origin_directory_view(stub_origin_id, stub_origin_visits,
                                    stub_origin_branches,

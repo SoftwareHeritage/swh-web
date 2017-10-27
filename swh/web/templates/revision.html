@@ -14,7 +14,7 @@
 </div>
 
 <table class="table">
-  {% for key, val in revision.items|dictsort:0 %}
+  {% for key, val in revision.items|dictsort:"0.lower" %}
     <tr>
       <th class="swh-metadata-table-row">{{ key }}</th>
       <td class="swh-metadata-table-row">{{ val }}</td>

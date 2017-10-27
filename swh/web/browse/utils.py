@@ -94,7 +94,13 @@ def get_mimetype_for_content(content):
         The mime type (e.g. text/plain) associated to the provided content.
 
     """
-    return magic.detect_from_content(content).mime_type
+    if hasattr(magic, 'detect_from_content'):
+        return magic.detect_from_content(content).mime_type
+    # for old api version of magic module (debian jessie)
+    else:
+        m = magic.open(magic.MAGIC_MIME_TYPE)
+        m.load()
+        return m.buffer(content)
 
 
 def request_content(query_string):
