@@ -13,3 +13,9 @@ CACHES = {
         'LOCATION': swh_web_config['throttling']['cache_uri'],
     }
 }
+
+# Setup support for proxy headers
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+ALLOWED_HOSTS += ['archive.softwareheritage.org']  # noqa

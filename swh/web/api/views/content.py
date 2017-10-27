@@ -59,7 +59,7 @@ def api_content_provenance(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/filetype/', 'content-filetype')
-@api_doc.route('/content/filetype/', tags=['upcoming'])
+@api_doc.route('/content/filetype/')
 @api_doc.arg('q',
              default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
              argtype=api_doc.argtypes.algo_and_hash,
@@ -80,7 +80,7 @@ def api_content_filetype(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/language/', 'content-language')
-@api_doc.route('/content/language/', tags=['upcoming'])
+@api_doc.route('/content/language/')
 @api_doc.arg('q',
              default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
              argtype=api_doc.argtypes.algo_and_hash,
@@ -102,7 +102,7 @@ def api_content_language(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/license/', 'content-license')
-@api_doc.route('/content/license/', tags=['upcoming'])
+@api_doc.route('/content/license/')
 @api_doc.arg('q',
              default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
              argtype=api_doc.argtypes.algo_and_hash,

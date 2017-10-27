@@ -1,16 +1,3 @@
-{% extends "layout.html" %}
-{% load swh_templatetags %}
+{% extends "browse.html" %}
+
 {% block title %}Person{% endblock %}
-{% block content %}
-
-<h2>Person information</h2>
-<table class="table">
-  {% for key, val in person.items|dictsort:0 %}
-    <tr>
-      <td>{{ key }}</td>
-      <td>{{ val | safe | urlize_links_and_mails | escape | safe }}</td>
-    </tr>
-  {% endfor %}
-</table>
-
-{% endblock %}

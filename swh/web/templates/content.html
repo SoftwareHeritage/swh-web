@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "browse.html" %}
 {% load static %}
 
 {% block header %}
@@ -20,23 +20,23 @@
 
 {% block title %}Content display{% endblock %}
 
-{% block content %}
+{% block swh-browse-main-panel-content %}
 
 {% include "includes/top-navigation.html" %}
 
-<div class="well well-sm">
-{% if "inode/x-empty" == mime_type %}
+<div class="well well-sm" style="margin-bottom: 0px">
+{% if "inode/x-empty" == mimetype %}
 <i>File is empty</i>
-{% elif "text/" in mime_type %}
+{% elif "text/" in mimetype %}
 <div class="highlightjs">
   <pre>
     <code class="{{ language }}">{{ content }}</code>
   </pre>
 </div>
-{% elif "image/" in mime_type and content %}
-  <img src="data:{{ mime_type }};base64,{{ content }}"/>
+{% elif "image/" in mimetype and content %}
+  <img src="data:{{ mimetype }};base64,{{ content }}"/>
 {% else %}
-Content with mime type {{ mime_type }} can not be displayed
+Content with mime type {{ mimetype }} can not be displayed
 {% endif %}
 </div>
 

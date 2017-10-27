@@ -34,3 +34,5 @@ swh_web_config.update({
 })
 
 from .common import *
+
+ALLOWED_HOSTS += ['testserver']  # noqa
