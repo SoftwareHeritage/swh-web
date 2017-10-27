@@ -304,7 +304,7 @@ stub_origin_branches = [
   'revision': 'd4878a55be7a4b7ac4e5db1ae5eef89e15811072'}
 ]
 
-stub_origin_master_branch = 'refs/heads/master'
+stub_origin_master_branch = 'HEAD'
 
 stub_origin_root_directory_sha1 = 'ae59ceecf46367e8e4ad800e231fc76adc3afffb'
 
@@ -599,7 +599,7 @@ stub_content_origin_visit_id = 10
 stub_content_origin_visit_unix_ts = 1494032350
 stub_content_origin_visit_iso_date = '2017-05-06T00:59:10+00:00'
 
-stub_content_origin_branch = 'refs/heads/master'
+stub_content_origin_branch = 'HEAD'
 
 stub_content_origin_visits = [
  {'date': '2015-09-26T09:30:52.373449+00:00',

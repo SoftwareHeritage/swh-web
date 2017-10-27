@@ -107,6 +107,23 @@ def _raise_exception_if_branch_not_found(origin_id, visit_id, ts, branch):
                           (branch, ts, origin_id))
 
 
+def _get_branch(branches, branch_name):
+    """
+    Utility function to get a specific branch from an origin branches list.
+    Its purpose is to get the default HEAD branch as some SWH origin
+    (e.g those with svn type) does not have it. In that latter case, check
+    if there is a master branch instead and returns it.
+    """
+    filtered_branches = [b for b in branches if branch_name in b['name']]
+    if len(filtered_branches) > 0:
+        return filtered_branches[0]
+    elif branch_name == 'HEAD':
+        filtered_branches = [b for b in branches if 'master' in b['name']]
+        if len(filtered_branches) > 0:
+            return filtered_branches[0]
+    return None
+
+
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/directory/',
               r'origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/', # noqa
@@ -174,17 +191,16 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                              'revision': revision_id,
                              'directory': root_sha1_git,
                              'url': None})
-            branch = revision_id
+            branch_name = revision_id
         else:
-            branch = request.GET.get('branch', 'master')
-            filtered_branches = [b for b in branches if branch in b['name']]
-
-            if len(filtered_branches) > 0:
-                root_sha1_git = filtered_branches[0]['directory']
-                branch = filtered_branches[0]['name']
+            branch_name = request.GET.get('branch', 'HEAD')
+            branch = _get_branch(branches, branch_name)
+            if branch:
+                branch_name = branch['name']
+                root_sha1_git = branch['directory']
             else:
                 _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch)
+                                                     timestamp, branch_name)
 
         sha1_git = root_sha1_git
         if path:
@@ -199,7 +215,7 @@ def origin_directory_browse(request, origin_id, visit_id=None,
     if revision_id:
         query_params = {'revision': revision_id}
     else:
-        query_params = {'branch': branch}
+        query_params = {'branch': branch_name}
 
     path_info = gen_path_info(path)
 
@@ -262,7 +278,7 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'files': files,
                    'breadcrumbs': breadcrumbs,
                    'branches': branches,
-                   'branch': branch,
+                   'branch': branch_name,
                    'top_right_link': history_url,
                    'top_right_link_text': 'History'})
 
@@ -328,17 +344,16 @@ def origin_content_display(request, origin_id, path,
                              'revision': revision_id,
                              'directory': root_sha1_git,
                              'url': None})
-            branch = revision_id
+            branch_name = revision_id
         else:
-            branch = request.GET.get('branch', 'master')
-            filtered_branches = [b for b in branches if branch in b['name']]
-
-            if len(filtered_branches) > 0:
-                root_sha1_git = filtered_branches[0]['directory']
-                branch = filtered_branches[0]['name']
+            branch_name = request.GET.get('branch', 'HEAD')
+            branch = _get_branch(branches, branch_name)
+            if branch:
+                branch_name = branch['name']
+                root_sha1_git = branch['directory']
             else:
                 _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch)
+                                                     timestamp, branch_name)
 
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
@@ -351,7 +366,7 @@ def origin_content_display(request, origin_id, path,
     if revision_id:
         query_params = {'revision': revision_id}
     else:
-        query_params = {'branch': branch}
+        query_params = {'branch': branch_name}
 
     content_display_data = prepare_content_for_display(
         content_data['raw_data'], content_data['mimetype'], path)
@@ -412,7 +427,7 @@ def origin_content_display(request, origin_id, path,
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
                    'branches': branches,
-                   'branch': branch,
+                   'branch': branch_name,
                    'top_right_link': content_raw_url,
                    'top_right_link_text': 'Raw File'})
 
@@ -480,7 +495,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
 
         revision_id = request.GET.get('revision', None)
         revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
-        branch = request.GET.get('branch', 'master')
+        branch_name = request.GET.get('branch', 'HEAD')
 
         if revision_id:
             revision = service.lookup_revision(revision_id)
@@ -488,18 +503,18 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                              'revision': revision_id,
                              'directory': revision['directory']})
             revision = revision_id
-            branch = revision_id
+            branch_name = revision_id
         elif revs_breadcrumb:
             revs = revs_breadcrumb.split('/')
             revision = revs[-1]
         else:
-            filtered_branches = [b for b in branches if branch in b['name']]
-            if len(filtered_branches) > 0:
-                revision = filtered_branches[0]['revision']
-                branch = filtered_branches[0]['name']
+            branch = _get_branch(branches, branch_name)
+            if branch:
+                branch_name = branch['name']
+                revision = branch['revision']
             else:
                 _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch)
+                                                     timestamp, branch_name)
 
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
         revision_log = service.lookup_revision_log(revision,
@@ -521,7 +536,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                     kwargs=url_args,
                     query_params={'revs_breadcrumb': prev_revs_breadcrumb,
                                   'per_page': per_page,
-                                  'branch': branch})
+                                  'branch': branch_name})
 
     next_rev = revision_log_display_data['next_rev']
     next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
@@ -552,7 +567,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
                    'branches': branches,
-                   'branch': branch,
+                   'branch': branch_name,
                    'top_right_link': None,
                    'top_right_link_text': None,
                    'include_top_navigation': True})
