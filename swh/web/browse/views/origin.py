@@ -547,7 +547,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                     kwargs=url_args,
                     query_params={'revs_breadcrumb': next_revs_breadcrumb,
                                   'per_page': per_page,
-                                  'branch': branch})
+                                  'branch': branch_name})
 
     revision_log_data = revision_log_display_data['revision_log_data']
 
