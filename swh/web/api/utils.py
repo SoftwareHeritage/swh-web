@@ -141,11 +141,16 @@ def enrich_directory(directory, context_url=None):
                 reverse('content', kwargs={'q': 'sha1_git:%s' % target})
             if context_url:
                 directory['file_url'] = context_url + directory['name'] + '/'
-        else:
+        elif target_type == 'dir':
             directory['target_url'] = reverse('directory',
                                               kwargs={'sha1_git': target})
             if context_url:
                 directory['dir_url'] = context_url + directory['name'] + '/'
+        else:
+            directory['target_url'] = reverse('revision',
+                                              kwargs={'sha1_git': target})
+            if context_url:
+                directory['rev_url'] = context_url + directory['name'] + '/'
 
     return directory
 

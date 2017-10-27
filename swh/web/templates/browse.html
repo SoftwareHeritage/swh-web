@@ -1,55 +1,52 @@
 {% extends "layout.html" %}
-{% block title %}Browse{% endblock %}
+{% load swh_templatetags %}
+
 {% block content %}
 
-<div class="browse-panel panel panel-default">
-  <div class="panel panel-body">
-
-    <ul class="nav nav-tabs" role="tablist">
-      <li><a class="nav-link active" data-toggle="tab" href="#tab-content" role="tabpanel">Content</a></li>
-      <li><a class="nav-link" data-toggle="tab" href="#tab-search" role="tabpanel">Search</a></li>
-      <li><a class="nav-link" data-toggle="tab" href="#tab-revision" role="tabpanel">Revision</a></li>
-      <li><a class="nav-link" data-toggle="tab" href="#tab-origin" role="tabpanel">Origin</a></li>
-      <li><a class="nav-link" data-toggle="tab" href="#tab-directory" role="tabpanel">Directory</a></li>
-    </ul>
-
-    <div class="tab-content container-fluid">
-      <!-- Content pane -->
-      <div class="tab-pane active" id="tab-content" role="tabpanel">
-        {% include 'includes/home-content.html' %}
+<div class="panel-group" id="accordion">
+  {% if top_panel_visible %}
+  <div class="panel panel-default">
+      <div class="panel-heading">
+        {% if top_panel_collapsible %}
+        <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
+        {% endif %}
+          <div class="panel-title pull-left">
+              <h4>{{ top_panel_text_left }}</h4> 
+          </div>
+          <div class="panel-title pull-right">
+            <h4>{{ top_panel_text_right }}</h4>
+          </div>
+          <div class="clearfix"></div>
+        {% if top_panel_collapsible %}  
+        </a>
+        {% endif %}
+          
       </div>
-
-      <!-- Search Symbol pane -->
-      <div class="tab-pane" id="tab-search" role="tabpanel">
-        {% include 'includes/home-search-symbol.html' %}
+      {% if top_panel_collapsible %}
+      <div id="swh-browse-top-collapse" class="panel-collapse collapse">
+      {% endif %}
+        <table class="table">
+          <tbody>
+            {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}  
+              <tr>
+                <th class="swh-metadata-table-row">{{ key }}</th>
+                <td class="swh-metadata-table-row">{{ val | safe | urlize_links_and_mails | safe }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% if top_panel_collapsible %}
       </div>
-
-      <!-- Revision pane -->
-      <div class="tab-pane" id="tab-revision" role="tabpanel">
-        {% include 'includes/home-revision.html' %}
-      </div>
-
-      <!-- Origin pane -->
-      <div class="tab-pane" id="tab-origin" role="tabpanel">
-        {% include 'includes/home-origin.html' %}
-      </div>
-
-      <!-- Directory pane -->
-      <div class="tab-pane" id="tab-directory" role="tabpanel">
-        {% include 'includes/home-directory.html' %}
-      </div>
-    </div>
-
+      {% endif %}
   </div>
+  {% endif %}
+  {% if main_panel_visible %}
+  <div class="panel panel-default">
+    {% block swh-browse-main-panel-content %}{% endblock %}
+  </div>
+  {% endif %}
 </div>
 
-<script>
-    // Hash update on page load
-    var hash = window.location.hash;
-    hash && $('ul.nav a[href="' + hash + '"]').tab('show');
-    // Hash update on nav-tab click
-    $('.nav-tabs a').click(function(e) {
-        window.location.hash = this.hash;
-    })
-</script>
+{% block swh-browse-after-panels %}{% endblock %}
+
 {% endblock %}

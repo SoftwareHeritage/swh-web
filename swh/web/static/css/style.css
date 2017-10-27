@@ -331,8 +331,20 @@ bread-crumbs ul {
     overflow-x: hidden;
 }
 
-.browse-bread-crumbs {
+.swh-browse-top-navigation {
+    border-bottom: 1px solid #ddd;
+    min-height: 42px;
+    padding: 4px 5px 0px 5px;
+}
+
+.swh-browse-bread-crumbs {
     font-size: inherit;
+    vertical-align: text-top;
+    margin-bottom: 1px;
+}
+
+.swh-metadata-table-row {
+    border-top: 1px solid #ddd !important;
 }
 
 /* for block of numbers */

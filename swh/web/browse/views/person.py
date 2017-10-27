@@ -31,4 +31,10 @@ def person_browse(request, person_id):
     except Exception as exc:
         return handle_view_exception(exc)
 
-    return render(request, 'person.html', {'person': person})
+    return render(request, 'person.html',
+                  {'top_panel_visible': True,
+                   'top_panel_collapsible': False,
+                   'top_panel_text_left': 'SWH object: Person',
+                   'top_panel_text_right': 'Name: ' + person['name'],
+                   'swh_object_metadata': person,
+                   'main_panel_visible': False})
