@@ -10,8 +10,8 @@ from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import (
-    _api_lookup, _doc_exc_id_not_found, _doc_header_link,
-    _doc_arg_last_elt, _doc_arg_per_page
+    api_lookup, doc_exc_id_not_found, doc_header_link,
+    doc_arg_last_elt, doc_arg_per_page
 )
 
 
@@ -31,7 +31,7 @@ from swh.web.api.views.utils import (
              default='https://github.com/hylang/hy',
              argtype=api_doc.argtypes.path,
              argdoc='origin URL (when looking up by type+URL)')
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""The metadata of the origin corresponding to the given
                         criteria""")
@@ -64,7 +64,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         return origin
 
-    return _api_lookup(
+    return api_lookup(
         service.lookup_origin, ori_dict,
         notfound_msg=error_msg,
         enrich_fn=_enrich_origin)
@@ -76,14 +76,14 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
              default=1,
              argtype=api_doc.argtypes.int,
              argdoc='software origin identifier')
-@api_doc.header('Link', doc=_doc_header_link)
+@api_doc.header('Link', doc=doc_header_link)
 @api_doc.param('last_visit', default=None,
                argtype=api_doc.argtypes.int,
-               doc=_doc_arg_last_elt)
+               doc=doc_arg_last_elt)
 @api_doc.param('per_page', default=10,
                argtype=api_doc.argtypes.int,
-               doc=_doc_arg_per_page)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+               doc=doc_arg_per_page)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.list,
                  retdoc="""a list of dictionaries describing individual visits.
                  For each visit, its identifier, timestamp (as UNIX time),
@@ -111,7 +111,7 @@ def api_origin_visits(request, origin_id):
                                                  'visit_id': ov['visit']})
         return ov
 
-    r = _api_lookup(
+    r = api_lookup(
         _lookup_origin_visits, origin_id,
         notfound_msg='No origin {} found'.format(origin_id),
         enrich_fn=_enrich_origin_visit)
@@ -151,7 +151,7 @@ def api_origin_visits(request, origin_id):
              argtype=api_doc.argtypes.int,
              argdoc="""visit identifier, relative to the origin identified by
              origin_id""")
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""dictionary containing both metadata for the entire
                  visit (e.g., timestamp as UNIX time, visit outcome, etc.) and
@@ -172,7 +172,7 @@ def api_origin_visit(request, origin_id, visit_id):
             }
         return ov
 
-    return _api_lookup(
+    return api_lookup(
         service.lookup_origin_visit, origin_id, visit_id,
         notfound_msg=('No visit {} for origin {} found'
                       .format(visit_id, origin_id)),
