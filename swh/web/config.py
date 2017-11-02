@@ -7,6 +7,7 @@ from swh.core import config
 from swh.storage import get_storage
 
 DEFAULT_CONFIG = {
+    'allowed_hosts': ('list', []),
     'storage': ('dict', {
         'cls': 'remote',
         'args': {
@@ -30,7 +31,7 @@ DEFAULT_CONFIG = {
     })
 }
 
-swhweb_config = None
+swhweb_config = {}
 
 
 def get_config(config_file='webapp/webapp'):
@@ -39,9 +40,9 @@ def get_config(config_file='webapp/webapp'):
        dict. If no configuration file is provided, return a default
        configuration."""
 
-    global swhweb_config
     if not swhweb_config:
-        swhweb_config = config.load_named_config(config_file, DEFAULT_CONFIG)
+        cfg = config.load_named_config(config_file, DEFAULT_CONFIG)
+        swhweb_config.update(cfg)
         config.prepare_folders(swhweb_config, 'log_dir')
         swhweb_config['storage'] = get_storage(**swhweb_config['storage'])
     return swhweb_config
