@@ -1,3 +1,5 @@
+.. _swh-web:
+
 Software Heritage Web Applications - Development Documentation
 ===============================================================
 
