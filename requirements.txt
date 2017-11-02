@@ -5,11 +5,11 @@
 # Runtime dependencies
 django
 djangorestframework
-python-dateutil
 docutils
-pygments
-yaml
 file_magic
+pygments
+python-dateutil
+pyyaml
 
 #Doc dependencies
 sphinx
