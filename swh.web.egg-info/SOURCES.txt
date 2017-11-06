@@ -5,8 +5,6 @@ MANIFEST.in
 Makefile
 Makefile.local
 README
-README-dev.md
-README-uri-scheme.md
 requirements-swh.txt
 requirements.txt
 setup.py
@@ -20,6 +18,7 @@ debian/source/format
 docs/.gitignore
 docs/Makefile
 docs/conf.py
+docs/developers-info.rst
 docs/index.rst
 docs/uri-scheme-api-content.rst
 docs/uri-scheme-api-directory.rst

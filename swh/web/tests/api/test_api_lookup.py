@@ -13,7 +13,7 @@ from swh.web.api.views import utils
 class ApiLookupTestCase(SWHApiTestCase):
 
     @istest
-    def generic_api_lookup_nothing_is_found(self):
+    def genericapi_lookup_nothing_is_found(self):
         # given
         def test_generic_lookup_fn(sha1, another_unused_arg):
             assert another_unused_arg == 'unused_arg'
@@ -22,7 +22,7 @@ class ApiLookupTestCase(SWHApiTestCase):
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
-            utils._api_lookup(
+            utils.api_lookup(
                 test_generic_lookup_fn, 'sha1', 'unused_arg',
                 notfound_msg='This will be raised because None is returned.')
 
@@ -37,7 +37,7 @@ class ApiLookupTestCase(SWHApiTestCase):
             return map(lambda x: x + 1, [1, 2, 3])
 
         # when
-        actual_result = utils._api_lookup(
+        actual_result = utils.api_lookup(
             test_generic_lookup_fn_1, 'something', 'some param 0',
             'some param 1',
             notfound_msg=('This is not the error message you are looking for. '
@@ -54,7 +54,7 @@ class ApiLookupTestCase(SWHApiTestCase):
             return ['a', 'b', 'c']
 
         # when
-        actual_result = utils._api_lookup(
+        actual_result = utils.api_lookup(
             test_generic_lookup_fn_2, 'something',
             notfound_msg=('Not the error message you are looking for, it is. '
                           'Along, you move!'),
@@ -70,7 +70,7 @@ class ApiLookupTestCase(SWHApiTestCase):
             return (i for i in [4, 5, 6])
 
         # when
-        actual_result = utils._api_lookup(
+        actual_result = utils.api_lookup(
             test_generic_lookup_fn_3, 'crit',
             notfound_msg='Move!',
             enrich_fn=lambda x: x - 1)
@@ -89,7 +89,7 @@ class ApiLookupTestCase(SWHApiTestCase):
             return x
 
         # when
-        actual_result = utils._api_lookup(
+        actual_result = utils.api_lookup(
             test_generic_lookup_fn_4, '123',
             notfound_msg='Nothing to do',
             enrich_fn=test_enrich_data)
@@ -100,7 +100,7 @@ class ApiLookupTestCase(SWHApiTestCase):
     def api_lookup_not_found(self):
         # when
         with self.assertRaises(NotFoundExc) as e:
-            utils._api_lookup(
+            utils.api_lookup(
                 lambda x: None, 'something',
                 notfound_msg='this is the error message raised as it is None')
 
@@ -110,7 +110,7 @@ class ApiLookupTestCase(SWHApiTestCase):
     @istest
     def api_lookup_with_result(self):
         # when
-        actual_result = utils._api_lookup(
+        actual_result = utils.api_lookup(
             lambda x: x + '!', 'something',
             notfound_msg='this is the error which won\'t be used here')
 
@@ -119,7 +119,7 @@ class ApiLookupTestCase(SWHApiTestCase):
     @istest
     def api_lookup_with_result_as_map(self):
         # when
-        actual_result = utils._api_lookup(
+        actual_result = utils.api_lookup(
             lambda x: map(lambda y: y+1, x), [1, 2, 3],
             notfound_msg='this is the error which won\'t be used here')
 

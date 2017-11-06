@@ -18,6 +18,15 @@ _swh_web_browse_url = '%s/%s/' % (_swh_web_base_url,
 
 
 def customize_sphinx_conf(sphinx_conf):
+    """
+    Utility function used to customize the sphinx doc build for swh-web
+    globally (when building doc from swh-docs) or locally (when building doc
+    from swh-web).
+
+    Args:
+        sphinx_conf (module): a reference to the sphinx conf.py module
+            used to build the doc.
+    """
     # fix for sphinxcontrib.httpdomain 1.3
     if 'Link' not in httpdomain.HEADER_REFS:
         httpdomain.HEADER_REFS['Link'] = httpdomain.IETFRef(5988, '5')

@@ -7,7 +7,7 @@ from swh.web.common import service
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import (
-    _api_lookup, _doc_exc_id_not_found,
+    api_lookup, doc_exc_id_not_found,
 )
 
 
@@ -17,13 +17,13 @@ from swh.web.api.views.utils import (
              default=42,
              argtype=api_doc.argtypes.int,
              argdoc='person identifier')
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc='The metadata of the person identified by person_id')
 def api_person(request, person_id):
     """Get information about a person.
 
     """
-    return _api_lookup(
+    return api_lookup(
         service.lookup_person, person_id,
         notfound_msg='Person with id {} not found.'.format(person_id))

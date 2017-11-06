@@ -8,8 +8,8 @@ from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import (
-    _api_lookup, _doc_exc_id_not_found,
-    _doc_exc_bad_id,
+    api_lookup, doc_exc_id_not_found,
+    doc_exc_bad_id,
 )
 
 
@@ -24,8 +24,8 @@ from swh.web.api.views.utils import (
              default='codec/demux',
              argtype=api_doc.argtypes.path,
              argdoc='path relative to directory identified by sha1_git')
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""either a list of directory entries with their metadata,
                         or the metadata of a single directory entry""")
@@ -47,13 +47,13 @@ def api_directory(request, sha1_git, path=None):
     if path:
         error_msg_path = ('Entry with path %s relative to directory '
                           'with sha1_git %s not found.') % (path, sha1_git)
-        return _api_lookup(
+        return api_lookup(
             service.lookup_directory_with_path, sha1_git, path,
             notfound_msg=error_msg_path,
             enrich_fn=utils.enrich_directory)
     else:
         error_msg_nopath = 'Directory with sha1_git %s not found.' % sha1_git
-        return _api_lookup(
+        return api_lookup(
             service.lookup_directory, sha1_git,
             notfound_msg=error_msg_nopath,
             enrich_fn=utils.enrich_directory)
