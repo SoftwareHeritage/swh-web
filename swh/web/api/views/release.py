@@ -8,7 +8,7 @@ from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import (
-    _api_lookup, _doc_exc_id_not_found, _doc_exc_bad_id
+    api_lookup, doc_exc_id_not_found, doc_exc_bad_id
 )
 
 
@@ -18,8 +18,8 @@ from swh.web.api.views.utils import (
              default='7045404f3d1c54e6473c71bbb716529fbad4be24',
              argtype=api_doc.argtypes.sha1_git,
              argdoc='release identifier')
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc='The metadata of the release identified by sha1_git')
 def api_release(request, sha1_git):
@@ -32,7 +32,7 @@ def api_release(request, sha1_git):
 
     """
     error_msg = 'Release with sha1_git %s not found.' % sha1_git
-    return _api_lookup(
+    return api_lookup(
         service.lookup_release, sha1_git,
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_release)

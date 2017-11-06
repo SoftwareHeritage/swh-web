@@ -14,9 +14,9 @@ from swh.web.api import apidoc as api_doc
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import (
-    _api_lookup, _doc_exc_id_not_found, _doc_header_link,
-    _doc_arg_last_elt, _doc_arg_per_page, _doc_exc_bad_id,
-    _doc_arg_content_id
+    api_lookup, doc_exc_id_not_found, doc_header_link,
+    doc_arg_last_elt, doc_arg_per_page, doc_exc_bad_id,
+    doc_arg_content_id
 )
 
 
@@ -25,9 +25,9 @@ from swh.web.api.views.utils import (
 @api_doc.arg('q',
              default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
              argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=_doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+             argdoc=doc_arg_content_id)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""List of provenance information (dict) for the matched
                         content.""")
@@ -52,7 +52,7 @@ def api_content_provenance(request, q):
                                             'visit_id': provenance['visit']})
         return p
 
-    return _api_lookup(
+    return api_lookup(
         service.lookup_content_provenance, q,
         notfound_msg='Content with {} not found.'.format(q),
         enrich_fn=_enrich_revision)
@@ -63,9 +63,9 @@ def api_content_provenance(request, q):
 @api_doc.arg('q',
              default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
              argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=_doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+             argdoc=doc_arg_content_id)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""Filetype information (dict) for the matched
                         content.""")
@@ -73,7 +73,7 @@ def api_content_filetype(request, q):
     """Get information about the detected MIME type of a content object.
 
     """
-    return _api_lookup(
+    return api_lookup(
         service.lookup_content_filetype, q,
         notfound_msg='No filetype information found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
@@ -84,9 +84,9 @@ def api_content_filetype(request, q):
 @api_doc.arg('q',
              default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
              argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=_doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+             argdoc=doc_arg_content_id)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""Language information (dict) for the matched
                         content.""")
@@ -95,7 +95,7 @@ def api_content_language(request, q):
     object.
 
     """
-    return _api_lookup(
+    return api_lookup(
         service.lookup_content_language, q,
         notfound_msg='No language information found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
@@ -106,9 +106,9 @@ def api_content_language(request, q):
 @api_doc.arg('q',
              default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
              argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=_doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+             argdoc=doc_arg_content_id)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""License information (dict) for the matched
                         content.""")
@@ -116,7 +116,7 @@ def api_content_license(request, q):
     """Get information about the detected license of a content object.
 
     """
-    return _api_lookup(
+    return api_lookup(
         service.lookup_content_license, q,
         notfound_msg='No license information found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
@@ -127,9 +127,9 @@ def api_content_license(request, q):
 @api_doc.arg('q',
              default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
              argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=_doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+             argdoc=doc_arg_content_id)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""Ctags symbol (dict) for the matched
                         content.""")
@@ -138,7 +138,7 @@ def api_content_ctags(request, q):
     symbols defined in a content object.
 
     """
-    return _api_lookup(
+    return api_lookup(
         service.lookup_content_ctags, q,
         notfound_msg='No ctags symbol found for content {}.'.format(q),
         enrich_fn=utils.enrich_metadata_endpoint)
@@ -149,13 +149,13 @@ def api_content_ctags(request, q):
 @api_doc.arg('q',
              default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
              argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=_doc_arg_content_id)
+             argdoc=doc_arg_content_id)
 @api_doc.param('filename', default=None,
                argtype=api_doc.argtypes.str,
                doc='User\'s desired filename. If provided, the downloaded'
                    ' content will get that filename.')
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.octet_stream,
                  retdoc='The raw content data as an octet stream')
 def api_content_raw(request, q):
@@ -195,13 +195,13 @@ def api_content_raw(request, q):
              default='hello',
              argtype=api_doc.argtypes.str,
              argdoc="""An expression string to lookup in swh's raw content""")
-@api_doc.header('Link', doc=_doc_header_link)
+@api_doc.header('Link', doc=doc_header_link)
 @api_doc.param('last_sha1', default=None,
                argtype=api_doc.argtypes.str,
-               doc=_doc_arg_last_elt)
+               doc=doc_arg_last_elt)
 @api_doc.param('per_page', default=10,
                argtype=api_doc.argtypes.int,
-               doc=_doc_arg_per_page)
+               doc=doc_arg_per_page)
 @api_doc.returns(rettype=api_doc.rettypes.list,
                  retdoc="""A list of dict whose content matches the expression.
                  Each dict has the following keys:
@@ -223,7 +223,7 @@ def api_content_symbol(request, q=None):
     def lookup_exp(exp, last_sha1=last_sha1, per_page=per_page):
         return service.lookup_expression(exp, last_sha1, per_page)
 
-    symbols = _api_lookup(
+    symbols = api_lookup(
         lookup_exp, q,
         notfound_msg="No indexed raw content match expression '{}'.".format(q),
         enrich_fn=functools.partial(utils.enrich_content, top_url=True))
@@ -262,7 +262,7 @@ def api_content_symbol(request, q=None):
                doc="""(POST request) An algo_hash:hash string, where algo_hash
                    is one of sha1, sha1_git or sha256 and hash is the hash to
                    search for in SWH""")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""a dictionary with results (found/not found for each given
                         identifier) and statistics about how many identifiers
@@ -325,16 +325,16 @@ def api_check_content_known(request, q=None):
 @api_doc.arg('q',
              default='dc2830a9e72f23c1dfebef4413003221baa5fb62',
              argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=_doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+             argdoc=doc_arg_content_id)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""known metadata for content identified by q""")
 def api_content_metadata(request, q):
     """Get information about a content (AKA "blob") object.
 
     """
-    return _api_lookup(
+    return api_lookup(
         service.lookup_content, q,
         notfound_msg='Content with {} not found.'.format(q),
         enrich_fn=functools.partial(utils.enrich_content, query_string=q))

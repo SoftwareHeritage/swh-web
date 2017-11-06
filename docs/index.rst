@@ -1,3 +1,5 @@
+.. _swh-web:
+
 Software Heritage Web Applications - Development Documentation
 ===============================================================
 
@@ -5,7 +7,7 @@ Software Heritage Web Applications - Development Documentation
    :maxdepth: 3
    :caption: Contents:
 
-   dev-info.md
+   developers-info
    uri-scheme-api
    uri-scheme-browse
 

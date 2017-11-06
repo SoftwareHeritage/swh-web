@@ -1,4 +1,16 @@
-swh-web-api
-===========
+swh-web
+=======
 
-SWH's API + web front-end
+This repository holds the developement of Software Heritage web applications:
+
+    * SWH Web API (https://archive.softwareheritage.org/api): enables to query 
+      the content of the SWH archive through HTTP requests and get responses in JSON or YAML.
+
+    * SWH Web browse (https://archive.softwareheritage.org/browse): graphical interface 
+      that eases the navigation in the SWH archive.
+
+Those applications are powered by the [Django Web Framework](https://www.djangoproject.com/). 
+
+Documentation about how to use these components but also the details of their URI schemes
+can be found in the docs folder. The produced HTML documentation can be read and browsed
+at https://docs.softwareheritage.org/devel/swh-web/index.html.
