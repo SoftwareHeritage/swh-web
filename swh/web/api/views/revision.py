@@ -12,9 +12,9 @@ from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import (
-    _api_lookup, _doc_exc_id_not_found, _doc_header_link,
-    _doc_arg_per_page, _doc_exc_bad_id,
-    _doc_ret_revision_log, _doc_ret_revision_meta
+    api_lookup, doc_exc_id_not_found, doc_header_link,
+    doc_arg_per_page, doc_exc_bad_id,
+    doc_ret_revision_log, doc_ret_revision_meta
 )
 
 
@@ -74,12 +74,12 @@ Defaults to 'refs/heads/master'.""")
              default='2000-01-17T11:23:54+00:00',
              argtype=api_doc.argtypes.ts,
              argdoc="""(Optional) A time or timestamp string to parse""")
-@api_doc.header('Link', doc=_doc_header_link)
+@api_doc.header('Link', doc=doc_header_link)
 @api_doc.param('per_page', default=10,
                argtype=api_doc.argtypes.int,
-               doc=_doc_arg_per_page)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=_doc_ret_revision_log)
+               doc=doc_arg_per_page)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
+@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_log)
 def api_revision_log_by(request, origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
@@ -103,7 +103,7 @@ def api_revision_log_by(request, origin_id,
     error_msg += ', branch name %s' % branch_name
     error_msg += (' and time stamp %s.' % ts) if ts else '.'
 
-    rev_get = _api_lookup(
+    rev_get = api_lookup(
         lookup_revision_log_by_with_limit, origin_id, branch_name, ts,
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_revision)
@@ -172,7 +172,7 @@ def api_revision_log_by(request, origin_id,
              default='Dockerfile',
              argtype=api_doc.argtypes.path,
              argdoc='The path to the directory or file to display')
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""The metadata of the revision corresponding to the
                         given criteria""")
@@ -220,8 +220,8 @@ def api_directory_through_revision_origin(request, origin_id,
              argtype=api_doc.argtypes.ts,
              argdoc="""(optional) timestamp close to which the revision pointed by
              the given branch should be looked up. Defaults to now.""")
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=_doc_ret_revision_meta)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
+@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_meta)
 def api_revision_with_origin(request, origin_id,
                              branch_name="refs/heads/master",
                              ts=None):
@@ -234,7 +234,7 @@ def api_revision_with_origin(request, origin_id,
 
     """
     ts = parse_timestamp(ts)
-    return _api_lookup(
+    return api_lookup(
         service.lookup_revision_by, origin_id, branch_name, ts,
         notfound_msg=('Revision with (origin_id: {}, branch_name: {}'
                       ', ts: {}) not found.'.format(origin_id,
@@ -253,8 +253,8 @@ def api_revision_with_origin(request, origin_id,
              default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
              argtype=api_doc.argtypes.path,
              argdoc='The navigation breadcrumbs -- use at your own risk')
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc='The metadata of the revision identified by sha1_git')
 def api_revision_with_context(request, sha1_git, context):
@@ -263,7 +263,7 @@ def api_revision_with_context(request, sha1_git, context):
     def _enrich_revision(revision, context=context):
         return utils.enrich_revision(revision, context)
 
-    return _api_lookup(
+    return api_lookup(
         service.lookup_revision, sha1_git,
         notfound_msg='Revision with sha1_git %s not found.' % sha1_git,
         enrich_fn=_enrich_revision)
@@ -275,9 +275,9 @@ def api_revision_with_context(request, sha1_git, context):
              default='aafb16d69fd30ff58afdd69036a26047f3aebdc6',
              argtype=api_doc.argtypes.sha1_git,
              argdoc="revision identifier")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=_doc_ret_revision_meta)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
+@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_meta)
 def api_revision(request, sha1_git):
     """Get information about a revision.
 
@@ -287,7 +287,7 @@ def api_revision(request, sha1_git):
     for details about how they are computed.
 
     """
-    return _api_lookup(
+    return api_lookup(
         service.lookup_revision, sha1_git,
         notfound_msg='Revision with sha1_git {} not found.'.format(sha1_git),
         enrich_fn=utils.enrich_revision)
@@ -299,8 +299,8 @@ def api_revision(request, sha1_git):
              default='ec72c666fb345ea5f21359b7bc063710ce558e39',
              argtype=api_doc.argtypes.sha1_git,
              argdoc="The queried revision's sha1_git identifier")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.octet_stream,
                  retdoc="""The message of the revision identified by sha1_git
                         as a downloadable octet stream""")
@@ -329,8 +329,8 @@ def api_revision_raw_message(request, sha1_git):
              argtype=api_doc.argtypes.path,
              argdoc="""path relative to the root directory of revision identifier by
                     sha1_git""")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
 @api_doc.returns(rettype=api_doc.rettypes.dict,
                  retdoc="""either a list of directory entries with their metadata,
                         or the metadata of a single directory entry""")
@@ -363,13 +363,13 @@ def api_revision_directory(request, sha1_git,
              argtype=api_doc.argtypes.path,
              argdoc="""(Optional) Navigation breadcrumbs (descendant revisions
 previously visited).  If multiple values, use / as delimiter.  """)
-@api_doc.header('Link', doc=_doc_header_link)
+@api_doc.header('Link', doc=doc_header_link)
 @api_doc.param('per_page', default=10,
                argtype=api_doc.argtypes.int,
-               doc=_doc_arg_per_page)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=_doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=_doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=_doc_ret_revision_log)
+               doc=doc_arg_per_page)
+@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
+@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
+@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_log)
 def api_revision_log(request, sha1_git, prev_sha1s=None):
     """Get a list of all revisions heading to a given one, i.e., show the
     commit log.
@@ -382,9 +382,9 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         return service.lookup_revision_log(s, limit)
 
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
-    rev_get = _api_lookup(lookup_revision_log_with_limit, sha1_git,
-                          notfound_msg=error_msg,
-                          enrich_fn=utils.enrich_revision)
+    rev_get = api_lookup(lookup_revision_log_with_limit, sha1_git,
+                         notfound_msg=error_msg,
+                         enrich_fn=utils.enrich_revision)
 
     l = len(rev_get)
     if l == per_page+1:
@@ -409,7 +409,7 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
 
     else:
         rev_forward_ids = prev_sha1s.split('/')
-        rev_forward = _api_lookup(
+        rev_forward = api_lookup(
             service.lookup_revision_multiple, rev_forward_ids,
             notfound_msg=error_msg,
             enrich_fn=utils.enrich_revision)

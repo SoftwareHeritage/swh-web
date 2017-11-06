@@ -12,29 +12,29 @@ from swh.web.common.exc import NotFoundExc
 from swh.web.api.apiurls import APIUrls, api_route
 
 # canned doc string snippets that are used in several doc strings
-_doc_arg_content_id = """A "[hash_type:]hash" content identifier, where
+doc_arg_content_id = """A "[hash_type:]hash" content identifier, where
    hash_type is one of "sha1" (the default), "sha1_git", "sha256", and hash is
    a checksum obtained with the hash_type hashing algorithm."""
-_doc_arg_last_elt = 'element to start listing from, for pagination purposes'
-_doc_arg_per_page = 'number of elements to list, for pagination purposes'
+doc_arg_last_elt = 'element to start listing from, for pagination purposes'
+doc_arg_per_page = 'number of elements to list, for pagination purposes'
 
-_doc_exc_bad_id = 'syntax error in the given identifier(s)'
-_doc_exc_id_not_found = 'no object matching the given criteria could be found'
+doc_exc_bad_id = 'syntax error in the given identifier(s)'
+doc_exc_id_not_found = 'no object matching the given criteria could be found'
 
-_doc_ret_revision_meta = 'metadata of the revision identified by sha1_git'
-_doc_ret_revision_log = """list of dictionaries representing the metadata of
+doc_ret_revision_meta = 'metadata of the revision identified by sha1_git'
+doc_ret_revision_log = """list of dictionaries representing the metadata of
     each revision found in the commit log heading to revision sha1_git.
     For each commit at least the following information are returned:
     author/committer, authoring/commit timestamps, revision id, commit message,
     parent (i.e., immediately preceding) commits, "root" directory id."""
 
-_doc_header_link = """indicates that a subsequent result page is available,
+doc_header_link = """indicates that a subsequent result page is available,
     pointing to it"""
 
 
-def _api_lookup(lookup_fn, *args,
-                notfound_msg='Object not found',
-                enrich_fn=lambda x: x):
+def api_lookup(lookup_fn, *args,
+               notfound_msg='Object not found',
+               enrich_fn=lambda x: x):
     """Capture a redundant behavior of:
     - looking up the backend with a criteria (be it an identifier or checksum)
     passed to the function lookup_fn
