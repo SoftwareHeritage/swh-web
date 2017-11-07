@@ -5,6 +5,7 @@
 
 from swh.core import config
 from swh.storage import get_storage
+from swh.vault.api.client import RemoteVaultClient
 
 DEFAULT_CONFIG = {
     'allowed_hosts': ('list', []),
@@ -14,6 +15,7 @@ DEFAULT_CONFIG = {
             'url': 'http://127.0.0.1:5002/',
         },
     }),
+    'vault': ('string', 'http://127.0.0.1:5005/'),
     'log_dir': ('string', '/tmp/swh/log'),
     'debug': ('bool', False),
     'host': ('string', '127.0.0.1'),  # development property
@@ -45,6 +47,7 @@ def get_config(config_file='webapp/webapp'):
         swhweb_config.update(cfg)
         config.prepare_folders(swhweb_config, 'log_dir')
         swhweb_config['storage'] = get_storage(**swhweb_config['storage'])
+        swhweb_config['vault'] = RemoteVaultClient(swhweb_config['vault'])
     return swhweb_config
 
 
@@ -53,3 +56,10 @@ def storage():
 
     """
     return get_config()['storage']
+
+
+def vault():
+    """Return the current application's SWH vault.
+
+    """
+    return get_config()['vault']

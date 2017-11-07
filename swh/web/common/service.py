@@ -15,6 +15,7 @@ from swh.web.common.exc import NotFoundExc
 from swh.web import config
 
 storage = config.storage()
+vault = config.vault()
 
 MAX_LIMIT = 50  # Top limit the users can ask for
 
@@ -826,3 +827,15 @@ def lookup_directory_through_revision(revision, path=None,
         raise NotFoundExc('Revision with criterion %s not found!' % revision)
     return (rev['id'],
             lookup_directory_with_revision(rev['id'], path, with_data))
+
+
+def vault_cook(obj_type, obj_id, email=None):
+    """Cook a vault bundle.
+    """
+    return vault.cook(obj_type, obj_id, email=email)
+
+
+def vault_fetch(obj_type, obj_id):
+    """Fetch a vault bundle.
+    """
+    return vault.fetch(obj_type, obj_id)
