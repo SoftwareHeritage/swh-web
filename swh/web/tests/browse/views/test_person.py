@@ -31,12 +31,12 @@ class SwhBrowsePersonTest(TestCase):
 
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('person.html')
-        self.assertContains(resp, '>%s</td>' % test_person_data['id'])
-        self.assertContains(resp, '>%s</td>' % test_person_data['name'])
-        self.assertContains(resp, '><a href="mailto:%s">%s</a></td>' %
+        self.assertContains(resp, '<pre>%s</pre>' % test_person_data['id'])
+        self.assertContains(resp, '<pre>%s</pre>' % test_person_data['name'])
+        self.assertContains(resp, '<pre><a href="mailto:%s">%s</a></pre>' %
                                   (test_person_data['email'],
                                    test_person_data['email']))
-        self.assertContains(resp, '>%s <<a href="mailto:%s">%s</a>></td>' %
+        self.assertContains(resp, '<pre>%s <<a href="mailto:%s">%s</a>></pre>' % # noqa
                                   (test_person_data['name'],
                                    test_person_data['email'],
                                    test_person_data['email']))
