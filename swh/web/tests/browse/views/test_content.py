@@ -10,6 +10,7 @@ from nose.tools import istest
 
 from django.test import TestCase
 from django.utils.html import escape
+from django.utils.encoding import DjangoUnicodeDecodeError
 
 from swh.web.common.utils import reverse
 from swh.web.browse.utils import (
@@ -20,7 +21,10 @@ from .data.content_test_data import (
     stub_content_text_path_with_root_dir,
     stub_content_bin_data,
     stub_content_bin_filename,
-    stub_content_text_no_highlight_data
+    stub_content_text_no_highlight_data,
+    non_utf8_encoded_content_data,
+    non_utf8_encoded_content,
+    non_utf8_encoding
 )
 
 
@@ -65,6 +69,30 @@ class SwhBrowseContentTest(TestCase):
         self.assertContains(resp, '<code class="nohighlight-swh">')
         self.assertContains(resp, escape(stub_content_text_no_highlight_data['raw_data'])) # noqa
         self.assertContains(resp, url_raw)
+
+    @patch('swh.web.browse.utils.service')
+    @istest
+    def content_view_no_utf8_text(self, mock_service):
+        mock_service.lookup_content.return_value = \
+            non_utf8_encoded_content_data
+
+        mock_service.lookup_content_raw.return_value = \
+            {'data': non_utf8_encoded_content}
+
+        mock_service.lookup_content_filetype.return_value = None
+        mock_service.lookup_content_language.return_value = None
+        mock_service.lookup_content_license.return_value = None
+
+        url = reverse('browse-content',
+                      kwargs={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
+
+        try:
+            resp = self.client.get(url)
+            self.assertEquals(resp.status_code, 200)
+            self.assertTemplateUsed('content.html')
+            self.assertContains(resp, escape(non_utf8_encoded_content.decode(non_utf8_encoding).encode('utf-8'))) # noqa
+        except DjangoUnicodeDecodeError:
+            self.fail('Textual content is not encoded in utf-8')
 
     @patch('swh.web.browse.views.content.request_content')
     @istest

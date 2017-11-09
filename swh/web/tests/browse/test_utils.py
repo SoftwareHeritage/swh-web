@@ -34,9 +34,10 @@ class SwhBrowseUtilsTestCase(unittest.TestCase):
         self.assertEquals(path_info, expected_result)
 
     @istest
-    def get_mimetype_for_content(self):
+    def get_mimetype_and_encoding_for_content(self):
         text = b'Hello world!'
-        self.assertEqual(utils.get_mimetype_for_content(text), 'text/plain')
+        self.assertEqual(utils.get_mimetype_and_encoding_for_content(text),
+                         ('text/plain', 'us-ascii'))
 
     @patch('swh.web.browse.utils.service')
     @istest

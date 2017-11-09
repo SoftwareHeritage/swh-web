@@ -83,24 +83,29 @@ def gen_path_info(path):
     return path_info
 
 
-def get_mimetype_for_content(content):
-    """Function that returns the mime type associated to
+def get_mimetype_and_encoding_for_content(content):
+    """Function that returns the mime type and the encoding associated to
     a content buffer using the magic module under the hood.
 
     Args:
         content (bytes): a content buffer
 
     Returns:
-        The mime type (e.g. text/plain) associated to the provided content.
+        A tuple (mimetype, encoding), for instance ('text/plain', 'us-ascii'),
+        associated to the provided content.
 
     """
     if hasattr(magic, 'detect_from_content'):
-        return magic.detect_from_content(content).mime_type
+        magic_result = magic.detect_from_content(content)
+        return magic_result.mime_type, magic_result.encoding
     # for old api version of magic module (debian jessie)
     else:
-        m = magic.open(magic.MAGIC_MIME_TYPE)
+        m = magic.open(magic.MAGIC_MIME)
         m.load()
-        return m.buffer(content)
+        magic_result = m.buffer(content).split(';')
+        mimetype = magic_result[0]
+        encoding = magic_result[1].split('=')[1]
+        return mimetype, encoding
 
 
 def request_content(query_string):
@@ -126,14 +131,24 @@ def request_content(query_string):
     content_data = service.lookup_content(query_string)
     content_raw = service.lookup_content_raw(query_string)
     content_data['raw_data'] = content_raw['data']
-    mimetype = service.lookup_content_filetype(query_string)
+    filetype = service.lookup_content_filetype(query_string)
     language = service.lookup_content_language(query_string)
     license = service.lookup_content_license(query_string)
-    if mimetype:
-        mimetype = mimetype['mimetype']
+    if filetype:
+        mimetype = filetype['mimetype']
+        encoding = filetype['encoding']
     else:
-        mimetype = get_mimetype_for_content(content_data['raw_data'])
+        mimetype, encoding = \
+            get_mimetype_and_encoding_for_content(content_data['raw_data'])
     content_data['mimetype'] = mimetype
+    content_data['encoding'] = encoding
+
+    # encode textual content to utf-8 if needed
+    if mimetype.startswith('text/') and 'ascii' not in encoding \
+       and 'utf-8' not in encoding:
+        content_data['raw_data'] = \
+            content_data['raw_data'].decode(encoding).encode('utf-8')
+
     if language:
         content_data['language'] = language['lang']
     else:

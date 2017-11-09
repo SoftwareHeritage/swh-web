@@ -321,6 +321,10 @@ bread-crumbs ul {
     border-color: transparent;
 }
 
+.swh-metadata-table-row pre {
+    background-color: #f5f5f5;
+}
+
 .hljs {
     background-color: transparent;
     white-space: pre;
