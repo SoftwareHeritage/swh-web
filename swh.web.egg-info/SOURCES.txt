@@ -341,6 +341,7 @@ swh/web/tests/browse/views/test_revision.py
 swh/web/tests/browse/views/data/__init__.py
 swh/web/tests/browse/views/data/content_test_data.py
 swh/web/tests/browse/views/data/directory_test_data.py
+swh/web/tests/browse/views/data/iso-8859-1_encoded_content
 swh/web/tests/browse/views/data/origin_test_data.py
 swh/web/tests/browse/views/data/revision_test_data.py
 swh/web/tests/browse/views/data/swh-logo.png
