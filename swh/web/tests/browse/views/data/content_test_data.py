@@ -140,6 +140,7 @@ stub_content_text_data = {
     'length': 1317,
     'raw_data': str.encode(stub_content_text_file),
     'mimetype': 'text/x-c++',
+    'encoding': 'us-ascii',
     'language': 'c++',
     'licenses': 'GPL'
 }
@@ -154,6 +155,7 @@ stub_content_text_no_highlight_data = {
     'length': 35147,
     'raw_data': str.encode(stub_content_text_file_no_highlight),
     'mimetype': 'text/plain',
+    'encoding': 'us-ascii',
     'language': 'not detected',
     'licenses': 'GPL'
 }
@@ -177,6 +179,25 @@ with open(png_file_path, 'rb') as png_file:
         'length': 18063,
         'raw_data': png_file.read(),
         'mimetype': 'image/png',
+        'encoding': 'binary',
         'language': 'not detected',
         'licenses': 'not detected'
     }
+
+_non_utf8_encoding_file_path = os.path.dirname(__file__) + '/iso-8859-1_encoded_content'
+
+non_utf8_encoded_content_data = {
+    'checksums': {
+        'sha1': '62cb71aa3534a03c12572157d20fa893753b03b6',
+        'sha1_git': '2f7470d0b26108130e71087e42a53c032473499c',
+        'sha256': 'aaf364ccd3acb546829ccc0e8e5e293e924c8a2e55a67cb739d249016e0034ed',
+        'blake2s256': 'b7564932460a7c2697c53bd55bd855272490da511d64b20c5a04f636dc9ac467'
+    },
+    'length': 111000
+}
+
+non_utf8_encoding = 'iso-8859-1'
+
+with open(_non_utf8_encoding_file_path, 'rb') as iso88591_file:
+    non_utf8_encoded_content = iso88591_file.read()
+    

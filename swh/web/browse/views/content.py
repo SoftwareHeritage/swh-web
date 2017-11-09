@@ -132,6 +132,7 @@ def content_display(request, query_string):
         'sha256 checksum': content_data['checksums']['sha256'],
         'blake2s256 checksum': content_data['checksums']['blake2s256'],
         'mime type': content_data['mimetype'],
+        'encoding': content_data['encoding'],
         'size': filesizeformat(content_data['length']),
         'language': content_data['language'],
         'licenses': content_data['licenses']
