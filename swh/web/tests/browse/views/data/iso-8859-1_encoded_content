@@ -1,0 +1,279 @@
+<?php
+/*****************************************************************************
+ * Bechamail script.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
+ * or go to http://www.gnu.org/copyleft/gpl.html
+ *
+ * Developer(s): 2004, Robert Sebille - robert.sebille(at)cassiopea(dot)org
+ * Company: Cassiopea asbl - Belgique
+ *****************************************************************************/
+	
+// Placement d'un cookie de vérification pour le login// SETCOOKIE("CartableCookieEnabled", "test");// Maintenant via config.inc
+
+session_start();
+
+//Page accessible à tous
+/*
+if (!isset($_SESSION['S_id_niveau']) or $_SESSION['S_id_niveau'] < 0 or $_SESSION['S_id_niveau'] > 4)
+	{header("Location: login.php?mess=".$mess_inc_non_autorise); exit();}
+
+*/
+
+if (isset($_POST['f_deconnect'])) {
+	//log
+	require "../utiles/config.inc";
+	require "../utiles/fonctions.inc";
+	if ($conf_log) {ajout_to_log("LOGOUT");}
+	session_destroy(); header("Location: login.php?mess=".urlencode("Vous êtes déconnecté")); exit();
+	}
+
+
+// Load TemTab class et messages.inc
+require "../classes/class.TemTab.php";
+require "../classes/class.ReqSql.php";
+require "../utiles/config.inc";
+require "../utiles/c.inc";
+require "../utiles/fonctions.inc";
+
+require "../utiles/secure-session.inc";
+
+// Accès ok pour niveaux 1 à 2
+niveau_ok(1,2);
+
+// compute starting time with microseconds precision
+if ($conf_aff_req_sql) {
+	$mtime = explode(" ",microtime());
+	$starttime = $mtime[1] + $mtime[0];
+	}
+
+// Soyons prudent et portable, désactivons magic_quote pour ce script. merci nexen ;)if (get_magic_quotes_gpc()) {
+    function stripslashes_deep($value)
+    {
+        $value = is_array($value) ?
+                    array_map('stripslashes_deep', $value) :
+                    stripslashes($value);
+
+        return $value;
+    }
+
+    $_POST = array_map('stripslashes_deep', $_POST);
+    $_GET = array_map('stripslashes_deep', $_GET);
+    $_COOKIE = array_map('stripslashes_deep', $_COOKIE);
+}
+
+/**************************/
+/* Crée les objets TemTab */
+/**************************/
+
+	// top
+	$template_file = "../html/meta.html";
+	$template_meta = new TemTab($template_file);
+
+	if ($_SESSION["S_niveau"] == 1) {$template_file = "../html/tete-admin-statistiques.html";}
+	if ($_SESSION["S_niveau"] == 2) {$template_file = "../html/tete-statistiques.html";}
+	$template_tete = new TemTab($template_file);
+
+	// corps
+	$template_file = "../html/statistiques.html";
+	$template = new TemTab($template_file);
+
+	// pied	$template_file = "../html/pied.html";
+	$template_pied = new TemTab($template_file);
+
+// Some initializations
+$sel="";$from="";$whe="";$col_val="";$affmess="";
+
+
+/************************/
+/* Traitement du script */
+/************************/
+
+	// Préparation de l'info alias / destination générique
+	$info_alias_dest_gen = ""; $client_auth_gen = false;
+ 	$client_auth_gen = ($conf_alias_dest_gen or $_SESSION["S_niveau"] == 1);
+	if (!$client_auth_gen) {
+		$info_alias_dest_gen = "Vous n\'avez pas le droit de modifier des alias ou destinations génériques, du type &quot;@domain.tld &quot; ! Vous devez demander cette modification à l\'administrateur du système.";
+		}
+	else {
+		$info_alias_dest_gen = "Vous avez le droit de modifier des alias ou destinations génériques, du type  &quot;@domain.tld &quot;.";
+		}
+
+	$domaines = str_replace(" ", "", $_SESSION["S_domaines"]);
+
+	// construction de la clause where en fonction des domaines autorisés par le login
+	$whe_dom = "";
+	$whe_dom = $conf_champ_alias." like \"%".$domaines;
+	$whe_dom = str_replace(",", "\" or ".$conf_champ_alias." like \"%", $whe_dom);
+	$whe_dom = $whe_dom."\"";
+	
+	// recherche des alias et destinations génériques
+	$alias_dest_gen = new ReqSql($hm_, $um_, $pm_, $nm_);
+	$sel = $conf_champ_alias.", ".$conf_champ_destination;
+	$from = $conf_table_alias;
+	$order = 	$conf_champ_alias." ASC";
+	$alias_dest_gen->RS_select($sel, $from, $whe_dom, $order);
+	mysql_free_result($alias_dest_gen->RS_res);
+	
+	$alias_dest_gen_array = array();
+	foreach($alias_dest_gen->RS_ligne as $val1) {
+		foreach($val1 as $key2 => $val2) {
+			if (($key2 == "0" or $key2 == "1") and (substr($val2, 0, 1) == "@")) {
+				array_push($alias_dest_gen_array, "<a href='modif-alias.php?alias=".$val1["0"]."&dest=".$val1["1"]."'>".$val1["0"]."</a> => ".$val1["1"]);
+				} // if (($key2 == "0" or $key2 == "1") and ..
+			} // foreach($val1 as $key2 => $val2)
+		} // foreach($alias_dest_gen->RS_ligne as $val1) 
+
+	$alias_dest_gen_array = array_unique($alias_dest_gen_array);
+	
+
+	// Recherche des domaines ayant un alias
+	$dom_login = new ReqSql($hm_, $um_, $pm_, $nm_);
+//	Pas mal, le select et le group by, là ;-)
+	$sel = "SUBSTRING(".$conf_champ_alias.", LOCATE('@', ".$conf_champ_alias.") + 1, LENGTH(".$conf_champ_alias.")) as nom_domaine, count( SUBSTRING(".$conf_champ_alias.", LOCATE('@', ".$conf_champ_alias.") + 1, LENGTH(".$conf_champ_alias."))) as nb_domaine";
+	$from = $conf_table_alias;
+	$group = "SUBSTRING(".$conf_champ_alias.", LOCATE('@', ".$conf_champ_alias.") + 1, LENGTH(".$conf_champ_alias."))";
+	$dom_login->RS_select_group($sel, $from, $whe_dom, $group);
+	mysql_free_result($dom_login->RS_res);
+
+	// Ajout des domaines du fichier de config n'ayant pas d'alias, puis tri
+	$domaine_array = array();$dom_array_compare = array();$dom_array_all = array();
+	// dédoublonner le tableau de la requete + preparer un tableau simple de comparaison
+	foreach($dom_login->RS_ligne as $val) {
+		array_push($domaine_array, array_unique($val));
+		array_push($dom_array_compare, $val["0"]);
+		}
+
+	// Tableau simple de tous les domaines autorisé
+	$dom_array_all = explode(",", $domaines);
+
+	// ajout  des domaines du fichier de config n'ayant pas d'alias a ceux qui en ont
+	foreach($dom_array_all as $val) {
+		if (!in_array($val, $dom_array_compare)) {array_push($domaine_array, array($val, 0));}
+		}
+
+	// Tri (voir bas de page : http://www.nexen.net/docs/php/annotee/function.array-multisort.php )	
+	foreach ($domaine_array as $key => $row) {
+		$ligne0[$key]  = $row['0'];
+		$ligne1[$key] = $row['1'];
+		}
+	array_multisort($ligne0, SORT_ASC, $ligne1, SORT_DESC, $domaine_array);
+
+	// Correspondance login / domaines et liste des domaines de la table transport
+	$f_base_login = "";$f_base_domaines = "";
+	if ($_SESSION["S_niveau"] == 1) {
+		$liste_login = new ReqSql($hl_, $ul_, $pl_, $nl_);
+		$sel = $conf_champ_login.",".$conf_champ_domaines;
+		$from = $conf_table_login;
+		$liste_login->RS_select($sel, $from, "", $conf_champ_login);
+		mysql_free_result($liste_login->RS_res);
+		$f_base_login = "Login => domaines gérés<br /><span class=\"note\">(".$liste_login->RS_nb_ligne." login trouvé(s) dans dans la table <i>".$conf_table_login."</i> de la base de données <i>".$conf_base_login."</i>. All = tous les domaines [super admin] )</span>";
+		
+		$liste_dom = new ReqSql($hm_, $um_, $pm_, $nm_);
+		$sel = $conf_champ_domaine.",".$conf_champ_transport;
+		$from = $conf_table_transport;
+		$liste_dom->RS_select($sel, $from, "", $conf_champ_domaine);
+		mysql_free_result($liste_dom->RS_res);
+		$f_base_domaines = "Domaines [<i>transport</i>]<br /><span class=\"note\">(".$liste_dom->RS_nb_ligne." domaine(s) trouvé(s) dans la table <i>".$conf_table_transport."</i> de la base de données <i>".$conf_base_mail."</i>.</span>";
+
+		} // if ($_SESSION["S_niveau"] == 1)
+	
+	
+/***********************************/
+/* traitement des variables TemTab */
+/***********************************/
+
+	// Affichage des balises meta
+	$template_meta->replace_var("t_meta_charset", $conf_meta_charset);
+	$template_meta->replace_var("t_meta_general_keywords", $conf_meta_general_keywords);
+	$template_meta->replace_var("t_meta_particulier_keywords", $meta_particulier_keywords);
+	$template_meta->replace_var("t_meta_copyright", $conf_meta_copyright);
+	$template_meta->replace_var("t_meta_author", $conf_meta_author);
+	$template_meta->replace_var("t_meta_generator", $conf_meta_generator);
+	$template_meta->replace_var("t_meta_description", $conf_meta_description);
+
+
+	// Affichage des titres
+	$template_meta->replace_var("t_nom_site", $conf_nom_site);
+
+	// Affichage de l(identifiant du site
+	$template_tete->replace_var("t_conf_name_log", $conf_name_log);
+
+	// formulaire déconnexion
+	$template_tete->replace_var("t_script_name", $conf_script_name);
+
+	// Affichage des alias et destination génériques
+	$template->replace_loop_vars_one("loop_gen", $alias_dest_gen_array);
+		
+	// Affichage des statistiques des alias
+	$template->replace_loop_vars("loop_stats", $domaine_array);
+
+	// Affichage des statistiques des comptes
+	$template->replace_loop_vars("loop_stats_comptes", 0);
+
+	// Affichage des correspondances login  / domaines
+	$template->replace_var("t_base_login_domaines", $f_base_login);
+	if ($_SESSION["S_niveau"] == 1) {$template->replace_loop_vars("loop_liste_login_domaines", $liste_login->RS_ligne);}
+		else {@$template->replace_loop_vars("loop_liste_login_domaines", $login_domaines_array);} // tableau vide si niveau 2
+
+	// Affichage des domaines de la table transport
+	$template->replace_var("t_base_domaines", $f_base_domaines);
+	if ($_SESSION["S_niveau"] == 1) {$template->replace_loop_vars("loop_liste_domaines", $liste_dom->RS_ligne);}
+		else {@$template->replace_loop_vars("loop_liste_domaines", $login_domaines_array);} // tableau vide si niveau 2
+
+	// Affichage de l'info alias / destination générique
+	$template->replace_var("t_info_alias_dest_gen", $info_alias_dest_gen);
+
+	// affichage du login
+	$f_login = $_SESSION["S_login"]; 
+	$template->replace_var("t_login", $f_login);
+
+
+// prépare un message éventuellement passé par GET (déconnexion, en l'occurence)
+if (isset($_GET["mess"])) {$affmess = stripslashes($_GET["mess"]);}
+if (!isset($affmess)) {$affmess = "";}
+if (isset($_GET["mess"]) or $affmess != "") {
+	$template->replace_var("t_mess_accueil", "<div class=\"mess\">".$affmess."</div><div>&nbsp;</div>");
+	}
+
+
+/*****************************************/
+/* Termine la construction des templates */
+/*****************************************/
+
+	// get rid of unused variables
+	$template_meta->remove_all_vars();
+	$template_tete->remove_all_vars();
+	$template->remove_all_vars();
+	$template_pied->remove_all_vars();
+
+	// and finally get the outputs
+	print ($template_meta->get_output());
+	print ($template_tete->get_output());
+	print ($template->get_output());
+	print ($template_pied->get_output());
+
+
+// compute elapsed time with microseconds precision
+if ($conf_aff_req_sql) {
+	$mtime = explode(" ",microtime());
+	$endtime = $mtime[1] + $mtime[0] - $starttime;
+	print "\n";
+	print "<div><div class=\"pied\">Durée du traitement: ".$endtime." microsecondes</div></div>\n<br>";
+	}
+
+
+	
+?>
+ 
