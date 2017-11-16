@@ -1,0 +1,125 @@
+{% load static %}
+
+<p>Search Software Heritage origins to browse:</p>
+<form class="form-horizontal" id="search_origins">
+  <div class="input-group add-on">
+    <input class="form-control" placeholder="Enter string pattern(s) to search for in origin urls" type="text" id="origins-url-patterns"/>
+    <div class="input-group-btn">
+      <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+    </div>
+  </div>
+</form>
+
+<div class="swh-loading">
+  <img src="{% static 'img/swh-spinner.gif' %}"></img>
+  <p>Searching origins ...</p>
+</div>
+
+<table class="table" id="origin-search-results">
+  <thead>
+    <tr>
+      <th>Origin id</th>
+      <th>Origin type</th>
+      <th>Origin url</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<ul class="pager">
+  <li class="disabled" id="origins-prev-results-button"><a href="#">Previous</a></li>
+  <li class="disabled" id="origins-next-results-button"><a href="#">Next</a></li>
+</ul>
+
+<script>
+
+  var origin_patterns;
+  var per_page = 15;
+  var offset = 0;
+  var origins_search_url = "{% url 'browse-origin-search' 'url_regexp' %}?limit=limit_val&offset=offset_val&regexp=true";
+  var origin_browse_url = "{% url 'browse-origin' '0' %}";
+
+  function populateOriginSearchResultsTable(data, limit, offset) {
+    $("#origin-search-results tbody tr").remove();
+    var table = $("#origin-search-results tbody");
+    $.each(data, function(idx, elem){
+      var tableRow = '<tr>';
+      tableRow += '<td>' + elem.id + '</td>';
+      tableRow += '<td>' + elem.type + '</td>';
+      tableRow += '<td><a href="' + elem.url + '">' + elem.url + '</a></td>';
+      var browse_url = origin_browse_url.replace('0', elem.id);
+      tableRow += '<td><a href="' + browse_url + '">Browse</a></td>';
+      tableRow += '</tr>';
+      table.append(tableRow);
+    });
+    if (data.length == per_page) {
+      $('#origins-next-results-button').removeClass('disabled');
+    } else {
+      $('#origins-next-results-button').addClass('disabled');
+    }
+    if (offset > 0) {
+      $('#origins-prev-results-button').removeClass('disabled');
+    } else {
+      $('#origins-prev-results-button').addClass('disabled');
+    }
+  }
+
+  $(document).ready(function() {
+    if (typeof(Storage) !== "undefined") {
+      origin_patterns = localStorage.getItem("last-swh-origin-url-patterns");
+      var data = localStorage.getItem("last-swh-origin-search-results");
+      offset = localStorage.getItem("last-swh-origin-search-offset");
+      if (data) {
+        $("#origins-url-patterns").val(origin_patterns);
+        offset = parseInt(offset);
+        populateOriginSearchResultsTable(JSON.parse(data), per_page, offset);
+      }
+    }
+  });
+
+  function searchOrigins(patterns, limit, offset) {
+    origin_patterns = patterns;
+    var patterns_to_regexp = patterns.trim().replace(/\s+/g,' ').replace(' ', '|');
+    var search_url = origins_search_url.replace('url_regexp', patterns_to_regexp)
+                                       .replace('limit_val', limit)
+                                       .replace('offset_val', offset);
+    $(".swh-loading").addClass('show');
+    $.ajax({
+      url: search_url,
+      dataType: 'json',
+      error: function() {
+        $(".swh-loading").removeClass('show');
+      },
+      success: function (data) {
+        if (typeof(Storage) !== "undefined") {
+          localStorage.setItem("last-swh-origin-url-patterns", patterns);
+          localStorage.setItem("last-swh-origin-search-results", JSON.stringify(data));
+          localStorage.setItem("last-swh-origin-search-offset", offset);
+        }
+        populateOriginSearchResultsTable(data, per_page, offset);
+        $(".swh-loading").removeClass('show');
+      }
+    });
+  }
+
+  $("#search_origins").submit(function (event) {
+    var patterns = $("#origins-url-patterns").val();
+    offset = 0;
+    searchOrigins(patterns, per_page, offset);
+    event.preventDefault();
+  });
+
+  $("#origins-next-results-button").click(function (event) {
+    offset += per_page;
+    searchOrigins(origin_patterns, per_page, offset);
+    event.preventDefault();
+  });
+
+  $("#origins-prev-results-button").click(function (event) {
+    offset -= per_page;
+    searchOrigins(origin_patterns, per_page, offset);
+    event.preventDefault();
+  });
+
+  </script>

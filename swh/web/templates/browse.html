@@ -3,52 +3,74 @@
 
 {% block content %}
 
-<div class="panel-group" id="accordion">
-  {% if top_panel_visible %}
-  <div class="panel panel-default" style="overflow-x: auto;">
-      <div class="panel-heading">
-        {% if top_panel_collapsible %}
-        <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
-        {% endif %}
-          <div class="panel-title pull-left">
-              <h4>{{ top_panel_text_left }}</h4>
-          </div>
-          <div class="panel-title pull-right">
-            <h4>{{ top_panel_text_right }}</h4>
-          </div>
-          <div class="clearfix"></div>
-        {% if top_panel_collapsible %}
-        </a>
-        {% endif %}
+<ul class="nav nav-tabs">
+  <li class="active">
+    <a  href="#tab_browse" data-toggle="tab" style="outline:none;">Browse</a>
+  </li>
+  <li>
+    <a href="#tab_search" data-toggle="tab" style="outline:none;">Search</a>
+  </li>
+</ul>
 
+<div class="tab-content" style="margin-top: 5px;">
+  <div class="tab-pane active" id="tab_browse">
+
+    <div class="panel-group" id="accordion">
+      {% if top_panel_visible %}
+      <div class="panel panel-default" style="overflow-x: auto;">
+          <div class="panel-heading">
+            {% if top_panel_collapsible %}
+            <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
+            {% endif %}
+              <div class="panel-title pull-left">
+                  <h4>{{ top_panel_text_left }}</h4>
+              </div>
+              <div class="panel-title pull-right">
+                <h4>{{ top_panel_text_right }}</h4>
+              </div>
+              <div class="clearfix"></div>
+            {% if top_panel_collapsible %}
+            </a>
+            {% endif %}
+
+          </div>
+          {% if top_panel_collapsible %}
+          <div id="swh-browse-top-collapse" class="panel-collapse collapse">
+          {% endif %}
+            <table class="table">
+              <tbody>
+                {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+                  <tr>
+                    <th class="swh-metadata-table-row">{{ key }}</th>
+                    <td class="swh-metadata-table-row">
+                      <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% if top_panel_collapsible %}
+          </div>
+          {% endif %}
       </div>
-      {% if top_panel_collapsible %}
-      <div id="swh-browse-top-collapse" class="panel-collapse collapse">
       {% endif %}
-        <table class="table">
-          <tbody>
-            {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-              <tr>
-                <th class="swh-metadata-table-row">{{ key }}</th>
-                <td class="swh-metadata-table-row">
-                  <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% if top_panel_collapsible %}
+      {% if main_panel_visible %}
+      <div class="panel panel-default" style="overflow-x: auto;">
+        {% block swh-browse-main-panel-content %}{% endblock %}
       </div>
       {% endif %}
+    </div>
+
+    {% block swh-browse-after-panels %}{% endblock %}
+
   </div>
-  {% endif %}
-  {% if main_panel_visible %}
-  <div class="panel panel-default" style="overflow-x: auto;">
-    {% block swh-browse-main-panel-content %}{% endblock %}
+  <div class="tab-pane" id="tab_search">
+
+    {% include "includes/origins-search.html" %}
+
   </div>
-  {% endif %}
 </div>
 
-{% block swh-browse-after-panels %}{% endblock %}
+
 
 {% endblock %}
