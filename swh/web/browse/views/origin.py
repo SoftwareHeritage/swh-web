@@ -4,7 +4,11 @@
 # See top-level LICENSE file for more information
 
 import dateutil
+import json
 
+from distutils.util import strtobool
+
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from django.template.defaultfilters import filesizeformat
@@ -618,3 +622,25 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                    'top_right_link_text': None,
                    'include_top_navigation': True,
                    'no_origin_context': False})
+
+
+@browse_route(r'origin/search/(?P<url_pattern>.+)/',
+              view_name='browse-origin-search')
+def origin_search(request, url_pattern):
+    """Search for origins whose urls contain a provided string pattern
+    or match a provided regular expression.
+    The search is performed in a case insensitive way.
+
+    """
+
+    offset = int(request.GET.get('offset', '0'))
+    limit = int(request.GET.get('limit', '50'))
+    regexp = request.GET.get('regexp', 'false')
+
+    results = service.search_origin(url_pattern, offset, limit,
+                                    bool(strtobool(regexp)))
+
+    results = json.dumps(list(results), sort_keys=True, indent=4,
+                         separators=(',', ': '))
+
+    return HttpResponse(results, content_type='application/json')

@@ -113,7 +113,7 @@ Origin
 
     .. parsed-literal::
 
-        $ curl -i :swh_web_api:`origin/search/python/`?limit=2
+        $ curl -i :swh_web_api:`origin/search/python/?limit=2`
 
     **Response:**
 
