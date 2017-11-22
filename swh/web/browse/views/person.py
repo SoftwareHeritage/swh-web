@@ -29,7 +29,7 @@ def person_browse(request, person_id):
     try:
         person = service.lookup_person(person_id)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     return render(request, 'person.html',
                   {'top_panel_visible': True,

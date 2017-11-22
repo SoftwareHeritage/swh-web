@@ -8,6 +8,7 @@ from nose.tools import istest, nottest
 
 from django.test import TestCase
 
+from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.utils import reverse
 from swh.web.browse.utils import gen_path_info
 from .data.directory_test_data import (
@@ -97,3 +98,29 @@ class SwhBrowseDirectoryTest(TestCase):
 
         self.directory_view(stub_root_directory_sha1, stub_sub_directory_data,
                             stub_sub_directory_path)
+
+    @patch('swh.web.browse.utils.service')
+    @patch('swh.web.browse.views.directory.service')
+    @istest
+    def directory_request_errors(self, mock_directory_service,
+                                 mock_utils_service):
+
+        mock_utils_service.lookup_directory.side_effect = \
+            BadInputExc('directory not found')
+
+        dir_url = reverse('browse-directory',
+                          kwargs={'sha1_git': '1253456'})
+
+        resp = self.client.get(dir_url)
+        self.assertEquals(resp.status_code, 400)
+        self.assertTemplateUsed('error.html')
+
+        mock_utils_service.lookup_directory.side_effect = \
+            NotFoundExc('directory not found')
+
+        dir_url = reverse('browse-directory',
+                          kwargs={'sha1_git': '1253456'})
+
+        resp = self.client.get(dir_url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')

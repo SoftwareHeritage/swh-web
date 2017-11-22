@@ -42,7 +42,7 @@ def directory_browse(request, sha1_git, path=None):
 
         dirs, files = get_directory_entries(sha1_git)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     path_info = gen_path_info(path)
 

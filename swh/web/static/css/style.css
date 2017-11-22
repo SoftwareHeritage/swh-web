@@ -329,7 +329,7 @@ bread-crumbs ul {
     background-color: transparent;
     white-space: pre;
 }
-    
+
 .scrollable-menu {
     max-height: 180px;
     overflow-x: hidden;
@@ -374,48 +374,76 @@ td.hljs-ln-code {
 	padding-left: 10px;
 }
 
-.btn-swh { 
-    color: #6C6C6C; 
-    background-color: #EAEAEA; 
-    border-color: #EAEAEA; 
-  } 
-   
-  .btn-swh:hover, 
-  .btn-swh:focus, 
-  .btn-swh:active, 
-  .btn-swh.active, 
-  .open .dropdown-toggle.btn-swh { 
-    color: #6C6C6C; 
-    background-color: #D4D4D4; 
-    border-color: #EAEAEA; 
-  } 
-   
-  .btn-swh:active, 
-  .btn-swh.active, 
-  .open .dropdown-toggle.btn-swh { 
-    background-image: none; 
-  } 
-   
-  .btn-swh.disabled, 
-  .btn-swh[disabled], 
-  fieldset[disabled] .btn-swh, 
-  .btn-swh.disabled:hover, 
-  .btn-swh[disabled]:hover, 
-  fieldset[disabled] .btn-swh:hover, 
-  .btn-swh.disabled:focus, 
-  .btn-swh[disabled]:focus, 
-  fieldset[disabled] .btn-swh:focus, 
-  .btn-swh.disabled:active, 
-  .btn-swh[disabled]:active, 
-  fieldset[disabled] .btn-swh:active, 
-  .btn-swh.disabled.active, 
-  .btn-swh[disabled].active, 
-  fieldset[disabled] .btn-swh.active { 
-    background-color: #EAEAEA; 
-    border-color: #EAEAEA; 
-  } 
-   
-  .btn-swh .badge { 
-    color: #EAEAEA; 
-    background-color: #6C6C6C; 
-  }
+.btn-swh {
+    color: #6C6C6C;
+    background-color: #EAEAEA;
+    border-color: #EAEAEA;
+}
+
+.btn-swh:hover,
+.btn-swh:focus,
+.btn-swh:active,
+.btn-swh.active,
+.open .dropdown-toggle.btn-swh {
+    color: #6C6C6C;
+    background-color: #D4D4D4;
+    border-color: #EAEAEA;
+}
+
+.btn-swh:active,
+.btn-swh.active,
+.open .dropdown-toggle.btn-swh {
+    background-image: none;
+}
+
+.btn-swh.disabled,
+.btn-swh[disabled],
+fieldset[disabled] .btn-swh,
+.btn-swh.disabled:hover,
+.btn-swh[disabled]:hover,
+fieldset[disabled] .btn-swh:hover,
+.btn-swh.disabled:focus,
+.btn-swh[disabled]:focus,
+fieldset[disabled] .btn-swh:focus,
+.btn-swh.disabled:active,
+.btn-swh[disabled]:active,
+fieldset[disabled] .btn-swh:active,
+.btn-swh.disabled.active,
+.btn-swh[disabled].active,
+fieldset[disabled] .btn-swh.active {
+    background-color: #EAEAEA;
+    border-color: #EAEAEA;
+}
+
+.btn-swh .badge {
+    color: #EAEAEA;
+    background-color: #6C6C6C;
+}
+
+.swh-http-error {
+    margin: 0 auto;
+    text-align: center;
+}
+
+.swh-http-error-head {
+    color: #2d353c;
+    font-size: 30px;
+}
+
+.swh-http-error-code {
+    bottom: 60%;
+    color: #2d353c;
+    font-size: 96px;
+    line-height: 80px;
+    margin-bottom: 10px!important;
+}
+
+.swh-http-error-desc {
+    font-size: 12px;
+    color: #647788;
+}
+
+.swh-http-error-desc pre {
+    background-color: #f5f5f5;
+    text-align: left;
+}

@@ -48,7 +48,7 @@ def revision_browse(request, sha1_git):
     try:
         revision = service.lookup_revision(sha1_git)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     revision_data = {}
 
@@ -113,7 +113,7 @@ def revision_log_browse(request, sha1_git):
                                                    limit=per_page+1)
         revision_log = list(revision_log)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
 
