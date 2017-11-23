@@ -164,6 +164,9 @@ def origin_directory_browse(request, origin_id, visit_id=None,
 
         if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
+            if not origin_visits:
+                raise NotFoundExc('No SWH visit associated to '
+                                  'origin with id %s' % origin_id)
             return origin_directory_browse(request, origin_id,
                                            origin_visits[-1]['visit'],
                                            path=path)
@@ -320,6 +323,9 @@ def origin_content_display(request, origin_id, path,
 
         if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
+            if not origin_visits:
+                raise NotFoundExc('No SWH visit associated to '
+                                  'origin with id %s' % origin_id)
             return origin_content_display(request, origin_id, path,
                                           origin_visits[-1]['visit'])
 
@@ -482,6 +488,9 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
 
         if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
+            if not origin_visits:
+                raise NotFoundExc('No SWH visit associated to '
+                                  'origin with id %s' % origin_id)
             return origin_log_browse(request, origin_id,
                                      origin_visits[-1]['visit'])
 
