@@ -114,11 +114,11 @@ def _get_branch(branches, branch_name):
     (e.g those with svn type) does not have it. In that latter case, check
     if there is a master branch instead and returns it.
     """
-    filtered_branches = [b for b in branches if branch_name in b['name']]
+    filtered_branches = [b for b in branches if b['name'].endswith(branch_name)] # noqa
     if len(filtered_branches) > 0:
         return filtered_branches[0]
     elif branch_name == 'HEAD':
-        filtered_branches = [b for b in branches if 'master' in b['name']]
+        filtered_branches = [b for b in branches if b['name'].endswith('master')] # noqa
         if len(filtered_branches) > 0:
             return filtered_branches[0]
     return None
