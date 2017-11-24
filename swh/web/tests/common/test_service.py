@@ -1776,14 +1776,13 @@ class ServiceTestCase(unittest.TestCase):
         mock_storage.revision_get_by.return_value = None
 
         # when
-        actual_revisions = service.lookup_revision_by(1)
+        with self.assertRaises(NotFoundExc):
+            service.lookup_revision_by(1)
 
-        # then
-        self.assertIsNone(actual_revisions)
-
-        mock_storage.revision_get_by.assert_called_with(1, 'refs/heads/master',
-                                                        limit=1,
-                                                        timestamp=None)
+            # then
+            mock_storage.revision_get_by.assert_called_with(1, 'refs/heads/master', # noqa
+                                                            limit=1,
+                                                            timestamp=None)
 
     @patch('swh.web.common.service.storage')
     @istest
