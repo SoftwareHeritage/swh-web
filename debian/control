@@ -17,7 +17,8 @@ Build-Depends: debhelper (>= 9),
                python3-sphinxcontrib.httpdomain,
                python3-swh.core (>= 0.0.20~),
                python3-swh.model (>= 0.0.15~),
-               python3-swh.storage (>= 0.0.83~)
+               python3-swh.storage (>= 0.0.83~),
+               python3-swh.vault (>= 0.0.1~)
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
