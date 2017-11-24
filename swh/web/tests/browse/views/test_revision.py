@@ -8,6 +8,7 @@ from nose.tools import istest
 from django.test import TestCase
 from django.utils.html import escape
 
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse, format_utc_iso_date
 
 from .data.revision_test_data import (
@@ -20,7 +21,7 @@ class SwhBrowseRevisionTest(TestCase):
 
     @patch('swh.web.browse.views.revision.service')
     @istest
-    def test_revision_browse(self, mock_service):
+    def revision_browse(self, mock_service):
         mock_service.lookup_revision.return_value = revision_metadata_test
 
         url = reverse('browse-revision',
@@ -72,7 +73,7 @@ class SwhBrowseRevisionTest(TestCase):
 
     @patch('swh.web.browse.views.revision.service')
     @istest
-    def test_revision_log_browse(self, mock_service):
+    def revision_log_browse(self, mock_service):
         per_page = 10
         mock_service.lookup_revision_log.return_value = \
             revision_history_log_test[:per_page+1]
@@ -175,3 +176,24 @@ class SwhBrowseRevisionTest(TestCase):
         self.assertContains(resp, '<li class="disabled"><a>Older</a></li>')
         self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
                             escape(prev_page_url))
+
+    @patch('swh.web.browse.views.revision.service')
+    @istest
+    def revision_request_errors(self, mock_service):
+        mock_service.lookup_revision.side_effect = \
+            NotFoundExc('Revision not found')
+        url = reverse('browse-revision',
+                      kwargs={'sha1_git': revision_id_test})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'Revision not found', status_code=404)
+
+        mock_service.lookup_revision_log.side_effect = \
+            NotFoundExc('Revision not found')
+        url = reverse('browse-revision-log',
+                      kwargs={'sha1_git': revision_id_test})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'Revision not found', status_code=404)

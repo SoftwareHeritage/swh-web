@@ -7,17 +7,18 @@ Build-Depends: debhelper (>= 9),
                python3-all,
                python3-docutils,
                python3-nose,
-               python3-django,
-               python3-djangorestframework,
+               python3-django (>= 1.10.7~),
+               python3-djangorestframework (>= 3.4.0~),
                python3-pygments,
                python3-setuptools,
                python3-yaml,
-               python3-magic,
+               python3-magic (>= 0.3.0~),
                python3-sphinx,
                python3-sphinxcontrib.httpdomain,
                python3-swh.core (>= 0.0.20~),
                python3-swh.model (>= 0.0.15~),
-               python3-swh.storage (>= 0.0.83~)
+               python3-swh.storage (>= 0.0.83~),
+               python3-swh.vault (>= 0.0.1~)
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
@@ -26,6 +27,7 @@ Architecture: all
 Depends: python3-swh.core (>= 0.0.20~),
          python3-swh.model (>= 0.0.15~),
          python3-swh.storage (>= 0.0.83~),
+         python3-swh.vault (>= 0.0.1~),
          ${misc:Depends},
          ${python3:Depends}
 Description: Software Heritage Web Applications

@@ -3,6 +3,8 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
+
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from swh.web.common import service
@@ -46,7 +48,7 @@ def revision_browse(request, sha1_git):
     try:
         revision = service.lookup_revision(sha1_git)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     revision_data = {}
 
@@ -63,6 +65,9 @@ def revision_browse(request, sha1_git):
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
     revision_data['message'] = revision['message']
+    revision_data['metadata'] = json.dumps(revision['metadata'],
+                                           sort_keys=True,
+                                           indent=4, separators=(',', ': '))
 
     parents = ''
     for p in revision['parents']:
@@ -108,7 +113,7 @@ def revision_log_browse(request, sha1_git):
                                                    limit=per_page+1)
         revision_log = list(revision_log)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
 

@@ -12,6 +12,7 @@ from django.test import TestCase
 from django.utils.html import escape
 from django.utils.encoding import DjangoUnicodeDecodeError
 
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
 from swh.web.browse.utils import (
     gen_path_info
@@ -226,3 +227,20 @@ class SwhBrowseContentTest(TestCase):
         self.assertEqual(resp['Content-disposition'],
                          'attachment; filename=%s' % stub_content_bin_filename)
         self.assertEqual(resp.content, stub_content_bin_data['raw_data'])
+
+    @patch('swh.web.browse.views.content.request_content')
+    @istest
+    def content_request_errors(self, mock_request_content):
+
+        url = reverse('browse-content', kwargs={'query_string': '123456'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 400)
+        self.assertTemplateUsed('error.html')
+
+        mock_request_content.side_effect = NotFoundExc('content not found')
+
+        url = reverse('browse-content',
+                      kwargs={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')

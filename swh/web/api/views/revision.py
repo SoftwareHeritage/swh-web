@@ -91,7 +91,7 @@ def api_revision_log_by(request, origin_id,
     pointed by a given branch.
     """
     result = {}
-    per_page = int(utils.get_query_params(request).get('per_page', '10'))
+    per_page = int(request.query_params.get('per_page', '10'))
 
     if ts:
         ts = parse_timestamp(ts)
@@ -120,7 +120,7 @@ def api_revision_log_by(request, origin_id,
         query_params = {}
         query_params['sha1_git'] = last_sha1_git
 
-        if utils.get_query_params(request).get('per_page'):
+        if request.query_params.get('per_page'):
             query_params['per_page'] = per_page
 
         result['headers'] = {
@@ -376,7 +376,7 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
 
     """
     result = {}
-    per_page = int(utils.get_query_params(request).get('per_page', '10'))
+    per_page = int(request.query_params.get('per_page', '10'))
 
     def lookup_revision_log_with_limit(s, limit=per_page+1):
         return service.lookup_revision_log(s, limit)
@@ -392,7 +392,7 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         new_last_sha1 = rev_get[-1]['id']
         query_params = {}
 
-        if utils.get_query_params(request).get('per_page'):
+        if request.query_params.get('per_page'):
             query_params['per_page'] = per_page
 
         result['headers'] = {

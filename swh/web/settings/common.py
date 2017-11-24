@@ -35,7 +35,7 @@ SECRET_KEY = swh_web_config['secret_key']
 DEBUG = swh_web_config['debug']
 DEBUG_PROPAGATE_EXCEPTIONS = swh_web_config['debug']
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost'] + swh_web_config['allowed_hosts']
 
 # Application definition
 
@@ -81,8 +81,6 @@ TEMPLATES = [
         },
     },
 ]
-
-TEMPLATE_DIRS = TEMPLATES[0]['DIRS']
 
 WSGI_APPLICATION = 'swh.web.wsgi.application'
 
@@ -189,5 +187,3 @@ LOGGING = {
         }
     },
 }
-
-SILENCED_SYSTEM_CHECKS = ['1_7.W001', '1_8.W001']

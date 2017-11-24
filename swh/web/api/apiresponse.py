@@ -62,7 +62,7 @@ def filter_by_fields(request, data):
     If such field is not provided, returns the data as is.
 
     """
-    fields = utils.get_query_params(request).get('fields')
+    fields = request.query_params.get('fields')
     if fields:
         fields = set(fields.split(','))
         data = utils.filter_field_keys(data, fields)

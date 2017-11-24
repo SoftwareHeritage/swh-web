@@ -46,7 +46,7 @@ def content_raw(request, query_string):
         checksum = hash_to_hex(checksum)
         content_data = request_content(query_string)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     filename = request.GET.get('filename', None)
     if not filename:
@@ -87,7 +87,7 @@ def content_display(request, query_string):
         checksum = hash_to_hex(checksum)
         content_data = request_content(query_string)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     path = request.GET.get('path', None)
 
