@@ -3,8 +3,6 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import django
-
 from django.conf.urls import (
     url, include, handler400, handler403, handler404, handler500
 )
@@ -37,12 +35,3 @@ handler400 = swh_handle400 # noqa
 handler403 = swh_handle403 # noqa
 handler404 = swh_handle404 # noqa
 handler500 = swh_handle500 # noqa
-
-# hack in order for our custom template tag library
-# to load on django 1.7 (debian jessie version)
-if django.VERSION < (1, 8):
-    from django.template.base import templatetags_modules # noqa
-    templatetags_modules += ['django.templatetags',
-                             'django.contrib.admin.templatetags',
-                             'django.contrib.staticfiles.templatetags',
-                             'rest_framework.templatetags', 'swh.web.common']

@@ -3,10 +3,10 @@
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
 # Runtime dependencies
-django
-djangorestframework
+django >= 1.10.7
+djangorestframework >= 3.4.0
 docutils
-file_magic
+file_magic >= 0.3.0
 pygments
 python-dateutil
 pyyaml

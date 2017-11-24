@@ -82,8 +82,6 @@ TEMPLATES = [
     },
 ]
 
-TEMPLATE_DIRS = TEMPLATES[0]['DIRS']
-
 WSGI_APPLICATION = 'swh.web.wsgi.application'
 
 
@@ -189,5 +187,3 @@ LOGGING = {
         }
     },
 }
-
-SILENCED_SYSTEM_CHECKS = ['1_7.W001', '1_8.W001']
