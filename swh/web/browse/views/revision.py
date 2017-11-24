@@ -3,6 +3,8 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
+
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from swh.web.common import service
@@ -63,6 +65,9 @@ def revision_browse(request, sha1_git):
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
     revision_data['message'] = revision['message']
+    revision_data['metadata'] = json.dumps(revision['metadata'],
+                                           sort_keys=True,
+                                           indent=4, separators=(',', ': '))
 
     parents = ''
     for p in revision['parents']:
