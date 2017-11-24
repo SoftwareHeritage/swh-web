@@ -14,4 +14,4 @@ docs/uri-scheme.md
 docs/dev-info.md
 db.sqlite3
 .vscode/
-
+.directory
