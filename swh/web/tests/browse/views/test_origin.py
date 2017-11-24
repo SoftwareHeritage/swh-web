@@ -9,6 +9,7 @@ from nose.tools import istest, nottest
 from django.test import TestCase
 from django.utils.html import escape
 
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
 
 from .data.origin_test_data import (
@@ -385,3 +386,114 @@ class SwhBrowseOriginTest(TestCase):
                                    stub_origin_sub_directory_entries,
                                    ts=stub_visit_iso_date,
                                    path=stub_origin_sub_directory_path)
+
+    @patch('swh.web.browse.views.origin.request_content')
+    @patch('swh.web.browse.views.origin.get_origin_visits')
+    @patch('swh.web.browse.views.origin.get_origin_visit_branches')
+    @patch('swh.web.browse.utils.service')
+    @patch('swh.web.browse.views.origin.service')
+    @istest
+    def origin_request_errors(self, mock_origin_service,
+                              mock_utils_service,
+                              mock_get_origin_visit_branches,
+                              mock_get_origin_visits,
+                              mock_request_content):
+
+        mock_origin_service.lookup_origin.side_effect = \
+            NotFoundExc('origin not found')
+        url = reverse('browse-origin',
+                      kwargs={'origin_id': '1'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, "origin not found", status_code=404)
+
+        mock_origin_service.lookup_origin.side_effect = None
+        mock_origin_service.lookup_origin.return_value = origin_info_test_data
+        mock_get_origin_visits.return_value = []
+        url = reverse('browse-origin-directory',
+                      kwargs={'origin_id': '1'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, "No SWH visit", status_code=404)
+
+        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visit_branches.side_effect = \
+            NotFoundExc('visit not found')
+        url = reverse('browse-origin-directory',
+                      kwargs={'origin_id': '1',
+                              'visit_id': len(stub_origin_visits)+1})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'visit not found', status_code=404)
+
+        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visit_branches.side_effect = None
+        mock_get_origin_visit_branches.return_value = []
+        url = reverse('browse-origin-directory',
+                      kwargs={'origin_id': '1'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertRegex(resp.content.decode('utf-8'),
+                         'Branch HEAD.*not found')
+
+        mock_get_origin_visit_branches.return_value = stub_origin_branches
+        mock_utils_service.lookup_directory.side_effect = \
+            NotFoundExc('Directory not found')
+        url = reverse('browse-origin-directory',
+                      kwargs={'origin_id': '1'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'Directory not found', status_code=404)
+
+        mock_origin_service.lookup_origin.side_effect = None
+        mock_origin_service.lookup_origin.return_value = origin_info_test_data
+        mock_get_origin_visits.return_value = []
+        url = reverse('browse-origin-content',
+                      kwargs={'origin_id': '1',
+                              'path': 'foo'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, "No SWH visit", status_code=404)
+
+        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visit_branches.side_effect = \
+            NotFoundExc('visit not found')
+        url = reverse('browse-origin-content',
+                      kwargs={'origin_id': '1',
+                              'visit_id': len(stub_origin_visits)+1,
+                              'path': 'foo'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'visit not found', status_code=404)
+
+        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visit_branches.side_effect = None
+        mock_get_origin_visit_branches.return_value = []
+        url = reverse('browse-origin-content',
+                      kwargs={'origin_id': '1',
+                              'path': 'foo'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertRegex(resp.content.decode('utf-8'),
+                         'Branch HEAD.*not found')
+
+        mock_get_origin_visit_branches.return_value = stub_origin_branches
+        mock_origin_service.lookup_directory_with_path.return_value = \
+            {'target': stub_content_text_data['checksums']['sha1']}
+        mock_request_content.side_effect = \
+            NotFoundExc('Content not found')
+        url = reverse('browse-origin-content',
+                      kwargs={'origin_id': '1',
+                              'path': 'foo'})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'Content not found', status_code=404)

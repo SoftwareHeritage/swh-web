@@ -36,7 +36,7 @@ def default_browse_view(request):
 
 
 urlpatterns = [
-    url(r'^$', default_browse_view)
+    url(r'^$', default_browse_view, name='browse-homepage')
 ]
 
 urlpatterns += BrowseUrls.get_url_patterns()

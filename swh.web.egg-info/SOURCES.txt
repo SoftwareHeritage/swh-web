@@ -65,6 +65,7 @@ swh/web/api/views/release.py
 swh/web/api/views/revision.py
 swh/web/api/views/stat.py
 swh/web/api/views/utils.py
+swh/web/api/views/vault.py
 swh/web/browse/__init__.py
 swh/web/browse/browseurls.py
 swh/web/browse/urls.py
@@ -98,6 +99,7 @@ swh/web/static/css/highlightjs/github.css
 swh/web/static/img/arrow-up-small.png
 swh/web/static/img/swh-logo-archive.png
 swh/web/static/img/swh-logo-archive.svg
+swh/web/static/img/swh-logo.svg
 swh/web/static/img/icons/swh-logo-32x32.png
 swh/web/static/img/icons/swh-logo-archive-180x180.png
 swh/web/static/img/icons/swh-logo-archive-192x192.png
@@ -295,6 +297,7 @@ swh/web/templates/content-with-origin.html
 swh/web/templates/content.html
 swh/web/templates/directory.html
 swh/web/templates/entity.html
+swh/web/templates/error.html
 swh/web/templates/layout.html
 swh/web/templates/origin.html
 swh/web/templates/person.html
@@ -330,6 +333,7 @@ swh/web/tests/api/views/test_person.py
 swh/web/tests/api/views/test_release.py
 swh/web/tests/api/views/test_revision.py
 swh/web/tests/api/views/test_stat.py
+swh/web/tests/api/views/test_vault.py
 swh/web/tests/browse/__init__.py
 swh/web/tests/browse/test_utils.py
 swh/web/tests/browse/views/__init__.py

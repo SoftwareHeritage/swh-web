@@ -94,8 +94,8 @@ def api_origin_visits(request, origin_id):
 
     """
     result = {}
-    per_page = int(utils.get_query_params(request).get('per_page', '10'))
-    last_visit = utils.get_query_params(request).get('last_visit')
+    per_page = int(request.query_params.get('per_page', '10'))
+    last_visit = request.query_params.get('last_visit')
     if last_visit:
         last_visit = int(last_visit)
 
@@ -123,7 +123,7 @@ def api_origin_visits(request, origin_id):
             query_params = {}
             query_params['last_visit'] = new_last_visit
 
-            if utils.get_query_params(request).get('per_page'):
+            if request.query_params.get('per_page'):
                 query_params['per_page'] = per_page
 
             result['headers'] = {

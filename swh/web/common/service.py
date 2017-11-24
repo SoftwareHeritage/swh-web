@@ -15,6 +15,7 @@ from swh.web.common.exc import NotFoundExc
 from swh.web import config
 
 storage = config.storage()
+vault = config.vault()
 
 MAX_LIMIT = 50  # Top limit the users can ask for
 
@@ -249,8 +250,13 @@ def lookup_person(person_id):
     Returns:
         person information as dict.
 
+    Raises:
+        NotFoundExc if there is no person with the provided id.
+
     """
     person = _first_element(storage.person_get([person_id]))
+    if not person:
+        raise NotFoundExc('Person with id %s not found' % person_id)
     return converters.from_person(person)
 
 
@@ -338,6 +344,7 @@ def lookup_revision(rev_sha1_git):
 
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
+        NotFoundExc if there is no revision with the provided sha1_git.
 
     """
     _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
@@ -345,6 +352,9 @@ def lookup_revision(rev_sha1_git):
         ['sha1'],
         'Only sha1_git is supported.')
     revision = _first_element(storage.revision_get([sha1_git_bin]))
+    if not revision:
+        raise NotFoundExc('Revision with sha1_git %s not found.'
+                          % rev_sha1_git)
     return converters.from_revision(revision)
 
 
@@ -420,11 +430,17 @@ def lookup_revision_by(origin_id,
     Yields:
         The revisions matching the criterions.
 
+    Raises:
+        NotFoundExc if no revision corresponds to the criterion
+
     """
     res = _first_element(storage.revision_get_by(origin_id,
                                                  branch_name,
                                                  timestamp=timestamp,
                                                  limit=1))
+    if not res:
+        raise NotFoundExc('Revision for origin %s and branch %s not found.'
+                          % (origin_id, branch_name))
     return converters.from_revision(res)
 
 
@@ -440,6 +456,7 @@ def lookup_revision_log(rev_sha1_git, limit):
 
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
+        NotFoundExc if there is no revision with the provided sha1_git.
 
     """
     _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
@@ -448,6 +465,9 @@ def lookup_revision_log(rev_sha1_git, limit):
         'Only sha1_git is supported.')
 
     revision_entries = storage.revision_log([sha1_git_bin], limit)
+    if not revision_entries:
+        raise NotFoundExc('Revision with sha1_git %s not found.'
+                          % rev_sha1_git)
     return map(converters.from_revision, revision_entries)
 
 
@@ -465,7 +485,6 @@ def lookup_revision_log_by(origin_id, branch_name, timestamp, limit):
 
     Raises:
         NotFoundExc if no revision corresponds to the criterion
-        NotFoundExc if the corresponding revision has no log
 
     """
     revision_entries = storage.revision_log_by(origin_id,
@@ -826,3 +845,15 @@ def lookup_directory_through_revision(revision, path=None,
         raise NotFoundExc('Revision with criterion %s not found!' % revision)
     return (rev['id'],
             lookup_directory_with_revision(rev['id'], path, with_data))
+
+
+def vault_cook(obj_type, obj_id, email=None):
+    """Cook a vault bundle.
+    """
+    return vault.cook(obj_type, obj_id, email=email)
+
+
+def vault_fetch(obj_type, obj_id):
+    """Fetch a vault bundle.
+    """
+    return vault.fetch(obj_type, obj_id)

@@ -351,14 +351,3 @@ def enrich_revision(revision, context=None):
                                           kwargs={'sha1_git': revision['id']})
 
     return revision
-
-
-def get_query_params(request):
-    """Utility functions for retrieving query parameters from a DRF request
-    object. Its purpose is to handle multiple versions of DRF."""
-    if hasattr(request, 'query_params'):
-        # DRF >= 3.0 uses query_params attribute
-        return request.query_params
-    else:
-        # while DRF < 3.0 uses QUERY_PARAMS attribute
-        return request.QUERY_PARAMS

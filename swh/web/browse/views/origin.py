@@ -53,7 +53,7 @@ def origin_browse(request, origin_id=None, origin_type=None,
         origin_id = origin_info['id']
         origin_visits = get_origin_visits(origin_id)
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     origin_info['last swh visit browse url'] = \
         reverse('browse-origin-directory',
@@ -114,11 +114,11 @@ def _get_branch(branches, branch_name):
     (e.g those with svn type) does not have it. In that latter case, check
     if there is a master branch instead and returns it.
     """
-    filtered_branches = [b for b in branches if branch_name in b['name']]
+    filtered_branches = [b for b in branches if b['name'].endswith(branch_name)] # noqa
     if len(filtered_branches) > 0:
         return filtered_branches[0]
     elif branch_name == 'HEAD':
-        filtered_branches = [b for b in branches if 'master' in b['name']]
+        filtered_branches = [b for b in branches if b['name'].endswith('master')] # noqa
         if len(filtered_branches) > 0:
             return filtered_branches[0]
     return None
@@ -164,6 +164,9 @@ def origin_directory_browse(request, origin_id, visit_id=None,
 
         if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
+            if not origin_visits:
+                raise NotFoundExc('No SWH visit associated to '
+                                  'origin with id %s' % origin_id)
             return origin_directory_browse(request, origin_id,
                                            origin_visits[-1]['visit'],
                                            path=path)
@@ -210,7 +213,7 @@ def origin_directory_browse(request, origin_id, visit_id=None,
         dirs, files = get_directory_entries(sha1_git)
 
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     if revision_id:
         query_params = {'revision': revision_id}
@@ -320,6 +323,9 @@ def origin_content_display(request, origin_id, path,
 
         if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
+            if not origin_visits:
+                raise NotFoundExc('No SWH visit associated to '
+                                  'origin with id %s' % origin_id)
             return origin_content_display(request, origin_id, path,
                                           origin_visits[-1]['visit'])
 
@@ -361,7 +367,7 @@ def origin_content_display(request, origin_id, path,
         content_data = request_content(query_string)
 
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     if revision_id:
         query_params = {'revision': revision_id}
@@ -448,7 +454,7 @@ NB_LOG_ENTRIES = 20
               r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/log/',
               view_name='browse-origin-log')
 def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
-    """Django view that produces an HTML display of revisions history (aka 
+    """Django view that produces an HTML display of revisions history (aka
     the commit log) associated to a SWH origin.
 
     The url scheme that points to it is the following:
@@ -464,7 +470,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
             (the last one will be used by default)
         timestamp: optionnal visit timestamp parameter
             (the last one will be used by default)
-        revs_breadcrumb: query parameter used internally to store 
+        revs_breadcrumb: query parameter used internally to store
             the navigation breadcrumbs (i.e. the list of descendant revisions
             visited so far).
         per_page: optionnal query parameter used to specify the number of
@@ -482,6 +488,9 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
 
         if not visit_id and not timestamp:
             origin_visits = get_origin_visits(origin_id)
+            if not origin_visits:
+                raise NotFoundExc('No SWH visit associated to '
+                                  'origin with id %s' % origin_id)
             return origin_log_browse(request, origin_id,
                                      origin_visits[-1]['visit'])
 
@@ -523,7 +532,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
         revision_log = list(revision_log)
 
     except Exception as exc:
-        return handle_view_exception(exc)
+        return handle_view_exception(request, exc)
 
     revision_log_display_data = prepare_revision_log_for_display(
         revision_log, per_page, revs_breadcrumb, origin_context=True)

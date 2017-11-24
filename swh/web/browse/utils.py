@@ -95,17 +95,8 @@ def get_mimetype_and_encoding_for_content(content):
         associated to the provided content.
 
     """
-    if hasattr(magic, 'detect_from_content'):
-        magic_result = magic.detect_from_content(content)
-        return magic_result.mime_type, magic_result.encoding
-    # for old api version of magic module (debian jessie)
-    else:
-        m = magic.open(magic.MAGIC_MIME)
-        m.load()
-        magic_result = m.buffer(content).split(';')
-        mimetype = magic_result[0]
-        encoding = magic_result[1].split('=')[1]
-        return mimetype, encoding
+    magic_result = magic.detect_from_content(content)
+    return magic_result.mime_type, magic_result.encoding
 
 
 def request_content(query_string):

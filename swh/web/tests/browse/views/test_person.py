@@ -7,6 +7,7 @@ from unittest.mock import patch
 from nose.tools import istest
 from django.test import TestCase
 
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
 
 
@@ -40,3 +41,15 @@ class SwhBrowsePersonTest(TestCase):
                                   (test_person_data['name'],
                                    test_person_data['email'],
                                    test_person_data['email']))
+
+    @patch('swh.web.browse.views.person.service')
+    @istest
+    def person_request_error(self, mock_service):
+        mock_service.lookup_person.side_effect = \
+            NotFoundExc('Person not found')
+
+        url = reverse('browse-person', kwargs={'person_id': 457587})
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'Person not found', status_code=404)
