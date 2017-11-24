@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="swh-http-error">
+  <div class="swh-http-error-head">Error</div>
+  <div class="swh-http-error-code">
+    <img class="hidden-xs" src="{% static 'img/swh-logo.svg' %}" style="width:80px; height:auto;"/>
+    {{ error_code }}
+    <img class="hidden-xs" src="{% static 'img/swh-logo.svg' %}" style="width:80px; height:auto;"/>
+  </div>
+  <h3>{{ error_message }}</h3>
+
+  <div class="swh-http-error-desc">
+    <pre>{{ error_description }}</pre>
+    <div>
+      <a class="btn" onclick="window.history.back();">
+        <i class="fa fa-arrow-left"></i>
+        Go back to previous page
+      </a>
+      or
+      <a class="btn" href="{% url 'swh-web-homepage' %}">
+        <i class="fa fa-arrow-left"></i>
+        Go back to homepage
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

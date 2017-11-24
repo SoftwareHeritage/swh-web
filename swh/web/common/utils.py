@@ -10,27 +10,20 @@ from dateutil import parser as date_parser
 
 from swh.web.common.exc import BadInputExc
 
-import urllib
-
 from django.core import urlresolvers
 from django.http import QueryDict
 
 
-# override django reverse function in order to get
-# the same result on debian jessie and stretch
-# (see https://code.djangoproject.com/ticket/22223)
 def reverse(viewname, args=None, kwargs=None, query_params=None,
             current_app=None,  urlconf=None):
-    """An override of django reverse function supporting multiple
-    django versions (from 1.7 to current) and query parameters.
+    """An override of django reverse function supporting query parameters.
 
     Args:
-        viewname: the name of the django view from which to compute
-                  a url
+        viewname: the name of the django view from which to compute a url
         args: list of url arguments ordered according to their position it
         kwargs: dictionnary of url arguments indexed by their names
         query_params: dictionnary of query parameters to append to the
-                      reversed url
+            reversed url
         current_app: the name of the django app tighted to the view
         urlconf: url configuration module
 
@@ -39,12 +32,9 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
         query parameters
     """
 
-    url = urllib.parse.unquote(
-        urlresolvers.reverse(
+    url = urlresolvers.reverse(
             viewname, urlconf=urlconf, args=args,
-            kwargs=kwargs, current_app=current_app
-        )
-    )
+            kwargs=kwargs, current_app=current_app)
 
     if query_params:
         query_params = {k: v for k, v in query_params.items() if v is not None}

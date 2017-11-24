@@ -1,12 +1,13 @@
-django
-djangorestframework
+django>=1.10.7
+djangorestframework>=3.4.0
 docutils
-file_magic
+file_magic>=0.3.0
 pygments
 python-dateutil
+pyyaml
 sphinx
 sphinxcontrib-httpdomain
 swh.core>=0.0.20
 swh.model>=0.0.15
 swh.storage>=0.0.83
-yaml
+swh.vault>=0.0.1

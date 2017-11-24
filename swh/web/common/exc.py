@@ -5,9 +5,7 @@
 
 import traceback
 
-from django.http import (
-    HttpResponseBadRequest, HttpResponseNotFound
-)
+from django.shortcuts import render
 
 from swh.web.config import get_config
 
@@ -42,13 +40,72 @@ class ForbiddenExc(Exception):
     pass
 
 
-def handle_view_exception(exc):
-    content_type = None
-    content = str(exc)
+_html_status_code_message = {
+    400: "Bad Request",
+    401: "Unauthorized",
+    403: "Access Denied",
+    404: "Resource not found",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service unavailable"
+}
+
+
+def _generate_error_page(request, error_code, error_description):
+    return render(request, "error.html",
+                  {'error_code': error_code,
+                   'error_message': _html_status_code_message[error_code],
+                   'error_description': error_description}, status=error_code)
+
+
+def swh_handle400(request):
+    """
+    Custom Django HTTP error 400 handler for swh-web.
+    """
+    error_description = 'The server cannot process the request to %s due to '\
+                        'something that is perceived to be a client error.' %\
+                        request.META['PATH_INFO']
+    return _generate_error_page(request, 400, error_description)
+
+
+def swh_handle403(request):
+    """
+    Custom Django HTTP error 403 handler for swh-web.
+    """
+    error_description = 'The resource %s requires an authentication.' %\
+                        request.META['PATH_INFO']
+    return _generate_error_page(request, 403, error_description)
+
+
+def swh_handle404(request):
+    """
+    Custom Django HTTP error 404 handler for swh-web.
+    """
+    error_description = 'The resource %s could not be found on the server.' %\
+                        request.META['PATH_INFO']
+    return _generate_error_page(request, 404, error_description)
+
+
+def swh_handle500(request):
+    """
+    Custom Django HTTP error 500 handler for swh-web.
+    """
+    error_description = 'An unexpected condition was encountered when '\
+                        'requesting resource %s.' %\
+                        request.META['PATH_INFO']
+    return _generate_error_page(request, 500, error_description)
+
+
+def handle_view_exception(request, exc):
+    """
+    Function used to generate an error page when an exception
+    was raised inside a swh-web browse view.
+    """
+    error_code = 400
+    error_description = str(exc)
     if get_config()['debug']:
-        content_type = 'text/plain'
-        content = traceback.format_exc()
+        error_description = traceback.format_exc()
     if isinstance(exc, NotFoundExc):
-        return HttpResponseNotFound(content, content_type=content_type)
-    else:
-        return HttpResponseBadRequest(content, content_type=content_type)
+        error_code = 404
+    return _generate_error_page(request, error_code, error_description)
