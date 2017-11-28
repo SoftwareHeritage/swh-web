@@ -5,7 +5,7 @@
 
 # Functions defined here are NOT DESIGNED FOR PRODUCTION
 
-from rest_framework.test import APITestCase
+from django.core.cache import cache
 
 from swh.storage.api.client import RemoteStorage as Storage
 
@@ -33,14 +33,10 @@ def _init_mock_storage(base_url='https://somewhere.org:4321'):
 
 
 def create_config(base_url='https://somewhere.org:4321'):
-    """Function to initiate a flask app with storage designed to be mocked.
+    """Function to initiate swh-web config with storage designed to be mocked.
 
     Returns:
-        Tuple:
-        - app test client (for testing api, client decorator from flask)
-        - application's full configuration
-        - the storage instance to stub and mock
-        - the main app without any decoration
+        dict containing swh-web config for tests
 
     NOT FOR PRODUCTION
 
@@ -55,16 +51,19 @@ def create_config(base_url='https://somewhere.org:4321'):
     return swh_config
 
 
-class SWHApiTestCase(APITestCase):
+class SWHWebTestBase(object):
     """Testing API class.
 
     """
     @classmethod
     def setUpClass(cls):
-        super(SWHApiTestCase, cls).setUpClass()
+        super(SWHWebTestBase, cls).setUpClass()
         cls.test_config = create_config()
         cls.maxDiff = None
 
     @classmethod
     def storage(cls):
         return cls.test_config['storage']
+
+    def setUp(self):
+        cache.clear()

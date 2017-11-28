@@ -11,11 +11,12 @@ from nose.tools import istest
 
 from swh.web.browse import utils
 from swh.web.common.utils import reverse
+from swh.web.tests.testbase import SWHWebTestBase
 
 from .views.data.revision_test_data import revision_history_log_test
 
 
-class SwhBrowseUtilsTestCase(unittest.TestCase):
+class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
 
     @istest
     def gen_path_info(self):

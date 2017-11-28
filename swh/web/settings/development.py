@@ -5,3 +5,6 @@
 
 
 from .common import *  # noqa
+
+from django.core.cache import cache
+cache.clear()

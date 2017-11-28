@@ -130,7 +130,11 @@ def make_api_response(request, data, doc_data={}, options={}):
                               indent=4,
                               separators=(',', ': '))
         doc_env['response_data'] = data
-        doc_env['request'] = request
+        doc_env['request'] = {
+            'path': request.path,
+            'method': request.method,
+            'absolute_uri': request.build_absolute_uri()
+        }
         doc_env['heading'] = shorten_path(str(request.path))
 
         response_args['data'] = doc_env

@@ -4,14 +4,15 @@
 # See top-level LICENSE file for more information
 
 from nose.tools import istest, nottest
+from rest_framework.test import APITestCase
 from rest_framework.response import Response
 
-from .swh_api_testcase import SWHApiTestCase
 from swh.web.api import apidoc
 from swh.web.api.apiurls import api_route
+from swh.web.tests.testbase import SWHWebTestBase
 
 
-class APIDocTestCase(SWHApiTestCase):
+class APIDocTestCase(SWHWebTestBase, APITestCase):
 
     def setUp(self):
 

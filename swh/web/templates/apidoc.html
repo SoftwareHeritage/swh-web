@@ -7,7 +7,7 @@
 <script>
   hljs.initHighlightingOnLoad();
 </script>
-<link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">  
+<link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">
 {% endblock %}
 {% block content %}
 <nav class="bread-crumbs">
@@ -29,7 +29,7 @@
 {% if response_data  %}
 <div class="response-data">
   <h2>Request</h2>
-  <pre><strong>{{ request.method }}</strong> {{ request.build_absolute_uri }}</pre>
+  <pre><strong>{{ request.method }}</strong> {{ request.absolute_uri }}</pre>
   <hr/>
   <h2>Response</h2>
   {% if status_code != 200 %}

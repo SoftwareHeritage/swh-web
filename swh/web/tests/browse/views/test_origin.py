@@ -11,6 +11,7 @@ from django.utils.html import escape
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
+from swh.web.tests.testbase import SWHWebTestBase
 
 from .data.origin_test_data import (
     origin_info_test_data,
@@ -37,7 +38,7 @@ from swh.web.browse.utils import (
 )
 
 
-class SwhBrowseOriginTest(TestCase):
+class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.service')
