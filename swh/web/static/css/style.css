@@ -254,7 +254,7 @@ tr.api-doc-route-deprecated > td, tr.api-doc-route-deprecated > td > a {
 }
 
 pre {
-    background-color: hsl(47, 99%, 75%);
+    background-color: #f5f5f5;
 }
 
 .dataTables_wrapper {
@@ -319,10 +319,6 @@ bread-crumbs ul {
     background-color: transparent;
     border-radius: 0px;
     border-color: transparent;
-}
-
-.swh-metadata-table-row pre {
-    background-color: #f5f5f5;
 }
 
 .hljs {
@@ -444,6 +440,5 @@ fieldset[disabled] .btn-swh.active {
 }
 
 .swh-http-error-desc pre {
-    background-color: #f5f5f5;
     text-align: left;
 }
