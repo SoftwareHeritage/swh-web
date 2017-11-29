@@ -9,7 +9,7 @@
   <!-- Timeline result -->
   <h2>Visits history</h2>
   <h3>Calendar</h3>
-  <div class="timeline">
+  <div class="timeline" style="margin-bottom: 20px">
     <div id="swh-calendar-window" style="height: 200px">
       <div id="cal-zoom-window" style="height: 60%"></div>
       <div id="cal-static-window" style="height: 40%"></div>
@@ -38,7 +38,7 @@
         </tr>
         {% endfor %}
       <tbody>
-    </table>  
+    </table>
   </div>
 </div>
 
@@ -51,8 +51,8 @@
 <script language="javascript" type="text/javascript" src="{% static 'js/calendar.js' %}"></script>
 <script>
 $(function(){
-  var cal = new Calendar('{{ browse_url_base }}', {{ origin_visits_data | safe }}, 
-                         {{ swh_object_metadata.id }}, $('#cal-zoom-window'), 
+  var cal = new Calendar('{{ browse_url_base }}', {{ origin_visits_data | safe }},
+                         {{ swh_object_metadata.id }}, $('#cal-zoom-window'),
                          $('#cal-static-window'),  $('#cal-clear'));
 });
 </script>

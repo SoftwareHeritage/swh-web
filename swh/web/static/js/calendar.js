@@ -25,7 +25,6 @@ var Calendar = function(browse_url, data, origin_id,
 
     /** Display **/
     this.desiredPxWidth = 7;
-    this.padding = 0.01;
 
     /** Object vars **/
     this.origin_id = origin_id;
@@ -43,6 +42,8 @@ var Calendar = function(browse_url, data, origin_id,
         group_data: null,
         plot_data: null
     };
+
+    zoomw.css('height', '100%');
 
     /**
      *  Keep a reference to the Calendar object context.
@@ -205,7 +206,8 @@ var Calendar = function(browse_url, data, origin_id,
                 mode: 'time',
                 minTickSize: [1, 'day'],
                 // monthNames: self.month_names,
-                position: 'top'
+                position: 'top',
+                timeformat: "%e %b %Y"
             },
             yaxis: {
                 show: false
@@ -215,7 +217,11 @@ var Calendar = function(browse_url, data, origin_id,
             },
             grid: {
                 clickable: true,
-                hoverable: true
+                hoverable: true,
+                margin: {
+                    left: 30,
+                    right: 30
+                }
             },
             tooltip: {
                 show: true,
@@ -246,7 +252,11 @@ var Calendar = function(browse_url, data, origin_id,
             grid: {
                 clickable: true,
                 hoverable: true,
-                color: '#999'
+                color: '#999',
+                margin: {
+                    left: 30,
+                    right: 30
+                }
             },
             selection: {
                 mode: 'x'
@@ -257,20 +267,9 @@ var Calendar = function(browse_url, data, origin_id,
             }
         };
 
-        function addPadding(options, range) {
-            var len = range.xaxis.to - range.xaxis.from;
-            return $.extend(true, {}, options, {
-                xaxis: {
-                    min: range.xaxis.from - (self.padding * len),
-                    max: range.xaxis.to + (self.padding * len)
-                }
-            });
-        }
-
         /** draw the windows **/
-        var plot = self.plotZoom(addPadding(zoom_options, cal_data_range));
-        var overview = self.plotStatic(
-            addPadding(overview_options, cal_data_range));
+        var plot = self.plotZoom(zoom_options);
+        var overview = self.plotStatic(overview_options);
 
         var current_ranges = $.extend(true, {}, cal_data_range);
 
@@ -302,11 +301,14 @@ var Calendar = function(browse_url, data, origin_id,
             self.zoom.group_data = self.static.group_data;
             self.zoom.plot_data = self.static.plot_data;
             self.updateGroupFactorAndData(zoomw, self.zoom, cal_data_range);
-            plot = self.plotZoom(addPadding(plot_options, cal_data_range));
+            plot = self.plotZoom(plot_options);
         }
 
         // now connect the two
         self.zoomw.bind('plotselected', function (event, ranges) {
+            zoomw.css('height', '60%');
+            staticw.show();
+            reset.show();
             // clamp the zooming to prevent eternal zoom
             if (ranges.xaxis.to - ranges.xaxis.from < 0.00001)
                 ranges.xaxis.to = ranges.xaxis.from + 0.00001;
@@ -316,8 +318,11 @@ var Calendar = function(browse_url, data, origin_id,
             overview.setSelection(ranges, true);
         });
 
+        self.staticw_just_selected = false;
+
         self.staticw.bind('plotselected', function (event, ranges) {
             plot.setSelection(ranges);
+            self.staticw_just_selected = true;
         });
 
         function unbindClick() {
@@ -331,18 +336,26 @@ var Calendar = function(browse_url, data, origin_id,
         }
 
         function redirect_to_revision(event, pos, item) {
-            if (item) {
-                var ts = Math.floor(item.datapoint[0] / 1000); // POSIX ts
-                var url = browse_url + 'ts/' + ts + '/directory/';
+            if (item && !self.staticw_just_selected) {
+                var js_date = new Date(item.datapoint[0]);
+                js_date.setUTCSeconds(0);
+                js_date.setUTCMilliseconds(0);
+                var date = js_date.toISOString();
+                var url = browse_url + 'ts/' + date + '/directory/';
                 window.location.href = url;
             }
+            self.staticw_just_selected = false;
         }
 
         reset.click(function(event) {
             plot.clearSelection();
             overview.clearSelection();
             current_ranges = $.extend(true, {}, cal_data_range);
+            zoomw.css('height', '100%');
             resetZoomW(zoom_options);
+            staticw.hide();
+            reset.hide();
+
         });
 
         $(window).resize(function(event) {
@@ -353,13 +366,14 @@ var Calendar = function(browse_url, data, origin_id,
             self.updateGroupFactorAndData(staticw, self.static, cal_data_range);
             self.static.plot_data = self.getPlotData(self.static.group_data);
             /** Replot **/
-            plot = self.plotZoom(
-                addPadding(zoom_options, current_ranges));
-            overview = self.plotStatic(
-                addPadding(overview_options, cal_data_range));
+            plot = self.plotZoom(zoom_options);
+            overview = self.plotStatic(overview_options);
         });
 
         bindClick();
+        staticw.hide();
+        reset.hide();
+
     };
     self.calendar(data);
 };
