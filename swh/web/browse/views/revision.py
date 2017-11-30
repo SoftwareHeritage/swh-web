@@ -79,7 +79,8 @@ def revision_browse(request, sha1_git):
     revision_data['type'] = revision['type']
 
     return render(request, 'revision.html',
-                  {'top_panel_visible': False,
+                  {'heading': 'Revision information',
+                   'top_panel_visible': False,
                    'top_panel_collapsible': False,
                    'top_panel_text_left': 'SWH object: Revision',
                    'top_panel_text_right': 'Sha1 git: ' + sha1_git,
@@ -146,7 +147,8 @@ def revision_log_browse(request, sha1_git):
         log['directory'] = _gen_directory_link(log['directory'], 'Tree')
 
     return render(request, 'revision-log.html',
-                  {'top_panel_visible': False,
+                  {'heading': 'Revision history information',
+                   'top_panel_visible': False,
                    'top_panel_collapsible': False,
                    'top_panel_text_left': 'SWH object: Revision history',
                    'top_panel_text_right': 'Sha1 git: ' + sha1_git,

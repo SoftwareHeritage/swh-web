@@ -1,4 +1,4 @@
-This document describes the <strong>Software Heritage Web API</strong>.
+# Software Heritage Web API
 
 <ul>
   <li><a href="#endpoint-index">Endpoint index</a></li>

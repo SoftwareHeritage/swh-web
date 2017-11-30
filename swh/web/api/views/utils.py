@@ -72,7 +72,7 @@ def api_home(request):
     return Response({}, template_name='api.html')
 
 
-APIUrls.add_url_pattern(r'^$', api_home, view_name='api_homepage')
+APIUrls.add_url_pattern(r'^$', api_home, view_name='api-homepage')
 
 
 @api_route(r'/', 'endpoints')

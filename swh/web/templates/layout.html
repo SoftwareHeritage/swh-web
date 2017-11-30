@@ -10,9 +10,9 @@
     {% block header %}{% endblock %}
 
     <!-- BEGIN: bootstrap -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-    
+
     <link rel="stylesheet" href="{% static 'css/bootstrap-responsive.min.css' %}">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
@@ -43,10 +43,10 @@
             <span class="icon-bar"></span>
           </button>
           <div class="logo">
-            <a class="navbar-brand" href="{% url 'api_homepage' %}"> <!-- logo -->
+            <a class="navbar-brand" href="{% url 'swh-web-homepage' %}"> <!-- logo -->
               <img alt="SWH Archive" src="{% static 'img/swh-logo-archive.png' %}" class="swh-logo" />
             </a>
-            <a class="navbar-brand sitename" href="{% url 'api_homepage' %}">
+            <a class="navbar-brand sitename" href="{% url 'swh-web-homepage' %}">
               <span class="first-word">Software</span> <span class="second-word">Heritage</span>
             </a>
           </div>
@@ -69,7 +69,7 @@
       our <a href="https://forge.softwareheritage.org/">development
       forge</a>. <br /> The source code files <em>archived</em> by Software
       Heritage are available under their own copyright and licenses. <br />
-      <a href="https://www.softwareheritage.org/software-heritage-api-terms-of-use/">Terms of use</a> - 
+      <a href="https://www.softwareheritage.org/software-heritage-api-terms-of-use/">Terms of use</a> -
       <a href="https://www.softwareheritage.org/contact/">Contact</a>.
     </div>
     <div id="back-to-top">
