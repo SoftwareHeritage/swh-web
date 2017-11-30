@@ -171,7 +171,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.content.request_content')
     @istest
-    def test_content_raw_text(self, mock_request_content):
+    def content_raw_text(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_data
 
         url = reverse('browse-content-raw',

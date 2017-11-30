@@ -382,7 +382,7 @@ class ContentApiTestCase(SWHWebTestBase, APITestCase):
 
     @patch('swh.web.api.views.content.service')
     @istest
-    def test_api_content_metadata(self, mock_service):
+    def api_content_metadata(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
             'checksums': {

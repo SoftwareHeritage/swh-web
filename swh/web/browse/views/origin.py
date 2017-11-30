@@ -12,7 +12,7 @@ from swh.web.common import service
 from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
-    get_origin_visits, get_origin_visit_branches,
+    get_origin_visits, get_origin_visit, get_origin_visit_branches,
     gen_path_info, get_directory_entries, request_content,
     prepare_content_for_display, gen_link,
     prepare_revision_log_for_display
@@ -124,6 +124,13 @@ def _get_branch(branches, branch_name):
     return None
 
 
+def _gen_origin_link(origin_id, origin_url):
+    origin_browse_url = reverse('browse-origin',
+                                kwargs={'origin_id': origin_id})
+    return gen_link(origin_browse_url,
+                    'Origin: ' + origin_url)
+
+
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/directory/',
               r'origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
               r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/', # noqa
@@ -172,9 +179,9 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                                            path=path)
 
         origin_info = service.lookup_origin({'id': origin_id})
-        branches, url_args = _get_origin_branches_and_url_args(origin_id,
-                                                               visit_id,
-                                                               timestamp)
+        branches, url_args = \
+            _get_origin_branches_and_url_args(origin_id, visit_id, timestamp)
+        visit_info = get_origin_visit(origin_id, visit_id, timestamp)
 
         for b in branches:
             branch_url_args = dict(url_args)
@@ -268,13 +275,15 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                     'origin id': origin_info['id'],
                     'origin type': origin_info['type'],
                     'origin url': origin_info['url'],
+                    'origin visit': format_utc_iso_date(visit_info['date']),
                     'path': '/' + path}
 
     return render(request, 'directory.html',
                   {'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Directory',
-                   'top_panel_text_right': 'Origin: ' + origin_info['url'],
+                   'top_panel_text_right': _gen_origin_link(
+                       origin_id, origin_info['url']),
                    'swh_object_metadata': dir_metadata,
                    'main_panel_visible': True,
                    'dirs': dirs,
@@ -330,9 +339,10 @@ def origin_content_display(request, origin_id, path,
                                           origin_visits[-1]['visit'])
 
         origin_info = service.lookup_origin({'id': origin_id})
-        branches, url_args = _get_origin_branches_and_url_args(origin_id,
-                                                               visit_id,
-                                                               timestamp)
+        branches, url_args = \
+            _get_origin_branches_and_url_args(origin_id, visit_id, timestamp)
+
+        visit_info = get_origin_visit(origin_id, visit_id, timestamp)
 
         for b in branches:
             bc_url_args = dict(url_args)
@@ -418,6 +428,7 @@ def origin_content_display(request, origin_id, path,
         'origin id': origin_info['id'],
         'origin type': origin_info['type'],
         'origin url': origin_info['url'],
+        'origin visit': format_utc_iso_date(visit_info['date']),
         'path': '/' + path,
         'filename': filename
     }
@@ -426,7 +437,8 @@ def origin_content_display(request, origin_id, path,
                   {'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Content',
-                   'top_panel_text_right': 'Origin: %s' % origin_info['url'],
+                   'top_panel_text_right': _gen_origin_link(
+                       origin_id, origin_info['url']),
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content_display_data['content_data'],
@@ -494,9 +506,10 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
             return origin_log_browse(request, origin_id,
                                      origin_visits[-1]['visit'])
 
-        branches, url_args = _get_origin_branches_and_url_args(origin_id,
-                                                               visit_id,
-                                                               timestamp)
+        branches, url_args = \
+            _get_origin_branches_and_url_args(origin_id, visit_id, timestamp)
+
+        visit_info = get_origin_visit(origin_id, visit_id, timestamp)
 
         for b in branches:
             b['url'] = reverse('browse-origin-log',
@@ -565,12 +578,22 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
         log['directory'] = _gen_directory_link(url_args, revision_log[i]['id'],
                                                'Tree')
 
+    origin_info = service.lookup_origin({'id': origin_id})
+
+    revision_metadata = {
+        'origin id': origin_info['id'],
+        'origin type': origin_info['type'],
+        'origin url': origin_info['url'],
+        'origin visit': format_utc_iso_date(visit_info['date'])
+    }
+
     return render(request, 'revision-log.html',
-                  {'top_panel_visible': False,
-                   'top_panel_collapsible': False,
+                  {'top_panel_visible': True,
+                   'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Revision history',
-                   'top_panel_text_right': 'Sha1 git: ' + revision,
-                   'swh_object_metadata': None,
+                   'top_panel_text_right': _gen_origin_link(
+                       origin_id, origin_info['url']),
+                   'swh_object_metadata': revision_metadata,
                    'main_panel_visible': True,
                    'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
@@ -580,4 +603,5 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                    'branch': branch_name,
                    'top_right_link': None,
                    'top_right_link_text': None,
-                   'include_top_navigation': True})
+                   'include_top_navigation': True,
+                   'no_origin_context': False})

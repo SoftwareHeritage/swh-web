@@ -249,6 +249,58 @@ def get_origin_visits(origin_id):
     return origin_visits
 
 
+def get_origin_visit(origin_id, visit_id=None, visit_ts=None):
+    """Function that returns information about a SWH visit for
+    a given origin.
+    The visit is retrieved from the visits list using either:
+        * a visit id
+        * a provided timestamp, in that case, the closest visit from
+          that timestamp is selected
+
+    Args:
+        origin_id (int): the id of the swh origin to fetch branches from
+        visit_id (int): the id of the origin visit
+        visit_ts (int or str): an ISO date string or Unix timestamp to parse
+
+    Returns:
+        A dict containing the visit info as described below::
+
+            {'origin': 2,
+             'date': '2017-10-08T11:54:25.582463+00:00',
+             'metadata': {},
+             'visit': 25,
+             'status': 'full'}
+
+    """
+    visits = get_origin_visits(origin_id)
+    if not visit_id and visit_ts:
+        parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
+        for i, visit in enumerate(visits):
+            ts = math.floor(parse_timestamp(visit['date']).timestamp())
+            if i == 0 and parsed_visit_ts <= ts:
+                return visit
+            elif i == len(visits) - 1:
+                if parsed_visit_ts >= ts:
+                    return visit
+            else:
+                next_ts = math.floor(
+                    parse_timestamp(visits[i+1]['date']).timestamp())
+                if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
+                    if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
+                        return visit
+                    else:
+                        return visits[i+1]
+        raise NotFoundExc(
+            'Visit with timestamp %s for origin with id %s not found!' %
+            (visit_ts, origin_id))
+
+    visit = [v for v in visits if v['visit'] == int(visit_id)]
+    if len(visit) > 0:
+        return visit[0]
+    else:
+        return None
+
+
 def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
     """Function that returns the list of branches associated to
     a swh origin for a given visit.
@@ -265,7 +317,8 @@ def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
         visit_ts (int or str): an ISO date string or Unix timestamp to parse
 
     Returns:
-        A list of dict describing the origin branches for the given visit::
+        A tuple with two members. The first one is a list of dict describing
+        the origin branches for the given visit::
 
             [{'name': <branch name>,
               'revision': <sha1_git of the associated revision>,
@@ -274,34 +327,15 @@ def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
              ...
             ]
 
+        The second one is the ISO date string corresponding to the associated
+        SWH visit.
+
     Raises:
         NotFoundExc if the origin or its visit are not found
     """
 
-    if not visit_id and visit_ts:
-        parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
-        visits = get_origin_visits(origin_id)
-        for i, visit in enumerate(visits):
-            ts = math.floor(parse_timestamp(visit['date']).timestamp())
-            if i == 0:
-                if parsed_visit_ts <= ts:
-                    return get_origin_visit_branches(origin_id, visit['visit'])
-            elif i == len(visits) - 1:
-                if parsed_visit_ts >= ts:
-                    return get_origin_visit_branches(origin_id, visit['visit'])
-            else:
-                next_ts = math.floor(
-                    parse_timestamp(visits[i+1]['date']).timestamp())
-                if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
-                    if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
-                        return get_origin_visit_branches(origin_id,
-                                                         visit['visit'])
-                    else:
-                        return get_origin_visit_branches(origin_id,
-                                                         visits[i+1]['visit'])
-        raise NotFoundExc(
-            'Visit with timestamp %s for origin with id %s not found!' %
-            (visit_ts, origin_id))
+    visit_info = get_origin_visit(origin_id, visit_id, visit_ts)
+    visit_id = visit_info['visit']
 
     cache_entry_id = 'origin_%s_visit_%s_branches' % (origin_id, visit_id)
     cache_entry = cache.get(cache_entry_id)

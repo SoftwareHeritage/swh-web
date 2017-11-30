@@ -160,4 +160,5 @@ def revision_log_browse(request, sha1_git):
                    'branch': None,
                    'top_right_link': None,
                    'top_right_link_text': None,
-                   'include_top_navigation': False})
+                   'include_top_navigation': False,
+                   'no_origin_context': True})

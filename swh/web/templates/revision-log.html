@@ -3,16 +3,17 @@
 
 {% block swh-browse-main-panel-content %}
 
+{% if no_origin_context %}
 <div class="panel-heading">
   <div class="panel-title pull-left">
-      <h4>{{ top_panel_text_left }}</h4> 
+      <h4>{{ top_panel_text_left }}</h4>
   </div>
   <div class="panel-title pull-right">
     <h4>{{ top_panel_text_right }}</h4>
   </div>
   <div class="clearfix"></div>
-      
 </div>
+{% endif %}
 
 {% if include_top_navigation %}
 {% include "includes/top-navigation.html" %}
