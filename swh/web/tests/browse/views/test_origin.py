@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.utils.html import escape
 
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, gen_path_info
 from swh.web.tests.testbase import SWHWebTestBase
 
 from .data.origin_test_data import (
@@ -31,10 +31,6 @@ from .data.content_test_data import (
     stub_content_root_dir,
     stub_content_text_data,
     stub_content_text_path
-)
-
-from swh.web.browse.utils import (
-    gen_path_info
 )
 
 
@@ -145,8 +141,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                         kwargs=url_args,
                         query_params={'branch': branch['name']})
 
-            self.assertContains(resp, '<a href="%s">%s</a>' %
-                                (root_dir_branch_url, branch['name']))
+            self.assertContains(resp, '<a href="%s">' % root_dir_branch_url)
 
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.get_origin_visit_branches')
@@ -294,8 +289,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                         kwargs=url_args,
                         query_params={'branch': branch['name']})
 
-            self.assertContains(resp, '<a href="%s">%s</a>' %
-                                (root_dir_branch_url, branch['name']))
+            self.assertContains(resp, '<a href="%s">' % root_dir_branch_url)
 
     @patch('swh.web.browse.views.origin.get_origin_visit')
     @patch('swh.web.browse.views.origin.get_origin_visits')

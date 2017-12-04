@@ -8,11 +8,10 @@ from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
-from swh.web.browse.utils import (
-    gen_path_info, get_directory_entries
-)
+from swh.web.browse.utils import get_directory_entries
+
 from swh.web.browse.browseurls import browse_route
 
 

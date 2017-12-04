@@ -11,11 +11,10 @@ from django.template.defaultfilters import filesizeformat
 from swh.model.hashutil import hash_to_hex
 
 from swh.web.common import query
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
-    gen_path_info, request_content,
-    prepare_content_for_display
+    request_content, prepare_content_for_display
 )
 from swh.web.browse.browseurls import browse_route
 

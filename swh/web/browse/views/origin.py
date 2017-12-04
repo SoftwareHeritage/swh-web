@@ -10,11 +10,13 @@ from django.utils.safestring import mark_safe
 from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
-from swh.web.common.utils import reverse, format_utc_iso_date
+from swh.web.common.utils import (
+    gen_path_info, reverse, format_utc_iso_date
+)
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
     get_origin_visits, get_origin_visit, get_origin_visit_branches,
-    gen_path_info, get_directory_entries, request_content,
+    get_directory_entries, request_content,
     prepare_content_for_display, gen_link,
     prepare_revision_log_for_display
 )

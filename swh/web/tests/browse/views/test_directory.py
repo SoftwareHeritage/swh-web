@@ -10,7 +10,7 @@ from django.test import TestCase
 
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.browse.utils import gen_path_info
+from swh.web.common.utils import gen_path_info
 from swh.web.tests.testbase import SWHWebTestBase
 
 from .data.directory_test_data import (

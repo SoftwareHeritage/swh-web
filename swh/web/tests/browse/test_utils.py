@@ -19,22 +19,6 @@ from .views.data.revision_test_data import revision_history_log_test
 class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
 
     @istest
-    def gen_path_info(self):
-        input_path = '/home/user/swh-environment/swh-web/'
-        expected_result = [
-            {'name': 'home', 'path': 'home'},
-            {'name': 'user', 'path': 'home/user'},
-            {'name': 'swh-environment', 'path': 'home/user/swh-environment'},
-            {'name': 'swh-web', 'path': 'home/user/swh-environment/swh-web'}
-        ]
-        path_info = utils.gen_path_info(input_path)
-        self.assertEquals(path_info, expected_result)
-
-        input_path = 'home/user/swh-environment/swh-web'
-        path_info = utils.gen_path_info(input_path)
-        self.assertEquals(path_info, expected_result)
-
-    @istest
     def get_mimetype_and_encoding_for_content(self):
         text = b'Hello world!'
         self.assertEqual(utils.get_mimetype_and_encoding_for_content(text),

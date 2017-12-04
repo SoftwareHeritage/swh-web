@@ -265,10 +265,8 @@ pre {
 
 .bread-crumbs{
     display: inline-block;
-    margin: 0 0 15px;
     overflow: hidden;
     color: rgba(0, 0, 0, 0.55);
-    font-size: 1.2rem;
 }
 
 bread-crumbs ul {
@@ -277,7 +275,6 @@ bread-crumbs ul {
 
 .bread-crumbs li {
     float: left;
-    margin-right: 10px;
     list-style-type: none;
 }
 

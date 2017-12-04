@@ -14,7 +14,7 @@ from django.utils.encoding import DjangoUnicodeDecodeError
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.browse.utils import gen_path_info
+from swh.web.common.utils import gen_path_info
 from swh.web.tests.testbase import SWHWebTestBase
 
 from .data.content_test_data import (

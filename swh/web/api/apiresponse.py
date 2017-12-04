@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from swh.storage.exc import StorageDBError, StorageAPIError
 
 from swh.web.common.exc import NotFoundExc, ForbiddenExc
-from swh.web.common.utils import shorten_path
+from swh.web.common.utils import shorten_path, gen_path_info
 from swh.web.api import utils
 
 
@@ -136,6 +136,9 @@ def make_api_response(request, data, doc_data={}, options={}):
             'absolute_uri': request.build_absolute_uri()
         }
         doc_env['heading'] = shorten_path(str(request.path))
+
+        if 'route' in doc_env:
+            doc_env['endpoint_path'] = gen_path_info(doc_env['route'])
 
         response_args['data'] = doc_env
         response_args['template_name'] = 'apidoc.html'
