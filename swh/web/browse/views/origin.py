@@ -6,6 +6,7 @@
 import dateutil
 
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
 from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
@@ -294,7 +295,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'branches': branches,
                    'branch': branch_name,
                    'top_right_link': history_url,
-                   'top_right_link_text': 'History'})
+                   'top_right_link_text': mark_safe(
+                       '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
+                       'History')
+                   })
 
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
@@ -451,7 +455,10 @@ def origin_content_display(request, origin_id, path,
                    'branches': branches,
                    'branch': branch_name,
                    'top_right_link': content_raw_url,
-                   'top_right_link_text': 'Raw File'})
+                   'top_right_link_text': mark_safe(
+                       '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
+                       '</i>Raw File')
+                   })
 
 
 def _gen_directory_link(url_args, revision, link_text):
