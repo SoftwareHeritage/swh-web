@@ -35,25 +35,26 @@ doc_header_link = """indicates that a subsequent result page is available,
 def api_lookup(lookup_fn, *args,
                notfound_msg='Object not found',
                enrich_fn=lambda x: x):
-    """Capture a redundant behavior of:
-    - looking up the backend with a criteria (be it an identifier or checksum)
-    passed to the function lookup_fn
-    - if nothing is found, raise an NotFoundExc exception with error
-    message notfound_msg.
-    - Otherwise if something is returned:
-        - either as list, map or generator, map the enrich_fn function to it
-        and return the resulting data structure as list.
-        - either as dict and pass to enrich_fn and return the dict enriched.
+    """
+    Capture a redundant behavior of:
+        - looking up the backend with a criteria (be it an identifier or
+          checksum) passed to the function lookup_fn
+        - if nothing is found, raise an NotFoundExc exception with error
+          message notfound_msg.
+        - Otherwise if something is returned:
+            - either as list, map or generator, map the enrich_fn function to
+              it and return the resulting data structure as list.
+            - either as dict and pass to enrich_fn and return the dict
+              enriched.
 
     Args:
-        - criteria: discriminating criteria to lookup
         - lookup_fn: function expects one criteria and optional supplementary
-        *args.
+          \*args.
         - notfound_msg: if nothing matching the criteria is found,
-        raise NotFoundExc with this error message.
+          raise NotFoundExc with this error message.
         - enrich_fn: Function to use to enrich the result returned by
-        lookup_fn. Default to the identity function if not provided.
-        - *args: supplementary arguments to pass to lookup_fn.
+          lookup_fn. Default to the identity function if not provided.
+        - \*args: supplementary arguments to pass to lookup_fn.
 
     Raises:
         NotFoundExp or whatever `lookup_fn` raises.
