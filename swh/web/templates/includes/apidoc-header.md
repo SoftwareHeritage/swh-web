@@ -1,5 +1,3 @@
-# Software Heritage Web API
-
 <ul>
   <li><a href="#endpoint-index">Endpoint index</a></li>
   <li><a href="#data-model">Data model</a></li>
