@@ -1,6 +1,12 @@
 {% extends "layout.html" %}
 {% load static %}
 {% block title %}The Software Heritage archive{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{% static 'css/odometer-theme-swh.css' %}"/>
+<script src="{% static 'js/odometer/odometer.min.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <h1>Welcolme to the Software Heritage archive</h1>
 
@@ -33,7 +39,43 @@ archive. It currently includes:
 
 </p>
 
-<h2>Archive access</h2>
+<h2>Size</h2>
+
+<p>
+    As of today the archive already contains and keeps safe for you the following amount
+    of objects:
+
+<div class="row">
+
+    <div class="col-md-2" align="center">
+      <h3>Source files</h3>
+      <span id="odometer-files" class="odometer swh-counter">0</span>
+    </div>
+    <div class="col-md-2" align="center">
+      <h3>Directories</h3>
+        <span id="odometer-dirs" class="odometer swh-counter">0</span>
+      </div>
+    <div class="col-md-2" align="center">
+      <h3>Commits</h3>
+      <span id="odometer-commits" class="odometer swh-counter">0</span>
+    </div>
+    <div class="col-md-2" align="center">
+      <h3>Authors</h3>
+      <span id="odometer-authors" class="odometer swh-counter">0</span>
+    </div>
+    <div class="col-md-2" align="center">
+      <h3>Projects</h3>
+      <span id="odometer-projects" class="odometer swh-counter">0</span>
+    </div>
+    <div class="col-md-2" align="center">
+      <h3>Releases</h3>
+      <span id="odometer-releases" class="odometer swh-counter">0</span>
+    </div>
+</div>
+
+</p>
+
+<h2>Access</h2>
 
 <div class="row">
   <div class="col-md-3" align="center"></div>
@@ -54,5 +96,22 @@ archive. It currently includes:
   <div class="col-md-3" align="center"></div>
 </div>
 
+<script>
+$(document).ready(function() {
+  $.ajax({
+    url: "{% url 'stat-counters' %}",
+    dataType: 'json',
+    success: function (data) {
+      $('#odometer-files').html(data.content);
+      $('#odometer-commits').html(data.revision);
+      $('#odometer-projects').html(data.origin);
+      $('#odometer-dirs').html(data.directory);
+      $('#odometer-authors').html(data.person);
+      $('#odometer-releases').html(data.release);
+    }
+
+  });
+});
+</script>
 
 {% endblock %}
