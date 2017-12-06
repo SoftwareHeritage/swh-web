@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.http import HttpResponse
+from django.views.decorators.cache import never_cache
 
 from swh.web.common import service, query
 from swh.web.common.utils import reverse
@@ -14,6 +15,7 @@ from swh.web.api.views.utils import (
 )
 
 
+@never_cache
 @api_route('/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
            'vault-cook-directory')
 @api_doc.route('/vault/directory', tags=['hidden'])
@@ -75,6 +77,7 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
+@never_cache
 @api_route(r'/vault/revision_gitfast/(?P<rev_id>[a-fA-F0-9]+)/',
            'vault-cook-revision_gitfast')
 @api_doc.route('/vault/revision_gitfast', tags=['hidden'])
