@@ -9,9 +9,10 @@ from django.test import TestCase
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
+from swh.web.tests.testbase import SWHWebTestBase
 
 
-class SwhBrowsePersonTest(TestCase):
+class SwhBrowsePersonTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.person.service')
     @istest

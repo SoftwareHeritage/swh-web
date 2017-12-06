@@ -4,16 +4,17 @@
 # See top-level LICENSE file for more information
 
 from nose.tools import istest
+from rest_framework.test import APITestCase
 from unittest.mock import patch
 
 from swh.model import hashutil
 
-from ..swh_api_testcase import SWHApiTestCase
+from swh.web.tests.testbase import SWHWebTestBase
 
 TEST_OBJ_ID = 'd4905454cc154b492bd6afed48694ae3c579345e'
 
 
-class VaultApiTestCase(SWHApiTestCase):
+class VaultApiTestCase(SWHWebTestBase, APITestCase):
     @patch('swh.web.api.views.vault.service')
     @istest
     def api_vault_cook(self, mock_service):

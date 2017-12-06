@@ -254,7 +254,7 @@ tr.api-doc-route-deprecated > td, tr.api-doc-route-deprecated > td > a {
 }
 
 pre {
-    background-color: hsl(47, 99%, 75%);
+    background-color: #f5f5f5;
 }
 
 .dataTables_wrapper {
@@ -265,10 +265,8 @@ pre {
 
 .bread-crumbs{
     display: inline-block;
-    margin: 0 0 15px;
     overflow: hidden;
     color: rgba(0, 0, 0, 0.55);
-    font-size: 1.2rem;
 }
 
 bread-crumbs ul {
@@ -277,7 +275,6 @@ bread-crumbs ul {
 
 .bread-crumbs li {
     float: left;
-    margin-right: 10px;
     list-style-type: none;
 }
 
@@ -319,10 +316,6 @@ bread-crumbs ul {
     background-color: transparent;
     border-radius: 0px;
     border-color: transparent;
-}
-
-.swh-metadata-table-row pre {
-    background-color: #f5f5f5;
 }
 
 .hljs {
@@ -444,6 +437,28 @@ fieldset[disabled] .btn-swh.active {
 }
 
 .swh-http-error-desc pre {
-    background-color: #f5f5f5;
     text-align: left;
+}
+
+.swh-table {
+    border-bottom: none !important;
+}
+
+.swh-counter {
+    font-size: 150%;
+}
+.swh-loading {
+    display : none;
+}
+
+.swh-loading.show {
+    display:inline-block;
+    position: absolute;
+    background: white;
+    border: 1px solid black;
+    top: 50%;
+    left: 50%;
+    transform: translate(0, -50%);
+    margin: -50px 0px 0px -50px;
+    text-align: center;
 }

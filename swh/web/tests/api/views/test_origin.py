@@ -4,14 +4,15 @@
 # See top-level LICENSE file for more information
 
 from nose.tools import istest
+from rest_framework.test import APITestCase
 from unittest.mock import patch
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
-from ..swh_api_testcase import SWHApiTestCase
+from swh.web.tests.testbase import SWHWebTestBase
 
 
-class OriginApiTestCase(SWHApiTestCase):
+class OriginApiTestCase(SWHWebTestBase, APITestCase):
 
     def setUp(self):
         self.origin_visit1 = {

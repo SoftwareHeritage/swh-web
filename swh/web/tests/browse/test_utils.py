@@ -11,27 +11,12 @@ from nose.tools import istest
 
 from swh.web.browse import utils
 from swh.web.common.utils import reverse
+from swh.web.tests.testbase import SWHWebTestBase
 
 from .views.data.revision_test_data import revision_history_log_test
 
 
-class SwhBrowseUtilsTestCase(unittest.TestCase):
-
-    @istest
-    def gen_path_info(self):
-        input_path = '/home/user/swh-environment/swh-web/'
-        expected_result = [
-            {'name': 'home', 'path': 'home'},
-            {'name': 'user', 'path': 'home/user'},
-            {'name': 'swh-environment', 'path': 'home/user/swh-environment'},
-            {'name': 'swh-web', 'path': 'home/user/swh-environment/swh-web'}
-        ]
-        path_info = utils.gen_path_info(input_path)
-        self.assertEquals(path_info, expected_result)
-
-        input_path = 'home/user/swh-environment/swh-web'
-        path_info = utils.gen_path_info(input_path)
-        self.assertEquals(path_info, expected_result)
+class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
 
     @istest
     def get_mimetype_and_encoding_for_content(self):
@@ -56,9 +41,83 @@ class SwhBrowseUtilsTestCase(unittest.TestCase):
 
         self.assertEqual(len(origin_visits), 3)
 
-    @patch('swh.web.browse.utils.service')
+    @patch('swh.web.browse.utils.get_origin_visits')
     @istest
-    def test_get_origin_visit_branches(self, mock_service):
+    def get_origin_visit(self, mock_origin_visits):
+        origin_id = 2
+        visits = \
+            [{'status': 'full',
+              'date': '2015-07-09T21:09:24+00:00',
+              'visit': 1,
+              'origin': origin_id
+              },
+             {'status': 'full',
+              'date': '2016-02-23T18:05:23.312045+00:00',
+              'visit': 2,
+              'origin': origin_id
+              },
+             {'status': 'full',
+              'date': '2016-03-28T01:35:06.554111+00:00',
+              'visit': 3,
+              'origin': origin_id
+              },
+             {'status': 'full',
+              'date': '2016-06-18T01:22:24.808485+00:00',
+              'visit': 4,
+              'origin': origin_id
+              },
+             {'status': 'full',
+              'date': '2016-08-14T12:10:00.536702+00:00',
+              'visit': 5,
+              'origin': origin_id
+              }]
+        mock_origin_visits.return_value = visits
+
+        visit = utils.get_origin_visit(origin_id, visit_id=12)
+        self.assertEqual(visit, None)
+
+        visit = utils.get_origin_visit(origin_id, visit_id=2)
+        self.assertEqual(visit, visits[1])
+
+        visit = utils.get_origin_visit(
+            origin_id, visit_ts='2016-02-23T18:05:23.312045+00:00')
+        self.assertEqual(visit, visits[1])
+
+        visit = utils.get_origin_visit(
+            origin_id, visit_ts='2016-02-20')
+        self.assertEqual(visit, visits[1])
+
+        visit = utils.get_origin_visit(
+            origin_id, visit_ts='2016-06-18T01:22')
+        self.assertEqual(visit, visits[3])
+
+        visit = utils.get_origin_visit(
+            origin_id, visit_ts='2016-06-18 01:22')
+        self.assertEqual(visit, visits[3])
+
+        visit = utils.get_origin_visit(
+            origin_id, visit_ts=1466208000)
+        self.assertEqual(visit, visits[3])
+
+        visit = utils.get_origin_visit(
+            origin_id, visit_ts='2014-01-01')
+        self.assertEqual(visit, visits[0])
+
+        visit = utils.get_origin_visit(
+            origin_id, visit_ts='2018-01-01')
+        self.assertEqual(visit, visits[-1])
+
+    @patch('swh.web.browse.utils.service')
+    @patch('swh.web.browse.utils.get_origin_visit')
+    @istest
+    def get_origin_visit_branches(self, mock_get_origin_visit,
+                                  mock_service):
+
+        mock_get_origin_visit.return_value = \
+            {'status': 'full',
+             'date': '2015-08-04T22:26:14.804009+00:00',
+             'visit': 1,
+             'origin': 1}
 
         mock_service.lookup_origin_visit.return_value = \
             {'date': '2015-08-04T22:26:14.804009+00:00',
@@ -132,7 +191,7 @@ class SwhBrowseUtilsTestCase(unittest.TestCase):
                          '<a href="%s">%s</a>' % (revision_url, revision_id[:7])) # noqa
 
     @istest
-    def test_prepare_revision_log_for_display_no_contex(self):
+    def prepare_revision_log_for_display_no_contex(self):
         per_page = 10
         first_page_logs_data = revision_history_log_test[:per_page+1]
         second_page_logs_data = revision_history_log_test[per_page:2*per_page+1] # noqa
@@ -215,7 +274,7 @@ class SwhBrowseUtilsTestCase(unittest.TestCase):
                          '/'.join(old_prev_revs_bc.split('/')[:-1]))
 
     @istest
-    def test_prepare_revision_log_for_display_origin_contex(self):
+    def prepare_revision_log_for_display_origin_contex(self):
         per_page = 10
         first_page_logs_data = revision_history_log_test[:per_page+1]
         second_page_logs_data = revision_history_log_test[per_page:2*per_page+1] # noqa

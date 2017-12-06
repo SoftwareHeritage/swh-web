@@ -4,14 +4,15 @@
 # See top-level LICENSE file for more information
 
 from nose.tools import istest
+from rest_framework.test import APITestCase
 from unittest.mock import patch
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
-from ..swh_api_testcase import SWHApiTestCase
+from swh.web.tests.testbase import SWHWebTestBase
 
 
-class StatApiTestCase(SWHApiTestCase):
+class StatApiTestCase(SWHWebTestBase, APITestCase):
     @patch('swh.web.api.views.stat.service')
     @istest
     def api_1_stat_counters_raise_error(self, mock_service):

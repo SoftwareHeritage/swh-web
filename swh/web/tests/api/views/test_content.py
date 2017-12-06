@@ -4,12 +4,13 @@
 # See top-level LICENSE file for more information
 
 from nose.tools import istest
+from rest_framework.test import APITestCase
 from unittest.mock import patch, MagicMock
 
-from ..swh_api_testcase import SWHApiTestCase
+from swh.web.tests.testbase import SWHWebTestBase
 
 
-class ContentApiTestCase(SWHApiTestCase):
+class ContentApiTestCase(SWHWebTestBase, APITestCase):
     @patch('swh.web.api.views.content.service')
     @istest
     def api_content_filetype(self, mock_service):
@@ -381,7 +382,7 @@ class ContentApiTestCase(SWHApiTestCase):
 
     @patch('swh.web.api.views.content.service')
     @istest
-    def test_api_content_metadata(self, mock_service):
+    def api_content_metadata(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
             'checksums': {

@@ -12,13 +12,96 @@
   // just a trick to get line numbers working when no highlight
   // has to be performed
   hljs.registerLanguage('nohighlight-swh', no_highlight);
-  hljs.initHighlightingOnLoad();
-  hljs.initLineNumbersOnLoad();
-</script>
-<link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">  
-{% endblock %}
 
-{% block title %}Content display{% endblock %}
+  // keep track of the first highlighted line
+  var first_hl_line = null;
+  // highlighting color
+  var line_hl_color = 'rgb(193, 255, 193)';
+
+  // function to highlight a line
+  function highlight_line(i) {
+    var line_td = $('div[data-line-number="' + i + '"]').parent().parent();
+    line_td.css('background-color', line_hl_color);
+    return line_td;
+  }
+
+  // function to reset highlighting
+  function reset_highlighted_lines() {
+    first_hl_line = null;
+    $('tr').css('background-color', 'inherit');
+  }
+
+  function scrollToLine(lineDomElt) {
+    $('html, body').animate({
+      scrollTop: $(lineDomElt).offset().top - 70
+    }, 500);
+  }
+
+  // function to highlight lines based on a url fragment
+  // in the form '#Lx' or '#Lx-Ly'
+  function parse_url_fragment_for_lines_to_highlight() {
+    var lines = [];
+    var lines_regexp = new RegExp(/L(\d+)/g);
+    var line = lines_regexp.exec(window.location.hash);
+    while (line) {
+      lines.push(parseInt(line[1]));
+      line = lines_regexp.exec(window.location.hash);
+    }
+    reset_highlighted_lines();
+    if  (lines.length == 1) {
+      first_hl_line = parseInt(lines[0]);
+      scrollToLine(highlight_line(lines[0]));
+    } else if (lines[0] < lines[lines.length - 1]) {
+      first_hl_line = parseInt(lines[0]);
+      scrollToLine(highlight_line(lines[0]));
+      for (var i = lines[0]+1; i <= lines[lines.length - 1]; ++i) {
+        highlight_line(i);
+      }
+    }
+  }
+
+  $(document).ready(function() {
+    // highlight code and add line numbers
+    $('code').each(function(i, block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+    // click handler to dynamically highlight line(s)
+    // when the user clicks on a line number (lines range
+    // can also be highlighted while holding the shift key)
+    $('body').click(function(evt) {
+      if (evt.target.classList.contains('hljs-ln-n')) {
+        var line = parseInt($(evt.target).data('line-number'));
+        if (evt.shiftKey && first_hl_line && line > first_hl_line) {
+          var first_line = first_hl_line;
+          reset_highlighted_lines();
+          for (var i = first_line; i <= line; ++i) {
+            highlight_line(i);
+          }
+          first_hl_line = first_line;
+          window.location.hash = '#L' + first_line + "-L" + line;
+        } else {
+          reset_highlighted_lines();
+          highlight_line(line);
+          window.location.hash = '#L' + line;
+          scrollToLine(evt.target);
+        }
+      }
+    });
+
+    // update lines highlighting when the url fragment changes
+    $(window).on('hashchange', function() {
+      parse_url_fragment_for_lines_to_highlight();
+    });
+
+    // highlight lines specified by an url fragment
+    parse_url_fragment_for_lines_to_highlight();
+
+  });
+
+</script>
+<link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">
+{% endblock %}
 
 {% block swh-browse-main-panel-content %}
 

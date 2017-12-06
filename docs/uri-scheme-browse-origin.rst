@@ -23,7 +23,7 @@ Origin metadata
         :swh_web_browse:`origin/13706355/`
 
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/
-    
+
     HTML view that displays a SWH origin identified by its type and url.
 
     The view displays the origin metadata and contains links
@@ -61,15 +61,15 @@ Origin directory
     The view also enables to easily switch between the origin branches
     through a dropdown menu.
 
-    The origin branch (default to master) from which to retrieve the directory 
+    The origin branch (default to master) from which to retrieve the directory
     content can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
-    :param string path: optional parameter used to specify the path of a directory 
+    :param string path: optional parameter used to specify the path of a directory
         reachable from the origin root one
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the directory
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
@@ -88,7 +88,7 @@ Origin directory
 .. http:get:: /browse/origin/(origin_id)/visit/(visit_id)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from the root directory
-    (including itself) associated to a specific visit (identified by its id) of a SWH origin. 
+    (including itself) associated to a specific visit (identified by its id) of a SWH origin.
 
     The content of the directory is first sorted in lexicographical order
     and the sub-directories are displayed before the regular files.
@@ -102,20 +102,20 @@ Origin directory
     The view also enables to easily switch between the origin branches
     through a dropdown menu.
 
-    The origin branch (default to master) from which to retrieve the directory 
+    The origin branch (default to master) from which to retrieve the directory
     content can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
     :param int visit_id: the id of the origin visit
-    :param string path: optional parameter used to specify the path of a directory 
+    :param string path: optional parameter used to specify the path of a directory
         reachable from the origin root one
     :query string branch: specify the origin branch from which
          to retrieve the directory
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
-        requested visit id does not exist or the provided path does 
+        requested visit id does not exist or the provided path does
         not exist from the origin root directory
 
     **Examples:**
@@ -130,9 +130,9 @@ Origin directory
 
 .. http:get:: /browse/origin/(origin_id)/ts/(timestamp)/directory/[(path)/]
 
-    HTML view for browsing the content of a directory reachable from 
-    the root directory (including itself) associated to a visitof a SWH 
-    origin closest to a provided timestamp. 
+    HTML view for browsing the content of a directory reachable from
+    the root directory (including itself) associated to a visitof a SWH
+    origin closest to a provided timestamp.
 
     The content of the directory is first sorted in lexicographical order
     and the sub-directories are displayed before the regular files.
@@ -146,22 +146,22 @@ Origin directory
     The view also enables to easily switch between the origin branches
     through a dropdown menu.
 
-    The origin branch (default to master) from which to retrieve the directory 
+    The origin branch (default to master) from which to retrieve the directory
     content can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
     :param string timestamp: an ISO date string or Unix timestamp to parse
         in order to find the closest SWH visit.
-    :param path: optional parameter used to specify the path of a directory 
+    :param path: optional parameter used to specify the path of a directory
         reachable from the origin root one
     :type path: string
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the directory
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the directory
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
-        requested visit timestamp does not exist or the provided path does 
+        requested visit timestamp does not exist or the provided path does
         not exist from the origin root directory
 
     **Examples:**
@@ -174,7 +174,7 @@ Origin directory
         :swh_web_browse:`origin/13706355/ts/1474620651/directory/Python/`
         :swh_web_browse:`origin/13706355/ts/1474620651/directory/?branch=refs/heads/2.7`
 
-    
+
 
 Origin content
 """"""""""""""
@@ -188,6 +188,14 @@ Origin content
     if possible using highlightjs_. The procedure to perform that task is described
     in :http:get:`/browse/content/[(algo_hash):](hash)/`.
 
+    It is also possible to highlight specific lines of a textual
+    content (not in terms of syntax highlighting but to emphasize
+    some relevant content part) by either:
+
+        * clicking on line numbers (holding shift to highlight a lines range)
+
+        * using an url fragment in the form '#Ln' or '#Lm-Ln'
+
     The view displays a breadcrumb on top of the rendered
     content in order to easily navigate up to the origin root directory.
 
@@ -199,9 +207,9 @@ Origin content
 
     :param int origin_id: the id of a SWH origin
     :param string path: path of a content reachable from the origin root directory
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the content
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the content
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
@@ -211,6 +219,7 @@ Origin content
 
     .. parsed-literal::
 
+        :swh_web_browse:`origin/723566/content/git.c/`
         :swh_web_browse:`origin/723566/content/git.c/`
         :swh_web_browse:`origin/16297443/content/js/src/json.cpp/`
         :swh_web_browse:`origin/723566/content/git.c/?branch=refs/heads/next`
@@ -224,6 +233,14 @@ Origin content
     if possible using highlightjs_. The procedure to perform that task is described
     in :http:get:`/browse/content/[(algo_hash):](hash)/`.
 
+    It is also possible to highlight specific lines of a textual
+    content (not in terms of syntax highlighting but to emphasize
+    some relevant content part) by either:
+
+        * clicking on line numbers (holding shift to highlight a lines range)
+
+        * using an url fragment in the form '#Ln' or '#Lm-Ln'
+
     The view displays a breadcrumb on top of the rendered
     content in order to easily navigate up to the origin root directory.
 
@@ -236,13 +253,13 @@ Origin content
     :param int origin_id: the id of a SWH origin
     :param int visit_id: the id of the origin visit
     :param string path: path of a content reachable from the origin root directory
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the content
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the content
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
-        requested visit id does not exist or the provided content path does 
+        requested visit id does not exist or the provided content path does
         not exist from the origin root directory
 
     **Examples:**
@@ -250,6 +267,7 @@ Origin content
     .. parsed-literal::
 
         :swh_web_browse:`origin/723566/visit/1/content/git.c/`
+        :swh_web_browse:`origin/723566/visit/13/content/git.c/#L334-L390`
         :swh_web_browse:`origin/16297443/visit/3/content/js/src/json.cpp/`
         :swh_web_browse:`origin/723566/visit/1/content/git.c/?branch=refs/heads/next`
 
@@ -262,6 +280,15 @@ Origin content
     if possible using highlightjs_. The procedure to perform that task is described
     in :http:get:`/browse/content/[(algo_hash):](hash)/`.
 
+    It is also possible to highlight specific lines of a textual
+    content (not in terms of syntax highlighting but to emphasize
+    some relevant content part) by either:
+
+        * clicking on line numbers (holding shift to highlight a lines range)
+
+        * using an url fragment in the form '#Ln' or '#Lm-Ln'
+
+
     The view displays a breadcrumb on top of the rendered
     content in order to easily navigate up to the origin root directory.
 
@@ -272,16 +299,16 @@ Origin content
     can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
-    :param string timestamp: an ISO date string or Unix timestamp to parse in 
+    :param string timestamp: an ISO date string or Unix timestamp to parse in
         order to find the closest SWH visit.
     :param string path: path of a content reachable from the origin root directory
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the content
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the content
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
-        requested visit timestamp does not exist or the provided content path does 
+        requested visit timestamp does not exist or the provided content path does
         not exist from the origin root directory
 
     **Examples:**
@@ -291,6 +318,7 @@ Origin content
         :swh_web_browse:`origin/723566/ts/1473933564/content/git.c/`
         :swh_web_browse:`origin/723566/ts/2016-05-05T00:0:00+00:00/content/git.c/`
         :swh_web_browse:`origin/16297443/ts/1490126182/content/js/src/json.cpp/`
+        :swh_web_browse:`origin/16297443/ts/2017-03-21/content/js/src/json.cpp/#L904-L931`
         :swh_web_browse:`origin/723566/ts/2017-09-15/content/git.c/?branch=refs/heads/next`
 
 Origin history
@@ -326,16 +354,16 @@ Origin history
     can also be specified by using the branch query parameter.
 
     :param int origin_id: the id of a SWH origin
-    :query string revs_breadcrumb: used internally to store 
+    :query string revs_breadcrumb: used internally to store
         the navigation breadcrumbs (i.e. the list of descendant revisions
-        visited so far). It must be a string in the form 
+        visited so far). It must be a string in the form
         "<rev_1>[/<rev_2>/.../<rev_n>]" where rev_i corresponds to a
         revision sha1_git.
-    :query int per_page: the number of log entries to display per page 
+    :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the commit log
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the commit log
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
@@ -347,7 +375,7 @@ Origin history
         :swh_web_browse:`origin/12215444/log/`
         :swh_web_browse:`origin/2081083/log/`
         :swh_web_browse:`origin/12081083/log/?branch=refs/heads/release`
-        
+
 .. http:get:: /browse/origin/(origin_id)/visit/(visit_id)/log/
 
     HTML view that produces a display of revisions history heading
@@ -379,16 +407,16 @@ Origin history
 
     :param int origin_id: the id of a SWH origin
     :param int visit_id: the id of the origin visit
-    :query string revs_breadcrumb: used internally to store 
+    :query string revs_breadcrumb: used internally to store
         the navigation breadcrumbs (i.e. the list of descendant revisions
-        visited so far). It must be a string in the form 
+        visited so far). It must be a string in the form
         "<rev_1>[/<rev_2>/.../<rev_n>]" where rev_i corresponds to a
         revision sha1_git.
-    :query int per_page: the number of log entries to display per page 
+    :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the commit log
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the commit log
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
@@ -434,16 +462,16 @@ Origin history
     :param int origin_id: the id of a SWH origin
     :param string timestamp: an ISO date string or Unix timestamp to parse
         in order to find the closest SWH visit.
-    :query string revs_breadcrumb: used internally to store 
+    :query string revs_breadcrumb: used internally to store
         the navigation breadcrumbs (i.e. the list of descendant revisions
-        visited so far). It must be a string in the form 
+        visited so far). It must be a string in the form
         "<rev_1>[/<rev_2>/.../<rev_n>]" where rev_i corresponds to a
         revision sha1_git.
-    :query int per_page: the number of log entries to display per page 
+    :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
-    :query string branch: specify the origin branch from which 
+    :query string branch: specify the origin branch from which
         to retrieve the commit log
-    :query string revision: specify the origin revision, identified by the hexadecimal 
+    :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the commit log
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
