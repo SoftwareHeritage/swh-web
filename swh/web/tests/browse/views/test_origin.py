@@ -143,6 +143,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
             self.assertContains(resp, '<a href="%s">' % root_dir_branch_url)
 
+    @patch('swh.web.browse.views.origin.get_origin_visit')
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.get_origin_visit_branches')
     @patch('swh.web.browse.views.origin.service')
@@ -150,9 +151,11 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
     @istest
     def origin_content_view(self, mock_request_content, mock_service,
                             mock_get_origin_visit_branches,
-                            mock_get_origin_visits):
+                            mock_get_origin_visits,
+                            mock_get_origin_visit):
 
         stub_content_text_sha1 = stub_content_text_data['checksums']['sha1']
+        mock_get_origin_visit.return_value = stub_content_origin_visits[0]
         mock_get_origin_visits.return_value = stub_content_origin_visits
         mock_get_origin_visit_branches.return_value = stub_content_origin_branches # noqa
         mock_service.lookup_directory_with_path.return_value = \
