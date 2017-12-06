@@ -8,11 +8,10 @@ from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
-from swh.web.browse.utils import (
-    gen_path_info, get_directory_entries
-)
+from swh.web.browse.utils import get_directory_entries
+
 from swh.web.browse.browseurls import browse_route
 
 
@@ -82,7 +81,8 @@ def directory_browse(request, sha1_git, path=None):
                     'sum of regular file sizes': sum_file_sizes}
 
     return render(request, 'directory.html',
-                  {'top_panel_visible': True,
+                  {'heading': 'Directory information',
+                   'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Directory',
                    'top_panel_text_right': 'Sha1 git: ' + sha1_git,

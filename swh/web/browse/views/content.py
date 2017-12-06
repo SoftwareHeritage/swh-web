@@ -4,18 +4,17 @@
 # See top-level LICENSE file for more information
 
 from django.http import HttpResponse
-
+from django.utils.safestring import mark_safe
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 
 from swh.model.hashutil import hash_to_hex
 
 from swh.web.common import query
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
-    gen_path_info, request_content,
-    prepare_content_for_display
+    request_content, prepare_content_for_display
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -139,7 +138,8 @@ def content_display(request, query_string):
     }
 
     return render(request, 'content.html',
-                  {'top_panel_visible': True,
+                  {'heading': 'Content information',
+                   'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Content',
                    'top_panel_text_right': '%s: %s' % (algo, checksum),
@@ -152,4 +152,7 @@ def content_display(request, query_string):
                    'branches': None,
                    'branch': None,
                    'top_right_link': content_raw_url,
-                   'top_right_link_text': 'Raw File'})
+                   'top_right_link_text': mark_safe(
+                       '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
+                       '</i>Raw File')
+                   })

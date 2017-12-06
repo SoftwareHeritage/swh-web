@@ -32,7 +32,8 @@ def person_browse(request, person_id):
         return handle_view_exception(request, exc)
 
     return render(request, 'person.html',
-                  {'top_panel_visible': True,
+                  {'heading': 'Person information',
+                   'top_panel_visible': True,
                    'top_panel_collapsible': False,
                    'top_panel_text_left': 'SWH object: Person',
                    'top_panel_text_right': 'Name: ' + person['name'],

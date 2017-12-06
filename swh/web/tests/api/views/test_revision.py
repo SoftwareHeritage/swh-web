@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from nose.tools import istest
+from rest_framework.test import APITestCase
 from unittest.mock import patch
 
 from swh.web.common.exc import NotFoundExc
@@ -11,10 +12,10 @@ from swh.web.api.views.revision import (
     _revision_directory_by
 )
 
-from ..swh_api_testcase import SWHApiTestCase
+from swh.web.tests.testbase import SWHWebTestBase
 
 
-class ReleaseApiTestCase(SWHApiTestCase):
+class ReleaseApiTestCase(SWHWebTestBase, APITestCase):
 
     @patch('swh.web.api.views.revision.service')
     @istest
@@ -777,6 +778,8 @@ class ReleaseApiTestCase(SWHApiTestCase):
 
         # when
         rv = self.client.get('/api/1/revision/origin/1/log/')
+
+        print(rv.content)
 
         # then
         self.assertEquals(rv.status_code, 404)

@@ -7,7 +7,7 @@ from django.conf.urls import (
     url, include, handler400, handler403, handler404, handler500
 )
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.shortcuts import redirect
+from django.shortcuts import render
 from django.views.generic.base import RedirectView
 
 from swh.web.common.exc import (
@@ -19,7 +19,7 @@ favicon_view = RedirectView.as_view(url='/static/img/icons/swh-logo-32x32.png',
 
 
 def default_view(request):
-    return redirect('api_homepage')
+    return render(request, "homepage.html")
 
 
 urlpatterns = [

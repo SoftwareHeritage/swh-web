@@ -3,9 +3,13 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-
 from .common import *  # noqa
 from .common import swh_web_config
+
+# activate per-site caching
+MIDDLEWARE += ['django.middleware.cache.UpdateCacheMiddleware', # noqa
+               'django.middleware.common.CommonMiddleware',
+               'django.middleware.cache.FetchFromCacheMiddleware']
 
 CACHES = {
     'default': {

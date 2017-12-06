@@ -10,6 +10,7 @@ from django.utils.html import escape
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse, format_utc_iso_date
+from swh.web.tests.testbase import SWHWebTestBase
 
 from .data.revision_test_data import (
     revision_id_test, revision_metadata_test,
@@ -17,7 +18,7 @@ from .data.revision_test_data import (
 )
 
 
-class SwhBrowseRevisionTest(TestCase):
+class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.revision.service')
     @istest

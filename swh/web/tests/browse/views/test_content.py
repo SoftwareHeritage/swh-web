@@ -14,9 +14,9 @@ from django.utils.encoding import DjangoUnicodeDecodeError
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.browse.utils import (
-    gen_path_info
-)
+from swh.web.common.utils import gen_path_info
+from swh.web.tests.testbase import SWHWebTestBase
+
 from .data.content_test_data import (
     stub_content_text_data,
     stub_content_text_path_with_root_dir,
@@ -29,7 +29,7 @@ from .data.content_test_data import (
 )
 
 
-class SwhBrowseContentTest(TestCase):
+class SwhBrowseContentTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.content.request_content')
     @istest
@@ -171,7 +171,7 @@ class SwhBrowseContentTest(TestCase):
 
     @patch('swh.web.browse.views.content.request_content')
     @istest
-    def test_content_raw_text(self, mock_request_content):
+    def content_raw_text(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_data
 
         url = reverse('browse-content-raw',
