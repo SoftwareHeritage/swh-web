@@ -2,14 +2,27 @@
 <div class="swh-browse-top-navigation">
   {% if branches %}
     <div class="dropdown" style="float: left;">
-      <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">{{ branch }}
-      <span class="caret"></span></button>
+      <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">
+        <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
+        Branch: <strong>{{ branch }}</strong>
+        <span class="caret"></span>
+      </button>
       <ul class="scrollable-menu dropdown-menu">
         {% for b in branches %}
-          <li class="swh-branch"><a href="{{ b.url }}">{{ b.name }}</a></li>
+          <li class="swh-branch">
+              <a href="{{ b.url }}">
+                <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
+                {% if b.name == branch %}
+                  <i class="fa fa-check fa-fw" aria-hidden="true"></i>
+                {% else %}
+                  <i class="fa fa-fw" aria-hidden="true"></i>
+                {% endif %}
+                {{ b.name }}
+              </a>
+          </li>
         {% endfor %}
       </ul>
-    </div> 
+    </div>
   {% endif %}
 
   {% if top_right_link %}
@@ -29,4 +42,3 @@
     </ul>
   </nav>
 </div>
-  

@@ -9,12 +9,12 @@ Origin
     :param int origin_id: a SWH origin identifier
 
     :>json number id: the origin unique identifier
-    :>json string origin_visits_url: link to in order to get information about the SWH 
+    :>json string origin_visits_url: link to in order to get information about the SWH
         visits for that origin
     :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
     :>json string url: the origin canonical url
 
-    :reqheader Accept: the requested response content type, 
+    :reqheader Accept: the requested response content type,
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
@@ -49,12 +49,12 @@ Origin
     :param string origin_url: the origin url
 
     :>json number id: the origin unique identifier
-    :>json string origin_visits_url: link to in order to get information about the SWH 
+    :>json string origin_visits_url: link to in order to get information about the SWH
         visits for that origin
     :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
     :>json string url: the origin canonical url
 
-    :reqheader Accept: the requested response content type, 
+    :reqheader Accept: the requested response content type,
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
@@ -83,6 +83,60 @@ Origin
             "url": "https://github.com/python/cpython"
         }
 
+.. http:get:: /api/1/origin/search/(url_pattern)/
+
+    Search for software origins whose urls contain a provided string
+    pattern or match a provided regular expression.
+    The search is performed in a case insensitive way.
+
+    :param string url_pattern: a string pattern or a regular expression
+    :query int offset: the number of found origins to skip before returning results
+    :query int limit: the maximum number of found origins to return
+    :query boolean regexp: if true, consider provided pattern as a regular expression
+        and search origins whose urls match it
+
+    :>jsonarr number id: the origin unique identifier
+    :>jsonarr string origin_visits_url: link to in order to get information about the SWH
+        visits for that origin
+    :>jsonarr string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+    :>jsonarr string url: the origin canonical url
+
+    :reqheader Accept: the requested response content type,
+        either *application/json* (default) or *application/yaml*
+    :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+    :statuscode 200: no error
+
+    **Request:**
+
+    .. parsed-literal::
+
+        $ curl -i :swh_web_api:`origin/search/python/?limit=2`
+
+    **Response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        [
+            {
+                "type": "git",
+                "origin_visits_url": "/api/1/origin/220/visits/",
+                "id": 220,
+                "url": "https://github.com/neon670/python.dev"
+            },
+            {
+                "type": "git",
+                "origin_visits_url": "/api/1/origin/328/visits/",
+                "id": 328,
+                "url": "https://github.com/aur-archive/python-werkzeug"
+            }
+        ]
+
 .. http:get:: /api/1/origin/(origin_id)/visits/
 
     Get information about all visits of a software origin.
@@ -91,7 +145,7 @@ Origin
     :query int per_page: specify the number of visits to list, for pagination purposes
     :query int last_visit: visit to start listing from, for pagination purposes
 
-    :reqheader Accept: the requested response content type, 
+    :reqheader Accept: the requested response content type,
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
     :resheader Link: indicates that a subsequent result page is available and contains
@@ -147,13 +201,13 @@ Origin
 
     :param int origin_id: a SWH origin identifier
     :param int visit_id: a visit identifier
-    
-    :reqheader Accept: the requested response content type, 
+
+    :reqheader Accept: the requested response content type,
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
-    
+
     :>json string date: ISO representation of the visit date (in UTC)
-    :>json object occurrences: object containing all branches associated to the origin found 
+    :>json object occurrences: object containing all branches associated to the origin found
         during the visit, for each of them the associated SWH revision id is given but also
         a link to in order to get information about it
     :>json number origin: the origin unique identifier

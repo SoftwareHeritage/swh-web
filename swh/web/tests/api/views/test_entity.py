@@ -4,14 +4,15 @@
 # See top-level LICENSE file for more information
 
 from nose.tools import istest
+from rest_framework.test import APITestCase
 from unittest.mock import patch
 
 from swh.web.common.exc import BadInputExc
 
-from ..swh_api_testcase import SWHApiTestCase
+from swh.web.tests.testbase import SWHWebTestBase
 
 
-class EntityApiTestCase(SWHApiTestCase):
+class EntityApiTestCase(SWHWebTestBase, APITestCase):
 
     @patch('swh.web.api.views.entity.service')
     @istest

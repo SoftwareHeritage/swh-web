@@ -119,7 +119,11 @@ class RendererTestCase(unittest.TestCase):
 
                 expected_data = {
                     'response_data': json.dumps(data),
-                    'request': request,
+                    'request': {
+                        'path': request.path,
+                        'method': request.method,
+                        'absolute_uri': request.build_absolute_uri()
+                    },
                     'headers_data': {},
                     'heading': 'my_short_path',
                     'status_code': 200

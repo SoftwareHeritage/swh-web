@@ -131,3 +131,32 @@ def format_utc_iso_date(iso_date):
     """
     date = date_parser.parse(iso_date)
     return date.strftime('%d %B %Y, %H:%M UTC')
+
+
+def gen_path_info(path):
+    """Function to generate path data navigation for use
+    with a breadcrumb in the swh web ui.
+
+    For instance, from a path /folder1/folder2/folder3,
+    it returns the following list::
+
+        [{'name': 'folder1', 'path': 'folder1'},
+         {'name': 'folder2', 'path': 'folder1/folder2'},
+         {'name': 'folder3', 'path': 'folder1/folder2/folder3'}]
+
+    Args:
+        path: a filesystem path
+
+    Returns:
+        A list of path data for navigation as illustrated above.
+
+    """
+    path_info = []
+    if path:
+        sub_paths = path.strip('/').split('/')
+        path_from_root = ''
+        for p in sub_paths:
+            path_from_root += '/' + p
+            path_info.append({'name': p,
+                              'path': path_from_root.strip('/')})
+    return path_info

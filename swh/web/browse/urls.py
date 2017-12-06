@@ -6,8 +6,6 @@
 from django.conf.urls import url
 from django.shortcuts import redirect
 
-from swh.web.common.utils import reverse
-
 import swh.web.browse.views.directory # noqa
 import swh.web.browse.views.content # noqa
 import swh.web.browse.views.origin # noqa
@@ -15,6 +13,7 @@ import swh.web.browse.views.person # noqa
 import swh.web.browse.views.revision # noqa
 
 from swh.web.browse.browseurls import BrowseUrls
+from swh.web.common.utils import reverse
 
 
 def default_browse_view(request):
@@ -25,6 +24,7 @@ def default_browse_view(request):
 
     Currently, it points to the origin view for the linux kernel
     source tree github mirror.
+
 
     Args:
         request: input django http request

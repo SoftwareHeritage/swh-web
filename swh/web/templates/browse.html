@@ -1,54 +1,130 @@
 {% extends "layout.html" %}
 {% load swh_templatetags %}
 
+{% block title %}{{ heading }} &ndash; Software Heritage archive {% endblock %}
+
 {% block content %}
 
-<div class="panel-group" id="accordion">
-  {% if top_panel_visible %}
-  <div class="panel panel-default" style="overflow-x: auto;">
-      <div class="panel-heading">
-        {% if top_panel_collapsible %}
-        <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
-        {% endif %}
-          <div class="panel-title pull-left">
-              <h4>{{ top_panel_text_left }}</h4>
-          </div>
-          <div class="panel-title pull-right">
-            <h4>{{ top_panel_text_right }}</h4>
-          </div>
-          <div class="clearfix"></div>
-        {% if top_panel_collapsible %}
-        </a>
-        {% endif %}
+<ul class="nav nav-tabs">
+  <li class="active">
+    <a  href="#browse" data-toggle="tab" style="outline:none;">Browse</a>
+  </li>
+  <li>
+    <a href="#search" data-toggle="tab" style="outline:none;">Search</a>
+  </li>
+  <li>
+    <a  href="#help" data-toggle="tab" style="outline:none;">Help</a>
+  </li>
+</ul>
 
+<div class="tab-content" style="margin-top: 5px;">
+
+  <div class="tab-pane active" id="browse">
+
+    <div class="panel-group" id="accordion">
+      {% if top_panel_visible %}
+      <div class="panel panel-default" style="overflow-x: auto;">
+          <div class="panel-heading">
+            {% if top_panel_collapsible %}
+            <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
+            {% endif %}
+              <div class="pull-left">
+                <h2>{{ top_panel_text_left }}</h2>
+              </div>
+              <div class="pull-right">
+                <h2>{{ top_panel_text_right }}</h2>
+              </div>
+              <div class="clearfix"></div>
+            {% if top_panel_collapsible %}
+            </a>
+            {% endif %}
+
+          </div>
+          {% if top_panel_collapsible %}
+          <div id="swh-browse-top-collapse" class="panel-collapse collapse">
+          {% endif %}
+            <table class="table">
+              <tbody>
+                {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+                  <tr>
+                    <th class="swh-metadata-table-row">{{ key }}</th>
+                    <td class="swh-metadata-table-row">
+                      <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% if top_panel_collapsible %}
+          </div>
+          {% endif %}
       </div>
-      {% if top_panel_collapsible %}
-      <div id="swh-browse-top-collapse" class="panel-collapse collapse">
       {% endif %}
-        <table class="table">
-          <tbody>
-            {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-              <tr>
-                <th class="swh-metadata-table-row">{{ key }}</th>
-                <td class="swh-metadata-table-row">
-                  <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% if top_panel_collapsible %}
+      {% if main_panel_visible %}
+      <div class="panel panel-default" style="overflow-x: auto;">
+        {% block swh-browse-main-panel-content %}{% endblock %}
       </div>
       {% endif %}
+    </div>
+
+    {% block swh-browse-after-panels %}{% endblock %}
+
   </div>
-  {% endif %}
-  {% if main_panel_visible %}
-  <div class="panel panel-default" style="overflow-x: auto;">
-    {% block swh-browse-main-panel-content %}{% endblock %}
+
+  <div class="tab-pane" id="search">
+    {% include "includes/origins-search.html" %}
   </div>
-  {% endif %}
+
+  <div class="tab-pane" id="help">
+    {% include "includes/browse-help.html" %}
+  </div>
+
 </div>
 
-{% block swh-browse-after-panels %}{% endblock %}
+<script>
+
+  function removeHash () {
+    history.pushState("", document.title, window.location.pathname + window.location.search);
+  }
+
+  var browse_tabs_hash = ["#browse", "#search", "#help"];
+
+  // Javascript to enable link to tab
+  function show_requested_tab() {
+    var hash = window.location.hash;
+    if (browse_tabs_hash.indexOf(hash) == -1) {
+      return;
+    }
+    if (hash) {
+      $('.nav-tabs a[href="' + hash + '"]').tab('show');
+    } else {
+      $('.nav-tabs a[href="#browse"]').tab('show');
+    }
+    window.scrollTo(0, 0);
+  }
+
+  // show requested tab when loading the page
+  $(document).ready(function() {
+
+    // Change hash for page reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+      if (e.target.hash != '#browse') {
+        window.location.hash = e.target.hash;
+      } else {
+        removeHash();
+      }
+      show_requested_tab();
+    })
+
+    // update displayed tab when the url fragment changes
+    $(window).on('hashchange', function() {
+      show_requested_tab();
+    });
+
+    show_requested_tab();
+  });
+
+</script>
+
 
 {% endblock %}

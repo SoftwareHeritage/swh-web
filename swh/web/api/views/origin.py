@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from distutils.util import strtobool
 
 from swh.web.common import service
 from swh.web.common.utils import reverse
@@ -13,6 +14,16 @@ from swh.web.api.views.utils import (
     api_lookup, doc_exc_id_not_found, doc_header_link,
     doc_arg_last_elt, doc_arg_per_page
 )
+
+
+def _enrich_origin(origin):
+    if 'id' in origin:
+        o = origin.copy()
+        o['origin_visits_url'] = \
+            reverse('origin-visits', kwargs={'origin_id': origin['id']})
+        return o
+
+    return origin
 
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'origin')
@@ -55,19 +66,70 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
         error_msg = 'Origin with type %s and URL %s not found' % (
             ori_dict['type'], ori_dict['url'])
 
-    def _enrich_origin(origin):
-        if 'id' in origin:
-            o = origin.copy()
-            o['origin_visits_url'] = \
-                reverse('origin-visits', kwargs={'origin_id': origin['id']})
-            return o
-
-        return origin
-
     return api_lookup(
         service.lookup_origin, ori_dict,
         notfound_msg=error_msg,
         enrich_fn=_enrich_origin)
+
+
+@api_route(r'/origin/search/(?P<url_pattern>.+)/',
+           'origin-search')
+@api_doc.route('/origin/search/')
+@api_doc.arg('url_pattern',
+             default='python',
+             argtype=api_doc.argtypes.str,
+             argdoc='string pattern to search for in origin urls')
+@api_doc.header('Link', doc=doc_header_link)
+@api_doc.param('offset',
+               default=0,
+               argtype=api_doc.argtypes.int,
+               doc='number of found origins to skip before returning results') # noqa
+@api_doc.param('limit',
+               default=50,
+               argtype=api_doc.argtypes.int,
+               doc='the maximum number of found origins to return')
+@api_doc.param('regexp',
+               default='false',
+               argtype=api_doc.argtypes.str,
+               doc="""if that query parameter is set to 'true', consider provided
+                   pattern as a regular expression and search origins whose
+                   urls match it""")
+@api_doc.returns(rettype=api_doc.rettypes.list,
+                 retdoc="""The metadata of the origins whose urls match
+                        the provided string pattern""")
+def api_origin_search(request, url_pattern):
+    """Search for origins whose urls contain a provided string pattern
+    or match a provided regular expression.
+    The search is performed in a case insensitive way.
+
+    """
+
+    result = {}
+    offset = int(request.query_params.get('offset', '0'))
+    limit = int(request.query_params.get('limit', '50'))
+    regexp = request.query_params.get('regexp', 'false')
+
+    r = api_lookup(service.search_origin, url_pattern, offset, limit,
+                   bool(strtobool(regexp)), enrich_fn=_enrich_origin)
+
+    l = len(r)
+    if l == limit:
+        query_params = {}
+        query_params['offset'] = offset + limit
+        query_params['limit'] = limit
+        query_params['regexp'] = regexp
+
+        result['headers'] = {
+            'link-next': reverse('origin-search',
+                                 kwargs={'url_pattern': url_pattern},
+                                 query_params=query_params)
+        }
+
+    result.update({
+        'results': r
+    })
+
+    return result
 
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'origin-visits')
