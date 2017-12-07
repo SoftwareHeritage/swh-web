@@ -129,6 +129,8 @@ def _get_branch(branches, branch_name):
         filtered_branches = [b for b in branches if b['name'].endswith('master')] # noqa
         if len(filtered_branches) > 0:
             return filtered_branches[0]
+        elif len(branches) > 0:
+            return branches[0]
     return None
 
 
