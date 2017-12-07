@@ -1,3 +1,11 @@
+swh-web (0.0.100-1~swh1) unstable-swh; urgency=medium
+
+  * v0.0.100
+  * swh.web.common.service: Read indexer data through the indexer
+  * storage
+
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 07 Dec 2017 16:25:12 +0100
+
 swh-web (0.0.99-1~swh1) unstable-swh; urgency=medium
 
   * version 0.0.99
