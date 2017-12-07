@@ -448,7 +448,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'),
-                         'Branch HEAD.*not found')
+                         'Origin.*is empty')
 
         mock_get_origin_visit_branches.return_value = stub_origin_branches
         mock_utils_service.lookup_directory.side_effect = \
@@ -493,7 +493,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'),
-                         'Branch HEAD.*not found')
+                         'Origin.*is empty')
 
         mock_get_origin_visit_branches.return_value = stub_origin_branches
         mock_origin_service.lookup_directory_with_path.return_value = \
