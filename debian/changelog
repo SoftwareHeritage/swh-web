@@ -1,8 +1,10 @@
-swh-web (0.0.99-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.100-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-backports.
+  * v0.0.100
+  * swh.web.common.service: Read indexer data through the indexer
+  * storage
 
- -- Antoine Lambert <antoine.lambert@inria.fr>  Wed, 06 Dec 2017 17:07:36 +0100
+ -- Antoine R. Dumont (@ardumont) <antoine.romain.dumont@gmail.com>  Thu, 07 Dec 2017 16:25:12 +0100
 
 swh-web (0.0.99-1~swh1) unstable-swh; urgency=medium
 

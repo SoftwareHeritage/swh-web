@@ -245,11 +245,11 @@ class ServiceTestCase(unittest.TestCase):
              hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')},
         )
 
-    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.idx_storage')
     @istest
-    def lookup_content_ctags(self, mock_storage):
+    def lookup_content_ctags(self, mock_idx_storage):
         # given
-        mock_storage.content_ctags_get = MagicMock(
+        mock_idx_storage.content_ctags_get = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -275,33 +275,27 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEqual(actual_ctags, expected_ctags)
 
-        mock_storage.content_ctags_get.assert_called_with(
+        mock_idx_storage.content_ctags_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.idx_storage')
     @istest
-    def lookup_content_ctags_no_hash(self, mock_storage):
+    def lookup_content_ctags_no_hash(self, mock_idx_storage):
         # given
-        mock_storage.content_find.return_value = None
-        mock_storage.content_ctags_get = MagicMock(
-            return_value=None)
+        mock_idx_storage.content_ctags_get = MagicMock(return_value=[])
 
         # when
         actual_ctags = list(service.lookup_content_ctags(
-            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f'))
+            'sha1:123caf10e9535160d90e874b45aa426de762f19f'))
 
         # then
         self.assertEqual(actual_ctags, [])
 
-        mock_storage.content_find.assert_called_once_with(
-            {'sha1_git': hash_to_bytes(
-                '123caf10e9535160d90e874b45aa426de762f19f')})
-
-    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.idx_storage')
     @istest
-    def lookup_content_filetype(self, mock_storage):
+    def lookup_content_filetype(self, mock_idx_storage):
         # given
-        mock_storage.content_mimetype_get = MagicMock(
+        mock_idx_storage.content_mimetype_get = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -321,12 +315,13 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEqual(actual_filetype, expected_filetype)
 
-        mock_storage.content_mimetype_get.assert_called_with(
+        mock_idx_storage.content_mimetype_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
+    @patch('swh.web.common.service.idx_storage')
     @patch('swh.web.common.service.storage')
     @istest
-    def lookup_content_filetype_2(self, mock_storage):
+    def lookup_content_filetype_2(self, mock_storage, mock_idx_storage):
         # given
         mock_storage.content_find = MagicMock(
             return_value={
@@ -334,7 +329,7 @@ class ServiceTestCase(unittest.TestCase):
                     '123caf10e9535160d90e874b45aa426de762f19f')
             }
         )
-        mock_storage.content_mimetype_get = MagicMock(
+        mock_idx_storage.content_mimetype_get = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -359,14 +354,14 @@ class ServiceTestCase(unittest.TestCase):
             'sha1_git', hash_to_bytes(
                 '456caf10e9535160d90e874b45aa426de762f19f')
         )
-        mock_storage.content_mimetype_get.assert_called_with(
+        mock_idx_storage.content_mimetype_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.idx_storage')
     @istest
-    def lookup_content_language(self, mock_storage):
+    def lookup_content_language(self, mock_idx_storage):
         # given
-        mock_storage.content_language_get = MagicMock(
+        mock_idx_storage.content_language_get = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -384,12 +379,13 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEqual(actual_language, expected_language)
 
-        mock_storage.content_language_get.assert_called_with(
+        mock_idx_storage.content_language_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
+    @patch('swh.web.common.service.idx_storage')
     @patch('swh.web.common.service.storage')
     @istest
-    def lookup_content_language_2(self, mock_storage):
+    def lookup_content_language_2(self, mock_storage, mock_idx_storage):
         # given
         mock_storage.content_find = MagicMock(
             return_value={
@@ -397,7 +393,7 @@ class ServiceTestCase(unittest.TestCase):
                     '123caf10e9535160d90e874b45aa426de762f19f')
             }
         )
-        mock_storage.content_language_get = MagicMock(
+        mock_idx_storage.content_language_get = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -420,14 +416,14 @@ class ServiceTestCase(unittest.TestCase):
             'sha1_git', hash_to_bytes(
                 '456caf10e9535160d90e874b45aa426de762f19f')
         )
-        mock_storage.content_language_get.assert_called_with(
+        mock_idx_storage.content_language_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
-    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.idx_storage')
     @istest
-    def lookup_expression(self, mock_storage):
+    def lookup_expression(self, mock_idx_storage):
         # given
-        mock_storage.content_ctags_search = MagicMock(
+        mock_idx_storage.content_ctags_search = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -451,14 +447,14 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEqual(actual_ctags, expected_ctags)
 
-        mock_storage.content_ctags_search.assert_called_with(
+        mock_idx_storage.content_ctags_search.assert_called_with(
             'foobar', last_sha1='hash', limit=10)
 
-    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.idx_storage')
     @istest
-    def lookup_expression_no_result(self, mock_storage):
+    def lookup_expression_no_result(self, mock_idx_storage):
         # given
-        mock_storage.content_ctags_search = MagicMock(
+        mock_idx_storage.content_ctags_search = MagicMock(
             return_value=[])
         expected_ctags = []
 
@@ -469,14 +465,14 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEqual(actual_ctags, expected_ctags)
 
-        mock_storage.content_ctags_search.assert_called_with(
+        mock_idx_storage.content_ctags_search.assert_called_with(
             'barfoo', last_sha1='hash', limit=10)
 
-    @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.idx_storage')
     @istest
-    def lookup_content_license(self, mock_storage):
+    def lookup_content_license(self, mock_idx_storage):
         # given
-        mock_storage.content_fossology_license_get = MagicMock(
+        mock_idx_storage.content_fossology_license_get = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -494,12 +490,13 @@ class ServiceTestCase(unittest.TestCase):
         # then
         self.assertEqual(actual_license, expected_license)
 
-        mock_storage.content_fossology_license_get.assert_called_with(
+        mock_idx_storage.content_fossology_license_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
+    @patch('swh.web.common.service.idx_storage')
     @patch('swh.web.common.service.storage')
     @istest
-    def lookup_content_license_2(self, mock_storage):
+    def lookup_content_license_2(self, mock_storage, mock_idx_storage):
         # given
         mock_storage.content_find = MagicMock(
             return_value={
@@ -507,7 +504,7 @@ class ServiceTestCase(unittest.TestCase):
                     '123caf10e9535160d90e874b45aa426de762f19f')
             }
         )
-        mock_storage.content_fossology_license_get = MagicMock(
+        mock_idx_storage.content_fossology_license_get = MagicMock(
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
@@ -530,7 +527,7 @@ class ServiceTestCase(unittest.TestCase):
             'sha1_git', hash_to_bytes(
                 '456caf10e9535160d90e874b45aa426de762f19f')
         )
-        mock_storage.content_fossology_license_get.assert_called_with(
+        mock_idx_storage.content_fossology_license_get.assert_called_with(
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
     @patch('swh.web.common.service.storage')

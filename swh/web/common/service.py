@@ -16,6 +16,8 @@ from swh.web import config
 
 storage = config.storage()
 vault = config.vault()
+idx_storage = config.indexer_storage()
+
 
 MAX_LIMIT = 50  # Top limit the users can ask for
 
@@ -63,9 +65,9 @@ def lookup_expression(expression, last_sha1, per_page):
     """
 
     limit = min(per_page, MAX_LIMIT)
-    ctags = storage.content_ctags_search(expression,
-                                         last_sha1=last_sha1,
-                                         limit=limit)
+    ctags = idx_storage.content_ctags_search(expression,
+                                             last_sha1=last_sha1,
+                                             limit=limit)
 
     for ctag in ctags:
         ctag = converters.from_swh(ctag, hashess={'id'})
@@ -154,7 +156,7 @@ def lookup_content_ctags(q):
     if not sha1:
         return None
 
-    ctags = list(storage.content_ctags_get([sha1]))
+    ctags = list(idx_storage.content_ctags_get([sha1]))
     if not ctags:
         return None
 
@@ -175,7 +177,7 @@ def lookup_content_filetype(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    filetype = _first_element(list(storage.content_mimetype_get([sha1])))
+    filetype = _first_element(list(idx_storage.content_mimetype_get([sha1])))
     if not filetype:
         return None
     return converters.from_filetype(filetype)
@@ -194,7 +196,7 @@ def lookup_content_language(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    lang = _first_element(list(storage.content_language_get([sha1])))
+    lang = _first_element(list(idx_storage.content_language_get([sha1])))
     if not lang:
         return None
     return converters.from_swh(lang, hashess={'id'})
@@ -213,7 +215,7 @@ def lookup_content_license(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    lang = _first_element(storage.content_fossology_license_get([sha1]))
+    lang = _first_element(idx_storage.content_fossology_license_get([sha1]))
     if not lang:
         return None
     return converters.from_swh(lang, hashess={'id'})
