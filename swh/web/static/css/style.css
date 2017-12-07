@@ -463,3 +463,23 @@ fieldset[disabled] .btn-swh.active {
     text-align: center;
     z-index:100;
 }
+
+.swh-readme a {
+    outline: none;
+    border: none;
+}
+
+.swh-readme table {
+    border-collapse: collapse;
+}
+
+.swh-readme table,
+.swh-readme table th,
+.swh-readme table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.swh-readme table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

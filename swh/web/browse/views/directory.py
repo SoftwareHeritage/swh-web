@@ -64,6 +64,9 @@ def directory_browse(request, sha1_git, path=None):
 
     sum_file_sizes = 0
 
+    readme_name = None
+    readme_url = None
+
     for f in files:
         query_string = 'sha1_git:' + f['target']
         f['url'] = reverse('browse-content',
@@ -72,6 +75,11 @@ def directory_browse(request, sha1_git, path=None):
                                          path + f['name']})
         sum_file_sizes += f['length']
         f['length'] = filesizeformat(f['length'])
+        if f['name'].lower().startswith('readme'):
+            readme_name = f['name']
+            readme_sha1 = f['checksums']['sha1']
+            readme_url = reverse('browse-content-raw',
+                                 kwargs={'query_string': readme_sha1})
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
@@ -94,4 +102,6 @@ def directory_browse(request, sha1_git, path=None):
                    'branches': None,
                    'branch': None,
                    'top_right_link': None,
-                   'top_right_link_text': None})
+                   'top_right_link_text': None,
+                   'readme_name': readme_name,
+                   'readme_url': readme_url})

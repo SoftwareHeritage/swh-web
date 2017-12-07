@@ -263,6 +263,9 @@ def origin_directory_browse(request, origin_id, visit_id=None,
 
     sum_file_sizes = 0
 
+    readme_name = None
+    readme_url = None
+
     for f in files:
         bc_url_args = dict(url_args)
         bc_url_args['path'] = path + f['name']
@@ -271,6 +274,11 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                            query_params=query_params)
         sum_file_sizes += f['length']
         f['length'] = filesizeformat(f['length'])
+        if f['name'].lower().startswith('readme'):
+            readme_name = f['name']
+            readme_sha1 = f['checksums']['sha1']
+            readme_url = reverse('browse-content-raw',
+                                 kwargs={'query_string': readme_sha1})
 
     history_url = reverse('browse-origin-log',
                           kwargs=url_args,
@@ -305,8 +313,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'top_right_link': history_url,
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
-                       'History')
-                   })
+                       'History'
+                    ),
+                   'readme_name': readme_name,
+                   'readme_url': readme_url})
 
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
