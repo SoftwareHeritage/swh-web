@@ -5,7 +5,9 @@
 
 from swh.core import config
 from swh.storage import get_storage
+from swh.indexer import get_indexer_storage
 from swh.vault.api.client import RemoteVaultClient
+
 
 DEFAULT_CONFIG = {
     'allowed_hosts': ('list', []),
@@ -14,6 +16,12 @@ DEFAULT_CONFIG = {
         'args': {
             'url': 'http://127.0.0.1:5002/',
         },
+    }),
+    'indexer_storage': ('dict', {
+        'cls': 'remote',
+        'args': {
+            'url': 'http://127.0.0.1:5007/',
+        }
     }),
     'vault': ('string', 'http://127.0.0.1:5005/'),
     'log_dir': ('string', '/tmp/swh/log'),
@@ -48,6 +56,8 @@ def get_config(config_file='webapp/webapp'):
         config.prepare_folders(swhweb_config, 'log_dir')
         swhweb_config['storage'] = get_storage(**swhweb_config['storage'])
         swhweb_config['vault'] = RemoteVaultClient(swhweb_config['vault'])
+        swhweb_config['indexer_storage'] = get_indexer_storage(
+            **swhweb_config['indexer_storage'])
     return swhweb_config
 
 
@@ -63,3 +73,10 @@ def vault():
 
     """
     return get_config()['vault']
+
+
+def indexer_storage():
+    """Return the current application's SWH indexer storage.
+
+    """
+    return get_config()['indexer_storage']
