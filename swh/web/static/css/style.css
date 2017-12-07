@@ -50,6 +50,7 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
+    z-index: 10;
 }
 
 #swh-navbar-collapse {
@@ -453,12 +454,12 @@ fieldset[disabled] .btn-swh.active {
 
 .swh-loading.show {
     display:inline-block;
-    position: absolute;
+    position: fixed;
     background: white;
     border: 1px solid black;
     top: 50%;
     left: 50%;
-    transform: translate(0, -50%);
     margin: -50px 0px 0px -50px;
     text-align: center;
+    z-index:100;
 }
