@@ -1,6 +1,6 @@
 TOOL=pandoc
 
-run: # works with the default ~/.config/swh/webapp.yml file
+run: # works with the default ~/.config/swh/webapp/webapp.yml file
 	cd swh/web && python3 manage.py runserver
 
 run-prod:
