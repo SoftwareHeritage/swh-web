@@ -5,7 +5,7 @@
 
 from swh.core import config
 from swh.storage import get_storage
-from swh.indexer import get_indexer_storage
+from swh.indexer.storage import get_indexer_storage
 from swh.vault.api.client import RemoteVaultClient
 
 
