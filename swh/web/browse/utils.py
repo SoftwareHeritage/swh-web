@@ -378,7 +378,7 @@ def gen_person_link(person_id, person_name):
     return gen_link(person_url, person_name)
 
 
-def gen_revision_link(revision_id, shorten_id=False):
+def gen_revision_link(revision_id, shorten_id=False, origin_id=None):
     """
     Utility function for generating a link to a SWH revision HTML view
     to insert in Django templates.
@@ -392,15 +392,38 @@ def gen_revision_link(revision_id, shorten_id=False):
         An HTML link in the form '<a href="revision_view_url">revision_id</a>'
 
     """
+    query_params = None
+    if origin_id:
+        query_params = {'origin_id': origin_id}
     revision_url = reverse('browse-revision',
-                           kwargs={'sha1_git': revision_id})
+                           kwargs={'sha1_git': revision_id},
+                           query_params=query_params)
     if shorten_id:
         return gen_link(revision_url, revision_id[:7])
     else:
         return gen_link(revision_url, revision_id)
 
 
-def _format_log_entries(revision_log, per_page):
+def gen_origin_link(origin_id, origin_url):
+    """
+    Utility function for generating a link to a SWH origin HTML view
+    to insert in Django templates.
+
+    Args:
+        origin_id (int): a SWH origin id
+        origin_url (str): the url of the origin
+
+    Returns:
+        An HTML link in the form '<a href="origin_view_url">Origin: origin_url</a>'
+
+    """ # noqa
+    origin_browse_url = reverse('browse-origin',
+                                kwargs={'origin_id': origin_id})
+    return gen_link(origin_browse_url,
+                    'Origin: ' + origin_url)
+
+
+def _format_log_entries(revision_log, per_page, origin_id=None):
     revision_log_data = []
     for i, log in enumerate(revision_log):
         if i == per_page:
@@ -408,7 +431,7 @@ def _format_log_entries(revision_log, per_page):
         revision_log_data.append(
             {'author': gen_person_link(log['author']['id'],
                                        log['author']['name']),
-             'revision': gen_revision_link(log['id'], True),
+             'revision': gen_revision_link(log['id'], True, origin_id),
              'message': log['message'],
              'message_shorten': textwrap.shorten(log['message'],
                                                  width=80,
@@ -419,7 +442,7 @@ def _format_log_entries(revision_log, per_page):
 
 
 def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
-                                     origin_context=False):
+                                     origin_context=False, origin_id=None):
     """
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
@@ -464,7 +487,8 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
     else:
         prev_revs_breadcrumb = prev_rev_bc
 
-    return {'revision_log_data': _format_log_entries(revision_log, per_page),
+    return {'revision_log_data': _format_log_entries(revision_log, per_page,
+                                                     origin_id),
             'prev_rev': prev_rev,
             'prev_revs_breadcrumb': prev_revs_breadcrumb,
             'next_rev': next_rev,

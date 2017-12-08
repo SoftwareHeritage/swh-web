@@ -54,7 +54,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (committer_url, committer_name))
         self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (directory_url, dir_id))
+                                  (directory_url, directory_url))
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (history_url, history_url))
 
@@ -71,6 +71,44 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, format_utc_iso_date(author_date))
         self.assertContains(resp, format_utc_iso_date(committer_date))
         self.assertContains(resp, message)
+
+        origin_info = {
+            'id': '7416001',
+            'type': 'git',
+            'url': 'https://github.com/webpack/webpack'
+        }
+
+        mock_service.lookup_origin.return_value = origin_info
+
+        origin_directory_url = reverse('browse-origin-directory',
+                                       kwargs={'origin_id': origin_info['id']},
+                                       query_params={'revision': revision_id_test}) # noqa
+
+        origin_revision_log_url = reverse('browse-origin-log',
+                                          kwargs={'origin_id': origin_info['id']}, # noqa
+                                          query_params={'revision': revision_id_test}) # noqa
+
+        url = reverse('browse-revision',
+                      kwargs={'sha1_git': revision_id_test},
+                      query_params={'origin_id': origin_info['id']}) # noqa
+
+        resp = self.client.get(url)
+
+        self.assertContains(resp, '<a href="%s">%s</a>' %
+                                  (origin_directory_url, origin_directory_url))
+
+        self.assertContains(resp, '<a href="%s">%s</a>' %
+                                  (origin_revision_log_url, origin_revision_log_url)) # noqa
+
+        self.assertContains(resp, '<a href="%s">%s</a>' %
+                            (origin_info['url'], origin_info['url']))
+
+        for parent in revision_metadata_test['parents']:
+            parent_url = reverse('browse-revision',
+                                 kwargs={'sha1_git': parent},
+                                 query_params={'origin_id': origin_info['id']})
+            self.assertContains(resp, '<a href="%s">%s</a>' %
+                                (parent_url, parent))
 
     @patch('swh.web.browse.views.revision.service')
     @istest
@@ -198,3 +236,16 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Revision not found', status_code=404)
+
+        url = reverse('browse-revision',
+                      kwargs={'sha1_git': revision_id_test},
+                      query_params={'origin_id': '54'})
+
+        mock_service.lookup_revision.side_effect = None
+        mock_service.lookup_origin.side_effect = \
+            NotFoundExc('Origin not found')
+
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        self.assertContains(resp, 'Origin not found', status_code=404)

@@ -22,7 +22,7 @@ from swh.web.browse.utils import (
     get_origin_visits, get_origin_visit, get_origin_visit_branches,
     get_directory_entries, request_content,
     prepare_content_for_display, gen_link,
-    prepare_revision_log_for_display
+    prepare_revision_log_for_display, gen_origin_link
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -144,13 +144,6 @@ def _get_branch(branches, branch_name):
         elif len(branches) > 0:
             return branches[0]
     return None
-
-
-def _gen_origin_link(origin_id, origin_url):
-    origin_browse_url = reverse('browse-origin',
-                                kwargs={'origin_id': origin_id})
-    return gen_link(origin_browse_url,
-                    'Origin: ' + origin_url)
 
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/directory/',
@@ -314,7 +307,7 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Directory',
-                   'top_panel_text_right': _gen_origin_link(
+                   'top_panel_text_right': gen_origin_link(
                        origin_id, origin_info['url']),
                    'swh_object_metadata': dir_metadata,
                    'main_panel_visible': True,
@@ -476,7 +469,7 @@ def origin_content_display(request, origin_id, path,
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Content',
-                   'top_panel_text_right': _gen_origin_link(
+                   'top_panel_text_right': gen_origin_link(
                        origin_id, origin_info['url']),
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
@@ -591,7 +584,8 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
         return handle_view_exception(request, exc)
 
     revision_log_display_data = prepare_revision_log_for_display(
-        revision_log, per_page, revs_breadcrumb, origin_context=True)
+        revision_log, per_page, revs_breadcrumb, origin_context=True,
+        origin_id=origin_id)
 
     prev_rev = revision_log_display_data['prev_rev']
     prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
@@ -635,7 +629,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Revision history',
-                   'top_panel_text_right': _gen_origin_link(
+                   'top_panel_text_right': gen_origin_link(
                        origin_id, origin_info['url']),
                    'swh_object_metadata': revision_metadata,
                    'main_panel_visible': True,
