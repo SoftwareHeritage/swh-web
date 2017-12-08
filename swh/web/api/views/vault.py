@@ -15,9 +15,9 @@ from swh.web.api.views.utils import (
 )
 
 
-@never_cache
 @api_route('/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
            'vault-cook-directory')
+@never_cache
 @api_doc.route('/vault/directory', tags=['hidden'])
 @api_doc.arg('dir_id',
              default='d4a96ba891017d0d26c15e509b4e6515e40d75ee',
@@ -77,9 +77,9 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
-@never_cache
 @api_route(r'/vault/revision_gitfast/(?P<rev_id>[a-fA-F0-9]+)/',
            'vault-cook-revision_gitfast')
+@never_cache
 @api_doc.route('/vault/revision_gitfast', tags=['hidden'])
 @api_doc.arg('rev_id',
              default='9174026cfe69d73ef80b27890615f8b2ef5c265a',
