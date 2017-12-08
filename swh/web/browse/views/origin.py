@@ -102,17 +102,29 @@ def _get_origin_branches_and_url_args(origin_id, visit_id, ts):
     return branches, url_args
 
 
-def _raise_exception_if_branch_not_found(origin_id, visit_id, ts, branch):
+def _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
+                                         branch, branches):
     if visit_id:
-        raise NotFoundExc('Branch %s associated to visit with'
-                          ' id %s for origin with id %s'
-                          ' not found!' %
-                          (branch, visit_id, origin_id))
+        if len(branches) == 0:
+            raise NotFoundExc('Origin with id %s is empty for visit'
+                              ' with id %s! No existing branches were found!' %
+                              (origin_id, visit_id))
+        else:
+            raise NotFoundExc('Branch %s associated to visit with'
+                              ' id %s for origin with id %s'
+                              ' not found!' %
+                              (branch, visit_id, origin_id))
     else:
-        raise NotFoundExc('Branch %s associated to visit with'
-                          ' timestamp %s for origin with id %s'
-                          ' not found!' %
-                          (branch, ts, origin_id))
+        if len(branches) == 0:
+            raise NotFoundExc('Origin with id %s is empty for visit'
+                              ' with timestamp %s! No existing branches'
+                              ' were found!' %
+                              (origin_id, ts))
+        else:
+            raise NotFoundExc('Branch %s associated to visit with'
+                              ' timestamp %s for origin with id %s'
+                              ' not found!' %
+                              (branch, ts, origin_id))
 
 
 def _get_branch(branches, branch_name):
@@ -129,6 +141,8 @@ def _get_branch(branches, branch_name):
         filtered_branches = [b for b in branches if b['name'].endswith('master')] # noqa
         if len(filtered_branches) > 0:
             return filtered_branches[0]
+        elif len(branches) > 0:
+            return branches[0]
     return None
 
 
@@ -218,7 +232,8 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                 root_sha1_git = branch['directory']
             else:
                 _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch_name)
+                                                     timestamp, branch_name,
+                                                     branches)
 
         sha1_git = root_sha1_git
         if path:
@@ -261,6 +276,9 @@ def origin_directory_browse(request, origin_id, visit_id=None,
 
     sum_file_sizes = 0
 
+    readme_name = None
+    readme_url = None
+
     for f in files:
         bc_url_args = dict(url_args)
         bc_url_args['path'] = path + f['name']
@@ -269,6 +287,11 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                            query_params=query_params)
         sum_file_sizes += f['length']
         f['length'] = filesizeformat(f['length'])
+        if f['name'].lower().startswith('readme'):
+            readme_name = f['name']
+            readme_sha1 = f['checksums']['sha1']
+            readme_url = reverse('browse-content-raw',
+                                 kwargs={'query_string': readme_sha1})
 
     history_url = reverse('browse-origin-log',
                           kwargs=url_args,
@@ -303,8 +326,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'top_right_link': history_url,
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
-                       'History')
-                   })
+                       'History'
+                    ),
+                   'readme_name': readme_name,
+                   'readme_url': readme_url})
 
 
 @browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
@@ -381,7 +406,8 @@ def origin_content_display(request, origin_id, path,
                 root_sha1_git = branch['directory']
             else:
                 _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch_name)
+                                                     timestamp, branch_name,
+                                                     branches)
 
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
@@ -553,7 +579,8 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                 revision = branch['revision']
             else:
                 _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch_name)
+                                                     timestamp, branch_name,
+                                                     branches)
 
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
         revision_log = service.lookup_revision_log(revision,

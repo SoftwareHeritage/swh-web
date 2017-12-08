@@ -10,6 +10,7 @@ from nose.tools import istest
 
 
 from swh.web.browse import utils
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
 from swh.web.tests.testbase import SWHWebTestBase
 
@@ -73,8 +74,12 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
               }]
         mock_origin_visits.return_value = visits
 
-        visit = utils.get_origin_visit(origin_id, visit_id=12)
-        self.assertEqual(visit, None)
+        with self.assertRaises(NotFoundExc) as cm:
+            visit_id = 12
+            visit = utils.get_origin_visit(origin_id, visit_id=visit_id)
+            self.assertIn('Visit with id %s for origin with id %s not found' %
+                          (origin_id, visit_id),
+                          cm.exception.args[0])
 
         visit = utils.get_origin_visit(origin_id, visit_id=2)
         self.assertEqual(visit, visits[1])

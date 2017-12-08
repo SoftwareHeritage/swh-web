@@ -266,10 +266,12 @@ def get_origin_visit(origin_id, visit_id=None, visit_ts=None):
             (visit_ts, origin_id))
 
     visit = [v for v in visits if v['visit'] == int(visit_id)]
-    if len(visit) > 0:
-        return visit[0]
-    else:
-        return None
+    if len(visit) == 0:
+        raise NotFoundExc(
+            'Visit with id %s for origin with id %s not found!' %
+            (visit_id, origin_id))
+
+    return visit[0]
 
 
 def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
