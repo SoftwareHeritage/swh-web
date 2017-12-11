@@ -32,84 +32,104 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
 
         def _lookup_origin_visits(*args, **kwargs):
             if kwargs['last_visit'] is None:
-                return [{'visit': 1}, {'visit': 2}]
+                return [{'visit': 1,
+                         'date': '2017-05-06T00:59:10+00:00',
+                         'metadata': {}},
+                        {'visit': 2,
+                         'date': '2017-08-06T00:59:10+00:00',
+                         'metadata': {}}
+                        ]
             else:
-                return [{'visit': 3}]
+                return [{'visit': 3,
+                         'date': '2017-09-06T00:59:10+00:00',
+                         'metadata': {}}
+                        ]
 
         mock_service.lookup_origin_visits.side_effect = _lookup_origin_visits
 
-        origin_visits = utils.get_origin_visits(1)
+        origin_info = {
+            'id': 1,
+            'type': 'git',
+            'url': 'https://github.com/foo/bar',
+        }
+
+        origin_visits = utils.get_origin_visits(origin_info)
 
         self.assertEqual(len(origin_visits), 3)
 
     @patch('swh.web.browse.utils.get_origin_visits')
     @istest
     def get_origin_visit(self, mock_origin_visits):
-        origin_id = 2
+        origin_info = {
+            'id': 2,
+            'type': 'git',
+            'url': 'https://github.com/foo/bar',
+        }
         visits = \
             [{'status': 'full',
               'date': '2015-07-09T21:09:24+00:00',
               'visit': 1,
-              'origin': origin_id
+              'origin': origin_info['id']
               },
              {'status': 'full',
               'date': '2016-02-23T18:05:23.312045+00:00',
               'visit': 2,
-              'origin': origin_id
+              'origin': origin_info['id']
               },
              {'status': 'full',
               'date': '2016-03-28T01:35:06.554111+00:00',
               'visit': 3,
-              'origin': origin_id
+              'origin': origin_info['id']
               },
              {'status': 'full',
               'date': '2016-06-18T01:22:24.808485+00:00',
               'visit': 4,
-              'origin': origin_id
+              'origin': origin_info['id']
               },
              {'status': 'full',
               'date': '2016-08-14T12:10:00.536702+00:00',
               'visit': 5,
-              'origin': origin_id
+              'origin': origin_info['id']
               }]
         mock_origin_visits.return_value = visits
 
         with self.assertRaises(NotFoundExc) as cm:
             visit_id = 12
-            visit = utils.get_origin_visit(origin_id, visit_id=visit_id)
+            visit = utils.get_origin_visit(origin_info,
+                                           visit_id=visit_id)
             self.assertIn('Visit with id %s for origin with id %s not found' %
-                          (origin_id, visit_id),
+                          (origin_info['id'], visit_id),
                           cm.exception.args[0])
 
-        visit = utils.get_origin_visit(origin_id, visit_id=2)
+        visit = utils.get_origin_visit(origin_info, visit_id=2)
         self.assertEqual(visit, visits[1])
 
         visit = utils.get_origin_visit(
-            origin_id, visit_ts='2016-02-23T18:05:23.312045+00:00')
+            origin_info, visit_ts='2016-02-23T18:05:23.312045+00:00')
         self.assertEqual(visit, visits[1])
 
         visit = utils.get_origin_visit(
-            origin_id, visit_ts='2016-02-20')
+            origin_info, visit_ts='2016-02-20')
         self.assertEqual(visit, visits[1])
 
         visit = utils.get_origin_visit(
-            origin_id, visit_ts='2016-06-18T01:22')
+            origin_info, visit_ts='2016-06-18T01:22')
         self.assertEqual(visit, visits[3])
 
         visit = utils.get_origin_visit(
-            origin_id, visit_ts='2016-06-18 01:22')
+            origin_info, visit_ts='2016-06-18 01:22')
         self.assertEqual(visit, visits[3])
 
         visit = utils.get_origin_visit(
-            origin_id, visit_ts=1466208000)
+            origin_info, visit_ts=1466208000)
         self.assertEqual(visit, visits[3])
 
         visit = utils.get_origin_visit(
-            origin_id, visit_ts='2014-01-01')
+            origin_info, visit_ts='2014-01-01')
         self.assertEqual(visit, visits[0])
 
         visit = utils.get_origin_visit(
-            origin_id, visit_ts='2018-01-01')
+            origin_info, visit_ts='2018-01-01')
         self.assertEqual(visit, visits[-1])
 
     @patch('swh.web.browse.utils.service')
@@ -166,7 +186,13 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
              'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd'}
         ]
 
-        origin_visit_branches = utils.get_origin_visit_branches(1, 1)
+        origin_info = {
+            'id': 1,
+            'type': 'git',
+            'url': 'https://github.com/hylang/hy'
+        }
+
+        origin_visit_branches = utils.get_origin_visit_branches(origin_info, 1)
 
         self.assertEqual(origin_visit_branches, expected_result)
 

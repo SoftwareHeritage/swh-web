@@ -10,7 +10,7 @@
       <ul class="scrollable-menu dropdown-menu">
         {% for b in branches %}
           <li class="swh-branch">
-              <a href="{{ b.url }}">
+              <a href="{{ b.url | safe }}">
                 <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
                 {% if b.name == branch %}
                   <i class="fa fa-check fa-fw" aria-hidden="true"></i>
@@ -26,14 +26,14 @@
   {% endif %}
 
   {% if top_right_link %}
-    <a href="{{ top_right_link }}" class="btn btn-md btn-swh pull-right" role="button">{{ top_right_link_text }}</a>
+    <a href="{{ top_right_link | safe }}" class="btn btn-md btn-swh pull-right" role="button">{{ top_right_link_text }}</a>
   {% endif %}
 
   <nav class="bread-crumbs swh-browse-bread-crumbs">
     <ul>
       {% for bc in breadcrumbs %}
         {% if bc.url %}
-          <li class="swh-path"><a href="{{ bc.url }}">{{ bc.name }}</a></li>
+          <li class="swh-path"><a href="{{ bc.url | safe }}">{{ bc.name }}</a></li>
           <li>/</li>
         {% else %}
           <li>{{ bc.name }}</li>

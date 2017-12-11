@@ -30,7 +30,7 @@
         {% for v in visits %}
         <tr class="swh-origin-visit">
           <td>{{ v.visit }}</td>
-          <td>{{ v.date }}</td>
+          <td>{{ v.fmt_date }}</td>
           <td>{{ v.status }}</td>
           <td><a href="{{ v.browse_url }}">{{ v.browse_url }}</a></td>
         </tr>

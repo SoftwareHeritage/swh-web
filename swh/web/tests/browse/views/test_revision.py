@@ -3,6 +3,8 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+# flake8: noqa
+
 from unittest.mock import patch
 from nose.tools import istest
 from django.test import TestCase
@@ -81,16 +83,19 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         mock_service.lookup_origin.return_value = origin_info
 
         origin_directory_url = reverse('browse-origin-directory',
-                                       kwargs={'origin_id': origin_info['id']},
-                                       query_params={'revision': revision_id_test}) # noqa
+                                       kwargs={'origin_type': origin_info['type'],
+                                               'origin_url': origin_info['url']},
+                                       query_params={'revision': revision_id_test})
 
         origin_revision_log_url = reverse('browse-origin-log',
-                                          kwargs={'origin_id': origin_info['id']}, # noqa
-                                          query_params={'revision': revision_id_test}) # noqa
+                                          kwargs={'origin_type': origin_info['type'],
+                                                  'origin_url': origin_info['url']},
+                                          query_params={'revision': revision_id_test})
 
         url = reverse('browse-revision',
                       kwargs={'sha1_git': revision_id_test},
-                      query_params={'origin_id': origin_info['id']}) # noqa
+                      query_params={'origin_type': origin_info['type'],
+                                    'origin_url': origin_info['url']})
 
         resp = self.client.get(url)
 
@@ -98,7 +103,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                   (origin_directory_url, origin_directory_url))
 
         self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (origin_revision_log_url, origin_revision_log_url)) # noqa
+                                  (origin_revision_log_url, origin_revision_log_url))
 
         self.assertContains(resp, '<a href="%s">%s</a>' %
                             (origin_info['url'], origin_info['url']))
@@ -106,7 +111,8 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         for parent in revision_metadata_test['parents']:
             parent_url = reverse('browse-revision',
                                  kwargs={'sha1_git': parent},
-                                 query_params={'origin_id': origin_info['id']})
+                                 query_params={'origin_type': origin_info['type'],
+                                               'origin_url': origin_info['url']})
             self.assertContains(resp, '<a href="%s">%s</a>' %
                                 (parent_url, parent))
 
@@ -126,7 +132,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         prev_rev = revision_history_log_test[per_page]['id']
         next_page_url = reverse('browse-revision-log',
                                 kwargs={'sha1_git': prev_rev},
-                                query_params={'revs_breadcrumb': revision_id_test, # noqa
+                                query_params={'revs_breadcrumb': revision_id_test,
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
@@ -162,7 +168,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                 query_params={'per_page': per_page})
         next_page_url = reverse('browse-revision-log',
                                 kwargs={'sha1_git': prev_prev_rev},
-                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev, # noqa
+                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev,
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
@@ -182,11 +188,11 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         prev_prev_prev_rev = revision_history_log_test[3*per_page]['id']
         prev_page_url = reverse('browse-revision-log',
                                 kwargs={'sha1_git': prev_rev},
-                                query_params={'revs_breadcrumb': revision_id_test, # noqa
+                                query_params={'revs_breadcrumb': revision_id_test,
                                               'per_page': per_page})
         next_page_url = reverse('browse-revision-log',
                                 kwargs={'sha1_git': prev_prev_prev_rev},
-                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev + '/' + prev_prev_rev, # noqa
+                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev + '/' + prev_prev_rev,
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
@@ -205,7 +211,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
         prev_page_url = reverse('browse-revision-log',
                                 kwargs={'sha1_git': prev_prev_rev},
-                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev, # noqa
+                                query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev,
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
@@ -239,7 +245,8 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
         url = reverse('browse-revision',
                       kwargs={'sha1_git': revision_id_test},
-                      query_params={'origin_id': '54'})
+                      query_params={'origin_type': 'git',
+                                    'origin_url': 'https://github.com/foo/bar'})
 
         mock_service.lookup_revision.side_effect = None
         mock_service.lookup_origin.side_effect = \

@@ -45,7 +45,7 @@
   var per_page = 15;
   var offset = 0;
   var origins_search_url = "{% url 'browse-origin-search' 'url_regexp' %}?limit=limit_val&offset=offset_val&regexp=true";
-  var origin_browse_url = "{% url 'browse-origin' '0' %}";
+  var origin_browse_url = "{% url 'browse-origin' 'type' 'origin_url' %}";
   var search_request = null;
 
   function populateOriginSearchResultsTable(data, limit, offset) {
@@ -56,7 +56,7 @@
       tableRow += '<td>' + elem.id + '</td>';
       tableRow += '<td>' + elem.type + '</td>';
       tableRow += '<td><a href="' + elem.url + '">' + elem.url + '</a></td>';
-      var browse_url = origin_browse_url.replace('0', elem.id);
+      var browse_url = origin_browse_url.replace('type', elem.type).replace('origin_url', elem.url);
       tableRow += '<td><a href="' + browse_url + '">Browse</a></td>';
       tableRow += '</tr>';
       table.append(tableRow);

@@ -25,17 +25,19 @@ def _gen_directory_link(sha1_git, link_text=None):
     return gen_link(directory_url, link_text)
 
 
-def _gen_origin_directory_link(origin_id, revision_id):
+def _gen_origin_directory_link(origin_info, revision_id):
     directory_url = reverse('browse-origin-directory',
-                            kwargs={'origin_id': origin_id},
+                            kwargs={'origin_type': origin_info['type'],
+                                    'origin_url': origin_info['url']},
                             query_params={'revision': revision_id})
     return gen_link(directory_url, directory_url)
 
 
-def _gen_revision_log_link(revision_id, origin_id=None, link_text=None):
-    if origin_id:
+def _gen_revision_log_link(revision_id, origin_info=None, link_text=None):
+    if origin_info:
         revision_log_url = reverse('browse-origin-log',
-                                   kwargs={'origin_id': origin_id},
+                                   kwargs={'origin_type': origin_info['type'],
+                                           'origin_url': origin_info['url']},
                                    query_params={'revision': revision_id})
     else:
         revision_log_url = reverse('browse-revision-log',
@@ -64,12 +66,9 @@ def revision_browse(request, sha1_git):
     try:
         revision = service.lookup_revision(sha1_git)
         origin_info = None
-        origin_id = request.GET.get('origin_id', None)
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
-        if origin_id:
-            origin_info = service.lookup_origin({'id': origin_id})
-        elif origin_type and origin_url:
+        if origin_type and origin_url:
             origin_info = service.lookup_origin({'type': origin_type,
                                                  'url': origin_url})
     except Exception as exc:
@@ -86,9 +85,9 @@ def revision_browse(request, sha1_git):
     revision_data['date'] = format_utc_iso_date(revision['date'])
     if origin_info:
         revision_data['directory'] = _gen_origin_directory_link(
-            origin_info['id'], sha1_git)
+            origin_info, sha1_git)
         revision_data['history log'] = _gen_revision_log_link(
-            sha1_git, origin_info['id'])
+            sha1_git, origin_info)
     else:
         revision_data['directory'] = _gen_directory_link(revision['directory'])
         revision_data['history log'] = _gen_revision_log_link(sha1_git)
@@ -104,14 +103,13 @@ def revision_browse(request, sha1_git):
         revision_data['origin type'] = origin_info['type']
         revision_data['origin url'] = gen_link(origin_info['url'],
                                                origin_info['url'])
-        top_panel_text_right = gen_origin_link(origin_info['id'],
-                                               origin_info['url'])
+        top_panel_text_right = gen_origin_link(origin_info)
     else:
         top_panel_text_right = 'Sha1 git: ' + sha1_git
 
     parents = ''
     for p in revision['parents']:
-        parent_link = gen_revision_link(p, origin_id=origin_id)
+        parent_link = gen_revision_link(p, origin_info=origin_info)
         parents += parent_link + '<br/>'
 
     revision_data['parents'] = mark_safe(parents)

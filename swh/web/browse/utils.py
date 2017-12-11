@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import base64
+import dateutil
 import magic
 import math
 import stat
@@ -170,7 +171,7 @@ def prepare_content_for_display(content_data, mime_type, path):
             'language': language}
 
 
-def get_origin_visits(origin_id):
+def get_origin_visits(origin_info):
     """Function that returns the list of visits for a swh origin.
     That list is put in cache in order to speedup the navigation
     in the swh web browse ui.
@@ -192,7 +193,7 @@ def get_origin_visits(origin_id):
     Raises:
         NotFoundExc if the origin is not found
     """
-    cache_entry_id = 'origin_%s_visits' % origin_id
+    cache_entry_id = 'origin_%s_visits' % origin_info['id']
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
@@ -203,7 +204,7 @@ def get_origin_visits(origin_id):
     per_page = service.MAX_LIMIT
     last_visit = None
     while 1:
-        visits = list(service.lookup_origin_visits(origin_id,
+        visits = list(service.lookup_origin_visits(origin_info['id'],
                                                    last_visit=last_visit,
                                                    per_page=per_page))
         origin_visits += visits
@@ -215,22 +216,30 @@ def get_origin_visits(origin_id):
             else:
                 last_visit += per_page
 
+    def _visit_sort_key(visit):
+        ts = dateutil.parser.parse(visit['date']).timestamp()
+        return ts + (float(visit['visit']) / 10e3)
+
+    for v in origin_visits:
+        del v['metadata']
+    origin_visits = [dict(t) for t in set([tuple(d.items())
+                                           for d in origin_visits])]
+    origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
+
     cache.set(cache_entry_id, origin_visits)
 
     return origin_visits
 
 
-def get_origin_visit(origin_id, visit_id=None, visit_ts=None):
+def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
     """Function that returns information about a SWH visit for
     a given origin.
-    The visit is retrieved from the visits list using either:
-        * a visit id
-        * a provided timestamp, in that case, the closest visit from
-          that timestamp is selected
+    The visit is retrieved from a provided timestamp.
+    The closest visit from that timestamp is selected.
 
     Args:
-        origin_id (int): the id of the swh origin to fetch branches from
-        visit_id (int): the id of the origin visit
+        origin_info (dict): a dict filled with origin information
+            (id, url, type)
         visit_ts (int or str): an ISO date string or Unix timestamp to parse
 
     Returns:
@@ -243,41 +252,63 @@ def get_origin_visit(origin_id, visit_id=None, visit_ts=None):
              'status': 'full'}
 
     """
-    visits = get_origin_visits(origin_id)
-    if not visit_id and visit_ts:
-        parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
-        for i, visit in enumerate(visits):
-            ts = math.floor(parse_timestamp(visit['date']).timestamp())
-            if i == 0 and parsed_visit_ts <= ts:
+    visits = get_origin_visits(origin_info)
+
+    if not visits:
+        raise NotFoundExc('No SWH visit associated to origin with'
+                          ' type %s and url %s!' % (origin_info['type'],
+                                                    origin_info['url']))
+
+    if visit_id:
+        visit = [v for v in visits if v['visit'] == int(visit_id)]
+        if len(visit) == 0:
+            raise NotFoundExc(
+                'Visit with id %s for origin with type %s'
+                ' and url %s not found!' % (visit_id, origin_info['type'],
+                                            origin_info['url']))
+        return visit[0]
+
+    if not visit_ts:
+        return visits[-1]
+
+    parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
+
+    visit_idx = None
+    for i, visit in enumerate(visits):
+        ts = math.floor(parse_timestamp(visit['date']).timestamp())
+        if i == 0 and parsed_visit_ts <= ts:
+            return visit
+        elif i == len(visits) - 1:
+            if parsed_visit_ts >= ts:
                 return visit
-            elif i == len(visits) - 1:
-                if parsed_visit_ts >= ts:
-                    return visit
-            else:
-                next_ts = math.floor(
-                    parse_timestamp(visits[i+1]['date']).timestamp())
-                if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
-                    if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
-                        return visit
-                    else:
-                        return visits[i+1]
+        else:
+            next_ts = math.floor(
+                parse_timestamp(visits[i+1]['date']).timestamp())
+            if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
+                if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
+                    visit_idx = i
+                    break
+                else:
+                    visit_idx = i+1
+                    break
+
+    if visit_idx:
+        visit = visits[visit_idx]
+        while visit_idx < len(visits) - 1 and \
+                visit['date'] == visits[visit_idx+1]['date']:
+            visit_idx = visit_idx + 1
+            visit = visits[visit_idx]
+        return visit
+    else:
         raise NotFoundExc(
-            'Visit with timestamp %s for origin with id %s not found!' %
-            (visit_ts, origin_id))
-
-    visit = [v for v in visits if v['visit'] == int(visit_id)]
-    if len(visit) == 0:
-        raise NotFoundExc(
-            'Visit with id %s for origin with id %s not found!' %
-            (visit_id, origin_id))
-
-    return visit[0]
+            'Visit with timestamp %s for origin with type %s and url %s not found!' % # noqa
+            (visit_ts, origin_info['type'], origin_info['url']))
 
 
-def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
+def get_origin_visit_branches(origin_info, visit_ts=None, visit_id=None):
     """Function that returns the list of branches associated to
     a swh origin for a given visit.
-    The visit can be expressed by its id or a timestamp. In the latter case,
+    The visit is expressed by a timestamp. In the latter case,
     the closest visit from the provided timestamp will be used.
     If no visit parameter is provided, it returns the list of branches
     found for the latest visit.
@@ -285,8 +316,8 @@ def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
     in the swh web browse ui.
 
     Args:
-        origin_id (int): the id of the swh origin to fetch branches from
-        visit_id (int): the id of the origin visit
+        origin_info (dict): a dict filled with origin information
+            (id, url, type)
         visit_ts (int or str): an ISO date string or Unix timestamp to parse
 
     Returns:
@@ -307,16 +338,19 @@ def get_origin_visit_branches(origin_id, visit_id=None, visit_ts=None):
         NotFoundExc if the origin or its visit are not found
     """
 
-    visit_info = get_origin_visit(origin_id, visit_id, visit_ts)
+    visit_info = get_origin_visit(origin_info, visit_ts, visit_id)
+
     visit_id = visit_info['visit']
 
-    cache_entry_id = 'origin_%s_visit_%s_branches' % (origin_id, visit_id)
+    cache_entry_id = 'origin_%s_visit_%s_branches' % (origin_info['id'],
+                                                      visit_id)
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
         return cache_entry
 
-    origin_visit_data = service.lookup_origin_visit(origin_id, visit_id)
+    origin_visit_data = service.lookup_origin_visit(origin_info['id'],
+                                                    visit_id)
     branches = []
     revision_ids = []
     occurrences = origin_visit_data['occurrences']
@@ -378,7 +412,7 @@ def gen_person_link(person_id, person_name):
     return gen_link(person_url, person_name)
 
 
-def gen_revision_link(revision_id, shorten_id=False, origin_id=None):
+def gen_revision_link(revision_id, shorten_id=False, origin_info=None):
     """
     Utility function for generating a link to a SWH revision HTML view
     to insert in Django templates.
@@ -393,8 +427,9 @@ def gen_revision_link(revision_id, shorten_id=False, origin_id=None):
 
     """
     query_params = None
-    if origin_id:
-        query_params = {'origin_id': origin_id}
+    if origin_info:
+        query_params = {'origin_type': origin_info['type'],
+                        'origin_url': origin_info['url']}
     revision_url = reverse('browse-revision',
                            kwargs={'sha1_git': revision_id},
                            query_params=query_params)
@@ -404,26 +439,27 @@ def gen_revision_link(revision_id, shorten_id=False, origin_id=None):
         return gen_link(revision_url, revision_id)
 
 
-def gen_origin_link(origin_id, origin_url):
+def gen_origin_link(origin_info):
     """
     Utility function for generating a link to a SWH origin HTML view
     to insert in Django templates.
 
     Args:
-        origin_id (int): a SWH origin id
-        origin_url (str): the url of the origin
+        origin_info (dict): a dicted filled with origin information
+            (id, type, url)
 
     Returns:
         An HTML link in the form '<a href="origin_view_url">Origin: origin_url</a>'
 
     """ # noqa
     origin_browse_url = reverse('browse-origin',
-                                kwargs={'origin_id': origin_id})
+                                kwargs={'origin_type': origin_info['type'],
+                                        'origin_url': origin_info['url']})
     return gen_link(origin_browse_url,
-                    'Origin: ' + origin_url)
+                    'Origin: ' + origin_info['url'])
 
 
-def _format_log_entries(revision_log, per_page, origin_id=None):
+def _format_log_entries(revision_log, per_page, origin_info=None):
     revision_log_data = []
     for i, log in enumerate(revision_log):
         if i == per_page:
@@ -431,7 +467,7 @@ def _format_log_entries(revision_log, per_page, origin_id=None):
         revision_log_data.append(
             {'author': gen_person_link(log['author']['id'],
                                        log['author']['name']),
-             'revision': gen_revision_link(log['id'], True, origin_id),
+             'revision': gen_revision_link(log['id'], True, origin_info),
              'message': log['message'],
              'message_shorten': textwrap.shorten(log['message'],
                                                  width=80,
@@ -442,7 +478,7 @@ def _format_log_entries(revision_log, per_page, origin_id=None):
 
 
 def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
-                                     origin_context=False, origin_id=None):
+                                     origin_context=False, origin_info=None):
     """
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
@@ -488,7 +524,7 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
         prev_revs_breadcrumb = prev_rev_bc
 
     return {'revision_log_data': _format_log_entries(revision_log, per_page,
-                                                     origin_id),
+                                                     origin_info),
             'prev_rev': prev_rev,
             'prev_revs_breadcrumb': prev_revs_breadcrumb,
             'next_rev': next_rev,

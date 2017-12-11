@@ -27,104 +27,44 @@ from swh.web.browse.utils import (
 from swh.web.browse.browseurls import browse_route
 
 
-@browse_route(r'origin/(?P<origin_id>[0-9]+)/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
-              view_name='browse-origin')
-def origin_browse(request, origin_id=None, origin_type=None,
-                  origin_url=None):
-    """Django view that produces an HTML display of a swh origin identified
-    by its id or its url.
+def _get_origin_branches_and_url_args(origin_info, timestamp, visit_id):
+    branches = get_origin_visit_branches(origin_info, timestamp, visit_id)
+    url_args = {'origin_type': origin_info['type'],
+                'origin_url': origin_info['url']}
+    if timestamp:
+        url_args['timestamp'] = format_utc_iso_date(timestamp,
+                                                    '%Y-%m-%dT%H:%M:%S')
 
-    The url scheme that points to it is :http:get:`/browse/origin/(origin_id)/`.
-
-    Args:
-        request: input django http request
-        origin_id: a swh origin id
-        origin_type: type of origin (git, svn, ...)
-        origin_url: url of the origin (e.g. https://github.com/<user>/<repo>)
-
-    Returns:
-        The HMTL rendering for the metadata of the provided origin.
-    """ # noqa
-    try:
-        if origin_id:
-            origin_request_params = {
-                'id': origin_id,
-            }
-        else:
-            origin_request_params = {
-                'type': origin_type,
-                'url': origin_url
-            }
-        origin_info = service.lookup_origin(origin_request_params)
-        origin_id = origin_info['id']
-        origin_visits = get_origin_visits(origin_id)
-    except Exception as exc:
-        return handle_view_exception(request, exc)
-
-    origin_info['last swh visit browse url'] = \
-        reverse('browse-origin-directory',
-                kwargs={'origin_id': origin_id})
-
-    origin_visits_data = []
-    for visit in origin_visits:
-        visit_date = dateutil.parser.parse(visit['date'])
-        visit['date'] = format_utc_iso_date(visit['date'])
-        visit['browse_url'] = reverse('browse-origin-directory',
-                                      kwargs={'origin_id': origin_id,
-                                              'visit_id': visit['visit']})
-        origin_visits_data.append(
-            {'date': visit_date.timestamp()})
-
-    return render(request, 'origin.html',
-                  {'heading': 'Origin information',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text_left': 'SWH object: Origin',
-                   'top_panel_text_right': 'Url: ' + origin_info['url'],
-                   'swh_object_metadata': origin_info,
-                   'main_panel_visible': True,
-                   'origin_visits_data': origin_visits_data,
-                   'visits': list(reversed(origin_visits)),
-                   'browse_url_base': '/browse/origin/%s/' %
-                   origin_id})
-
-
-def _get_origin_branches_and_url_args(origin_id, visit_id, ts):
-    if not visit_id and ts:
-        branches = get_origin_visit_branches(origin_id, visit_ts=ts)
-        url_args = {'origin_id': origin_id,
-                    'timestamp': ts}
-    else:
-        branches = get_origin_visit_branches(origin_id, visit_id)
-        url_args = {'origin_id': origin_id,
-                    'visit_id': visit_id}
     return branches, url_args
 
 
-def _raise_exception_if_branch_not_found(origin_id, visit_id, ts,
-                                         branch, branches):
+def _raise_exception_if_branch_not_found(origin_info, timestamp,
+                                         branch, branches, visit_id=None):
     if visit_id:
         if len(branches) == 0:
-            raise NotFoundExc('Origin with id %s is empty for visit'
-                              ' with id %s! No existing branches were found!' %
-                              (origin_id, visit_id))
+            raise NotFoundExc('Origin with type %s and url %s is empty'
+                              ' for visit with id %s! No existing branches'
+                              ' were found!' % (origin_info['type'],
+                                                origin_info['url'], visit_id))
         else:
             raise NotFoundExc('Branch %s associated to visit with'
-                              ' id %s for origin with id %s'
-                              ' not found!' %
-                              (branch, visit_id, origin_id))
+                              ' id %s for origin with type %s and url %s'
+                              ' not found!' % (branch, visit_id,
+                                               origin_info['type'],
+                                               origin_info['url']))
     else:
         if len(branches) == 0:
-            raise NotFoundExc('Origin with id %s is empty for visit'
-                              ' with timestamp %s! No existing branches'
-                              ' were found!' %
-                              (origin_id, ts))
+            raise NotFoundExc('Origin with type %s and url %s is empty'
+                              ' for visit with timestamp %s! No existing'
+                              ' branches were found!' % (origin_info['type'],
+                                                         origin_info['url'],
+                                                         timestamp))
         else:
             raise NotFoundExc('Branch %s associated to visit with'
-                              ' timestamp %s for origin with id %s'
-                              ' not found!' %
-                              (branch, ts, origin_id))
+                              ' timestamp %s for origin with type %s'
+                              ' and url %s not found!' % (branch, timestamp,
+                                                          origin_info['type'],
+                                                          origin_info['url']))
 
 
 def _get_branch(branches, branch_name):
@@ -134,11 +74,13 @@ def _get_branch(branches, branch_name):
     (e.g those with svn type) does not have it. In that latter case, check
     if there is a master branch instead and returns it.
     """
-    filtered_branches = [b for b in branches if b['name'].endswith(branch_name)] # noqa
+    filtered_branches = \
+        [b for b in branches if b['name'].endswith(branch_name)]
     if len(filtered_branches) > 0:
         return filtered_branches[0]
     elif branch_name == 'HEAD':
-        filtered_branches = [b for b in branches if b['name'].endswith('master')] # noqa
+        filtered_branches = \
+            [b for b in branches if b['name'].endswith('master')]
         if len(filtered_branches) > 0:
             return filtered_branches[0]
         elif len(branches) > 0:
@@ -146,34 +88,30 @@ def _get_branch(branches, branch_name):
     return None
 
 
-@browse_route(r'origin/(?P<origin_id>[0-9]+)/directory/',
-              r'origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
-              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/directory/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/directory/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/directory/(?P<path>.+)/', # noqa
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/', # noqa
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/directory/', # noqa
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/directory/(?P<path>.+)/', # noqa
               view_name='browse-origin-directory')
-def origin_directory_browse(request, origin_id, visit_id=None,
+def origin_directory_browse(request, origin_type, origin_url,
                             timestamp=None, path=None):
     """Django view for browsing the content of a swh directory associated
     to an origin for a given visit.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/(origin_id)/directory/[(path)/]`
-        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/directory/[(path)/]`
-        * :http:get:`/browse/origin/(origin_id)/ts/(timestamp)/directory/[(path)/]`
+        * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/directory/[(path)/]`
+        * :http:get:`/browse/origin/(origin_type)/url/(origin_type)/visit/(timestamp)/directory/[(path)/]`
 
     Args:
         request: input django http request
-        origin_id: a swh origin id
-        visit_id: optionnal visit id parameter
+        origin_type: the type of swh origin (git, svn, hg, ...)
+        origin_url: the url of the swh origin
+        timestamp: optional swh visit timestamp parameter
             (the last one will be used by default)
-        timestamp: optionnal visit timestamp parameter
-            (the last one will be used by default)
-        path: optionnal path parameter used to navigate in directories
+        path: optional path parameter used to navigate in directories
               reachable from the origin root one
-        branch: optionnal query parameter that specifies the origin branch
+        branch: optional query parameter that specifies the origin branch
             from which to retrieve the directory
         revision: optional query parameter to specify the origin revision
             from which to retrieve the directory
@@ -184,19 +122,20 @@ def origin_directory_browse(request, origin_id, visit_id=None,
     """ # noqa
     try:
 
-        if not visit_id and not timestamp:
-            origin_visits = get_origin_visits(origin_id)
-            if not origin_visits:
-                raise NotFoundExc('No SWH visit associated to '
-                                  'origin with id %s' % origin_id)
-            return origin_directory_browse(request, origin_id,
-                                           origin_visits[-1]['visit'],
-                                           path=path)
+        origin_info = service.lookup_origin({
+            'type': origin_type,
+            'url': origin_url
+        })
 
-        origin_info = service.lookup_origin({'id': origin_id})
+        visit_id = request.GET.get('visit_id', None)
+
+        visit_info = get_origin_visit(origin_info, timestamp, visit_id)
+
+        if timestamp:
+            timestamp = visit_info['date']
+
         branches, url_args = \
-            _get_origin_branches_and_url_args(origin_id, visit_id, timestamp)
-        visit_info = get_origin_visit(origin_id, visit_id, timestamp)
+            _get_origin_branches_and_url_args(origin_info, timestamp, visit_id)
 
         for b in branches:
             branch_url_args = dict(url_args)
@@ -205,7 +144,10 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                 branch_url_args['path'] = path
             b['url'] = reverse('browse-origin-directory',
                                kwargs=branch_url_args,
-                               query_params={'branch': b['name']})
+                               query_params={'branch': b['name'],
+                                             'visit_id': visit_id})
+
+        query_params = {'visit_id': visit_id}
 
         revision_id = request.GET.get('revision', None)
 
@@ -217,16 +159,18 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                              'directory': root_sha1_git,
                              'url': None})
             branch_name = revision_id
+            query_params['revision'] = revision_id
         else:
             branch_name = request.GET.get('branch', 'HEAD')
             branch = _get_branch(branches, branch_name)
             if branch:
                 branch_name = branch['name']
                 root_sha1_git = branch['directory']
+                query_params['branch'] = branch_name
             else:
-                _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch_name,
-                                                     branches)
+                _raise_exception_if_branch_not_found(origin_info, timestamp,
+                                                     branch_name, branches,
+                                                     visit_id)
 
         sha1_git = root_sha1_git
         if path:
@@ -237,11 +181,6 @@ def origin_directory_browse(request, origin_id, visit_id=None,
 
     except Exception as exc:
         return handle_view_exception(request, exc)
-
-    if revision_id:
-        query_params = {'revision': revision_id}
-    else:
-        query_params = {'branch': branch_name}
 
     path_info = gen_path_info(path)
 
@@ -299,7 +238,8 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                     'origin id': origin_info['id'],
                     'origin type': origin_info['type'],
                     'origin url': origin_info['url'],
-                    'origin visit': format_utc_iso_date(visit_info['date']),
+                    'origin visit date': format_utc_iso_date(visit_info['date']), # noqa
+                    'origin visit id': visit_info['visit'],
                     'path': '/' + path}
 
     return render(request, 'directory.html',
@@ -307,8 +247,7 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Directory',
-                   'top_panel_text_right': gen_origin_link(
-                       origin_id, origin_info['url']),
+                   'top_panel_text_right': gen_origin_link(origin_info),
                    'swh_object_metadata': dir_metadata,
                    'main_panel_visible': True,
                    'dirs': dirs,
@@ -325,30 +264,27 @@ def origin_directory_browse(request, origin_id, visit_id=None,
                    'readme_url': readme_url})
 
 
-@browse_route(r'origin/(?P<origin_id>[0-9]+)/content/(?P<path>.+)/',
-              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/content/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/content/(?P<path>.+)/', # noqa
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/content/(?P<path>.+)/', # noqa
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/content/(?P<path>.+)/', # noqa
               view_name='browse-origin-content')
-def origin_content_display(request, origin_id, path,
-                           visit_id=None, timestamp=None):
+def origin_content_display(request, origin_type, origin_url, path,
+                           timestamp=None):
     """Django view that produces an HTML display of a swh content
     associated to an origin for a given visit.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/(origin_id)/content/(path)/`
-        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/content/(path)/`
-        * :http:get:`/browse/origin/(origin_id)/ts/(timestamp)/content/(path)/`
+        * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/content/(path)/`
+        * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/content/(path)/`
 
     Args:
         request: input django http request
-        origin_id: id of a swh origin
+        origin_type: the type of swh origin (git, svn, hg, ...)
+        origin_url: the url of the swh origin
         path: path of the content relative to the origin root directory
-        visit_id: optionnal visit id parameter
+        timestamp: optional swh visit timestamp parameter
             (the last one will be used by default)
-        timestamp: optionnal visit timestamp parameter
-            (the last one will be used by default)
-        branch: optionnal query parameter that specifies the origin branch
+        branch: optional query parameter that specifies the origin branch
             from which to retrieve the content
         revision: optional query parameter to specify the origin revision
             from which to retrieve the content
@@ -360,26 +296,29 @@ def origin_content_display(request, origin_id, path,
     """ # noqa
     try:
 
-        if not visit_id and not timestamp:
-            origin_visits = get_origin_visits(origin_id)
-            if not origin_visits:
-                raise NotFoundExc('No SWH visit associated to '
-                                  'origin with id %s' % origin_id)
-            return origin_content_display(request, origin_id, path,
-                                          origin_visits[-1]['visit'])
+        origin_info = service.lookup_origin({
+            'type': origin_type,
+            'url': origin_url
+        })
 
-        origin_info = service.lookup_origin({'id': origin_id})
+        visit_id = request.GET.get('visit_id', None)
+
+        visit_info = get_origin_visit(origin_info, timestamp, visit_id)
+        if timestamp:
+            timestamp = visit_info['date']
+
         branches, url_args = \
-            _get_origin_branches_and_url_args(origin_id, visit_id, timestamp)
-
-        visit_info = get_origin_visit(origin_id, visit_id, timestamp)
+            _get_origin_branches_and_url_args(origin_info, timestamp, visit_id)
 
         for b in branches:
             bc_url_args = dict(url_args)
             bc_url_args['path'] = path
             b['url'] = reverse('browse-origin-content',
                                kwargs=bc_url_args,
-                               query_params={'branch': b['name']})
+                               query_params={'branch': b['name'],
+                                             'visit_id': visit_id})
+
+        query_params = {'visit_id': visit_id}
 
         revision_id = request.GET.get('revision', None)
 
@@ -391,16 +330,18 @@ def origin_content_display(request, origin_id, path,
                              'directory': root_sha1_git,
                              'url': None})
             branch_name = revision_id
+            query_params['revision'] = revision_id
         else:
             branch_name = request.GET.get('branch', 'HEAD')
             branch = _get_branch(branches, branch_name)
             if branch:
                 branch_name = branch['name']
                 root_sha1_git = branch['directory']
+                query_params['branch'] = branch_name
             else:
-                _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch_name,
-                                                     branches)
+                _raise_exception_if_branch_not_found(origin_info, timestamp,
+                                                     branch_name, branches,
+                                                     visit_id)
 
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
@@ -409,11 +350,6 @@ def origin_content_display(request, origin_id, path,
 
     except Exception as exc:
         return handle_view_exception(request, exc)
-
-    if revision_id:
-        query_params = {'revision': revision_id}
-    else:
-        query_params = {'branch': branch_name}
 
     content_display_data = prepare_content_for_display(
         content_data['raw_data'], content_data['mimetype'], path)
@@ -459,7 +395,8 @@ def origin_content_display(request, origin_id, path,
         'origin id': origin_info['id'],
         'origin type': origin_info['type'],
         'origin url': origin_info['url'],
-        'origin visit': format_utc_iso_date(visit_info['date']),
+        'origin visit date': format_utc_iso_date(visit_info['date']),
+        'origin visit id': visit_info['visit'],
         'path': '/' + path,
         'filename': filename
     }
@@ -469,8 +406,7 @@ def origin_content_display(request, origin_id, path,
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Content',
-                   'top_panel_text_right': gen_origin_link(
-                       origin_id, origin_info['url']),
+                   'top_panel_text_right': gen_origin_link(origin_info),
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content_display_data['content_data'],
@@ -486,35 +422,32 @@ def origin_content_display(request, origin_id, path,
                    })
 
 
-def _gen_directory_link(url_args, revision, link_text):
+def _gen_directory_link(url_args, query_params, link_text):
     directory_url = reverse('browse-origin-directory',
                             kwargs=url_args,
-                            query_params={'revision': revision})
+                            query_params=query_params)
     return gen_link(directory_url, link_text)
 
 
 NB_LOG_ENTRIES = 20
 
 
-@browse_route(r'origin/(?P<origin_id>[0-9]+)/log/',
-              r'origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/log/', # noqa
-              r'origin/(?P<origin_id>[0-9]+)/ts/(?P<timestamp>.+)/log/',
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/log/', # noqa
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/log/',
               view_name='browse-origin-log')
-def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
+def origin_log_browse(request, origin_type, origin_url, timestamp=None):
     """Django view that produces an HTML display of revisions history (aka
     the commit log) associated to a SWH origin.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/(origin_id)/log/`
-        * :http:get:`/browse/origin/(origin_id)/visit/(visit_id)/log/`
-        * :http:get:`/browse/origin/(origin_id)/ts/(timestamp)/log/`
+        * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/log/`
+        * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/log/`
 
     Args:
         request: input django http request
-        origin_id: id of a swh origin
-        visit_id: optionnal visit id parameter
-            (the last one will be used by default)
+        origin_type: the type of swh origin (git, svn, hg, ...)
+        origin_url: the url of the swh origin
         timestamp: optionnal visit timestamp parameter
             (the last one will be used by default)
         revs_breadcrumb: query parameter used internally to store
@@ -533,23 +466,25 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
     """ # noqa
     try:
 
-        if not visit_id and not timestamp:
-            origin_visits = get_origin_visits(origin_id)
-            if not origin_visits:
-                raise NotFoundExc('No SWH visit associated to '
-                                  'origin with id %s' % origin_id)
-            return origin_log_browse(request, origin_id,
-                                     origin_visits[-1]['visit'])
+        origin_info = service.lookup_origin({
+            'type': origin_type,
+            'url': origin_url
+        })
+
+        visit_id = request.GET.get('visit_id', None)
+
+        visit_info = get_origin_visit(origin_info, timestamp, visit_id)
+        if timestamp:
+            timestamp = visit_info['date']
 
         branches, url_args = \
-            _get_origin_branches_and_url_args(origin_id, visit_id, timestamp)
-
-        visit_info = get_origin_visit(origin_id, visit_id, timestamp)
+            _get_origin_branches_and_url_args(origin_info, timestamp, visit_id)
 
         for b in branches:
             b['url'] = reverse('browse-origin-log',
                                kwargs=url_args,
-                               query_params={'branch': b['name']})
+                               query_params={'branch': b['name'],
+                                             'visit_id': visit_id})
 
         revision_id = request.GET.get('revision', None)
         revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
@@ -571,9 +506,9 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                 branch_name = branch['name']
                 revision = branch['revision']
             else:
-                _raise_exception_if_branch_not_found(origin_id, visit_id,
-                                                     timestamp, branch_name,
-                                                     branches)
+                _raise_exception_if_branch_not_found(origin_info, timestamp,
+                                                     branch_name, branches,
+                                                     visit_id)
 
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
         revision_log = service.lookup_revision_log(revision,
@@ -585,7 +520,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
 
     revision_log_display_data = prepare_revision_log_for_display(
         revision_log, per_page, revs_breadcrumb, origin_context=True,
-        origin_id=origin_id)
+        origin_info=origin_info)
 
     prev_rev = revision_log_display_data['prev_rev']
     prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
@@ -596,7 +531,8 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                     kwargs=url_args,
                     query_params={'revs_breadcrumb': prev_revs_breadcrumb,
                                   'per_page': per_page,
-                                  'branch': branch_name})
+                                  'branch': branch_name,
+                                  'visit_id': visit_id})
 
     next_rev = revision_log_display_data['next_rev']
     next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
@@ -607,21 +543,24 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                     kwargs=url_args,
                     query_params={'revs_breadcrumb': next_revs_breadcrumb,
                                   'per_page': per_page,
-                                  'branch': branch_name})
+                                  'branch': branch_name,
+                                  'visit_id': visit_id})
 
     revision_log_data = revision_log_display_data['revision_log_data']
 
     for i, log in enumerate(revision_log_data):
-        log['directory'] = _gen_directory_link(url_args, revision_log[i]['id'],
-                                               'Tree')
-
-    origin_info = service.lookup_origin({'id': origin_id})
+        query_params = {
+            'revision': revision_log[i]['id'],
+            'visit_id': visit_id
+        }
+        log['directory'] = _gen_directory_link(url_args, query_params, 'Tree')
 
     revision_metadata = {
         'origin id': origin_info['id'],
         'origin type': origin_info['type'],
         'origin url': origin_info['url'],
-        'origin visit': format_utc_iso_date(visit_info['date'])
+        'origin visit date': format_utc_iso_date(visit_info['date']),
+        'origin visit id': visit_info['visit']
     }
 
     return render(request, 'revision-log.html',
@@ -629,8 +568,7 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Revision history',
-                   'top_panel_text_right': gen_origin_link(
-                       origin_id, origin_info['url']),
+                   'top_panel_text_right': gen_origin_link(origin_info),
                    'swh_object_metadata': revision_metadata,
                    'main_panel_visible': True,
                    'revision_log': revision_log_data,
@@ -643,6 +581,71 @@ def origin_log_browse(request, origin_id, visit_id=None, timestamp=None):
                    'top_right_link_text': None,
                    'include_top_navigation': True,
                    'no_origin_context': False})
+
+
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
+              view_name='browse-origin')
+def origin_browse(request, origin_type=None, origin_url=None):
+    """Django view that produces an HTML display of a swh origin identified
+    by its id or its url.
+
+    The url scheme that points to it is :http:get:`/browse/origin/(origin_type)/url/(origin_url)/`.
+
+    Args:
+        request: input django http request
+        origin_type: type of origin (git, svn, ...)
+        origin_url: url of the origin (e.g. https://github.com/<user>/<repo>)
+
+    Returns:
+        The HMTL rendering for the metadata of the provided origin.
+    """ # noqa
+    try:
+        origin_info = service.lookup_origin({
+            'type': origin_type,
+            'url': origin_url
+        })
+        origin_visits = get_origin_visits(origin_info)
+    except Exception as exc:
+        return handle_view_exception(request, exc)
+
+    origin_info['last swh visit browse url'] = \
+        reverse('browse-origin-directory',
+                kwargs={'origin_type': origin_type,
+                        'origin_url': origin_url})
+
+    origin_visits_data = []
+    for i, visit in enumerate(origin_visits):
+        visit_date = dateutil.parser.parse(visit['date'])
+        url_date = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%S')
+        visit['fmt_date'] = format_utc_iso_date(visit['date'])
+        query_params = {}
+        if i < len(origin_visits) - 1:
+            if visit['date'] == origin_visits[i+1]['date']:
+                query_params = {'visit_id': visit['visit']}
+        if i > 0:
+            if visit['date'] == origin_visits[i-1]['date']:
+                query_params = {'visit_id': visit['visit']}
+
+        visit['browse_url'] = reverse('browse-origin-directory',
+                                      kwargs={'origin_type': origin_type,
+                                              'origin_url': origin_url,
+                                              'timestamp': url_date},
+                                      query_params=query_params)
+        origin_visits_data.append(
+            {'date': visit_date.timestamp()})
+
+    return render(request, 'origin.html',
+                  {'heading': 'Origin information',
+                   'top_panel_visible': True,
+                   'top_panel_collapsible': True,
+                   'top_panel_text_left': 'SWH object: Origin',
+                   'top_panel_text_right': 'Url: ' + origin_info['url'],
+                   'swh_object_metadata': origin_info,
+                   'main_panel_visible': True,
+                   'origin_visits_data': origin_visits_data,
+                   'visits': list(reversed(origin_visits)),
+                   'browse_url_base': '/browse/origin/%s/url/%s/' %
+                   (origin_type, origin_url)})
 
 
 @browse_route(r'origin/search/(?P<url_pattern>.+)/',
