@@ -483,3 +483,13 @@ fieldset[disabled] .btn-swh.active {
 .swh-readme table tr:nth-child(even) {
     background-color: #f2f2f2;
 }
+
+.swh-web-app-link:hover {
+    background-color: #efeff2;
+}
+
+.swh-web-app-link a {
+    text-decoration: none;
+    outline: none;
+    border: none;
+}
