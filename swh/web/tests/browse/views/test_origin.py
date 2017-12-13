@@ -55,7 +55,6 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('origin.html')
-        self.assertContains(resp, '<td>%s</td>' % origin_info_test_data['id'])
         self.assertContains(resp, '<pre>%s</pre>' % origin_info_test_data['type'])
         self.assertContains(resp, '<pre><a href="%s">%s</a></pre>' %
                                   (origin_info_test_data['url'],

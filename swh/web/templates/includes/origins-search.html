@@ -23,10 +23,8 @@
       <table class="table" id="origin-search-results">
         <thead>
           <tr>
-            <th>Origin id</th>
             <th>Origin type</th>
-            <th>Origin url</th>
-            <th></th>
+            <th>Origin browse url</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -53,11 +51,9 @@
     var table = $("#origin-search-results tbody");
     $.each(data, function(idx, elem){
       var tableRow = '<tr>';
-      tableRow += '<td>' + elem.id + '</td>';
       tableRow += '<td>' + elem.type + '</td>';
-      tableRow += '<td><a href="' + elem.url + '">' + elem.url + '</a></td>';
       var browse_url = origin_browse_url.replace('type', elem.type).replace('origin_url', elem.url);
-      tableRow += '<td><a href="' + browse_url + '">Browse</a></td>';
+      tableRow += '<td><a href="' + browse_url + '">' + browse_url + '</a></td>';
       tableRow += '</tr>';
       table.append(tableRow);
     });
@@ -114,7 +110,7 @@
     origin_patterns = patterns;
     var patterns_array = patterns.trim().replace(/\s+/g,' ').split(' ');
     var patterns_permut = []
-    heapsPermute(patterns_array, (p) => {patterns_permut.push(p.join('.*'));})
+    heapsPermute(patterns_array, function(p) {patterns_permut.push(p.join('.*'));})
     var regex = patterns_permut.join('|');
     var search_url = origins_search_url.replace('url_regexp', regex)
                                        .replace('limit_val', limit)

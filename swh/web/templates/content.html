@@ -25,6 +25,10 @@
     return line_td;
   }
 
+  function removeHash () {
+    history.pushState("", document.title, window.location.pathname + window.location.search);
+  }
+
   // function to reset highlighting
   function reset_highlighted_lines() {
     first_hl_line = null;
@@ -86,6 +90,9 @@
           window.location.hash = '#L' + line;
           scrollToLine(evt.target);
         }
+      } else {
+        reset_highlighted_lines();
+        removeHash();
       }
     });
 

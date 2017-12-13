@@ -20,7 +20,6 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Visit id</th>
           <th>Visit date</th>
           <th>Visit status</th>
           <th>Tree</th>
@@ -29,7 +28,6 @@
       <tbody>
         {% for v in visits %}
         <tr class="swh-origin-visit">
-          <td>{{ v.visit }}</td>
           <td>{{ v.fmt_date }}</td>
           <td>{{ v.status }}</td>
           <td><a href="{{ v.browse_url }}">{{ v.browse_url }}</a></td>

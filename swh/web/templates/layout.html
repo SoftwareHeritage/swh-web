@@ -34,27 +34,19 @@
   </head>
   <body
     <a id="top"></a>
-    <div class="jumbotron">
-      <nav class="navbar navbar-default" id="swh-navbar-collapse">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed"
-                  data-toggle="collapse" data-target="#swh-navbar-collapse" aria-expanded="false"> <!-- screen-reader -->
-	    <span class="sr-only">Toggle navigation menu</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <div class="logo">
-            <a class="navbar-brand" href="{% url 'swh-web-homepage' %}"> <!-- logo -->
-              <img alt="SWH Archive" src="{% static 'img/swh-logo-archive.png' %}" class="swh-logo" />
-            </a>
-            <a class="navbar-brand sitename" href="{% url 'swh-web-homepage' %}">
-              <span class="first-word">Software</span> <span class="second-word">Heritage</span>
-            </a>
-          </div>
+    <nav class="navbar navbar-default navbar-static-top" id="swh-navbar-collapse">
+      <div class="navbar-header">
+        <div class="logo">
+          <a class="navbar-brand" href="{% url 'swh-web-homepage' %}"> <!-- logo -->
+            <img alt="SWH Archive" src="{% static 'img/swh-logo-archive.png' %}" class="swh-logo" />
+          </a>
+          <a class="navbar-brand sitename" href="{% url 'swh-web-homepage' %}">
+            <span class="first-word">Software</span> <span class="second-word">Heritage</span>
+          </a>
         </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
+
     <div class="container">
       <div class="container">
       </div>
