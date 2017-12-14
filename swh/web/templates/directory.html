@@ -23,7 +23,7 @@
       <tr>
         <td class="swh-directory">
           <i class="fa fa-folder fa-fw" aria-hidden="true"></i>
-          <a href="{{ d.url }}">{{ d.name }}</a>
+          <a href="{{ d.url | safe }}">{{ d.name }}</a>
         </td>
         <td>{{ d.perms }}</td>
         <td></td>
@@ -34,7 +34,7 @@
       <tr>
         <td class="swh-content">
           <i class="fa fa-file-text fa-fw" aria-hidden="true"></i>
-          <a href="{{ f.url }}">{{ f.name }}</a>
+          <a href="{{ f.url | safe }}">{{ f.name }}</a>
         </td>
         <td>{{ f.perms }}</td>
         <td>{{ f.length }}</td>

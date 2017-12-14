@@ -53,27 +53,46 @@
     <ul>
       <li>
         Display a <b>content</b> from its checksum:
-        <a href='/browse/content/sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c/'>/browse/content/sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c/</a>
+        <a href="{% url 'browse-content' 'sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c' %}">
+          {% url 'browse-content' 'sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c' %}
+        </a>
       </li>
       <li>
         Display a <b>directory</b> from its <i>sha1_git</i> identifier:
-        <a href='/browse/directory/977fc4b98c0e85816348cebd3b12026407c368b6/'>/browse/directory/977fc4b98c0e85816348cebd3b12026407c368b6/</a>
+
+        <a href="{% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}">
+          {% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}
+        </a>
         <br/>
         (see the <a href="https://docs.softwareheritage.org/devel/swh-model/apidoc/swh.model.html#swh.model.identifiers.directory_identifier">documentation</a> to get more details about how it is computed)
       </li>
       <li>
         Display information about a software <b>origin</b>:
         <ul>
-          <li><a href="/browse/origin/2/">/browse/origin/2/</a></li>
-          <li><a href="/browse/origin/git/url/https://github.com/python/cpython/">/browse/origin/git/url/https://github.com/python/cpython/</a></li>
+
+          <li>
+            <a href="{% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}">
+              {% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}">
+              {% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}
+            </a>
+          </li>
         </ul>
       </li>
       <li>
-        Display information about a <b>person</b>: <a href="/browse/person/8275/">/browse/person/8275/</a>
+
+        Display information about a <b>person</b>: <a href="{% url 'browse-person' '8275' %}">{% url 'browse-person' '8275' %}</a>
       </li>
       <li>
         Display information about a <b>revision</b> from its <i>sha1_git</i> identifier:
-        <a href="/browse/revision/f1b94134a4b879bc55c3dacdb496690c8ebdc03f/">/browse/revision/f1b94134a4b879bc55c3dacdb496690c8ebdc03f/</a>
+
+        <a href="{% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}">
+          {% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}
+        </a>
         <br/>
         (see the <a href="https://docs.softwareheritage.org/devel/swh-model/apidoc/swh.model.html#swh.model.identifiers.revision_identifier">documentation</a> to get more details about how it is computed)
       </li>
@@ -100,15 +119,23 @@
     <ul>
       <li>
         Display a <b>content</b> from an <b>origin</b>:
-        <a href='/browse/origin/723566/content/git.c/'>/browse/origin/723566/content/git.c/</a>
+        <a href="{% url 'browse-origin-content' 'git' 'https://github.com/git/git' 'git.c' %}">
+          {% url 'browse-origin-content' 'git' 'https://github.com/git/git' 'git.c' %}
+        </a>
       </li>
       <li>
         Display a <b>directory</b> from an <b>origin</b>:
-        <a href='/browse/origin/2/directory/net/ethernet/'>/browse/origin/2/directory/net/ethernet/</a>
+
+        <a href="{% url 'browse-origin-directory' 'git' 'https://github.com/torvalds/linux' 'net/ethernet' %}">
+          {% url 'browse-origin-directory' 'git' 'https://github.com/torvalds/linux' 'net/ethernet' %}
+        </a>
       </li>
       <li>
           Display the <b>revision history</b> (aka the commit log) from an <b>origin</b>:
-          <a href='/browse/origin/12081083/log/'>/browse/origin/12081083/log/</a>
+
+          <a href="{% url 'browse-origin-log' 'git' 'https://github.com/Kitware/CMake' %}">
+            {% url 'browse-origin-log' 'git' 'https://github.com/Kitware/CMake' %}
+          </a>
         </li>
     </ul>
 

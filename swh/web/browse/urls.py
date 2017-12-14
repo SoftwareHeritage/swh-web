@@ -29,10 +29,11 @@ def default_browse_view(request):
     Args:
         request: input django http request
     """
-    linux_origin_id = '2'
-    linux_origin_url = reverse('browse-origin',
-                               kwargs={'origin_id': linux_origin_id})
-    return redirect(linux_origin_url)
+    linux_origin_url = 'https://github.com/torvalds/linux'
+    default_url = reverse('browse-origin',
+                          kwargs={'origin_type': 'git',
+                                  'origin_url': linux_origin_url})
+    return redirect(default_url)
 
 
 urlpatterns = [
