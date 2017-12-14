@@ -15,7 +15,7 @@ from django.http import QueryDict
 
 
 def reverse(viewname, args=None, kwargs=None, query_params=None,
-            current_app=None,  urlconf=None):
+            current_app=None, urlconf=None):
     """An override of django reverse function supporting query parameters.
 
     Args:
@@ -41,8 +41,8 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
 
     if query_params and len(query_params) > 0:
         query_dict = QueryDict('', mutable=True)
-        for k, v in query_params.items():
-            query_dict[k] = v
+        for k in sorted(query_params.keys()):
+            query_dict[k] = query_params[k]
         url += ('?' + query_dict.urlencode(safe='/'))
 
     return url
@@ -115,22 +115,25 @@ def shorten_path(path):
     return re.sub(sha1_re, r'\1...', ret)
 
 
-def format_utc_iso_date(iso_date):
+def format_utc_iso_date(iso_date, fmt='%d %B %Y, %H:%M UTC'):
     """Turns a string reprensation of an UTC iso date
     into a more human readable one.
 
-    More precisely, from the following input
+    By default, from the following input
     string: '2017-05-04T13:27:13+02:00' the following one
     is returned: '04 May 2017, 13:27 UTC'.
+    Custom format string may also be provided
+    as parameter
 
     Args:
         iso_date (str): a string representation of an UTC iso date
+        fmt (str): optional date formatting string
 
     Returns:
-        A human readable string representation of the input iso date
+        A formatted string representation of the input iso date
     """
     date = date_parser.parse(iso_date)
-    return date.strftime('%d %B %Y, %H:%M UTC')
+    return date.strftime(fmt)
 
 
 def gen_path_info(path):

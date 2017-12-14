@@ -341,7 +341,7 @@ var Calendar = function(browse_url, data, origin_id,
                 js_date.setUTCSeconds(0);
                 js_date.setUTCMilliseconds(0);
                 var date = js_date.toISOString();
-                var url = browse_url + 'ts/' + date + '/directory/';
+                var url = browse_url + 'visit/' + date + '/directory/';
                 window.location.href = url;
             }
             self.staticw_just_selected = false;
