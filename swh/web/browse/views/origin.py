@@ -231,7 +231,11 @@ def origin_directory_browse(request, origin_type, origin_url,
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
+    browse_dir_url = reverse('browse-directory',
+                             kwargs={'sha1_git': sha1_git})
+
     dir_metadata = {'id': sha1_git,
+                    'browse directory url': browse_dir_url,
                     'number of regular files': len(files),
                     'number of subdirectories': len(dirs),
                     'sum of regular file sizes': sum_file_sizes,
@@ -378,11 +382,15 @@ def origin_content_display(request, origin_type, origin_url, path,
     breadcrumbs.append({'name': filename,
                         'url': None})
 
+    browse_content_url = reverse('browse-content',
+                                 kwargs={'query_string': query_string})
+
     content_raw_url = reverse('browse-content-raw',
                               kwargs={'query_string': query_string},
                               query_params={'filename': filename})
 
     content_metadata = {
+        'browse content url': browse_content_url,
         'sha1 checksum': content_data['checksums']['sha1'],
         'sha1_git checksum': content_data['checksums']['sha1_git'],
         'sha256 checksum': content_data['checksums']['sha256'],
@@ -555,7 +563,11 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
         }
         log['directory'] = _gen_directory_link(url_args, query_params, 'Tree')
 
+    browse_log_url = reverse('browse-revision-log',
+                             kwargs={'sha1_git': revision})
+
     revision_metadata = {
+        'browse revision history url': browse_log_url,
         'origin id': origin_info['id'],
         'origin type': origin_info['type'],
         'origin url': origin_info['url'],

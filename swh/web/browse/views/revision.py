@@ -99,6 +99,10 @@ def revision_browse(request, sha1_git):
                                            indent=4, separators=(',', ': '))
 
     if origin_info:
+        browse_revision_url = reverse('browse-revision',
+                                      kwargs={'sha1_git': sha1_git})
+        revision_data['browse revision url'] = gen_link(browse_revision_url,
+                                                        browse_revision_url)
         revision_data['origin id'] = origin_info['id']
         revision_data['origin type'] = origin_info['type']
         revision_data['origin url'] = gen_link(origin_info['url'],
