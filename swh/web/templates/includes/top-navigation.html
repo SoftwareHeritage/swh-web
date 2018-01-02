@@ -1,3 +1,4 @@
+{% load swh_templatetags %}
 
 <div class="swh-browse-top-navigation">
   {% if origin_context and origin_context.branch %}
@@ -61,9 +62,12 @@
     </div>
   {% endif %}
 
-  {% if top_right_link %}
-    <a href="{{ top_right_link | safe }}" class="btn btn-md btn-swh pull-right" role="button">{{ top_right_link_text }}</a>
-  {% endif %}
+  <div class="btn-group pull-right">
+    {% if top_right_link %}
+      <a href="{{ top_right_link | safe }}" class="btn btn-md btn-swh" role="button">{{ top_right_link_text }}</a>
+    {% endif %}
+    {% include "includes/vault-create-tasks.html" %}
+  </div>
 
   {% include "includes/breadcrumbs.html" %}
 

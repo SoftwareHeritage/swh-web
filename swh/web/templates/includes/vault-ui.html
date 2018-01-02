@@ -1,0 +1,142 @@
+{% load static %}
+
+<div class="panel panel-default" style="overflow-x: auto;">
+  <div class="panel-heading">
+      <h2>Download content from the Software Heritage Vault</h2>
+  </div>
+  <div class="panel-body">
+    <p>
+      This interface enables to track the status of the different Software Heritage
+      Vault cooking tasks created during the current browsing session.
+    </p>
+    <p>
+      Once a cooking task is finished, a link will be made available in order to
+      download the associated archive.
+    </p>
+    <div class="table-responsive">
+      <table class="table swh-table" id="vault-cooking-tasks">
+        <thead>
+          <tr>
+            <th>Object type</th>
+            <th>Object id</th>
+            <th>Email notification</th>
+            <th>Cooking status</th>
+            <th style="width: 320px"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  var cook_dir_url = "{% url 'vault-cook-directory' 'ffff' %}";
+  var cook_rev_url = "{% url 'vault-cook-revision_gitfast' 'ffff' %}";
+  var browse_dir_url = "{% url 'browse-directory' 'ffff' %}";
+  var browse_rev_url = "{% url 'browse-revision' 'ffff' %}";
+
+  var progress = '<div class="progress" style="margin-bottom: 0px;"> \
+                    <div class="progress-bar progress-bar-success progress-bar-striped" \
+                         role="progressbar" aria-valuenow="100" aria-valuemin="0" \
+                         aria-valuemax="100" style="width: 100%;height: 100%;"> \
+                    </div> \
+                  </div>';
+
+  function check_vault_cooking_tasks() {
+    var vault_cooking_tasks = JSON.parse(sessionStorage.getItem("swh-vault-cooking-tasks"));
+    if (!vault_cooking_tasks) {
+      return;
+    }
+    var cooking_urls = [];
+    var tasks = {};
+    for (var i = 0 ; i < vault_cooking_tasks.length ; ++i) {
+      var cooking_task = vault_cooking_tasks[i];
+      tasks[cooking_task.object_id] = cooking_task;
+      var cooking_url;
+      if (cooking_task.object_type == 'directory') {
+        cooking_url = cook_dir_url.replace('ffff', cooking_task.object_id);
+      } else {
+        cooking_url = cook_rev_url.replace('ffff', cooking_task.object_id);
+      }
+      if (cooking_task.status != 'done' && cooking_task.status != 'failed') {
+        cooking_urls.push($.ajax(cooking_url));
+      }
+    }
+    $.when.apply($, cooking_urls).then(function() {
+      $("#vault-cooking-tasks tbody tr").remove();
+      var table = $("#vault-cooking-tasks tbody");
+      for (var i = 0 ; i < cooking_urls.length ; ++i) {
+        var resp;
+        if (cooking_urls.length == 1) {
+          resp = arguments[i];
+        } else {
+          resp = arguments[i][0];
+        }
+        var cooking_task = tasks[resp.obj_id];
+        cooking_task.status = resp.status;
+        cooking_task.fetch_url = resp.fetch_url;
+      }
+      for (var i = 0 ; i < vault_cooking_tasks.length ; ++i) {
+        var cooking_task = vault_cooking_tasks[i];
+        var browse_url;
+        if (cooking_task.object_type == 'directory') {
+          browse_url = browse_dir_url.replace('ffff', cooking_task.object_id);
+        } else {
+          browse_url = browse_rev_url.replace('ffff', cooking_task.object_id);
+        }
+
+        var progress_bar = $.parseHTML(progress)[0];
+        var progress_bar_content = $(progress_bar).find('.progress-bar');
+        if (cooking_task.status == 'failed') {
+          progress_bar_content.css('background-image', 'none');
+          progress_bar_content.css('background-color', 'red');
+        }
+        progress_bar_content.text(cooking_task.status);
+        if (cooking_task.status == 'pending') {
+          progress_bar_content.addClass('active');
+        } else if (cooking_task.status == 'done') {
+          progress_bar_content.removeClass('progress-bar-striped');
+        }
+        var table_row;
+        if (cooking_task.object_type == 'directory') {
+          table_row = '<tr title="Once downloaded, the directory can be extracted with the ' +
+                      'following command:\n\n$ tar xvzf ' + cooking_task.object_id + '.tar.gz">';
+        } else {
+          table_row = '<tr title="Once downloaded, the git repository can be imported with the ' +
+                      'following commands:\n\n$ git init\n$ zcat ' + cooking_task.object_id + '.gitfast.gz | git fast-import">';
+        }
+        if (cooking_task.object_type == 'directory') {
+          table_row += '<td><i class="fa fa-folder fa-fw" aria-hidden="true"></i>directory</td>';
+        } else {
+          table_row += '<td><i class="octicon octicon-git-commit fa-fw"></i>revision</td>';
+        }
+        table_row += '<td><a href="' + browse_url + '">' + cooking_task.object_id + '</a></td>';
+        table_row += '<td>' + (cooking_task.email || 'none') + '</td>';
+        table_row += '<td>' + progress_bar.outerHTML + '</td>';
+        var dl_link = 'Waiting for download link to be available';
+        if (cooking_task.status == 'done') {
+          dl_link = '<a class="btn btn-md btn-swh" href="' + cooking_task.fetch_url +
+                    '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>';
+        }
+        table_row += '<td  style="width: 320px">' + dl_link + '</td>';
+        table_row += '</tr>';
+        table.append(table_row);
+      }
+      sessionStorage.setItem("swh-vault-cooking-tasks", JSON.stringify(vault_cooking_tasks));
+      check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
+    });
+  }
+
+  var polling_interval = 5000;
+
+  var check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
+
+  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    if (e.target.text == 'Vault') {
+      clearTimeout(check_vault_id);
+      check_vault_cooking_tasks();
+    }
+  });
+
+</script>

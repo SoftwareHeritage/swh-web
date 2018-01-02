@@ -88,6 +88,13 @@ def directory_browse(request, sha1_git, path=None):
                     'number of subdirectories': len(dirs),
                     'sum of regular file sizes': sum_file_sizes}
 
+    vault_cooking = {
+        'directory_context': True,
+        'directory_id': sha1_git,
+        'revision_context': False,
+        'revision_id': None
+    }
+
     return render(request, 'directory.html',
                   {'empty_browse': False,
                    'heading': 'Directory information',
@@ -103,4 +110,5 @@ def directory_browse(request, sha1_git, path=None):
                    'top_right_link_text': None,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
-                   'origin_context': None})
+                   'origin_context': None,
+                   'vault_cooking': vault_cooking})

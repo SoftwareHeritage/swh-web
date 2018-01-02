@@ -116,6 +116,9 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
             self.assertContains(resp, '<a href="%s">%s</a>' %
                                 (parent_url, parent))
 
+        self.assertContains(resp, '<button id="vault-cook-directory"')
+        self.assertContains(resp, '<button id="vault-cook-revision"')
+
     @patch('swh.web.browse.views.revision.service')
     @istest
     def revision_log_browse(self, mock_service):

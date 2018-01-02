@@ -457,6 +457,11 @@ fieldset[disabled] .btn-swh.active {
 
 .swh-table {
     border-bottom: none !important;
+    margin-bottom: 0px !important;
+}
+
+.swh-table td {
+    vertical-align: middle !important;
 }
 
 .swh-counter {
@@ -506,6 +511,15 @@ fieldset[disabled] .btn-swh.active {
     text-decoration: none;
     outline: none;
     border: none;
+}
+
+.popover {
+    max-width: 100%;
+}
+
+.btn-swh-vault {
+    border-top-right-radius: 4px !important;
+    border-bottom-right-radius: 4px !important;
 }
 
 .pager a {
@@ -608,4 +622,23 @@ fieldset[disabled] .btn-swh.active {
     transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
     z-index: 2000;
+  }
+
+  .modal {
+    text-align: center;
+    padding: 0!important;
+  }
+
+  .modal:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -4px;
+  }
+
+  .modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
   }

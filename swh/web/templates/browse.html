@@ -12,6 +12,9 @@
       <a  href="#help" data-toggle="tab" style="outline:none;">Help</a>
     </li>
     <li>
+      <a  href="#vault" data-toggle="tab" style="outline:none;">Vault</a>
+    </li>
+    <li>
       <a  href="#browse" data-toggle="tab" style="outline:none;">Browse</a>
     </li>
   </ul>
@@ -29,6 +32,10 @@
 
     <div class="tab-pane" id="help">
       {% include "includes/browse-help.html" %}
+    </div>
+
+    <div class="tab-pane" id="vault">
+      {% include "includes/vault-ui.html" %}
     </div>
 
     <div class="tab-pane" id="browse">
@@ -110,25 +117,54 @@
 
   <script>
 
+    var browse_tabs_hash = ["#browse", "#search", "#help", "#vault"];
+
     function removeHash () {
       history.replaceState("", document.title, window.location.pathname + window.location.search);
     }
 
-    var browse_tabs_hash = ["#browse", "#search", "#help"];
+    function show_tab(hash) {
+      $('.navbar-nav.swh-browse-nav a[href="' + hash + '"]').tab('show');
+    }
 
-    // Javascript to enable link to tab
     function show_requested_tab() {
       var hash = window.location.hash;
       if (hash && browse_tabs_hash.indexOf(hash) == -1) {
         return;
       }
       if (hash) {
-        $('.navbar-nav.swh-browse-nav a[href="' + hash + '"]').tab('show');
+        show_tab(hash);
+      } else {
+        show_tab('#browse');
+      }
+    }
+
+    $('[data-toggle=popover]:not([data-popover-content])').popover();
+    $('[data-toggle=popover][data-popover-content]').popover({
+        html : true,
+        container: 'body',
+        trigger: 'focus',
+        content: function() {
+          var content = $(this).attr("data-popover-content");
+          return $(content).children(".popover-body").html();
+        },
+        title: function() {
+          var title = $(this).attr("data-popover-content");
+          return $(title).children(".popover-heading").html();
+        }
+    }).click(function(e) {
+      e.preventDefault();
+    });;
+
+    // Change hash for page reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+      if (e.target.hash != '#browse') {
+        window.location.hash = e.target.hash;
       } else {
         $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
       }
-        window.scrollTo(0, 0);
-    }
+      window.scrollTo(0, 0);
+    });
 
     // show requested tab when loading the page
     $(document).ready(function() {
