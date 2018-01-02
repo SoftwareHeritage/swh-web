@@ -180,5 +180,6 @@ def content_display(request, query_string):
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
                        '</i>Raw File'),
-                   'origin_context': None
+                   'origin_context': None,
+                   'vault_cooking': None
                    })

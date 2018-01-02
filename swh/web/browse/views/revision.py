@@ -165,6 +165,12 @@ def revision_browse(request, sha1_git):
                                query_params=query_params)
 
     history_url = get_revision_log_url(sha1_git, origin_context)
+    vault_cooking = {
+        'directory_context': True,
+        'directory_id': dir_id,
+        'revision_context': True,
+        'revision_id': sha1_git
+    }
 
     return render(request, 'revision.html',
                   {'empty_browse': False,
@@ -188,7 +194,8 @@ def revision_browse(request, sha1_git):
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
                        'History'
-                    )})
+                    ),
+                   'vault_cooking': vault_cooking})
 
 
 NB_LOG_ENTRIES = 20
@@ -263,4 +270,5 @@ def revision_log_browse(request, sha1_git):
                    'top_right_link': None,
                    'top_right_link_text': None,
                    'include_top_navigation': False,
-                   'origin_context': None})
+                   'origin_context': None,
+                   'vault_cooking': None})

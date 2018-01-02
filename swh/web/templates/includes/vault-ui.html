@@ -1,0 +1,115 @@
+{% load static %}
+
+<div class="panel panel-default" style="overflow-x: auto;">
+  <div class="panel-heading">
+      <h2>Download content from the Software Heritage Vault</h2>
+  </div>
+  <div class="panel-body">
+
+    <div class="table-responsive">
+      <table class="table swh-table" id="vault-cooking-tasks">
+        <thead>
+          <tr>
+            <th>Object type</th>
+            <th>Object id</th>
+            <th>Email notification</th>
+            <th>Cooking status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  var cook_dir_url = "{% url 'vault-cook-directory' 'ffff' %}";
+  var cook_rev_url = "{% url 'vault-cook-revision_gitfast' 'ffff' %}";
+  var browse_dir_url = "{% url 'browse-directory' 'ffff' %}";
+  var browse_rev_url = "{% url 'browse-revision' 'ffff' %}";
+
+  var progress = '<div class="progress"> \
+                    <div class="progress-bar progress-bar-success progress-bar-striped" \
+                         role="progressbar" aria-valuenow="100" aria-valuemin="0" \
+                         aria-valuemax="100" style="width: 100%"> \
+                    </div> \
+                  </div>';
+
+  function check_vault_cooking_tasks() {
+    var vault_cooking_tasks = JSON.parse(sessionStorage.getItem("swh-vault-cooking-tasks"));
+    if (!vault_cooking_tasks) {
+      return;
+    }
+    var cooking_urls = [];
+    for (var i = 0 ; i < vault_cooking_tasks.length ; ++i) {
+      var cooking_task = vault_cooking_tasks[i];
+      var cooking_url;
+      if (cooking_task.object_type == 'directory') {
+        cooking_url = cook_dir_url.replace('ffff', cooking_task.object_id);
+      } else {
+        cooking_url = cook_rev_url.replace('ffff', cooking_task.object_id);
+      }
+      cooking_urls.push($.ajax(cooking_url));
+    }
+    $.when.apply($, cooking_urls).then(function() {
+      $("#vault-cooking-tasks tbody tr").remove();
+      var table = $("#vault-cooking-tasks tbody");
+      for (var i = 0 ; i < cooking_urls.length ; ++i) {
+        var cooking_task = vault_cooking_tasks[i];
+        var browse_url;
+        if (cooking_task.object_type == 'directory') {
+          browse_url = browse_dir_url.replace('ffff', cooking_task.object_id);
+        } else {
+          browse_url = browse_rev_url.replace('ffff', cooking_task.object_id);
+        }
+        var task;
+        if (cooking_urls.length == 1) {
+          task = arguments[i];
+        } else {
+          task = arguments[i][0];
+        }
+        var progress_bar = $.parseHTML(progress)[0];
+        var progress_bar_content = $(progress_bar).find('.progress-bar');
+        progress_bar_content.text(task.status);
+        if (task.status == 'pending') {
+          progress_bar_content.addClass('active');
+        } else if (task.status == 'done') {
+          progress_bar_content.removeClass('progress-bar-striped');
+        }
+        var table_row;
+        if (task.obj_type == 'directory') {
+          table_row = '<tr title="Once downloaded, the directory can be extracted with the ' +
+                                  'following command:\n\n$ tar xvzf ' + task.obj_id + '.tar.gz">';
+        } else {
+          table_row = '<tr title="Once downloaded, the git repository can be imported with the ' +
+                                  'following commands:\n\n$ git init\n$ zcat ' + task.obj_id + '.gitfast.gz | git fast-import">';
+        }
+        table_row += '<td>' + task.obj_type + '</td>';
+        table_row += '<td><a href="' + browse_url + '">' + task.obj_id + '</a></td>';
+        table_row += '<td>' + vault_cooking_tasks[i].email + '</td>';
+        table_row += '<td>' + progress_bar.outerHTML + '</td>';
+        var dl_link = 'Waiting for download link to be available';
+        if (task.status == 'done') {
+          dl_link = '<a href="' + task.fetch_url + '">Download</a>';
+        }
+        table_row += '<td>' + dl_link + '</td>';
+        table_row += '</tr>';
+        table.append(table_row);
+      }
+      check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
+    });
+  }
+
+  var polling_interval = 5000;
+
+  var check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
+
+  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    if (e.target.text == 'Vault') {
+      clearTimeout(check_vault_id);
+      check_vault_cooking_tasks();
+    }
+  });
+
+</script>
