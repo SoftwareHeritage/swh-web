@@ -376,9 +376,10 @@ td.hljs-ln-code {
 .btn-swh {
     color: #6C6C6C;
     background-color: #EAEAEA;
-    border-color: #EAEAEA;
+    border-color: #ddd;
     background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
     background-repeat: repeat-x;
+    outline: none;
 }
 
 .btn-swh:hover,
@@ -386,15 +387,9 @@ td.hljs-ln-code {
 .btn-swh:active,
 .btn-swh.active,
 .open .dropdown-toggle.btn-swh {
-    color: #6C6C6C;
-    background-color: #D4D4D4;
-    border-color: #EAEAEA;
-}
-
-.btn-swh:active,
-.btn-swh.active,
-.open .dropdown-toggle.btn-swh {
-    background-image: none;
+    background-color: #e6ebf1;
+    background-image: linear-gradient(to bottom,#f1f1f1 0,#e6e6e6 100%);
+    border-color: rgb(197, 197, 197);
 }
 
 .btn-swh.disabled,
@@ -499,4 +494,8 @@ fieldset[disabled] .btn-swh.active {
     text-decoration: none;
     outline: none;
     border: none;
+}
+
+.pager a {
+    outline: none;
 }

@@ -58,7 +58,7 @@ def urlize_links_and_mails(text):
         The text as is otherwise.
 
     """
-    text = re.sub(r'(/api/[^"<]*/|/browse/.*/|http.*$)',
+    text = re.sub(r'(/api/[^"<]*|/browse/[^"<]*|http.*$)',
                   r'<a href="\1">\1</a>',
                   text)
     return re.sub(r'([^ <>"]+@[^ <>"]+)',
