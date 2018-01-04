@@ -518,7 +518,8 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
             revision = service.lookup_revision(revision_id)
             branches.append({'name': revision_id,
                              'revision': revision_id,
-                             'directory': revision['directory']})
+                             'directory': revision['directory'],
+                             'url': None})
             revision = revision_id
             branch_name = revision_id
         elif revs_breadcrumb:
