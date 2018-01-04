@@ -2,7 +2,7 @@
 
 <div class="panel panel-default" style="overflow-x: auto;">
   <div class="panel-heading">
-      <h2>Search Software Heritage origins to browse:</h2>
+      <h2>Search Software Heritage origins to browse</h2>
   </div>
   <div class="panel-body">
     <form class="form-horizontal" id="search_origins">
@@ -41,26 +41,30 @@
 
   var origin_patterns;
   var per_page = 15;
+  var limit = per_page * 10;
   var offset = 0;
   var origins_search_url = "{% url 'browse-origin-search' 'url_regexp' %}?limit=limit_val&offset=offset_val&regexp=true";
   var origin_browse_url = "{% url 'browse-origin' 'type' 'origin_url' %}";
   var search_request = null;
+  var current_data = null;
 
-  function populateOriginSearchResultsTable(data, limit, offset) {
+  function populateOriginSearchResultsTable(data, offset) {
+    var local_offset = offset % limit;
     $("#origin-search-results tbody tr").remove();
     var table = $("#origin-search-results tbody");
-    $.each(data, function(idx, elem){
+    for (var i = local_offset ; i < local_offset + per_page && i < data.length ; ++i) {
+      var elem = data[i];
       var tableRow = '<tr>';
-      tableRow += '<td>' + elem.type + '</td>';
+      tableRow += '<td style="width: 100px;">' + elem.type + '</td>';
       var browse_url = origin_browse_url.replace('type', elem.type).replace('origin_url', elem.url);
-      tableRow += '<td><a href="' + browse_url + '">' + browse_url + '</a></td>';
+      tableRow += '<td style="white-space: nowrap;"><a href="' + browse_url + '">' + browse_url + '</a></td>';
       tableRow += '</tr>';
       table.append(tableRow);
-    });
-    if (data.length == per_page) {
-      $('#origins-next-results-button').removeClass('disabled');
-    } else {
+    }
+    if (data.length - local_offset < per_page) {
       $('#origins-next-results-button').addClass('disabled');
+    } else {
+      $('#origins-next-results-button').removeClass('disabled');
     }
     if (offset > 0) {
       $('#origins-prev-results-button').removeClass('disabled');
@@ -77,7 +81,7 @@
       if (data) {
         $("#origins-url-patterns").val(origin_patterns);
         offset = parseInt(offset);
-        populateOriginSearchResultsTable(JSON.parse(data), per_page, offset);
+        populateOriginSearchResultsTable(JSON.parse(data), offset);
       }
     }
   });
@@ -106,7 +110,7 @@
     }
   };
 
-  function searchOrigins(patterns, limit, offset) {
+  function searchOrigins(patterns, limit, search_offset, offset) {
     origin_patterns = patterns;
     var patterns_array = patterns.trim().replace(/\s+/g,' ').split(' ');
     var patterns_permut = []
@@ -114,7 +118,7 @@
     var regex = patterns_permut.join('|');
     var search_url = origins_search_url.replace('url_regexp', regex)
                                        .replace('limit_val', limit)
-                                       .replace('offset_val', offset);
+                                       .replace('offset_val', search_offset);
     if (search_request) {
       search_request.abort();
     }
@@ -128,14 +132,14 @@
       },
       success: function (data) {
         search_request = null;
+        current_data = data;
         if (typeof(Storage) !== "undefined") {
           sessionStorage.setItem("last-swh-origin-url-patterns", patterns);
           sessionStorage.setItem("last-swh-origin-search-results", JSON.stringify(data));
           sessionStorage.setItem("last-swh-origin-search-offset", offset);
         }
-        populateOriginSearchResultsTable(data, per_page, offset);
+        populateOriginSearchResultsTable(data, offset);
         $(".swh-loading").removeClass('show');
-
       }
     });
   }
@@ -143,19 +147,33 @@
   $("#search_origins").submit(function (event) {
     var patterns = $("#origins-url-patterns").val();
     offset = 0;
-    searchOrigins(patterns, per_page, offset);
+    searchOrigins(patterns, limit, offset, offset);
     event.preventDefault();
   });
 
   $("#origins-next-results-button").click(function (event) {
+    if ($("#origins-next-results-button").hasClass('disabled')) {
+      return;
+    }
     offset += per_page;
-    searchOrigins(origin_patterns, per_page, offset);
+    if (!current_data || offset % limit == 0) {
+      searchOrigins(origin_patterns, limit, offset, offset);
+    } else {
+      populateOriginSearchResultsTable(current_data, offset);
+    }
     event.preventDefault();
   });
 
   $("#origins-prev-results-button").click(function (event) {
+    if ($("#origins-prev-results-button").hasClass('disabled')) {
+      return;
+    }
     offset -= per_page;
-    searchOrigins(origin_patterns, per_page, offset);
+    if (!current_data || (offset > 0 && (offset + per_page) % limit == 0)) {
+      searchOrigins(origin_patterns, limit, (offset + per_page) - limit, offset);
+    } else {
+      populateOriginSearchResultsTable(current_data, offset);
+    }
     event.preventDefault();
   });
 

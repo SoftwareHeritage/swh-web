@@ -167,6 +167,7 @@ def origin_directory_browse(request, origin_type, origin_url,
                 branch_name = branch['name']
                 root_sha1_git = branch['directory']
                 query_params['branch'] = branch_name
+                revision_id = branch['revision']
             else:
                 _raise_exception_if_branch_not_found(origin_info, timestamp,
                                                      branch_name, branches,
@@ -234,6 +235,11 @@ def origin_directory_browse(request, origin_type, origin_url,
     browse_dir_url = reverse('browse-directory',
                              kwargs={'sha1_git': sha1_git})
 
+    browse_rev_url = reverse('browse-revision',
+                             kwargs={'sha1_git': revision_id},
+                             query_params={'origin_type': origin_info['type'],
+                                           'origin_url': origin_info['url']})
+
     dir_metadata = {'id': sha1_git,
                     'browse directory url': browse_dir_url,
                     'number of regular files': len(files),
@@ -244,7 +250,9 @@ def origin_directory_browse(request, origin_type, origin_url,
                     'origin url': origin_info['url'],
                     'origin visit date': format_utc_iso_date(visit_info['date']), # noqa
                     'origin visit id': visit_info['visit'],
-                    'path': '/' + path}
+                    'path': '/' + path,
+                    'revision id': revision_id,
+                    'browse revision url': browse_rev_url}
 
     return render(request, 'directory.html',
                   {'heading': 'Directory information',
@@ -342,6 +350,7 @@ def origin_content_display(request, origin_type, origin_url, path,
                 branch_name = branch['name']
                 root_sha1_git = branch['directory']
                 query_params['branch'] = branch_name
+                revision_id = branch['revision']
             else:
                 _raise_exception_if_branch_not_found(origin_info, timestamp,
                                                      branch_name, branches,
@@ -389,6 +398,11 @@ def origin_content_display(request, origin_type, origin_url, path,
                               kwargs={'query_string': query_string},
                               query_params={'filename': filename})
 
+    browse_rev_url = reverse('browse-revision',
+                             kwargs={'sha1_git': revision_id},
+                             query_params={'origin_type': origin_info['type'],
+                                           'origin_url': origin_info['url']})
+
     content_metadata = {
         'browse content url': browse_content_url,
         'sha1 checksum': content_data['checksums']['sha1'],
@@ -406,7 +420,9 @@ def origin_content_display(request, origin_type, origin_url, path,
         'origin visit date': format_utc_iso_date(visit_info['date']),
         'origin visit id': visit_info['visit'],
         'path': '/' + path,
-        'filename': filename
+        'filename': filename,
+        'revision id': revision_id,
+        'browse revision url': browse_rev_url
     }
 
     return render(request, 'content.html',
@@ -502,7 +518,8 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
             revision = service.lookup_revision(revision_id)
             branches.append({'name': revision_id,
                              'revision': revision_id,
-                             'directory': revision['directory']})
+                             'directory': revision['directory'],
+                             'url': None})
             revision = revision_id
             branch_name = revision_id
         elif revs_breadcrumb:
