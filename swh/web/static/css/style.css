@@ -437,10 +437,14 @@ fieldset[disabled] .btn-swh.active {
 .swh-http-error-desc {
     font-size: 12px;
     color: #647788;
+    text-align: center;
 }
 
 .swh-http-error-desc pre {
+    display: inline-block;
     text-align: left;
+    max-width: 800px;
+    white-space: pre-wrap;
 }
 
 .swh-table {
