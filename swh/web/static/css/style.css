@@ -503,3 +503,9 @@ fieldset[disabled] .btn-swh.active {
 .pager a {
     outline: none;
 }
+
+.swh-content {
+    background-image: none;
+    border: none;
+    background-color: white;
+}
