@@ -77,10 +77,10 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
-@api_route(r'/vault/revision_gitfast/(?P<rev_id>[a-fA-F0-9]+)/',
+@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast',
            'vault-cook-revision_gitfast')
 @never_cache
-@api_doc.route('/vault/revision_gitfast', tags=['hidden'])
+@api_doc.route('/vault/revision/gitfast', tags=['hidden'])
 @api_doc.arg('rev_id',
              default='9174026cfe69d73ef80b27890615f8b2ef5c265a',
              argtype=api_doc.argtypes.sha1_git,
@@ -116,9 +116,9 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         enrich_fn=_enrich_dir_cook)
 
 
-@api_route('/vault/revision_gitfast/(?P<rev_id>[a-fA-F0-9]+)/raw/',
+@api_route('/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
            'vault-fetch-revision_gitfast')
-@api_doc.route('/vault/revision_gitfast/raw', tags=['hidden'],
+@api_doc.route('/vault/revision/gitfast/raw', tags=['hidden'],
                handle_response=True)
 @api_doc.arg('rev_id',
              default='9174026cfe69d73ef80b27890615f8b2ef5c265a',
