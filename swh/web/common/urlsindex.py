@@ -30,8 +30,11 @@ class UrlsIndex(object):
         """
         if cls.scope not in cls.urlpatterns:
             cls.urlpatterns[cls.scope] = []
-        cls.urlpatterns[cls.scope].append(url(url_pattern, view,
-                                              name=view_name))
+        if view_name:
+            cls.urlpatterns[cls.scope].append(url(url_pattern, view,
+                                                  name=view_name))
+        else:
+            cls.urlpatterns[cls.scope].append(url(url_pattern, view))
 
     @classmethod
     def get_url_patterns(cls):
