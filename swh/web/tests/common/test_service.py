@@ -1610,11 +1610,12 @@ class ServiceTestCase(unittest.TestCase):
         mock_storage.content_find = MagicMock(return_value=None)
 
         # when
-        actual_content = service.lookup_content(
-            'sha1:%s' % self.SHA1_SAMPLE)
-
-        # then
-        self.assertIsNone(actual_content)
+        with self.assertRaises(NotFoundExc) as cm:
+            # then
+            service.lookup_content('sha1:%s' % self.SHA1_SAMPLE)
+            self.assertIn(cm.exc.args[0],
+                          'Content with %s checksum equals to %s not found!' %
+                          ('sha1', self.SHA1_SAMPLE))
 
         mock_storage.content_find.assert_called_with(
             {'sha1': self.SHA1_SAMPLE_BIN})

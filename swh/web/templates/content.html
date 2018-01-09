@@ -25,7 +25,7 @@
     return line_td;
   }
 
-  function removeHash () {
+  function remove_hash () {
     history.pushState("", document.title, window.location.pathname + window.location.search);
   }
 
@@ -35,7 +35,7 @@
     $('tr').css('background-color', 'inherit');
   }
 
-  function scrollToLine(lineDomElt) {
+  function scroll_to_line(lineDomElt) {
     $('html, body').animate({
       scrollTop: $(lineDomElt).offset().top - 70
     }, 500);
@@ -54,10 +54,10 @@
     reset_highlighted_lines();
     if  (lines.length == 1) {
       first_hl_line = parseInt(lines[0]);
-      scrollToLine(highlight_line(lines[0]));
+      scroll_to_line(highlight_line(lines[0]));
     } else if (lines[0] < lines[lines.length - 1]) {
       first_hl_line = parseInt(lines[0]);
-      scrollToLine(highlight_line(lines[0]));
+      scroll_to_line(highlight_line(lines[0]));
       for (var i = lines[0]+1; i <= lines[lines.length - 1]; ++i) {
         highlight_line(i);
       }
@@ -88,11 +88,11 @@
           reset_highlighted_lines();
           highlight_line(line);
           window.location.hash = '#L' + line;
-          scrollToLine(evt.target);
+          scroll_to_line(evt.target);
         }
       } else {
         reset_highlighted_lines();
-        removeHash();
+        remove_hash();
       }
     });
 
@@ -114,7 +114,7 @@
 
 {% include "includes/top-navigation.html" %}
 
-<div class="well well-sm" style="margin-bottom: 0px">
+<div class="well well-sm swh-content" style="margin-bottom: 0px">
 {% if "inode/x-empty" == mimetype %}
 <i>File is empty</i>
 {% elif "text/" in mimetype %}
