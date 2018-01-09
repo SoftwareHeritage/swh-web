@@ -297,7 +297,9 @@ swh/web/static/js/odometer/odometer.js
 swh/web/static/js/odometer/odometer.min.js
 swh/web/static/js/showdown/license.txt
 swh/web/static/js/showdown/showdown.js
+swh/web/static/js/showdown/showdown.js.map
 swh/web/static/js/showdown/showdown.min.js
+swh/web/static/js/showdown/showdown.min.js.map
 swh/web/templates/about.html
 swh/web/templates/api-endpoints.html
 swh/web/templates/api.html
