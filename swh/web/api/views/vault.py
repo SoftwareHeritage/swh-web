@@ -112,6 +112,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
         $ git init
         $ zcat path/to/revision.gitfast.gz | git fast-import
+        $ git checkout HEAD
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
