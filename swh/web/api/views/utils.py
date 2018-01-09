@@ -34,7 +34,7 @@ doc_header_link = """indicates that a subsequent result page is available,
 
 def api_lookup(lookup_fn, *args,
                notfound_msg='Object not found',
-               enrich_fn=lambda x: x):
+               enrich_fn=None):
     """
     Capture a redundant behavior of:
         - looking up the backend with a criteria (be it an identifier or
@@ -60,6 +60,8 @@ def api_lookup(lookup_fn, *args,
         NotFoundExp or whatever `lookup_fn` raises.
 
     """
+    if enrich_fn is None:
+        enrich_fn = (lambda x: x)
     res = lookup_fn(*args)
     if not res:
         raise NotFoundExc(notfound_msg)

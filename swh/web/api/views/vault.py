@@ -6,6 +6,7 @@
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 
+from swh.model import hashutil
 from swh.web.common import service, query
 from swh.web.common.utils import reverse
 from swh.web.api import apidoc as api_doc
@@ -15,10 +16,27 @@ from swh.web.api.views.utils import (
 )
 
 
+# XXX: a bit spaghetti. Would be better with class-based views.
+def _dispatch_cook_progress(request, obj_type, obj_id):
+    hex_id = hashutil.hash_to_hex(obj_id)
+    object_name = obj_type.split('_')[0].title()
+    if request.method == 'GET':
+        return api_lookup(
+            service.vault_progress, obj_type, obj_id,
+            notfound_msg=("{} '{}' was never requested."
+                          .format(object_name, hex_id)))
+    elif request.method == 'POST':
+        email = request.POST.get('email', request.GET.get('email', None))
+        return api_lookup(
+            service.vault_cook, obj_type, obj_id, email,
+            notfound_msg=("{} '{}' not found."
+                          .format(object_name, hex_id)))
+
+
 @api_route('/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
-           'vault-cook-directory')
+           'vault-cook-directory', methods=['GET', 'POST'])
 @never_cache
-@api_doc.route('/vault/directory', tags=['hidden'])
+@api_doc.route('/vault/directory/', tags=['hidden'])
 @api_doc.arg('dir_id',
              default='d4a96ba891017d0d26c15e509b4e6515e40d75ee',
              argtype=api_doc.argtypes.sha1_git,
@@ -38,24 +56,18 @@ def api_vault_cook_directory(request, dir_id):
 
         $ tar xvf path/to/directory.tar.gz
     """
-    email = request.GET.get('email', None)
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
 
-    def _enrich_dir_cook(res):
-        res['fetch_url'] = reverse('vault-fetch-directory',
-                                   kwargs={'dir_id': dir_id})
-        return res
-
-    return api_lookup(
-        service.vault_cook, 'directory', obj_id, email,
-        notfound_msg="Directory with ID '{}' not found.".format(dir_id),
-        enrich_fn=_enrich_dir_cook)
+    res = _dispatch_cook_progress(request, 'directory', obj_id)
+    res['fetch_url'] = reverse('vault-fetch-directory',
+                               kwargs={'dir_id': dir_id})
+    return res
 
 
 @api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/raw/',
            'vault-fetch-directory')
-@api_doc.route('/vault/directory/raw', tags=['hidden'], handle_response=True)
+@api_doc.route('/vault/directory/raw/', tags=['hidden'], handle_response=True)
 @api_doc.arg('dir_id',
              default='d4a96ba891017d0d26c15e509b4e6515e40d75ee',
              argtype=api_doc.argtypes.sha1_git,
@@ -77,10 +89,10 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
-@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast',
-           'vault-cook-revision_gitfast')
+@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/',
+           'vault-cook-revision_gitfast', methods=['GET', 'POST'])
 @never_cache
-@api_doc.route('/vault/revision/gitfast', tags=['hidden'])
+@api_doc.route('/vault/revision/gitfast/', tags=['hidden'])
 @api_doc.arg('rev_id',
              default='9174026cfe69d73ef80b27890615f8b2ef5c265a',
              argtype=api_doc.argtypes.sha1_git,
@@ -101,24 +113,18 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         $ git init
         $ zcat path/to/revision.gitfast.gz | git fast-import
     """
-    email = request.GET.get('email', None)
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
 
-    def _enrich_dir_cook(res):
-        res['fetch_url'] = reverse('vault-fetch-revision_gitfast',
-                                   kwargs={'rev_id': rev_id})
-        return res
-
-    return api_lookup(
-        service.vault_cook, 'revision_gitfast', obj_id, email,
-        notfound_msg="Revision with ID '{}' not found.".format(rev_id),
-        enrich_fn=_enrich_dir_cook)
+    res = _dispatch_cook_progress(request, 'revision_gitfast', obj_id)
+    res['fetch_url'] = reverse('vault-fetch-revision_gitfast',
+                               kwargs={'rev_id': rev_id})
+    return res
 
 
 @api_route('/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
            'vault-fetch-revision_gitfast')
-@api_doc.route('/vault/revision/gitfast/raw', tags=['hidden'],
+@api_doc.route('/vault/revision/gitfast/raw/', tags=['hidden'],
                handle_response=True)
 @api_doc.arg('rev_id',
              default='9174026cfe69d73ef80b27890615f8b2ef5c265a',

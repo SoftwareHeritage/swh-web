@@ -884,3 +884,9 @@ def vault_fetch(obj_type, obj_id):
     """Fetch a vault bundle.
     """
     return vault.fetch(obj_type, obj_id)
+
+
+def vault_progress(obj_type, obj_id):
+    """Get the current progress of a vault bundle.
+    """
+    return vault.progress(obj_type, obj_id)
