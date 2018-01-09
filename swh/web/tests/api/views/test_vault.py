@@ -1,4 +1,4 @@
-# Copyright (C) 2017  The Software Heritage developers
+# Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,6 +12,9 @@ from swh.model import hashutil
 from swh.web.tests.testbase import SWHWebTestBase
 
 TEST_OBJ_ID = 'd4905454cc154b492bd6afed48694ae3c579345e'
+
+OBJECT_TYPES = {'directory': ('directory', None),
+                'revision_gitfast': ('revision', 'gitfast')}
 
 
 class VaultApiTestCase(SWHWebTestBase, APITestCase):
@@ -32,9 +35,11 @@ class VaultApiTestCase(SWHWebTestBase, APITestCase):
         mock_service.vault_cook.return_value = stub_cook
         mock_service.vault_fetch.return_value = stub_fetch
 
-        for obj_type in ('directory', 'revision_gitfast'):
-            rv = self.client.get(('/api/1/vault/{}/{}/?email=test@test.mail')
-                                 .format(obj_type, TEST_OBJ_ID))
+        for obj_type, (obj_type_name, obj_type_format) in OBJECT_TYPES.items():
+            url = '/api/1/vault/{}/{}/'.format(obj_type_name, TEST_OBJ_ID)
+            if obj_type_format:
+                url += '{}/'.format(obj_type_format)
+            rv = self.client.post(url, {'email': 'test@test.mail'})
 
             self.assertEquals(rv.status_code, 200)
             self.assertEquals(rv['Content-Type'], 'application/json')
@@ -45,8 +50,7 @@ class VaultApiTestCase(SWHWebTestBase, APITestCase):
                 hashutil.hash_to_bytes(TEST_OBJ_ID),
                 'test@test.mail')
 
-            rv = self.client.get(('/api/1/vault/{}/{}/raw/')
-                                 .format(obj_type, TEST_OBJ_ID))
+            rv = self.client.get(url + 'raw/')
 
             self.assertEquals(rv.status_code, 200)
             self.assertEquals(rv['Content-Type'], 'application/gzip')
@@ -60,9 +64,11 @@ class VaultApiTestCase(SWHWebTestBase, APITestCase):
         mock_service.vault_cook.return_value = None
         mock_service.vault_fetch.return_value = None
 
-        for obj_type in ('directory', 'revision_gitfast'):
-            rv = self.client.get(('/api/1/vault/{}/{}/')
-                                 .format(obj_type, TEST_OBJ_ID))
+        for obj_type, (obj_type_name, obj_type_format) in OBJECT_TYPES.items():
+            url = '/api/1/vault/{}/{}/'.format(obj_type_name, TEST_OBJ_ID)
+            if obj_type_format:
+                url += '{}/'.format(obj_type_format)
+            rv = self.client.post(url)
 
             self.assertEquals(rv.status_code, 404)
             self.assertEquals(rv['Content-Type'], 'application/json')
@@ -71,8 +77,7 @@ class VaultApiTestCase(SWHWebTestBase, APITestCase):
             mock_service.vault_cook.assert_called_with(
                 obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID), None)
 
-            rv = self.client.get(('/api/1/vault/{}/{}/raw/')
-                                 .format(obj_type, TEST_OBJ_ID))
+            rv = self.client.get(url + 'raw/')
 
             self.assertEquals(rv.status_code, 404)
             self.assertEquals(rv['Content-Type'], 'application/json')

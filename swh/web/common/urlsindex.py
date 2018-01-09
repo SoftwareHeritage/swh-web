@@ -1,4 +1,4 @@
-# Copyright (C) 2017  The Software Heritage developers
+# Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -30,8 +30,11 @@ class UrlsIndex(object):
         """
         if cls.scope not in cls.urlpatterns:
             cls.urlpatterns[cls.scope] = []
-        cls.urlpatterns[cls.scope].append(url(url_pattern, view,
-                                              name=view_name))
+        if view_name:
+            cls.urlpatterns[cls.scope].append(url(url_pattern, view,
+                                                  name=view_name))
+        else:
+            cls.urlpatterns[cls.scope].append(url(url_pattern, view))
 
     @classmethod
     def get_url_patterns(cls):
