@@ -1,4 +1,4 @@
-# Copyright (C) 2017  The Software Heritage developers
+# Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,24 +8,24 @@
 revision_id_test = '7bc08e1aa0b08cb23e18715a32aa38517ad34672'
 
 revision_metadata_test = \
-{'id': '7bc08e1aa0b08cb23e18715a32aa38517ad34672', 
+{'id': '7bc08e1aa0b08cb23e18715a32aa38517ad34672',
  'type': 'git',
- 'parents': ['bf3652b16b65c27db5243aa0d674e2de4a8ccde9', 
-             'a952bb99a6830804d06c5b8e04b75c66100fbae9'], 
- 'metadata': {}, 
- 'committer': {'name': 'GitHub', 
-               'fullname': 'GitHub <noreply@github.com>', 
-               'id': 10932771, 
-               'email': 'noreply@github.com'}, 
- 'directory': 'ae59ceecf46367e8e4ad800e231fc76adc3afffb', 
- 'date': '2017-05-04T13:27:13+02:00', 
- 'merge': True, 
- 'committer_date': '2017-05-04T13:27:13+02:00', 
- 'author': {'name': 'Tobias Koppers', 
-            'fullname': 'Tobias Koppers <tobias.koppers@googlemail.com>', 
-            'id': 141959, 
-            'email': 'tobias.koppers@googlemail.com'}, 
- 'message': 'Merge pull request #4816 from webpack/bugfix/hoist-immutable-export\n\nhoist exports', 
+ 'parents': ['bf3652b16b65c27db5243aa0d674e2de4a8ccde9',
+             'a952bb99a6830804d06c5b8e04b75c66100fbae9'],
+ 'metadata': {},
+ 'committer': {'name': 'GitHub',
+               'fullname': 'GitHub <noreply@github.com>',
+               'id': 10932771,
+               'email': 'noreply@github.com'},
+ 'directory': 'ae59ceecf46367e8e4ad800e231fc76adc3afffb',
+ 'date': '2017-05-04T13:27:13+02:00',
+ 'merge': True,
+ 'committer_date': '2017-05-04T13:27:13+02:00',
+ 'author': {'name': 'Tobias Koppers',
+            'fullname': 'Tobias Koppers <tobias.koppers@googlemail.com>',
+            'id': 141959,
+            'email': 'tobias.koppers@googlemail.com'},
+ 'message': 'Merge pull request #4816 from webpack/bugfix/hoist-immutable-export\n\nhoist exports',
  'synthetic': False
 }
 
