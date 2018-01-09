@@ -692,9 +692,15 @@ def lookup_content(q):
     Args:
         q: The release's sha1 as hexadecimal
 
+    Raises:
+        NotFoundExc if the requested content is not found
+
     """
     algo, hash = query.parse_hash(q)
     c = storage.content_find({algo: hash})
+    if not c:
+        raise NotFoundExc('Content with %s checksum equals to %s not found!' %
+                          (algo, hashutil.hash_to_hex(hash)))
     return converters.from_content(c)
 
 
@@ -709,15 +715,17 @@ def lookup_content_raw(q):
         data representing its raw data decoded.
 
     Raises:
-        NotFoundExc if the requested content is not found
+        NotFoundExc if the requested content is not found or
+        if the content bytes are not available in the storage
 
     """
-    algo, hash = query.parse_hash(q)
-    c = storage.content_find({algo: hash})
-    if not c:
-        raise NotFoundExc('Content with %s checksum equals to %s not found!' %
+    c = lookup_content(q)
+    content = _first_element(storage.content_get([c['checksums']['sha1']]))
+    if not content:
+        algo, hash = query.parse_hash(q)
+        raise NotFoundExc('Bytes of content with %s checksum equals to %s '
+                          'not available in SWH storage!' %
                           (algo, hashutil.hash_to_hex(hash)))
-    content = _first_element(storage.content_get([c['sha1']]))
     return converters.from_content(content)
 
 

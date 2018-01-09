@@ -32,8 +32,8 @@
     </div>
 
     <ul class="pager">
-      <li class="disabled" id="origins-prev-results-button"><a href="#">Previous</a></li>
-      <li class="disabled" id="origins-next-results-button"><a href="#">Next</a></li>
+      <li class="disabled" id="origins-prev-results-button" style="cursor:pointer"><a>Previous</a></li>
+      <li class="disabled" id="origins-next-results-button" style="cursor:pointer"><a>Next</a></li>
     </ul>
   </div>
 </div>
@@ -50,18 +50,21 @@
 
   function populateOriginSearchResultsTable(data, offset) {
     var local_offset = offset % limit;
-    $("#origin-search-results tbody tr").remove();
-    var table = $("#origin-search-results tbody");
-    for (var i = local_offset ; i < local_offset + per_page && i < data.length ; ++i) {
-      var elem = data[i];
-      var tableRow = '<tr>';
-      tableRow += '<td style="width: 100px;">' + elem.type + '</td>';
-      var browse_url = origin_browse_url.replace('type', elem.type).replace('origin_url', elem.url);
-      tableRow += '<td style="white-space: nowrap;"><a href="' + browse_url + '">' + browse_url + '</a></td>';
-      tableRow += '</tr>';
-      table.append(tableRow);
+    if (data.length > 0) {
+      $("#origin-search-results tbody tr").remove();
+      var table = $("#origin-search-results tbody");
+      for (var i = local_offset ; i < local_offset + per_page && i < data.length ; ++i) {
+        var elem = data[i];
+        var tableRow = '<tr>';
+        tableRow += '<td style="width: 100px;">' + elem.type + '</td>';
+        var browse_url = origin_browse_url.replace('type', elem.type).replace('origin_url', elem.url);
+        tableRow += '<td style="white-space: nowrap;"><a href="' + browse_url + '">' + browse_url + '</a></td>';
+        tableRow += '</tr>';
+        table.append(tableRow);
+      }
     }
-    if (data.length - local_offset < per_page) {
+    if (data.length - local_offset < per_page ||
+        (data.length < limit && (local_offset + per_page) == data.length)) {
       $('#origins-next-results-button').addClass('disabled');
     } else {
       $('#origins-next-results-button').removeClass('disabled');
@@ -71,6 +74,7 @@
     } else {
       $('#origins-prev-results-button').addClass('disabled');
     }
+    in_search = false;
   }
 
   $(document).ready(function() {
@@ -129,6 +133,7 @@
       error: function() {
         search_request = null;
         $(".swh-loading").removeClass('show');
+        in_search = false;
       },
       success: function (data) {
         search_request = null;
@@ -138,8 +143,8 @@
           sessionStorage.setItem("last-swh-origin-search-results", JSON.stringify(data));
           sessionStorage.setItem("last-swh-origin-search-offset", offset);
         }
-        populateOriginSearchResultsTable(data, offset);
         $(".swh-loading").removeClass('show');
+        populateOriginSearchResultsTable(data, offset);
       }
     });
   }
@@ -147,14 +152,18 @@
   $("#search_origins").submit(function (event) {
     var patterns = $("#origins-url-patterns").val();
     offset = 0;
+    in_search = true;
     searchOrigins(patterns, limit, offset, offset);
     event.preventDefault();
   });
 
+  var in_search = false;
+
   $("#origins-next-results-button").click(function (event) {
-    if ($("#origins-next-results-button").hasClass('disabled')) {
+    if ($("#origins-next-results-button").hasClass('disabled') || in_search) {
       return;
     }
+    in_search = true;
     offset += per_page;
     if (!current_data || offset % limit == 0) {
       searchOrigins(origin_patterns, limit, offset, offset);
@@ -165,9 +174,10 @@
   });
 
   $("#origins-prev-results-button").click(function (event) {
-    if ($("#origins-prev-results-button").hasClass('disabled')) {
+    if ($("#origins-prev-results-button").hasClass('disabled') || in_search) {
       return;
     }
+    in_search = true;
     offset -= per_page;
     if (!current_data || (offset > 0 && (offset + per_page) % limit == 0)) {
       searchOrigins(origin_patterns, limit, (offset + per_page) - limit, offset);
