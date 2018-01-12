@@ -19,22 +19,28 @@
       <p>Searching origins ...</p>
     </div>
 
-    <div class="table-responsive">
-      <table class="table" id="origin-search-results">
-        <thead>
-          <tr>
-            <th>Origin type</th>
-            <th>Origin browse url</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <div id="swh-origin-search-results" style="display: none;">
+      <div class="table-responsive">
+        <table class="table" id="origin-search-results">
+          <thead>
+            <tr>
+              <th>Origin type</th>
+              <th>Origin browse url</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-    <ul class="pager">
-      <li class="disabled" id="origins-prev-results-button" style="cursor:pointer"><a>Previous</a></li>
-      <li class="disabled" id="origins-next-results-button" style="cursor:pointer"><a>Next</a></li>
-    </ul>
+      <ul class="pager">
+        <li class="disabled" id="origins-prev-results-button" style="cursor:pointer"><a>Previous</a></li>
+        <li class="disabled" id="origins-next-results-button" style="cursor:pointer"><a>Next</a></li>
+      </ul>
+    </div>
+    <p id="swh-no-origins-found" style="display: none;">
+      <br/>
+      No origins matching the search criteria were found
+    </p>
   </div>
 </div>
 <script>
@@ -51,6 +57,8 @@
   function populateOriginSearchResultsTable(data, offset) {
     var local_offset = offset % limit;
     if (data.length > 0) {
+      $("#swh-origin-search-results").show();
+      $("#swh-no-origins-found").hide();
       $("#origin-search-results tbody tr").remove();
       var table = $("#origin-search-results tbody");
       for (var i = local_offset ; i < local_offset + per_page && i < data.length ; ++i) {
@@ -62,6 +70,9 @@
         tableRow += '</tr>';
         table.append(tableRow);
       }
+    } else {
+      $("#swh-origin-search-results").hide();
+      $("#swh-no-origins-found").show();
     }
     if (data.length - local_offset < per_page ||
         (data.length < limit && (local_offset + per_page) == data.length)) {
@@ -75,6 +86,9 @@
       $('#origins-prev-results-button').addClass('disabled');
     }
     in_search = false;
+    setTimeout(function() {
+      window.scrollTo(0, 0);
+    });
   }
 
   $(document).ready(function() {

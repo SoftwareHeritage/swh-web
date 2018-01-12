@@ -29,15 +29,20 @@
     <link rel="icon" href="{% static 'img/icons/swh-logo-archive-192x192.png' %}" sizes="192x192" />
     <link rel="apple-touch-icon-precomposed" href="{% static 'img/icons/swh-logo-archive-180x180.png' %}" />
     <meta name="msapplication-TileImage" content="{% static 'img/icons/swh-logo-archive-270x270.png' %}" />
-    <script>document.domain = "softwareheritage.org";</script>
+    <script>document.domain = "archive.softwareheritage.org";</script>
 
   </head>
-  <body
+  <body>
     <a id="top"></a>
     <nav class="navbar navbar-default navbar-static-top" id="swh-navbar-collapse">
       <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#swh-collapse-navbar" aria-expanded="false">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
         <div class="logo">
-          <a class="navbar-brand" href="{% url 'swh-web-homepage' %}"> <!-- logo -->
+          <a class="navbar-brand" href="{% url 'swh-web-homepage' %}">
             <img alt="SWH Archive" src="{% static 'img/swh-logo-archive.png' %}" class="swh-logo" />
           </a>
           <a class="navbar-brand sitename" href="{% url 'swh-web-homepage' %}">
@@ -45,15 +50,15 @@
           </a>
         </div>
       </div>
+      <div class="collapse navbar-collapse" id="swh-collapse-navbar">
+        {% block navbar-content %}{% endblock %}
+      </div>
     </nav>
 
-    <div class="container">
-      <div class="container">
-      </div>
-      <div class="container content">
-        {% block content %}{% endblock %}
-      </div>
+    <div class="container content">
+      {% block content %}{% endblock %}
     </div>
+
     <div id="footer" class="panel-footer">
       <a href="https://www.softwareheritage.org">Software Heritage</a> &mdash;
       Copyright (C) 2015&ndash;{% now "Y" %}, The Software Heritage developers.

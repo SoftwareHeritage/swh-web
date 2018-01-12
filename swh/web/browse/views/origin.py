@@ -255,7 +255,8 @@ def origin_directory_browse(request, origin_type, origin_url,
                     'browse revision url': browse_rev_url}
 
     return render(request, 'directory.html',
-                  {'heading': 'Directory information',
+                  {'empty_browse': False,
+                   'heading': 'Directory information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Directory',
@@ -426,7 +427,8 @@ def origin_content_display(request, origin_type, origin_url, path,
     }
 
     return render(request, 'content.html',
-                  {'heading': 'Content information',
+                  {'empty_browse': False,
+                   'heading': 'Content information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Content',
@@ -593,7 +595,8 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
     }
 
     return render(request, 'revision-log.html',
-                  {'heading': 'Revision history information',
+                  {'empty_browse': False,
+                   'heading': 'Revision history information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Revision history',
@@ -664,7 +667,8 @@ def origin_browse(request, origin_type=None, origin_url=None):
             {'date': visit_date.timestamp()})
 
     return render(request, 'origin.html',
-                  {'heading': 'Origin information',
+                  {'empty_browse': False,
+                   'heading': 'Origin information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Origin',
