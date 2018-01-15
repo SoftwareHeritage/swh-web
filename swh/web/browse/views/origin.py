@@ -637,6 +637,7 @@ def origin_browse(request, origin_type=None, origin_url=None):
             'url': origin_url
         })
         origin_visits = get_origin_visits(origin_info)
+        origin_visits.reverse()
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -646,8 +647,11 @@ def origin_browse(request, origin_type=None, origin_url=None):
                         'origin_url': origin_url})
 
     origin_visits_data = []
+    visits_splitted = []
+    visits_by_year = {}
     for i, visit in enumerate(origin_visits):
         visit_date = dateutil.parser.parse(visit['date'])
+        visit_year = str(visit_date.year)
         url_date = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%S')
         visit['fmt_date'] = format_utc_iso_date(visit['date'])
         query_params = {}
@@ -663,8 +667,17 @@ def origin_browse(request, origin_type=None, origin_url=None):
                                               'origin_url': origin_url,
                                               'timestamp': url_date},
                                       query_params=query_params)
-        origin_visits_data.append(
-            {'date': visit_date.timestamp()})
+        origin_visits_data.insert(0, {'date': visit_date.timestamp()})
+        if visit_year not in visits_by_year:
+            # display 3 years by row in visits list view
+            if len(visits_by_year) == 3:
+                visits_splitted.insert(0, visits_by_year)
+                visits_by_year = {}
+            visits_by_year[visit_year] = []
+        visits_by_year[visit_year].append(visit)
+
+    if len(visits_by_year) > 0:
+        visits_splitted.insert(0, visits_by_year)
 
     return render(request, 'origin.html',
                   {'empty_browse': False,
@@ -676,7 +689,7 @@ def origin_browse(request, origin_type=None, origin_url=None):
                    'swh_object_metadata': origin_info,
                    'main_panel_visible': True,
                    'origin_visits_data': origin_visits_data,
-                   'visits': list(reversed(origin_visits)),
+                   'visits_splitted': visits_splitted,
                    'browse_url_base': '/browse/origin/%s/url/%s/' %
                    (origin_type, origin_url)})
 

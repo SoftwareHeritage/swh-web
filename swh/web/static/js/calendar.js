@@ -196,10 +196,12 @@ var Calendar = function(browse_url, data, origin_id,
             },
             series: {
                 clickable: true,
+                color: "rgb(226, 0, 38)",
                 bars: {
                     show: true,
                     lineWidth: 1,
-                    barWidth: self.zoom.group_factor
+                    barWidth: self.zoom.group_factor,
+                    fillColor: "rgba(226, 0, 38, 0.5)"
                 }
             },
             xaxis: {
@@ -235,10 +237,12 @@ var Calendar = function(browse_url, data, origin_id,
             },
             series: {
                 clickable: true,
+                color: "rgb(226, 0, 38)",
                 bars: {
                     show: true,
                     lineWidth: 1,
-                    barWidth: self.static.group_factor
+                    barWidth: self.static.group_factor,
+                    fillColor: "rgba(226, 0, 38, 0.5)"
                 },
                 shadowSize: 0
             },

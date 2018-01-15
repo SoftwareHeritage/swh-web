@@ -44,7 +44,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.service')
     @istest
-    def origin_browse(self, mock_service, mock_get_origin_visits):
+    def test_origin_browse(self, mock_service, mock_get_origin_visits):
         mock_service.lookup_origin.return_value = origin_info_test_data
         mock_get_origin_visits.return_value = origin_visits_test_data
 
@@ -60,17 +60,18 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                   (origin_info_test_data['url'],
                                    origin_info_test_data['url']))
 
-        self.assertContains(resp, '<tr class="swh-origin-visit">',
+        self.assertContains(resp, '<td class="swh-origin-visit">',
                             count=len(origin_visits_test_data))
 
         for visit in origin_visits_test_data:
-            visit_date = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%S')
+            visit_date_iso = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%S')
+            visit_date = format_utc_iso_date(visit['date'])
             browse_url = reverse('browse-origin-directory',
                                  kwargs={'origin_type': origin_info_test_data['type'],
                                          'origin_url': origin_info_test_data['url'],
-                                         'timestamp': visit_date})
-            self.assertContains(resp, '<td><a href="%s">%s</a></td>' %
-                                (browse_url, browse_url))
+                                         'timestamp': visit_date_iso})
+            self.assertContains(resp, 'href="%s">%s</a>' %
+                                (browse_url, visit_date))
 
     @nottest
     def origin_content_view_test(self, origin_info, origin_visits,

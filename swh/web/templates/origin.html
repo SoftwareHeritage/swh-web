@@ -16,26 +16,34 @@
   </div>
 
   <h3>List</h3>
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Visit date</th>
-          <th>Visit status</th>
-          <th>Tree</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for v in visits %}
-        <tr class="swh-origin-visit">
-          <td>{{ v.fmt_date }}</td>
-          <td>{{ v.status }}</td>
-          <td><a href="{{ v.browse_url }}">{{ v.browse_url }}</a></td>
-        </tr>
-        {% endfor %}
-      <tbody>
-    </table>
+  {% for visits_by_year in visits_splitted %}
+  <div class="row">
+    <div class="col-sm-2">
+    </div>
+    {% for key, val in visits_by_year.items|dictsortreversed:"0.lower" %}
+      <div class="col-sm-3">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ key }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for visit in val %}
+              <tr>
+                <td class="swh-origin-visit">
+                  <a class="swh-visit-{{ visit.status }}" title="{{ visit.status}} visit" href="{{ visit.browse_url }}">{{ visit.fmt_date }}</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+    <div class="col-sm-1">
+    </div>
   </div>
+  {% endfor %}
 </div>
 
 <!-- Flot calendar setup -->

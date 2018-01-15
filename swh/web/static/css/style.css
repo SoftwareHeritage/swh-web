@@ -509,3 +509,29 @@ fieldset[disabled] .btn-swh.active {
     border: none;
     background-color: white;
 }
+
+.swh-visit-full {
+    color: green;
+    position: relative;
+}
+
+.swh-visit-full:before {
+    content: "\f00c";
+    font-family: FontAwesome;
+    left:-20px;
+    position:absolute;
+    top:-2px;
+ }
+
+.swh-visit-partial {
+    color: #edc344;
+    position: relative;
+}
+
+.swh-visit-partial:before {
+    content: "\f071";
+    font-family: FontAwesome;
+    left:-20px;
+    position:absolute;
+    top:-2px;
+ }
