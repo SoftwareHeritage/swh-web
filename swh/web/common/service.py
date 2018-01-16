@@ -279,6 +279,14 @@ def lookup_person(person_id):
     return converters.from_person(person)
 
 
+def _to_sha1_bin(sha1_hex):
+    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
+        sha1_hex,
+        ['sha1'],  # HACK: sha1_git really
+        'Only sha1_git is supported.')
+    return sha1_git_bin
+
+
 def lookup_directory(sha1_git):
     """Return information about the directory with id sha1_git.
 
@@ -289,10 +297,7 @@ def lookup_directory(sha1_git):
         directory information as dict.
 
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        sha1_git,
-        ['sha1'],  # HACK: sha1_git really
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(sha1_git)
 
     dir = _first_element(storage.directory_get([sha1_git_bin]))
     if not dir:
@@ -315,10 +320,7 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
     Raises:
         NotFoundExc if the directory entry is not found
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        directory_sha1_git,
-        ['sha1'],
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(directory_sha1_git)
 
     paths = path_string.strip(os.path.sep).split(os.path.sep)
     queried_dir = storage.directory_entry_get_by_path(
@@ -344,12 +346,28 @@ def lookup_release(release_sha1_git):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        release_sha1_git,
-        ['sha1'],
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(release_sha1_git)
     res = _first_element(storage.release_get([sha1_git_bin]))
     return converters.from_release(res)
+
+
+def lookup_release_multiple(sha1_git_list):
+    """Return information about the revisions identified with
+    their sha1_git identifiers.
+
+    Args:
+        sha1_git_list: A list of revision sha1_git identifiers
+
+    Returns:
+        Release information as dict.
+
+    Raises:
+        ValueError if the identifier provided is not of sha1 nature.
+
+    """
+    sha1_bin_list = (_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list)
+    releases = storage.release_get(sha1_bin_list) or []
+    return (converters.from_release(r) for r in releases)
 
 
 def lookup_revision(rev_sha1_git):
@@ -366,10 +384,7 @@ def lookup_revision(rev_sha1_git):
         NotFoundExc if there is no revision with the provided sha1_git.
 
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        rev_sha1_git,
-        ['sha1'],
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(rev_sha1_git)
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
         raise NotFoundExc('Revision with sha1_git %s not found.'
@@ -378,28 +393,22 @@ def lookup_revision(rev_sha1_git):
 
 
 def lookup_revision_multiple(sha1_git_list):
-    """Return information about the revision with sha1 revision_sha1_git.
+    """Return information about the revisions identified with
+    their sha1_git identifiers.
 
     Args:
-        revision_sha1_git: The revision's sha1 as hexadecimal
+        sha1_git_list: A list of revision sha1_git identifiers
 
     Returns:
-        Revision information as dict.
+        Generator of revisions information as dict.
 
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    def to_sha1_bin(sha1_hex):
-        _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-            sha1_hex,
-            ['sha1'],
-            'Only sha1_git is supported.')
-        return sha1_git_bin
-
-    sha1_bin_list = (to_sha1_bin(x) for x in sha1_git_list)
+    sha1_bin_list = (_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list)
     revisions = storage.revision_get(sha1_bin_list) or []
-    return (converters.from_revision(x) for x in revisions)
+    return (converters.from_revision(r) for r in revisions)
 
 
 def lookup_revision_message(rev_sha1_git):
@@ -416,10 +425,7 @@ def lookup_revision_message(rev_sha1_git):
         NotFoundExc if the revision is not found, or if it has no message
 
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        rev_sha1_git,
-        ['sha1'],
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(rev_sha1_git)
 
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
@@ -478,10 +484,7 @@ def lookup_revision_log(rev_sha1_git, limit):
         NotFoundExc if there is no revision with the provided sha1_git.
 
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        rev_sha1_git,
-        ['sha1'],
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(rev_sha1_git)
 
     revision_entries = storage.revision_log([sha1_git_bin], limit)
     if not revision_entries:
@@ -578,20 +581,14 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
         ancestor of sha1_git_root
 
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        sha1_git,
-        ['sha1'],
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(sha1_git)
 
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
 
     if isinstance(sha1_git_root, str):
-        _, sha1_git_root_bin = query.parse_hash_with_algorithms_or_throws(
-            sha1_git_root,
-            ['sha1'],
-            'Only sha1_git is supported.')
+        sha1_git_root_bin = _to_sha1_bin(sha1_git_root)
 
         revision_root = _first_element(storage.revision_get([sha1_git_root_bin])) # noqa
         if not revision_root:
@@ -642,10 +639,7 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         type 'dir' or 'file'.
 
     """
-    _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        sha1_git,
-        ['sha1'],
-        'Only sha1_git is supported.')
+    sha1_git_bin = _to_sha1_bin(sha1_git)
 
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
