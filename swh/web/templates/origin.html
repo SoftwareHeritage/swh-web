@@ -18,7 +18,7 @@
   <h3>List</h3>
   {% for visits_by_year in visits_splitted %}
   <div class="row">
-    <div class="col-sm-2">
+    <div class="col-sm-1">
     </div>
     {% for key, val in visits_by_year.items|dictsortreversed:"0.lower" %}
       <div class="col-sm-3">
@@ -40,7 +40,7 @@
         </table>
       </div>
     {% endfor %}
-    <div class="col-sm-1">
+    <div class="col-sm-2">
     </div>
   </div>
   {% endfor %}

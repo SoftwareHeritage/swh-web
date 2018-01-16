@@ -24,9 +24,9 @@ from .data.origin_test_data import (
     stub_content_origin_info, stub_content_origin_visit_id,
     stub_content_origin_visit_unix_ts, stub_content_origin_visit_iso_date,
     stub_content_origin_branch,
-    stub_content_origin_visits, stub_content_origin_branches,
+    stub_content_origin_visits, stub_content_origin_occurrences,
     stub_origin_info, stub_visit_id,
-    stub_origin_visits, stub_origin_branches,
+    stub_origin_visits, stub_origin_occurrences,
     stub_origin_root_directory_entries, stub_origin_master_branch,
     stub_origin_root_directory_sha1, stub_origin_sub_directory_path,
     stub_origin_sub_directory_entries, stub_visit_unix_ts, stub_visit_iso_date
@@ -44,7 +44,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.service')
     @istest
-    def test_origin_browse(self, mock_service, mock_get_origin_visits):
+    def origin_browse(self, mock_service, mock_get_origin_visits):
         mock_service.lookup_origin.return_value = origin_info_test_data
         mock_get_origin_visits.return_value = origin_visits_test_data
 
@@ -75,7 +75,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
     @nottest
     def origin_content_view_test(self, origin_info, origin_visits,
-                                 origin_branches, origin_branch,
+                                 origin_branches, origin_releases,
+                                 origin_branch,
                                  root_dir_sha1, content_sha1,
                                  content_path, content_data,
                                  content_language,
@@ -161,20 +162,33 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                         kwargs=url_args,
                         query_params=query_params)
 
-            self.assertContains(resp, '<a href="%s">' % root_dir_branch_url)
+        self.assertContains(resp, '<a href="%s">' % root_dir_branch_url)
+
+        self.assertContains(resp, '<li class="swh-release">',
+                            count=len(origin_releases))
+
+        query_params['branch'] = None
+        for release in origin_releases:
+            query_params['release'] = release['name']
+            root_dir_release_url = \
+                reverse('browse-origin-content',
+                        kwargs=url_args,
+                        query_params=query_params)
+
+            self.assertContains(resp, '<a href="%s">' % root_dir_release_url)
 
     @patch('swh.web.browse.utils.get_origin_visits')
-    @patch('swh.web.browse.views.origin.get_origin_visit_branches')
+    @patch('swh.web.browse.views.origin.get_origin_visit_occurrences')
     @patch('swh.web.browse.views.origin.service')
     @patch('swh.web.browse.views.origin.request_content')
     @istest
     def origin_content_view(self, mock_request_content, mock_service,
-                                 mock_get_origin_visit_branches,
+                                 mock_get_origin_visit_occurrences,
                                  mock_get_origin_visits):
 
         stub_content_text_sha1 = stub_content_text_data['checksums']['sha1']
         mock_get_origin_visits.return_value = stub_content_origin_visits
-        mock_get_origin_visit_branches.return_value = stub_content_origin_branches
+        mock_get_origin_visit_occurrences.return_value = stub_content_origin_occurrences
         mock_service.lookup_directory_with_path.return_value = \
             {'target': stub_content_text_sha1}
         mock_request_content.return_value = stub_content_text_data
@@ -182,7 +196,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         self.origin_content_view_test(stub_content_origin_info,
                                       stub_content_origin_visits,
-                                      stub_content_origin_branches,
+                                      stub_content_origin_occurrences[0],
+                                      stub_content_origin_occurrences[1],
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
@@ -192,7 +207,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         self.origin_content_view_test(stub_content_origin_info,
                                       stub_content_origin_visits,
-                                      stub_content_origin_branches,
+                                      stub_content_origin_occurrences[0],
+                                      stub_content_origin_occurrences[1],
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
@@ -203,7 +219,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         self.origin_content_view_test(stub_content_origin_info,
                                       stub_content_origin_visits,
-                                      stub_content_origin_branches,
+                                      stub_content_origin_occurrences[0],
+                                      stub_content_origin_occurrences[1],
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
@@ -214,7 +231,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         self.origin_content_view_test(stub_content_origin_info,
                                       stub_content_origin_visits,
-                                      stub_content_origin_branches,
+                                      stub_content_origin_occurrences[0],
+                                      stub_content_origin_occurrences[1],
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
@@ -225,9 +243,9 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
     @nottest
     def origin_directory_view(self, origin_info, origin_visits,
-                                   origin_branches, origin_branch,
-                                   root_directory_sha1, directory_entries,
-                                   visit_id=None, timestamp=None, path=None):
+                              origin_branches, origin_releases, origin_branch,
+                              root_directory_sha1, directory_entries,
+                              visit_id=None, timestamp=None, path=None):
 
         dirs = [e for e in directory_entries
                 if e['type'] == 'dir']
@@ -308,11 +326,11 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                   (root_dir_branch_url,
                                    root_directory_sha1[:7]))
 
-        self.assertContains(resp, '<li class="swh-branch">',
-                            count=len(origin_branches))
-
         if path:
             url_args['path'] = path
+
+        self.assertContains(resp, '<li class="swh-branch">',
+                            count=len(origin_branches))
 
         for branch in origin_branches:
             query_params['branch'] = branch['name']
@@ -323,61 +341,78 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
             self.assertContains(resp, '<a href="%s">' % root_dir_branch_url)
 
+        self.assertContains(resp, '<li class="swh-release">',
+                            count=len(origin_releases))
+
+        query_params['branch'] = None
+        for release in origin_releases:
+            query_params['release'] = release['name']
+            root_dir_release_url = \
+                reverse('browse-origin-directory',
+                        kwargs=url_args,
+                        query_params=query_params)
+
+            self.assertContains(resp, '<a href="%s">' % root_dir_release_url)
+
     @patch('swh.web.browse.utils.get_origin_visits')
-    @patch('swh.web.browse.views.origin.get_origin_visit_branches')
+    @patch('swh.web.browse.views.origin.get_origin_visit_occurrences')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     @istest
     def origin_root_directory_view(self, mock_origin_service,
                                    mock_utils_service,
-                                   mock_get_origin_visit_branches,
+                                   mock_get_origin_visit_occurrences,
                                    mock_get_origin_visits):
 
         mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.return_value = stub_origin_branches
+        mock_get_origin_visit_occurrences.return_value = stub_origin_occurrences
         mock_utils_service.lookup_directory.return_value = \
             stub_origin_root_directory_entries
         mock_origin_service.lookup_origin.return_value = stub_origin_info
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_root_directory_entries)
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_root_directory_entries,
                                    visit_id=stub_visit_id)
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_root_directory_entries,
                                    timestamp=stub_visit_unix_ts)
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_root_directory_entries,
                                    timestamp=stub_visit_iso_date)
 
     @patch('swh.web.browse.utils.get_origin_visits')
-    @patch('swh.web.browse.views.origin.get_origin_visit_branches')
+    @patch('swh.web.browse.views.origin.get_origin_visit_occurrences')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     @istest
     def origin_sub_directory_view(self, mock_origin_service,
                                   mock_utils_service,
-                                  mock_get_origin_visit_branches,
+                                  mock_get_origin_visit_occurrences,
                                   mock_get_origin_visits):
 
         mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.return_value = stub_origin_branches
+        mock_get_origin_visit_occurrences.return_value = stub_origin_occurrences
         mock_utils_service.lookup_directory.return_value = \
             stub_origin_sub_directory_entries
         mock_origin_service.lookup_directory_with_path.return_value = \
@@ -385,14 +420,16 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         mock_origin_service.lookup_origin.return_value = stub_origin_info
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_sub_directory_entries,
                                    path=stub_origin_sub_directory_path)
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_sub_directory_entries,
@@ -400,7 +437,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                    path=stub_origin_sub_directory_path)
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_sub_directory_entries,
@@ -408,7 +446,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                    path=stub_origin_sub_directory_path)
 
         self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_branches,
+                                   stub_origin_occurrences[0],
+                                   stub_origin_occurrences[1],
                                    stub_origin_master_branch,
                                    stub_origin_root_directory_sha1,
                                    stub_origin_sub_directory_entries,
@@ -417,15 +456,15 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.origin.request_content')
     @patch('swh.web.browse.utils.get_origin_visits')
-    @patch('swh.web.browse.views.origin.get_origin_visit_branches')
+    @patch('swh.web.browse.views.origin.get_origin_visit_occurrences')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     @istest
-    def test_origin_request_errors(self, mock_origin_service,
-                                   mock_utils_service,
-                                   mock_get_origin_visit_branches,
-                                   mock_get_origin_visits,
-                                   mock_request_content):
+    def origin_request_errors(self, mock_origin_service,
+                              mock_utils_service,
+                              mock_get_origin_visit_occurrences,
+                              mock_get_origin_visits,
+                              mock_request_content):
 
         mock_origin_service.lookup_origin.side_effect = \
             NotFoundExc('origin not found')
@@ -449,7 +488,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, "No SWH visit", status_code=404)
 
         mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.side_effect = \
+        mock_get_origin_visit_occurrences.side_effect = \
             NotFoundExc('visit not found')
         url = reverse('browse-origin-directory',
                       kwargs={'origin_type': 'foo',
@@ -461,8 +500,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertRegex(resp.content.decode('utf-8'), 'Visit.*not found')
 
         mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.side_effect = None
-        mock_get_origin_visit_branches.return_value = []
+        mock_get_origin_visit_occurrences.side_effect = None
+        mock_get_origin_visit_occurrences.return_value = ([], [])
         url = reverse('browse-origin-directory',
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'bar'})
@@ -470,9 +509,9 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'),
-                         'Origin.*is empty')
+                         'Origin.*has an empty list of branches')
 
-        mock_get_origin_visit_branches.return_value = stub_origin_branches
+        mock_get_origin_visit_occurrences.return_value = stub_origin_occurrences
         mock_utils_service.lookup_directory.side_effect = \
             NotFoundExc('Directory not found')
         url = reverse('browse-origin-directory',
@@ -496,7 +535,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, "No SWH visit", status_code=404)
 
         mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.side_effect = \
+        mock_get_origin_visit_occurrences.side_effect = \
             NotFoundExc('visit not found')
         url = reverse('browse-origin-content',
                       kwargs={'origin_type': 'foo',
@@ -509,8 +548,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertRegex(resp.content.decode('utf-8'), 'Visit.*not found')
 
         mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_branches.side_effect = None
-        mock_get_origin_visit_branches.return_value = []
+        mock_get_origin_visit_occurrences.side_effect = None
+        mock_get_origin_visit_occurrences.return_value = ([], [])
         url = reverse('browse-origin-content',
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'bar',
@@ -519,9 +558,9 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'),
-                         'Origin.*is empty')
+                         'Origin.*has an empty list of branches')
 
-        mock_get_origin_visit_branches.return_value = stub_origin_branches
+        mock_get_origin_visit_occurrences.return_value = stub_origin_occurrences
         mock_origin_service.lookup_directory_with_path.return_value = \
             {'target': stub_content_text_data['checksums']['sha1']}
         mock_request_content.side_effect = \

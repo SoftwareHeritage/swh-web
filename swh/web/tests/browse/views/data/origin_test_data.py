@@ -206,7 +206,8 @@ stub_origin_visits = [
   'visit': 14}
 ]
 
-stub_origin_branches = [
+stub_origin_occurrences = (
+[
  {'directory': 'ae59ceecf46367e8e4ad800e231fc76adc3afffb',
   'name': 'HEAD',
   'revision': '7bc08e1aa0b08cb23e18715a32aa38517ad34672'},
@@ -306,7 +307,24 @@ stub_origin_branches = [
  {'directory': '0fa77c20564364056319570bd46607111c97cb42',
   'name': 'refs/heads/webpack-1',
   'revision': 'd4878a55be7a4b7ac4e5db1ae5eef89e15811072'}
-]
+],
+[{'name': 'v2.1.0-beta.6',
+  'release': 'ae2e1a30e4f2ac701e8a6e2fe85a5f200d7e597a',
+  'revision': 'ca8b693c2c17bd06778476381fae23b3b21c0475',
+  'directory': '4e1f9b3c2f5c4bd205051a14af4ade62349ee57a'},
+ {'name': 'v2.1.0-beta.7',
+  'target': '46e94bbdc9e54cf6273a985732446b4c963bf1aa',
+  'revision': '9162f9e6eea62137139f95b8aaedee335c870edd',
+  'directory': '713763f90f17371fec714c1660f229ba41b9f5e2'},
+ {'name': 'v2.1.0-beta.8',
+  'release': '910ada6bf809f8f1c318e098f67f2c0b3c80c888',
+  'revision': 'abf0cefd592700a19856c3ef9b6d65f905ec73c1',
+  'directory': 'd6a069fda992759670851dc38500b2e8dccdc595'},
+ {'name': 'v2.1.0-beta.9',
+  'target': '63063663c86b0c7e5886adbd3c22aacba9b957b0',
+  'revision': 'dc3bd055027d8d1ebbb0ebdd07fb73387a0ab6d1',
+  'directory': '467251807aea6ba83719194e9a1d65e8053f14e0'}
+])
 
 stub_origin_master_branch = 'HEAD'
 
@@ -691,7 +709,8 @@ stub_content_origin_visits = [
   'visit': 16}
 ]
 
-stub_content_origin_branches = [
+stub_content_origin_occurrences = (
+[
  {'directory': '08e8329257dad3a3ef7adea48aa6e576cd82de5b',
   'name': 'HEAD',
   'revision': '11f15b0789344427ddf17b8d75f38577c4395ce0'},
@@ -758,4 +777,21 @@ stub_content_origin_branches = [
  {'directory': 'e39f1a6967c33635c9e0c3ee627fbd987612417b',
   'name': 'refs/pull/1/head',
   'revision': 'dd6530d110b165dfeed8dc1b20b8cfab0e4bd25b'}
-]
+],
+[{'name': 'v4.9.90',
+  'release': 'f6a3a31474a86023377ce6fa1cbec3d9ab809d06',
+  'revision': '4dd3d7de2f684fcdf27028bafdc022183e33610d',
+  'directory': 'a5b9c74c35732189b8aa7567f979f9ac36fdb8bc'},
+ {'name': 'v4.9.95',
+  'release': '74bab04b34b243269354f6e5530d6d0edf92f84d',
+  'revision': '6bd42579908cf62f094ebca0e100832208967428',
+  'directory': 'aaeba0a71293465b9026249381c0a1f13a13a43f'},
+ {'name': 'v4.9.97',
+  'release': 'd8bf93d6915c4ab17de882c443423f281c961a1c',
+  'revision': '5fbd023fc46ecc57a6772be2aa04f532e8426f43',
+  'directory': '0ce36caec34ad7c930f35eca907148208b2a3f2b'},
+ {'name': 'v4.9.98',
+  'release': '9bf0265d4fce650926bfd93b117584eb3fd0bd73',
+  'revision': '670aff3a940fecf6a085fe71a5bead2edcad8a55',
+  'directory': '0747fbcc783dfab9e857040287ed400df145079d'}
+])

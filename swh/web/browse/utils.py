@@ -305,9 +305,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
             (visit_ts, origin_info['type'], origin_info['url']))
 
 
-def get_origin_visit_branches(origin_info, visit_ts=None, visit_id=None):
-    """Function that returns the list of branches associated to
-    a swh origin for a given visit.
+def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
+    """Function that returns the lists of branches and releases
+    associated to a swh origin for a given visit.
     The visit is expressed by a timestamp. In the latter case,
     the closest visit from the provided timestamp will be used.
     If no visit parameter is provided, it returns the list of branches
@@ -319,6 +319,8 @@ def get_origin_visit_branches(origin_info, visit_ts=None, visit_id=None):
         origin_info (dict): a dict filled with origin information
             (id, url, type)
         visit_ts (int or str): an ISO date string or Unix timestamp to parse
+        visit_id (int): optional visit id for desambiguation in case
+            several visits have the same timestamp
 
     Returns:
         A tuple with two members. The first one is a list of dict describing
@@ -331,8 +333,8 @@ def get_origin_visit_branches(origin_info, visit_ts=None, visit_id=None):
              ...
             ]
 
-        The second one is the ISO date string corresponding to the associated
-        SWH visit.
+        The second one is a list of dict describing the origin branches
+        for the given visit.
 
     Raises:
         NotFoundExc if the origin or its visit are not found
@@ -342,40 +344,62 @@ def get_origin_visit_branches(origin_info, visit_ts=None, visit_id=None):
 
     visit_id = visit_info['visit']
 
-    cache_entry_id = 'origin_%s_visit_%s_branches' % (origin_info['id'],
-                                                      visit_id)
+    cache_entry_id = 'origin_%s_visit_%s_occurrences' % (origin_info['id'],
+                                                         visit_id)
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
-        return cache_entry
+        return cache_entry['branches'], cache_entry['releases']
 
     origin_visit_data = service.lookup_origin_visit(origin_info['id'],
                                                     visit_id)
     branches = []
+    releases = []
     revision_ids = []
+    releases_ids = []
     occurrences = origin_visit_data['occurrences']
     for key in sorted(occurrences.keys()):
         if occurrences[key]['target_type'] == 'revision':
             branches.append({'name': key,
                              'revision': occurrences[key]['target']})
             revision_ids.append(occurrences[key]['target'])
+        elif occurrences[key]['target_type'] == 'release':
+            releases_ids.append(occurrences[key]['target'])
+
+    releases_info = service.lookup_release_multiple(releases_ids)
+    for release in releases_info:
+        releases.append({'name': release['name'],
+                         'release': release['id'],
+                         'revision': release['target']})
+        revision_ids.append(release['target'])
 
     revisions = service.lookup_revision_multiple(revision_ids)
 
     branches_to_remove = []
+    releases_to_remove = []
 
     for idx, revision in enumerate(revisions):
-        if revision:
-            branches[idx]['directory'] = revision['directory']
+        if idx < len(branches):
+            if revision:
+                branches[idx]['directory'] = revision['directory']
+            else:
+                branches_to_remove.append(branches[idx])
         else:
-            branches_to_remove.append(branches[idx])
+            rel_idx = idx - len(branches)
+            if revision:
+                releases[rel_idx]['directory'] = revision['directory']
+            else:
+                releases_to_remove.append(releases[rel_idx])
 
     for b in branches_to_remove:
         branches.remove(b)
 
-    cache.set(cache_entry_id, branches)
+    for b in releases_to_remove:
+        releases.remove(b)
 
-    return branches
+    cache.set(cache_entry_id, {'branches': branches, 'releases': releases})
+
+    return branches, releases
 
 
 def gen_link(url, link_text):

@@ -135,8 +135,8 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.utils.get_origin_visit')
     @istest
-    def get_origin_visit_branches(self, mock_get_origin_visit,
-                                  mock_service):
+    def get_origin_visit_occurrences(self, mock_get_origin_visit,
+                                     mock_service):
 
         mock_get_origin_visit.return_value = \
             {'status': 'full',
@@ -155,13 +155,13 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
                  },
                  'refs/tags/0.10.0': {
                      'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
-                     'target_type': 'revision',
-                     'target_url': '/api/1/revision/6072557b6c10cd9a21145781e26ad1f978ed14b9/' # noqa
+                     'target_type': 'release',
+                     'target_url': '/api/1/release/6072557b6c10cd9a21145781e26ad1f978ed14b9/' # noqa
                  },
                  'refs/tags/0.10.1': {
                      'target': 'ecc003b43433e5b46511157598e4857a761007bf',
-                     'target_type': 'revision',
-                     'target_url': '/api/1/revision/ecc003b43433e5b46511157598e4857a761007bf/' # noqa
+                     'target_type': 'release',
+                     'target_url': '/api/1/release/ecc003b43433e5b46511157598e4857a761007bf/' # noqa
                  }
              },
              'origin': 1,
@@ -169,22 +169,32 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
              'status': 'full',
              'visit': 1}
 
+        mock_service.lookup_release_multiple.return_value = \
+            [{'name': '0.10.0',
+              'id': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'target': 'e9c6243371087d04848b7686888f6dd29dfaef0e'},
+             {'name': '0.10.1',
+              'id': 'ecc003b43433e5b46511157598e4857a761007bf',
+              'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9'}]
+
         mock_service.lookup_revision_multiple.return_value = \
             [{'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'},
              {'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
              {'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd'}]
 
-        expected_result = [
-            {'name': 'refs/heads/master',
-             'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
-             'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'},
-            {'name': 'refs/tags/0.10.0',
-             'revision': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
-             'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
-            {'name': 'refs/tags/0.10.1',
-             'revision': 'ecc003b43433e5b46511157598e4857a761007bf',
-             'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd'}
-        ]
+        expected_result = (
+            [{'name': 'refs/heads/master',
+              'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
+              'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'}],
+            [{'name': '0.10.0',
+              'release': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'revision': 'e9c6243371087d04848b7686888f6dd29dfaef0e',
+              'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
+             {'name': '0.10.1',
+              'release': 'ecc003b43433e5b46511157598e4857a761007bf',
+              'revision': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd'}]
+        )
 
         origin_info = {
             'id': 1,
@@ -192,7 +202,8 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
             'url': 'https://github.com/hylang/hy'
         }
 
-        origin_visit_branches = utils.get_origin_visit_branches(origin_info, 1)
+        origin_visit_branches = \
+            utils.get_origin_visit_occurrences(origin_info, visit_id=1)
 
         self.assertEqual(origin_visit_branches, expected_result)
 

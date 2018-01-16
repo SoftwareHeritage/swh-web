@@ -4,7 +4,7 @@
 {% block title %}{{ heading }} &ndash; Software Heritage archive {% endblock %}
 
 {% block navbar-content %}
-<ul class="nav navbar-nav">
+<ul class="nav navbar-nav swh-browse-nav">
   <li class="active">
     <a href="#search" data-toggle="tab" style="outline:none;">Search</a>
   </li>
@@ -118,9 +118,9 @@
       return;
     }
     if (hash) {
-      $('.navbar-nav a[href="' + hash + '"]').tab('show');
+      $('.navbar-nav.swh-browse-nav a[href="' + hash + '"]').tab('show');
     } else {
-      $('.navbar-nav a[href="#browse"]').tab('show');
+      $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
     }
       window.scrollTo(0, 0);
   }
@@ -129,14 +129,14 @@
   $(document).ready(function() {
 
     // Change hash for page reload
-    $('.navbar-nav a').on('shown.bs.tab', function (e) {
+    $('.navbar-nav.swh-browse-nav a').on('shown.bs.tab', function (e) {
       if (e.target.hash != '#browse') {
         window.location.hash = e.target.hash;
       } else {
         removeHash();
       }
       show_requested_tab();
-    })
+    });
 
     // update displayed tab when the url fragment changes
     $(window).on('hashchange', function() {
