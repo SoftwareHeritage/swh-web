@@ -4,71 +4,73 @@
 {% block title %}{{ heading }} &ndash; Software Heritage archive {% endblock %}
 
 {% block navbar-content %}
-<ul class="nav navbar-nav swh-browse-nav">
-  <li class="active">
-    <a href="#search" data-toggle="tab" style="outline:none;">Search</a>
-  </li>
-  <li>
-    <a  href="#help" data-toggle="tab" style="outline:none;">Help</a>
-  </li>
-  <li>
-    <a  href="#browse" data-toggle="tab" style="outline:none;">Browse</a>
-  </li>
-</ul>
+  <ul class="nav navbar-nav swh-browse-nav">
+    <li class="active">
+      <a href="#search" data-toggle="tab" style="outline:none;">Search</a>
+    </li>
+    <li>
+      <a  href="#help" data-toggle="tab" style="outline:none;">Help</a>
+    </li>
+    <li>
+      <a  href="#browse" data-toggle="tab" style="outline:none;">Browse</a>
+    </li>
+  </ul>
 {% endblock %}
 
 {% block content %}
 
-<div class="tab-content" style="margin-top: 5px;">
+  <div class="tab-content" style="margin-top: 5px;">
 
-  <div class="tab-pane active" id="search">
-    {% include "includes/origins-search.html" %}
-  </div>
+    <div class="tab-pane active" id="search">
+      {% include "includes/origins-search.html" %}
+    </div>
 
-  <div class="tab-pane" id="help">
-    {% include "includes/browse-help.html" %}
-  </div>
+    <div class="tab-pane" id="help">
+      {% include "includes/browse-help.html" %}
+    </div>
 
-  <div class="tab-pane" id="browse">
+    <div class="tab-pane" id="browse">
 
-    {% if empty_browse %}
-      <div class="panel panel-default" style="overflow-x: auto;">
-        <div class="panel-heading">
-          <h2>Browse the Software Heritage archive</h2>
-        </div>
-        <div class ="panel-body">
-          <p>
-            No Software Heritage object currently browsed.
-            <br/>
-            To browse the content of the archive, you can either use
-            the <a href="{% url 'browse-homepage' %}#search">Search</a> interface or refer to the URI scheme described
-            in the <a href="{% url 'browse-homepage' %}#help">Help</a> page.
-          </p>
-        </div>
-      </div>
-    {% else %}
-      <div class="panel-group" id="accordion">
-        {% if top_panel_visible %}
+      {% if empty_browse %}
+
         <div class="panel panel-default" style="overflow-x: auto;">
-            <div class="panel-heading">
-              {% if top_panel_collapsible %}
-              <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
-              {% endif %}
+          <div class="panel-heading">
+            <h2>Browse the Software Heritage archive</h2>
+          </div>
+          <div class ="panel-body">
+            <p>
+              No Software Heritage object currently browsed.
+              <br/>
+              To browse the content of the archive, you can either use
+              the <a href="{% url 'browse-homepage' %}#search">Search</a> interface or refer to the URI scheme described
+              in the <a href="{% url 'browse-homepage' %}#help">Help</a> page.
+            </p>
+          </div>
+        </div>
+
+      {% else %}
+
+        <div class="panel-group" id="accordion">
+
+          {% block swh-browse-before-panels %}{% endblock %}
+
+          {% if top_panel_visible %}
+            <div class="panel panel-default" style="overflow-x: auto;">
+              <div class="panel-heading">
+                {% if top_panel_collapsible %}
+                  <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
+                {% endif %}
                 <div class="pull-left">
-                  <h2>{{ top_panel_text_left }}</h2>
-                </div>
-                <div class="pull-right">
-                  <h2>{{ top_panel_text_right }}</h2>
+                  <h2>{{ top_panel_text }}</h2>
                 </div>
                 <div class="clearfix"></div>
+                {% if top_panel_collapsible %}
+                  </a>
+                {% endif %}
+              </div>
               {% if top_panel_collapsible %}
-              </a>
+                <div id="swh-browse-top-collapse" class="panel-collapse collapse">
               {% endif %}
-
-            </div>
-            {% if top_panel_collapsible %}
-            <div id="swh-browse-top-collapse" class="panel-collapse collapse">
-            {% endif %}
               <table class="table">
                 <tbody>
                   {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
@@ -81,72 +83,72 @@
                   {% endfor %}
                 </tbody>
               </table>
-            {% if top_panel_collapsible %}
+              {% if top_panel_collapsible %}
+                </div>
+              {% endif %}
             </div>
-            {% endif %}
-        </div>
-        {% endif %}
-        {% if main_panel_visible %}
-        <div class="panel panel-default" style="overflow-x: auto;">
-          {% block swh-browse-main-panel-content %}{% endblock %}
-        </div>
-        {% endif %}
+          {% endif %}
 
-        {% block swh-browse-panels-group-end %}{% endblock %}
+          {% if main_panel_visible %}
+            <div class="panel panel-default" style="overflow-x: auto;">
+              {% block swh-browse-main-panel-content %}{% endblock %}
+            </div>
+          {% endif %}
+
+          {% block swh-browse-panels-group-end %}{% endblock %}
+
+        </div>
+
+        {% block swh-browse-after-panels %}{% endblock %}
 
       </div>
+    {% endif %}
 
-      {% block swh-browse-after-panels %}{% endblock %}
+  </div>
 
-    </div>
-  {% endif %}
+  <script>
 
-</div>
-
-<script>
-
-  function removeHash () {
-    history.replaceState("", document.title, window.location.pathname + window.location.search);
-  }
-
-  var browse_tabs_hash = ["#browse", "#search", "#help"];
-
-  // Javascript to enable link to tab
-  function show_requested_tab() {
-    var hash = window.location.hash;
-    if (hash && browse_tabs_hash.indexOf(hash) == -1) {
-      return;
+    function removeHash () {
+      history.replaceState("", document.title, window.location.pathname + window.location.search);
     }
-    if (hash) {
-      $('.navbar-nav.swh-browse-nav a[href="' + hash + '"]').tab('show');
-    } else {
-      $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
-    }
-      window.scrollTo(0, 0);
-  }
 
-  // show requested tab when loading the page
-  $(document).ready(function() {
+    var browse_tabs_hash = ["#browse", "#search", "#help"];
 
-    // Change hash for page reload
-    $('.navbar-nav.swh-browse-nav a').on('shown.bs.tab', function (e) {
-      if (e.target.hash != '#browse') {
-        window.location.hash = e.target.hash;
-      } else {
-        removeHash();
+    // Javascript to enable link to tab
+    function show_requested_tab() {
+      var hash = window.location.hash;
+      if (hash && browse_tabs_hash.indexOf(hash) == -1) {
+        return;
       }
+      if (hash) {
+        $('.navbar-nav.swh-browse-nav a[href="' + hash + '"]').tab('show');
+      } else {
+        $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
+      }
+        window.scrollTo(0, 0);
+    }
+
+    // show requested tab when loading the page
+    $(document).ready(function() {
+
+      // Change hash for page reload
+      $('.navbar-nav.swh-browse-nav a').on('shown.bs.tab', function (e) {
+        if (e.target.hash != '#browse') {
+          window.location.hash = e.target.hash;
+        } else {
+          removeHash();
+        }
+        show_requested_tab();
+      });
+
+      // update displayed tab when the url fragment changes
+      $(window).on('hashchange', function() {
+        show_requested_tab();
+      });
+
       show_requested_tab();
     });
 
-    // update displayed tab when the url fragment changes
-    $(window).on('hashchange', function() {
-      show_requested_tab();
-    });
-
-    show_requested_tab();
-  });
-
-</script>
-
+  </script>
 
 {% endblock %}

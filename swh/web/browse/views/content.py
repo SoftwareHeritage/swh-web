@@ -142,18 +142,16 @@ def content_display(request, query_string):
                    'heading': 'Content information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text_left': 'SWH object: Content',
-                   'top_panel_text_right': '%s: %s' % (algo, checksum),
+                   'top_panel_text': 'SWH object: Content',
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content_display_data['content_data'],
                    'mimetype': content_data['mimetype'],
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
-                   'branches': None,
-                   'branch': None,
                    'top_right_link': content_raw_url,
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
-                       '</i>Raw File')
+                       '</i>Raw File'),
+                   'origin_context': None
                    })

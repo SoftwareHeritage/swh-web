@@ -111,6 +111,12 @@
 <link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">
 {% endblock %}
 
+{% block swh-browse-before-panels %}
+{% if origin_context %}
+  {% include "includes/origin-visit-snapshot.html" %}
+{% endif %}
+{% endblock %}
+
 {% block swh-browse-main-panel-content %}
 
 {% include "includes/top-navigation.html" %}

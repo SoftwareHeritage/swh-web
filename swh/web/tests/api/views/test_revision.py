@@ -779,8 +779,6 @@ class ReleaseApiTestCase(SWHWebTestBase, APITestCase):
         # when
         rv = self.client.get('/api/1/revision/origin/1/log/')
 
-        print(rv.content)
-
         # then
         self.assertEquals(rv.status_code, 404)
         self.assertEquals(rv['Content-Type'], 'application/json')

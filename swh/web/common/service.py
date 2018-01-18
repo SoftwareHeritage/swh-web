@@ -347,8 +347,11 @@ def lookup_release(release_sha1_git):
 
     """
     sha1_git_bin = _to_sha1_bin(release_sha1_git)
-    res = _first_element(storage.release_get([sha1_git_bin]))
-    return converters.from_release(res)
+    release = _first_element(storage.release_get([sha1_git_bin]))
+    if not release:
+        raise NotFoundExc('Release with sha1_git %s not found.'
+                          % release_sha1_git)
+    return converters.from_release(release)
 
 
 def lookup_release_multiple(sha1_git_list):

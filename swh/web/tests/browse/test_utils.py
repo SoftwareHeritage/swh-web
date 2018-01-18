@@ -3,6 +3,8 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+# flake8: noqa
+
 import unittest
 
 from unittest.mock import patch
@@ -151,17 +153,17 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
                  'refs/heads/master': {
                      'target': '9fbd21adbac36be869514e82e2e98505dc47219c',
                      'target_type': 'revision',
-                     'target_url': '/api/1/revision/9fbd21adbac36be869514e82e2e98505dc47219c/' # noqa
+                     'target_url': '/api/1/revision/9fbd21adbac36be869514e82e2e98505dc47219c/'
                  },
                  'refs/tags/0.10.0': {
                      'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
                      'target_type': 'release',
-                     'target_url': '/api/1/release/6072557b6c10cd9a21145781e26ad1f978ed14b9/' # noqa
+                     'target_url': '/api/1/release/6072557b6c10cd9a21145781e26ad1f978ed14b9/'
                  },
                  'refs/tags/0.10.1': {
                      'target': 'ecc003b43433e5b46511157598e4857a761007bf',
                      'target_type': 'release',
-                     'target_url': '/api/1/release/ecc003b43433e5b46511157598e4857a761007bf/' # noqa
+                     'target_url': '/api/1/release/ecc003b43433e5b46511157598e4857a761007bf/'
                  }
              },
              'origin': 1,
@@ -171,28 +173,51 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
 
         mock_service.lookup_release_multiple.return_value = \
             [{'name': '0.10.0',
+              'message': 'release 0.10.0',
               'id': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'date': '2015-08-04T13:16:54+03:00',
+              'target_type': 'revision',
               'target': 'e9c6243371087d04848b7686888f6dd29dfaef0e'},
              {'name': '0.10.1',
+              'message': 'release 0.10.1',
               'id': 'ecc003b43433e5b46511157598e4857a761007bf',
+              'date': '2017-08-04T13:16:54+03:00',
+              'target_type': 'revision',
               'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9'}]
 
         mock_service.lookup_revision_multiple.return_value = \
-            [{'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'},
-             {'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
-             {'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd'}]
+            [{'date': '2015-08-04T13:16:54+03:00',
+              'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7',
+              'id': '9fbd21adbac36be869514e82e2e98505dc47219c',
+              'message': 'Merge pull request #678 from algernon'},
+             {'date': '2014-04-10T23:01:11-04:00',
+              'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf',
+              'id': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'message': '0.10: The "Oh fuck it\'s PyCon" release\n'},
+             {'date': '2014-10-10T09:45:23-04:00',
+              'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd',
+              'id': 'ecc003b43433e5b46511157598e4857a761007bf',
+              'message': '0.10.1\n'}]
 
         expected_result = (
             [{'name': 'refs/heads/master',
+              'message': 'Merge pull request #678 from algernon',
+              'date': '04 August 2015, 13:16 UTC',
               'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
               'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'}],
             [{'name': '0.10.0',
-              'release': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
-              'revision': 'e9c6243371087d04848b7686888f6dd29dfaef0e',
+              'id': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'message': 'release 0.10.0',
+              'date': '04 August 2015, 13:16 UTC',
+              'target_type': 'revision',
+              'target': 'e9c6243371087d04848b7686888f6dd29dfaef0e',
               'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
              {'name': '0.10.1',
-              'release': 'ecc003b43433e5b46511157598e4857a761007bf',
-              'revision': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'id': 'ecc003b43433e5b46511157598e4857a761007bf',
+              'message': 'release 0.10.1',
+              'date': '04 August 2017, 13:16 UTC',
+              'target_type': 'revision',
+              'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
               'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd'}]
         )
 
@@ -209,7 +234,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
 
     @istest
     def gen_link(self):
-        self.assertEqual(utils.gen_link('https://www.softwareheritage.org/', 'SWH'), # noqa
+        self.assertEqual(utils.gen_link('https://www.softwareheritage.org/', 'SWH'),
                          '<a href="https://www.softwareheritage.org/">SWH</a>')
 
     @istest
@@ -230,15 +255,15 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         self.assertEqual(utils.gen_revision_link(revision_id),
                          '<a href="%s">%s</a>' % (revision_url, revision_id))
         self.assertEqual(utils.gen_revision_link(revision_id, shorten_id=True),
-                         '<a href="%s">%s</a>' % (revision_url, revision_id[:7])) # noqa
+                         '<a href="%s">%s</a>' % (revision_url, revision_id[:7]))
 
     @istest
     def prepare_revision_log_for_display_no_contex(self):
         per_page = 10
         first_page_logs_data = revision_history_log_test[:per_page+1]
-        second_page_logs_data = revision_history_log_test[per_page:2*per_page+1] # noqa
-        third_page_logs_data = revision_history_log_test[2*per_page:3*per_page+1] # noqa
-        last_page_logs_data = revision_history_log_test[3*per_page:3*per_page+5] # noqa
+        second_page_logs_data = revision_history_log_test[per_page:2*per_page+1]
+        third_page_logs_data = revision_history_log_test[2*per_page:3*per_page+1]
+        last_page_logs_data = revision_history_log_test[3*per_page:3*per_page+5]
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
             first_page_logs_data, per_page, None)
@@ -257,7 +282,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          None)
 
-        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
             second_page_logs_data, per_page, old_prev_revs_bc)
@@ -270,26 +295,26 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
                          second_page_logs_data[-1]['id'])
 
         self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
-                         old_prev_revs_bc + '/' + second_page_logs_data[0]['id']) # noqa
+                         old_prev_revs_bc + '/' + second_page_logs_data[0]['id'])
 
         self.assertEqual(revision_log_display_data['next_rev'],
                          old_prev_revs_bc)
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          None)
 
-        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
             third_page_logs_data, per_page, old_prev_revs_bc)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
-                         utils._format_log_entries(third_page_logs_data, per_page)) # noqa
+                         utils._format_log_entries(third_page_logs_data, per_page))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          third_page_logs_data[-1]['id'])
 
         self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
-                         old_prev_revs_bc + '/' + third_page_logs_data[0]['id']) # noqa
+                         old_prev_revs_bc + '/' + third_page_logs_data[0]['id'])
 
         self.assertEqual(revision_log_display_data['next_rev'],
                          old_prev_revs_bc.split('/')[-1])
@@ -297,38 +322,45 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          '/'.join(old_prev_revs_bc.split('/')[:-1]))
 
-        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
             last_page_logs_data, per_page, old_prev_revs_bc)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
-                         utils._format_log_entries(last_page_logs_data, per_page)) # noqa
+                         utils._format_log_entries(last_page_logs_data, per_page))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          None)
 
         self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
-                         None) # noqa
+                         None)
 
-        self.assertEqual(revision_log_display_data['next_rev'], old_prev_revs_bc.split('/')[-1]) # noqa
+        self.assertEqual(revision_log_display_data['next_rev'], old_prev_revs_bc.split('/')[-1])
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          '/'.join(old_prev_revs_bc.split('/')[:-1]))
 
     @istest
-    def prepare_revision_log_for_display_origin_contex(self):
+    def prepare_revision_log_for_display_origin_context(self):
         per_page = 10
         first_page_logs_data = revision_history_log_test[:per_page+1]
-        second_page_logs_data = revision_history_log_test[per_page:2*per_page+1] # noqa
-        third_page_logs_data = revision_history_log_test[2*per_page:3*per_page+1] # noqa
-        last_page_logs_data = revision_history_log_test[3*per_page:3*per_page+5] # noqa
+        second_page_logs_data = revision_history_log_test[per_page:2*per_page+1]
+        third_page_logs_data = revision_history_log_test[2*per_page:3*per_page+1]
+        last_page_logs_data = revision_history_log_test[3*per_page:3*per_page+5]
+
+        origin_context = {
+            'origin_info': {'type': 'git',
+                            'url': 'https://github.com/git/git'},
+            'url_args': {},
+            'query_params': {}
+        }
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            first_page_logs_data, per_page, None, origin_context=True)
+            first_page_logs_data, per_page, None, origin_context=origin_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
                          utils._format_log_entries(first_page_logs_data,
-                                                   per_page))
+                                                   per_page, origin_context=origin_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          first_page_logs_data[-1]['id'])
@@ -340,39 +372,40 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          None)
 
-        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            second_page_logs_data, per_page, old_prev_revs_bc, origin_context=True) # noqa
+            second_page_logs_data, per_page, old_prev_revs_bc, origin_context=origin_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
                          utils._format_log_entries(second_page_logs_data,
-                                                   per_page))
+                                                   per_page, origin_context=origin_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          second_page_logs_data[-1]['id'])
 
         self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
-                         old_prev_revs_bc + '/' + second_page_logs_data[-1]['id']) # noqa
+                         old_prev_revs_bc + '/' + second_page_logs_data[-1]['id'])
 
         self.assertEqual(revision_log_display_data['next_rev'],
                          old_prev_revs_bc)
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          None)
 
-        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            third_page_logs_data, per_page, old_prev_revs_bc, origin_context=True) # noqa
+            third_page_logs_data, per_page, old_prev_revs_bc, origin_context=origin_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
-                         utils._format_log_entries(third_page_logs_data, per_page)) # noqa
+                         utils._format_log_entries(third_page_logs_data, per_page,
+                                                   origin_context=origin_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          third_page_logs_data[-1]['id'])
 
         self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
-                         old_prev_revs_bc + '/' + third_page_logs_data[-1]['id']) # noqa
+                         old_prev_revs_bc + '/' + third_page_logs_data[-1]['id'])
 
         self.assertEqual(revision_log_display_data['next_rev'],
                          old_prev_revs_bc.split('/')[-1])
@@ -380,20 +413,21 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          '/'.join(old_prev_revs_bc.split('/')[:-1]))
 
-        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb']) # noqa
+        old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            last_page_logs_data, per_page, old_prev_revs_bc, origin_context=True) # noqa
+            last_page_logs_data, per_page, old_prev_revs_bc, origin_context=origin_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
-                         utils._format_log_entries(last_page_logs_data, per_page)) # noqa
+                         utils._format_log_entries(last_page_logs_data, per_page,
+                                                   origin_context=origin_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          None)
 
         self.assertEqual(revision_log_display_data['prev_revs_breadcrumb'],
-                         None) # noqa
+                         None)
 
-        self.assertEqual(revision_log_display_data['next_rev'], old_prev_revs_bc.split('/')[-1]) # noqa
+        self.assertEqual(revision_log_display_data['next_rev'], old_prev_revs_bc.split('/')[-1])
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          '/'.join(old_prev_revs_bc.split('/')[:-1]))
