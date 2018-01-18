@@ -509,3 +509,53 @@ fieldset[disabled] .btn-swh.active {
     border: none;
     background-color: white;
 }
+
+.swh-visit-full {
+    color: green;
+    position: relative;
+}
+
+.swh-visit-full:before {
+    content: "\f00c";
+    font-family: FontAwesome;
+    left:-20px;
+    position:absolute;
+    top:-2px;
+ }
+
+.swh-visit-partial {
+    color: #edc344;
+    position: relative;
+}
+
+.swh-visit-partial:before {
+    content: "\f071";
+    font-family: FontAwesome;
+    left:-20px;
+    position:absolute;
+    top:-2px;
+ }
+
+ .swh-branches-releases {
+     min-width: 200px;
+ }
+
+ .swh-branches-switch,
+ .swh-releases-switch {
+     padding: 5px 15px !important;
+ }
+
+ li.swh-branch:hover,
+ li.swh-release:hover {
+     background-color: #e8e8e8;
+ }
+
+ .swh-branch a,
+ .swh-release a {
+     outline:none;
+ }
+
+ .swh-branch a:hover,
+ .swh-release a:hover {
+    text-decoration: none;
+}

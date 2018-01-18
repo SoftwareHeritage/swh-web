@@ -138,7 +138,8 @@ def content_display(request, query_string):
     }
 
     return render(request, 'content.html',
-                  {'heading': 'Content information',
+                  {'empty_browse': False,
+                   'heading': 'Content information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Content',

@@ -1,26 +1,60 @@
 
 <div class="swh-browse-top-navigation">
   {% if branches %}
-    <div class="dropdown" style="float: left;">
+    <div class="dropdown" style="float: left;" id="swh-branches-releases-dd">
       <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">
-        <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
-        Branch: <strong>{{ branch }}</strong>
+        {% if branch %}
+          <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
+          Branch: <strong>{{ branch }}</strong>
+        {% else %}
+          <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
+          Release: <strong>{{ release }}</strong>
+        {% endif %}
         <span class="caret"></span>
       </button>
-      <ul class="scrollable-menu dropdown-menu">
-        {% for b in branches %}
-          <li class="swh-branch">
-              <a href="{{ b.url | safe }}">
-                <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
-                {% if b.name == branch %}
-                  <i class="fa fa-check fa-fw" aria-hidden="true"></i>
-                {% else %}
-                  <i class="fa fa-fw" aria-hidden="true"></i>
-                {% endif %}
-                {{ b.name }}
-              </a>
-          </li>
-        {% endfor %}
+      <ul class="scrollable-menu dropdown-menu swh-branches-releases">
+        <div class="tabbable tabs-top">
+          <ul class="nav nav-tabs">
+            <li class="active"><a class="swh-branches-switch" data-toggle="tab">Branches</a></li>
+            <li><a class="swh-releases-switch" data-toggle="tab">Releases</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="swh-tab-branches">
+              {% for b in branches %}
+                <li class="swh-branch">
+                  <a href="{{ b.url | safe }}">
+                    <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
+                    {% if b.name == branch %}
+                      <i class="fa fa-check fa-fw" aria-hidden="true"></i>
+                    {% else %}
+                      <i class="fa fa-fw" aria-hidden="true"></i>
+                    {% endif %}
+                    {{ b.name }}
+                  </a>
+                </li>
+              {% endfor %}
+            </div>
+            <div class="tab-pane" id="swh-tab-releases">
+              {% if releases %}
+                {% for r in releases %}
+                  <li class="swh-release">
+                    <a href="{{ r.url | safe }}">
+                      <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
+                      {% if r.name == release %}
+                        <i class="fa fa-check fa-fw" aria-hidden="true"></i>
+                      {% else %}
+                        <i class="fa fa-fw" aria-hidden="true"></i>
+                      {% endif %}
+                      {{ r.name }}
+                    </a>
+                  </li>
+                {% endfor %}
+              {% else %}
+                <span>No releases to show</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
       </ul>
     </div>
   {% endif %}
@@ -42,3 +76,50 @@
     </ul>
   </nav>
 </div>
+
+<script>
+
+  function setBranchesTabActive() {
+    $('.swh-releases-switch').parent().removeClass('active');
+    $('.swh-branches-switch').parent().addClass('active');
+    $('#swh-tab-releases').removeClass('active');
+    $('#swh-tab-branches').addClass('active');
+  }
+
+  function setReleasesTabActive() {
+    $('.swh-branches-switch').parent().removeClass('active');
+    $('.swh-releases-switch').parent().addClass('active');
+    $('#swh-tab-branches').removeClass('active');
+    $('#swh-tab-releases').addClass('active');
+  }
+
+  $('.dropdown-menu a.swh-branches-switch').click(function(e) {
+    setBranchesTabActive();
+    e.stopPropagation();
+  });
+
+  $('.dropdown-menu a.swh-releases-switch').click(function(e) {
+    setReleasesTabActive();
+    e.stopPropagation();
+  });
+
+  var dd_resized = false;
+
+  // hack to resize the branches/releases dropdown content,
+  // taking icons into account, in order to make the whole names readable
+  $('#swh-branches-releases-dd').on('show.bs.dropdown', function () {
+    if (dd_resized) return;
+    var dd_width = $('.swh-branches-releases').width();
+    $('.swh-branches-releases').width(dd_width + 25);
+    dd_resized = true;
+  })
+
+  $(document).ready(function() {
+    if ('{{ branch }}' != 'None') {
+      setBranchesTabActive();
+    } else {
+      setReleasesTabActive();
+    }
+  });
+
+</script>
