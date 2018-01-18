@@ -9,33 +9,41 @@
   <h3>Calendar</h3>
   <div class="timeline" style="margin-bottom: 20px">
     <div id="swh-calendar-window" style="height: 200px">
-      <div id="cal-zoom-window" style="height: 60%"></div>
-      <div id="cal-static-window" style="height: 40%"></div>
+      <div id="cal-zoom-window" style="width: 100%; height: 60%"></div>
+      <div id="cal-static-window" style="width: 100%; height: 40%"></div>
     </div>
     <button class="btn btn-sm btn-swh pull-right" id="cal-clear">Reset zoom</button>
   </div>
 
   <h3>List</h3>
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Visit date</th>
-          <th>Visit status</th>
-          <th>Tree</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for v in visits %}
-        <tr class="swh-origin-visit">
-          <td>{{ v.fmt_date }}</td>
-          <td>{{ v.status }}</td>
-          <td><a href="{{ v.browse_url }}">{{ v.browse_url }}</a></td>
-        </tr>
-        {% endfor %}
-      <tbody>
-    </table>
+  {% for visits_by_year in visits_splitted %}
+  <div class="row">
+    <div class="col-sm-1">
+    </div>
+    {% for key, val in visits_by_year.items|dictsortreversed:"0.lower" %}
+      <div class="col-sm-3">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ key }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for visit in val %}
+              <tr>
+                <td class="swh-origin-visit">
+                  <a class="swh-visit-{{ visit.status }}" title="{{ visit.status}} visit" href="{{ visit.browse_url }}">{{ visit.fmt_date }}</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+    <div class="col-sm-2">
+    </div>
   </div>
+  {% endfor %}
 </div>
 
 <!-- Flot calendar setup -->
@@ -46,11 +54,15 @@
 <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot.tooltip/0.9.0/jquery.flot.tooltip.min.js"></script>
 <script language="javascript" type="text/javascript" src="{% static 'js/calendar.js' %}"></script>
 <script>
-$(function(){
-  var cal = new Calendar('{{ browse_url_base }}', {{ origin_visits_data | safe }},
-                         {{ swh_object_metadata.id }}, $('#cal-zoom-window'),
-                         $('#cal-static-window'),  $('#cal-clear'));
-});
+  var cal = null;
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var target = $(e.target).attr("href");
+    if (!cal && target == '#browse') {
+      cal = new Calendar('{{ browse_url_base }}', {{ origin_visits_data | safe }},
+                          {{ swh_object_metadata.id }}, $('#cal-zoom-window'),
+                          $('#cal-static-window'),  $('#cal-clear'));
+    }
+  });
 </script>
 
 {% endblock %}

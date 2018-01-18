@@ -53,7 +53,9 @@ Origin directory
     :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
     :param string path: optional parameter used to specify the path of a directory
         reachable from the origin root one
-    :query string branch: specify the origin branch from which
+    :query string branch: specify the origin branch name from which
+        to retrieve the directory
+    :query string release: specify the origin release name from which
         to retrieve the directory
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the directory
@@ -102,7 +104,9 @@ Origin directory
     :param path: optional parameter used to specify the path of a directory
         reachable from the origin root one
     :type path: string
-    :query string branch: specify the origin branch from which
+    :query string branch: specify the origin branch name from which
+        to retrieve the directory
+    :query string revision: specify the origin release name from which
         to retrieve the directory
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the directory
@@ -156,7 +160,9 @@ Origin content
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
     :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
     :param string path: path of a content reachable from the origin root directory
-    :query string branch: specify the origin branch from which
+    :query string branch: specify the origin branch name from which
+        to retrieve the content
+    :query string release: specify the origin release name from which
         to retrieve the content
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the content
@@ -207,7 +213,9 @@ Origin content
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest SWH visit.
     :param string path: path of a content reachable from the origin root directory
-    :query string branch: specify the origin branch from which
+    :query string branch: specify the origin branch name from which
+        to retrieve the content
+    :query string release: specify the origin release name from which
         to retrieve the content
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the content
@@ -270,7 +278,9 @@ Origin history
         revision sha1_git.
     :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
-    :query string branch: specify the origin branch from which
+    :query string branch: specify the origin branch name from which
+        to retrieve the commit log
+    :query string release: specify the origin release name from which
         to retrieve the commit log
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the commit log
@@ -329,7 +339,9 @@ Origin history
         revision sha1_git.
     :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
-    :query string branch: specify the origin branch from which
+    :query string branch: specify the origin branch name from which
+        to retrieve the commit log
+    :query string release: specify the origin release name from which
         to retrieve the commit log
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the commit log
