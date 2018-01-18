@@ -89,7 +89,8 @@ def directory_browse(request, sha1_git, path=None):
                     'sum of regular file sizes': sum_file_sizes}
 
     return render(request, 'directory.html',
-                  {'heading': 'Directory information',
+                  {'empty_browse': False,
+                   'heading': 'Directory information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text_left': 'SWH object: Directory',
