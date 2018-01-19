@@ -106,7 +106,7 @@
 <script>
 
   function removeHash () {
-    history.pushState("", document.title, window.location.pathname + window.location.search);
+    history.replaceState("", document.title, window.location.pathname + window.location.search);
   }
 
   var browse_tabs_hash = ["#browse", "#search", "#help"];
