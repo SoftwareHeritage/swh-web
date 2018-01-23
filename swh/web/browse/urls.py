@@ -10,6 +10,7 @@ import swh.web.browse.views.directory # noqa
 import swh.web.browse.views.content # noqa
 import swh.web.browse.views.origin # noqa
 import swh.web.browse.views.person # noqa
+import swh.web.browse.views.release # noqa
 import swh.web.browse.views.revision # noqa
 
 from swh.web.browse.browseurls import BrowseUrls

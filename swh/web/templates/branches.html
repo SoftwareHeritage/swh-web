@@ -1,0 +1,59 @@
+{% extends "browse.html" %}
+
+{% block swh-browse-before-panels %}
+{% if origin_context %}
+  {% include "includes/origin-visit-snapshot.html" %}
+{% endif %}
+{% endblock %}
+
+{% block swh-browse-main-panel-content %}
+
+<div class="panel-heading">
+  <div class="pull-left">
+      <h2>{{ top_panel_text }}</h2>
+  </div>
+  <div class="clearfix"></div>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th><i class="fa fa-code-fork fa-fw"></i>Name</th>
+        <th>Revision</th>
+        <th>Message</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for branch in displayed_branches %}
+          <tr class="swh-origin-branch">
+            <td style="max-width: 300px"><i class="fa fa-code-fork fa-fw"></i><a href="{{ branch.directory_url }}">{{ branch.name }}</a></td>
+            <td><a href="{{ branch.revision_url }}">{{ branch.revision|slice:":7" }}</a></td>
+            <td style="min-width: 500px" title="{{ branch.message }}">{{ branch.message|truncatechars:70 }}</td>
+            <td style="min-width: 250px">{{ branch.date }}</td
+          </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block swh-browse-after-panels %}
+
+{% if prev_branches_url or next_branches_url %}
+  <ul class="pager">
+      {% if prev_branches_url %}
+        <li><a href="{{ prev_branches_url }}">Previous</a></li>
+      {% else %}
+        <li class="disabled"><a>Older</a></li>
+      {% endif %}
+      {% if next_branches_url %}
+        <li><a href="{{ next_branches_url }}">Next</a></li>
+      {% else %}
+        <li class="disabled"><a>Newer</a></li>
+      {% endif %}
+  </ul>
+{% endif %}
+
+{% endblock %}

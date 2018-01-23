@@ -1,15 +1,17 @@
 {% extends "browse.html" %}
 
+{% block swh-browse-before-panels %}
+{% if origin_context %}
+  {% include "includes/origin-visit-snapshot.html" %}
+{% endif %}
+{% endblock %}
+
 {% block swh-browse-main-panel-content %}
 <div class="panel-heading">
   <div class="pull-left">
-      <h2>{{ top_panel_text_left }}</h2>
-  </div>
-  <div class="pull-right">
-    <h2>{{ top_panel_text_right }}</h2>
+      <h2>{{ top_panel_text }}</h2>
   </div>
   <div class="clearfix"></div>
-
 </div>
 
 <table class="table">

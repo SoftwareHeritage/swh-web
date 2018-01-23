@@ -94,9 +94,11 @@ def request_content(query_string):
     content_data = service.lookup_content(query_string)
     content_raw = service.lookup_content_raw(query_string)
     content_data['raw_data'] = content_raw['data']
-    filetype = service.lookup_content_filetype(query_string)
-    language = service.lookup_content_language(query_string)
-    license = service.lookup_content_license(query_string)
+    # Temporarily disable synchronous requests to indexer storage
+    # to improve performance
+    filetype = None  # service.lookup_content_filetype(query_string)
+    language = None  # service.lookup_content_language(query_string)
+    license = None  # service.lookup_content_license(query_string)
     if filetype:
         mimetype = filetype['mimetype']
         encoding = filetype['encoding']
@@ -115,11 +117,15 @@ def request_content(query_string):
     if language:
         content_data['language'] = language['lang']
     else:
-        content_data['language'] = 'not detected'
+        content_data['language'] = 'request sent to SWH indexer'
     if license:
         content_data['licenses'] = ', '.join(license['licenses'])
     else:
-        content_data['licenses'] = 'not detected'
+        content_data['licenses'] = 'request sent to SWH indexer'
+
+    content_data['metadata_url'] = \
+        reverse('browse-content-metadata',
+                kwargs={'query_string': query_string})
     return content_data
 
 
@@ -221,7 +227,8 @@ def get_origin_visits(origin_info):
         return ts + (float(visit['visit']) / 10e3)
 
     for v in origin_visits:
-        del v['metadata']
+        if 'metadata' in v:
+            del v['metadata']
     origin_visits = [dict(t) for t in set([tuple(d.items())
                                            for d in origin_visits])]
     origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
@@ -342,17 +349,17 @@ def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
 
     visit_info = get_origin_visit(origin_info, visit_ts, visit_id)
 
-    visit_id = visit_info['visit']
+    visit = visit_info['visit']
 
     cache_entry_id = 'origin_%s_visit_%s_occurrences' % (origin_info['id'],
-                                                         visit_id)
+                                                         visit)
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
         return cache_entry['branches'], cache_entry['releases']
 
     origin_visit_data = service.lookup_origin_visit(origin_info['id'],
-                                                    visit_id)
+                                                    visit)
     branches = []
     releases = []
     revision_ids = []
@@ -369,33 +376,32 @@ def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
     releases_info = service.lookup_release_multiple(releases_ids)
     for release in releases_info:
         releases.append({'name': release['name'],
-                         'release': release['id'],
-                         'revision': release['target']})
+                         'date': format_utc_iso_date(release['date']),
+                         'id': release['id'],
+                         'message': release['message'],
+                         'target_type': release['target_type'],
+                         'target': release['target']})
         revision_ids.append(release['target'])
 
     revisions = service.lookup_revision_multiple(revision_ids)
 
     branches_to_remove = []
-    releases_to_remove = []
 
     for idx, revision in enumerate(revisions):
         if idx < len(branches):
             if revision:
                 branches[idx]['directory'] = revision['directory']
+                branches[idx]['date'] = format_utc_iso_date(revision['date'])
+                branches[idx]['message'] = revision['message']
             else:
                 branches_to_remove.append(branches[idx])
         else:
             rel_idx = idx - len(branches)
             if revision:
                 releases[rel_idx]['directory'] = revision['directory']
-            else:
-                releases_to_remove.append(releases[rel_idx])
 
     for b in branches_to_remove:
         branches.remove(b)
-
-    for b in releases_to_remove:
-        releases.remove(b)
 
     cache.set(cache_entry_id, {'branches': branches, 'releases': releases})
 
@@ -436,7 +442,7 @@ def gen_person_link(person_id, person_name):
     return gen_link(person_url, person_name)
 
 
-def gen_revision_link(revision_id, shorten_id=False, origin_info=None):
+def gen_revision_link(revision_id, shorten_id=False, origin_context=None):
     """
     Utility function for generating a link to a SWH revision HTML view
     to insert in Django templates.
@@ -451,9 +457,17 @@ def gen_revision_link(revision_id, shorten_id=False, origin_info=None):
 
     """
     query_params = None
-    if origin_info:
+    if origin_context:
+        origin_info = origin_context['origin_info']
         query_params = {'origin_type': origin_info['type'],
                         'origin_url': origin_info['url']}
+        if 'timestamp' in origin_context['url_args']:
+            query_params['timestamp'] = \
+                 origin_context['url_args']['timestamp']
+        if 'visit_id' in origin_context['query_params']:
+            query_params['visit_id'] = \
+                origin_context['query_params']['visit_id']
+
     revision_url = reverse('browse-revision',
                            kwargs={'sha1_git': revision_id},
                            query_params=query_params)
@@ -483,7 +497,94 @@ def gen_origin_link(origin_info):
                     'Origin: ' + origin_info['url'])
 
 
-def _format_log_entries(revision_log, per_page, origin_info=None):
+def gen_directory_link(sha1_git, link_text=None):
+    """
+    Utility function for generating a link to a SWH directory HTML view
+    to insert in Django templates.
+
+    Args:
+        sha1_git (str): directory identifier
+        link_text (str): optional text for the generated link
+            (the generated url will be used by default)
+
+    Returns:
+        An HTML link in the form '<a href="directory_view_url">link_text</a>'
+
+    """
+    directory_url = reverse('browse-directory',
+                            kwargs={'sha1_git': sha1_git})
+    if not link_text:
+        link_text = directory_url
+    return gen_link(directory_url, link_text)
+
+
+def gen_origin_directory_link(origin_context, revision_id=None):
+    """
+    Utility function for generating a link to a SWH directory HTML view
+    in the context of an origin to insert in Django templates.
+
+    Args:
+        origin_info (dict): the origin information (type and url)
+        revision_id (str): optional revision identifier in order
+            to use the associated directory
+
+    Returns:
+        An HTML link in the form
+        '<a href="origin_directory_view_url">origin_directory_view_url</a>'
+    """
+    origin_info = origin_context['origin_info']
+    url_args = {'origin_type': origin_info['type'],
+                'origin_url': origin_info['url']}
+    query_params = {'revision': revision_id}
+    if 'timestamp' in origin_context['url_args']:
+        url_args['timestamp'] = \
+            origin_context['url_args']['timestamp']
+    if 'visit_id' in origin_context['query_params']:
+        query_params['visit_id'] = \
+            origin_context['query_params']['visit_id']
+    directory_url = reverse('browse-origin-directory',
+                            kwargs=url_args,
+                            query_params=query_params)
+    return gen_link(directory_url, directory_url)
+
+
+def gen_revision_log_link(revision_id, origin_context=None, link_text=None):
+    """
+    Utility function for generating a link to a SWH revision log HTML view
+    (possibly in the context of an origin) to insert in Django templates.
+
+    Args:
+        revision_id (str): revision identifier the history heads to
+        origin_info (dict): optional origin information
+        link_text (str): optional text to use for the generated link
+
+    Returns:
+        An HTML link in the form
+        '<a href="revision_log_view_url">link_text</a>'
+    """
+    if origin_context:
+        origin_info = origin_context['origin_info']
+        url_args = {'origin_type': origin_info['type'],
+                    'origin_url': origin_info['url']}
+        query_params = {'revision': revision_id}
+        if 'timestamp' in origin_context['url_args']:
+            url_args['timestamp'] = \
+                origin_context['url_args']['timestamp']
+        if 'visit_id' in origin_context['query_params']:
+            query_params['visit_id'] = \
+                origin_context['query_params']['visit_id']
+        revision_log_url = reverse('browse-origin-log',
+                                   kwargs=url_args,
+                                   query_params=query_params)
+    else:
+        revision_log_url = reverse('browse-revision-log',
+                                   kwargs={'sha1_git': revision_id})
+    if not link_text:
+        link_text = revision_log_url
+    return gen_link(revision_log_url, link_text)
+
+
+def _format_log_entries(revision_log, per_page, origin_context=None):
     revision_log_data = []
     for i, log in enumerate(revision_log):
         if i == per_page:
@@ -491,7 +592,7 @@ def _format_log_entries(revision_log, per_page, origin_info=None):
         revision_log_data.append(
             {'author': gen_person_link(log['author']['id'],
                                        log['author']['name']),
-             'revision': gen_revision_link(log['id'], True, origin_info),
+             'revision': gen_revision_link(log['id'], True, origin_context),
              'message': log['message'],
              'message_shorten': textwrap.shorten(log['message'],
                                                  width=80,
@@ -502,7 +603,7 @@ def _format_log_entries(revision_log, per_page, origin_info=None):
 
 
 def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
-                                     origin_context=False, origin_info=None):
+                                     origin_context=None):
     """
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
@@ -548,8 +649,91 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
         prev_revs_breadcrumb = prev_rev_bc
 
     return {'revision_log_data': _format_log_entries(revision_log, per_page,
-                                                     origin_info),
+                                                     origin_context),
             'prev_rev': prev_rev,
             'prev_revs_breadcrumb': prev_revs_breadcrumb,
             'next_rev': next_rev,
             'next_revs_breadcrumb': next_revs_breadcrumb}
+
+
+def get_origin_context(origin_type, origin_url, timestamp, visit_id=None):
+    """
+    Utility function to compute relevant information when navigating
+    the SWH archive in an origin context.
+
+    Args:
+        origin_type (str): the origin type (git, svn, deposit, ...)
+        origin_url (str): the origin_url (e.g. https://github.com/<user>/<repo>)
+        timestamp (str): a datetime string for retrieving the closest
+            SWH visit of the origin
+        visit_id (int): optional visit id for disambiguation in case
+            of several visits with the same timestamp
+
+    Returns:
+        A dict with the following entries:
+            * origin_info: dict containing origin information
+            * visit_info: dict containing SWH visit information
+            * branches: the list of branches for the origin found
+              during the visit
+            * releases: the list of releases for the origin found
+              during the visit
+            * origin_browse_url: the url to browse the origin
+            * origin_branches_url: the url to browse the origin branches
+            * origin_releases_url': the url to browse the origin releases
+            * origin_visit_url: the url to browse the snapshot of the origin
+              found during the visit
+            * url_args: dict containg url arguments to use when browsing in
+              the context of the origin and its visit
+    """ # noqa
+    origin_info = service.lookup_origin({'type': origin_type,
+                                         'url': origin_url})
+
+    visit_info = get_origin_visit(origin_info, timestamp, visit_id)
+    visit_info['fmt_date'] = format_utc_iso_date(visit_info['date'])
+
+    # provided timestamp is not necessarily equals to the one
+    # of the retrieved visit, so get the exact one in order
+    # use it in the urls generated below
+    if timestamp:
+        timestamp = visit_info['date']
+
+    branches, releases = \
+        get_origin_visit_occurrences(origin_info, timestamp, visit_id)
+
+    releases = list(reversed(releases))
+
+    url_args = {'origin_type': origin_info['type'],
+                'origin_url': origin_info['url']}
+
+    if timestamp:
+        url_args['timestamp'] = format_utc_iso_date(timestamp,
+                                                    '%Y-%m-%dT%H:%M:%S')
+
+    origin_browse_url = reverse('browse-origin',
+                                kwargs={'origin_type': origin_info['type'],
+                                        'origin_url': origin_info['url']})
+
+    origin_visit_url = reverse('browse-origin-directory',
+                               kwargs=url_args,
+                               query_params={'visit_id': visit_id})
+
+    origin_branches_url = reverse('browse-origin-branches',
+                                  kwargs=url_args,
+                                  query_params={'visit_id': visit_id})
+
+    origin_releases_url = reverse('browse-origin-releases',
+                                  kwargs=url_args,
+                                  query_params={'visit_id': visit_id})
+
+    return {
+        'origin_info': origin_info,
+        'visit_info': visit_info,
+        'branches': branches,
+        'releases': releases,
+        'origin_browse_url': origin_browse_url,
+        'origin_branches_url': origin_branches_url,
+        'origin_releases_url': origin_releases_url,
+        'origin_visit_url': origin_visit_url,
+        'url_args': url_args,
+        'query_params': {'visit_id': visit_id}
+    }

@@ -559,3 +559,24 @@ fieldset[disabled] .btn-swh.active {
  .swh-release a:hover {
     text-decoration: none;
 }
+
+.swh-origin-visit-details {
+    text-align: center;
+}
+
+.swh-origin-visit-details ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.swh-origin-visit-details li {
+    display: inline-block;
+    vertical-align:  middle;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.swh-browse-nav li a {
+    border-radius: 4px;
+}
