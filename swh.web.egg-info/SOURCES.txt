@@ -30,6 +30,7 @@ docs/uri-scheme-api-stat.rst
 docs/uri-scheme-api.rst
 docs/uri-scheme-browse-content.rst
 docs/uri-scheme-browse-directory.rst
+docs/uri-scheme-browse-identifiers.rst
 docs/uri-scheme-browse-origin.rst
 docs/uri-scheme-browse-person.rst
 docs/uri-scheme-browse-release.rst
@@ -74,6 +75,7 @@ swh/web/browse/utils.py
 swh/web/browse/views/__init__.py
 swh/web/browse/views/content.py
 swh/web/browse/views/directory.py
+swh/web/browse/views/identifiers.py
 swh/web/browse/views/origin.py
 swh/web/browse/views/person.py
 swh/web/browse/views/release.py
@@ -359,6 +361,7 @@ swh/web/tests/browse/test_utils.py
 swh/web/tests/browse/views/__init__.py
 swh/web/tests/browse/views/test_content.py
 swh/web/tests/browse/views/test_directory.py
+swh/web/tests/browse/views/test_identifiers.py
 swh/web/tests/browse/views/test_origin.py
 swh/web/tests/browse/views/test_person.py
 swh/web/tests/browse/views/test_release.py
