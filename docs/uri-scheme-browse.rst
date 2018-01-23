@@ -85,12 +85,12 @@ SWH Browse Urls
 
 .. include:: uri-scheme-browse-directory.rst
 
+.. include:: uri-scheme-browse-identifiers.rst
+
 .. include:: uri-scheme-browse-origin.rst
 
 .. include:: uri-scheme-browse-person.rst
 
-.. include:: uri-scheme-browse-revision.rst
-
 .. include:: uri-scheme-browse-release.rst
 
-.. include:: uri-scheme-browse-identifiers.rst
+.. include:: uri-scheme-browse-revision.rst

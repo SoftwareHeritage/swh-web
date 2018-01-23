@@ -4,7 +4,7 @@ Revision
 .. http:get:: /browse/revision/(sha1_git)/
 
     HTML view that displays the metadata associated to a SWH revision.
-    It notably shows the revision date and message but also offers 
+    It notably shows the revision date and message but also offers
     links to get more details on:
 
         * the author
@@ -13,9 +13,11 @@ Revision
         * the history log reachable from that revision
 
     :param string sha1_git: hexadecimal representation for the *sha1_git*
-         identifier of a SWH revision 
+         identifier of a SWH revision
     :statuscode 200: no error
     :statuscode 404: requested revision can not be found in the SWH archive
+
+    **Examples:**
 
     .. parsed-literal::
 
@@ -24,7 +26,7 @@ Revision
 
 .. http:get:: /browse/revision/(sha1_git)/log/
 
-    HTML view that displays the list of revisions heading to 
+    HTML view that displays the list of revisions heading to
     a given one. In other words, it shows a commit log.
     The following data are displayed for each log entry:
 
@@ -42,17 +44,19 @@ Revision
         * *Older*: fetch and display if available the N older log entries
           than the ones currently displayed
 
-    :param string sha1_git: hexadecimal representation for the *sha1_git* 
-        identifier of a SWH revision 
-    :query string revs_breadcrumb: used internally to store 
+    :param string sha1_git: hexadecimal representation for the *sha1_git*
+        identifier of a SWH revision
+    :query string revs_breadcrumb: used internally to store
         the navigation breadcrumbs (i.e. the list of descendant revisions
-        visited so far). It must be a string in the form 
+        visited so far). It must be a string in the form
         "<rev_1>[/<rev_2>/.../<rev_n>]" where rev_i corresponds to a
         revision sha1_git.
-    :query int per_page: the number of log entries to display per page 
+    :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
     :statuscode 200: no error
     :statuscode 404: requested revision can not be found in the SWH archive
+
+    **Examples:**
 
     .. parsed-literal::
 

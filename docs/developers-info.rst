@@ -50,7 +50,7 @@ Configuration and settings
     * :mod:`swh.web.doc_config`: utility module used to extend the sphinx configuration
       when building the documentation.
     * :mod:`swh.web.manage`: Django management module for developpers.
-    * :mod:`swh.web.urls`: module that holds the whole URI scheme of all 
+    * :mod:`swh.web.urls`: module that holds the whole URI scheme of all
       the web applications.
     * :mod:`swh.web.wsgi`: WSGI module to use when deploying the web applications
       in production.
@@ -62,25 +62,25 @@ Configuration and settings
 Common utilities
 """"""""""""""""
 
-    * :mod:`swh.web.common.converters`: conversion module used to transform SWH raw data 
-      to serializable ones. It is used by :mod:`swh.web.common.service`: to convert data 
+    * :mod:`swh.web.common.converters`: conversion module used to transform SWH raw data
+      to serializable ones. It is used by :mod:`swh.web.common.service`: to convert data
       before transmitting then to Django views.
     * :mod:`swh.web.common.exc`: module defining exceptions used in the web applications.
     * :mod:`swh.web.common.highlightjs`: utility module to ease the use of the highlightjs_
       library in produced Django views.
-    * :mod:`swh.web.common.query`: Utilities to parse data from HTTP endpoints. It is used 
+    * :mod:`swh.web.common.query`: Utilities to parse data from HTTP endpoints. It is used
       by :mod:`swh.web.common.service`.
     * :mod:`swh.web.common.service`: Orchestration layer used by views module
-      in charge of communication with :mod:`swh.storage` to retrieve information and 
+      in charge of communication with :mod:`swh.storage` to retrieve information and
       perform conversion for the upper layer.
     * :mod:`swh.web.common.swh_templatetags`: Custom Django template tags library for swh.
-    * :mod:`swh.web.common.throttling`: Custom request rate limiter to use with the `Django REST Framework 
+    * :mod:`swh.web.common.throttling`: Custom request rate limiter to use with the `Django REST Framework
       <http://www.django-rest-framework.org/>`_
-    * :mod:`swh.web.common.urlsindex`: Utilities to help the registering of endpoints 
+    * :mod:`swh.web.common.urlsindex`: Utilities to help the registering of endpoints
       for the web applications
     * :mod:`swh.web.common.utils`: Utility functions used in the web applications implementation
-    
- 
+
+
 SWH Web API application
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -121,8 +121,11 @@ SWH Web browse application
       endpoints implementation.
     * :mod:`swh.web.browse.views.content`: Implementation of endpoints for browsing SWH contents.
     * :mod:`swh.web.browse.views.directory`: Implementation of endpoints for browsing SWH directories.
+    * :mod:`swh.web.browse.views.identifiers`: Implementation of endpoints for browsing SWH objects
+      through persistent identifiers.
     * :mod:`swh.web.browse.views.origin`: Implementation of endpoints for browsing SWH origins.
     * :mod:`swh.web.browse.views.person`: Implementation of endpoints for browsing SWH persons.
+    * :mod:`swh.web.browse.views.release`: Implementation of endpoints for browsing SWH releases.
     * :mod:`swh.web.browse.views.revision`: Implementation of endpoints for browsing SWH revisions.
-    
+
 .. _highlightjs: https://highlightjs.org/
