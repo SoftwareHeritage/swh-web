@@ -105,6 +105,16 @@
     $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
     parse_url_fragment_for_lines_to_highlight();
 
+    // load content metadata asynchronously
+    $.ajax({
+      url: '{{ content_metadata_url }}',
+      dataType: 'json',
+      success: function (data) {
+        $('th:contains("language")').siblings().children().text(data.language);
+        $('th:contains("licenses")').siblings().children().text(data.licenses);
+      }
+    });
+
   });
 
 </script>

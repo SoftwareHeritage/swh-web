@@ -94,9 +94,11 @@ def request_content(query_string):
     content_data = service.lookup_content(query_string)
     content_raw = service.lookup_content_raw(query_string)
     content_data['raw_data'] = content_raw['data']
-    filetype = service.lookup_content_filetype(query_string)
-    language = service.lookup_content_language(query_string)
-    license = service.lookup_content_license(query_string)
+    # Temporarily disable synchronous requests to indexer storage
+    # to improve performance
+    filetype = None  # service.lookup_content_filetype(query_string)
+    language = None  # service.lookup_content_language(query_string)
+    license = None  # service.lookup_content_license(query_string)
     if filetype:
         mimetype = filetype['mimetype']
         encoding = filetype['encoding']
@@ -115,11 +117,15 @@ def request_content(query_string):
     if language:
         content_data['language'] = language['lang']
     else:
-        content_data['language'] = 'not detected'
+        content_data['language'] = 'request sent to SWH indexer'
     if license:
         content_data['licenses'] = ', '.join(license['licenses'])
     else:
-        content_data['licenses'] = 'not detected'
+        content_data['licenses'] = 'request sent to SWH indexer'
+
+    content_data['metadata_url'] = \
+        reverse('browse-content-metadata',
+                kwargs={'query_string': query_string})
     return content_data
 
 
