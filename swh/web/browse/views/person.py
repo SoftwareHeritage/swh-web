@@ -36,7 +36,6 @@ def person_browse(request, person_id):
                    'heading': 'Person information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': False,
-                   'top_panel_text_left': 'SWH object: Person',
-                   'top_panel_text_right': 'Name: ' + person['name'],
+                   'top_panel_text': 'SWH object: Person',
                    'swh_object_metadata': person,
                    'main_panel_visible': False})

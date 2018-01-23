@@ -2,11 +2,43 @@
 {% load static %}
 {% load swh_templatetags %}
 
+{% block swh-browse-before-panels %}
+
+<div class="panel panel-default" style="overflow-x: auto;">
+    <div class="panel-heading">
+      <a data-toggle="collapse" data-parent="#accordion" href="#swh-origin-top-collapse" style="outline:none;">
+        <h2 style="text-align: center">SWH origin: {{ origin_info.url }}</h2>
+        <div class="clearfix"></div>
+      </a>
+    </div>
+    <div id="swh-origin-top-collapse" class="panel-collapse collapse">
+      <table class="table">
+        <tbody>
+          {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+            <tr>
+              <th class="swh-metadata-table-row">{{ key }}</th>
+              <td class="swh-metadata-table-row">
+                <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</div>
+
+{% endblock %}
+
 {% block swh-browse-main-panel-content %}
+<div class="panel-heading">
+  <div class="pull-left">
+      <h2>{{ top_panel_text }}</h2>
+  </div>
+  <div class="clearfix"></div>
+</div>
 <div class="panel-body">
   <!-- Timeline result -->
-  <h2>Visits history</h2>
-  <h3>Calendar</h3>
+  <h2>Calendar</h3>
   <div class="timeline" style="margin-bottom: 20px">
     <div id="swh-calendar-window" style="height: 200px">
       <div id="cal-zoom-window" style="width: 100%; height: 60%"></div>
@@ -15,7 +47,7 @@
     <button class="btn btn-sm btn-swh pull-right" id="cal-clear">Reset zoom</button>
   </div>
 
-  <h3>List</h3>
+  <h2>List</h3>
   {% for visits_by_year in visits_splitted %}
   <div class="row">
     <div class="col-sm-1">
