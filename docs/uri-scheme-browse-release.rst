@@ -17,6 +17,8 @@ Release
     :statuscode 200: no error
     :statuscode 404: requested release can not be found in the SWH archive
 
+    **Examples:**
+
     .. parsed-literal::
 
         :swh_web_browse:`release/208f61cc7a5dbc9879ae6e5c2f95891e270f09ef/`
