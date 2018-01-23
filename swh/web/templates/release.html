@@ -1,43 +1,28 @@
-{% extends "layout.html" %}
-{% block title %}Release{% endblock %}
-{% block content %}
+{% extends "browse.html" %}
+{% load swh_templatetags %}
 
-{% if message is not none %}
-{{ message }}
+{% block swh-browse-before-panels %}
+{% if origin_context %}
+  {% include "includes/origin-visit-snapshot.html" %}
 {% endif %}
+{% endblock %}
 
-{% if release is not none %}
-<div>
-  {% for key in release.keys() %}
-    {% if key not in ['author', 'target_url', 'message', 'target', 'target_type', 'decoding_failures'] and release[key] is not none %}
-    <div class="row">
-      <div class="col-md-2">{{ key }}</div>
-      <div class="col-md-6">{{ release[key] }}</div>
-    </div>
-    {% endif %}
-  {% endfor %}
-  {% if release['author'] is not none %}
-  <div class="row">
-    <div class="col-md-2">author</div>
-    <div class="col-md-6">
-      {{ release['author']['name'] }} - {{ release['author']['email'] }}
-      {% if 'decoding_failures' in release['author'] %}(some decoding errors){% endif %}
-    </div>
+{% block swh-browse-main-panel-content %}
+<div class="panel-heading">
+  <div class="pull-left">
+      <h2>{{ top_panel_text }}</h2>
   </div>
-  {% endif %}
-  </div>
-  {% if release['target_url'] is not none %}
-  <div class="row">
-    <div class="col-md-2">{{ release['target_type'] }}</div>
-    <div class="col-md-6"><a href="{{ release['target_url'] }}">{{ release['target_url'] }}</a></div>
-  </div>
-  {% endif %}
-  {% if 'decoding_failures' in release %}
-  <div class="row">
-    <div class="col-md-10">(some decoding errors)</div>
-  </div>
-  {% endif %}
+  <div class="clearfix"></div>
+
 </div>
-{% endif %}
+
+<table class="table">
+  {% for key, val in release.items|dictsort:"0.lower" %}
+    <tr>
+      <th class="swh-metadata-table-row">{{ key }}</th>
+      <td class="swh-metadata-table-row"><pre>{{ val }}</pre></td>
+    </tr>
+  {% endfor %}
+</table>
 
 {% endblock %}

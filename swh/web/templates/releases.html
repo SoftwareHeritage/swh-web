@@ -1,0 +1,59 @@
+{% extends "browse.html" %}
+
+{% block swh-browse-before-panels %}
+{% if origin_context %}
+  {% include "includes/origin-visit-snapshot.html" %}
+{% endif %}
+{% endblock %}
+
+{% block swh-browse-main-panel-content %}
+
+<div class="panel-heading">
+  <div class="pull-left">
+      <h2>{{ top_panel_text }}</h2>
+  </div>
+  <div class="clearfix"></div>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th><i class="fa fa-tag fa-fw"></i>Name</th>
+        <th>Type</th>
+        <th>Message</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for release in displayed_releases %}
+          <tr class="swh-origin-release">
+            <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
+            <td>{{ release.target_type }}</td>
+            <td title="{{ release.message }}">{{ release.message|truncatechars:80 }}</td>
+            <td>{{ release.date }}</td
+          </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block swh-browse-after-panels %}
+
+{% if prev_releases_url or next_releases_url %}
+  <ul class="pager">
+      {% if prev_releases_url %}
+        <li><a href="{{ prev_releases_url }}">Previous</a></li>
+      {% else %}
+        <li class="disabled"><a>Older</a></li>
+      {% endif %}
+      {% if next_releases_url %}
+        <li><a href="{{ next_releases_url }}">Next</a></li>
+      {% else %}
+        <li class="disabled"><a>Newer</a></li>
+      {% endif %}
+  </ul>
+{% endif %}
+
+{% endblock %}

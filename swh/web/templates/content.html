@@ -26,7 +26,7 @@
   }
 
   function remove_hash () {
-    history.pushState("", document.title, window.location.pathname + window.location.search);
+    history.replaceState("", document.title, window.location.pathname + window.location.search);
   }
 
   // function to reset highlighting
@@ -102,12 +102,29 @@
     });
 
     // highlight lines specified by an url fragment
+    $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
     parse_url_fragment_for_lines_to_highlight();
+
+    // load content metadata asynchronously
+    $.ajax({
+      url: '{{ content_metadata_url }}',
+      dataType: 'json',
+      success: function (data) {
+        $('th:contains("language")').siblings().children().text(data.language);
+        $('th:contains("licenses")').siblings().children().text(data.licenses);
+      }
+    });
 
   });
 
 </script>
 <link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">
+{% endblock %}
+
+{% block swh-browse-before-panels %}
+{% if origin_context %}
+  {% include "includes/origin-visit-snapshot.html" %}
+{% endif %}
 {% endblock %}
 
 {% block swh-browse-main-panel-content %}

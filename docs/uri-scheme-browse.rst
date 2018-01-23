@@ -90,3 +90,5 @@ SWH Browse Urls
 .. include:: uri-scheme-browse-person.rst
 
 .. include:: uri-scheme-browse-revision.rst
+
+.. include:: uri-scheme-browse-release.rst

@@ -13,38 +13,11 @@ from swh.web.common.exc import handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_link, gen_person_link, gen_revision_link,
-    prepare_revision_log_for_display, gen_origin_link
+    prepare_revision_log_for_display,
+    get_origin_context, gen_origin_directory_link,
+    gen_revision_log_link,
+    gen_directory_link
 )
-
-
-def _gen_directory_link(sha1_git, link_text=None):
-    directory_url = reverse('browse-directory',
-                            kwargs={'sha1_git': sha1_git})
-    if not link_text:
-        link_text = directory_url
-    return gen_link(directory_url, link_text)
-
-
-def _gen_origin_directory_link(origin_info, revision_id):
-    directory_url = reverse('browse-origin-directory',
-                            kwargs={'origin_type': origin_info['type'],
-                                    'origin_url': origin_info['url']},
-                            query_params={'revision': revision_id})
-    return gen_link(directory_url, directory_url)
-
-
-def _gen_revision_log_link(revision_id, origin_info=None, link_text=None):
-    if origin_info:
-        revision_log_url = reverse('browse-origin-log',
-                                   kwargs={'origin_type': origin_info['type'],
-                                           'origin_url': origin_info['url']},
-                                   query_params={'revision': revision_id})
-    else:
-        revision_log_url = reverse('browse-revision-log',
-                                   kwargs={'sha1_git': revision_id})
-    if not link_text:
-        link_text = revision_log_url
-    return gen_link(revision_log_url, link_text)
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/',
@@ -66,11 +39,14 @@ def revision_browse(request, sha1_git):
     try:
         revision = service.lookup_revision(sha1_git)
         origin_info = None
+        origin_context = None
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
+        timestamp = request.GET.get('timestamp', None)
+        visit_id = request.GET.get('visit_id', None)
         if origin_type and origin_url:
-            origin_info = service.lookup_origin({'type': origin_type,
-                                                 'url': origin_url})
+            origin_context = get_origin_context(origin_type, origin_url,
+                                                timestamp, visit_id)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -83,14 +59,15 @@ def revision_browse(request, sha1_git):
     revision_data['committer date'] = format_utc_iso_date(
         revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])
-    if origin_info:
-        revision_data['directory'] = _gen_origin_directory_link(
-            origin_info, sha1_git)
-        revision_data['history log'] = _gen_revision_log_link(
-            sha1_git, origin_info)
+    if origin_context:
+        revision_data['directory'] = \
+            gen_origin_directory_link(origin_context, sha1_git)
+        revision_data['history log'] = \
+            gen_revision_log_link(sha1_git, origin_context)
     else:
-        revision_data['directory'] = _gen_directory_link(revision['directory'])
-        revision_data['history log'] = _gen_revision_log_link(sha1_git)
+        revision_data['directory'] = \
+            gen_directory_link(revision['directory'])
+        revision_data['history log'] = gen_revision_log_link(sha1_git)
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
     revision_data['message'] = revision['message']
@@ -107,13 +84,10 @@ def revision_browse(request, sha1_git):
         revision_data['origin type'] = origin_info['type']
         revision_data['origin url'] = gen_link(origin_info['url'],
                                                origin_info['url'])
-        top_panel_text_right = gen_origin_link(origin_info)
-    else:
-        top_panel_text_right = 'Sha1 git: ' + sha1_git
 
     parents = ''
     for p in revision['parents']:
-        parent_link = gen_revision_link(p, origin_info=origin_info)
+        parent_link = gen_revision_link(p, origin_context=origin_context)
         parents += parent_link + '<br/>'
 
     revision_data['parents'] = mark_safe(parents)
@@ -125,11 +99,11 @@ def revision_browse(request, sha1_git):
                    'heading': 'Revision information',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text_left': 'SWH object: Revision',
-                   'top_panel_text_right': top_panel_text_right,
+                   'top_panel_text': 'SWH object: Revision',
                    'swh_object_metadata': None,
                    'main_panel_visible': True,
-                   'revision': revision_data})
+                   'revision': revision_data,
+                   'origin_context': origin_context})
 
 
 NB_LOG_ENTRIES = 20
@@ -187,24 +161,21 @@ def revision_log_browse(request, sha1_git):
     revision_log_data = revision_log_display_data['revision_log_data']
 
     for log in revision_log_data:
-        log['directory'] = _gen_directory_link(log['directory'], 'Tree')
+        log['directory'] = gen_directory_link(log['directory'], 'Tree')
 
     return render(request, 'revision-log.html',
                   {'empty_browse': False,
                    'heading': 'Revision history information',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text_left': 'SWH object: Revision history',
-                   'top_panel_text_right': 'Sha1 git: ' + sha1_git,
+                   'top_panel_text': 'SWH object: Revision history',
                    'swh_object_metadata': None,
                    'main_panel_visible': True,
                    'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
-                   'branches': None,
-                   'branch': None,
                    'top_right_link': None,
                    'top_right_link_text': None,
                    'include_top_navigation': False,
-                   'no_origin_context': True})
+                   'origin_context': None})

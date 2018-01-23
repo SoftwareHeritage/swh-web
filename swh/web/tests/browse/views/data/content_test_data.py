@@ -142,7 +142,8 @@ stub_content_text_data = {
     'mimetype': 'text/x-c++',
     'encoding': 'us-ascii',
     'language': 'c++',
-    'licenses': 'GPL'
+    'licenses': 'GPL',
+    'metadata_url': ''
 }
 
 stub_content_text_no_highlight_data = {
@@ -157,7 +158,8 @@ stub_content_text_no_highlight_data = {
     'mimetype': 'text/plain',
     'encoding': 'us-ascii',
     'language': 'not detected',
-    'licenses': 'GPL'
+    'licenses': 'GPL',
+    'metadata_url': ''
 }
 
 stub_content_text_path = 'kate/autotests/session_test.h'
@@ -181,7 +183,8 @@ with open(png_file_path, 'rb') as png_file:
         'mimetype': 'image/png',
         'encoding': 'binary',
         'language': 'not detected',
-        'licenses': 'not detected'
+        'licenses': 'not detected',
+        'metadata_url': ''
     }
 
 _non_utf8_encoding_file_path = os.path.dirname(__file__) + '/iso-8859-1_encoded_content'

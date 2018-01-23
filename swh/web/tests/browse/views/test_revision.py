@@ -19,12 +19,15 @@ from .data.revision_test_data import (
     revision_history_log_test
 )
 
+from .data.origin_test_data import stub_origin_visits
+
 
 class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.revision.service')
+    @patch('swh.web.browse.utils.service')
     @istest
-    def revision_browse(self, mock_service):
+    def revision_browse(self, mock_service_utils, mock_service):
         mock_service.lookup_revision.return_value = revision_metadata_test
 
         url = reverse('browse-revision',
@@ -80,7 +83,9 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
             'url': 'https://github.com/webpack/webpack'
         }
 
-        mock_service.lookup_origin.return_value = origin_info
+        mock_service_utils.lookup_origin.return_value = origin_info
+        mock_service_utils.lookup_origin_visits.return_value = stub_origin_visits
+        mock_service_utils.MAX_LIMIT = 20
 
         origin_directory_url = reverse('browse-origin-directory',
                                        kwargs={'origin_type': origin_info['type'],
@@ -104,9 +109,6 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (origin_revision_log_url, origin_revision_log_url))
-
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                            (origin_info['url'], origin_info['url']))
 
         for parent in revision_metadata_test['parents']:
             parent_url = reverse('browse-revision',
@@ -222,9 +224,10 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
                             escape(prev_page_url))
 
+    @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.revision.service')
     @istest
-    def revision_request_errors(self, mock_service):
+    def revision_request_errors(self, mock_service, mock_utils_service):
         mock_service.lookup_revision.side_effect = \
             NotFoundExc('Revision not found')
         url = reverse('browse-revision',
@@ -249,7 +252,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                     'origin_url': 'https://github.com/foo/bar'})
 
         mock_service.lookup_revision.side_effect = None
-        mock_service.lookup_origin.side_effect = \
+        mock_utils_service.lookup_origin.side_effect = \
             NotFoundExc('Origin not found')
 
         resp = self.client.get(url)

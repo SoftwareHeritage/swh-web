@@ -1,6 +1,16 @@
 Origin
 ^^^^^^
 
+This describes the URI scheme when one wants to browse the Software Heritage
+archive in the context of an origin (for instance, a repository crawled from
+GitHub or a Debian source package). All the views pointed by that scheme
+offer quick links to browse objects as found during the associated crawls
+performed by Software Heritage:
+
+    * the root directory of the origin
+    * the list of branches of the origin
+    * the list of releases of the origin
+
 Origin metadata
 """""""""""""""
 
@@ -44,7 +54,7 @@ Origin directory
     to keep track of the paths navigated so far.
 
     The view also enables to easily switch between the origin branches
-    through a dropdown menu.
+    and releases through a dropdown menu.
 
     The origin branch (default to master) from which to retrieve the directory
     content can also be specified by using the branch query parameter.
@@ -92,7 +102,7 @@ Origin directory
     to keep track of the paths navigated so far.
 
     The view also enables to easily switch between the origin branches
-    through a dropdown menu.
+    and releases through a dropdown menu.
 
     The origin branch (default to master) from which to retrieve the directory
     content can also be specified by using the branch query parameter.
@@ -152,7 +162,7 @@ Origin content
     content in order to easily navigate up to the origin root directory.
 
     The view also enables to easily switch between the origin branches
-    through a dropdown menu.
+    and releases through a dropdown menu.
 
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
@@ -203,7 +213,7 @@ Origin content
     content in order to easily navigate up to the origin root directory.
 
     The view also enables to easily switch between the origin branches
-    through a dropdown menu.
+    and releases through a dropdown menu.
 
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
@@ -264,7 +274,7 @@ Origin history
           than the ones currently displayed
 
     The view also enables to easily switch between the origin branches
-    through a dropdown menu.
+    and releases through a dropdown menu.
 
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
@@ -323,7 +333,7 @@ Origin history
           than the ones currently displayed
 
     The view also enables to easily switch between the origin branches
-    through a dropdown menu.
+    and releases through a dropdown menu.
 
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
@@ -358,6 +368,124 @@ Origin history
         :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/2016-04-01/log/`
         :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/1438116814/log/?branch=refs/heads/release`
         :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/2017-05-05T03:14:23/log/?branch=refs/heads/release`
+
+Origin branches
+"""""""""""""""
+
+.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/branches/
+
+    HTML view that produces a display of the list of branches
+    found during the latest visit of a SWH origin.
+
+    The following data are displayed for each branch:
+
+        * its name
+        * a link to browse the associated directory
+        * a link to browse the associated revision
+        * last commit message
+        * last commit date
+
+    That list of branches is paginated, each page displaying a maximum of 20 branches.
+
+    :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
+    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the SWH archive
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`origin/deb/url/deb://Debian/packages/linux/branches/`
+        :swh_web_browse:`origin/git/url/https://github.com/webpack/webpack/branches/`
+
+.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/branches/
+
+    HTML view that produces a display of the list of branches
+    found during a visit of a SWH origin closest to the provided timestamp.
+
+    The following data are displayed for each branch:
+
+        * its name
+        * a link to browse the associated directory
+        * a link to browse the associated revision
+        * last commit message
+        * last commit date
+
+    That list of branches is paginated, each page displaying a maximum of 20 branches.
+
+    :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
+    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
+        or Unix timestamp to parse in order to find the closest SWH visit.
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the SWH archive
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`origin/git/url/https://github.com/kripken/emscripten/visit/2017-05-05T12:02:03/branches/`
+        :swh_web_browse:`origin/deb/url/deb://Debian/packages/apache2-mod-xforward/visit/2017-11-15T05:15:09/branches/`
+
+Origin releases
+"""""""""""""""
+
+.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/releases/
+
+    HTML view that produces a display of the list of releases
+    found during the latest visit of a SWH origin.
+
+    The following data are displayed for each release:
+
+        * its name
+        * a link to browse the release details
+        * its target type (revision, directory, content or release)
+        * its associated message
+        * its date
+
+    That list of releases is paginated, each page displaying a maximum of 20 releases.
+
+    :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
+    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the SWH archive
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`origin/git/url/https://github.com/git/git/releases/`
+        :swh_web_browse:`origin/git/url/https://github.com/webpack/webpack/releases/`
+
+.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/releases/
+
+    HTML view that produces a display of the list of releases
+    found during the latest visit of a SWH origin.
+
+    The following data are displayed for each release:
+
+        * its name
+        * a link to browse the release details
+        * its target type (revision, directory, content or release)
+        * its associated message
+        * its date
+
+    That list of releases is paginated, each page displaying a maximum of 20 releases.
+
+    :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
+    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
+        or Unix timestamp to parse in order to find the closest SWH visit.
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the SWH archive
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visit/2017-11-21T19:37:42/releases/`
+        :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/2016-09-23T14:06:35/releases/`
 
 .. _highlightjs: https://highlightjs.org/
 .. _dateutil.parser.parse: http://dateutil.readthedocs.io/en/stable/parser.html
