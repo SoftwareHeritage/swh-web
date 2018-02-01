@@ -417,6 +417,13 @@ fieldset[disabled] .btn-swh.active {
     background-color: #6C6C6C;
 }
 
+.btn-swh a {
+    color: #6C6C6C;
+    border: none;
+    outline: none;
+    text-decoration: none;
+}
+
 .swh-http-error {
     margin: 0 auto;
     text-align: center;

@@ -7,6 +7,7 @@ import json
 
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
+
 from swh.web.common import service
 from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.common.exc import handle_view_exception
@@ -61,16 +62,18 @@ def revision_browse(request, sha1_git):
     revision_data['date'] = format_utc_iso_date(revision['date'])
     if origin_context:
         revision_data['directory'] = \
-            gen_origin_directory_link(origin_context, sha1_git)
+            gen_origin_directory_link(origin_context, sha1_git,
+                                      link_text='Browse')
         revision_data['history log'] = \
-            gen_revision_log_link(sha1_git, origin_context)
+            gen_revision_log_link(sha1_git, origin_context,
+                                  link_text='Browse')
     else:
         revision_data['directory'] = \
-            gen_directory_link(revision['directory'])
-        revision_data['history log'] = gen_revision_log_link(sha1_git)
+            gen_directory_link(revision['directory'], link_text='Browse')
+        revision_data['history log'] = \
+            gen_revision_log_link(sha1_git, link_text='Browse')
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
-    revision_data['message'] = revision['message']
     revision_data['metadata'] = json.dumps(revision['metadata'],
                                            sort_keys=True,
                                            indent=4, separators=(',', ': '))
@@ -94,15 +97,48 @@ def revision_browse(request, sha1_git):
     revision_data['synthetic'] = revision['synthetic']
     revision_data['type'] = revision['type']
 
+    message_lines = revision['message'].split('\n')
+
+    browse_link_text = '<i class="fa fa-folder-open fa-fw" '\
+                       'aria-hidden="true"></i>Browse files'
+
+    if origin_context:
+        browse_files_url = \
+            gen_origin_directory_link(origin_context, sha1_git,
+                                      link_text=browse_link_text)
+    else:
+        browse_files_url = \
+            gen_directory_link(revision['directory'],
+                               link_text=browse_link_text)
+
+    pos = browse_files_url.find('href')
+    browse_files_button = browse_files_url[0:pos] + \
+        'class="btn btn-md btn-swh pull-right" role="button" ' + \
+        browse_files_url[pos:]
+
+    parents_links = '<b>%s parent%s</b> ' %  \
+        (len(revision['parents']),
+         '' if len(revision['parents']) == 1 else 's')
+    parents_links += '<i class="octicon octicon-git-commit fa-fw"></i> '
+    for p in revision['parents']:
+        parent_link = gen_revision_link(p, shorten_id=True,
+                                        origin_context=origin_context)
+        parents_links += parent_link
+        if p != revision['parents'][-1]:
+            parents_links += ' + '
+
     return render(request, 'revision.html',
                   {'empty_browse': False,
                    'heading': 'Revision information',
-                   'top_panel_visible': False,
-                   'top_panel_collapsible': False,
+                   'top_panel_visible': True,
+                   'top_panel_collapsible': True,
                    'top_panel_text': 'SWH object: Revision',
-                   'swh_object_metadata': None,
+                   'swh_object_metadata': revision_data,
+                   'message_header': message_lines[0],
+                   'message_body': '\n'.join(message_lines[1:]),
+                   'browse_files_button': mark_safe(browse_files_button),
+                   'parents_links': mark_safe(parents_links),
                    'main_panel_visible': True,
-                   'revision': revision_data,
                    'origin_context': origin_context})
 
 
