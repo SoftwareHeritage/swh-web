@@ -518,7 +518,8 @@ def gen_directory_link(sha1_git, link_text=None):
     return gen_link(directory_url, link_text)
 
 
-def gen_origin_directory_link(origin_context, revision_id=None):
+def gen_origin_directory_link(origin_context, revision_id=None,
+                              link_text=None):
     """
     Utility function for generating a link to a SWH directory HTML view
     in the context of an origin to insert in Django templates.
@@ -545,7 +546,9 @@ def gen_origin_directory_link(origin_context, revision_id=None):
     directory_url = reverse('browse-origin-directory',
                             kwargs=url_args,
                             query_params=query_params)
-    return gen_link(directory_url, directory_url)
+    if not link_text:
+        link_text = directory_url
+    return gen_link(directory_url, link_text)
 
 
 def gen_revision_log_link(revision_id, origin_context=None, link_text=None):
