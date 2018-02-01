@@ -44,6 +44,8 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         target = stub_release['target']
         target_url = reverse('browse-revision', kwargs={'sha1_git': target})
 
+        message_lines = stub_release['message'].split('\n')
+
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
@@ -51,7 +53,8 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
         self.assertContains(resp, format_utc_iso_date(release_date))
-        self.assertContains(resp, message)
+        self.assertContains(resp, '<h2>%s</h2>%s' % (message_lines[0],
+                                                     '\n'.join(message_lines[1:])))
         self.assertContains(resp, release_id)
         self.assertContains(resp, release_name)
         self.assertContains(resp, target_type)
@@ -80,7 +83,8 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
         self.assertContains(resp, format_utc_iso_date(release_date))
-        self.assertContains(resp, message)
+        self.assertContains(resp, '<h2>%s</h2>%s' % (message_lines[0],
+                                                     '\n'.join(message_lines[1:])))
         self.assertContains(resp, release_id)
         self.assertContains(resp, release_name)
         self.assertContains(resp, target_type)
