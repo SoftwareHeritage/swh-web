@@ -4,6 +4,8 @@
 # See top-level LICENSE file for more information
 
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
+
 from swh.web.common import service
 from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.common.exc import handle_view_exception
@@ -49,7 +51,6 @@ def release_browse(request, sha1_git):
         release['author']['id'], release['author']['name'])
     release_data['date'] = format_utc_iso_date(release['date'])
     release_data['id'] = sha1_git
-    release_data['message'] = release['message']
     release_data['name'] = release['name']
     release_data['synthetic'] = release['synthetic']
     release_data['target type'] = release['target_type']
@@ -74,13 +75,25 @@ def release_browse(request, sha1_git):
                     kwargs={'sha1_git': release['target']})
         release_data['target'] = gen_link(release_url, release['target'])
 
+    release_note_lines = release['message'].split('\n')
+
+    release_target_link = '<b>Target:</b> '
+    if release['target_type'] == 'revision':
+        release_target_link += '<i class="octicon octicon-git-commit fa-fw"></i>' # noqa
+    else:
+        release_target_link += release['target_type']
+    release_target_link += ' ' + release_data['target']
+
     return render(request, 'release.html',
                   {'empty_browse': False,
                    'heading': 'Release information',
-                   'top_panel_visible': False,
-                   'top_panel_collapsible': False,
+                   'top_panel_visible': True,
+                   'top_panel_collapsible': True,
                    'top_panel_text': 'SWH object: Release',
-                   'swh_object_metadata': None,
+                   'swh_object_metadata': release_data,
                    'main_panel_visible': True,
-                   'release': release_data,
+                   'release_name': release['name'],
+                   'release_note_header': release_note_lines[0],
+                   'release_note_body': '\n'.join(release_note_lines[1:]),
+                   'release_target_link': mark_safe(release_target_link),
                    'origin_context': origin_context})

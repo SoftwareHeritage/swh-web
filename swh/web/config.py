@@ -26,8 +26,8 @@ DEFAULT_CONFIG = {
     'vault': ('string', 'http://127.0.0.1:5005/'),
     'log_dir': ('string', '/tmp/swh/log'),
     'debug': ('bool', False),
-    'host': ('string', '127.0.0.1'),  # development property
-    'port': ('int', 5003),            # development property
+    'host': ('string', '127.0.0.1'),
+    'port': ('int', 5004),
     'secret_key': ('string', 'development key'),
     'throttling': ('dict', {
         'cache_uri': None,  # production: memcached as cache (127.0.0.1:11211)

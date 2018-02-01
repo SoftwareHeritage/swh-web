@@ -58,10 +58,8 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                   (author_url, author_name))
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (committer_url, committer_name))
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (directory_url, directory_url))
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (history_url, history_url))
+        self.assertContains(resp, directory_url)
+        self.assertContains(resp, history_url)
 
         for parent in revision_metadata_test['parents']:
             parent_url = reverse('browse-revision',
@@ -71,11 +69,13 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
         author_date = revision_metadata_test['date']
         committer_date = revision_metadata_test['committer_date']
-        message = revision_metadata_test['message']
+
+        message_lines = revision_metadata_test['message'].split('\n')
 
         self.assertContains(resp, format_utc_iso_date(author_date))
         self.assertContains(resp, format_utc_iso_date(committer_date))
-        self.assertContains(resp, message)
+        self.assertContains(resp, '<h2>%s</h2>%s' % (message_lines[0],
+                                                     '\n'.join(message_lines[1:])))
 
         origin_info = {
             'id': '7416001',
@@ -104,11 +104,9 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
         resp = self.client.get(url)
 
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (origin_directory_url, origin_directory_url))
+        self.assertContains(resp, origin_directory_url)
 
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (origin_revision_log_url, origin_revision_log_url))
+        self.assertContains(resp, origin_revision_log_url)
 
         for parent in revision_metadata_test['parents']:
             parent_url = reverse('browse-revision',

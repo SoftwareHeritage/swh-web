@@ -25,8 +25,8 @@
   <table class="table">
     <thead>
       <tr>
+        <th><i class="octicon octicon-git-commit fa-fw"></i>Revision</th>
         <th>Author</th>
-        <th>Revision</th>
         <th>Message</th>
         <th>Date</th>
         <th></th>
@@ -35,8 +35,8 @@
     <tbody>
         {% for log in revision_log %}
           <tr class="swh-revision-log-entry">
+            <td><i class="octicon octicon-git-commit fa-fw"></i>{{ log.revision }}</td>
             <td>{{ log.author }}</td>
-            <td>{{ log.revision }}</td>
             <td title="{{ log.message }}">{{ log.message_shorten }}</td>
             <td>{{ log.date }}</td>
             <td>{{ log.directory }}</td>
