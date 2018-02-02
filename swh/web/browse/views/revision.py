@@ -102,19 +102,21 @@ def revision_browse(request, sha1_git):
     browse_link_text = '<i class="fa fa-folder-open fa-fw" '\
                        'aria-hidden="true"></i>Browse files'
 
-    if origin_context:
-        browse_files_url = \
-            gen_origin_directory_link(origin_context, sha1_git,
-                                      link_text=browse_link_text)
-    else:
-        browse_files_url = \
-            gen_directory_link(revision['directory'],
-                               link_text=browse_link_text)
+    browse_files_link_attrs = {
+        'class': 'btn btn-md btn-swh pull-right',
+        'role': 'button'
+    }
 
-    pos = browse_files_url.find('href')
-    browse_files_button = browse_files_url[0:pos] + \
-        'class="btn btn-md btn-swh pull-right" role="button" ' + \
-        browse_files_url[pos:]
+    if origin_context:
+        browse_files_button = \
+            gen_origin_directory_link(origin_context, sha1_git,
+                                      link_text=browse_link_text,
+                                      link_attrs=browse_files_link_attrs)
+    else:
+        browse_files_button = \
+            gen_directory_link(revision['directory'],
+                               link_text=browse_link_text,
+                               link_attrs=browse_files_link_attrs)
 
     parents_links = '<b>%s parent%s</b> ' %  \
         (len(revision['parents']),
