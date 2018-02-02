@@ -1,110 +1,23 @@
 {% extends "browse.html" %}
-{% load static %}
 
 {% block header %}
-<script src="{% static 'js/highlightjs/dist/highlight.pack.js' %}"></script>
-<script src="{% static 'js/highlightjs-line-numbers/dist/highlightjs-line-numbers.min.js' %}"></script>
+  {% include "includes/content-scripts.html" %}
+{% endblock %}
+
+{% block swh-browse-before-panels %}
+  {% if origin_context %}
+    {% include "includes/origin-visit-snapshot.html" %}
+  {% endif %}
+{% endblock %}
+
+{% block swh-browse-main-panel-content %}
+
+{% include "includes/top-navigation.html" %}
+
+{% include "includes/content-display.html" %}
+
 <script>
-  // empty hljs language definition
-  function no_highlight(hljs) {
-    return {}
-  }
-  // just a trick to get line numbers working when no highlight
-  // has to be performed
-  hljs.registerLanguage('nohighlight-swh', no_highlight);
-
-  // keep track of the first highlighted line
-  var first_hl_line = null;
-  // highlighting color
-  var line_hl_color = 'rgb(193, 255, 193)';
-
-  // function to highlight a line
-  function highlight_line(i) {
-    var line_td = $('div[data-line-number="' + i + '"]').parent().parent();
-    line_td.css('background-color', line_hl_color);
-    return line_td;
-  }
-
-  function remove_hash () {
-    history.replaceState("", document.title, window.location.pathname + window.location.search);
-  }
-
-  // function to reset highlighting
-  function reset_highlighted_lines() {
-    first_hl_line = null;
-    $('tr').css('background-color', 'inherit');
-  }
-
-  function scroll_to_line(lineDomElt) {
-    $('html, body').animate({
-      scrollTop: $(lineDomElt).offset().top - 70
-    }, 500);
-  }
-
-  // function to highlight lines based on a url fragment
-  // in the form '#Lx' or '#Lx-Ly'
-  function parse_url_fragment_for_lines_to_highlight() {
-    var lines = [];
-    var lines_regexp = new RegExp(/L(\d+)/g);
-    var line = lines_regexp.exec(window.location.hash);
-    while (line) {
-      lines.push(parseInt(line[1]));
-      line = lines_regexp.exec(window.location.hash);
-    }
-    reset_highlighted_lines();
-    if  (lines.length == 1) {
-      first_hl_line = parseInt(lines[0]);
-      scroll_to_line(highlight_line(lines[0]));
-    } else if (lines[0] < lines[lines.length - 1]) {
-      first_hl_line = parseInt(lines[0]);
-      scroll_to_line(highlight_line(lines[0]));
-      for (var i = lines[0]+1; i <= lines[lines.length - 1]; ++i) {
-        highlight_line(i);
-      }
-    }
-  }
-
   $(document).ready(function() {
-    // highlight code and add line numbers
-    $('code').each(function(i, block) {
-      hljs.highlightBlock(block);
-      hljs.lineNumbersBlock(block);
-    });
-    // click handler to dynamically highlight line(s)
-    // when the user clicks on a line number (lines range
-    // can also be highlighted while holding the shift key)
-    $('body').click(function(evt) {
-      if (evt.target.classList.contains('hljs-ln-n')) {
-        var line = parseInt($(evt.target).data('line-number'));
-        if (evt.shiftKey && first_hl_line && line > first_hl_line) {
-          var first_line = first_hl_line;
-          reset_highlighted_lines();
-          for (var i = first_line; i <= line; ++i) {
-            highlight_line(i);
-          }
-          first_hl_line = first_line;
-          window.location.hash = '#L' + first_line + "-L" + line;
-        } else {
-          reset_highlighted_lines();
-          highlight_line(line);
-          window.location.hash = '#L' + line;
-          scroll_to_line(evt.target);
-        }
-      } else {
-        reset_highlighted_lines();
-        remove_hash();
-      }
-    });
-
-    // update lines highlighting when the url fragment changes
-    $(window).on('hashchange', function() {
-      parse_url_fragment_for_lines_to_highlight();
-    });
-
-    // highlight lines specified by an url fragment
-    $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
-    parse_url_fragment_for_lines_to_highlight();
-
     // load content metadata asynchronously
     $.ajax({
       url: '{{ content_metadata_url }}',
@@ -114,37 +27,7 @@
         $('th:contains("licenses")').siblings().children().text(data.licenses);
       }
     });
-
   });
-
 </script>
-<link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">
-{% endblock %}
-
-{% block swh-browse-before-panels %}
-{% if origin_context %}
-  {% include "includes/origin-visit-snapshot.html" %}
-{% endif %}
-{% endblock %}
-
-{% block swh-browse-main-panel-content %}
-
-{% include "includes/top-navigation.html" %}
-
-<div class="well well-sm swh-content" style="margin-bottom: 0px">
-{% if "inode/x-empty" == mimetype %}
-<i>File is empty</i>
-{% elif "text/" in mimetype %}
-<div class="highlightjs">
-  <pre>
-    <code class="{{ language }}">{{ content }}</code>
-  </pre>
-</div>
-{% elif "image/" in mimetype and content %}
-  <img src="data:{{ mimetype }};base64,{{ content }}"/>
-{% else %}
-Content with mime type {{ mimetype }} can not be displayed
-{% endif %}
-</div>
 
 {% endblock %}
