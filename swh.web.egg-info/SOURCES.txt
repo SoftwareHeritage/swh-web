@@ -329,7 +329,11 @@ swh/web/templates/symbols.html
 swh/web/templates/includes/apidoc-header-toc.html
 swh/web/templates/includes/apidoc-header.html
 swh/web/templates/includes/apidoc-header.md
+swh/web/templates/includes/breadcrumbs.html
 swh/web/templates/includes/browse-help.html
+swh/web/templates/includes/content-display.html
+swh/web/templates/includes/content-scripts.html
+swh/web/templates/includes/directory-display.html
 swh/web/templates/includes/home-content.html
 swh/web/templates/includes/home-directory.html
 swh/web/templates/includes/home-origin.html

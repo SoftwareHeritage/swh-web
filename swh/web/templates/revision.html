@@ -1,5 +1,11 @@
 {% extends "browse.html" %}
 
+{% if content %}
+{% block header %}
+  {% include "includes/content-scripts.html" %}
+{% endblock %}
+{% endif %}
+
 {% block swh-browse-before-panels %}
 {% if origin_context %}
   {% include "includes/origin-visit-snapshot.html" %}
@@ -9,12 +15,26 @@
 {% block swh-browse-main-panel-content %}
 <div style="height: 35px;margin: 4px;">
 <i class="octicon octicon-git-commit fa-fw"></i>Revision <b>{{ swh_object_metadata.id }}</b> authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
-{{ browse_files_button }}
 </div>
 <pre style="white-space: pre-wrap">
 <h2>{{ message_header }}</h2>{{ message_body }}
 </pre>
-<div style="margin: 4px;">
+<div style="margin: 4px; padding-bottom: 5px;">
 {{ parents_links }}
 </div>
+
+<div style="padding-bottom:5px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;">
+{% include "includes/breadcrumbs.html" %}
+</div>
+
+{% if content %}
+
+{% include "includes/content-display.html" %}
+
+{% else %}
+
+{% include "includes/directory-display.html" %}
+
+{% endif %}
+
 {% endblock %}

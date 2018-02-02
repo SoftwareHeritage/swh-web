@@ -1,0 +1,12 @@
+<nav class="bread-crumbs swh-browse-bread-crumbs">
+  <ul>
+    {% for bc in breadcrumbs %}
+      {% if bc.url %}
+        <li class="swh-path"><a href="{{ bc.url | safe }}">{{ bc.name }}</a></li>
+        <li>/</li>
+      {% else %}
+        <li>{{ bc.name }}</li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>

@@ -9,15 +9,15 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 from swh.web.common import service
-from swh.web.common.utils import reverse, format_utc_iso_date
+from swh.web.common.utils import reverse, format_utc_iso_date, gen_path_info
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_link, gen_person_link, gen_revision_link,
     prepare_revision_log_for_display,
     get_origin_context, gen_origin_directory_link,
-    gen_revision_log_link,
-    gen_directory_link
+    gen_revision_log_link, get_directory_entries,
+    gen_directory_link, request_content, prepare_content_for_display
 )
 
 
@@ -45,9 +45,27 @@ def revision_browse(request, sha1_git):
         origin_url = request.GET.get('origin_url', None)
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
+        path = request.GET.get('path', None)
+        dir_id = None
+        dirs, files = None, None
+        content_data = None
         if origin_type and origin_url:
             origin_context = get_origin_context(origin_type, origin_url,
                                                 timestamp, visit_id)
+        if path:
+            path_info = \
+                service.lookup_directory_with_path(revision['directory'], path)
+            if path_info['type'] == 'dir':
+                dir_id = path_info['target']
+            else:
+                query_string = 'sha1_git:' + path_info['target']
+                content_data = request_content(query_string)
+        else:
+            dir_id = revision['directory']
+
+        if dir_id:
+            path = '' if path is None else (path + '/')
+            dirs, files = get_directory_entries(dir_id)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -99,23 +117,6 @@ def revision_browse(request, sha1_git):
 
     message_lines = revision['message'].split('\n')
 
-    browse_link_text = '<i class="fa fa-folder-open fa-fw" '\
-                       'aria-hidden="true"></i>Browse files'
-
-    if origin_context:
-        browse_files_url = \
-            gen_origin_directory_link(origin_context, sha1_git,
-                                      link_text=browse_link_text)
-    else:
-        browse_files_url = \
-            gen_directory_link(revision['directory'],
-                               link_text=browse_link_text)
-
-    pos = browse_files_url.find('href')
-    browse_files_button = browse_files_url[0:pos] + \
-        'class="btn btn-md btn-swh pull-right" role="button" ' + \
-        browse_files_url[pos:]
-
     parents_links = '<b>%s parent%s</b> ' %  \
         (len(revision['parents']),
          '' if len(revision['parents']) == 1 else 's')
@@ -127,6 +128,47 @@ def revision_browse(request, sha1_git):
         if p != revision['parents'][-1]:
             parents_links += ' + '
 
+    path_info = gen_path_info(path)
+
+    query_params = {'origin_type': origin_type,
+                    'origin_url': origin_url,
+                    'timestamp': timestamp,
+                    'visit_id': visit_id}
+
+    breadcrumbs = []
+    breadcrumbs.append({'name': revision['directory'][:7],
+                        'url': reverse('browse-revision',
+                                       kwargs={'sha1_git': sha1_git},
+                                       query_params=query_params)})
+    for pi in path_info:
+        query_params['path'] = pi['path']
+        breadcrumbs.append({'name': pi['name'],
+                            'url': reverse('browse-revision',
+                                           kwargs={'sha1_git': sha1_git},
+                                           query_params=query_params)})
+
+    content = None
+    mimetype = None
+    language = None
+    if content_data:
+        breadcrumbs[-1]['url'] = None
+        content_display_data = prepare_content_for_display(
+            content_data['raw_data'], content_data['mimetype'], path)
+        content = content_display_data['content_data']
+        mimetype = content_data['mimetype']
+        language = content_display_data['language']
+    else:
+        for d in dirs:
+            query_params['path'] = path + d['name']
+            d['url'] = reverse('browse-revision',
+                               kwargs={'sha1_git': sha1_git},
+                               query_params=query_params)
+        for f in files:
+            query_params['path'] = path + f['name']
+            f['url'] = reverse('browse-revision',
+                               kwargs={'sha1_git': sha1_git},
+                               query_params=query_params)
+
     return render(request, 'revision.html',
                   {'empty_browse': False,
                    'heading': 'Revision information',
@@ -136,10 +178,15 @@ def revision_browse(request, sha1_git):
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],
                    'message_body': '\n'.join(message_lines[1:]),
-                   'browse_files_button': mark_safe(browse_files_button),
                    'parents_links': mark_safe(parents_links),
                    'main_panel_visible': True,
-                   'origin_context': origin_context})
+                   'origin_context': origin_context,
+                   'dirs': dirs,
+                   'files': files,
+                   'content': content,
+                   'mimetype': mimetype,
+                   'language': language,
+                   'breadcrumbs': breadcrumbs})
 
 
 NB_LOG_ENTRIES = 20
