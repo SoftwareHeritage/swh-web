@@ -408,7 +408,7 @@ def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
     return branches, releases
 
 
-def gen_link(url, link_text):
+def gen_link(url, link_text, link_attrs={}):
     """
     Utility function for generating an HTML link to insert
     in Django templates.
@@ -416,16 +416,21 @@ def gen_link(url, link_text):
     Args:
         url (str): an url
         link_text (str): the text for the produced link
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
 
     Returns:
         An HTML link in the form '<a href="url">link_text</a>'
 
     """
-    link = '<a href="%s">%s</a>' % (url, link_text)
+    attrs = ' '
+    for k, v in link_attrs.items():
+        attrs += '%s="%s" ' % (k, v)
+    link = '<a%shref="%s">%s</a>' % (attrs, url, link_text)
     return mark_safe(link)
 
 
-def gen_person_link(person_id, person_name):
+def gen_person_link(person_id, person_name, link_attrs={}):
     """
     Utility function for generating a link to a SWH person HTML view
     to insert in Django templates.
@@ -433,24 +438,31 @@ def gen_person_link(person_id, person_name):
     Args:
         person_id (int): a SWH person id
         person_name (str): the associated person name
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
 
     Returns:
         An HTML link in the form '<a href="person_view_url">person_name</a>'
 
     """
     person_url = reverse('browse-person', kwargs={'person_id': person_id})
-    return gen_link(person_url, person_name)
+    return gen_link(person_url, person_name, link_attrs)
 
 
-def gen_revision_link(revision_id, shorten_id=False, origin_context=None):
+def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
+                      link_attrs={}):
     """
     Utility function for generating a link to a SWH revision HTML view
     to insert in Django templates.
 
     Args:
-        revision_id (int): a SWH revision id
+        revision_id (str): a SWH revision id
         shorten_id (boolean): wheter to shorten the revision id to 7
             characters for the link text
+        origin_context (dict): if provided, generate origin-dependent browsing
+            link (see :func:`swh.web.browse.utils.get_origin_context`)
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
 
     Returns:
         An HTML link in the form '<a href="revision_view_url">revision_id</a>'
@@ -472,12 +484,12 @@ def gen_revision_link(revision_id, shorten_id=False, origin_context=None):
                            kwargs={'sha1_git': revision_id},
                            query_params=query_params)
     if shorten_id:
-        return gen_link(revision_url, revision_id[:7])
+        return gen_link(revision_url, revision_id[:7], link_attrs)
     else:
-        return gen_link(revision_url, revision_id)
+        return gen_link(revision_url, revision_id, link_attrs)
 
 
-def gen_origin_link(origin_info):
+def gen_origin_link(origin_info, link_attrs={}):
     """
     Utility function for generating a link to a SWH origin HTML view
     to insert in Django templates.
@@ -485,6 +497,8 @@ def gen_origin_link(origin_info):
     Args:
         origin_info (dict): a dicted filled with origin information
             (id, type, url)
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
 
     Returns:
         An HTML link in the form '<a href="origin_view_url">Origin: origin_url</a>'
@@ -494,10 +508,10 @@ def gen_origin_link(origin_info):
                                 kwargs={'origin_type': origin_info['type'],
                                         'origin_url': origin_info['url']})
     return gen_link(origin_browse_url,
-                    'Origin: ' + origin_info['url'])
+                    'Origin: ' + origin_info['url'], link_attrs)
 
 
-def gen_directory_link(sha1_git, link_text=None):
+def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
     """
     Utility function for generating a link to a SWH directory HTML view
     to insert in Django templates.
@@ -506,6 +520,8 @@ def gen_directory_link(sha1_git, link_text=None):
         sha1_git (str): directory identifier
         link_text (str): optional text for the generated link
             (the generated url will be used by default)
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
 
     Returns:
         An HTML link in the form '<a href="directory_view_url">link_text</a>'
@@ -515,11 +531,11 @@ def gen_directory_link(sha1_git, link_text=None):
                             kwargs={'sha1_git': sha1_git})
     if not link_text:
         link_text = directory_url
-    return gen_link(directory_url, link_text)
+    return gen_link(directory_url, link_text, link_attrs)
 
 
 def gen_origin_directory_link(origin_context, revision_id=None,
-                              link_text=None):
+                              link_text=None, link_attrs={}):
     """
     Utility function for generating a link to a SWH directory HTML view
     in the context of an origin to insert in Django templates.
@@ -528,6 +544,9 @@ def gen_origin_directory_link(origin_context, revision_id=None,
         origin_info (dict): the origin information (type and url)
         revision_id (str): optional revision identifier in order
             to use the associated directory
+        link_text (str): optional text to use for the generated link
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
 
     Returns:
         An HTML link in the form
@@ -548,18 +567,22 @@ def gen_origin_directory_link(origin_context, revision_id=None,
                             query_params=query_params)
     if not link_text:
         link_text = directory_url
-    return gen_link(directory_url, link_text)
+    return gen_link(directory_url, link_text, link_attrs)
 
 
-def gen_revision_log_link(revision_id, origin_context=None, link_text=None):
+def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
+                          link_attrs={}):
     """
     Utility function for generating a link to a SWH revision log HTML view
     (possibly in the context of an origin) to insert in Django templates.
 
     Args:
         revision_id (str): revision identifier the history heads to
-        origin_info (dict): optional origin information
+        origin_context (dict): if provided, generate origin-dependent browsing
+            link (see :func:`swh.web.browse.utils.get_origin_context`)
         link_text (str): optional text to use for the generated link
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
 
     Returns:
         An HTML link in the form
@@ -584,7 +607,7 @@ def gen_revision_log_link(revision_id, origin_context=None, link_text=None):
                                    kwargs={'sha1_git': revision_id})
     if not link_text:
         link_text = revision_log_url
-    return gen_link(revision_log_url, link_text)
+    return gen_link(revision_log_url, link_text, link_attrs)
 
 
 def _format_log_entries(revision_log, per_page, origin_context=None):

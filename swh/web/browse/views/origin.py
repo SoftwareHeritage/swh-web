@@ -393,7 +393,7 @@ def origin_content_display(request, origin_type, origin_url, path,
 
     split_path = path.split('/')
     filename = split_path[-1]
-    path = path.replace(filename, '')
+    path = path[:-len(filename)]
     path_info = gen_path_info(path)
     breadcrumbs.append({'name': root_sha1_git[:7],
                         'url': reverse('browse-origin-directory',

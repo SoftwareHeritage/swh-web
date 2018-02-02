@@ -130,7 +130,7 @@ def content_display(request, query_string):
         root_dir = split_path[0]
         filename = split_path[-1]
         path = path.replace(root_dir + '/', '')
-        path = path.replace(filename, '')
+        path = path[:-len(filename)]
         path_info = gen_path_info(path)
         breadcrumbs.append({'name': root_dir[:7],
                             'url': reverse('browse-directory',
