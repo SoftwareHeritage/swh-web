@@ -208,6 +208,42 @@ class ConvertersTestCase(unittest.TestCase):
         self.assertEqual(actual_origin, expected_origin)
 
     @istest
+    def from_origin_visit(self):
+        snap_hash = 'b5f0b7f716735ebffe38505c60145c4fd9da6ca3'
+
+        for snap in [snap_hash, None]:
+            # given
+            visit = {
+                'date': {
+                    'timestamp': datetime.datetime(
+                        2015, 1, 1, 22, 0, 0,
+                        tzinfo=datetime.timezone.utc).timestamp(),
+                    'offset': 0,
+                    'negative_utc': False,
+                },
+                'origin': 10,
+                'visit': 100,
+                'metadata': None,
+                'status': 'full',
+                'snapshot': hashutil.hash_to_bytes(snap) if snap else snap,
+            }
+
+            expected_visit = {
+                'date': '2015-01-01T22:00:00+00:00',
+                'origin': 10,
+                'visit': 100,
+                'metadata': {},
+                'status': 'full',
+                'snapshot': snap_hash if snap else snap
+            }
+
+            # when
+            actual_visit = converters.from_origin_visit(visit)
+
+            # then
+            self.assertEqual(actual_visit, expected_visit)
+
+    @istest
     def from_release(self):
         release_input = {
             'id': hashutil.hash_to_bytes(
