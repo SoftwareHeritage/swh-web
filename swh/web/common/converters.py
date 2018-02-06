@@ -305,7 +305,7 @@ def from_origin_visit(visit):
 
     """
     ov = from_swh(visit,
-                  hashess={'target'},
+                  hashess={'target', 'snapshot'},
                   bytess={'branch'},
                   dates={'date'},
                   empty_dict={'metadata'})
