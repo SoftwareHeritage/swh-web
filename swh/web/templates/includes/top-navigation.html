@@ -1,6 +1,6 @@
 
 <div class="swh-browse-top-navigation">
-  {% if origin_context %}
+  {% if origin_context and origin_context.branch %}
     <div class="dropdown" style="float: left;" id="swh-branches-releases-dd">
       <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">
         {% if origin_context.branch %}

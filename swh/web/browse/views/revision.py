@@ -16,8 +16,8 @@ from swh.web.browse.utils import (
     gen_link, gen_person_link, gen_revision_link,
     prepare_revision_log_for_display,
     get_origin_context, gen_origin_directory_link,
-    gen_revision_log_link, get_directory_entries,
-    gen_directory_link, request_content, prepare_content_for_display
+    get_revision_log_url, get_directory_entries,
+    gen_directory_link, request_content, prepare_content_for_display,
 )
 
 
@@ -82,14 +82,9 @@ def revision_browse(request, sha1_git):
         revision_data['directory'] = \
             gen_origin_directory_link(origin_context, sha1_git,
                                       link_text='Browse')
-        revision_data['history log'] = \
-            gen_revision_log_link(sha1_git, origin_context,
-                                  link_text='Browse')
     else:
         revision_data['directory'] = \
             gen_directory_link(revision['directory'], link_text='Browse')
-        revision_data['history log'] = \
-            gen_revision_log_link(sha1_git, link_text='Browse')
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
     revision_data['metadata'] = json.dumps(revision['metadata'],
@@ -169,6 +164,8 @@ def revision_browse(request, sha1_git):
                                kwargs={'sha1_git': sha1_git},
                                query_params=query_params)
 
+    history_url = get_revision_log_url(sha1_git, origin_context)
+
     return render(request, 'revision.html',
                   {'empty_browse': False,
                    'heading': 'Revision information',
@@ -186,7 +183,12 @@ def revision_browse(request, sha1_git):
                    'content': content,
                    'mimetype': mimetype,
                    'language': language,
-                   'breadcrumbs': breadcrumbs})
+                   'breadcrumbs': breadcrumbs,
+                   'top_right_link': history_url,
+                   'top_right_link_text': mark_safe(
+                       '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
+                       'History'
+                    )})
 
 
 NB_LOG_ENTRIES = 20

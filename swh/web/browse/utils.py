@@ -570,23 +570,17 @@ def gen_origin_directory_link(origin_context, revision_id=None,
     return gen_link(directory_url, link_text, link_attrs)
 
 
-def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
-                          link_attrs={}):
+def get_revision_log_url(revision_id, origin_context=None):
     """
-    Utility function for generating a link to a SWH revision log HTML view
-    (possibly in the context of an origin) to insert in Django templates.
+    Utility function for getting the URL for a SWH revision log HTML view
+    (possibly in the context of an origin).
 
     Args:
         revision_id (str): revision identifier the history heads to
         origin_context (dict): if provided, generate origin-dependent browsing
             link (see :func:`swh.web.browse.utils.get_origin_context`)
-        link_text (str): optional text to use for the generated link
-        link_attrs (dict): optional attributes (e.g. class)
-            to add to the link
-
     Returns:
-        An HTML link in the form
-        '<a href="revision_log_view_url">link_text</a>'
+        The SWH revision log view URL
     """
     if origin_context:
         origin_info = origin_context['origin_info']
@@ -605,6 +599,29 @@ def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
     else:
         revision_log_url = reverse('browse-revision-log',
                                    kwargs={'sha1_git': revision_id})
+    return revision_log_url
+
+
+def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
+                          link_attrs={}):
+    """
+    Utility function for generating a link to a SWH revision log HTML view
+    (possibly in the context of an origin) to insert in Django templates.
+
+    Args:
+        revision_id (str): revision identifier the history heads to
+        origin_context (dict): if provided, generate origin-dependent browsing
+            link (see :func:`swh.web.browse.utils.get_origin_context`)
+        link_text (str): optional text to use for the generated link
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
+
+    Returns:
+        An HTML link in the form
+        '<a href="revision_log_view_url">link_text</a>'
+    """
+
+    revision_log_url = get_revision_log_url(revision_id, origin_context)
     if not link_text:
         link_text = revision_log_url
     return gen_link(revision_log_url, link_text, link_attrs)
@@ -756,6 +773,8 @@ def get_origin_context(origin_type, origin_url, timestamp, visit_id=None):
         'visit_info': visit_info,
         'branches': branches,
         'releases': releases,
+        'branch': None,
+        'release': None,
         'origin_browse_url': origin_browse_url,
         'origin_branches_url': origin_branches_url,
         'origin_releases_url': origin_releases_url,
