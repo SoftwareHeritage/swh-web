@@ -3,8 +3,6 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-
 from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 from django.shortcuts import render
@@ -12,7 +10,7 @@ from django.template.defaultfilters import filesizeformat
 
 from swh.model.hashutil import hash_to_hex
 
-from swh.web.common import query, service
+from swh.web.common import query
 from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
@@ -62,30 +60,6 @@ def content_raw(request, query_string):
                                 content_type='application/octet-stream')
         response['Content-disposition'] = 'attachment; filename=%s' % filename
     return response
-
-
-@browse_route(r'content/(?P<query_string>.+)/metadata/',
-              view_name='browse-content-metadata')
-def content_metadata(request, query_string):
-    """
-    Endpoint used to query content metadata asynchronously client-side.
-    """
-    language = service.lookup_content_language(query_string)
-    license = service.lookup_content_license(query_string)
-
-    content_metadata = {}
-    if language:
-        content_metadata['language'] = language['lang']
-    else:
-        content_metadata['language'] = 'not detected'
-    if license:
-        content_metadata['licenses'] = ', '.join(license['licenses'])
-    else:
-        content_metadata['licenses'] = 'not detected'
-
-    content_metadata = json.dumps(content_metadata, separators=(',', ': '))
-
-    return HttpResponse(content_metadata, content_type='application/json')
 
 
 @browse_route(r'content/(?P<query_string>.+)/',
@@ -172,7 +146,6 @@ def content_display(request, query_string):
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content_display_data['content_data'],
-                   'content_metadata_url': content_data['metadata_url'],
                    'mimetype': content_data['mimetype'],
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
