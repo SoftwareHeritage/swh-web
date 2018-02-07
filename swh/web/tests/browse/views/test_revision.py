@@ -157,8 +157,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                 (author_url, log['author']['name']))
             self.assertContains(resp, '<a href="%s">%s</a>' %
                                 (revision_url, log['id'][:7]))
-            self.assertContains(resp, '<a href="%s">%s</a>' %
-                                (directory_url, 'Tree'))
+            self.assertContains(resp, directory_url)
 
         mock_service.lookup_revision_log.return_value = \
             revision_history_log_test[per_page:2*per_page+1]

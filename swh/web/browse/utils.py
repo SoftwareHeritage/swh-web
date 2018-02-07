@@ -8,7 +8,6 @@ import dateutil
 import magic
 import math
 import stat
-import textwrap
 
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
@@ -450,7 +449,7 @@ def gen_person_link(person_id, person_name, link_attrs={}):
 
 
 def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
-                      link_attrs={}):
+                      link_text=None, link_attrs={}):
     """
     Utility function for generating a link to a SWH revision HTML view
     to insert in Django templates.
@@ -486,7 +485,9 @@ def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
     if shorten_id:
         return gen_link(revision_url, revision_id[:7], link_attrs)
     else:
-        return gen_link(revision_url, revision_id, link_attrs)
+        if not link_text:
+            link_text = revision_id
+        return gen_link(revision_url, link_text, link_attrs)
 
 
 def gen_origin_link(origin_info, link_attrs={}):
@@ -570,6 +571,29 @@ def gen_origin_directory_link(origin_context, revision_id=None,
     return gen_link(directory_url, link_text, link_attrs)
 
 
+def gen_content_link(sha1_git, link_text=None, link_attrs={}):
+    """
+    Utility function for generating a link to a SWH content HTML view
+    to insert in Django templates.
+
+    Args:
+        sha1_git (str): content identifier
+        link_text (str): optional text for the generated link
+            (the generated url will be used by default)
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
+
+    Returns:
+        An HTML link in the form '<a href="content_view_url">link_text</a>'
+
+    """
+    content_url = reverse('browse-content',
+                          kwargs={'query_string': 'sha1_git:' + sha1_git})
+    if not link_text:
+        link_text = content_url
+    return gen_link(content_url, link_text, link_attrs)
+
+
 def get_revision_log_url(revision_id, origin_context=None):
     """
     Utility function for getting the URL for a SWH revision log HTML view
@@ -637,9 +661,6 @@ def _format_log_entries(revision_log, per_page, origin_context=None):
                                        log['author']['name']),
              'revision': gen_revision_link(log['id'], True, origin_context),
              'message': log['message'],
-             'message_shorten': textwrap.shorten(log['message'],
-                                                 width=80,
-                                                 placeholder='...'),
              'date': format_utc_iso_date(log['date']),
              'directory': log['directory']})
     return revision_log_data

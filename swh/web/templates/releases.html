@@ -16,7 +16,7 @@
 </div>
 
 <div class="table-responsive">
-  <table class="table">
+  <table class="table swh-table-even-odd">
     <thead>
       <tr>
         <th><i class="fa fa-tag fa-fw"></i>Name</th>
@@ -30,7 +30,7 @@
           <tr class="swh-origin-release">
             <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
             <td>{{ release.target_type }}</td>
-            <td title="{{ release.message }}">{{ release.message|truncatechars:80 }}</td>
+            <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
             <td>{{ release.date }}</td
           </tr>
         {% endfor %}

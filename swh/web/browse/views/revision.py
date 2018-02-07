@@ -17,7 +17,7 @@ from swh.web.browse.utils import (
     prepare_revision_log_for_display,
     get_origin_context, gen_origin_directory_link,
     get_revision_log_url, get_directory_entries,
-    gen_directory_link, request_content, prepare_content_for_display,
+    gen_directory_link, request_content, prepare_content_for_display
 )
 
 
@@ -52,6 +52,7 @@ def revision_browse(request, sha1_git):
         if origin_type and origin_url:
             origin_context = get_origin_context(origin_type, origin_url,
                                                 timestamp, visit_id)
+            origin_info = origin_context['origin_info']
         if path:
             path_info = \
                 service.lookup_directory_with_path(revision['directory'], path)
@@ -81,10 +82,14 @@ def revision_browse(request, sha1_git):
     if origin_context:
         revision_data['directory'] = \
             gen_origin_directory_link(origin_context, sha1_git,
-                                      link_text='Browse')
+                                      link_text='Browse',
+                                      link_attrs={'class': 'btn btn-md btn-swh', # noqa
+                                                  'role': 'button'})
     else:
         revision_data['directory'] = \
-            gen_directory_link(revision['directory'], link_text='Browse')
+            gen_directory_link(revision['directory'], link_text='Browse',
+                               link_attrs={'class': 'btn btn-md btn-swh',
+                                           'role': 'button'})
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
     revision_data['metadata'] = json.dumps(revision['metadata'],
@@ -92,10 +97,10 @@ def revision_browse(request, sha1_git):
                                            indent=4, separators=(',', ': '))
 
     if origin_info:
-        browse_revision_url = reverse('browse-revision',
-                                      kwargs={'sha1_git': sha1_git})
-        revision_data['browse revision url'] = gen_link(browse_revision_url,
-                                                        browse_revision_url)
+        revision_data['context-independent revision'] = \
+            gen_revision_link(sha1_git, link_text='Browse',
+                              link_attrs={'class': 'btn btn-md btn-swh',
+                                          'role': 'button'})
         revision_data['origin id'] = origin_info['id']
         revision_data['origin type'] = origin_info['type']
         revision_data['origin url'] = gen_link(origin_info['url'],
@@ -165,6 +170,7 @@ def revision_browse(request, sha1_git):
                                query_params=query_params)
 
     history_url = get_revision_log_url(sha1_git, origin_context)
+
     vault_cooking = {
         'directory_context': True,
         'directory_id': dir_id,
@@ -253,7 +259,12 @@ def revision_log_browse(request, sha1_git):
     revision_log_data = revision_log_display_data['revision_log_data']
 
     for log in revision_log_data:
-        log['directory'] = gen_directory_link(log['directory'], 'Tree')
+        log['directory'] = gen_directory_link(
+            log['directory'],
+            link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
+                      '</i>Browse files',
+            link_attrs={'class': 'btn btn-md btn-swh',
+                        'role': 'button'})
 
     return render(request, 'revision-log.html',
                   {'empty_browse': False,
@@ -269,6 +280,5 @@ def revision_log_browse(request, sha1_git):
                    'breadcrumbs': None,
                    'top_right_link': None,
                    'top_right_link_text': None,
-                   'include_top_navigation': False,
                    'origin_context': None,
                    'vault_cooking': None})

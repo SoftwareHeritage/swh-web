@@ -84,8 +84,8 @@
                 <tbody>
                   {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
                     <tr>
-                      <th class="swh-metadata-table-row">{{ key }}</th>
-                      <td class="swh-metadata-table-row">
+                      <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
+                      <td class="swh-metadata-table-row swh-metadata-table-value">
                         <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
                       </td>
                     </tr>
@@ -125,6 +125,7 @@
 
     function show_tab(hash) {
       $('.navbar-nav.swh-browse-nav a[href="' + hash + '"]').tab('show');
+      window.scrollTo(0, 0);
     }
 
     function show_requested_tab() {
@@ -154,16 +155,6 @@
         }
     }).click(function(e) {
       e.preventDefault();
-    });;
-
-    // Change hash for page reload
-    $('.nav-tabs a').on('shown.bs.tab', function (e) {
-      if (e.target.hash != '#browse') {
-        window.location.hash = e.target.hash;
-      } else {
-        $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
-      }
-      window.scrollTo(0, 0);
     });
 
     // show requested tab when loading the page
