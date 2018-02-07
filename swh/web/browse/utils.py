@@ -107,7 +107,7 @@ def request_content(query_string):
 
     # encode textual content to utf-8 if needed
     if mimetype.startswith('text/') and 'ascii' not in encoding \
-       and 'utf-8' not in encoding:
+       and encoding not in ['utf-8', 'binary']:
         content_data['raw_data'] = \
             content_data['raw_data'].decode(encoding).encode('utf-8')
 
