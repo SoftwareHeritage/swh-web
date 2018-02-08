@@ -254,7 +254,7 @@ def get_hljs_language_from_filename(filename):
     """
     _init_pygments_to_hljs_map()
     if filename:
-        exts = filename.split('.')
+        exts = filename.lower().split('.')
         # check if file extension matches an hljs language
         # also handle .ext.in cases
         for ext in reversed(exts[-2:]):

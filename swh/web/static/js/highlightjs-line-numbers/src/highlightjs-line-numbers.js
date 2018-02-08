@@ -75,8 +75,8 @@
 		// convert options
 		var firstLineIndex = !!options.singleLine ? 0 : 1;
 
-		var text = changeMultilineComments(element);
-		var lines = getLines(text);
+        var text = changeMultilineComments(element);
+        var lines = getLines(text);
 
 		if (lines.length > firstLineIndex) {
 			var html = '';
@@ -118,10 +118,18 @@
 		return result;
 	}
 
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+    }
+
 	function changeMultilineComments(element) {
 		var result = '';
 		var children = element.childNodes;
-		for(var child in children){
+		for(var child in children) {
 			if(children.hasOwnProperty(child)) {
                 if(children[child].className === "hljs-comment" ||
                    children[child].className === "hljs-string") {
@@ -131,10 +139,10 @@
 					result += children[child].outerHTML;
 				}
 				else {
-					result += children[child].textContent;
+					result += escapeHtml(children[child].textContent);
 				}
 			}
-		}
+        }
 		return result;
 	}
 

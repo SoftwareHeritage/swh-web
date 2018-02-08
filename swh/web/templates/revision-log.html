@@ -7,22 +7,17 @@
 {% endblock %}
 
 {% block swh-browse-main-panel-content %}
-
 {% if not origin_context %}
 <div class="panel-heading">
   <div class="panel-title pull-left">
-      <h2>{{ top_panel_text }}</h2>
+    <h2>{{ top_panel_text }}</h2>
   </div>
   <div class="clearfix"></div>
 </div>
 {% endif %}
 
-{% if include_top_navigation %}
-{% include "includes/top-navigation.html" %}
-{% endif %}
-
 <div class="table-responsive">
-  <table class="table">
+  <table class="table swh-table-even-odd">
     <thead>
       <tr>
         <th><i class="octicon octicon-git-commit fa-fw"></i>Revision</th>
@@ -35,10 +30,10 @@
     <tbody>
         {% for log in revision_log %}
           <tr class="swh-revision-log-entry">
-            <td><i class="octicon octicon-git-commit fa-fw"></i>{{ log.revision }}</td>
-            <td>{{ log.author }}</td>
-            <td title="{{ log.message }}">{{ log.message_shorten }}</td>
-            <td>{{ log.date }}</td>
+            <td class="swh-revision-log-entry-id"><i class="octicon octicon-git-commit fa-fw"></i>{{ log.revision }}</td>
+            <td class="swh-revision-log-entry-author">{{ log.author }}</td>
+            <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ log.message }}">{{ log.message }}</td>
+            <td class="swh-revision-log-entry-date">{{ log.date }}</td>
             <td>{{ log.directory }}</td>
           </tr>
         {% endfor %}

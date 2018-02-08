@@ -21,7 +21,7 @@
 
     <div id="swh-origin-search-results" style="display: none;">
       <div class="table-responsive">
-        <table class="table" id="origin-search-results">
+        <table class="table swh-table-even-odd" id="origin-search-results">
           <thead>
             <tr>
               <th>Origin type</th>
@@ -54,6 +54,12 @@
   var search_request = null;
   var current_data = null;
 
+  function fixTableRowsStyle() {
+    setTimeout(function() {
+      $("#origin-search-results tbody tr").removeAttr('style');
+    });
+  }
+
   function populateOriginSearchResultsTable(data, offset) {
     var local_offset = offset % limit;
     if (data.length > 0) {
@@ -70,6 +76,7 @@
         tableRow += '</tr>';
         table.append(tableRow);
       }
+      fixTableRowsStyle();
     } else {
       $("#swh-origin-search-results").hide();
       $("#swh-no-origins-found").show();
@@ -199,6 +206,12 @@
       populateOriginSearchResultsTable(current_data, offset);
     }
     event.preventDefault();
+  });
+
+  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    if (e.target.text == 'Search') {
+      fixTableRowsStyle();
+    }
   });
 
   </script>
