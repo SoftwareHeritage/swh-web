@@ -16,18 +16,4 @@
 
 {% include "includes/content-display.html" %}
 
-<script>
-  $(document).ready(function() {
-    // load content metadata asynchronously
-    $.ajax({
-      url: '{{ content_metadata_url }}',
-      dataType: 'json',
-      success: function (data) {
-        $('th:contains("language")').siblings().children().text(data.language);
-        $('th:contains("licenses")').siblings().children().text(data.licenses);
-      }
-    });
-  });
-</script>
-
 {% endblock %}

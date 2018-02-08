@@ -81,6 +81,8 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
             self.assertContains(resp, '<a href="%s">%s</a>' %
                                       (dir_url, p['name']))
 
+        self.assertContains(resp, '<button id="vault-cook-directory"')
+
     @patch('swh.web.browse.utils.service')
     @istest
     def root_directory_view(self, mock_service):

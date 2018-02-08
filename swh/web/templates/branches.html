@@ -16,7 +16,7 @@
 </div>
 
 <div class="table-responsive">
-  <table class="table">
+  <table class="table swh-table-even-odd">
     <thead>
       <tr>
         <th><i class="fa fa-code-fork fa-fw"></i>Name</th>
@@ -30,7 +30,7 @@
           <tr class="swh-origin-branch">
             <td style="max-width: 300px"><i class="fa fa-code-fork fa-fw"></i><a href="{{ branch.directory_url }}">{{ branch.name }}</a></td>
             <td><a href="{{ branch.revision_url }}">{{ branch.revision|slice:":7" }}</a></td>
-            <td style="min-width: 500px" title="{{ branch.message }}">{{ branch.message|truncatechars:70 }}</td>
+            <td class="swh-log-entry-message swh-table-cell-text-overflow" style="min-width: 500px" title="{{ branch.message }}">{{ branch.message }}</td>
             <td style="min-width: 250px">{{ branch.date }}</td
           </tr>
         {% endfor %}
