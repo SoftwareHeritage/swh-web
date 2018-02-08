@@ -8,7 +8,6 @@ import dateutil
 import magic
 import math
 import stat
-import textwrap
 
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
@@ -94,11 +93,9 @@ def request_content(query_string):
     content_data = service.lookup_content(query_string)
     content_raw = service.lookup_content_raw(query_string)
     content_data['raw_data'] = content_raw['data']
-    # Temporarily disable synchronous requests to indexer storage
-    # to improve performance
-    filetype = None  # service.lookup_content_filetype(query_string)
-    language = None  # service.lookup_content_language(query_string)
-    license = None  # service.lookup_content_license(query_string)
+    filetype = service.lookup_content_filetype(query_string)
+    language = service.lookup_content_language(query_string)
+    license = service.lookup_content_license(query_string)
     if filetype:
         mimetype = filetype['mimetype']
         encoding = filetype['encoding']
@@ -110,22 +107,19 @@ def request_content(query_string):
 
     # encode textual content to utf-8 if needed
     if mimetype.startswith('text/') and 'ascii' not in encoding \
-       and 'utf-8' not in encoding:
+       and encoding not in ['utf-8', 'binary']:
         content_data['raw_data'] = \
             content_data['raw_data'].decode(encoding).encode('utf-8')
 
     if language:
         content_data['language'] = language['lang']
     else:
-        content_data['language'] = 'request sent to SWH indexer'
+        content_data['language'] = 'not detected'
     if license:
         content_data['licenses'] = ', '.join(license['licenses'])
     else:
-        content_data['licenses'] = 'request sent to SWH indexer'
+        content_data['licenses'] = 'not detected'
 
-    content_data['metadata_url'] = \
-        reverse('browse-content-metadata',
-                kwargs={'query_string': query_string})
     return content_data
 
 
@@ -450,7 +444,7 @@ def gen_person_link(person_id, person_name, link_attrs={}):
 
 
 def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
-                      link_attrs={}):
+                      link_text=None, link_attrs={}):
     """
     Utility function for generating a link to a SWH revision HTML view
     to insert in Django templates.
@@ -486,7 +480,9 @@ def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
     if shorten_id:
         return gen_link(revision_url, revision_id[:7], link_attrs)
     else:
-        return gen_link(revision_url, revision_id, link_attrs)
+        if not link_text:
+            link_text = revision_id
+        return gen_link(revision_url, link_text, link_attrs)
 
 
 def gen_origin_link(origin_info, link_attrs={}):
@@ -570,23 +566,40 @@ def gen_origin_directory_link(origin_context, revision_id=None,
     return gen_link(directory_url, link_text, link_attrs)
 
 
-def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
-                          link_attrs={}):
+def gen_content_link(sha1_git, link_text=None, link_attrs={}):
     """
-    Utility function for generating a link to a SWH revision log HTML view
-    (possibly in the context of an origin) to insert in Django templates.
+    Utility function for generating a link to a SWH content HTML view
+    to insert in Django templates.
+
+    Args:
+        sha1_git (str): content identifier
+        link_text (str): optional text for the generated link
+            (the generated url will be used by default)
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
+
+    Returns:
+        An HTML link in the form '<a href="content_view_url">link_text</a>'
+
+    """
+    content_url = reverse('browse-content',
+                          kwargs={'query_string': 'sha1_git:' + sha1_git})
+    if not link_text:
+        link_text = content_url
+    return gen_link(content_url, link_text, link_attrs)
+
+
+def get_revision_log_url(revision_id, origin_context=None):
+    """
+    Utility function for getting the URL for a SWH revision log HTML view
+    (possibly in the context of an origin).
 
     Args:
         revision_id (str): revision identifier the history heads to
         origin_context (dict): if provided, generate origin-dependent browsing
             link (see :func:`swh.web.browse.utils.get_origin_context`)
-        link_text (str): optional text to use for the generated link
-        link_attrs (dict): optional attributes (e.g. class)
-            to add to the link
-
     Returns:
-        An HTML link in the form
-        '<a href="revision_log_view_url">link_text</a>'
+        The SWH revision log view URL
     """
     if origin_context:
         origin_info = origin_context['origin_info']
@@ -605,6 +618,29 @@ def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
     else:
         revision_log_url = reverse('browse-revision-log',
                                    kwargs={'sha1_git': revision_id})
+    return revision_log_url
+
+
+def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
+                          link_attrs={}):
+    """
+    Utility function for generating a link to a SWH revision log HTML view
+    (possibly in the context of an origin) to insert in Django templates.
+
+    Args:
+        revision_id (str): revision identifier the history heads to
+        origin_context (dict): if provided, generate origin-dependent browsing
+            link (see :func:`swh.web.browse.utils.get_origin_context`)
+        link_text (str): optional text to use for the generated link
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
+
+    Returns:
+        An HTML link in the form
+        '<a href="revision_log_view_url">link_text</a>'
+    """
+
+    revision_log_url = get_revision_log_url(revision_id, origin_context)
     if not link_text:
         link_text = revision_log_url
     return gen_link(revision_log_url, link_text, link_attrs)
@@ -620,9 +656,6 @@ def _format_log_entries(revision_log, per_page, origin_context=None):
                                        log['author']['name']),
              'revision': gen_revision_link(log['id'], True, origin_context),
              'message': log['message'],
-             'message_shorten': textwrap.shorten(log['message'],
-                                                 width=80,
-                                                 placeholder='...'),
              'date': format_utc_iso_date(log['date']),
              'directory': log['directory']})
     return revision_log_data
@@ -756,6 +789,8 @@ def get_origin_context(origin_type, origin_url, timestamp, visit_id=None):
         'visit_info': visit_info,
         'branches': branches,
         'releases': releases,
+        'branch': None,
+        'release': None,
         'origin_browse_url': origin_browse_url,
         'origin_branches_url': origin_branches_url,
         'origin_releases_url': origin_releases_url,

@@ -3,9 +3,7 @@
     <i>File is empty</i>
   {% elif "text/" in mimetype %}
     <div class="highlightjs">
-      <pre>
-        <code class="{{ language }}">{{ content }}</code>
-      </pre>
+      <pre><code class="{{ language }}">{{ content }}</code></pre>
   </div>
   {% elif "image/" in mimetype and content %}
     <img src="data:{{ mimetype }};base64,{{ content }}"/>

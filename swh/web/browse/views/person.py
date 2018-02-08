@@ -38,4 +38,5 @@ def person_browse(request, person_id):
                    'top_panel_collapsible': False,
                    'top_panel_text': 'SWH object: Person',
                    'swh_object_metadata': person,
-                   'main_panel_visible': False})
+                   'main_panel_visible': False,
+                   'vault_cooking': None})

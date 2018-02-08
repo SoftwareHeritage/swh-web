@@ -21,9 +21,11 @@ from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
     get_origin_visits,
     get_directory_entries, request_content,
-    prepare_content_for_display, gen_link,
+    prepare_content_for_display,
     prepare_revision_log_for_display,
-    get_origin_context
+    get_origin_context, gen_directory_link,
+    gen_revision_link, gen_revision_log_link,
+    gen_content_link, gen_origin_directory_link
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -287,16 +289,20 @@ def origin_directory_browse(request, origin_type, origin_url,
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
-    browse_dir_url = reverse('browse-directory',
-                             kwargs={'sha1_git': sha1_git})
+    browse_dir_link = \
+        gen_directory_link(sha1_git, link_text='Browse',
+                           link_attrs={'class': 'btn btn-md btn-swh',
+                                       'role': 'button'})
 
-    browse_rev_url = reverse('browse-revision',
-                             kwargs={'sha1_git': revision_id},
-                             query_params={'origin_type': origin_info['type'],
-                                           'origin_url': origin_info['url']})
+    browse_rev_link = \
+        gen_revision_link(revision_id,
+                          origin_context=origin_context,
+                          link_text='Browse',
+                          link_attrs={'class': 'btn btn-md btn-swh',
+                                      'role': 'button'})
 
     dir_metadata = {'id': sha1_git,
-                    'browse directory url': browse_dir_url,
+                    'context-independent directory': browse_dir_link,
                     'number of regular files': len(files),
                     'number of subdirectories': len(dirs),
                     'sum of regular file sizes': sum_file_sizes,
@@ -307,7 +313,14 @@ def origin_directory_browse(request, origin_type, origin_url,
                     'origin visit id': visit_info['visit'],
                     'path': '/' + path,
                     'revision id': revision_id,
-                    'browse revision url': browse_rev_url}
+                    'revision': browse_rev_link}
+
+    vault_cooking = {
+        'directory_context': True,
+        'directory_id': sha1_git,
+        'revision_context': True,
+        'revision_id': revision_id
+    }
 
     return render(request, 'directory.html',
                   {'empty_browse': False,
@@ -327,7 +340,8 @@ def origin_directory_browse(request, origin_type, origin_url,
                     ),
                    'readme_name': readme_name,
                    'readme_url': readme_url,
-                   'origin_context': origin_context})
+                   'origin_context': origin_context,
+                   'vault_cooking': vault_cooking})
 
 
 @browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/content/(?P<path>.+)/', # noqa
@@ -410,20 +424,24 @@ def origin_content_display(request, origin_type, origin_url, path,
     breadcrumbs.append({'name': filename,
                         'url': None})
 
-    browse_content_url = reverse('browse-content',
-                                 kwargs={'query_string': query_string})
+    browse_content_link = \
+        gen_content_link(sha1_git, link_text='Browse',
+                         link_attrs={'class': 'btn btn-md btn-swh',
+                                     'role': 'button'})
 
     content_raw_url = reverse('browse-content-raw',
                               kwargs={'query_string': query_string},
                               query_params={'filename': filename})
 
-    browse_rev_url = reverse('browse-revision',
-                             kwargs={'sha1_git': revision_id},
-                             query_params={'origin_type': origin_info['type'],
-                                           'origin_url': origin_info['url']})
+    browse_rev_link = \
+        gen_revision_link(revision_id,
+                          origin_context=origin_context,
+                          link_text='Browse',
+                          link_attrs={'class': 'btn btn-md btn-swh',
+                                      'role': 'button'})
 
     content_metadata = {
-        'browse content url': browse_content_url,
+        'context-independent content': browse_content_link,
         'sha1 checksum': content_data['checksums']['sha1'],
         'sha1_git checksum': content_data['checksums']['sha1_git'],
         'sha256 checksum': content_data['checksums']['sha256'],
@@ -441,7 +459,7 @@ def origin_content_display(request, origin_type, origin_url, path,
         'path': '/' + path,
         'filename': filename,
         'revision id': revision_id,
-        'browse revision url': browse_rev_url
+        'revision': browse_rev_link
     }
 
     return render(request, 'content.html',
@@ -453,7 +471,6 @@ def origin_content_display(request, origin_type, origin_url, path,
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content_display_data['content_data'],
-                   'content_metadata_url': content_data['metadata_url'],
                    'mimetype': content_data['mimetype'],
                    'language': content_display_data['language'],
                    'breadcrumbs': breadcrumbs,
@@ -461,14 +478,9 @@ def origin_content_display(request, origin_type, origin_url, path,
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
                        '</i>Raw File'),
-                   'origin_context': origin_context})
-
-
-def _gen_directory_link(url_args, query_params, link_text):
-    directory_url = reverse('browse-origin-directory',
-                            kwargs=url_args,
-                            query_params=query_params)
-    return gen_link(directory_url, link_text)
+                   'origin_context': origin_context,
+                   'vault_cooking': None
+                   })
 
 
 PER_PAGE = 20
@@ -566,13 +578,20 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
         }
         if 'visit_id' in query_params:
             params['visit_id'] = query_params['visit_id']
-        log['directory'] = _gen_directory_link(url_args, params, 'Tree')
+        log['directory'] = gen_origin_directory_link(
+            origin_context, revision_log[i]['id'],
+            link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
+                      '</i>Browse files',
+            link_attrs={'class': 'btn btn-md btn-swh',
+                        'role': 'button'})
 
-    browse_log_url = reverse('browse-revision-log',
-                             kwargs={'sha1_git': revision_id})
+    browse_log_link = \
+        gen_revision_log_link(revision_id, link_text='Browse',
+                              link_attrs={'class': 'btn btn-md btn-swh',
+                                          'role': 'button'})
 
     revision_metadata = {
-        'browse revision history url': browse_log_url,
+        'context-independent revision history': browse_log_link,
         'origin id': origin_info['id'],
         'origin type': origin_info['type'],
         'origin url': origin_info['url'],
@@ -594,8 +613,8 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
                    'breadcrumbs': None,
                    'top_right_link': None,
                    'top_right_link_text': None,
-                   'include_top_navigation': True,
-                   'origin_context': origin_context})
+                   'origin_context': origin_context,
+                   'vault_cooking': None})
 
 
 @browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/branches/', # noqa
@@ -669,7 +688,6 @@ def origin_branches_browse(request, origin_type, origin_url, timestamp=None):
                    'main_panel_visible': True,
                    'top_right_link': None,
                    'top_right_link_text': None,
-                   'include_top_navigation': True,
                    'displayed_branches': displayed_branches,
                    'prev_branches_url': prev_branches_url,
                    'next_branches_url': next_branches_url,
@@ -743,11 +761,11 @@ def origin_releases_browse(request, origin_type, origin_url, timestamp=None):
                    'main_panel_visible': True,
                    'top_right_link': None,
                    'top_right_link_text': None,
-                   'include_top_navigation': True,
                    'displayed_releases': displayed_releases,
                    'prev_releases_url': prev_releases_url,
                    'next_releases_url': next_releases_url,
-                   'origin_context': origin_context})
+                   'origin_context': origin_context,
+                   'vault_cooking': None})
 
 
 @browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
@@ -826,7 +844,8 @@ def origin_browse(request, origin_type=None, origin_url=None):
                    'visits_splitted': visits_splitted,
                    'origin_info': origin_info,
                    'browse_url_base': '/browse/origin/%s/url/%s/' %
-                   (origin_type, origin_url)})
+                   (origin_type, origin_url),
+                   'vault_cooking': None})
 
 
 @browse_route(r'origin/search/(?P<url_pattern>.+)/',
