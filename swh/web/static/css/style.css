@@ -86,6 +86,7 @@ a {
     border-bottom-style: none;
     border-bottom-width: 1px;
     border-bottom-color: rgb(91, 94, 111);
+    outline: none;
 }
 
 a:hover {
@@ -545,7 +546,8 @@ fieldset[disabled] .btn-swh.active {
     padding: 0px;
 }
 
-.swh-content pre {
+.swh-content pre,
+.swh-content pre code {
     margin: 0px;
     padding: 0px;
 }
@@ -590,9 +592,10 @@ fieldset[disabled] .btn-swh.active {
      background-color: #e8e8e8;
  }
 
+ .nav a,
  .swh-branch a,
  .swh-release a {
-     outline:none;
+     outline: none;
  }
 
  .swh-branch a:hover,
@@ -665,6 +668,10 @@ fieldset[disabled] .btn-swh.active {
     margin-bottom: 0px;
 }
 
+.panel-group {
+    margin-bottom: 0px;
+}
+
 .swh-table-even-odd tr:nth-child(even) {
     background-color: #f5f5f5;
 }
@@ -703,6 +710,40 @@ fieldset[disabled] .btn-swh.active {
     width: 220px;
 }
 
+.swh-directory-table {
+    margin-bottom: 0px;
+}
+
 .swh-directory-table td {
     border-top: 1px solid #ddd !important;
+}
+
+.swh-title-color {
+    color: #e20026;
+}
+
+.swh-diff-lines-info {
+    background-color: rgba(0, 0, 255, 0.1) !important;
+}
+
+.swh-diff-added-line {
+    background-color: rgba(0, 255, 0, 0.1) !important;
+}
+
+.swh-diff-removed-line {
+    background-color: rgba(255, 0, 0, 0.1) !important;
+}
+
+span.no-nl-marker {
+    position: relative;
+    color: #cb2431;
+    vertical-align: middle;
+}
+
+span.no-nl-marker svg {
+    vertical-align: text-bottom;
+}
+
+span.no-nl-marker svg path {
+    fill: currentColor;
 }
