@@ -12,6 +12,8 @@ import stat
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 
+from importlib import reload
+
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
@@ -66,8 +68,22 @@ def get_mimetype_and_encoding_for_content(content):
         associated to the provided content.
 
     """
-    magic_result = magic.detect_from_content(content)
-    return magic_result.mime_type, magic_result.encoding
+    while True:
+        try:
+            magic_result = magic.detect_from_content(content)
+            mime_type = magic_result.mime_type
+            encoding = magic_result.encoding
+            break
+        except Exception as exc:
+            # workaround an issue with the magic module who can fail
+            # if detect_from_content is called multiple times in
+            # a short amount of time
+            if 'too many values to unpack' in str(exc):
+                reload(magic)
+            else:
+                break
+
+    return mime_type, encoding
 
 
 def request_content(query_string):
@@ -106,10 +122,17 @@ def request_content(query_string):
     content_data['encoding'] = encoding
 
     # encode textual content to utf-8 if needed
-    if mimetype.startswith('text/') and 'ascii' not in encoding \
-       and encoding not in ['utf-8', 'binary']:
-        content_data['raw_data'] = \
-            content_data['raw_data'].decode(encoding).encode('utf-8')
+    if mimetype.startswith('text/'):
+        # probably a malformed UTF-8 content, reencode it
+        # by replacing invalid chars with a substitution one
+        if encoding == 'unknown-8bit':
+            content_data['raw_data'] = \
+                content_data['raw_data'].decode('utf-8', 'replace')\
+                                        .encode('utf-8')
+        elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']:
+            content_data['raw_data'] = \
+                content_data['raw_data'].decode(encoding, 'replace')\
+                                        .encode('utf-8')
 
     if language:
         content_data['language'] = language['lang']
