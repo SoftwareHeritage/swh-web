@@ -3,6 +3,11 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import difflib
+import json
+
+from distutils.util import strtobool
+
 from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 from django.shortcuts import render
@@ -61,6 +66,98 @@ def content_raw(request, query_string):
                                 content_type='application/octet-stream')
         response['Content-disposition'] = 'attachment; filename=%s' % filename
     return response
+
+
+_auto_diff_size_limit = 20000
+
+
+@browse_route(r'content/(?P<from_query_string>.*)/diff/(?P<to_query_string>.*)', # noqa
+              view_name='diff-contents')
+def _contents_diff(request, from_query_string, to_query_string):
+    """
+    Browse endpoint used to compute unified diffs between two contents.
+
+    Diffs are generated only if the two contents are textual.
+    By default, diffs whose size are greater than 20 kB will
+    not be generated. To force the generation of large diffs,
+    the 'force' boolean query parameter must be used.
+
+    Args:
+        request: input django http request
+        from_query_string: a string of the form "[ALGO_HASH:]HASH" where
+            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
+            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
+            representation of the hash value identifying the first content
+        to_query_string: same as above for identifying the second content
+
+    Returns:
+        A JSON object containing the unified diff.
+
+    """
+    diff_data = {}
+    content_from = None
+    content_to = None
+    content_from_size = 0
+    content_to_size = 0
+    content_from_lines = []
+    content_to_lines = []
+    force = request.GET.get('force', 'false')
+    path = request.GET.get('path', None)
+    language = 'nohighlight-swh'
+
+    force = bool(strtobool(force))
+
+    if from_query_string == to_query_string:
+        diff_str = 'File renamed without changes'
+    else:
+        text_diff = True
+        if from_query_string:
+            content_from = request_content(from_query_string)
+            content_from_display_data = prepare_content_for_display(
+                    content_from['raw_data'], content_from['mimetype'], path)
+            language = content_from_display_data['language']
+            content_from_size = content_from['length']
+            if not content_from['mimetype'].startswith('text/'):
+                text_diff = False
+
+        if text_diff and to_query_string:
+            content_to = request_content(to_query_string)
+            content_to_display_data = prepare_content_for_display(
+                    content_to['raw_data'], content_to['mimetype'], path)
+            language = content_to_display_data['language']
+            content_to_size = content_to['length']
+            if not content_to['mimetype'].startswith('text/'):
+                text_diff = False
+
+        diff_size = abs(content_to_size - content_from_size)
+
+        if not text_diff:
+            diff_str = 'Diffs are not generated for non textual content'
+            language = 'nohighlight-swh'
+        elif not force and diff_size > _auto_diff_size_limit:
+            diff_str = 'Large diffs are not automatically computed'
+            language = 'nohighlight-swh'
+        else:
+            if content_from:
+                content_from_lines = content_from['raw_data'].decode('utf-8')\
+                                                             .splitlines(True)
+                if content_from_lines[-1][-1] != '\n':
+                    content_from_lines[-1] += '[swh-no-nl-marker]\n'
+
+            if content_to:
+                content_to_lines = content_to['raw_data'].decode('utf-8')\
+                                                         .splitlines(True)
+                if content_to_lines[-1][-1] != '\n':
+                    content_to_lines[-1] += '[swh-no-nl-marker]\n'
+
+            diff_lines = difflib.unified_diff(content_from_lines,
+                                              content_to_lines)
+            diff_str = ''.join(list(diff_lines)[2:])
+
+    diff_data['diff_str'] = diff_str
+    diff_data['language'] = language
+    diff_data_json = json.dumps(diff_data, separators=(',', ': '))
+    return HttpResponse(diff_data_json, content_type='application/json')
 
 
 @browse_route(r'content/(?P<query_string>.+)/',

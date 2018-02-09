@@ -18,7 +18,7 @@
 
   // function to highlight a line
   function highlight_line(i) {
-    var line_td = $('div[data-line-number="' + i + '"]').parent().parent();
+    var line_td = $('.swh-content div[data-line-number="' + i + '"]').parent().parent();
     line_td.css('background-color', line_hl_color);
     return line_td;
   }
@@ -30,13 +30,15 @@
   // function to reset highlighting
   function reset_highlighted_lines() {
     first_hl_line = null;
-    $('tr').css('background-color', 'inherit');
+    $('.swh-content tr').css('background-color', 'inherit');
   }
 
   function scroll_to_line(lineDomElt) {
-    $('html, body').animate({
-      scrollTop: $(lineDomElt).offset().top - 70
-    }, 500);
+    if ($(lineDomElt).closest('.swh-content').length > 0) {
+      $('html, body').animate({
+        scrollTop: $(lineDomElt).offset().top - 70
+      }, 500);
+    }
   }
 
   // function to highlight lines based on a url fragment

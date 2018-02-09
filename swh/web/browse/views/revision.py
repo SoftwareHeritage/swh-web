@@ -3,6 +3,7 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import hashlib
 import json
 
 from django.shortcuts import render
@@ -21,6 +22,98 @@ from swh.web.browse.utils import (
     gen_directory_link, request_content, prepare_content_for_display,
     content_display_max_size
 )
+
+
+def _gen_content_url(revision, query_string, path, origin_context):
+    if origin_context:
+        url_args = origin_context['url_args']
+        url_args['path'] = path
+        query_params = origin_context['query_params']
+        query_params['revision'] = revision['id']
+        content_url = reverse('browse-origin-content',
+                              kwargs=url_args,
+                              query_params=query_params)
+    else:
+        content_path = '%s/%s' % (revision['directory'], path)
+        content_url = reverse('browse-content',
+                              kwargs={'query_string': query_string},
+                              query_params={'path': content_path})
+    return content_url
+
+
+def _gen_revision_changes_list(revision, changes, origin_context):
+    """
+    Returns a HTML string describing the file changes
+    inroduced in a revision. The generated list is formatted
+    like the output of 'git diff'.
+    As this string will be displayed in the browse revision view,
+    links to adequate file diffs are also generated.
+
+    Args:
+        revision (str): hexadecimal representation of a revision identifier
+        origin_context (dict): optional origin context used to reverse
+            the content urls
+
+    Returns:
+        A string to insert in a revision HTML view.
+
+    """
+    changes_msg = []
+    for change in changes:
+        hasher = hashlib.sha1()
+        from_query_string = ''
+        to_query_string = ''
+        diff_id = 'diff-'
+        if change['from']:
+            from_query_string = 'sha1_git:' + change['from']['target']
+            diff_id += change['from']['target'] + '-' + change['from_path']
+        diff_id += '-'
+        if change['to']:
+            to_query_string = 'sha1_git:' + change['to']['target']
+            diff_id += change['to']['target'] + change['to_path']
+        change['path'] = change['to_path'] or change['from_path']
+        url_args = {'from_query_string': from_query_string,
+                    'to_query_string': to_query_string}
+        query_params = {'path': change['path']}
+        change['diff_url'] = reverse('diff-contents',
+                                     kwargs=url_args,
+                                     query_params=query_params)
+
+        hasher.update(diff_id.encode('utf-8'))
+        diff_id = hasher.hexdigest()
+        change['id'] = diff_id
+        panel_diff_link = '#panel_' + diff_id
+
+        if change['type'] == 'modify':
+            change['content_url'] = \
+                _gen_content_url(revision, to_query_string,
+                                 change['to_path'], origin_context)
+            changes_msg.append('modified:  %s' % gen_link(panel_diff_link,
+                                                          change['to_path']))
+        elif change['type'] == 'insert':
+            change['content_url'] = \
+                _gen_content_url(revision, to_query_string,
+                                 change['to_path'], origin_context)
+            changes_msg.append('new file:  %s' % gen_link(panel_diff_link,
+                                                          change['to_path']))
+        elif change['type'] == 'delete':
+            parent = service.lookup_revision(revision['parents'][0])
+            change['content_url'] = \
+                _gen_content_url(parent,
+                                 from_query_string,
+                                 change['from_path'], origin_context)
+            changes_msg.append('deleted:   %s' % gen_link(panel_diff_link,
+                                                          change['from_path']))
+        elif change['type'] == 'rename':
+            change['content_url'] = \
+                _gen_content_url(revision, to_query_string,
+                                 change['to_path'], origin_context)
+            link_text = change['from_path'] + ' &rarr; ' + change['to_path']
+            changes_msg.append('renamed:   %s' % gen_link(panel_diff_link,
+                                                          link_text))
+    if not changes:
+        changes_msg.append('No changes')
+    return mark_safe('\n'.join(changes_msg))
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/',
@@ -207,6 +300,9 @@ def revision_browse(request, sha1_git):
         vault_cooking['directory_context'] = True
         vault_cooking['directory_id'] = dir_id
 
+    changes = list(service.diff_revision(sha1_git))
+    changes_msg = _gen_revision_changes_list(revision, changes, origin_context)
+
     return render(request, 'revision.html',
                   {'empty_browse': False,
                    'heading': 'Revision information',
@@ -231,7 +327,9 @@ def revision_browse(request, sha1_git):
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': top_right_link,
                    'top_right_link_text': top_right_link_text,
-                   'vault_cooking': vault_cooking})
+                   'vault_cooking': vault_cooking,
+                   'changes': changes,
+                   'changes_msg': changes_msg})
 
 
 NB_LOG_ENTRIES = 20

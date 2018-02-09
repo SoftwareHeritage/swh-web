@@ -1,10 +1,8 @@
 {% extends "browse.html" %}
-
-{% if content %}
+{% load static %}
 {% block header %}
   {% include "includes/content-scripts.html" %}
 {% endblock %}
-{% endif %}
 
 {% block swh-browse-before-panels %}
 {% if origin_context %}
@@ -23,28 +21,366 @@
 {{ parents_links }}
 </div>
 
-<div style="padding-bottom:5px; border-top: 1px solid #ddd;">
-{% include "includes/top-navigation.html" %}
+<ul class="nav nav-tabs">
+  <li class="active"><a data-toggle="tab" href="#swh-revision-tree">Files</a></li>
+  <li><a data-toggle="tab" href="#swh-revision-changes">Changes</a></li>
+</ul>
+
+<div class="tab-content">
+  <div id="swh-revision-tree" class="tab-pane active">
+
+    {% include "includes/top-navigation.html" %}
+
+    {% if content_size %}
+
+    {% include "includes/content-display.html" %}
+
+    {% else %}
+
+    {% include "includes/directory-display.html" %}
+
+    {% endif %}
+  </div>
+  <div id="swh-revision-changes" class="tab-pane">
+
+    <div class="panel-group" style="padding: 5px;">
+
+      <div class="panel panel-default" style="overflow-x: auto;">
+        <div class="panel-heading">
+          <a data-toggle="collapse" href="#swh-revision-changes-list">
+            <div class="pull-left">
+              Showing <strong id="swh-revision-changed-files"></strong>
+              with <strong id="swh-revision-lines-added" style="color:green">0 additions</strong>
+              and <strong id="swh-revision-lines-deleted" style="color:red">0 deletions</strong>
+            </div>
+            <div class="clearfix"></div>
+          </a>
+        </div>
+
+        <div id="swh-revision-changes-list" class="panel-collapse collapse">
+          <pre style="background: none; border: none;">{{ changes_msg }}</pre>
+        </div>
+      </div>
+
+      {% for change in changes %}
+      <div id="panel_{{ change.id }}" class="panel panel-default" style="overflow-x: auto;">
+        <div class="panel-heading">
+          <a data-toggle="collapse" href="#panel_{{ change.id }}_content">
+            <div class="pull-left swh-title-color">
+              {% if change.type != 'rename' %}
+                <strong>{{ change.path }}</strong>
+              {% else %}
+                <strong>{{ change.from_path }} &rarr; {{ change.to_path }}</strong>
+              {% endif %}
+            </div>
+          </a>
+          <div class="pull-right">
+            {% if change.type != 'rename' %}
+              <div class="btn-group diff-styles" data-toggle="buttons" style="visibility: hidden;">
+                <button class="btn btn-md btn-swh active unified-diff-button" type="button" onclick="showUnifiedDiff(event, '{{ change.id }}')">Unified</button>
+                <button class="btn btn-md btn-swh splitted-diff-button" type="button" onclick="showSplittedDiff(event, '{{ change.id }}')">Side-by-side</button>
+              </div>
+            {% endif %}
+            <a href="{{ change.content_url }}" class="btn btn-md btn-swh" role="button">View file</a>
+          </div>
+          <div class="clearfix"></div>
+
+        </div>
+
+        <div id="panel_{{ change.id }}_content" class="panel-collapse collapse in">
+          <div class="swh-diff-loading" id="{{ change.id }}-loading" style="text-align: center;">
+            <img src="{% static 'img/swh-spinner.gif' %}"></img>
+            <p>Loading diff ...</p>
+          </div>
+
+          <div class="highlightjs swh-content" style="display: none;" id="{{ change.id }}-highlightjs">
+            <div id="{{ change.id }}-unified-diff">
+              <pre><code class="{{ change.id }}" id="{{ change.id }}"></code></pre>
+            </div>
+            <div style="width: 100%; display: none;" id="{{ change.id }}-splitted-diff">
+              <pre style="width: 50%; float: left;"><code class="{{ change.id }}" id="{{ change.id }}-from"></code></pre>
+              <pre style="width: 50%"><code class="{{ change.id }}" id="{{ change.id }}-to"></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+  </div>
+
 </div>
 
-{% if content_size %}
+<script>
 
-{% include "includes/content-display.html" %}
+  function format_ln_diff(from_line, to_line, max_number_chars) {
+    var ret = '';
+    if (from_line != null) {
+      for (var i = 0 ; i < (max_number_chars - from_line.length); ++i) {
+        ret += ' ';
+      }
+      ret += from_line;
+    }
+    if (from_line != null && to_line != null) {
+      ret += '  ';
+    }
+    if (to_line != null) {
+      for (var i = 0 ; i < (max_number_chars - to_line.length); ++i) {
+        ret += ' ';
+      }
+      ret += to_line;
+    }
+    return ret;
+  }
 
-{% else %}
+  var nb_changed_files = {{ changes|length }};
 
-{% include "includes/directory-display.html" %}
+  // the no newline at end of file marker from Github
+  var no_nl_marker = '<span class="no-nl-marker" title="No newline at end of file">' +
+                     '<svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16">' +
+                     '  <path fill-rule="evenodd" d="M16 5v3c0 .55-.45 1-1 1h-3v2L9 8l3-3v2h2V5h2zM8 8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4 4 1.8 4 4zM1.5 9.66L5.66 5.5C5.18 5.19 4.61 5 4 5 2.34 5 1 6.34 1 8c0 .61.19 1.17.5 1.66zM7 8c0-.61-.19-1.17-.5-1.66L2.34 10.5c.48.31 1.05.5 1.66.5 1.66 0 3-1.34 3-3z"></path>' +
+                     '</svg>' +
+                     '</span>';
 
-{% endif %}
+  var nb_additions = 0;
+  var nb_deletions = 0;
+
+  $(document).ready(function() {
+
+    var changed_files_text = nb_changed_files + ' changed file';
+    if (nb_changed_files != 1) {
+      changed_files_text += 's';
+    }
+    $('#swh-revision-changed-files').text(changed_files_text);
+
+  });
+
+  function showUnifiedDiff(event, diff_id) {
+    $('#' + diff_id + '-splitted-diff').css('display', 'none');
+    $('#' + diff_id + '-unified-diff').css('display', 'block');
+    $(event.target).parent().find('.splitted-diff-button').removeClass('active');
+    $(event.target).parent().find('.unified-diff-button').addClass('active');
+  }
+
+  function showSplittedDiff(event, diff_id) {
+    $('#' + diff_id + '-unified-diff').css('display', 'none');
+    $('#' + diff_id + '-splitted-diff').css('display', 'block');
+    $(event.target).parent().find('.unified-diff-button').removeClass('active');
+    $(event.target).parent().find('.splitted-diff-button').addClass('active');
+  }
+
+  function compute_diff(diff_url, diff_id) {
+    // set spinner visible while requesting diff
+    $('#' + diff_id + '-loading').css('display', 'block');
+    $('#' + diff_id + '-highlightjs').css('display', 'none');
+
+    $.ajax({
+      url: diff_url,
+      dataType: 'json',
+      success: function (data) {
+        if (data.diff_str.indexOf('Large diff') == 0) {
+          $('#' + diff_id)[0].innerHTML = data.diff_str +
+            '<br/><button class="btn btn-md btn-swh" type="button" onclick="compute_diff(\'' +
+            diff_url + '&force=true\', \'' + diff_id + '\')">Request diff</button>'
+        } else {
+
+          // prepare code highlighting
+          $('.' + diff_id).removeClass('nohighlight-swh');
+          $('.' + diff_id).addClass(data.language);
+
+          // set unified diff text
+          $('#' + diff_id).text(data.diff_str);
+
+          // code highlighting for unified diff
+          $('#' + diff_id).each(function(i, block) {
+            hljs.highlightBlock(block);
+            hljs.lineNumbersBlock(block);
+          });
+
+          // process unified diff lines in order to generate side-by-side diffs text
+          // but also compute line numbers for unified and side-by-side difss
+          var lines_info_regexp = new RegExp(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/g);
+          var base_from_line = '';
+          var base_to_line = '';
+          var from_to_lines = [];
+          var from_lines = [];
+          var to_lines = [];
+          var max_number_chars = 0;
+          var diff_from_str = '';
+          var diff_to_str = '';
+          var lines_offset = 0;
+          $('#' + diff_id + ' .hljs-ln-numbers').each(function(i, ln_elt) {
+            var ln_text = ln_elt.nextSibling.innerText;
+            var lines_info = lines_info_regexp.exec(ln_text);
+            var from_line = '';
+            var to_line = '';
+            // parsed lines info from the diff output
+            if (lines_info) {
+              base_from_line = parseInt(lines_info[1]) - 1;
+              base_to_line = parseInt(lines_info[3]) - 1;
+              lines_offset = 0;
+              diff_from_str += (ln_text + '\n');
+              diff_to_str += (ln_text + '\n');
+              from_lines.push('');
+              to_lines.push('');
+            // line removed in the from file
+            } else if (ln_text.length > 0 && ln_text[0] == '-') {
+              base_from_line = base_from_line + 1;
+              from_line = base_from_line.toString();
+              from_lines.push(from_line);
+              ++nb_deletions;
+              diff_from_str += (ln_text + '\n');
+              ++lines_offset;
+            // line added in the from file
+            } else if (ln_text.length > 0 && ln_text[0] == '+') {
+              base_to_line = base_to_line + 1;
+              to_line = base_to_line.toString();
+              to_lines.push(to_line);
+              ++nb_additions;
+              diff_to_str += (ln_text + '\n');
+              --lines_offset;
+            // line present in both files
+            } else {
+              base_from_line = base_from_line + 1;
+              base_to_line = base_to_line + 1;
+              from_line = base_from_line.toString();
+              to_line = base_to_line.toString();
+              for (var j = 0 ; j < Math.abs(lines_offset) ; ++j) {
+                if (lines_offset > 0) {
+                  diff_to_str += '\n';
+                  to_lines.push('');
+                } else {
+                  diff_from_str += '\n';
+                  from_lines.push('');
+                }
+              }
+              lines_offset = 0;
+              diff_from_str += (ln_text + '\n');
+              diff_to_str += (ln_text + '\n');
+              to_lines.push(to_line);
+              from_lines.push(from_line);
+            }
+            if (!base_from_line) {
+              from_line = '';
+            }
+            if (!base_to_line) {
+              to_line = '';
+            }
+            from_to_lines[i] = [from_line, to_line];
+            max_number_chars = Math.max(max_number_chars, from_line.length);
+            max_number_chars = Math.max(max_number_chars, to_line.length);
+          });
+
+          // set side-by-side diffs text
+          $('#' + diff_id + '-from').text(diff_from_str);
+          $('#' + diff_id + '-to').text(diff_to_str);
+
+          // code highlighting for side-by-side diffs
+          $('#' + diff_id + '-from, #' + diff_id + '-to').each(function(i, block) {
+            hljs.highlightBlock(block);
+            hljs.lineNumbersBlock(block);
+          });
+
+          // diff highlighting for added/removed lines on top of code highlighting
+          $('.' + diff_id + ' .hljs-ln-numbers').each(function(i, ln_elt) {
+            var ln_text = ln_elt.nextSibling.innerText;
+            var lines_info = lines_info_regexp.exec(ln_text);
+            if (lines_info) {
+              $(ln_elt).parent().addClass('swh-diff-lines-info');
+            } else if (ln_text.length > 0 && ln_text[0] == '-') {
+              $(ln_elt).parent().addClass('swh-diff-removed-line');
+            } else if (ln_text.length > 0 && ln_text[0] == '+') {
+              $(ln_elt).parent().addClass('swh-diff-added-line');
+            }
+          });
+
+
+          // set line numbers for unified diff
+          $('#' + diff_id + ' .hljs-ln-numbers').each(function(i, ln_elt) {
+            $(ln_elt).children().attr('data-line-number',
+                                      format_ln_diff(from_to_lines[i][0], from_to_lines[i][1],
+                                      max_number_chars));
+          });
+
+          // set line numbers for the from side-by-side diff
+          $('#' + diff_id + '-from .hljs-ln-numbers').each(function(i, ln_elt) {
+            $(ln_elt).children().attr('data-line-number',
+                                      format_ln_diff(from_lines[i], null,
+                                      max_number_chars));
+          });
+
+          // set line numbers for the to side-by-side diff
+          $('#' + diff_id + '-to .hljs-ln-numbers').each(function(i, ln_elt) {
+            $(ln_elt).children().attr('data-line-number',
+                                      format_ln_diff(null, to_lines[i],
+                                      max_number_chars));
+          });
+
+          // last processings:
+          //  - remove the '+' and '-' at the beginning of the diff lines
+          //    from code highlighting
+          //  - add the "no new line at end of file marker" if needed
+          $('.' + diff_id + ' .hljs-ln-line').each(function(i, ln_elt) {
+            if (ln_elt.firstChild) {
+              if (ln_elt.firstChild.nodeName != "#text") {
+                var line_text = ln_elt.firstChild.innerHTML;
+                if (line_text[0] == '-' || line_text[0] == '+') {
+                  ln_elt.firstChild.innerHTML = line_text.substr(1);
+                  var new_text_node = document.createTextNode(line_text[0]);
+                  $(ln_elt).prepend(new_text_node);
+                }
+              }
+              $(ln_elt).contents().filter(function() {
+                return this.nodeType === 3; //Node.TEXT_NODE
+              }).each(function(i, textNode) {
+                var swh_no_nl_marker = '[swh-no-nl-marker]';
+                if (textNode.textContent.indexOf(swh_no_nl_marker) != -1) {
+                  textNode.textContent = textNode.textContent.replace(swh_no_nl_marker, '');
+                  $(ln_elt).append($(no_nl_marker));
+                }
+              });
+            }
+          });
+
+          $('#' + diff_id + ' tr:last').remove();
+          $('#' + diff_id + '-from tr:last').remove();
+          $('#' + diff_id + '-to tr:last').remove();
+          $('#' + diff_id + '-from tr:last').remove();
+          $('#' + diff_id + '-to tr:last').remove();
+
+          $('#panel_' + diff_id + ' .diff-styles').css('visibility', 'visible');
+        }
+
+        // set the unified diff visible by default
+        $('#' + diff_id + '-loading').css('display', 'none');
+        $('#' + diff_id + '-highlightjs').css('display', 'block');
+
+        $('#swh-revision-lines-added').text(nb_additions + ' additions');
+        $('#swh-revision-lines-deleted').text(nb_deletions + ' deletions');
+      }
+    });
+  }
+
+  var diff_requests_sent = false;
+
+  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    if (e.target.text == 'Changes') {
+      if (!diff_requests_sent) {
+        diff_requests_sent = true;
+        {% for change in changes %}
+          compute_diff('{{ change.diff_url }}', '{{ change.id }}');
+        {% endfor %}
+      }
+      $('#readme-panel').css('display', 'none');
+    } else if (e.target.text == 'Files') {
+      $('#readme-panel').css('display', 'block');
+    }
+  });
+</script>
 
 {% endblock %}
 
-{% if not content_size %}
-
-{% block swh-browse-panels-group-end %}
+{% block swh-browse-after-panels %}
 
 {% include "includes/readme-display.html" %}
 
 {% endblock %}
-
-{% endif %}

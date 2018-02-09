@@ -902,3 +902,19 @@ def vault_progress(obj_type, obj_id):
     """Get the current progress of a vault bundle.
     """
     return vault.progress(obj_type, obj_id)
+
+
+def diff_revision(rev_id):
+    """Get the list of file changes (insertion/deletion/modification/renaming)
+    for a particular revision.
+    """
+    rev_sha1_git_bin = _to_sha1_bin(rev_id)
+
+    for change in storage.diff_revision(rev_sha1_git_bin, track_renaming=True):
+        change['from'] = converters.from_directory_entry(change['from'])
+        change['to'] = converters.from_directory_entry(change['to'])
+        if change['from_path']:
+            change['from_path'] = change['from_path'].decode('utf-8')
+        if change['to_path']:
+            change['to_path'] = change['to_path'].decode('utf-8')
+        yield change
