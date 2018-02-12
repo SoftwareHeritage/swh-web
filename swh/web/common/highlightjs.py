@@ -112,6 +112,7 @@ _hljs_languages_aliases = {
     'iced': 'coffeescript',
     'icl': 'clean',
     'instances': 'roboconf',
+    'ipynb': 'json',
     'irb': 'ruby',
     'jinja': 'django',
     'js': 'javascript',
