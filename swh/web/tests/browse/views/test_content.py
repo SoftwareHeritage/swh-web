@@ -25,7 +25,8 @@ from .data.content_test_data import (
     stub_content_text_no_highlight_data,
     non_utf8_encoded_content_data,
     non_utf8_encoded_content,
-    non_utf8_encoding
+    non_utf8_encoding,
+    stub_content_too_large_data
 )
 
 
@@ -244,3 +245,22 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
         self.assertEquals(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
+
+    @patch('swh.web.browse.views.content.request_content')
+    @istest
+    def content_too_large(self, mock_request_content):
+        mock_request_content.return_value = stub_content_too_large_data
+
+        url = reverse('browse-content',
+                      kwargs={'query_string': stub_content_too_large_data['checksums']['sha1']}) # noqa
+
+        url_raw = reverse('browse-content-raw',
+                          kwargs={'query_string': stub_content_too_large_data['checksums']['sha1']}) # noqa
+
+        resp = self.client.get(url)
+
+        self.assertEquals(resp.status_code, 200)
+        self.assertTemplateUsed('content.html')
+
+        self.assertContains(resp, 'Content is too large to be displayed.')
+        self.assertContains(resp, url_raw)

@@ -86,7 +86,12 @@ def get_mimetype_and_encoding_for_content(content):
     return mime_type, encoding
 
 
-def request_content(query_string):
+# maximum authorized content size in bytes for HTML display
+# with code highlighting
+content_display_max_size = 1000000
+
+
+def request_content(query_string, max_size=content_display_max_size):
     """Function that retrieves a SWH content from the SWH archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -98,6 +103,8 @@ def request_content(query_string):
             optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
             or *blake2s256* (default to *sha1*) and HASH the hexadecimal
             representation of the hash value
+        max_size: the maximum size for a content to retrieve (default to 1MB,
+            no size limit if None)
 
     Returns:
         A tuple whose first member corresponds to the content raw bytes
@@ -107,32 +114,40 @@ def request_content(query_string):
         NotFoundExc if the content is not found
     """
     content_data = service.lookup_content(query_string)
-    content_raw = service.lookup_content_raw(query_string)
-    content_data['raw_data'] = content_raw['data']
     filetype = service.lookup_content_filetype(query_string)
     language = service.lookup_content_language(query_string)
     license = service.lookup_content_license(query_string)
+    mimetype = 'unknown'
+    encoding = 'unknown'
     if filetype:
         mimetype = filetype['mimetype']
         encoding = filetype['encoding']
+
+    if not max_size or content_data['length'] < max_size:
+        content_raw = service.lookup_content_raw(query_string)
+        content_data['raw_data'] = content_raw['data']
+
+        if not filetype:
+            mimetype, encoding = \
+                get_mimetype_and_encoding_for_content(content_data['raw_data'])
+
+        # encode textual content to utf-8 if needed
+        if mimetype.startswith('text/'):
+            # probably a malformed UTF-8 content, reencode it
+            # by replacing invalid chars with a substitution one
+            if encoding == 'unknown-8bit':
+                content_data['raw_data'] = \
+                    content_data['raw_data'].decode('utf-8', 'replace')\
+                                            .encode('utf-8')
+            elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']: # noqa
+                content_data['raw_data'] = \
+                    content_data['raw_data'].decode(encoding, 'replace')\
+                                            .encode('utf-8')
     else:
-        mimetype, encoding = \
-            get_mimetype_and_encoding_for_content(content_data['raw_data'])
+        content_data['raw_data'] = None
+
     content_data['mimetype'] = mimetype
     content_data['encoding'] = encoding
-
-    # encode textual content to utf-8 if needed
-    if mimetype.startswith('text/'):
-        # probably a malformed UTF-8 content, reencode it
-        # by replacing invalid chars with a substitution one
-        if encoding == 'unknown-8bit':
-            content_data['raw_data'] = \
-                content_data['raw_data'].decode('utf-8', 'replace')\
-                                        .encode('utf-8')
-        elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']:
-            content_data['raw_data'] = \
-                content_data['raw_data'].decode(encoding, 'replace')\
-                                        .encode('utf-8')
 
     if language:
         content_data['language'] = language['lang']

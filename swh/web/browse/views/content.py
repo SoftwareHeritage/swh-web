@@ -14,7 +14,8 @@ from swh.web.common import query
 from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
-    request_content, prepare_content_for_display
+    request_content, prepare_content_for_display,
+    content_display_max_size
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -43,7 +44,7 @@ def content_raw(request, query_string):
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
-        content_data = request_content(query_string)
+        content_data = request_content(query_string, max_size=None)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -90,8 +91,13 @@ def content_display(request, query_string):
 
     path = request.GET.get('path', None)
 
-    content_display_data = prepare_content_for_display(
-        content_data['raw_data'], content_data['mimetype'], path)
+    content = None
+    language = None
+    if content_data['raw_data'] is not None:
+        content_display_data = prepare_content_for_display(
+            content_data['raw_data'], content_data['mimetype'], path)
+        content = content_display_data['content_data']
+        language = content_display_data['language']
 
     root_dir = None
     filename = None
@@ -145,9 +151,11 @@ def content_display(request, query_string):
                    'top_panel_text': 'SWH object: Content',
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
-                   'content': content_display_data['content_data'],
+                   'content': content,
+                   'content_size': content_data['length'],
+                   'max_content_size': content_display_max_size,
                    'mimetype': content_data['mimetype'],
-                   'language': content_display_data['language'],
+                   'language': language,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': content_raw_url,
                    'top_right_link_text': mark_safe(

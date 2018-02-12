@@ -25,7 +25,8 @@ from swh.web.browse.utils import (
     prepare_revision_log_for_display,
     get_origin_context, gen_directory_link,
     gen_revision_link, gen_revision_log_link,
-    gen_content_link, gen_origin_directory_link
+    gen_content_link, gen_origin_directory_link,
+    content_display_max_size
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -397,8 +398,13 @@ def origin_content_display(request, origin_type, origin_url, path,
     origin_info = origin_context['origin_info']
     visit_info = origin_context['visit_info']
 
-    content_display_data = prepare_content_for_display(
-        content_data['raw_data'], content_data['mimetype'], path)
+    content = None
+    language = None
+    if content_data['raw_data'] is not None:
+        content_display_data = prepare_content_for_display(
+            content_data['raw_data'], content_data['mimetype'], path)
+        content = content_display_data['content_data']
+        language = content_display_data['language']
 
     filename = None
     path_info = None
@@ -470,9 +476,11 @@ def origin_content_display(request, origin_type, origin_url, path,
                    'top_panel_text': 'SWH object: Content',
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
-                   'content': content_display_data['content_data'],
+                   'content': content,
+                   'content_size': content_data['length'],
+                   'max_content_size': content_display_max_size,
                    'mimetype': content_data['mimetype'],
-                   'language': content_display_data['language'],
+                   'language': language,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': content_raw_url,
                    'top_right_link_text': mark_safe(
