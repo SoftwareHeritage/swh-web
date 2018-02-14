@@ -15,23 +15,31 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     specific networks specified in swh-web configuration.
 
     Requests are grouped into scopes. It enables to apply different
-    requests rate limiting based on the scope name.
+    requests rate limiting based on the scope name but also the
+    input HTTP request types.
 
     To associate a scope to requests, one must add a 'throttle_scope'
     attribute when using a class based view, or call the 'throttle_scope'
     decorator when using a function based view. By default, requests
     do not have an associated scope and are not rate limited.
 
-    For instance, the following YAML configuration section sets a rate of
-    60 requests per minute for the 'swh_api' scope while exempting those
-    comming from the 127.0.0.0/8 ip network
+    Rate limiting can also be configured according to the type
+    of the input HTTP requests for fine grained tuning.
+
+    For instance, the following YAML configuration section sets a rate of:
+        - 1 per minute for POST requests
+        - 60 per minute for other request types
+    for the 'swh_api' scope while exempting those comming from the
+    127.0.0.0/8 ip network.
 
     .. code-block:: yaml
 
         throttling:
             scopes:
                 swh_api:
-                    limiter_rate: 60/min
+                    limiter_rate:
+                        default: 60/m
+                        POST: 1/m
                     exempted_networks:
                         - 127.0.0.0/8
 
@@ -42,30 +50,59 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     def __init__(self):
         super().__init__()
         self.exempted_networks = None
-        scopes = get_config()['throttling']['scopes']
-        scope = scopes.get(self.scope)
-        if scope:
-            networks = scope.get('exempted_networks')
-            if networks:
-                self.exempted_networks = [ipaddress.ip_network(network)
-                                          for network in networks]
+
+    def get_exempted_networks(self, scope_name):
+        if not self.exempted_networks:
+            scopes = get_config()['throttling']['scopes']
+            scope = scopes.get(scope_name)
+            if scope:
+                networks = scope.get('exempted_networks')
+                if networks:
+                    self.exempted_networks = [ipaddress.ip_network(network)
+                                              for network in networks]
+        return self.exempted_networks
 
     def allow_request(self, request, view):
         # class based view case
         if not self.scope:
-            request_allowed = \
-                super(SwhWebRateThrottle, self).allow_request(request, view)
+            default_scope = getattr(view, self.scope_attr, None)
+            # check if there is a specific rate limiting associated
+            # to the request type
+            try:
+                request_scope = default_scope + '_' + request.method.lower()
+                setattr(view, self.scope_attr, request_scope)
+                request_allowed = \
+                    super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
+                setattr(view, self.scope_attr, default_scope)
+            # use default rate limiting otherwise
+            except:
+                setattr(view, self.scope_attr, default_scope)
+                request_allowed = \
+                    super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
+
         # function based view case
         else:
-            self.rate = self.get_rate()
+            default_scope = self.scope
+            # check if there is a specific rate limiting associated
+            # to the request type
+            try:
+                self.scope = default_scope + '_' + request.method.lower()
+                self.rate = self.get_rate()
+            # use default rate limiting otherwise
+            except:
+                self.scope = default_scope
+                self.rate = self.get_rate()
             self.num_requests, self.duration = self.parse_rate(self.rate)
             request_allowed = \
                 super(ScopedRateThrottle, self).allow_request(request, view)
+            self.scope = default_scope
 
-        if self.exempted_networks:
+        exempted_networks = self.get_exempted_networks(default_scope)
+
+        if exempted_networks:
             remote_address = ipaddress.ip_address(self.get_ident(request))
             return any(remote_address in network
-                       for network in self.exempted_networks) or \
+                       for network in exempted_networks) or \
                 request_allowed
 
         return request_allowed
