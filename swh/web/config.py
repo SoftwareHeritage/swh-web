@@ -29,6 +29,8 @@ DEFAULT_CONFIG = {
     'host': ('string', '127.0.0.1'),
     'port': ('int', 5004),
     'secret_key': ('string', 'development key'),
+    # do not display code highlighting for content > 1MB
+    'content_display_max_size': ('int', 1024 * 1024),
     'throttling': ('dict', {
         'cache_uri': None,  # production: memcached as cache (127.0.0.1:11211)
                             # development: in-memory cache so None

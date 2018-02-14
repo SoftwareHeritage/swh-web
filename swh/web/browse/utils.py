@@ -19,6 +19,7 @@ from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, parse_timestamp
 )
+from swh.web.config import get_config
 
 
 def get_directory_entries(sha1_git):
@@ -88,7 +89,7 @@ def get_mimetype_and_encoding_for_content(content):
 
 # maximum authorized content size in bytes for HTML display
 # with code highlighting
-content_display_max_size = 1000000
+content_display_max_size = get_config()['content_display_max_size']
 
 
 def request_content(query_string, max_size=content_display_max_size):

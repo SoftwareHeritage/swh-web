@@ -1,6 +1,6 @@
 <div class="well well-sm swh-content" style="margin-bottom: 0px">
   {% if content_size > max_content_size %}
-    Content is too large to be displayed.
+    Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
   {% elif "inode/x-empty" == mimetype %}
     <i>File is empty</i>
   {% elif "text/" in mimetype %}

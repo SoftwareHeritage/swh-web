@@ -262,5 +262,5 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('content.html')
 
-        self.assertContains(resp, 'Content is too large to be displayed.')
+        self.assertContains(resp, 'Content is too large to be displayed')
         self.assertContains(resp, url_raw)
