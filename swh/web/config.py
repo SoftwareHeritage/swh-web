@@ -34,7 +34,16 @@ DEFAULT_CONFIG = {
                             # development: in-memory cache so None
         'scopes': {
             'swh_api': {
-                'limiter_rate': '120/h',
+                'limiter_rate': {
+                    'default': '120/h'
+                },
+                'exempted_networks': ['127.0.0.0/8']
+            },
+            'swh_vault_cooking': {
+                'limiter_rate': {
+                    'default': '120/h',
+                    'GET': '60/m'
+                },
                 'exempted_networks': ['127.0.0.0/8']
             }
         }

@@ -28,6 +28,13 @@ swh_web_config.update({
                 },
                 'exempted_networks': ['127.0.0.0/8']
             },
+            'swh_vault_cooking': {
+                'limiter_rate': {
+                    'default': '120/h',
+                    'GET': '60/m'
+                },
+                'exempted_networks': ['127.0.0.0/8']
+            },
             'scope1': {
                 'limiter_rate': {
                     'default': '%s/min' % scope1_limiter_rate,
