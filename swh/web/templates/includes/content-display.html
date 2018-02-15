@@ -1,13 +1,15 @@
 <div class="well well-sm swh-content" style="margin-bottom: 0px">
-  {% if "inode/x-empty" == mimetype %}
+  {% if content_size > max_content_size %}
+    Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
+  {% elif "inode/x-empty" == mimetype %}
     <i>File is empty</i>
   {% elif "text/" in mimetype %}
     <div class="highlightjs">
       <pre><code class="{{ language }}">{{ content }}</code></pre>
-  </div>
+    </div>
   {% elif "image/" in mimetype and content %}
     <img src="data:{{ mimetype }};base64,{{ content }}"/>
   {% else %}
-    Content with mime type {{ mimetype }} can not be displayed
+    Content with mime type {{ mimetype }} can not be displayed.
   {% endif %}
 </div>

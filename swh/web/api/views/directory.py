@@ -33,8 +33,8 @@ def api_directory(request, sha1_git, path=None):
     """Get information about directory or directory entry objects.
 
     Directories are identified by SHA1 checksums, compatible with Git directory
-    identifiers. See ``directory_identifier`` in our `data model module
-    <https://forge.softwareheritage.org/source/swh-model/browse/master/swh/model/identifiers.py>`_
+    identifiers. See the `documentation
+    <https://docs.softwareheritage.org/devel/swh-model/apidoc/swh.model.html#swh.model.identifiers.directory_identifier>`_
     for details about how they are computed.
 
     When given only a directory identifier, this endpoint returns information

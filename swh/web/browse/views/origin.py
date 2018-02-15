@@ -25,14 +25,15 @@ from swh.web.browse.utils import (
     prepare_revision_log_for_display,
     get_origin_context, gen_directory_link,
     gen_revision_link, gen_revision_log_link,
-    gen_content_link, gen_origin_directory_link
+    gen_content_link, gen_origin_directory_link,
+    content_display_max_size
 )
 from swh.web.browse.browseurls import browse_route
 
 
-def _occurrence_not_found(origin_info, timestamp,
-                          branch_type, occurrence, occurrences,
-                          visit_id=None):
+def _branch_not_found(origin_info, timestamp,
+                      branch_type, branch, branches,
+                      visit_id=None):
     """
     Utility function to raise an exception when a specified branch/release
     can not be found.
@@ -45,7 +46,7 @@ def _occurrence_not_found(origin_info, timestamp,
         occ_type_plural = 'releases'
 
     if visit_id:
-        if len(occurrences) == 0:
+        if len(branches) == 0:
             raise NotFoundExc('Origin with type %s and url %s'
                               ' for visit with id %s has an empty list'
                               ' of %s!' % (origin_info['type'],
@@ -54,11 +55,11 @@ def _occurrence_not_found(origin_info, timestamp,
         else:
             raise NotFoundExc('%s %s associated to visit with'
                               ' id %s for origin with type %s and url %s'
-                              ' not found!' % (occ_type, occurrence, visit_id,
+                              ' not found!' % (occ_type, branch, visit_id,
                                                origin_info['type'],
                                                origin_info['url']))
     else:
-        if len(occurrences) == 0:
+        if len(branches) == 0:
             raise NotFoundExc('Origin with type %s and url %s'
                               ' for visit with timestamp %s has an empty list'
                               ' of %s!' % (origin_info['type'],
@@ -67,7 +68,7 @@ def _occurrence_not_found(origin_info, timestamp,
         else:
             raise NotFoundExc('%s %s associated to visit with'
                               ' timestamp %s for origin with type %s'
-                              ' and url %s not found!' % (occ_type, occurrence,
+                              ' and url %s not found!' % (occ_type, branch,
                                                           timestamp,
                                                           origin_info['type'],
                                                           origin_info['url']))
@@ -157,9 +158,9 @@ def _process_origin_request(request, origin_type, origin_url,
             query_params['release'] = release_name
             revision_id = release['target']
         else:
-            _occurrence_not_found(origin_context['origin_info'], timestamp,
-                                  False, release_name,
-                                  origin_context['releases'], visit_id)
+            _branch_not_found(origin_context['origin_info'], timestamp,
+                              False, release_name,
+                              origin_context['releases'], visit_id)
     else:
         branch_name = request.GET.get('branch', None)
         if branch_name:
@@ -171,9 +172,9 @@ def _process_origin_request(request, origin_type, origin_url,
             revision_id = branch['revision']
 
         else:
-            _occurrence_not_found(origin_context['origin_info'], timestamp,
-                                  True, branch_name,
-                                  origin_context['branches'], visit_id)
+            _branch_not_found(origin_context['origin_info'], timestamp,
+                              True, branch_name,
+                              origin_context['branches'], visit_id)
 
     origin_context['root_sha1_git'] = root_sha1_git
     origin_context['revision_id'] = revision_id
@@ -397,8 +398,13 @@ def origin_content_display(request, origin_type, origin_url, path,
     origin_info = origin_context['origin_info']
     visit_info = origin_context['visit_info']
 
-    content_display_data = prepare_content_for_display(
-        content_data['raw_data'], content_data['mimetype'], path)
+    content = None
+    language = None
+    if content_data['raw_data'] is not None:
+        content_display_data = prepare_content_for_display(
+            content_data['raw_data'], content_data['mimetype'], path)
+        content = content_display_data['content_data']
+        language = content_display_data['language']
 
     filename = None
     path_info = None
@@ -470,9 +476,11 @@ def origin_content_display(request, origin_type, origin_url, path,
                    'top_panel_text': 'SWH object: Content',
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
-                   'content': content_display_data['content_data'],
+                   'content': content,
+                   'content_size': content_data['length'],
+                   'max_content_size': content_display_max_size,
                    'mimetype': content_data['mimetype'],
-                   'language': content_display_data['language'],
+                   'language': language,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': content_raw_url,
                    'top_right_link_text': mark_safe(

@@ -77,6 +77,7 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
                                     'origin_url': origin_info['url']})
 
         resp = self.client.get(url)
+
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('release.html')
 

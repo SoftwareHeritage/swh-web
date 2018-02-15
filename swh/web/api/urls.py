@@ -10,6 +10,7 @@ import swh.web.api.views.origin # noqa
 import swh.web.api.views.person # noqa
 import swh.web.api.views.release # noqa
 import swh.web.api.views.revision # noqa
+import swh.web.api.views.snapshot # noqa
 import swh.web.api.views.stat # noqa
 import swh.web.api.views.vault # noqa
 

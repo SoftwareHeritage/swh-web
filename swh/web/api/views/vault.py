@@ -34,7 +34,8 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
 
 
 @api_route('/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
-           'vault-cook-directory', methods=['GET', 'POST'])
+           'vault-cook-directory', methods=['GET', 'POST'],
+           throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc.route('/vault/directory/', tags=['hidden'])
 @api_doc.arg('dir_id',
@@ -90,7 +91,8 @@ def api_vault_fetch_directory(request, dir_id):
 
 
 @api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/',
-           'vault-cook-revision_gitfast', methods=['GET', 'POST'])
+           'vault-cook-revision_gitfast', methods=['GET', 'POST'],
+           throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc.route('/vault/revision/gitfast/', tags=['hidden'])
 @api_doc.arg('rev_id',

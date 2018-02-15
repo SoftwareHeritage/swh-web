@@ -310,6 +310,8 @@ def from_origin_visit(visit):
                   dates={'date'},
                   empty_dict={'metadata'})
 
+    # TODO: remove that piece of code once snapshot migration
+    # is totally effective in storage (no more occurrences)
     if ov and 'occurrences' in ov:
         ov['occurrences'] = {
             decode_with_escape(k): v
@@ -317,6 +319,22 @@ def from_origin_visit(visit):
         }
 
     return ov
+
+
+def from_snapshot(snapshot):
+    """Convert swh snapshot to serializable snapshot dictionary.
+
+    """
+    sv = from_swh(snapshot,
+                  hashess={'id', 'target'})
+
+    if sv and 'branches' in sv:
+        sv['branches'] = {
+            decode_with_escape(k): v
+            for k, v in sv['branches'].items()
+        }
+
+    return sv
 
 
 def from_directory_entry(dir_entry):
