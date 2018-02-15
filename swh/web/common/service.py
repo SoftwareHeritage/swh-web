@@ -786,6 +786,21 @@ def lookup_origin_visit(origin_id, visit_id):
     return converters.from_origin_visit(visit)
 
 
+def lookup_snapshot(snapshot_id):
+    """Return information about a snapshot, aka the list of named
+    branches found during a specific visit of an origin.
+
+    Args:
+        snapshot_id: sha1 identifier of the snapshot
+
+    Returns:
+        A dict filled with the snapshot content.
+    """
+    snapshot_id_bin = _to_sha1_bin(snapshot_id)
+    snapshot = storage.snapshot_get(snapshot_id_bin)
+    return converters.from_snapshot(snapshot)
+
+
 def lookup_entity_by_uuid(uuid):
     """Return the entity's hierarchy from its uuid.
 
