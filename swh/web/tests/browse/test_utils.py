@@ -137,19 +137,18 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.utils.get_origin_visit')
     @istest
-    def get_origin_visit_occurrences(self, mock_get_origin_visit,
-                                     mock_service):
+    def get_origin_visit_snapshot(self, mock_get_origin_visit,
+                                  mock_service):
 
         mock_get_origin_visit.return_value = \
             {'status': 'full',
              'date': '2015-08-04T22:26:14.804009+00:00',
              'visit': 1,
-             'origin': 1}
+             'origin': 1,
+             'snapshot': '584b2fe3ce6218a96892e73bd76c2966bbc2a797'}
 
-        mock_service.lookup_origin_visit.return_value = \
-            {'date': '2015-08-04T22:26:14.804009+00:00',
-             'metadata': {},
-             'occurrences': {
+        mock_service.lookup_snapshot.return_value = \
+            {'branches': {
                  'refs/heads/master': {
                      'target': '9fbd21adbac36be869514e82e2e98505dc47219c',
                      'target_type': 'revision',
@@ -166,10 +165,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
                      'target_url': '/api/1/release/ecc003b43433e5b46511157598e4857a761007bf/'
                  }
              },
-             'origin': 1,
-             'origin_url': '/api/1/origin/1/',
-             'status': 'full',
-             'visit': 1}
+             'id': '584b2fe3ce6218a96892e73bd76c2966bbc2a797'}
 
         mock_service.lookup_release_multiple.return_value = \
             [{'name': '0.10.0',
@@ -228,7 +224,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         }
 
         origin_visit_branches = \
-            utils.get_origin_visit_occurrences(origin_info, visit_id=1)
+            utils.get_origin_visit_snapshot(origin_info, visit_id=1)
 
         self.assertEqual(origin_visit_branches, expected_result)
 

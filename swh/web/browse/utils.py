@@ -12,11 +12,14 @@ import stat
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 
+from importlib import reload
+
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, parse_timestamp
 )
+from swh.web.config import get_config
 
 
 def get_directory_entries(sha1_git):
@@ -66,11 +69,30 @@ def get_mimetype_and_encoding_for_content(content):
         associated to the provided content.
 
     """
-    magic_result = magic.detect_from_content(content)
-    return magic_result.mime_type, magic_result.encoding
+    while True:
+        try:
+            magic_result = magic.detect_from_content(content)
+            mime_type = magic_result.mime_type
+            encoding = magic_result.encoding
+            break
+        except Exception as exc:
+            # workaround an issue with the magic module who can fail
+            # if detect_from_content is called multiple times in
+            # a short amount of time
+            if 'too many values to unpack' in str(exc):
+                reload(magic)
+            else:
+                break
+
+    return mime_type, encoding
 
 
-def request_content(query_string):
+# maximum authorized content size in bytes for HTML display
+# with code highlighting
+content_display_max_size = get_config()['content_display_max_size']
+
+
+def request_content(query_string, max_size=content_display_max_size):
     """Function that retrieves a SWH content from the SWH archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -82,6 +104,8 @@ def request_content(query_string):
             optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
             or *blake2s256* (default to *sha1*) and HASH the hexadecimal
             representation of the hash value
+        max_size: the maximum size for a content to retrieve (default to 1MB,
+            no size limit if None)
 
     Returns:
         A tuple whose first member corresponds to the content raw bytes
@@ -91,25 +115,40 @@ def request_content(query_string):
         NotFoundExc if the content is not found
     """
     content_data = service.lookup_content(query_string)
-    content_raw = service.lookup_content_raw(query_string)
-    content_data['raw_data'] = content_raw['data']
     filetype = service.lookup_content_filetype(query_string)
     language = service.lookup_content_language(query_string)
     license = service.lookup_content_license(query_string)
+    mimetype = 'unknown'
+    encoding = 'unknown'
     if filetype:
         mimetype = filetype['mimetype']
         encoding = filetype['encoding']
+
+    if not max_size or content_data['length'] < max_size:
+        content_raw = service.lookup_content_raw(query_string)
+        content_data['raw_data'] = content_raw['data']
+
+        if not filetype:
+            mimetype, encoding = \
+                get_mimetype_and_encoding_for_content(content_data['raw_data'])
+
+        # encode textual content to utf-8 if needed
+        if mimetype.startswith('text/'):
+            # probably a malformed UTF-8 content, reencode it
+            # by replacing invalid chars with a substitution one
+            if encoding == 'unknown-8bit':
+                content_data['raw_data'] = \
+                    content_data['raw_data'].decode('utf-8', 'replace')\
+                                            .encode('utf-8')
+            elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']: # noqa
+                content_data['raw_data'] = \
+                    content_data['raw_data'].decode(encoding, 'replace')\
+                                            .encode('utf-8')
     else:
-        mimetype, encoding = \
-            get_mimetype_and_encoding_for_content(content_data['raw_data'])
+        content_data['raw_data'] = None
+
     content_data['mimetype'] = mimetype
     content_data['encoding'] = encoding
-
-    # encode textual content to utf-8 if needed
-    if mimetype.startswith('text/') and 'ascii' not in encoding \
-       and encoding not in ['utf-8', 'binary']:
-        content_data['raw_data'] = \
-            content_data['raw_data'].decode(encoding).encode('utf-8')
 
     if language:
         content_data['language'] = language['lang']
@@ -306,7 +345,7 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
             (visit_ts, origin_info['type'], origin_info['url']))
 
 
-def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
+def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
     """Function that returns the lists of branches and releases
     associated to a swh origin for a given visit.
     The visit is expressed by a timestamp. In the latter case,
@@ -345,27 +384,27 @@ def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
 
     visit = visit_info['visit']
 
-    cache_entry_id = 'origin_%s_visit_%s_occurrences' % (origin_info['id'],
-                                                         visit)
+    cache_entry_id = 'origin_%s_visit_%s_snapshot' % (origin_info['id'],
+                                                      visit)
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
         return cache_entry['branches'], cache_entry['releases']
 
-    origin_visit_data = service.lookup_origin_visit(origin_info['id'],
-                                                    visit)
+    origin_visit_snapshot = service.lookup_snapshot(visit_info['snapshot'])
+
     branches = []
     releases = []
     revision_ids = []
     releases_ids = []
-    occurrences = origin_visit_data['occurrences']
-    for key in sorted(occurrences.keys()):
-        if occurrences[key]['target_type'] == 'revision':
+    snapshot_branches = origin_visit_snapshot['branches']
+    for key in sorted(snapshot_branches.keys()):
+        if snapshot_branches[key]['target_type'] == 'revision':
             branches.append({'name': key,
-                             'revision': occurrences[key]['target']})
-            revision_ids.append(occurrences[key]['target'])
-        elif occurrences[key]['target_type'] == 'release':
-            releases_ids.append(occurrences[key]['target'])
+                             'revision': snapshot_branches[key]['target']})
+            revision_ids.append(snapshot_branches[key]['target'])
+        elif snapshot_branches[key]['target_type'] == 'release':
+            releases_ids.append(snapshot_branches[key]['target'])
 
     releases_info = service.lookup_release_multiple(releases_ids)
     for release in releases_info:
@@ -757,7 +796,7 @@ def get_origin_context(origin_type, origin_url, timestamp, visit_id=None):
         timestamp = visit_info['date']
 
     branches, releases = \
-        get_origin_visit_occurrences(origin_info, timestamp, visit_id)
+        get_origin_visit_snapshot(origin_info, timestamp, visit_id)
 
     releases = list(reversed(releases))
 

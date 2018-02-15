@@ -92,11 +92,13 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
             {
                 'date': 1293919200.0,
                 'origin': 2,
+                'snapshot': '1234',
                 'visit': 2
             },
             {
                 'date': 1420149600.0,
                 'origin': 2,
+                'snapshot': '5678',
                 'visit': 3
             }
         ]
@@ -112,14 +114,18 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
             {
                 'date': 1293919200.0,
                 'origin': 2,
+                'snapshot': '1234',
                 'visit': 2,
                 'origin_visit_url': '/api/1/origin/2/visit/2/',
+                'snapshot_url': '/api/1/snapshot/1234/'
             },
             {
                 'date': 1420149600.0,
                 'origin': 2,
+                'snapshot': '5678',
                 'visit': 3,
                 'origin_visit_url': '/api/1/origin/2/visit/3/',
+                'snapshot_url': '/api/1/snapshot/5678/'
             }
         ])
 
@@ -137,7 +143,8 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
                     'target_type': 'revision',
                     'target': '98564',
                 }
-            }
+            },
+            'snapshot': '57478754'
         })
 
         mock_service.lookup_origin_visit.return_value = origin_visit
@@ -151,7 +158,9 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
                     'target': '98564',
                     'target_url': '/api/1/revision/98564/'
                 }
-            }
+            },
+            'snapshot': '57478754',
+            'snapshot_url': '/api/1/snapshot/57478754/'
         })
 
         # when

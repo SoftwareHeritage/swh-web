@@ -282,8 +282,8 @@ def api_revision(request, sha1_git):
     """Get information about a revision.
 
     Revisions are identified by SHA1 checksums, compatible with Git commit
-    identifiers. See ``revision_identifier`` in our `data model module
-    <https://forge.softwareheritage.org/source/swh-model/browse/master/swh/model/identifiers.py>`_
+    identifiers. See the `documentation
+    <https://docs.softwareheritage.org/devel/swh-model/apidoc/swh.model.html#swh.model.identifiers.revision_identifier>`_
     for details about how they are computed.
 
     """

@@ -143,7 +143,6 @@ stub_content_text_data = {
     'encoding': 'us-ascii',
     'language': 'c++',
     'licenses': 'GPL',
-    'metadata_url': ''
 }
 
 stub_content_text_no_highlight_data = {
@@ -159,7 +158,6 @@ stub_content_text_no_highlight_data = {
     'encoding': 'us-ascii',
     'language': 'not detected',
     'licenses': 'GPL',
-    'metadata_url': ''
 }
 
 stub_content_text_path = 'kate/autotests/session_test.h'
@@ -184,7 +182,6 @@ with open(png_file_path, 'rb') as png_file:
         'encoding': 'binary',
         'language': 'not detected',
         'licenses': 'not detected',
-        'metadata_url': ''
     }
 
 _non_utf8_encoding_file_path = os.path.dirname(__file__) + '/iso-8859-1_encoded_content'
@@ -203,3 +200,18 @@ non_utf8_encoding = 'iso-8859-1'
 
 with open(_non_utf8_encoding_file_path, 'rb') as iso88591_file:
     non_utf8_encoded_content = iso88591_file.read()
+
+stub_content_too_large_data = {
+    'checksums': {
+        'sha1': '8624bcdae55baeef00cd11d5dfcfa60f68710a02',
+        'sha1_git': '94a9ed024d3859793618152ea559a168bbcbb5e2',
+        'sha256': '8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903',
+        'blake2s256': '38702b7168c7785bfe748b51b45d9856070ba90f9dc6d90f2ea75d4356411ffe'
+    },
+    'length': 3000000,
+    'raw_data': None,
+    'mimetype': 'text/plain',
+    'encoding': 'us-ascii',
+    'language': 'not detected',
+    'licenses': 'GPL',
+}

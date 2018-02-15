@@ -6,6 +6,7 @@
 import json
 
 from django.shortcuts import render
+from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
 from swh.web.common import service
@@ -17,7 +18,8 @@ from swh.web.browse.utils import (
     prepare_revision_log_for_display,
     get_origin_context, gen_origin_directory_link,
     get_revision_log_url, get_directory_entries,
-    gen_directory_link, request_content, prepare_content_for_display
+    gen_directory_link, request_content, prepare_content_for_display,
+    content_display_max_size
 )
 
 
@@ -147,16 +149,36 @@ def revision_browse(request, sha1_git):
                                            kwargs={'sha1_git': sha1_git},
                                            query_params=query_params)})
 
+    vault_cooking = {
+        'directory_context': False,
+        'directory_id': None,
+        'revision_context': True,
+        'revision_id': sha1_git
+    }
+
     content = None
+    content_size = None
     mimetype = None
     language = None
+
     if content_data:
         breadcrumbs[-1]['url'] = None
-        content_display_data = prepare_content_for_display(
-            content_data['raw_data'], content_data['mimetype'], path)
-        content = content_display_data['content_data']
+        content_size = content_data['length']
         mimetype = content_data['mimetype']
-        language = content_display_data['language']
+        if content_data['raw_data']:
+            content_display_data = prepare_content_for_display(
+                content_data['raw_data'], content_data['mimetype'], path)
+            content = content_display_data['content_data']
+            language = content_display_data['language']
+        query_params = {}
+        if path:
+            query_params['filename'] = path_info[-1]['name']
+        top_right_link = reverse('browse-content-raw',
+                                 kwargs={'query_string': query_string},
+                                 query_params=query_params)
+        top_right_link_text = mark_safe(
+            '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
+            '</i>Raw File')
     else:
         for d in dirs:
             query_params['path'] = path + d['name']
@@ -168,15 +190,15 @@ def revision_browse(request, sha1_git):
             f['url'] = reverse('browse-revision',
                                kwargs={'sha1_git': sha1_git},
                                query_params=query_params)
+            f['length'] = filesizeformat(f['length'])
 
-    history_url = get_revision_log_url(sha1_git, origin_context)
+        top_right_link = get_revision_log_url(sha1_git, origin_context)
+        top_right_link_text = mark_safe(
+            '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
+            'History')
 
-    vault_cooking = {
-        'directory_context': True,
-        'directory_id': dir_id,
-        'revision_context': True,
-        'revision_id': sha1_git
-    }
+        vault_cooking['directory_context'] = True
+        vault_cooking['directory_id'] = dir_id
 
     return render(request, 'revision.html',
                   {'empty_browse': False,
@@ -193,14 +215,13 @@ def revision_browse(request, sha1_git):
                    'dirs': dirs,
                    'files': files,
                    'content': content,
+                   'content_size': content_size,
+                   'max_content_size': content_display_max_size,
                    'mimetype': mimetype,
                    'language': language,
                    'breadcrumbs': breadcrumbs,
-                   'top_right_link': history_url,
-                   'top_right_link_text': mark_safe(
-                       '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
-                       'History'
-                    ),
+                   'top_right_link': top_right_link,
+                   'top_right_link_text': top_right_link_text,
                    'vault_cooking': vault_cooking})
 
 
