@@ -155,6 +155,9 @@ Origin
     :>jsonarr number id: the unique identifier of the origin
     :>jsonarr string origin_visit_url: link to :http:get:`/api/1/origin/(origin_id)/visit/(visit_id)/`
         in order to get information about the visit
+    :>jsonarr string snapshot: the snapshot identifier of the visit
+    :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
+        in order to get information about the snapshot of the visit
     :>jsonarr string status: status of the visit (either *full*, *partial* or *ongoing*)
     :>jsonarr number visit: the unique identifier of the visit
 
@@ -182,6 +185,8 @@ Origin
                 "date": "2015-08-04T22:26:14.804009+00:00",
                 "origin": 1,
                 "origin_visit_url": "/api/1/origin/1/visit/1/",
+                "snapshot": "584b2fe3ce6218a96892e73bd76c2966bbc2a797",
+                "snapshot_url": "/api/1/snapshot/584b2fe3ce6218a96892e73bd76c2966bbc2a797/",
                 "status": "full",
                 "visit": 1
             },
@@ -190,6 +195,8 @@ Origin
                 "metadata": {},
                 "origin": 1,
                 "origin_visit_url": "/api/1/origin/1/visit/2/",
+                "snapshot": "9d502b5a193c33b59b22be3c75f73472867b0f8e",
+                "snapshot_url": "/api/1/snapshot/9d502b5a193c33b59b22be3c75f73472867b0f8e/",
                 "status": "full",
                 "visit": 2
             },
@@ -208,10 +215,13 @@ Origin
 
     :>json string date: ISO representation of the visit date (in UTC)
     :>json object occurrences: object containing all branches associated to the origin found
-        during the visit, for each of them the associated SWH revision id is given but also
-        a link to in order to get information about it
+        during the visit, for each of them the associated SWH target type and id are given
+        but also a link to get information about that target
     :>json number origin: the origin unique identifier
     :>json string origin_url: link to get information about the origin
+    :>jsonarr string snapshot: the snapshot identifier of the visit
+    :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
+        in order to get information about the snapshot of the visit
     :>json string status: status of the visit (either *full*, *partial* or *ongoing*)
     :>json number visit: the unique identifier of the visit
 
@@ -259,6 +269,8 @@ Origin
             },
             "origin": 1500,
             "origin_url": "/api/1/origin/1500/",
+            "snapshot": "6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a",
+            "snapshot_url": "/api/1/snapshot/6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a/",
             "status": "full",
             "visit": 1
         }

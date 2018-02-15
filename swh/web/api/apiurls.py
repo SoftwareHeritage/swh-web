@@ -101,17 +101,19 @@ class api_route(object):  # noqa: N801
     """
 
     def __init__(self, url_pattern=None, view_name=None,
-                 methods=['GET', 'HEAD', 'OPTIONS'], api_version='1'):
+                 methods=['GET', 'HEAD', 'OPTIONS'],
+                 throttle_scope='swh_api',
+                 api_version='1'):
         super().__init__()
         self.url_pattern = '^' + api_version + url_pattern + '$'
         self.view_name = view_name
         self.methods = methods
+        self.throttle_scope = throttle_scope
 
     def __call__(self, f):
-
         # create a DRF view from the wrapped function
         @api_view(self.methods)
-        @throttle_scope('swh_api')
+        @throttle_scope(self.throttle_scope)
         def api_view_f(*args, **kwargs):
             return f(*args, **kwargs)
         # small hacks for correctly generating API endpoints index doc

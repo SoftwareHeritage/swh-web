@@ -381,7 +381,8 @@ td.hljs-ln-numbers {
 
 /* for block of code */
 td.hljs-ln-code {
-	padding-left: 10px;
+    padding-left: 10px;
+    width: 100%;
 }
 
 .btn-swh {

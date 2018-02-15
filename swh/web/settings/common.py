@@ -139,9 +139,21 @@ INTERNAL_IPS = ['127.0.0.1']
 
 throttle_rates = {}
 
+http_requests = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+
 throttling = swh_web_config['throttling']
 for limiter_scope, limiter_conf in throttling['scopes'].items():
-    throttle_rates[limiter_scope] = limiter_conf['limiter_rate']
+    if 'default' in limiter_conf['limiter_rate']:
+        throttle_rates[limiter_scope] = limiter_conf['limiter_rate']['default']
+    # for backward compatibility
+    else:
+        throttle_rates[limiter_scope] = limiter_conf['limiter_rate']
+    # register sub scopes specific for HTTP request types
+    for http_request in http_requests:
+        if http_request in limiter_conf['limiter_rate']:
+            throttle_rates[limiter_scope + '_' + http_request.lower()] = \
+                limiter_conf['limiter_rate'][http_request]
+
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
