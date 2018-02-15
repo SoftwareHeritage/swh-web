@@ -345,7 +345,7 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
             (visit_ts, origin_info['type'], origin_info['url']))
 
 
-def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
+def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
     """Function that returns the lists of branches and releases
     associated to a swh origin for a given visit.
     The visit is expressed by a timestamp. In the latter case,
@@ -384,27 +384,27 @@ def get_origin_visit_occurrences(origin_info, visit_ts=None, visit_id=None):
 
     visit = visit_info['visit']
 
-    cache_entry_id = 'origin_%s_visit_%s_occurrences' % (origin_info['id'],
-                                                         visit)
+    cache_entry_id = 'origin_%s_visit_%s_snapshot' % (origin_info['id'],
+                                                      visit)
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
         return cache_entry['branches'], cache_entry['releases']
 
-    origin_visit_data = service.lookup_origin_visit(origin_info['id'],
-                                                    visit)
+    origin_visit_snapshot = service.lookup_snapshot(visit_info['snapshot'])
+
     branches = []
     releases = []
     revision_ids = []
     releases_ids = []
-    occurrences = origin_visit_data['occurrences']
-    for key in sorted(occurrences.keys()):
-        if occurrences[key]['target_type'] == 'revision':
+    snapshot_branches = origin_visit_snapshot['branches']
+    for key in sorted(snapshot_branches.keys()):
+        if snapshot_branches[key]['target_type'] == 'revision':
             branches.append({'name': key,
-                             'revision': occurrences[key]['target']})
-            revision_ids.append(occurrences[key]['target'])
-        elif occurrences[key]['target_type'] == 'release':
-            releases_ids.append(occurrences[key]['target'])
+                             'revision': snapshot_branches[key]['target']})
+            revision_ids.append(snapshot_branches[key]['target'])
+        elif snapshot_branches[key]['target_type'] == 'release':
+            releases_ids.append(snapshot_branches[key]['target'])
 
     releases_info = service.lookup_release_multiple(releases_ids)
     for release in releases_info:
@@ -796,7 +796,7 @@ def get_origin_context(origin_type, origin_url, timestamp, visit_id=None):
         timestamp = visit_info['date']
 
     branches, releases = \
-        get_origin_visit_occurrences(origin_info, timestamp, visit_id)
+        get_origin_visit_snapshot(origin_info, timestamp, visit_id)
 
     releases = list(reversed(releases))
 
