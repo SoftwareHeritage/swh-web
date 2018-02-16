@@ -7,17 +7,19 @@
   <div class="panel-body">
     <p>
       This interface enables to track the status of the different Software Heritage
-      Vault cooking tasks created during the current browsing session.
+      Vault cooking tasks created while browsing the archive.
     </p>
     <p>
       Once a cooking task is finished, a link will be made available in order to
       download the associated archive.
     </p>
+    <button type="button" class="btn btn-md btn-swh" id="vault-remove-tasks">Remove selected tasks</button>
     <div class="table-responsive">
       <table class="table swh-vault-table" id="vault-cooking-tasks">
         <thead>
           <tr>
-            <th>Object type</th>
+            <th><input type="checkbox" id="vault-tasks-toggle-selection"/></th>
+            <th style="width: 100px">Object type</th>
             <th>Object id</th>
             <th style="width: 350px">Cooking status</th>
             <th style="width: 320px"></th>
@@ -51,6 +53,7 @@
       progress_bar.css('background-color', 'rgba(0, 255, 0, 0.5)');
     } else if (cooking_task.status == 'failed') {
       progress_bar.css('background-color', 'rgba(255, 0, 0, 0.5)');
+      progress_bar.css('background-image', 'none');
     }
     progress_bar.text(cooking_task.progress_message || cooking_task.status);
     if (cooking_task.status == 'new' || cooking_task.status == 'pending') {
@@ -61,14 +64,18 @@
   }
 
   function check_vault_cooking_tasks() {
-    var vault_cooking_tasks = JSON.parse(sessionStorage.getItem("swh-vault-cooking-tasks"));
-    if (!vault_cooking_tasks) {
+    var vault_cooking_tasks = JSON.parse(localStorage.getItem("swh-vault-cooking-tasks"));
+    if (vault_cooking_tasks.length == 0) {
+      $('.swh-vault-table tbody tr').remove();
+      check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
       return;
     }
     var cooking_urls = [];
     var tasks = {};
+    var current_object_ids = [];
     for (var i = 0 ; i < vault_cooking_tasks.length ; ++i) {
       var cooking_task = vault_cooking_tasks[i];
+      current_object_ids.push(cooking_task.object_id);
       tasks[cooking_task.object_id] = cooking_task;
       var cooking_url;
       if (cooking_task.object_type == 'directory') {
@@ -80,6 +87,12 @@
         cooking_urls.push($.ajax(cooking_url));
       }
     }
+    $('.swh-vault-table tbody tr').each(function(i, row) {
+      var object_id = $(row).find('.vault-object-id').data('object-id');
+      if ($.inArray(object_id, current_object_ids) == -1) {
+        $(row).remove();
+      }
+    });
     $.when.apply($, cooking_urls).then(function() {
       var table = $("#vault-cooking-tasks tbody");
       for (var i = 0 ; i < cooking_urls.length ; ++i) {
@@ -119,12 +132,13 @@
             table_row = '<tr id="vault-task-' + cooking_task.object_id + '"  title="Once downloaded, the git repository can be imported with the ' +
                         'following commands:\n\n$ git init\n$ zcat ' + cooking_task.object_id + '.gitfast.gz | git fast-import">';
           }
+          table_row += '<td><input type="checkbox" class="vault-task-toggle-selection"/></td>';
           if (cooking_task.object_type == 'directory') {
             table_row += '<td><i class="fa fa-folder fa-fw" aria-hidden="true"></i>directory</td>';
           } else {
             table_row += '<td><i class="octicon octicon-git-commit fa-fw"></i>revision</td>';
           }
-          table_row += '<td><a href="' + browse_url + '">' + cooking_task.object_id + '</a></td>';
+          table_row += '<td class="vault-object-id" data-object-id="' + cooking_task.object_id + '"><a href="' + browse_url + '">' + cooking_task.object_id + '</a></td>';
           table_row += '<td style="width: 350px">' + progress_bar.outerHTML + '</td>';
           var dl_link = 'Waiting for download link to be available';
           if (cooking_task.status == 'done') {
@@ -133,7 +147,7 @@
           }
           table_row += '<td class="vault-dl-link" style="width: 320px">' + dl_link + '</td>';
           table_row += '</tr>';
-          table.append(table_row);
+          table.prepend(table_row);
         } else {
           var progress_bar = row_task.find('.progress-bar');
           update_progress_bar(progress_bar, cooking_task);
@@ -142,13 +156,39 @@
           if (cooking_task.status == 'done') {
             dl_link[0].innerHTML = '<a class="btn btn-md btn-swh" href="' + cooking_task.fetch_url +
                                    '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>';
+          } else if (cooking_task.status == 'failed') {
+            dl_link[0].innerHTML = '';
           }
         }
       }
-      sessionStorage.setItem("swh-vault-cooking-tasks", JSON.stringify(vault_cooking_tasks));
+      localStorage.setItem("swh-vault-cooking-tasks", JSON.stringify(vault_cooking_tasks));
       check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
     });
   }
+
+  $('#vault-tasks-toggle-selection').change(function() {
+    $('.vault-task-toggle-selection').prop('checked', this.checked);
+  });
+
+  $('#vault-remove-tasks').click(function() {
+    clearTimeout(check_vault_id);
+    var tasks_to_remove = [];
+    $('.swh-vault-table tbody tr').each(function(i, row) {
+      var task_selected = $(row).find('.vault-task-toggle-selection').prop('checked');
+      if (task_selected) {
+        var object_id = $(row).find('.vault-object-id').data('object-id');
+        tasks_to_remove.push(object_id);
+        $(row).remove();
+      }
+    });
+    var vault_cooking_tasks = JSON.parse(localStorage.getItem("swh-vault-cooking-tasks"));
+    vault_cooking_tasks = jQuery.grep(vault_cooking_tasks, function(task) {
+      return $.inArray(task.object_id, tasks_to_remove) == -1;
+    });
+    localStorage.setItem("swh-vault-cooking-tasks", JSON.stringify(vault_cooking_tasks));
+    $('#vault-tasks-toggle-selection').prop('checked', false);
+    check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
+  });
 
   var polling_interval = 5000;
 
@@ -160,5 +200,10 @@
       check_vault_cooking_tasks();
     }
   });
+
+  window.onfocus = function() {
+    clearTimeout(check_vault_id);
+    check_vault_cooking_tasks();
+  };
 
 </script>

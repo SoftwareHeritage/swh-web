@@ -171,8 +171,12 @@ def api_origin_visits(request, origin_id):
         ov['origin_visit_url'] = reverse('origin-visit',
                                          kwargs={'origin_id': origin_id,
                                                  'visit_id': ov['visit']})
-        ov['snapshot_url'] = reverse('snapshot',
-                                     kwargs={'snapshot_id': ov['snapshot']})
+        snapshot = ov['snapshot']
+        if snapshot:
+            ov['snapshot_url'] = reverse('snapshot',
+                                         kwargs={'snapshot_id': snapshot})
+        else:
+            ov['snapshot_url'] = None
         return ov
 
     r = api_lookup(
@@ -229,8 +233,12 @@ def api_origin_visit(request, origin_id, visit_id):
         ov = origin_visit.copy()
         ov['origin_url'] = reverse('origin',
                                    kwargs={'origin_id': ov['origin']})
-        ov['snapshot_url'] = reverse('snapshot',
-                                     kwargs={'snapshot_id': ov['snapshot']})
+        snapshot = ov['snapshot']
+        if snapshot:
+            ov['snapshot_url'] = reverse('snapshot',
+                                         kwargs={'snapshot_id': snapshot})
+        else:
+            ov['snapshot_url'] = None
 
         # TODO: remove that piece of code once the snapshot migration
         # is totally effective in storage (no more occurrences)

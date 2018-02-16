@@ -391,50 +391,51 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
     if cache_entry:
         return cache_entry['branches'], cache_entry['releases']
 
-    origin_visit_snapshot = service.lookup_snapshot(visit_info['snapshot'])
-
     branches = []
     releases = []
-    revision_ids = []
-    releases_ids = []
-    snapshot_branches = origin_visit_snapshot['branches']
-    for key in sorted(snapshot_branches.keys()):
-        if snapshot_branches[key]['target_type'] == 'revision':
-            branches.append({'name': key,
-                             'revision': snapshot_branches[key]['target']})
-            revision_ids.append(snapshot_branches[key]['target'])
-        elif snapshot_branches[key]['target_type'] == 'release':
-            releases_ids.append(snapshot_branches[key]['target'])
 
-    releases_info = service.lookup_release_multiple(releases_ids)
-    for release in releases_info:
-        releases.append({'name': release['name'],
-                         'date': format_utc_iso_date(release['date']),
-                         'id': release['id'],
-                         'message': release['message'],
-                         'target_type': release['target_type'],
-                         'target': release['target']})
-        revision_ids.append(release['target'])
+    if visit_info['snapshot']:
+        revision_ids = []
+        releases_ids = []
+        origin_visit_snapshot = service.lookup_snapshot(visit_info['snapshot'])
+        snapshot_branches = origin_visit_snapshot['branches']
+        for key in sorted(snapshot_branches.keys()):
+            if snapshot_branches[key]['target_type'] == 'revision':
+                branches.append({'name': key,
+                                'revision': snapshot_branches[key]['target']})
+                revision_ids.append(snapshot_branches[key]['target'])
+            elif snapshot_branches[key]['target_type'] == 'release':
+                releases_ids.append(snapshot_branches[key]['target'])
 
-    revisions = service.lookup_revision_multiple(revision_ids)
+        releases_info = service.lookup_release_multiple(releases_ids)
+        for release in releases_info:
+            releases.append({'name': release['name'],
+                             'date': format_utc_iso_date(release['date']),
+                             'id': release['id'],
+                             'message': release['message'],
+                             'target_type': release['target_type'],
+                             'target': release['target']})
+            revision_ids.append(release['target'])
 
-    branches_to_remove = []
+        revisions = service.lookup_revision_multiple(revision_ids)
 
-    for idx, revision in enumerate(revisions):
-        if idx < len(branches):
-            if revision:
-                branches[idx]['directory'] = revision['directory']
-                branches[idx]['date'] = format_utc_iso_date(revision['date'])
-                branches[idx]['message'] = revision['message']
+        branches_to_remove = []
+
+        for idx, revision in enumerate(revisions):
+            if idx < len(branches):
+                if revision:
+                    branches[idx]['directory'] = revision['directory']
+                    branches[idx]['date'] = format_utc_iso_date(revision['date']) # noqa
+                    branches[idx]['message'] = revision['message']
+                else:
+                    branches_to_remove.append(branches[idx])
             else:
-                branches_to_remove.append(branches[idx])
-        else:
-            rel_idx = idx - len(branches)
-            if revision:
-                releases[rel_idx]['directory'] = revision['directory']
+                rel_idx = idx - len(branches)
+                if revision:
+                    releases[rel_idx]['directory'] = revision['directory']
 
-    for b in branches_to_remove:
-        branches.remove(b)
+        for b in branches_to_remove:
+            branches.remove(b)
 
     cache.set(cache_entry_id, {'branches': branches, 'releases': releases})
 
