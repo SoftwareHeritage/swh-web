@@ -95,7 +95,7 @@
     var cook_dir_url = "{% url 'vault-cook-directory' 'ffff' %}";
     var cook_rev_url = "{% url 'vault-cook-revision_gitfast' 'ffff' %}";
     function add_vault_cooking_task(cooking_task) {
-      var vault_cooking_tasks = JSON.parse(sessionStorage.getItem("swh-vault-cooking-tasks"));
+      var vault_cooking_tasks = JSON.parse(localStorage.getItem("swh-vault-cooking-tasks"));
       if (!vault_cooking_tasks) {
         vault_cooking_tasks = [];
       }
@@ -116,8 +116,14 @@
           type : 'POST',
           success: function() {
             vault_cooking_tasks.push(cooking_task);
-            sessionStorage.setItem("swh-vault-cooking-tasks", JSON.stringify(vault_cooking_tasks));
+            localStorage.setItem("swh-vault-cooking-tasks", JSON.stringify(vault_cooking_tasks));
+            $('#vault-cook-directory-modal').modal('hide');
+            $('#vault-cook-revision-modal').modal('hide');
             show_tab('#vault');
+          },
+          error: function() {
+            $('#vault-cook-directory-modal').modal('hide');
+            $('#vault-cook-revision-modal').modal('hide');
           }
         });
       } else {
@@ -131,7 +137,6 @@
     function vault_cook_directory_archive() {
       var email = $('#swh-vault-directory-email').val().trim();
       if (!email || validateEmail(email)) {
-        $('#vault-cook-directory-modal').modal('hide');
         var cooking_task = {'object_type': 'directory',
                             'object_id': '{{ vault_cooking.directory_id }}',
                             'email': email,
@@ -145,7 +150,6 @@
     function vault_cook_revision_archive() {
       var email = $('#swh-vault-revision-email').val().trim();
       if (!email || validateEmail(email)) {
-        $('#vault-cook-revision-modal').modal('hide');
         var cooking_task = {'object_type': 'revision',
                             'object_id': '{{ vault_cooking.revision_id }}',
                             'email': email,
