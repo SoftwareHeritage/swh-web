@@ -65,7 +65,7 @@
 
   function check_vault_cooking_tasks() {
     var vault_cooking_tasks = JSON.parse(localStorage.getItem("swh-vault-cooking-tasks"));
-    if (vault_cooking_tasks.length == 0) {
+    if (!vault_cooking_tasks || vault_cooking_tasks.length == 0) {
       $('.swh-vault-table tbody tr').remove();
       check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
       return;
