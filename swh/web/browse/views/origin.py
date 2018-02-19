@@ -3,7 +3,6 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import dateutil
 import json
 
 from distutils.util import strtobool
@@ -15,7 +14,8 @@ from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
 from swh.web.common.utils import (
-    gen_path_info, reverse, format_utc_iso_date
+    gen_path_info, reverse, format_utc_iso_date,
+    parse_timestamp
 )
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
@@ -811,9 +811,9 @@ def origin_browse(request, origin_type=None, origin_url=None):
     visits_splitted = []
     visits_by_year = {}
     for i, visit in enumerate(origin_visits):
-        visit_date = dateutil.parser.parse(visit['date'])
+        visit_date = parse_timestamp(visit['date'])
         visit_year = str(visit_date.year)
-        url_date = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%S')
+        url_date = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%SZ')
         visit['fmt_date'] = format_utc_iso_date(visit['date'])
         query_params = {}
         if i < len(origin_visits) - 1:

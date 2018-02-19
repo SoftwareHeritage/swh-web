@@ -7,6 +7,7 @@ import re
 
 from datetime import datetime, timezone
 from dateutil import parser as date_parser
+from dateutil import tz
 
 from swh.web.common.exc import BadInputExc
 
@@ -77,8 +78,23 @@ def fmap(f, data):
     return f(data)
 
 
+def datetime_to_utc(date):
+    """Returns datetime in UTC without timezone info
+
+    Args:
+        date (datetime.datetime): input datetime with timezone info
+
+    Returns:
+        datetime.datime: datetime in UTC without timezone info
+    """
+    if date.tzinfo:
+        return date.astimezone(tz.gettz('UTC')).replace(tzinfo=timezone.utc)
+    else:
+        return date
+
+
 def parse_timestamp(timestamp):
-    """Given a time or timestamp (as string), parse the result as datetime.
+    """Given a time or timestamp (as string), parse the result as UTC datetime.
 
     Returns:
         a timezone-aware datetime representing the parsed value.
@@ -95,7 +111,8 @@ def parse_timestamp(timestamp):
         return None
 
     try:
-        return date_parser.parse(timestamp, ignoretz=False, fuzzy=True)
+        date = date_parser.parse(timestamp, ignoretz=False, fuzzy=True)
+        return datetime_to_utc(date)
     except:
         try:
             return datetime.utcfromtimestamp(float(timestamp)).replace(
@@ -116,23 +133,23 @@ def shorten_path(path):
 
 
 def format_utc_iso_date(iso_date, fmt='%d %B %Y, %H:%M UTC'):
-    """Turns a string reprensation of an UTC iso date
-    into a more human readable one.
+    """Turns a string reprensation of an ISO 8601 date string
+    to UTC and format it into a more human readable one.
 
-    By default, from the following input
+    For instance, from the following input
     string: '2017-05-04T13:27:13+02:00' the following one
-    is returned: '04 May 2017, 13:27 UTC'.
+    is returned: '04 May 2017, 11:27 UTC'.
     Custom format string may also be provided
     as parameter
 
     Args:
-        iso_date (str): a string representation of an UTC iso date
+        iso_date (str): a string representation of an ISO 8601 date
         fmt (str): optional date formatting string
 
     Returns:
         A formatted string representation of the input iso date
     """
-    date = date_parser.parse(iso_date)
+    date = parse_timestamp(iso_date)
     return date.strftime(fmt)
 
 

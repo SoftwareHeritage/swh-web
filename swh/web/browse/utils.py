@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import base64
-import dateutil
 import magic
 import math
 import stat
@@ -256,7 +255,7 @@ def get_origin_visits(origin_info):
                 last_visit += per_page
 
     def _visit_sort_key(visit):
-        ts = dateutil.parser.parse(visit['date']).timestamp()
+        ts = parse_timestamp(visit['date']).timestamp()
         return ts + (float(visit['visit']) / 10e3)
 
     for v in origin_visits:
