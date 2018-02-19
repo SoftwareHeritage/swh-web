@@ -535,8 +535,13 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
             'browse-origin-log')
 
         revision_id = origin_context['revision_id']
+        current_rev = revision_id
         per_page = int(request.GET.get('per_page', PER_PAGE))
-        revision_log = service.lookup_revision_log(revision_id,
+        revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
+
+        if revs_breadcrumb:
+            current_rev = revs_breadcrumb.split('/')[-1]
+        revision_log = service.lookup_revision_log(current_rev,
                                                    limit=per_page+1)
         revision_log = list(revision_log)
 
@@ -549,11 +554,6 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
     query_params = origin_context['query_params']
 
     query_params['per_page'] = per_page
-
-    revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
-
-    if revs_breadcrumb:
-        revision_id = revs_breadcrumb.split('/')[-1]
 
     revision_log_display_data = prepare_revision_log_for_display(
         revision_log, per_page, revs_breadcrumb, origin_context)
