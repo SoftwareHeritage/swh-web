@@ -1,0 +1,25 @@
+{% load static %}
+
+{% if readme_name %}
+
+<div class="panel panel-default" style="overflow-x: auto;">
+  <div class="panel-heading">
+    <h2>{{ readme_name }}</h2>
+  </div>
+  <div id='readme' class="swh-readme panel-body">
+  </div>
+</div>
+
+<script src="{% static 'js/showdown/showdown.min.js' %}"></script>
+<script>
+  var converter = new showdown.Converter({tables: true});
+  $.ajax({
+    url: '{{ readme_url }}',
+    dataType: 'text',
+    success: function (data) {
+      $('#readme').html(converter.makeHtml(data))
+    }
+  });
+</script>
+
+{% endif %}
