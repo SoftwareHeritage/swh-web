@@ -85,7 +85,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
                argtype=api_doc.argtypes.int,
                doc='number of found origins to skip before returning results') # noqa
 @api_doc.param('limit',
-               default=50,
+               default=70,
                argtype=api_doc.argtypes.int,
                doc='the maximum number of found origins to return')
 @api_doc.param('regexp',
@@ -103,10 +103,9 @@ def api_origin_search(request, url_pattern):
     The search is performed in a case insensitive way.
 
     """
-
     result = {}
     offset = int(request.query_params.get('offset', '0'))
-    limit = int(request.query_params.get('limit', '50'))
+    limit = int(request.query_params.get('limit', '70'))
     regexp = request.query_params.get('regexp', 'false')
 
     r = api_lookup(service.search_origin, url_pattern, offset, limit,
