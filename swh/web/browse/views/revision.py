@@ -160,6 +160,8 @@ def revision_browse(request, sha1_git):
     content_size = None
     mimetype = None
     language = None
+    readme_name = None
+    readme_url = None
 
     if content_data:
         breadcrumbs[-1]['url'] = None
@@ -191,6 +193,11 @@ def revision_browse(request, sha1_git):
                                kwargs={'sha1_git': sha1_git},
                                query_params=query_params)
             f['length'] = filesizeformat(f['length'])
+            if f['name'].lower().startswith('readme'):
+                readme_name = f['name']
+                readme_sha1 = f['checksums']['sha1']
+                readme_url = reverse('browse-content-raw',
+                                     kwargs={'query_string': readme_sha1})
 
         top_right_link = get_revision_log_url(sha1_git, origin_context)
         top_right_link_text = mark_safe(
@@ -219,6 +226,8 @@ def revision_browse(request, sha1_git):
                    'max_content_size': content_display_max_size,
                    'mimetype': mimetype,
                    'language': language,
+                   'readme_name': readme_name,
+                   'readme_url': readme_url,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': top_right_link,
                    'top_right_link_text': top_right_link_text,

@@ -331,6 +331,7 @@ swh/web/templates/includes/content-scripts.html
 swh/web/templates/includes/directory-display.html
 swh/web/templates/includes/origin-visit-snapshot.html
 swh/web/templates/includes/origins-search.html
+swh/web/templates/includes/readme-display.html
 swh/web/templates/includes/top-navigation.html
 swh/web/templates/includes/vault-create-tasks.html
 swh/web/templates/includes/vault-ui.html
