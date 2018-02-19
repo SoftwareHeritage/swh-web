@@ -38,3 +38,13 @@
 {% endif %}
 
 {% endblock %}
+
+{% if not content_size %}
+
+{% block swh-browse-panels-group-end %}
+
+{% include "includes/readme-display.html" %}
+
+{% endblock %}
+
+{% endif %}
