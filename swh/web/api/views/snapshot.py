@@ -44,7 +44,7 @@ def api_snapshot(request, snapshot_id):
         s = snapshot.copy()
         if 'branches' in s:
             s['branches'] = {
-                k: utils.enrich_object(v)
+                k: utils.enrich_object(v) if v else None
                 for k, v in s['branches'].items()
             }
         return s

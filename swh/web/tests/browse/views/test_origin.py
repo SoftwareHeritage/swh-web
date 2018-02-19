@@ -64,7 +64,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                             count=len(origin_visits_test_data))
 
         for visit in origin_visits_test_data:
-            visit_date_iso = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%S')
+            visit_date_iso = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%SZ')
             visit_date = format_utc_iso_date(visit['date'])
             browse_url = reverse('browse-origin-directory',
                                  kwargs={'origin_type': origin_info_test_data['type'],

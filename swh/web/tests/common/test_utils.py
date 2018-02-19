@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import datetime
-import dateutil
 import unittest
 
 from nose.tools import istest
@@ -76,8 +75,8 @@ class UtilsTestCase(unittest.TestCase):
         output_dates = [
             None,
             datetime.datetime(2016, 1, 12, 0, 0),
-            datetime.datetime(2016, 1, 12, 9, 19, 12,
-                              tzinfo=dateutil.tz.tzoffset(None, 3600)),
+            datetime.datetime(2016, 1, 12, 8, 19, 12,
+                              tzinfo=datetime.timezone.utc),
             datetime.datetime(2047, 1, 1, 8, 21),
             datetime.datetime(2016, 1, 12, 9, 39, 2,
                               tzinfo=datetime.timezone.utc),
@@ -89,7 +88,7 @@ class UtilsTestCase(unittest.TestCase):
     @istest
     def format_utc_iso_date(self):
         self.assertEqual(utils.format_utc_iso_date('2017-05-04T13:27:13+02:00'), # noqa
-                         '04 May 2017, 13:27 UTC')
+                         '04 May 2017, 11:27 UTC')
 
     @istest
     def gen_path_info(self):
