@@ -65,7 +65,7 @@
 
   function check_vault_cooking_tasks() {
     var vault_cooking_tasks = JSON.parse(localStorage.getItem("swh-vault-cooking-tasks"));
-    if (vault_cooking_tasks.length == 0) {
+    if (!vault_cooking_tasks || vault_cooking_tasks.length == 0) {
       $('.swh-vault-table tbody tr').remove();
       check_vault_id = setTimeout(check_vault_cooking_tasks, polling_interval);
       return;
@@ -144,6 +144,8 @@
           if (cooking_task.status == 'done') {
             dl_link = '<a class="btn btn-md btn-swh" href="' + cooking_task.fetch_url +
                       '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>';
+          } else if (cooking_task.status == 'failed') {
+            dl_link = '';
           }
           table_row += '<td class="vault-dl-link" style="width: 320px">' + dl_link + '</td>';
           table_row += '</tr>';
