@@ -399,6 +399,8 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
         origin_visit_snapshot = service.lookup_snapshot(visit_info['snapshot'])
         snapshot_branches = origin_visit_snapshot['branches']
         for key in sorted(snapshot_branches.keys()):
+            if not snapshot_branches[key]:
+                continue
             if snapshot_branches[key]['target_type'] == 'revision':
                 branches.append({'name': key,
                                 'revision': snapshot_branches[key]['target']})

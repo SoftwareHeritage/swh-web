@@ -243,7 +243,7 @@ def api_origin_visit(request, origin_id, visit_id):
         # is totally effective in storage (no more occurrences)
         if 'occurrences' in ov:
             ov['occurrences'] = {
-                k: utils.enrich_object(v)
+                k: utils.enrich_object(v) if v else None
                 for k, v in ov['occurrences'].items()
             }
         return ov
