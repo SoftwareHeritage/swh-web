@@ -10,27 +10,14 @@ from django.http import HttpResponse
 from swh.web.common import service
 from swh.web.common.utils import reverse
 from swh.web.common.exc import NotFoundExc, ForbiddenExc
-from swh.web.api import apidoc as api_doc
+from swh.web.api.apidoc import api_doc
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
-from swh.web.api.views.utils import (
-    api_lookup, doc_exc_id_not_found, doc_header_link,
-    doc_arg_last_elt, doc_arg_per_page, doc_exc_bad_id,
-    doc_arg_content_id
-)
+from swh.web.api.views.utils import api_lookup
 
 
 @api_route(r'/content/(?P<q>.+)/provenance/', 'content-provenance')
-@api_doc.route('/content/provenance/', tags=['hidden'])
-@api_doc.arg('q',
-             default='sha1_git:88b9b366facda0b5ff8d8640ee9279bed346f242',
-             argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""List of provenance information (dict) for the matched
-                        content.""")
+@api_doc('/content/provenance/', tags=['hidden'])
 def api_content_provenance(request, q):
     """Return content's provenance information if any.
 
@@ -59,20 +46,43 @@ def api_content_provenance(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/filetype/', 'content-filetype')
-@api_doc.route('/content/filetype/')
-@api_doc.arg('q',
-             default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
-             argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""Filetype information (dict) for the matched
-                        content.""")
+@api_doc('/content/filetype/')
 def api_content_filetype(request, q):
-    """Get information about the detected MIME type of a content object.
-
     """
+    .. http:get:: /api/1/content/[(hash_type):](hash)/filetype/
+
+        Get information about the detected MIME type of a content object.
+
+        :param string hash_type: optional parameter specifying which hashing algorithm has been used
+            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
+            or *blake2s256*. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is *sha1*.
+        :param string hash: hexadecimal representation of the checksum value computed with
+            the specified hashing algorithm.
+
+        :>json object content_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/` for
+            getting information about the content
+        :>json string encoding: the detected content encoding
+        :>json string id: the *sha1* identifier of the content
+        :>json string mimetype: the detected MIME type of the content
+        :>json object tool: information about the tool used to detect the content filetype
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *hash_type* or *hash* has been provided
+        :statuscode 404: requested content can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/filetype/`
+    """ # noqa
     return api_lookup(
         service.lookup_content_filetype, q,
         notfound_msg='No filetype information found for content {}.'.format(q),
@@ -80,21 +90,42 @@ def api_content_filetype(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/language/', 'content-language')
-@api_doc.route('/content/language/')
-@api_doc.arg('q',
-             default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
-             argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""Language information (dict) for the matched
-                        content.""")
+@api_doc('/content/language/')
 def api_content_language(request, q):
-    """Get information about the detected (programming) language of a content
-    object.
-
     """
+    .. http:get:: /api/1/content/[(hash_type):](hash)/language/
+
+        Get information about the programming language used in a content object.
+
+        :param string hash_type: optional parameter specifying which hashing algorithm has been used
+            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
+            or *blake2s256*. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is *sha1*.
+        :param string hash: hexadecimal representation of the checksum value computed with
+            the specified hashing algorithm.
+
+        :>json object content_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/` for
+            getting information about the content
+        :>json string id: the *sha1* identifier of the content
+        :>json string lang: the detected programming language if any
+        :>json object tool: information about the tool used to detect the programming language
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *hash_type* or *hash* has been provided
+        :statuscode 404: requested content can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/language/`
+    """ # noqa
     return api_lookup(
         service.lookup_content_language, q,
         notfound_msg='No language information found for content {}.'.format(q),
@@ -102,20 +133,42 @@ def api_content_language(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/license/', 'content-license')
-@api_doc.route('/content/license/')
-@api_doc.arg('q',
-             default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
-             argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""License information (dict) for the matched
-                        content.""")
+@api_doc('/content/license/')
 def api_content_license(request, q):
-    """Get information about the detected license of a content object.
-
     """
+    .. http:get:: /api/1/content/[(hash_type):](hash)/license/
+
+        Get information about the license of a content object.
+
+        :param string hash_type: optional parameter specifying which hashing algorithm has been used
+            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
+            or *blake2s256*. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is *sha1*.
+        :param string hash: hexadecimal representation of the checksum value computed with
+            the specified hashing algorithm.
+
+        :>json object content_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/` for
+            getting information about the content
+        :>json string id: the *sha1* identifier of the content
+        :>json array licenses: array of strings containing the detected license names if any
+        :>json object tool: information about the tool used to detect the license
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *hash_type* or *hash* has been provided
+        :statuscode 404: requested content can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/license/`
+    """ # noqa
     return api_lookup(
         service.lookup_content_license, q,
         notfound_msg='No license information found for content {}.'.format(q),
@@ -123,20 +176,11 @@ def api_content_license(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/ctags/', 'content-ctags')
-@api_doc.route('/content/ctags/', tags=['upcoming'])
-@api_doc.arg('q',
-             default='sha1:1fc6129a692e7a87b5450e2ba56e7669d0c5775d',
-             argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""Ctags symbol (dict) for the matched
-                        content.""")
+@api_doc('/content/ctags/', tags=['hidden'])
 def api_content_ctags(request, q):
-    """Get information about all `Ctags <http://ctags.sourceforge.net/>`_-style
+    """
+    Get information about all `Ctags <http://ctags.sourceforge.net/>`_-style
     symbols defined in a content object.
-
     """
     return api_lookup(
         service.lookup_content_ctags, q,
@@ -145,24 +189,35 @@ def api_content_ctags(request, q):
 
 
 @api_route(r'/content/(?P<q>.+)/raw/', 'content-raw')
-@api_doc.route('/content/raw/', handle_response=True)
-@api_doc.arg('q',
-             default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
-             argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=doc_arg_content_id)
-@api_doc.param('filename', default=None,
-               argtype=api_doc.argtypes.str,
-               doc='User\'s desired filename. If provided, the downloaded'
-                   ' content will get that filename.')
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.octet_stream,
-                 retdoc='The raw content data as an octet stream')
+@api_doc('/content/raw/', handle_response=True)
 def api_content_raw(request, q):
-    """Get the raw content of a content object (AKA "blob"), as a byte
-    sequence.
-
     """
+    .. http:get:: /api/1/content/[(hash_type):](hash)/raw/
+
+        Get the raw content of a content object (aka a "blob"), as a byte sequence.
+
+        :param string hash_type: optional parameter specifying which hashing algorithm has been used
+            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
+            or *blake2s256*. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is *sha1*.
+        :param string hash: hexadecimal representation of the checksum value computed with
+            the specified hashing algorithm.
+        :query string filename: if provided, the downloaded content will get that filename
+
+        :resheader Content-Type: application/octet-stream
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *hash_type* or *hash* has been provided
+        :statuscode 404: requested content can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/raw/`
+    """ # noqa
     def generate(content):
         yield content['data']
 
@@ -190,27 +245,7 @@ def api_content_raw(request, q):
 
 
 @api_route(r'/content/symbol/(?P<q>.+)/', 'content-symbol')
-@api_doc.route('/content/symbol/', tags=['upcoming'])
-@api_doc.arg('q',
-             default='hello',
-             argtype=api_doc.argtypes.str,
-             argdoc="""An expression string to lookup in swh's raw content""")
-@api_doc.header('Link', doc=doc_header_link)
-@api_doc.param('last_sha1', default=None,
-               argtype=api_doc.argtypes.str,
-               doc=doc_arg_last_elt)
-@api_doc.param('per_page', default=10,
-               argtype=api_doc.argtypes.int,
-               doc=doc_arg_per_page)
-@api_doc.returns(rettype=api_doc.rettypes.list,
-                 retdoc="""A list of dict whose content matches the expression.
-                 Each dict has the following keys:
-                 - id (bytes): identifier of the content
-                 - name (text): symbol whose content match the expression
-                 - kind (text): kind of the symbol that matched
-                 - lang (text): Language for that entry
-                 - line (int): Number line for the symbol
-                """)
+@api_doc('/content/symbol/', tags=['hidden'])
 def api_content_symbol(request, q=None):
     """Search content objects by `Ctags <http://ctags.sourceforge.net/>`_-style
     symbol (e.g., function name, data type, method, ...).
@@ -252,31 +287,37 @@ def api_content_symbol(request, q=None):
 
 @api_route(r'/content/known/search/', 'content-known', methods=['POST'])
 @api_route(r'/content/known/(?P<q>(?!search).*)/', 'content-known')
-@api_doc.route('/content/known/', tags=['hidden'])
-@api_doc.arg('q',
-             default='adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
-             argtype=api_doc.argtypes.sha1,
-             argdoc='content identifier as a sha1 checksum')
-@api_doc.param('q', default=None,
-               argtype=api_doc.argtypes.str,
-               doc="""(POST request) An algo_hash:hash string, where algo_hash
-                   is one of sha1, sha1_git or sha256 and hash is the hash to
-                   search for in SWH""")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""a dictionary with results (found/not found for each given
-                        identifier) and statistics about how many identifiers
-                        were found""")
+@api_doc('/content/known/', tags=['hidden'])
 def api_check_content_known(request, q=None):
-    """Check whether some content (AKA "blob") is present in the archive.
-
-    Lookup can be performed by various means:
-
-    - a GET request with one or several hashes, separated by ','
-    - a POST request with one or several hashes, passed as (multiple) values
-      for parameter 'q'
-
     """
+    .. http:get:: /api/1/content/known/(sha1)[,(sha1), ...,(sha1)]/
+
+        Check whether some content(s) (aka "blob(s)") is present in the SWH archive
+        based on its *sha1* checksum.
+
+        :param string sha1: hexadecimal representation of the *sha1* checksum value
+            for the content to check existence. Multiple values can be provided separated
+            by ','.
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json array search_res: array holding the search result for each provided *sha1*
+        :>json object search_stats: some statistics regarding the number of *sha1* provided
+            and the percentage of those found in the SWH archive
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *sha1* has been provided
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`content/known/dc2830a9e72f23c1dfebef4413003221baa5fb62,0c3f19cb47ebfbe643fb19fa94c874d18fa62d12/`
+    """ # noqa
     response = {'search_res': None,
                 'search_stats': None}
     search_stats = {'nbfiles': 0, 'pct': 0}
@@ -321,19 +362,49 @@ def api_check_content_known(request, q=None):
 
 
 @api_route(r'/content/(?P<q>.+)/', 'content')
-@api_doc.route('/content/')
-@api_doc.arg('q',
-             default='dc2830a9e72f23c1dfebef4413003221baa5fb62',
-             argtype=api_doc.argtypes.algo_and_hash,
-             argdoc=doc_arg_content_id)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""known metadata for content identified by q""")
+@api_doc('/content/')
 def api_content_metadata(request, q):
-    """Get information about a content (AKA "blob") object.
-
     """
+    .. http:get:: /api/1/content/[(hash_type):](hash)/
+
+        Get information about a content (aka a "blob") object.
+        In the SWH archive, a content object is identified based on checksum
+        values computed using various hashing algorithms.
+
+        :param string hash_type: optional parameter specifying which hashing algorithm has been used
+            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
+            or *blake2s256*. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is *sha1*.
+        :param string hash: hexadecimal representation of the checksum value computed with
+            the specified hashing algorithm.
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json object checksums: object holding the computed checksum values for the requested content
+        :>json string data_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/raw/`
+            for downloading the content raw bytes
+        :>json string filetype_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/filetype/`
+            for getting information about the content MIME type
+        :>json string language_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/language/`
+            for getting information about the programming language used in the content
+        :>json number length: length of the content in bytes
+        :>json string license_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/license/`
+            for getting information about the license of the content
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *hash_type* or *hash* has been provided
+        :statuscode 404: requested content can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            curl -i :swh_web_api:`content/sha1_git:fe95a46679d128ff167b7c55df5d02356c5a1ae1/`
+    """ # noqa
     return api_lookup(
         service.lookup_content, q,
         notfound_msg='Content with {} not found.'.format(q),

@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import docutils.parsers.rst
+import docutils.utils
 import re
 
 from datetime import datetime, timezone
@@ -282,3 +284,25 @@ def get_swh_persistent_id(object_type, object_id, scheme_version=1):
                           (object_id, e))
     else:
         return swh_id
+
+
+def parse_rst(text, report_level=2):
+    """
+    Parse a reStructuredText string with docutils.
+
+    Args:
+        text (str): string with reStructuredText markups in it
+        report_level (int): level of docutils report messages to print
+            (1 info 2 warning 3 error 4 severe 5 none)
+
+    Returns:
+        docutils.nodes.document: a parsed docutils document
+    """
+    parser = docutils.parsers.rst.Parser()
+    components = (docutils.parsers.rst.Parser,)
+    settings = docutils.frontend.OptionParser(
+        components=components).get_default_values()
+    settings.report_level = report_level
+    document = docutils.utils.new_document('rst-doc', settings=settings)
+    parser.parse(text, document)
+    return document
