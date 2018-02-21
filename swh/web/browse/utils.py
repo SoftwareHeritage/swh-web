@@ -78,10 +78,7 @@ def get_mimetype_and_encoding_for_content(content):
             # workaround an issue with the magic module who can fail
             # if detect_from_content is called multiple times in
             # a short amount of time
-            if 'too many values to unpack' in str(exc):
-                reload(magic)
-            else:
-                break
+            reload(magic)
 
     return mime_type, encoding
 
