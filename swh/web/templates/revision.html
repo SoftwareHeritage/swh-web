@@ -17,9 +17,22 @@
 <i class="octicon octicon-git-commit fa-fw"></i>Revision <b>{{ swh_object_metadata.id }}</b>
 authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
 </div>
-<pre style="white-space: pre-wrap">
-<h2>{{ message_header }}</h2>{{ message_body }}
-</pre>
+
+<div class="panel panel-default" style="overflow-x: auto;">
+  <div class="panel-heading" style="padding: 10px">
+    <a data-toggle="collapse" id="swh-collapse-revision-message" href="#swh-revision-message">
+      <div class="pull-left">
+        <pre style="white-space: pre-wrap; background-color: inherit; padding: 0px; margin: 0px; border: none;"><h2 style="padding-bottom: 0px;">{{ message_header }}</h2></pre>
+      </div>
+      <div class="clearfix"></div>
+    </a>
+  </div>
+
+  <div id="swh-revision-message" class="panel-collapse collapse">
+    <pre style="white-space: pre-wrap; margin: 0px; border: none; border-radius: 0px;">{{ message_body }}</pre>
+  </div>
+</div>
+
 <div style="margin: 4px; padding-bottom: 5px;">
 {{ parents_links }}
 </div>
@@ -498,6 +511,12 @@ Pushing that button will request the immediate computation of all diffs.">Comput
       changed_files_text += 's';
     }
     $('#swh-revision-changed-files').text(changed_files_text);
+
+    {% if message_body|length  > 0 %}
+      $('#swh-revision-message').addClass('in');
+    {% else %}
+      $('#swh-collapse-revision-message').attr('data-toggle', '');
+    {% endif %}
 
     var $root = $('html, body');
 
