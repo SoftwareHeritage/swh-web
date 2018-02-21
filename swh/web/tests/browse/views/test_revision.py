@@ -74,8 +74,8 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
         self.assertContains(resp, format_utc_iso_date(author_date))
         self.assertContains(resp, format_utc_iso_date(committer_date))
-        self.assertContains(resp, '<h2>%s</h2>%s' % (message_lines[0],
-                                                     '\n'.join(message_lines[1:])))
+        self.assertContains(resp, message_lines[0])
+        self.assertContains(resp, '\n'.join(message_lines[1:]))
 
         origin_info = {
             'id': '7416001',
