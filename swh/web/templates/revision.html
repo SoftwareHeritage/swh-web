@@ -59,7 +59,11 @@ authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }
   </div>
   <div id="swh-revision-changes" class="tab-pane">
 
-    <div class="panel-group" style="padding: 5px;">
+    <div id="swh-too-large-revision-diff" class="alert alert-warning" role="alert" style="display: none; margin: 5px 5px 0px 5px">
+      The diff you're trying to view is too large. Only the first <span id="swh-nb-loaded-diffs">1000</span> changed files have been loaded.
+    </div>
+
+    <div id="swh-revision-diffs" class="panel-group" style="padding: 5px;">
 
       <div class="panel panel-default" style="overflow-x: auto;">
         <div class="panel-heading">
@@ -68,66 +72,24 @@ authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }
               Showing <strong id="swh-revision-changed-files"></strong>
               with <strong id="swh-revision-lines-added" style="color:green">0 additions</strong>
               and <strong id="swh-revision-lines-deleted" style="color:red">0 deletions</strong>
-               (<span id="swh-nb-diffs-computed">0</span> / {{ changes|length }} diffs computed)
+              (<span id="swh-nb-diffs-computed">0</span> / <span id="swh-total-nb-diffs">0</span> diffs computed)
             </div>
             <div class="pull-right">
               <button class="btn btn-md btn-swh" type="button" onclick="compute_all_diffs(event)" id="swh-compute-all-diffs"
                       title="By default, diffs will be computed as the view is scrolled.
-Pushing that button will request the immediate computation of all diffs.">Compute all diffs</button>
+Pushing that button will request the immediate computation of all diffs." style="visibility: hidden;">Compute all diffs</button>
             </div>
             <div class="clearfix"></div>
           </a>
         </div>
-
-        <div id="swh-revision-changes-list" class="panel-collapse collapse">
-          <pre style="background: none; border: none;">{{ changes_msg }}</pre>
+        <div id="swh-revision-changes-list" class="panel-collapse collapse in">
+          <div id="swh-revision-changes-loading" style="text-align: center">
+            <img src="{% static "img/swh-spinner.gif" %}"></img>
+            <p>Computing file changes ...</p>
+          </div>
+          <pre style="background: none; border: none;display: none;"></pre>
         </div>
       </div>
-
-      {% for change in changes %}
-      <div id="panel_{{ change.id }}" class="panel panel-default swh-file-diff-panel" style="overflow-x: auto;">
-        <div class="panel-heading">
-          <a data-toggle="collapse" href="#panel_{{ change.id }}_content">
-            <div class="pull-left swh-title-color">
-              {% if change.type != 'rename' %}
-                <strong>{{ change.path }}</strong>
-              {% else %}
-                <strong>{{ change.from_path }} &rarr; {{ change.to_path }}</strong>
-              {% endif %}
-            </div>
-          </a>
-          <div class="pull-right">
-            {% if change.type != 'rename' %}
-              <div class="btn-group diff-styles" data-toggle="buttons" style="visibility: hidden;">
-                <button class="btn btn-md btn-swh active unified-diff-button" type="button" onclick="show_unified_diff(event, '{{ change.id }}')">Unified</button>
-                <button class="btn btn-md btn-swh splitted-diff-button" type="button" onclick="show_splitted_diff(event, '{{ change.id }}')">Side-by-side</button>
-              </div>
-            {% endif %}
-            <a href="{{ change.content_url }}" class="btn btn-md btn-swh" role="button">View file</a>
-          </div>
-          <div class="clearfix"></div>
-
-        </div>
-
-        <div id="panel_{{ change.id }}_content" class="panel-collapse collapse in">
-          <div class="swh-diff-loading" id="{{ change.id }}-loading" style="text-align: center;visibility: hidden;">
-            <img src="{% static 'img/swh-spinner.gif' %}"></img>
-            <p>Loading diff ...</p>
-          </div>
-
-          <div class="highlightjs swh-content" style="display: none;" id="{{ change.id }}-highlightjs">
-            <div id="{{ change.id }}-unified-diff">
-              <pre><code class="{{ change.id }}" id="{{ change.id }}"></code></pre>
-            </div>
-            <div style="width: 100%; display: none;" id="{{ change.id }}-splitted-diff">
-              <pre style="width: 50%; float: left;"><code class="{{ change.id }}" id="{{ change.id }}-from"></code></pre>
-              <pre style="width: 50%"><code class="{{ change.id }}" id="{{ change.id }}-to"></code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-
   </div>
 
 </div>
@@ -135,7 +97,8 @@ Pushing that button will request the immediate computation of all diffs.">Comput
 <script>
 
   // number of changed files in the revision
-  var nb_changed_files = {{ changes|length }};
+  var changes = null;
+  var nb_changed_files = 0;
   // to track the number of already computed files diffs
   var nb_diffs_computed = 0;
 
@@ -232,7 +195,7 @@ Pushing that button will request the immediate computation of all diffs.">Comput
         // increment number of computed diffs
         ++nb_diffs_computed;
         // toggle the 'Compute all diffs' button if all diffs have been computed
-        if (nb_diffs_computed == nb_changed_files) {
+        if (nb_diffs_computed == changes.length) {
           $('#swh-compute-all-diffs').addClass('active');
         }
 
@@ -241,7 +204,7 @@ Pushing that button will request the immediate computation of all diffs.">Comput
         if (data.diff_str.indexOf('Large diff') == 0) {
           $('#' + diff_id)[0].innerHTML = data.diff_str +
             '<br/><button class="btn btn-md btn-swh" type="button" onclick="compute_diff(\'' +
-            diff_url + '&force=true\', \'' + diff_id + '\')">Request diff</button>'
+            diff_url + '&force=true\', \'' + diff_id + '\')">Request diff</button>';
         } else {
 
           // prepare code highlighting
@@ -433,56 +396,6 @@ Pushing that button will request the immediate computation of all diffs.">Comput
     });
   }
 
-  // callback when the 'Changes' tab is activated
-  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
-    if (e.target.text == 'Changes') {
-      // iterate on list of file changes
-      {% for change in changes %}
-        // map diff id to diff computation url
-        diffs_urls['{{ change.id }}'] = '{{ change.diff_url }}';
-
-        // in order to not send too much diff computation requests
-        // (as the file changes list can be large),
-        // diffs computation will be requested on the fly
-        // as the view is scrolled
-
-        // create a waypoint that will trigger diff computation when
-        // the top of the diff panel hits the bottom of the viewport
-        $('#panel_{{ change.id }}').waypoint({
-          handler: function() {
-            if (is_in_viewport($('#panel_{{ change.id }}'))) {
-              compute_diff('{{ change.diff_url }}', '{{ change.id }}');
-              this.destroy();
-            }
-          },
-          offset: '100%'
-        });
-
-        // create a waypoint that will trigger diff computation when
-        // the bottom of the diff panel hits the top of the viewport
-        $('#panel_{{ change.id }}').waypoint({
-          handler: function() {
-            if (is_in_viewport($('#panel_{{ change.id }}'))) {
-              compute_diff('{{ change.diff_url }}', '{{ change.id }}');
-              this.destroy();
-            }
-          },
-          offset: function() {
-            return -$('#panel_{{ change.id }}').height();
-          }
-        });
-      {% endfor %}
-
-      // compute visible diffs when navigating to the 'Changes' tab
-      compute_visible_diffs();
-
-      $('#readme-panel').css('display', 'none');
-
-    } else if (e.target.text == 'Files') {
-      $('#readme-panel').css('display', 'block');
-    }
-  });
-
   // to compute all visible diffs in the viewport
   function compute_visible_diffs() {
     $('.swh-file-diff-panel').each(function(i, elt) {
@@ -504,13 +417,134 @@ Pushing that button will request the immediate computation of all diffs.">Comput
     event.stopPropagation();
   }
 
-  $(document).ready(function() {
-
-    var changed_files_text = nb_changed_files + ' changed file';
-    if (nb_changed_files != 1) {
-      changed_files_text += 's';
+  function gen_diff_panel(diff_data) {
+    var diff_panel_title = diff_data.path;
+    if (diff_data.type == 'rename') {
+      diff_panel_title = diff_data.from_path + ' &rarr; ' + diff_data.to_path;
     }
-    $('#swh-revision-changed-files').text(changed_files_text);
+    var diff_panel_html =
+    '<div id="panel_' + diff_data.id + '" class="panel panel-default swh-file-diff-panel" style="overflow-x: auto;"> \
+      <div class="panel-heading"> \
+        <a data-toggle="collapse" href="#panel_' + diff_data.id + '_content"> \
+          <div class="pull-left swh-title-color"> \
+            <strong>' + diff_panel_title + '</strong> \
+          </div> \
+        </a> \
+        <div class="pull-right"> \
+          <div class="btn-group diff-styles" data-toggle="buttons" style="visibility: hidden;"> \
+            <button class="btn btn-md btn-swh active unified-diff-button" type="button" onclick="show_unified_diff(event, \'' + diff_data.id + '\')">Unified</button> \
+            <button class="btn btn-md btn-swh splitted-diff-button" type="button" onclick="show_splitted_diff(event, \'' + diff_data.id + '\')">Side-by-side</button> \
+          </div> \
+          <a href="' + diff_data.content_url + '" class="btn btn-md btn-swh" role="button">View file</a> \
+        </div> \
+        <div class="clearfix"></div> \
+      </div> \
+      <div id="panel_' + diff_data.id + '_content" class="panel-collapse collapse in"> \
+        <div class="swh-diff-loading" id="' + diff_data.id + '-loading" style="text-align: center;visibility: hidden;"> \
+          <img src="{% static "img/swh-spinner.gif" %}"></img> \
+          <p>Loading diff ...</p> \
+        </div> \
+        <div class="highlightjs swh-content" style="display: none;" id="' + diff_data.id + '-highlightjs"> \
+          <div id="' + diff_data.id + '-unified-diff"> \
+            <pre><code class="' + diff_data.id + '" id="' + diff_data.id + '"></code></pre> \
+          </div> \
+          <div style="width: 100%; display: none;" id="' + diff_data.id + '-splitted-diff"> \
+            <pre style="width: 50%; float: left;"><code class="' + diff_data.id + '" id="' + diff_data.id + '-from"></code></pre> \
+            <pre style="width: 50%"><code class="' + diff_data.id + '" id="' + diff_data.id + '-to"></code></pre> \
+          </div> \
+        </div> \
+      </div> \
+    </div>';
+    return diff_panel_html;
+  }
+
+  // setup waypoints to request diffs computation on the fly while scrolling
+  function setup_waypoints() {
+    for (var i = 0 ; i < changes.length ; ++i) {
+      var diff_data = changes[i];
+
+      // create a waypoint that will trigger diff computation when
+      // the top of the diff panel hits the bottom of the viewport
+      $('#panel_' + diff_data.id).waypoint({
+        handler: function() {
+          if (is_in_viewport(this.element)) {
+            var diff_id = this.element.id.replace('panel_', '');
+            compute_diff(diffs_urls[diff_id], diff_id);
+            this.destroy();
+          }
+        },
+        offset: '100%'
+      });
+
+      // create a waypoint that will trigger diff computation when
+      // the bottom of the diff panel hits the top of the viewport
+      $('#panel_' + diff_data.id).waypoint({
+        handler: function() {
+          if (is_in_viewport(this.element)) {
+            var diff_id = this.element.id.replace('panel_', '');
+            compute_diff(diffs_urls[diff_id], diff_id);
+            this.destroy();
+          }
+        },
+        offset: function() {
+          return -$(this.element).height();
+        }
+      });
+
+    }
+  }
+
+  // callback when the 'Changes' tab is activated
+  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    if (e.target.text == 'Changes') {
+
+      $('#readme-panel').css('display', 'none');
+
+      // request computation of revision file changes list
+      // when navigating to the 'Changes' tab and add diff panels
+      // to the DOM when receiving the result
+      $.ajax({
+        url: '{{ diff_revision_url }}',
+        dataType: 'json',
+        success: function (data) {
+
+          changes = data.changes;
+          nb_changed_files = data.total_nb_changes;
+          var changed_files_text = nb_changed_files + ' changed file';
+          if (nb_changed_files != 1) {
+            changed_files_text += 's';
+          }
+          $('#swh-revision-changed-files').text(changed_files_text);
+          $('#swh-total-nb-diffs').text(changes.length);
+          $('#swh-revision-changes-list pre')[0].innerHTML = data.changes_msg;
+
+          $('#swh-revision-changes-loading').css('display', 'none');
+          $('#swh-revision-changes-list pre').css('display', 'block');
+          $('#swh-compute-all-diffs').css('visibility', 'visible');
+          $('#swh-revision-changes-list').removeClass('in');
+
+          if (nb_changed_files > changes.length) {
+            $('#swh-too-large-revision-diff').css('display', 'block');
+            $('#swh-nb-loaded-diffs').text(changes.length);
+          }
+
+          for (var i = 0 ; i < changes.length ; ++i) {
+            var diff_data = changes[i];
+            diffs_urls[diff_data.id] = diff_data.diff_url;
+            $('#swh-revision-diffs').append(gen_diff_panel(diff_data));
+          }
+
+          setup_waypoints();
+          compute_visible_diffs();
+        }
+      });
+
+    } else if (e.target.text == 'Files') {
+      $('#readme-panel').css('display', 'block');
+    }
+  });
+
+  $(document).ready(function() {
 
     {% if message_body|length  > 0 %}
       $('#swh-revision-message').addClass('in');
@@ -522,26 +556,26 @@ Pushing that button will request the immediate computation of all diffs.">Comput
 
     // callback when the user requests to scroll on a specific diff or back to top
     $('#swh-revision-changes-list a[href^="#"], #back-to-top a[href^="#"]').click(function() {
-      var href = $.attr(this, 'href');
-      // disable waypoints while scrolling as we do not want to
-      // launch computation of diffs the user is not interested in
-      // (file changes list can be large)
-      Waypoint.disableAll();
+       var href = $.attr(this, 'href');
+       // disable waypoints while scrolling as we do not want to
+       // launch computation of diffs the user is not interested in
+       // (file changes list can be large)
+       Waypoint.disableAll();
 
-      $root.animate(
-        {
-          scrollTop: $(href).offset().top
-        },
-        {
-          duration: 500,
-          complete: function () {
-            window.location.hash = href;
-            // enable waypoints back after scrolling
-            Waypoint.enableAll();
-            // compute diffs visible in the viewport
-            compute_visible_diffs();
-          }
-      });
+       $root.animate(
+         {
+           scrollTop: $(href).offset().top
+         },
+         {
+           duration: 500,
+           complete: function () {
+             window.location.hash = href;
+             // enable waypoints back after scrolling
+             Waypoint.enableAll();
+             // compute diffs visible in the viewport
+             compute_visible_diffs();
+           }
+       });
 
       return false;
     });

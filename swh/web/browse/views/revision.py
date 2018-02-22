@@ -6,6 +6,7 @@
 import hashlib
 import json
 
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
@@ -41,6 +42,17 @@ def _gen_content_url(revision, query_string, path, origin_context):
     return content_url
 
 
+def _gen_diff_link(idx, diff_anchor, link_text):
+    if idx < _max_displayed_file_diffs:
+        return gen_link(diff_anchor, link_text)
+    else:
+        return link_text
+
+
+# TODO: put in conf
+_max_displayed_file_diffs = 1000
+
+
 def _gen_revision_changes_list(revision, changes, origin_context):
     """
     Returns a HTML string describing the file changes
@@ -59,7 +71,7 @@ def _gen_revision_changes_list(revision, changes, origin_context):
 
     """
     changes_msg = []
-    for change in changes:
+    for i, change in enumerate(changes):
         hasher = hashlib.sha1()
         from_query_string = ''
         to_query_string = ''
@@ -88,32 +100,66 @@ def _gen_revision_changes_list(revision, changes, origin_context):
             change['content_url'] = \
                 _gen_content_url(revision, to_query_string,
                                  change['to_path'], origin_context)
-            changes_msg.append('modified:  %s' % gen_link(panel_diff_link,
-                                                          change['to_path']))
+            changes_msg.append('modified:  %s' %
+                               _gen_diff_link(i, panel_diff_link,
+                                              change['to_path']))
         elif change['type'] == 'insert':
             change['content_url'] = \
                 _gen_content_url(revision, to_query_string,
                                  change['to_path'], origin_context)
-            changes_msg.append('new file:  %s' % gen_link(panel_diff_link,
-                                                          change['to_path']))
+            changes_msg.append('new file:  %s' %
+                               _gen_diff_link(i, panel_diff_link,
+                                              change['to_path']))
         elif change['type'] == 'delete':
             parent = service.lookup_revision(revision['parents'][0])
             change['content_url'] = \
                 _gen_content_url(parent,
                                  from_query_string,
                                  change['from_path'], origin_context)
-            changes_msg.append('deleted:   %s' % gen_link(panel_diff_link,
-                                                          change['from_path']))
+            changes_msg.append('deleted:   %s' %
+                               _gen_diff_link(i, panel_diff_link,
+                                              change['from_path']))
         elif change['type'] == 'rename':
             change['content_url'] = \
                 _gen_content_url(revision, to_query_string,
                                  change['to_path'], origin_context)
             link_text = change['from_path'] + ' &rarr; ' + change['to_path']
-            changes_msg.append('renamed:   %s' % gen_link(panel_diff_link,
-                                                          link_text))
+            changes_msg.append('renamed:   %s' %
+                               _gen_diff_link(i, panel_diff_link, link_text))
     if not changes:
         changes_msg.append('No changes')
     return mark_safe('\n'.join(changes_msg))
+
+
+@browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/diff/',
+              view_name='diff-revision')
+def _revision_diff(request, sha1_git):
+    """
+    Browse internal endpoint to compute revision diff
+    """
+    try:
+        revision = service.lookup_revision(sha1_git)
+        origin_context = None
+        origin_type = request.GET.get('origin_type', None)
+        origin_url = request.GET.get('origin_url', None)
+        timestamp = request.GET.get('timestamp', None)
+        visit_id = request.GET.get('visit_id', None)
+        if origin_type and origin_url:
+            origin_context = get_origin_context(origin_type, origin_url,
+                                                timestamp, visit_id)
+    except Exception as exc:
+        return handle_view_exception(request, exc)
+
+    changes = service.diff_revision(sha1_git)
+    changes_msg = _gen_revision_changes_list(revision, changes, origin_context)
+
+    diff_data = {
+        'total_nb_changes': len(changes),
+        'changes': changes[:_max_displayed_file_diffs],
+        'changes_msg': changes_msg
+    }
+    diff_data_json = json.dumps(diff_data, separators=(',', ': '))
+    return HttpResponse(diff_data_json, content_type='application/json')
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/',
@@ -300,8 +346,11 @@ def revision_browse(request, sha1_git):
         vault_cooking['directory_context'] = True
         vault_cooking['directory_id'] = dir_id
 
-    changes = service.diff_revision(sha1_git)
-    changes_msg = _gen_revision_changes_list(revision, changes, origin_context)
+    diff_revision_url = reverse('diff-revision', kwargs={'sha1_git': sha1_git},
+                                query_params={'origin_type': origin_type,
+                                              'origin_url': origin_url,
+                                              'timestamp': timestamp,
+                                              'visit_id': visit_id})
 
     return render(request, 'revision.html',
                   {'empty_browse': False,
@@ -328,8 +377,7 @@ def revision_browse(request, sha1_git):
                    'top_right_link': top_right_link,
                    'top_right_link_text': top_right_link_text,
                    'vault_cooking': vault_cooking,
-                   'changes': changes,
-                   'changes_msg': changes_msg})
+                   'diff_revision_url': diff_revision_url})
 
 
 NB_LOG_ENTRIES = 20
