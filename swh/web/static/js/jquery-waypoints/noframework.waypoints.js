@@ -1,6 +1,6 @@
 /*!
 Waypoints - 4.0.1
-Copyright © 2011-2016 Caleb Troughton
+Copyright © 2011-2018 Caleb Troughton
 Licensed under the MIT license.
 https://github.com/imakewebthings/waypoints/blob/master/licenses.txt
 */
@@ -213,7 +213,7 @@ https://github.com/imakewebthings/waypoints/blob/master/licenses.txt
   Context.prototype.add = function(waypoint) {
     var axis = waypoint.options.horizontal ? 'horizontal' : 'vertical'
     this.waypoints[axis][waypoint.key] = waypoint
-    this.refresh()
+    //this.refresh()
   }
 
   /* Private */
