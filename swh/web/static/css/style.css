@@ -797,3 +797,62 @@ a.dropdown-left:before {
     float: left;
     margin-left: -20px;
 }
+#swh-visits-calendar.calendar table td {
+    width: 28px;
+    height: 28px;
+    padding: 0px;
+}
+
+.d3-wrapper {
+    position: relative;
+    height: 0;
+    width: 100%;
+    padding: 0;
+    /* padding-bottom will be overwritten by JavaScript later */
+    padding-bottom: 100%;
+}
+.d3-wrapper > svg {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+
+svg .grid line {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+
+svg .grid path {
+    stroke-width: 0;
+}
+
+div.d3-tooltip {
+    position: absolute;
+    text-align: center;
+    width: auto;
+    height: auto;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: white;
+    border: 1px solid black;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.swh-visits-list-column {
+    float: left;
+    padding: 10px;
+}
+
+.swh-visits-list-row {
+    padding-left: 50px;
+}
+
+.swh-visits-list-row:after {
+    content: "";
+    display: table;
+    clear: both;
+}

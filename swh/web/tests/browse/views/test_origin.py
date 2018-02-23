@@ -60,18 +60,6 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                   (origin_info_test_data['url'],
                                    origin_info_test_data['url']))
 
-        self.assertContains(resp, '<td class="swh-origin-visit">',
-                            count=len(origin_visits_test_data))
-
-        for visit in origin_visits_test_data:
-            visit_date_iso = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%SZ')
-            visit_date = format_utc_iso_date(visit['date'])
-            browse_url = reverse('browse-origin-directory',
-                                 kwargs={'origin_type': origin_info_test_data['type'],
-                                         'origin_url': origin_info_test_data['url'],
-                                         'timestamp': visit_date_iso})
-            self.assertContains(resp, 'href="%s">%s</a>' %
-                                (browse_url, visit_date))
 
     @nottest
     def origin_content_view_test(self, origin_info, origin_visits,
