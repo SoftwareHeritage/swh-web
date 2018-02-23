@@ -832,13 +832,13 @@ def origin_browse(request, origin_type=None, origin_url=None):
         if visit_year not in visits_by_year:
             # display 3 years by row in visits list view
             if len(visits_by_year) == 3:
-                visits_splitted.insert(0, visits_by_year)
+                visits_splitted.append(visits_by_year)
                 visits_by_year = {}
             visits_by_year[visit_year] = []
         visits_by_year[visit_year].append(visit)
 
     if len(visits_by_year) > 0:
-        visits_splitted.insert(0, visits_by_year)
+        visits_splitted.append(visits_by_year)
 
     return render(request, 'origin.html',
                   {'empty_browse': False,
