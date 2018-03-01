@@ -57,7 +57,8 @@ def content_raw(request, query_string):
     if not filename:
         filename = '%s_%s' % (algo, checksum)
 
-    if content_data['mimetype'].startswith('text/'):
+    if content_data['mimetype'].startswith('text/') or \
+       content_data['mimetype'] == 'inode/x-empty':
         response = HttpResponse(content_data['raw_data'],
                                 content_type="text/plain")
         response['Content-disposition'] = 'filename=%s' % filename
@@ -117,7 +118,8 @@ def _contents_diff(request, from_query_string, to_query_string):
                     content_from['raw_data'], content_from['mimetype'], path)
             language = content_from_display_data['language']
             content_from_size = content_from['length']
-            if not content_from['mimetype'].startswith('text/'):
+            if not (content_from['mimetype'].startswith('text/') or
+                    content_from['mimetype'] == 'inode/x-empty'):
                 text_diff = False
 
         if text_diff and to_query_string:
@@ -126,7 +128,8 @@ def _contents_diff(request, from_query_string, to_query_string):
                     content_to['raw_data'], content_to['mimetype'], path)
             language = content_to_display_data['language']
             content_to_size = content_to['length']
-            if not content_to['mimetype'].startswith('text/'):
+            if not (content_to['mimetype'].startswith('text/') or
+                    content_to['mimetype'] == 'inode/x-empty'):
                 text_diff = False
 
         diff_size = abs(content_to_size - content_from_size)
@@ -141,13 +144,13 @@ def _contents_diff(request, from_query_string, to_query_string):
             if content_from:
                 content_from_lines = content_from['raw_data'].decode('utf-8')\
                                                              .splitlines(True)
-                if content_from_lines[-1][-1] != '\n':
+                if content_from_lines and content_from_lines[-1][-1] != '\n':
                     content_from_lines[-1] += '[swh-no-nl-marker]\n'
 
             if content_to:
                 content_to_lines = content_to['raw_data'].decode('utf-8')\
                                                          .splitlines(True)
-                if content_to_lines[-1][-1] != '\n':
+                if content_to_lines and content_to_lines[-1][-1] != '\n':
                     content_to_lines[-1] += '[swh-no-nl-marker]\n'
 
             diff_lines = difflib.unified_diff(content_from_lines,
