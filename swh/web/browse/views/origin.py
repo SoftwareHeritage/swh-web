@@ -878,3 +878,19 @@ def origin_search(request, url_pattern):
                          separators=(',', ': '))
 
     return HttpResponse(results, content_type='application/json')
+
+
+@browse_route(r'origin/(?P<origin_id>[0-9]+)/latest_snapshot/',
+              view_name='browse-origin-latest-snapshot')
+def _origin_latest_snapshot(request, origin_id):
+    """
+    Internal browse endpoint used to check if an origin has already
+    been visited by Software Heritage and has at least one full visit.
+    """
+    result = service.lookup_latest_origin_snapshot(origin_id,
+                                                   allowed_statuses=['full'])
+
+    result = json.dumps(result, sort_keys=True, indent=4,
+                        separators=(',', ': '))
+
+    return HttpResponse(result, content_type='application/json')
