@@ -801,6 +801,23 @@ def lookup_snapshot(snapshot_id):
     return converters.from_snapshot(snapshot)
 
 
+def lookup_latest_origin_snapshot(origin_id, allowed_statuses=None):
+    """Return information about the latest snapshot of an origin.
+
+    Args:
+        origin_id: integer identifier of the origin
+        allowed_statuses: list of visit statuses considered
+            to find the latest snapshot for the visit. For instance,
+            ``allowed_statuses=['full']`` will only consider visits that
+            have successfully run to completion.
+
+    Returns:
+        A dict filled with the snapshot content.
+    """
+    snapshot = storage.snapshot_get_latest(origin_id, allowed_statuses)
+    return converters.from_snapshot(snapshot)
+
+
 def lookup_entity_by_uuid(uuid):
     """Return the entity's hierarchy from its uuid.
 
