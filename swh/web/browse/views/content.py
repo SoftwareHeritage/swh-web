@@ -259,5 +259,6 @@ def content_display(request, query_string):
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
                        '</i>Raw File'),
                    'origin_context': None,
-                   'vault_cooking': None
+                   'vault_cooking': None,
+                   'show_actions_menu': False
                    })

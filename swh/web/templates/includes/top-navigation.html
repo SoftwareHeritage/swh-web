@@ -68,7 +68,15 @@
     {% if top_right_link %}
       <a href="{{ top_right_link | safe }}" class="btn btn-md btn-swh" role="button">{{ top_right_link_text }}</a>
     {% endif %}
-    {% include "includes/vault-create-tasks.html" %}
+    {% if show_actions_menu %}
+      <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>Actions
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu swh-browse-actions-menu">
+        {% include "includes/vault-create-tasks.html" %}
+      </ul>
+    {% endif %}
   </div>
 
   {% include "includes/breadcrumbs.html" %}
@@ -120,6 +128,11 @@
         setReleasesTabActive();
       }
     {% endif %}
+    $('.dropdown-submenu a.dropdown-link').on("click", function(e){
+      $(this).next('ul').toggle();
+      e.stopPropagation();
+      e.preventDefault();
+    });
   });
 
 </script>

@@ -377,7 +377,8 @@ def revision_browse(request, sha1_git):
                    'top_right_link': top_right_link,
                    'top_right_link_text': top_right_link_text,
                    'vault_cooking': vault_cooking,
-                   'diff_revision_url': diff_revision_url})
+                   'diff_revision_url': diff_revision_url,
+                   'show_actions_menu': True})
 
 
 NB_LOG_ENTRIES = 20
@@ -457,4 +458,5 @@ def revision_log_browse(request, sha1_git):
                    'top_right_link': None,
                    'top_right_link_text': None,
                    'origin_context': None,
-                   'vault_cooking': None})
+                   'vault_cooking': None,
+                   'show_actions_menu': False})
