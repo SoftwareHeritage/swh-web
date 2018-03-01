@@ -5,26 +5,31 @@
 {% block swh-browse-before-panels %}
 
 <div class="panel panel-default" style="overflow-x: auto;">
-    <div class="panel-heading">
-      <a data-toggle="collapse" data-parent="#accordion" href="#swh-origin-top-collapse" style="outline:none;">
-        <h2 style="text-align: center">SWH origin: {{ origin_info.url }}</h2>
-        <div class="clearfix"></div>
-      </a>
-    </div>
-    <div id="swh-origin-top-collapse" class="panel-collapse collapse">
-      <table class="table">
-        <tbody>
-          {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-            <tr>
-              <th class="swh-metadata-table-row">{{ key }}</th>
-              <td class="swh-metadata-table-row">
-                <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="panel-heading">
+    {% if origin_info.url|slice:"0:4" == "http" %}
+      <div class="pull-right">
+        <a href="{{ origin_info.url }}" class="btn btn-md btn-swh" role="button">Go to origin</a>
+      </div>
+    {% endif %}
+    <a data-toggle="collapse" data-parent="#accordion" href="#swh-origin-top-collapse" style="outline:none;">
+      <h2 style="text-align: center">SWH origin: {{ origin_info.url }}</h2>
+      <div class="clearfix"></div>
+    </a>
+  </div>
+  <div id="swh-origin-top-collapse" class="panel-collapse collapse">
+    <table class="table">
+      <tbody>
+        {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+          <tr>
+            <th class="swh-metadata-table-row">{{ key }}</th>
+            <td class="swh-metadata-table-row">
+              <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% endblock %}
@@ -36,65 +41,76 @@
   </div>
   <div class="clearfix"></div>
 </div>
-<div class="panel-body">
-  <!-- Timeline result -->
-  <h2>Calendar</h3>
-  <div class="timeline" style="margin-bottom: 20px">
-    <div id="swh-calendar-window" style="height: 200px">
-      <div id="cal-zoom-window" style="width: 100%; height: 60%"></div>
-      <div id="cal-static-window" style="width: 100%; height: 40%"></div>
-    </div>
-    <button class="btn btn-sm btn-swh pull-right" id="cal-clear">Reset zoom</button>
-  </div>
 
-  <h2>List</h3>
-  {% for visits_by_year in visits_splitted %}
-  <div class="row">
-    <div class="col-sm-1">
+<div class="panel-body">
+
+  {% if origin_visits_data %}
+
+    <!-- Timeline result -->
+    <h2>Calendar</h3>
+    <div class="timeline" style="margin-bottom: 20px">
+      <div id="swh-calendar-window" style="height: 200px">
+        <div id="cal-zoom-window" style="width: 100%; height: 60%"></div>
+        <div id="cal-static-window" style="width: 100%; height: 40%"></div>
+      </div>
+      <button class="btn btn-sm btn-swh pull-right" id="cal-clear">Reset zoom</button>
     </div>
-    {% for key, val in visits_by_year.items|dictsortreversed:"0.lower" %}
-      <div class="col-sm-3">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>{{ key }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for visit in val %}
-              <tr>
-                <td class="swh-origin-visit">
-                  <a class="swh-visit-{{ visit.status }}" title="{{ visit.status}} visit" href="{{ visit.browse_url }}">{{ visit.fmt_date }}</a>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+
+    <h2>List</h3>
+    {% for visits_by_year in visits_splitted %}
+      <div class="row">
+        <div class="col-sm-1"></div>
+        {% for key, val in visits_by_year.items|dictsortreversed:"0.lower" %}
+          <div class="col-sm-3">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>{{ key }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for visit in val %}
+                  <tr>
+                    <td class="swh-origin-visit">
+                      <a class="swh-visit-{{ visit.status }}" title="{{ visit.status}} visit" href="{{ visit.browse_url }}">{{ visit.fmt_date }}</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endfor %}
+        <div class="col-sm-2"></div>
       </div>
     {% endfor %}
-    <div class="col-sm-2">
-    </div>
-  </div>
-  {% endfor %}
-</div>
 
-<!-- Flot calendar setup -->
-<!-- Flot plugin dependencies -->
-<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
-<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>
-<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.selection.min.js"></script>
-<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot.tooltip/0.9.0/jquery.flot.tooltip.min.js"></script>
-<script language="javascript" type="text/javascript" src="{% static 'js/calendar.js' %}"></script>
-<script>
-  var cal = null;
-  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    var target = $(e.target).attr("href");
-    if (!cal && target == '#browse') {
-      cal = new Calendar('{{ browse_url_base }}', {{ origin_visits_data | safe }},
-                          {{ swh_object_metadata.id }}, $('#cal-zoom-window'),
-                          $('#cal-static-window'),  $('#cal-clear'));
-    }
-  });
-</script>
+    <!-- Flot calendar setup -->
+    <!-- Flot plugin dependencies -->
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.selection.min.js"></script>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot.tooltip/0.9.0/jquery.flot.tooltip.min.js"></script>
+    <script language="javascript" type="text/javascript" src="{% static 'js/calendar.js' %}"></script>
+    <script>
+      var cal = null;
+      $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var target = $(e.target).attr("href");
+        if (!cal && target == '#browse') {
+          cal = new Calendar('{{ browse_url_base }}', {{ origin_visits_data | safe }},
+                              {{ swh_object_metadata.id }}, $('#cal-zoom-window'),
+                              $('#cal-static-window'),  $('#cal-clear'));
+        }
+      });
+    </script>
+
+  {% else %}
+
+    <p>
+      Origin has not yet been visited by Software Heritage.
+    </p>
+
+  {% endif %}
+
+</div>
 
 {% endblock %}

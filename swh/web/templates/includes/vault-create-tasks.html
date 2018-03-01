@@ -1,22 +1,20 @@
 {% if vault_cooking %}
-  <a class="btn btn-md btn-swh btn-swh-vault" data-placement="bottom" data-popover-content="#vault-popover" data-toggle="popover" href="#" tabindex="0">
-    <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download
-  </a>
-  <div class="hidden" id="vault-popover">
-    <div class="popover-heading">
-      Request download from the Software Heritage Vault
-    </div>
-    <div class="popover-body">
-      <div class="btn-group-vertical">
-        {% if vault_cooking.directory_context %}
-          <button id="vault-cook-directory" type="button" class="btn btn-md btn-swh" data-toggle="modal" data-target="#vault-cook-directory-modal">Cook a standard archive from the current directory</button>
-        {% endif %}
-        {% if vault_cooking.revision_context %}
-          <button id="vault-cook-revision" type="button" class="btn btn-md btn-swh" data-toggle="modal" data-target="#vault-cook-revision-modal">Cook a git fast-import archive from the current revision</button>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+
+  <!-- entry in the Actions menu -->
+  <li class="dropdown-submenu">
+    <a class="dropdown-link dropdown-left" tabindex="-1" href="#"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>
+    <ul class="dropdown-menu">
+      {% if vault_cooking.directory_context %}
+        <li><a tabindex="-1" href="#" data-toggle="modal" data-target="#vault-cook-directory-modal"><i class="fa fa-folder fa-fw" aria-hidden="true"></i>     Directory</a></li>
+      {% endif %}
+      {% if vault_cooking.revision_context %}
+        <li><a tabindex="-1" href="#" data-toggle="modal" data-target="#vault-cook-revision-modal"><i class="octicon octicon-git-commit fa-fw"></i>Revision</a></li>
+      {% endif %}
+    </ul>
+  </li>
+
+  <!-- modals related to the creation of vault cooking tasks -->
+  <!-- they will be reparented in the script below in order to be able to display them -->
   <div class="modal fade" id="vault-cook-directory-modal" tabindex="-1" role="dialog" aria-labelledby="vault-cook-directory-modal-label" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -46,6 +44,7 @@
       </div>
     </div>
   </div>
+
   <div class="modal fade" id="vault-cook-revision-modal" tabindex="-1" role="dialog" aria-labelledby="vault-cook-revision-modal-label" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -75,6 +74,7 @@
       </div>
     </div>
   </div>
+
   <div class="modal fade" id="invalid-email-modal" tabindex="-1" role="dialog" aria-labelledby="invalid-email-modal-label" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -91,6 +91,7 @@
       </div>
     </div>
   </div>
+
   <script>
     var cook_dir_url = "{% url 'vault-cook-directory' 'ffff' %}";
     var cook_rev_url = "{% url 'vault-cook-revision_gitfast' 'ffff' %}";
@@ -159,5 +160,15 @@
         $('#invalid-email-modal').modal('show');
       }
     }
+
+    // reparent the modals to the top navigation div in order to be able
+    // to display them
+    $(document).ready(function() {
+      $('.swh-browse-top-navigation').append($('#vault-cook-directory-modal'));
+      $('.swh-browse-top-navigation').append($('#vault-cook-revision-modal'));
+      $('.swh-browse-top-navigation').append($('#invalid-email-modal'));
+    });
+
   </script>
+
 {% endif %}
