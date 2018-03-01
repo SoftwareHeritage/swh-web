@@ -387,8 +387,8 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                         query_params=query_params)
 
             self.assertContains(resp, '<a href="%s">' % root_dir_release_url)
-        self.assertContains(resp, '<button id="vault-cook-directory"')
-        self.assertContains(resp, '<button id="vault-cook-revision"')
+        self.assertContains(resp, 'vault-cook-directory')
+        self.assertContains(resp, 'vault-cook-revision')
 
     @patch('swh.web.browse.utils.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')

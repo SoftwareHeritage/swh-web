@@ -26,6 +26,7 @@
             <tr>
               <th>Origin type</th>
               <th>Origin browse url</th>
+              <th>Visit status</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -51,6 +52,7 @@
   var offset = 0;
   var origins_search_url = "{% url 'browse-origin-search' 'url_regexp' %}?limit=limit_val&offset=offset_val&regexp=true";
   var origin_browse_url = "{% url 'browse-origin' 'type' 'origin_url' %}";
+  var origin_latest_snapshot_url = "{% url 'browse-origin-latest-snapshot' '1234' %}";
   var search_request = null;
   var current_data = null;
 
@@ -73,8 +75,25 @@
         tableRow += '<td style="width: 100px;">' + elem.type + '</td>';
         var browse_url = origin_browse_url.replace('type', elem.type).replace('origin_url', elem.url);
         tableRow += '<td style="white-space: nowrap;"><a href="' + browse_url + '">' + browse_url + '</a></td>';
+        tableRow += '<td id="visit-status-origin-' + elem.id + '"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>';
         tableRow += '</tr>';
         table.append(tableRow);
+        // get async latest visit snapshot and update visit status icon
+        var latest_snasphot_url = origin_latest_snapshot_url.replace('1234', elem.id);
+        $.ajax({
+          url: latest_snasphot_url,
+          dataType: 'json',
+          success: function(origin_id) {
+            return function(data) {
+              $('#visit-status-origin-' + origin_id).children().remove();
+              if (data) {
+                $('#visit-status-origin-' + origin_id).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');
+              } else {
+                $('#visit-status-origin-' + origin_id).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="fa fa-times"></i>');
+              }
+            }
+          }(elem.id)
+        });
       }
       fixTableRowsStyle();
     } else {

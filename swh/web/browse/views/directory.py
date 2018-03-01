@@ -111,4 +111,5 @@ def directory_browse(request, sha1_git, path=None):
                    'readme_name': readme_name,
                    'readme_url': readme_url,
                    'origin_context': None,
-                   'vault_cooking': vault_cooking})
+                   'vault_cooking': vault_cooking,
+                   'show_actions_menu': True})

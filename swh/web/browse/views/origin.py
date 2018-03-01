@@ -342,7 +342,8 @@ def origin_directory_browse(request, origin_type, origin_url,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
                    'origin_context': origin_context,
-                   'vault_cooking': vault_cooking})
+                   'vault_cooking': vault_cooking,
+                   'show_actions_menu': True})
 
 
 @browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/content/(?P<path>.+)/', # noqa
@@ -487,8 +488,8 @@ def origin_content_display(request, origin_type, origin_url, path,
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
                        '</i>Raw File'),
                    'origin_context': origin_context,
-                   'vault_cooking': None
-                   })
+                   'vault_cooking': None,
+                   'show_actions_menu': False})
 
 
 PER_PAGE = 20
@@ -622,7 +623,8 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
                    'top_right_link': None,
                    'top_right_link_text': None,
                    'origin_context': origin_context,
-                   'vault_cooking': None})
+                   'vault_cooking': None,
+                   'show_actions_menu': False})
 
 
 @browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/branches/', # noqa
@@ -773,7 +775,8 @@ def origin_releases_browse(request, origin_type, origin_url, timestamp=None):
                    'prev_releases_url': prev_releases_url,
                    'next_releases_url': next_releases_url,
                    'origin_context': origin_context,
-                   'vault_cooking': None})
+                   'vault_cooking': None,
+                   'show_actions_menu': False})
 
 
 @browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
@@ -832,13 +835,13 @@ def origin_browse(request, origin_type=None, origin_url=None):
         if visit_year not in visits_by_year:
             # display 3 years by row in visits list view
             if len(visits_by_year) == 3:
-                visits_splitted.insert(0, visits_by_year)
+                visits_splitted.append(visits_by_year)
                 visits_by_year = {}
             visits_by_year[visit_year] = []
         visits_by_year[visit_year].append(visit)
 
     if len(visits_by_year) > 0:
-        visits_splitted.insert(0, visits_by_year)
+        visits_splitted.append(visits_by_year)
 
     return render(request, 'origin.html',
                   {'empty_browse': False,
@@ -853,7 +856,8 @@ def origin_browse(request, origin_type=None, origin_url=None):
                    'origin_info': origin_info,
                    'browse_url_base': '/browse/origin/%s/url/%s/' %
                    (origin_type, origin_url),
-                   'vault_cooking': None})
+                   'vault_cooking': None,
+                   'show_actions_menu': False})
 
 
 @browse_route(r'origin/search/(?P<url_pattern>.+)/',
@@ -874,3 +878,19 @@ def origin_search(request, url_pattern):
                          separators=(',', ': '))
 
     return HttpResponse(results, content_type='application/json')
+
+
+@browse_route(r'origin/(?P<origin_id>[0-9]+)/latest_snapshot/',
+              view_name='browse-origin-latest-snapshot')
+def _origin_latest_snapshot(request, origin_id):
+    """
+    Internal browse endpoint used to check if an origin has already
+    been visited by Software Heritage and has at least one full visit.
+    """
+    result = service.lookup_latest_origin_snapshot(origin_id,
+                                                   allowed_statuses=['full'])
+
+    result = json.dumps(result, sort_keys=True, indent=4,
+                        separators=(',', ': '))
+
+    return HttpResponse(result, content_type='application/json')

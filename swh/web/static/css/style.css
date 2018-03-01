@@ -747,3 +747,24 @@ span.no-nl-marker svg {
 span.no-nl-marker svg path {
     fill: currentColor;
 }
+
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: -100%;
+    margin-top: -6px;
+    margin-left: -2px;
+}
+
+a.dropdown-left:before {
+    content: "\f0d9";
+    font-family: FontAwesome;
+    display: block;
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin-left: -20px;
+}
