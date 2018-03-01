@@ -6,6 +6,11 @@
 
 <div class="panel panel-default" style="overflow-x: auto;">
     <div class="panel-heading">
+      {% if origin_info.url|slice:"0:4" == "http" %}
+        <div class="pull-right">
+          <a href="{{ origin_info.url }}" class="btn btn-md btn-swh" role="button">Go to origin</a>
+        </div>
+      {% endif %}
       <a data-toggle="collapse" data-parent="#accordion" href="#swh-origin-top-collapse" style="outline:none;">
         <h2 style="text-align: center">SWH origin: {{ origin_info.url }}</h2>
         <div class="clearfix"></div>
