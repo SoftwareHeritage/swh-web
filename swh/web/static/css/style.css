@@ -576,30 +576,56 @@ fieldset[disabled] .btn-swh.active {
     left:-20px;
     position:absolute;
     top:-2px;
- }
+}
 
- .swh-branches-releases {
-     min-width: 200px;
- }
+.swh-visit-failed {
+    color: #ff0000;
+    position: relative;
+}
 
- .swh-branches-switch,
- .swh-releases-switch {
-     padding: 5px 15px !important;
- }
+.swh-visit-failed:before {
+    content: "\f06a";
+    font-family: FontAwesome;
+    left:-20px;
+    position:absolute;
+    top:-2px;
+}
 
- li.swh-branch:hover,
- li.swh-release:hover {
-     background-color: #e8e8e8;
- }
+.swh-visit-ongoing {
+    color: #0000ff;
+    position: relative;
+}
 
- .nav a,
- .swh-branch a,
- .swh-release a {
-     outline: none;
- }
+.swh-visit-ongoing:before {
+    content: "\f021";
+    font-family: FontAwesome;
+    left:-20px;
+    position:absolute;
+    top:-2px;
+}
 
- .swh-branch a:hover,
- .swh-release a:hover {
+.swh-branches-releases {
+    min-width: 200px;
+}
+
+.swh-branches-switch,
+.swh-releases-switch {
+    padding: 5px 15px !important;
+}
+
+li.swh-branch:hover,
+li.swh-release:hover {
+    background-color: #e8e8e8;
+}
+
+.nav a,
+.swh-branch a,
+.swh-release a {
+    outline: none;
+}
+
+.swh-branch a:hover,
+.swh-release a:hover {
     text-decoration: none;
 }
 
