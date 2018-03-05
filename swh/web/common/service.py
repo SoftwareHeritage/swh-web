@@ -798,6 +798,8 @@ def lookup_snapshot(snapshot_id):
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
     snapshot = storage.snapshot_get(snapshot_id_bin)
+    if not snapshot:
+        raise NotFoundExc('Snapshot with id %s not found!' % snapshot_id)
     return converters.from_snapshot(snapshot)
 
 

@@ -1,8 +1,8 @@
 {% extends "browse.html" %}
 
 {% block swh-browse-before-panels %}
-{% if origin_context %}
-  {% include "includes/origin-visit-snapshot.html" %}
+{% if snapshot_context %}
+  {% include "includes/snapshot-context.html" %}
 {% endif %}
 {% endblock %}
 
@@ -20,7 +20,7 @@
     <thead>
       <tr>
         <th><i class="fa fa-tag fa-fw"></i>Name</th>
-        <th>Type</th>
+        <th>Target</th>
         <th>Message</th>
         <th>Date</th>
       </tr>

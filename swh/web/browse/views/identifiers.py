@@ -43,6 +43,10 @@ def swh_id_browse(request, swh_id):
             view_url = reverse('browse-revision',
                                kwargs={'sha1_git': object_id},
                                query_params=request.GET)
+        elif object_type == 'snp':
+            view_url = reverse('browse-snapshot',
+                               kwargs={'snapshot_id': object_id},
+                               query_params=request.GET)
         else:
             msg = '\'%s\' is not a valid SWH persistent identifier!' % swh_id
             raise BadInputExc(msg)

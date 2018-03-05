@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block swh-browse-before-panels %}
-  {% if origin_context %}
-    {% include "includes/origin-visit-snapshot.html" %}
+  {% if snapshot_context %}
+    {% include "includes/snapshot-context.html" %}
   {% endif %}
 {% endblock %}
 

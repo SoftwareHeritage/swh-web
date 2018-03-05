@@ -27,3 +27,4 @@ are guaranteed to remain stable (persistent) over time.
         :swh_web_browse:`swh:1:dir:db990da9af15427455ce7836ce2b8a34b9bf67f5`
         :swh_web_browse:`swh:1:rel:a9b7e3f1eada90250a6b2ab2ef3e0a846cb16831`
         :swh_web_browse:`swh:1:rev:f1b94134a4b879bc55c3dacdb496690c8ebdc03f`
+        :swh_web_browse:`swh:1:snp:673156c31a876c5b99b2fe3e89615529de9a3c44`
