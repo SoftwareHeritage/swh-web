@@ -40,14 +40,15 @@ SWH crawlers.
 Wherever a revision context is expected in a path (i.e., a
 **/browse/revision/(sha1_git)/** path fragment) we can put in its stead a path fragment
 of the form **/origin/(origin_type)/url/(origin_url)/[/visit/(timestamp)/][?branch=(branch)]**.
-Such a fragment is resolved, internally by the SWH archive, to a *sha1_git* as follows:
+Such a fragment is resolved, internally by the SWH archive, to a revision *sha1_git* as follows:
 
-- if *timestamp* is absent: look for the most recent crawl of origin *origin_id*
-- if *timestamp* is given: look for the closest crawl of origin *origin_id*
-  from timestamp *timestamp*
+- if *timestamp* is absent: look for the most recent crawl of origin
+  identified by *origin_type* and *origin_url*
+- if *timestamp* is given: look for the closest crawl of origin identified
+  by *origin_type* and *origin_url* from timestamp *timestamp*
 - if *branch* is given as a query parameter: look for the branch *branch*
 - if *branch* is absent: look for branch "HEAD" or "master"
-- return the *sha1_git* pointed by the chosen branch
+- return the revision *sha1_git* pointed by the chosen branch
 
 The already mentioned URLs for revision contexts can therefore be alternatively
 specified by users as:
@@ -61,9 +62,11 @@ specified by users as:
 
 Typing:
 
-- *origin_id* is given as an integer identifier, pointing into the origin table.
-  There will be separate mechanisms for finding origins by other means (e.g.,
-  URLs, metadata, etc).
+- *origin_type* corresponds to the type of the archived origin:
+  *git*, *svn*, *hg*, *deposit*, *deb*, ...
+
+- *origin_url* corresponds to the URL the origin was crawled from,
+  for instance https://github.com/(user)/(repo)/
 
 - *branch* name is given as per the corresponding VCS (e.g., Git) as
   a query parameter to the requestes URL.

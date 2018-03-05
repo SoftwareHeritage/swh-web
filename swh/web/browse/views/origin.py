@@ -197,7 +197,7 @@ def origin_directory_browse(request, origin_type, origin_url,
     The url scheme that points to it is the following:
 
         * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/directory/[(path)/]`
-        * :http:get:`/browse/origin/(origin_type)/url/(origin_type)/visit/(timestamp)/directory/[(path)/]`
+        * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/directory/[(path)/]`
 
     Args:
         request: input django http request

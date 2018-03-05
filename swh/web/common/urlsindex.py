@@ -15,7 +15,7 @@ class UrlsIndex(object):
     all declared patterns will be grouped under the default one.
     """
 
-    urlpatterns = {}
+    _urlpatterns = {}
     scope = 'default'
 
     @classmethod
@@ -28,13 +28,13 @@ class UrlsIndex(object):
             view: function implementing the Django view
             view_name: name of the view used to reverse the url
         """
-        if cls.scope not in cls.urlpatterns:
-            cls.urlpatterns[cls.scope] = []
+        if cls.scope not in cls._urlpatterns:
+            cls._urlpatterns[cls.scope] = []
         if view_name:
-            cls.urlpatterns[cls.scope].append(url(url_pattern, view,
-                                                  name=view_name))
+            cls._urlpatterns[cls.scope].append(url(url_pattern, view,
+                                                   name=view_name))
         else:
-            cls.urlpatterns[cls.scope].append(url(url_pattern, view))
+            cls._urlpatterns[cls.scope].append(url(url_pattern, view))
 
     @classmethod
     def get_url_patterns(cls):
@@ -45,4 +45,4 @@ class UrlsIndex(object):
         Returns:
             The list of url patterns associated to the current scope
         """
-        return cls.urlpatterns[cls.scope]
+        return cls._urlpatterns[cls.scope]

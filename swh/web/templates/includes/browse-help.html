@@ -67,27 +67,6 @@
         (see the <a href="https://docs.softwareheritage.org/devel/swh-model/apidoc/swh.model.html#swh.model.identifiers.directory_identifier">documentation</a> to get more details about how it is computed)
       </li>
       <li>
-        Display information about a software <b>origin</b>:
-        <ul>
-
-          <li>
-            <a href="{% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}">
-              {% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}">
-              {% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}
-            </a>
-          </li>
-        </ul>
-      </li>
-      <li>
-
-        Display information about a <b>person</b>: <a href="{% url 'browse-person' '8275' %}">{% url 'browse-person' '8275' %}</a>
-      </li>
-      <li>
         Display information about a <b>revision</b> from its <i>sha1_git</i> identifier:
 
         <a href="{% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}">
@@ -117,6 +96,23 @@
     </p>
 
     <ul>
+      <li>
+        Display information about the SWH visits of a software <b>origin</b>:
+        <ul>
+
+          <li>
+            <a href="{% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}">
+              {% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}">
+              {% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}
+            </a>
+          </li>
+        </ul>
+      </li>
       <li>
         Display a <b>content</b> from an <b>origin</b>:
         <a href="{% url 'browse-origin-content' 'git' 'https://github.com/git/git' 'git.c' %}">
