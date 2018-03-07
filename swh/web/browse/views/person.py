@@ -18,13 +18,6 @@ def person_browse(request, person_id):
     identified by its id.
 
     The url that points to it is :http:get:`/browse/person/(person_id)/`.
-
-    Args:
-        request: input django http request
-        person_id (int): a swh person id
-
-    Returns:
-        The HMTL rendering for the metadata of the provided person.
     """
     try:
         person = service.lookup_person(person_id)

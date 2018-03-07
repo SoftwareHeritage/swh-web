@@ -170,13 +170,6 @@ def revision_browse(request, sha1_git):
     identified by its id.
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/`.
-
-    Args:
-        request: input django http request
-        sha1_git: a SWH revision id
-
-    Returns:
-        The HMTL rendering for the metadata of the provided revision.
     """
     try:
         revision = service.lookup_revision(sha1_git)
@@ -392,13 +385,6 @@ def revision_log_browse(request, sha1_git):
     log for a SWH revision identified by its id.
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`.
-
-    Args:
-        request: input django http request
-        sha1_git: a SWH revision id
-
-    Returns:
-        The HMTL rendering of the revision history log.
     """ # noqa
     try:
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))

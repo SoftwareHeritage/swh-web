@@ -198,25 +198,6 @@ def origin_directory_browse(request, origin_type, origin_url,
 
         * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/directory/[(path)/]`
         * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/directory/[(path)/]`
-
-    Args:
-        request: input django http request
-        origin_type: the type of swh origin (git, svn, hg, ...)
-        origin_url: the url of the swh origin
-        timestamp: optional swh visit timestamp parameter
-            (the last one will be used by default)
-        path: optional path parameter used to navigate in directories
-              reachable from the origin root one
-        branch: optional query parameter that specifies the origin branch
-            from which to retrieve the directory
-        release: optional query parameter that specifies the origin release
-            from which to retrieve the directory
-        revision: optional query parameter to specify the origin revision
-            from which to retrieve the directory
-
-    Returns:
-        The HTML rendering for the content of the directory associated
-        to the provided origin and visit.
     """ # noqa
     try:
 
@@ -359,24 +340,6 @@ def origin_content_display(request, origin_type, origin_url, path,
         * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/content/(path)/`
         * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/content/(path)/`
 
-    Args:
-        request: input django http request
-        origin_type: the type of swh origin (git, svn, hg, ...)
-        origin_url: the url of the swh origin
-        path: path of the content relative to the origin root directory
-        timestamp: optional swh visit timestamp parameter
-            (the last one will be used by default)
-        branch: optional query parameter that specifies the origin branch
-            from which to retrieve the content
-        release: optional query parameter that specifies the origin release
-            from which to retrieve the content
-        revision: optional query parameter to specify the origin revision
-            from which to retrieve the content
-
-    Returns:
-        The HTML rendering of the requested content associated to
-        the provided origin and visit.
-
     """ # noqa
     try:
 
@@ -506,28 +469,6 @@ def origin_log_browse(request, origin_type, origin_url, timestamp=None):
 
         * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/log/`
         * :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/log/`
-
-    Args:
-        request: input django http request
-        origin_type: the type of swh origin (git, svn, hg, ...)
-        origin_url: the url of the swh origin
-        timestamp: optional visit timestamp parameter
-            (the last one will be used by default)
-        revs_breadcrumb: query parameter used internally to store
-            the navigation breadcrumbs (i.e. the list of descendant revisions
-            visited so far).
-        per_page: optional query parameter used to specify the number of
-            log entries per page
-        branch: optional query parameter that specifies the origin branch
-            from which to retrieve the commit log
-        release: optional query parameter that specifies the origin release
-            from which to retrieve the commit log
-        revision: optional query parameter to specify the origin revision
-            from which to retrieve the commit log
-
-    Returns:
-        The HTML rendering of revisions history for a given SWH visit.
-
     """ # noqa
     try:
 
@@ -786,14 +727,6 @@ def origin_browse(request, origin_type=None, origin_url=None):
     by its id or its url.
 
     The url scheme that points to it is :http:get:`/browse/origin/(origin_type)/url/(origin_url)/`.
-
-    Args:
-        request: input django http request
-        origin_type: type of origin (git, svn, ...)
-        origin_url: url of the origin (e.g. https://github.com/<user>/<repo>)
-
-    Returns:
-        The HMTL rendering for the metadata of the provided origin.
     """ # noqa
     try:
         origin_info = service.lookup_origin({

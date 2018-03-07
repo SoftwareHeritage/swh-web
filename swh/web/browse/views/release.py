@@ -24,13 +24,6 @@ def release_browse(request, sha1_git):
     identified by its id.
 
     The url that points to it is :http:get:`/browse/release/(sha1_git)/`.
-
-    Args:
-        request: input django http request
-        sha1_git: a SWH release id
-
-    Returns:
-        The HMTL rendering for the metadata of the provided release.
     """
     try:
         release = service.lookup_release(sha1_git)
