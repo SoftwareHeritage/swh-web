@@ -36,6 +36,7 @@ docs/uri-scheme-browse-origin.rst
 docs/uri-scheme-browse-person.rst
 docs/uri-scheme-browse-release.rst
 docs/uri-scheme-browse-revision.rst
+docs/uri-scheme-browse-snapshot.rst
 docs/uri-scheme-browse.rst
 docs/_static/.placeholder
 docs/_templates/.placeholder
@@ -82,6 +83,9 @@ swh/web/browse/views/origin.py
 swh/web/browse/views/person.py
 swh/web/browse/views/release.py
 swh/web/browse/views/revision.py
+swh/web/browse/views/snapshot.py
+swh/web/browse/views/utils/__init__.py
+swh/web/browse/views/utils/snapshot_context.py
 swh/web/common/__init__.py
 swh/web/common/converters.py
 swh/web/common/exc.py
@@ -343,9 +347,9 @@ swh/web/templates/includes/browse-help.html
 swh/web/templates/includes/content-display.html
 swh/web/templates/includes/content-scripts.html
 swh/web/templates/includes/directory-display.html
-swh/web/templates/includes/origin-visit-snapshot.html
 swh/web/templates/includes/origins-search.html
 swh/web/templates/includes/readme-display.html
+swh/web/templates/includes/snapshot-context.html
 swh/web/templates/includes/top-navigation.html
 swh/web/templates/includes/vault-create-tasks.html
 swh/web/templates/includes/vault-ui.html

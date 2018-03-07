@@ -29,6 +29,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     For instance, the following YAML configuration section sets a rate of:
         - 1 per minute for POST requests
         - 60 per minute for other request types
+
     for the 'swh_api' scope while exempting those comming from the
     127.0.0.0/8 ip network.
 

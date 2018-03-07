@@ -101,12 +101,15 @@
       parse_url_fragment_for_lines_to_highlight();
     });
 
-    // highlight lines specified by an url fragment
     $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
-    parse_url_fragment_for_lines_to_highlight();
 
-    // remove empty last line added by highlight.js
-    $('.highlightjs tr:last').remove();
+    // schedule the highlight of lines specified by an url fragment,
+    // as hljs.lineNumbersBlock is async
+    setTimeout(function() {
+      parse_url_fragment_for_lines_to_highlight();
+      // remove empty last line added by highlight.js
+      $('.highlightjs tr:last').remove();
+    });
 
   });
 

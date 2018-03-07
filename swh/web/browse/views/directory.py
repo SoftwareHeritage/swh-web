@@ -23,15 +23,6 @@ def directory_browse(request, sha1_git, path=None):
     by its sha1_git value.
 
     The url that points to it is :http:get:`/browse/directory/(sha1_git)/[(path)/]`
-
-    Args:
-        request: input django http request
-        sha1_git: swh sha1_git identifer of the directory to browse
-        path: optionnal path parameter used to navigate in directories
-              reachable from the provided root one
-
-    Returns:
-        The HTML rendering for the content of the provided directory.
     """ # noqa
     root_sha1_git = sha1_git
     try:
@@ -110,6 +101,6 @@ def directory_browse(request, sha1_git, path=None):
                    'top_right_link_text': None,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
-                   'origin_context': None,
+                   'snapshot_context': None,
                    'vault_cooking': vault_cooking,
                    'show_actions_menu': True})

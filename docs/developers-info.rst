@@ -10,17 +10,18 @@ The following introduces a default configuration file:
 .. sourcecode:: yaml
 
     storage:
-    cls: remote
-    args:
-        url: http://localhost:5002
+        cls: remote
+        args:
+            url: http://localhost:5002
     debug: false
     throttling:
         cache_uri: None
         scopes:
             swh_api:
-            limiter_rate: 120/h
-            exempted_networks:
-                - 127.0.0.0/8
+                limiter_rate:
+                    default: 120/h
+                exempted_networks:
+                    - 127.0.0.0/8
 
 Run server
 ----------
@@ -106,6 +107,8 @@ SWH Web API application
       about SWH releases.
     * :mod:`swh.web.api.views.revision`: Implementation of API endpoints for getting information
       about SWH revisions.
+    * :mod:`swh.web.api.views.snapshot`: Implementation of API endpoints for getting information
+      about SWH snapshots.
     * :mod:`swh.web.api.views.stat`: Implementation of API endpoints for getting information
       about SWH archive statistics.
     * :mod:`swh.web.api.views.utils`: Utilities used in the web api endpoints implementation.
@@ -127,5 +130,6 @@ SWH Web browse application
     * :mod:`swh.web.browse.views.person`: Implementation of endpoints for browsing SWH persons.
     * :mod:`swh.web.browse.views.release`: Implementation of endpoints for browsing SWH releases.
     * :mod:`swh.web.browse.views.revision`: Implementation of endpoints for browsing SWH revisions.
+    * :mod:`swh.web.browse.views.snapshot`: Implementation of endpoints for browsing SWH snapshots.
 
 .. _highlightjs: https://highlightjs.org/

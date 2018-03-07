@@ -1,13 +1,16 @@
 {% extends "browse.html" %}
 
 {% block swh-browse-before-panels %}
-{% if origin_context %}
-  {% include "includes/origin-visit-snapshot.html" %}
+{% if snapshot_context %}
+  {% include "includes/snapshot-context.html" %}
 {% endif %}
 {% endblock %}
 
 {% block swh-browse-main-panel-content %}
-{% if not origin_context %}
+
+{% include "includes/top-navigation.html" %}
+
+{% if not snapshot_context %}
 <div class="panel-heading">
   <div class="panel-title pull-left">
     <h2>{{ top_panel_text }}</h2>
