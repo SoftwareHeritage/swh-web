@@ -395,8 +395,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
 
     split_path = path.split('/')
     filename = split_path[-1]
-    path = path[:-len(filename)]
-    path_info = gen_path_info(path)
+    path_info = gen_path_info(path[:-len(filename)])
     breadcrumbs.append({'name': root_sha1_git[:7],
                         'url': reverse(browse_view_name,
                                        kwargs=url_args,
@@ -439,7 +438,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         'size': filesizeformat(content_data['length']),
         'language': content_data['language'],
         'licenses': content_data['licenses'],
-        'path': '/' + path,
+        'path': '/' + path[:-len(filename)],
         'filename': filename,
         'revision id': revision_id,
         'revision': browse_rev_link,
