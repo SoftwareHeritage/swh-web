@@ -42,7 +42,7 @@ Origin directory
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from the root directory
-    (including itself) associated to the latest visit of a SWH origin.
+    (including itself) associated to the latest full visit of a SWH origin.
 
     The content of the directory is first sorted in lexicographical order
     and the sub-directories are displayed before the regular files.
@@ -144,7 +144,7 @@ Origin content
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/content/(path)/
 
     HTML view that produces a display of a SWH content
-    associated to the latest visit of a SWH origin.
+    associated to the latest full visit of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
     if possible using highlightjs_. The procedure to perform that task is described
@@ -255,7 +255,7 @@ Origin history
     HTML view that produces a display of revisions history heading
     to the last revision found during the latest visit of a SWH origin.
     In other words, it shows the commit log associated to the latest
-    visit of a SWH origin.
+    full visit of a SWH origin.
 
     The following data are displayed for each log entry:
 
@@ -375,7 +375,7 @@ Origin branches
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/branches/
 
     HTML view that produces a display of the list of branches
-    found during the latest visit of a SWH origin.
+    found during the latest full visit of a SWH origin.
 
     The following data are displayed for each branch:
 
@@ -434,7 +434,7 @@ Origin releases
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/releases/
 
     HTML view that produces a display of the list of releases
-    found during the latest visit of a SWH origin.
+    found during the latest full visit of a SWH origin.
 
     The following data are displayed for each release:
 
@@ -461,7 +461,7 @@ Origin releases
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/releases/
 
     HTML view that produces a display of the list of releases
-    found during the latest visit of a SWH origin.
+    found during a visit of a SWH origin closest to the provided timestamp.
 
     The following data are displayed for each release:
 

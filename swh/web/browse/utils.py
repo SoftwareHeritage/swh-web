@@ -305,6 +305,10 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
         return visit[0]
 
     if not visit_ts:
+        # returns the latest full visit when no timestamp is provided
+        for v in reversed(visits):
+            if v['status'] == 'full':
+                return v
         return visits[-1]
 
     parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
