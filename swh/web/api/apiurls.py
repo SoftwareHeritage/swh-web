@@ -20,19 +20,19 @@ class APIUrls(UrlsIndex):
       generating related urls in API documentation
 
     """
-    apidoc_routes = {}
-    method_endpoints = {}
+    _apidoc_routes = {}
+    _method_endpoints = {}
     scope = 'api'
 
     @classmethod
     def get_app_endpoints(cls):
-        return cls.apidoc_routes
+        return cls._apidoc_routes
 
     @classmethod
     def get_method_endpoints(cls, f):
-        if f.__name__ not in cls.method_endpoints:
-            cls.method_endpoints[f.__name__] = cls.group_routes_by_method(f)
-        return cls.method_endpoints[f.__name__]
+        if f.__name__ not in cls._method_endpoints:
+            cls._method_endpoints[f.__name__] = cls.group_routes_by_method(f)
+        return cls._method_endpoints[f.__name__]
 
     @classmethod
     def group_routes_by_method(cls, f):
@@ -79,12 +79,12 @@ class APIUrls(UrlsIndex):
         Add a route to the self-documenting API reference
         """
         route_view_name = route[1:-1].replace('/', '-')
-        if route not in cls.apidoc_routes:
+        if route not in cls._apidoc_routes:
             d = {'docstring': docstring,
                  'route_view_name': route_view_name}
             for k, v in kwargs.items():
                 d[k] = v
-            cls.apidoc_routes[route] = d
+            cls._apidoc_routes[route] = d
 
 
 class api_route(object):  # noqa: N801

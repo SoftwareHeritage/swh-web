@@ -20,13 +20,6 @@ def swh_id_browse(request, swh_id):
     :ref:`persistent-identifiers`.
 
     The url that points to it is :http:get:`/browse/(swh_id)/`.
-
-    Args:
-        swh_id: A SWH persistent identifier
-
-    Returns:
-        A redirection to the adequate view to browse the
-        requested SWH object
     """
     try:
         swh_id_parsed = parse_persistent_identifier(swh_id)
@@ -49,6 +42,10 @@ def swh_id_browse(request, swh_id):
         elif object_type == 'rev':
             view_url = reverse('browse-revision',
                                kwargs={'sha1_git': object_id},
+                               query_params=request.GET)
+        elif object_type == 'snp':
+            view_url = reverse('browse-snapshot',
+                               kwargs={'snapshot_id': object_id},
                                query_params=request.GET)
         else:
             msg = '\'%s\' is not a valid SWH persistent identifier!' % swh_id

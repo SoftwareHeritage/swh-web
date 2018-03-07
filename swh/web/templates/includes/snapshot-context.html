@@ -1,0 +1,33 @@
+<div class="panel panel-default" style="overflow-x: auto;">
+  <div class="panel-heading">
+    {% if snapshot_context.origin_info %}
+      {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
+        <div class="pull-right">
+          <a href="{{ snapshot_context.origin_info.url }}" class="btn btn-md btn-swh" role="button">Go to origin</a>
+        </div>
+      {% endif %}
+      <a href="{{ snapshot_context.browse_url }}" style="outline:none;">
+        <h2 style="text-align: center">SWH origin: {{ snapshot_context.origin_info.url }}</h2>
+        <div class="clearfix"></div>
+      </a>
+    {% else %}
+    <a href="{{ snapshot_context.browse_url }}" style="outline:none;">
+      <h2 style="text-align: center">SWH snapshot: {{ snapshot_context.snapshot_id }}</h2>
+      <div class="clearfix"></div>
+    </a>
+    {% endif %}
+  </div>
+  <div class="swh-origin-visit-details">
+    <ul>
+      {% if snapshot_context.visit_info %}
+        <li><i class="fa fa-calendar fa-fw"></i> SWH visit date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.fmt_date }}</a></li>
+      {% endif %}
+      <li><i class="fa fa-code-fork fa-fw"></i> <a href="{{ snapshot_context.branches_url }}">Branches ({{ snapshot_context.branches|length}})</a></li>
+      {% if snapshot_context.releases %}
+        <li><i class="fa fa-tag fa-fw"></i> <a href="{{ snapshot_context.releases_url }}">Releases ({{ snapshot_context.releases|length }})</a></li>
+      {% else %}
+        <li><i class="fa fa-tag fa-fw"></i> Releases (0)</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>

@@ -18,18 +18,18 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_link, gen_person_link, gen_revision_link,
     prepare_revision_log_for_display,
-    get_origin_context, gen_origin_directory_link,
+    get_snapshot_context, gen_snapshot_directory_link,
     get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
-    content_display_max_size
+    content_display_max_size, gen_snapshot_link
 )
 
 
-def _gen_content_url(revision, query_string, path, origin_context):
-    if origin_context:
-        url_args = origin_context['url_args']
+def _gen_content_url(revision, query_string, path, snapshot_context):
+    if snapshot_context:
+        url_args = snapshot_context['url_args']
         url_args['path'] = path
-        query_params = origin_context['query_params']
+        query_params = snapshot_context['query_params']
         query_params['revision'] = revision['id']
         content_url = reverse('browse-origin-content',
                               kwargs=url_args,
@@ -53,7 +53,7 @@ def _gen_diff_link(idx, diff_anchor, link_text):
 _max_displayed_file_diffs = 1000
 
 
-def _gen_revision_changes_list(revision, changes, origin_context):
+def _gen_revision_changes_list(revision, changes, snapshot_context):
     """
     Returns a HTML string describing the file changes
     introduced in a revision.
@@ -63,7 +63,7 @@ def _gen_revision_changes_list(revision, changes, origin_context):
     Args:
         revision (str): hexadecimal representation of a revision identifier
         changes (list): list of file changes in the revision
-        origin_context (dict): optional origin context used to reverse
+        snapshot_context (dict): optional origin context used to reverse
             the content urls
 
     Returns:
@@ -99,14 +99,14 @@ def _gen_revision_changes_list(revision, changes, origin_context):
         if change['type'] == 'modify':
             change['content_url'] = \
                 _gen_content_url(revision, to_query_string,
-                                 change['to_path'], origin_context)
+                                 change['to_path'], snapshot_context)
             changes_msg.append('modified:  %s' %
                                _gen_diff_link(i, panel_diff_link,
                                               change['to_path']))
         elif change['type'] == 'insert':
             change['content_url'] = \
                 _gen_content_url(revision, to_query_string,
-                                 change['to_path'], origin_context)
+                                 change['to_path'], snapshot_context)
             changes_msg.append('new file:  %s' %
                                _gen_diff_link(i, panel_diff_link,
                                               change['to_path']))
@@ -115,14 +115,14 @@ def _gen_revision_changes_list(revision, changes, origin_context):
             change['content_url'] = \
                 _gen_content_url(parent,
                                  from_query_string,
-                                 change['from_path'], origin_context)
+                                 change['from_path'], snapshot_context)
             changes_msg.append('deleted:   %s' %
                                _gen_diff_link(i, panel_diff_link,
                                               change['from_path']))
         elif change['type'] == 'rename':
             change['content_url'] = \
                 _gen_content_url(revision, to_query_string,
-                                 change['to_path'], origin_context)
+                                 change['to_path'], snapshot_context)
             link_text = change['from_path'] + ' &rarr; ' + change['to_path']
             changes_msg.append('renamed:   %s' %
                                _gen_diff_link(i, panel_diff_link, link_text))
@@ -139,19 +139,21 @@ def _revision_diff(request, sha1_git):
     """
     try:
         revision = service.lookup_revision(sha1_git)
-        origin_context = None
+        snapshot_context = None
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
         if origin_type and origin_url:
-            origin_context = get_origin_context(origin_type, origin_url,
-                                                timestamp, visit_id)
+            snapshot_context = get_snapshot_context(None, origin_type,
+                                                    origin_url,
+                                                    timestamp, visit_id)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
     changes = service.diff_revision(sha1_git)
-    changes_msg = _gen_revision_changes_list(revision, changes, origin_context)
+    changes_msg = _gen_revision_changes_list(revision, changes,
+                                             snapshot_context)
 
     diff_data = {
         'total_nb_changes': len(changes),
@@ -170,30 +172,28 @@ def revision_browse(request, sha1_git):
     identified by its id.
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/`.
-
-    Args:
-        request: input django http request
-        sha1_git: a SWH revision id
-
-    Returns:
-        The HMTL rendering for the metadata of the provided revision.
     """
     try:
         revision = service.lookup_revision(sha1_git)
         origin_info = None
-        origin_context = None
+        snapshot_context = None
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
+        snapshot_id = request.GET.get('snapshot_id', None)
         path = request.GET.get('path', None)
         dir_id = None
         dirs, files = None, None
         content_data = None
         if origin_type and origin_url:
-            origin_context = get_origin_context(origin_type, origin_url,
-                                                timestamp, visit_id)
-            origin_info = origin_context['origin_info']
+            snapshot_context = get_snapshot_context(None, origin_type,
+                                                    origin_url,
+                                                    timestamp, visit_id)
+            origin_info = snapshot_context['origin_info']
+            snapshot_id = snapshot_context['snapshot_id']
+        elif snapshot_id:
+            snapshot_context = get_snapshot_context(snapshot_id)
         if path:
             path_info = \
                 service.lookup_directory_with_path(revision['directory'], path)
@@ -220,12 +220,13 @@ def revision_browse(request, sha1_git):
     revision_data['committer date'] = format_utc_iso_date(
         revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])
-    if origin_context:
+    if snapshot_context:
+        revision_data['snapshot id'] = snapshot_id
         revision_data['directory'] = \
-            gen_origin_directory_link(origin_context, sha1_git,
-                                      link_text='Browse',
-                                      link_attrs={'class': 'btn btn-md btn-swh', # noqa
-                                                  'role': 'button'})
+            gen_snapshot_directory_link(snapshot_context, sha1_git,
+                                        link_text='Browse',
+                                        link_attrs={'class': 'btn btn-md btn-swh', # noqa
+                                                    'role': 'button'})
     else:
         revision_data['directory'] = \
             gen_directory_link(revision['directory'], link_text='Browse',
@@ -246,10 +247,15 @@ def revision_browse(request, sha1_git):
         revision_data['origin type'] = origin_info['type']
         revision_data['origin url'] = gen_link(origin_info['url'],
                                                origin_info['url'])
+        browse_snapshot_link = \
+            gen_snapshot_link(snapshot_id, link_text='Browse',
+                              link_attrs={'class': 'btn btn-md btn-swh',
+                                          'role': 'button'})
+        revision_data['snapshot'] = browse_snapshot_link
 
     parents = ''
     for p in revision['parents']:
-        parent_link = gen_revision_link(p, origin_context=origin_context)
+        parent_link = gen_revision_link(p, snapshot_context=snapshot_context)
         parents += parent_link + '<br/>'
 
     revision_data['parents'] = mark_safe(parents)
@@ -264,14 +270,15 @@ def revision_browse(request, sha1_git):
     parents_links += '<i class="octicon octicon-git-commit fa-fw"></i> '
     for p in revision['parents']:
         parent_link = gen_revision_link(p, shorten_id=True,
-                                        origin_context=origin_context)
+                                        snapshot_context=snapshot_context)
         parents_links += parent_link
         if p != revision['parents'][-1]:
             parents_links += ' + '
 
     path_info = gen_path_info(path)
 
-    query_params = {'origin_type': origin_type,
+    query_params = {'snapshot_id': snapshot_id,
+                    'origin_type': origin_type,
                     'origin_url': origin_url,
                     'timestamp': timestamp,
                     'visit_id': visit_id}
@@ -338,7 +345,7 @@ def revision_browse(request, sha1_git):
                 readme_url = reverse('browse-content-raw',
                                      kwargs={'query_string': readme_sha1})
 
-        top_right_link = get_revision_log_url(sha1_git, origin_context)
+        top_right_link = get_revision_log_url(sha1_git, snapshot_context)
         top_right_link_text = mark_safe(
             '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
             'History')
@@ -363,7 +370,7 @@ def revision_browse(request, sha1_git):
                    'message_body': '\n'.join(message_lines[1:]),
                    'parents_links': mark_safe(parents_links),
                    'main_panel_visible': True,
-                   'origin_context': origin_context,
+                   'snapshot_context': snapshot_context,
                    'dirs': dirs,
                    'files': files,
                    'content': content,
@@ -392,13 +399,6 @@ def revision_log_browse(request, sha1_git):
     log for a SWH revision identified by its id.
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`.
-
-    Args:
-        request: input django http request
-        sha1_git: a SWH revision id
-
-    Returns:
-        The HMTL rendering of the revision history log.
     """ # noqa
     try:
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
@@ -457,6 +457,6 @@ def revision_log_browse(request, sha1_git):
                    'breadcrumbs': None,
                    'top_right_link': None,
                    'top_right_link_text': None,
-                   'origin_context': None,
+                   'snapshot_context': None,
                    'vault_cooking': None,
                    'show_actions_menu': False})

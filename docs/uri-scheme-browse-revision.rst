@@ -39,6 +39,8 @@ Revision
         :swh_web_browse:`revision/f1b94134a4b879bc55c3dacdb496690c8ebdc03f/`
         :swh_web_browse:`revision/d1aa2b3f607b35dc5dbf613b2334b6d243ec2bda/`
 
+    .. _dateutil.parser.parse: http://dateutil.readthedocs.io/en/stable/parser.html
+
 .. http:get:: /browse/revision/(sha1_git)/log/
 
     HTML view that displays the list of revisions heading to
