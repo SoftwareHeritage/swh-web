@@ -32,18 +32,6 @@ def content_raw(request, query_string):
     by its hash value.
 
     The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
-
-    Args:
-        request: input django http request
-        query_string: a string of the form "[ALGO_HASH:]HASH" where
-            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
-            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
-            representation of the hash value
-
-    Returns:
-        The raw bytes of the content.
-
-
     """ # noqa
 
     try:
@@ -170,17 +158,6 @@ def content_display(request, query_string):
     by its hash value.
 
     The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/`
-
-    Args:
-        request: input django http request
-        query_string: a string of the form "[ALGO_HASH:]HASH" where
-            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
-            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
-            representation of the hash value
-
-    Returns:
-        The HTML rendering of the requested content.
-
     """ # noqa
     try:
         algo, checksum = query.parse_hash(query_string)
@@ -261,7 +238,7 @@ def content_display(request, query_string):
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
                        '</i>Raw File'),
-                   'origin_context': None,
+                   'snapshot_context': None,
                    'vault_cooking': None,
                    'show_actions_menu': False
                    })

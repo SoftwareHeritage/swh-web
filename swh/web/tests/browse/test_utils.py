@@ -337,14 +337,14 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
                          '/'.join(old_prev_revs_bc.split('/')[:-1]))
 
     @istest
-    def prepare_revision_log_for_display_origin_context(self):
+    def prepare_revision_log_for_display_snapshot_context(self):
         per_page = 10
         first_page_logs_data = revision_history_log_test[:per_page+1]
         second_page_logs_data = revision_history_log_test[per_page:2*per_page+1]
         third_page_logs_data = revision_history_log_test[2*per_page:3*per_page+1]
         last_page_logs_data = revision_history_log_test[3*per_page:3*per_page+5]
 
-        origin_context = {
+        snapshot_context = {
             'origin_info': {'type': 'git',
                             'url': 'https://github.com/git/git'},
             'url_args': {},
@@ -352,11 +352,11 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         }
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            first_page_logs_data, per_page, None, origin_context=origin_context)
+            first_page_logs_data, per_page, None, snapshot_context=snapshot_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
                          utils._format_log_entries(first_page_logs_data,
-                                                   per_page, origin_context=origin_context))
+                                                   per_page, snapshot_context=snapshot_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          first_page_logs_data[-1]['id'])
@@ -371,11 +371,11 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            second_page_logs_data, per_page, old_prev_revs_bc, origin_context=origin_context)
+            second_page_logs_data, per_page, old_prev_revs_bc, snapshot_context=snapshot_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
                          utils._format_log_entries(second_page_logs_data,
-                                                   per_page, origin_context=origin_context))
+                                                   per_page, snapshot_context=snapshot_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          second_page_logs_data[-1]['id'])
@@ -391,11 +391,11 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            third_page_logs_data, per_page, old_prev_revs_bc, origin_context=origin_context)
+            third_page_logs_data, per_page, old_prev_revs_bc, snapshot_context=snapshot_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
                          utils._format_log_entries(third_page_logs_data, per_page,
-                                                   origin_context=origin_context))
+                                                   snapshot_context=snapshot_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          third_page_logs_data[-1]['id'])
@@ -412,11 +412,11 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         old_prev_revs_bc = str(revision_log_display_data['prev_revs_breadcrumb'])
 
         revision_log_display_data = utils.prepare_revision_log_for_display(
-            last_page_logs_data, per_page, old_prev_revs_bc, origin_context=origin_context)
+            last_page_logs_data, per_page, old_prev_revs_bc, snapshot_context=snapshot_context)
 
         self.assertEqual(revision_log_display_data['revision_log_data'],
                          utils._format_log_entries(last_page_logs_data, per_page,
-                                                   origin_context=origin_context))
+                                                   snapshot_context=snapshot_context))
 
         self.assertEqual(revision_log_display_data['prev_rev'],
                          None)

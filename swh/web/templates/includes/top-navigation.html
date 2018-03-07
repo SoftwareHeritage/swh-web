@@ -1,16 +1,16 @@
 {% load swh_templatetags %}
 
 <div class="swh-browse-top-navigation">
-  {% if origin_context %}
-    {% if origin_context.branch or origin_context.release %}
+  {% if snapshot_context %}
+    {% if snapshot_context.branch or snapshot_context.release %}
       <div class="dropdown" style="float: left;" id="swh-branches-releases-dd">
         <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">
-          {% if origin_context.branch %}
+          {% if snapshot_context.branch %}
             <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
-            Branch: <strong>{{ origin_context.branch }}</strong>
+            Branch: <strong>{{ snapshot_context.branch }}</strong>
           {% else %}
             <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
-            Release: <strong>{{ origin_context.release }}</strong>
+            Release: <strong>{{ snapshot_context.release }}</strong>
           {% endif %}
           <span class="caret"></span>
         </button>
@@ -22,11 +22,11 @@
             </ul>
             <div class="tab-content">
               <div class="tab-pane active" id="swh-tab-branches">
-                {% for b in origin_context.branches %}
+                {% for b in snapshot_context.branches %}
                   <li class="swh-branch">
                     <a href="{{ b.url | safe }}">
                       <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
-                      {% if b.name == origin_context.branch %}
+                      {% if b.name == snapshot_context.branch %}
                         <i class="fa fa-check fa-fw" aria-hidden="true"></i>
                       {% else %}
                         <i class="fa fa-fw" aria-hidden="true"></i>
@@ -37,13 +37,13 @@
                 {% endfor %}
               </div>
               <div class="tab-pane" id="swh-tab-releases">
-                {% if origin_context.releases %}
-                  {% for r in origin_context.releases %}
+                {% if snapshot_context.releases %}
+                  {% for r in snapshot_context.releases %}
                     {% if r.target_type == 'revision' %}
                       <li class="swh-release">
                         <a href="{{ r.url | safe }}">
                           <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
-                          {% if r.name == origin_context.release %}
+                          {% if r.name == snapshot_context.release %}
                             <i class="fa fa-check fa-fw" aria-hidden="true"></i>
                           {% else %}
                             <i class="fa fa-fw" aria-hidden="true"></i>
@@ -121,8 +121,8 @@
   })
 
   $(document).ready(function() {
-    {% if origin_context %}
-      if ('{{ origin_context.branch }}' != 'None') {
+    {% if snapshot_context %}
+      if ('{{ snapshot_context.branch }}' != 'None') {
         setBranchesTabActive();
       } else {
         setReleasesTabActive();

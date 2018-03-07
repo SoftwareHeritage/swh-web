@@ -5,6 +5,10 @@
 
 # flake8: noqa
 
+"""
+Django tests settings for swh-web.
+"""
+
 from swh.web.config import get_config
 
 scope1_limiter_rate = 3

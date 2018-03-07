@@ -305,6 +305,10 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
         return visit[0]
 
     if not visit_ts:
+        # returns the latest full visit when no timestamp is provided
+        for v in reversed(visits):
+            if v['status'] == 'full':
+                return v
         return visits[-1]
 
     parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
@@ -341,47 +345,25 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
             (visit_ts, origin_info['type'], origin_info['url']))
 
 
-def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
-    """Function that returns the lists of branches and releases
-    associated to a swh origin for a given visit.
-    The visit is expressed by a timestamp. In the latter case,
-    the closest visit from the provided timestamp will be used.
-    If no visit parameter is provided, it returns the list of branches
-    found for the latest visit.
+def get_snapshot_content(snapshot_id):
+    """Returns the lists of branches and releases
+    associated to a swh snapshot.
     That list is put in  cache in order to speedup the navigation
-    in the swh web browse ui.
+    in the swh-web/browse ui.
 
     Args:
-        origin_info (dict): a dict filled with origin information
-            (id, url, type)
-        visit_ts (int or str): an ISO date string or Unix timestamp to parse
-        visit_id (int): optional visit id for desambiguation in case
-            several visits have the same timestamp
+        snapshot_id (str): hexadecimal representation of the snapshot
+            identifier
 
     Returns:
         A tuple with two members. The first one is a list of dict describing
-        the origin branches for the given visit::
-
-            [{'name': <branch name>,
-              'revision': <sha1_git of the associated revision>,
-              'directory': <sha1_git of the associated root directory>
-             },
-             ...
-            ]
-
-        The second one is a list of dict describing the origin branches
-        for the given visit.
+        the snapshot branches. The second one is a list of dict describing the
+        snapshot releases.
 
     Raises:
-        NotFoundExc if the origin or its visit are not found
+        NotFoundExc if the snapshot does not exist
     """
-
-    visit_info = get_origin_visit(origin_info, visit_ts, visit_id)
-
-    visit = visit_info['visit']
-
-    cache_entry_id = 'origin_%s_visit_%s_snapshot' % (origin_info['id'],
-                                                      visit)
+    cache_entry_id = 'swh_snapshot_%s' % snapshot_id
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
@@ -390,17 +372,17 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
     branches = []
     releases = []
 
-    if visit_info['snapshot']:
+    if snapshot_id:
         revision_ids = []
         releases_ids = []
-        origin_visit_snapshot = service.lookup_snapshot(visit_info['snapshot'])
-        snapshot_branches = origin_visit_snapshot['branches']
+        snapshot = service.lookup_snapshot(snapshot_id)
+        snapshot_branches = snapshot['branches']
         for key in sorted(snapshot_branches.keys()):
             if not snapshot_branches[key]:
                 continue
             if snapshot_branches[key]['target_type'] == 'revision':
                 branches.append({'name': key,
-                                'revision': snapshot_branches[key]['target']})
+                                 'revision': snapshot_branches[key]['target']})
                 revision_ids.append(snapshot_branches[key]['target'])
             elif snapshot_branches[key]['target_type'] == 'release':
                 releases_ids.append(snapshot_branches[key]['target'])
@@ -438,6 +420,38 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
     cache.set(cache_entry_id, {'branches': branches, 'releases': releases})
 
     return branches, releases
+
+
+def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
+    """Returns the lists of branches and releases
+    associated to a swh origin for a given visit.
+    The visit is expressed by a timestamp. In the latter case,
+    the closest visit from the provided timestamp will be used.
+    If no visit parameter is provided, it returns the list of branches
+    found for the latest visit.
+    That list is put in  cache in order to speedup the navigation
+    in the swh-web/browse ui.
+
+    Args:
+        origin_info (dict): a dict filled with origin information
+            (id, url, type)
+        visit_ts (int or str): an ISO date string or Unix timestamp to parse
+        visit_id (int): optional visit id for desambiguation in case
+            several visits have the same timestamp
+
+    Returns:
+        A tuple with two members. The first one is a list of dict describing
+        the origin branches for the given visit.
+        The second one is a list of dict describing the origin releases
+        for the given visit.
+
+    Raises:
+        NotFoundExc if the origin or its visit are not found
+    """
+
+    visit_info = get_origin_visit(origin_info, visit_ts, visit_id)
+
+    return get_snapshot_content(visit_info['snapshot'])
 
 
 def gen_link(url, link_text, link_attrs={}):
@@ -481,7 +495,7 @@ def gen_person_link(person_id, person_name, link_attrs={}):
     return gen_link(person_url, person_name, link_attrs)
 
 
-def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
+def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
                       link_text=None, link_attrs={}):
     """
     Utility function for generating a link to a SWH revision HTML view
@@ -491,8 +505,8 @@ def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
         revision_id (str): a SWH revision id
         shorten_id (boolean): wheter to shorten the revision id to 7
             characters for the link text
-        origin_context (dict): if provided, generate origin-dependent browsing
-            link (see :func:`swh.web.browse.utils.get_origin_context`)
+        snapshot_context (dict): if provided, generate snapshot-dependent
+            browsing link
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
 
@@ -501,16 +515,18 @@ def gen_revision_link(revision_id, shorten_id=False, origin_context=None,
 
     """
     query_params = None
-    if origin_context:
-        origin_info = origin_context['origin_info']
+    if snapshot_context and snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
         query_params = {'origin_type': origin_info['type'],
                         'origin_url': origin_info['url']}
-        if 'timestamp' in origin_context['url_args']:
+        if 'timestamp' in snapshot_context['url_args']:
             query_params['timestamp'] = \
-                 origin_context['url_args']['timestamp']
-        if 'visit_id' in origin_context['query_params']:
+                 snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
             query_params['visit_id'] = \
-                origin_context['query_params']['visit_id']
+                snapshot_context['query_params']['visit_id']
+    elif snapshot_context:
+        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
 
     revision_url = reverse('browse-revision',
                            kwargs={'sha1_git': revision_id},
@@ -568,14 +584,37 @@ def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
     return gen_link(directory_url, link_text, link_attrs)
 
 
-def gen_origin_directory_link(origin_context, revision_id=None,
-                              link_text=None, link_attrs={}):
+def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
     """
-    Utility function for generating a link to a SWH directory HTML view
-    in the context of an origin to insert in Django templates.
+    Utility function for generating a link to a SWH snapshot HTML view
+    to insert in Django templates.
 
     Args:
-        origin_info (dict): the origin information (type and url)
+        snapshot_id (str): snapshot identifier
+        link_text (str): optional text for the generated link
+            (the generated url will be used by default)
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
+
+    Returns:
+        An HTML link in the form '<a href="snapshot_view_url">link_text</a>'
+
+    """
+    snapshot_url = reverse('browse-snapshot',
+                           kwargs={'snapshot_id': snapshot_id})
+    if not link_text:
+        link_text = snapshot_url
+    return gen_link(snapshot_url, link_text, link_attrs)
+
+
+def gen_snapshot_directory_link(snapshot_context, revision_id=None,
+                                link_text=None, link_attrs={}):
+    """
+    Utility function for generating a link to a SWH directory HTML view
+    in the context of a snapshot to insert in Django templates.
+
+    Args:
+        snapshot_context (dict): the snapshot information
         revision_id (str): optional revision identifier in order
             to use the associated directory
         link_text (str): optional text to use for the generated link
@@ -586,19 +625,26 @@ def gen_origin_directory_link(origin_context, revision_id=None,
         An HTML link in the form
         '<a href="origin_directory_view_url">origin_directory_view_url</a>'
     """
-    origin_info = origin_context['origin_info']
-    url_args = {'origin_type': origin_info['type'],
-                'origin_url': origin_info['url']}
     query_params = {'revision': revision_id}
-    if 'timestamp' in origin_context['url_args']:
-        url_args['timestamp'] = \
-            origin_context['url_args']['timestamp']
-    if 'visit_id' in origin_context['query_params']:
-        query_params['visit_id'] = \
-            origin_context['query_params']['visit_id']
-    directory_url = reverse('browse-origin-directory',
-                            kwargs=url_args,
-                            query_params=query_params)
+    if snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
+        url_args = {'origin_type': origin_info['type'],
+                    'origin_url': origin_info['url']}
+        if 'timestamp' in snapshot_context['url_args']:
+            url_args['timestamp'] = \
+                snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
+            query_params['visit_id'] = \
+                snapshot_context['query_params']['visit_id']
+        directory_url = reverse('browse-origin-directory',
+                                kwargs=url_args,
+                                query_params=query_params)
+    else:
+        url_args = {'snapshot_id': snapshot_context['snapshot_id']}
+        directory_url = reverse('browse-snapshot-directory',
+                                kwargs=url_args,
+                                query_params=query_params)
+
     if not link_text:
         link_text = directory_url
     return gen_link(directory_url, link_text, link_attrs)
@@ -627,30 +673,35 @@ def gen_content_link(sha1_git, link_text=None, link_attrs={}):
     return gen_link(content_url, link_text, link_attrs)
 
 
-def get_revision_log_url(revision_id, origin_context=None):
+def get_revision_log_url(revision_id, snapshot_context=None):
     """
     Utility function for getting the URL for a SWH revision log HTML view
     (possibly in the context of an origin).
 
     Args:
         revision_id (str): revision identifier the history heads to
-        origin_context (dict): if provided, generate origin-dependent browsing
-            link (see :func:`swh.web.browse.utils.get_origin_context`)
+        snapshot_context (dict): if provided, generate snapshot-dependent
+            browsing link
     Returns:
         The SWH revision log view URL
     """
-    if origin_context:
-        origin_info = origin_context['origin_info']
+    query_params = {'revision': revision_id}
+    if snapshot_context and snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
         url_args = {'origin_type': origin_info['type'],
                     'origin_url': origin_info['url']}
-        query_params = {'revision': revision_id}
-        if 'timestamp' in origin_context['url_args']:
+        if 'timestamp' in snapshot_context['url_args']:
             url_args['timestamp'] = \
-                origin_context['url_args']['timestamp']
-        if 'visit_id' in origin_context['query_params']:
+                snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
             query_params['visit_id'] = \
-                origin_context['query_params']['visit_id']
+                snapshot_context['query_params']['visit_id']
         revision_log_url = reverse('browse-origin-log',
+                                   kwargs=url_args,
+                                   query_params=query_params)
+    elif snapshot_context:
+        url_args = {'snapshot_id': snapshot_context['snapshot_id']}
+        revision_log_url = reverse('browse-snapshot-log',
                                    kwargs=url_args,
                                    query_params=query_params)
     else:
@@ -659,7 +710,7 @@ def get_revision_log_url(revision_id, origin_context=None):
     return revision_log_url
 
 
-def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
+def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
                           link_attrs={}):
     """
     Utility function for generating a link to a SWH revision log HTML view
@@ -667,8 +718,8 @@ def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
 
     Args:
         revision_id (str): revision identifier the history heads to
-        origin_context (dict): if provided, generate origin-dependent browsing
-            link (see :func:`swh.web.browse.utils.get_origin_context`)
+        snapshot_context (dict): if provided, generate snapshot-dependent
+            browsing link
         link_text (str): optional text to use for the generated link
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
@@ -678,13 +729,13 @@ def gen_revision_log_link(revision_id, origin_context=None, link_text=None,
         '<a href="revision_log_view_url">link_text</a>'
     """
 
-    revision_log_url = get_revision_log_url(revision_id, origin_context)
+    revision_log_url = get_revision_log_url(revision_id, snapshot_context)
     if not link_text:
         link_text = revision_log_url
     return gen_link(revision_log_url, link_text, link_attrs)
 
 
-def _format_log_entries(revision_log, per_page, origin_context=None):
+def _format_log_entries(revision_log, per_page, snapshot_context=None):
     revision_log_data = []
     for i, log in enumerate(revision_log):
         if i == per_page:
@@ -692,7 +743,7 @@ def _format_log_entries(revision_log, per_page, origin_context=None):
         revision_log_data.append(
             {'author': gen_person_link(log['author']['id'],
                                        log['author']['name']),
-             'revision': gen_revision_link(log['id'], True, origin_context),
+             'revision': gen_revision_link(log['id'], True, snapshot_context),
              'message': log['message'],
              'date': format_utc_iso_date(log['date']),
              'directory': log['directory']})
@@ -700,7 +751,7 @@ def _format_log_entries(revision_log, per_page, origin_context=None):
 
 
 def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
-                                     origin_context=None):
+                                     snapshot_context=None):
     """
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
@@ -718,8 +769,8 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
         revs_breadcrumb (str): breadcrumbs of revisions navigated so far,
             in the form 'rev1[/rev2/../revN]'. Each revision corresponds to
             the first one displayed in the HTML view for history log.
-        origin_context (boolean): wheter or not the revision log is browsed
-            from an origin view.
+        snapshot_context (dict): if provided, generate snapshot-dependent
+            browsing link
 
 
     """
@@ -732,7 +783,7 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
         prev_rev = revision_log[-1]['id']
 
     prev_rev_bc = current_rev
-    if origin_context:
+    if snapshot_context:
         prev_rev_bc = prev_rev
 
     if revs_breadcrumb:
@@ -746,21 +797,25 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
         prev_revs_breadcrumb = prev_rev_bc
 
     return {'revision_log_data': _format_log_entries(revision_log, per_page,
-                                                     origin_context),
+                                                     snapshot_context),
             'prev_rev': prev_rev,
             'prev_revs_breadcrumb': prev_revs_breadcrumb,
             'next_rev': next_rev,
             'next_revs_breadcrumb': next_revs_breadcrumb}
 
 
-def get_origin_context(origin_type, origin_url, timestamp, visit_id=None):
+def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
+                         timestamp=None, visit_id=None):
     """
     Utility function to compute relevant information when navigating
-    the SWH archive in an origin context.
+    the SWH archive in a snapshot context. The snapshot is either
+    referenced by its id or it will be retrieved from an origin visit.
 
     Args:
+        snapshot_id (str): hexadecimal representation of a snapshot identifier,
+            all other parameters will be ignored if it is provided
         origin_type (str): the origin type (git, svn, deposit, ...)
-        origin_url (str): the origin_url (e.g. https://github.com/<user>/<repo>)
+        origin_url (str): the origin_url (e.g. https://github.com/(user)/(repo)/)
         timestamp (str): a datetime string for retrieving the closest
             SWH visit of the origin
         visit_id (int): optional visit id for disambiguation in case
@@ -782,57 +837,83 @@ def get_origin_context(origin_type, origin_url, timestamp, visit_id=None):
             * url_args: dict containg url arguments to use when browsing in
               the context of the origin and its visit
     """ # noqa
-    origin_info = service.lookup_origin({'type': origin_type,
-                                         'url': origin_url})
+    origin_info = None
+    visit_info = None
+    url_args = None
+    query_params = {}
+    branches = []
+    releases = []
+    browse_url = None
+    visit_url = None
+    branches_url = None
+    releases_url = None
+    swh_type = 'snapshot'
+    if origin_type and origin_url:
+        swh_type = 'origin'
+        origin_info = service.lookup_origin({'type': origin_type,
+                                            'url': origin_url})
 
-    visit_info = get_origin_visit(origin_info, timestamp, visit_id)
-    visit_info['fmt_date'] = format_utc_iso_date(visit_info['date'])
+        visit_info = get_origin_visit(origin_info, timestamp, visit_id)
+        visit_info['fmt_date'] = format_utc_iso_date(visit_info['date'])
+        snapshot_id = visit_info['snapshot']
 
-    # provided timestamp is not necessarily equals to the one
-    # of the retrieved visit, so get the exact one in order
-    # use it in the urls generated below
-    if timestamp:
-        timestamp = visit_info['date']
+        # provided timestamp is not necessarily equals to the one
+        # of the retrieved visit, so get the exact one in order
+        # use it in the urls generated below
+        if timestamp:
+            timestamp = visit_info['date']
 
-    branches, releases = \
-        get_origin_visit_snapshot(origin_info, timestamp, visit_id)
+        branches, releases = \
+            get_origin_visit_snapshot(origin_info, timestamp, visit_id)
+
+        url_args = {'origin_type': origin_info['type'],
+                    'origin_url': origin_info['url']}
+
+        query_params = {'visit_id': visit_id}
+
+        browse_url = reverse('browse-origin',
+                             kwargs=url_args)
+
+        if timestamp:
+            url_args['timestamp'] = format_utc_iso_date(timestamp,
+                                                        '%Y-%m-%dT%H:%M:%S')
+        visit_url = reverse('browse-origin-directory',
+                            kwargs=url_args,
+                            query_params=query_params)
+        visit_info['url'] = visit_url
+
+        branches_url = reverse('browse-origin-branches',
+                               kwargs=url_args,
+                               query_params=query_params)
+
+        releases_url = reverse('browse-origin-releases',
+                               kwargs=url_args,
+                               query_params=query_params)
+    elif snapshot_id:
+        branches, releases = get_snapshot_content(snapshot_id)
+        url_args = {'snapshot_id': snapshot_id}
+        browse_url = reverse('browse-snapshot',
+                             kwargs=url_args)
+        branches_url = reverse('browse-snapshot-branches',
+                               kwargs=url_args)
+
+        releases_url = reverse('browse-snapshot-releases',
+                               kwargs=url_args)
 
     releases = list(reversed(releases))
 
-    url_args = {'origin_type': origin_info['type'],
-                'origin_url': origin_info['url']}
-
-    if timestamp:
-        url_args['timestamp'] = format_utc_iso_date(timestamp,
-                                                    '%Y-%m-%dT%H:%M:%S')
-
-    origin_browse_url = reverse('browse-origin',
-                                kwargs={'origin_type': origin_info['type'],
-                                        'origin_url': origin_info['url']})
-
-    origin_visit_url = reverse('browse-origin-directory',
-                               kwargs=url_args,
-                               query_params={'visit_id': visit_id})
-
-    origin_branches_url = reverse('browse-origin-branches',
-                                  kwargs=url_args,
-                                  query_params={'visit_id': visit_id})
-
-    origin_releases_url = reverse('browse-origin-releases',
-                                  kwargs=url_args,
-                                  query_params={'visit_id': visit_id})
-
     return {
+        'swh_type': swh_type,
+        'snapshot_id': snapshot_id,
         'origin_info': origin_info,
         'visit_info': visit_info,
         'branches': branches,
         'releases': releases,
         'branch': None,
         'release': None,
-        'origin_browse_url': origin_browse_url,
-        'origin_branches_url': origin_branches_url,
-        'origin_releases_url': origin_releases_url,
-        'origin_visit_url': origin_visit_url,
+        'browse_url': browse_url,
+        'branches_url': branches_url,
+        'releases_url': releases_url,
         'url_args': url_args,
-        'query_params': {'visit_id': visit_id}
+        'query_params': query_params
     }

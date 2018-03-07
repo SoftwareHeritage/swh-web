@@ -12,7 +12,7 @@ from swh.web.common.exc import handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_person_link, gen_revision_link,
-    get_origin_context, gen_link
+    get_snapshot_context, gen_link
 )
 
 
@@ -24,24 +24,19 @@ def release_browse(request, sha1_git):
     identified by its id.
 
     The url that points to it is :http:get:`/browse/release/(sha1_git)/`.
-
-    Args:
-        request: input django http request
-        sha1_git: a SWH release id
-
-    Returns:
-        The HMTL rendering for the metadata of the provided release.
     """
     try:
         release = service.lookup_release(sha1_git)
-        origin_context = None
+        snapshot_context = None
+        snapshot_id = request.GET.get('snapshot_id', None)
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
         if origin_type and origin_url:
-            origin_context = get_origin_context(origin_type, origin_url,
-                                                timestamp, visit_id)
+            snapshot_context = get_snapshot_context(snapshot_id, origin_type,
+                                                    origin_url, timestamp,
+                                                    visit_id)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -58,7 +53,7 @@ def release_browse(request, sha1_git):
     if release['target_type'] == 'revision':
         release_data['target'] = \
             gen_revision_link(release['target'],
-                              origin_context=origin_context)
+                              snapshot_context=snapshot_context)
     elif release['target_type'] == 'content':
         content_url = \
             reverse('browse-content',
@@ -96,4 +91,4 @@ def release_browse(request, sha1_git):
                    'release_note_header': release_note_lines[0],
                    'release_note_body': '\n'.join(release_note_lines[1:]),
                    'release_target_link': mark_safe(release_target_link),
-                   'origin_context': origin_context})
+                   'snapshot_context': snapshot_context})

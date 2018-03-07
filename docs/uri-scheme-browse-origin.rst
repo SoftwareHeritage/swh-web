@@ -22,7 +22,7 @@ Origin metadata
     for browsing its directories and contents for each SWH visit.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
@@ -42,7 +42,7 @@ Origin directory
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from the root directory
-    (including itself) associated to the latest visit of a SWH origin.
+    (including itself) associated to the latest full visit of a SWH origin.
 
     The content of the directory is first sorted in lexicographical order
     and the sub-directories are displayed before the regular files.
@@ -60,17 +60,17 @@ Origin directory
     content can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string path: optional parameter used to specify the path of a directory
         reachable from the origin root one
     :query string branch: specify the origin branch name from which
-        to retrieve the directory
+        to retrieve the root directory
     :query string release: specify the origin release name from which
-        to retrieve the directory
+        to retrieve the root directory
     :query string revision: specify the origin revision, identified by the hexadecimal
-        representation of its *sha1_git* value, from which to retrieve the directory
+        representation of its *sha1_git* value, from which to retrieve the root directory
     :query int visit_id: specify a SWH visit id to retrieve the directory from instead
-        of using the latest visit by default
+        of using the latest full visit by default
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
         or the provided path does not exist from the origin root directory
@@ -89,7 +89,7 @@ Origin directory
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from
-    the root directory (including itself) associated to a visitof a SWH
+    the root directory (including itself) associated to a visit of a SWH
     origin closest to a provided timestamp.
 
     The content of the directory is first sorted in lexicographical order
@@ -108,16 +108,16 @@ Origin directory
     content can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest SWH visit.
     :param path: optional parameter used to specify the path of a directory
         reachable from the origin root one
     :type path: string
     :query string branch: specify the origin branch name from which
-        to retrieve the directory
-    :query string revision: specify the origin release name from which
-        to retrieve the directory
+        to retrieve the root directory
+    :query string release: specify the origin release name from which
+        to retrieve the root directory
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the directory
     :query int visit_id: specify a SWH visit id to retrieve the directory from instead
@@ -144,7 +144,7 @@ Origin content
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/content/(path)/
 
     HTML view that produces a display of a SWH content
-    associated to the latest visit of a SWH origin.
+    associated to the latest full visit of a SWH origin.
 
     If the content to display is textual, it will be highlighted client-side
     if possible using highlightjs_. The procedure to perform that task is described
@@ -168,7 +168,7 @@ Origin content
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string path: path of a content reachable from the origin root directory
     :query string branch: specify the origin branch name from which
         to retrieve the content
@@ -177,7 +177,7 @@ Origin content
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its *sha1_git* value, from which to retrieve the content
     :query int visit_id: specify a SWH visit id to retrieve the content from instead
-        of using the latest visit by default
+        of using the latest full visit by default
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive,
         or the provided content path does not exist from the origin root directory
@@ -219,7 +219,7 @@ Origin content
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest SWH visit.
     :param string path: path of a content reachable from the origin root directory
@@ -255,7 +255,7 @@ Origin history
     HTML view that produces a display of revisions history heading
     to the last revision found during the latest visit of a SWH origin.
     In other words, it shows the commit log associated to the latest
-    visit of a SWH origin.
+    full visit of a SWH origin.
 
     The following data are displayed for each log entry:
 
@@ -280,12 +280,12 @@ Origin history
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :query string revs_breadcrumb: used internally to store
         the navigation breadcrumbs (i.e. the list of descendant revisions
         visited so far). It must be a string in the form
         "(rev_1)[/(rev_2)/.../(rev_n)]" where rev_i corresponds to a
-        revision sha1_git.
+        revision *sha1_git*.
     :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
     :query string branch: specify the origin branch name from which
@@ -339,14 +339,14 @@ Origin history
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest SWH visit.
     :query string revs_breadcrumb: used internally to store
         the navigation breadcrumbs (i.e. the list of descendant revisions
         visited so far). It must be a string in the form
         "(rev_1)[/(rev_2)/.../(rev_n)]" where rev_i corresponds to a
-        revision sha1_git.
+        revision *sha1_git*.
     :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
     :query string branch: specify the origin branch name from which
@@ -375,7 +375,7 @@ Origin branches
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/branches/
 
     HTML view that produces a display of the list of branches
-    found during the latest visit of a SWH origin.
+    found during the latest full visit of a SWH origin.
 
     The following data are displayed for each branch:
 
@@ -388,7 +388,7 @@ Origin branches
     That list of branches is paginated, each page displaying a maximum of 20 branches.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
@@ -415,7 +415,7 @@ Origin branches
     That list of branches is paginated, each page displaying a maximum of 20 branches.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest SWH visit.
     :statuscode 200: no error
@@ -434,7 +434,7 @@ Origin releases
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/releases/
 
     HTML view that produces a display of the list of releases
-    found during the latest visit of a SWH origin.
+    found during the latest full visit of a SWH origin.
 
     The following data are displayed for each release:
 
@@ -447,7 +447,7 @@ Origin releases
     That list of releases is paginated, each page displaying a maximum of 20 releases.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the SWH archive
 
@@ -461,7 +461,7 @@ Origin releases
 .. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/releases/
 
     HTML view that produces a display of the list of releases
-    found during the latest visit of a SWH origin.
+    found during a visit of a SWH origin closest to the provided timestamp.
 
     The following data are displayed for each release:
 
@@ -474,7 +474,7 @@ Origin releases
     That list of releases is paginated, each page displaying a maximum of 20 releases.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
-    :param string origin_url: the url of the origin (e.g. https://github.com/user/repo)
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest SWH visit.
     :statuscode 200: no error
