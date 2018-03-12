@@ -113,7 +113,7 @@ def parse_timestamp(timestamp):
     try:
         date = date_parser.parse(timestamp, ignoretz=False, fuzzy=True)
         return datetime_to_utc(date)
-    except:
+    except Exception:
         try:
             return datetime.utcfromtimestamp(float(timestamp)).replace(
                 tzinfo=timezone.utc)

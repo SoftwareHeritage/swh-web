@@ -269,7 +269,7 @@ def get_hljs_language_from_filename(filename):
         # try to find a Pygment lexer
         try:
             lexer = get_lexer_for_filename(filename)
-        except:
+        except Exception:
             pass
         # if there is a correspondance between the lexer and an hljs
         # language, return it

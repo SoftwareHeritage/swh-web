@@ -76,7 +76,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                     super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
                 setattr(view, self.scope_attr, default_scope)
             # use default rate limiting otherwise
-            except:
+            except Exception:
                 setattr(view, self.scope_attr, default_scope)
                 request_allowed = \
                     super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
@@ -90,7 +90,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                 self.scope = default_scope + '_' + request.method.lower()
                 self.rate = self.get_rate()
             # use default rate limiting otherwise
-            except:
+            except Exception:
                 self.scope = default_scope
                 self.rate = self.get_rate()
             self.num_requests, self.duration = self.parse_rate(self.rate)

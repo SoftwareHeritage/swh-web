@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # in sys.modules)
     try:
         from swh.web import urls # noqa
-    except:
+    except Exception:
         pass
     try:
         from django.core.management.commands.runserver import (
