@@ -30,7 +30,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
         - 1 per minute for POST requests
         - 60 per minute for other request types
 
-    for the 'swh_api' scope while exempting those comming from the
+    for the 'swh_api' scope while exempting those coming from the
     127.0.0.0/8 ip network.
 
     .. code-block:: yaml

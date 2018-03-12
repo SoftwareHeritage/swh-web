@@ -210,11 +210,11 @@ _hljs_languages_aliases = {
     'zsh': 'bash'
 }
 
-# dictionnary mapping pygment lexers to hljs languages
+# dictionary mapping pygment lexers to hljs languages
 _pygments_lexer_to_hljs_language = {}
 
 
-# dictionnary mapping mime types to hljs languages
+# dictionary mapping mime types to hljs languages
 _mime_type_to_hljs_language = {
     'text/x-c': 'cpp',
     'text/x-c++': 'cpp',
