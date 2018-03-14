@@ -107,8 +107,9 @@ def api_revision_log_by(request, origin_id,
         lookup_revision_log_by_with_limit, origin_id, branch_name, ts,
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_revision)
-    l = len(rev_get)
-    if l == per_page+1:
+
+    nb_rev = len(rev_get)
+    if nb_rev == per_page+1:
         revisions = rev_get[:-1]
         last_sha1_git = rev_get[-1]['id']
 
@@ -386,8 +387,8 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
                          notfound_msg=error_msg,
                          enrich_fn=utils.enrich_revision)
 
-    l = len(rev_get)
-    if l == per_page+1:
+    nb_rev = len(rev_get)
+    if nb_rev == per_page+1:
         rev_backward = rev_get[:-1]
         new_last_sha1 = rev_get[-1]['id']
         query_params = {}
