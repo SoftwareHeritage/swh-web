@@ -108,11 +108,11 @@ def api_origin_search(request, url_pattern):
     limit = int(request.query_params.get('limit', '70'))
     regexp = request.query_params.get('regexp', 'false')
 
-    r = api_lookup(service.search_origin, url_pattern, offset, limit,
-                   bool(strtobool(regexp)), enrich_fn=_enrich_origin)
+    results = api_lookup(service.search_origin, url_pattern, offset, limit,
+                         bool(strtobool(regexp)), enrich_fn=_enrich_origin)
 
-    l = len(r)
-    if l == limit:
+    nb_results = len(results)
+    if nb_results == limit:
         query_params = {}
         query_params['offset'] = offset + limit
         query_params['limit'] = limit
@@ -125,7 +125,7 @@ def api_origin_search(request, url_pattern):
         }
 
     result.update({
-        'results': r
+        'results': results
     })
 
     return result
@@ -178,15 +178,14 @@ def api_origin_visits(request, origin_id):
             ov['snapshot_url'] = None
         return ov
 
-    r = api_lookup(
-        _lookup_origin_visits, origin_id,
-        notfound_msg='No origin {} found'.format(origin_id),
-        enrich_fn=_enrich_origin_visit)
+    results = api_lookup(_lookup_origin_visits, origin_id,
+                         notfound_msg='No origin {} found'.format(origin_id),
+                         enrich_fn=_enrich_origin_visit)
 
-    if r:
-        l = len(r)
-        if l == per_page:
-            new_last_visit = r[-1]['visit']
+    if results:
+        nb_results = len(results)
+        if nb_results == per_page:
+            new_last_visit = results[-1]['visit']
             query_params = {}
             query_params['last_visit'] = new_last_visit
 
@@ -200,7 +199,7 @@ def api_origin_visits(request, origin_id):
             }
 
     result.update({
-        'results': r
+        'results': results
     })
 
     return result

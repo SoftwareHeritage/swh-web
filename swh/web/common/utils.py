@@ -22,8 +22,8 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
     Args:
         viewname: the name of the django view from which to compute a url
         args: list of url arguments ordered according to their position it
-        kwargs: dictionnary of url arguments indexed by their names
-        query_params: dictionnary of query parameters to append to the
+        kwargs: dictionary of url arguments indexed by their names
+        query_params: dictionary of query parameters to append to the
             reversed url
         current_app: the name of the django app tighted to the view
         urlconf: url configuration module
@@ -113,7 +113,7 @@ def parse_timestamp(timestamp):
     try:
         date = date_parser.parse(timestamp, ignoretz=False, fuzzy=True)
         return datetime_to_utc(date)
-    except:
+    except Exception:
         try:
             return datetime.utcfromtimestamp(float(timestamp)).replace(
                 tzinfo=timezone.utc)

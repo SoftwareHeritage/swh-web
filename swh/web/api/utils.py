@@ -42,7 +42,7 @@ def prepare_data_for_view(data, encoding='utf-8'):
         if isinstance(s, bytes):
             try:
                 return s.decode(encoding)
-            except:
+            except Exception:
                 return "Cannot decode the data bytes, try and set another " \
                        "encoding in the url (e.g. ?encoding=utf8) or " \
                        "download directly the " \

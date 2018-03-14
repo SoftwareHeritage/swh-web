@@ -229,9 +229,9 @@ def api_content_symbol(request, q=None):
         enrich_fn=functools.partial(utils.enrich_content, top_url=True))
 
     if symbols:
-        l = len(symbols)
+        nb_symbols = len(symbols)
 
-        if l == per_page:
+        if nb_symbols == per_page:
             query_params = {}
             new_last_sha1 = symbols[-1]['sha1']
             query_params['last_sha1'] = new_last_sha1
@@ -303,7 +303,7 @@ def api_check_content_known(request, q=None):
     if queries:
         lookup = service.lookup_multiple_hashes(queries)
         result = []
-        l = len(queries)
+        nb_queries = len(queries)
         for el in lookup:
             res_d = {'sha1': el['sha1'],
                      'found': el['found']}
@@ -312,8 +312,8 @@ def api_check_content_known(request, q=None):
             result.append(res_d)
             search_res = result
             nbfound = len([x for x in lookup if x['found']])
-            search_stats['nbfiles'] = l
-            search_stats['pct'] = (nbfound / l) * 100
+            search_stats['nbfiles'] = nb_queries
+            search_stats['pct'] = (nbfound / nb_queries) * 100
 
     response['search_res'] = search_res
     response['search_stats'] = search_stats

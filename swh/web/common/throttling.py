@@ -30,7 +30,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
         - 1 per minute for POST requests
         - 60 per minute for other request types
 
-    for the 'swh_api' scope while exempting those comming from the
+    for the 'swh_api' scope while exempting those coming from the
     127.0.0.0/8 ip network.
 
     .. code-block:: yaml
@@ -76,7 +76,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                     super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
                 setattr(view, self.scope_attr, default_scope)
             # use default rate limiting otherwise
-            except:
+            except Exception:
                 setattr(view, self.scope_attr, default_scope)
                 request_allowed = \
                     super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
@@ -90,7 +90,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                 self.scope = default_scope + '_' + request.method.lower()
                 self.rate = self.get_rate()
             # use default rate limiting otherwise
-            except:
+            except Exception:
                 self.scope = default_scope
                 self.rate = self.get_rate()
             self.num_requests, self.duration = self.parse_rate(self.rate)
