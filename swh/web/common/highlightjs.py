@@ -210,11 +210,11 @@ _hljs_languages_aliases = {
     'zsh': 'bash'
 }
 
-# dictionnary mapping pygment lexers to hljs languages
+# dictionary mapping pygment lexers to hljs languages
 _pygments_lexer_to_hljs_language = {}
 
 
-# dictionnary mapping mime types to hljs languages
+# dictionary mapping mime types to hljs languages
 _mime_type_to_hljs_language = {
     'text/x-c': 'cpp',
     'text/x-c++': 'cpp',
@@ -269,7 +269,7 @@ def get_hljs_language_from_filename(filename):
         # try to find a Pygment lexer
         try:
             lexer = get_lexer_for_filename(filename)
-        except:
+        except Exception:
             pass
         # if there is a correspondance between the lexer and an hljs
         # language, return it
