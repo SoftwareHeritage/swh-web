@@ -105,6 +105,7 @@ class ConvertersTestCase(unittest.TestCase):
             'b': None,
             'c': 'someone',
             'd': None,
+            'e': None
         }
 
         expected_output = {
@@ -112,11 +113,13 @@ class ConvertersTestCase(unittest.TestCase):
             'b': None,
             'c': 'someone',
             'd': None,
+            'e': None
         }
 
         actual_output = converters.from_swh(some_input,
                                             hashess={'a', 'b'},
-                                            bytess={'c', 'd'})
+                                            bytess={'c', 'd'},
+                                            dates={'e'})
 
         self.assertEquals(expected_output, actual_output)
 

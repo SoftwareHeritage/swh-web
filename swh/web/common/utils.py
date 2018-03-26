@@ -149,6 +149,8 @@ def format_utc_iso_date(iso_date, fmt='%d %B %Y, %H:%M UTC'):
     Returns:
         A formatted string representation of the input iso date
     """
+    if not iso_date:
+        return iso_date
     date = parse_timestamp(iso_date)
     return date.strftime(fmt)
 
