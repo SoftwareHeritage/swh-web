@@ -17,5 +17,6 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
+* `URLs index <http-routingtable.html>`_
 * :ref:`search`
 
