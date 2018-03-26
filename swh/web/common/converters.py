@@ -85,6 +85,8 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
             We convert it to a human-readable string
 
         """
+        if not v:
+            return v
         if isinstance(v, datetime.datetime):
             return v.isoformat()
 
