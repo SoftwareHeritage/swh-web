@@ -27,7 +27,11 @@ CACHES = {
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-ALLOWED_HOSTS += ['archive.softwareheritage.org']  # noqa
+ALLOWED_HOSTS += [  # noqa: F405
+    'archive.softwareheritage.org',
+    'base.softwareheritage.org',
+    'archive.internal.softwareheritage.org',
+]
 
 # We're going through seven (or, in that case, 2) proxies thanks to Varnish
 REST_FRAMEWORK['NUM_PROXIES'] = 2
