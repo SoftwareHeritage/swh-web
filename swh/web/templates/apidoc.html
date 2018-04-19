@@ -1,14 +1,17 @@
 {% extends "layout.html" %}
+
 {% load swh_templatetags %}
-{% load static %}
+{% load render_bundle from webpack_loader %}
+
 {% block title %}{{ heading }} &ndash; Software Heritage API {% endblock %}
+
 {% block header %}
-<script src="{% static 'js/highlightjs/dist/highlight.pack.js' %}"></script>
-<script>
-  hljs.initHighlightingOnLoad();
-</script>
-<link rel="stylesheet" href="{% static 'css/highlightjs/github.css' %}">
+  {% render_bundle 'highlightjs' %}
+  <script>
+    swh.webapp.highlightCode(false);
+  </script>
 {% endblock %}
+
 {% block content %}
 <div class="panel panel-default" style="overflow-x: auto;">
   <div class="panel-heading">

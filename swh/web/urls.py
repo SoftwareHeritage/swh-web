@@ -10,6 +10,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.shortcuts import render
 from django.views.generic.base import RedirectView
 
+from django_js_reverse.views import urls_js
+
 from swh.web.common.exc import (
     swh_handle400, swh_handle403, swh_handle404, swh_handle500
 )
@@ -27,6 +29,7 @@ urlpatterns = [
     url(r'^api/', include('swh.web.api.urls')),
     url(r'^browse/', include('swh.web.browse.urls')),
     url(r'^$', default_view, name='swh-web-homepage'),
+    url(r'^jsreverse/$', urls_js, name='js_reverse')
 ]
 
 urlpatterns += staticfiles_urlpatterns()

@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'swh.web.api',
-    'swh.web.browse'
+    'swh.web.browse',
+    'webpack_loader',
+    'django_js_reverse'
 ]
 
 MIDDLEWARE = [
@@ -190,4 +192,15 @@ LOGGING = {
             'propagate': True,
         }
     },
+}
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': './',
+        'STATS_FILE': os.path.join(PROJECT_DIR, '../static/webpack-stats.json'), # noqa
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': ['.+\.hot-update.js', '.+\.map']
+    }
 }

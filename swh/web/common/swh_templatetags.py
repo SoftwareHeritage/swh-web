@@ -3,13 +3,16 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
 import re
+
+from django import template
+from django.core.serializers.json import DjangoJSONEncoder
+from django.utils.safestring import mark_safe
 
 from docutils.core import publish_parts
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 from inspect import cleandoc
-
-from django import template
 
 register = template.Library()
 
@@ -83,3 +86,18 @@ def urlize_header_links(text):
     """
     return re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
                   text)
+
+
+@register.filter
+def jsonify(obj):
+    """Utility function for converting a django template variable
+    to JSON in order to use it in script tags.
+
+    Args
+        obj: Any django template context variable
+
+    Returns:
+        JSON representation of the variable.
+
+    """
+    return mark_safe(json.dumps(obj, cls=DjangoJSONEncoder))

@@ -1,8 +1,10 @@
 {% extends "layout.html" %}
 {% load static %}
+
 {% block title %}The Software Heritage archive{% endblock %}
 
 {% block content %}
+
 <h1>Welcome to the Software Heritage archive</h1>
 
 <h2>Overview</h2>
@@ -92,22 +94,20 @@ archive. It currently includes:
 </div>
 
 <script>
-
-$(document).ready(function() {
-
-  $.ajax({
-    url: "{% url 'stat-counters' %}",
-    dataType: 'json',
-    success: function (data) {
-      $('#nb-files').html(data.content.toLocaleString());
-      $('#nb-commits').html(data.revision.toLocaleString());
-      $('#nb-projects').html(data.origin.toLocaleString());
-      $('#nb-dirs').html(data.directory.toLocaleString());
-      $('#nb-authors').html(data.person.toLocaleString());
-      $('#nb-releases').html(data.release.toLocaleString());
-    }
+  $(document).ready(function() {
+    $.ajax({
+      url: Urls.stat_counters(),
+      dataType: 'json',
+      success: function (data) {
+        $('#nb-files').html(data.content.toLocaleString());
+        $('#nb-commits').html(data.revision.toLocaleString());
+        $('#nb-projects').html(data.origin.toLocaleString());
+        $('#nb-dirs').html(data.directory.toLocaleString());
+        $('#nb-authors').html(data.person.toLocaleString());
+        $('#nb-releases').html(data.release.toLocaleString());
+      }
+    });
   });
-});
 </script>
 
 {% endblock %}
