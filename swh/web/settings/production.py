@@ -20,8 +20,8 @@ if os.environ['DJANGO_SETTINGS_MODULE'] == 'swh.web.settings.production':
     from .common import REST_FRAMEWORK
 
     # activate per-site caching
-    MIDDLEWARE += ['django.middleware.cache.UpdateCacheMiddleware',
-                   'swh.web.common.middlewares.CommonMiddleware',
+    MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+    MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
                    'django.middleware.cache.FetchFromCacheMiddleware']
 
     CACHES = {

@@ -17,5 +17,7 @@ if os.environ['DJANGO_SETTINGS_MODULE'] == 'swh.web.settings.development':
 
     from .common import *
 
+    MIDDLEWARE += ['swh.web.common.middlewares.HtmlPrettifyMiddleware']
+
     from django.core.cache import cache
     cache.clear()
