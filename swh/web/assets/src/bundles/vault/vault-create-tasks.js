@@ -18,7 +18,7 @@ function addVaultCookingTask(cookingTask) {
     if (cookingTask.email) {
       cookingUrl += '?email=' + cookingTask.email;
     }
-    fetch(cookingUrl, {method: 'POST'})
+    fetch(cookingUrl, {credentials: 'same-origin', method: 'POST'})
       .then(handleFetchError)
       .then(() => {
         vaultCookingTasks.push(cookingTask);

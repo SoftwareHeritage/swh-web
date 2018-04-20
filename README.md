@@ -71,8 +71,7 @@ Below is the list of available make targets that can be executed from the root d
 
 * **run-django-webpack-dev**: Compile not optimized (no mignification, no dead code elimination) frontend static assets using webpack and run django server with development settings. This is the recommended target when one only wants to develop the backend side of the application.
 
-* **run-django-webpack-prod**: Compile optimized (with mignification and dead code elimination) frontend static assets using webpack and run django server with production settings. This is usefull to test the applications in production mode (with the difference that static assets are served by django). Production settings notably enables advanced django caching
-and you will need to have [memcached](https://memcached.org/) installed for that feature to work.
+* **run-django-webpack-prod**: Compile optimized (with mignification and dead code elimination) frontend static assets using webpack and run django server with production settings. This is usefull to test the applications in production mode (with the difference that static assets are served by django). Production settings notably enables advanced django caching and you will need to have [memcached](https://memcached.org/) installed for that feature to work.
 
 * **run-django-server-dev**: Run the django server with development settings but without compiling frontend static assets through webpack.
 

@@ -32,7 +32,7 @@ function populateOriginSearchResultsTable(data, offset) {
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
       let latestSnapshotUrl = Urls.browse_origin_latest_snapshot(elem.id);
-      fetch(latestSnapshotUrl)
+      fetch(latestSnapshotUrl, {credentials: 'same-origin'})
         .then(response => response.json())
         .then(data => {
           let originId = elem.id;
@@ -75,7 +75,7 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
   let searchUrl = Urls.browse_origin_search(regex) + `?limit=${limit}&offset=${searchOffset}&regexp=true`;
 
   $('.swh-loading').addClass('show');
-  fetch(searchUrl)
+  fetch(searchUrl, {credentials: 'same-origin'})
     .then(handleFetchError)
     .then(response => response.json())
     .then(data => {
