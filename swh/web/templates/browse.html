@@ -1,7 +1,13 @@
 {% extends "layout.html" %}
 {% load swh_templatetags %}
+{% load render_bundle from webpack_loader %}
 
 {% block title %}{{ heading }} &ndash; Software Heritage archive {% endblock %}
+
+{% block header %}
+  {% render_bundle 'browse' %}
+  {% render_bundle 'vault' %}
+{% endblock %}
 
 {% block navbar-content %}
   <ul class="nav navbar-nav swh-browse-nav">
@@ -116,68 +122,7 @@
   </div>
 
   <script>
-
-    var browse_tabs_hash = ["#browse", "#search", "#help", "#vault"];
-
-    function removeHash () {
-      history.replaceState("", document.title, window.location.pathname + window.location.search);
-    }
-
-    function show_tab(hash) {
-      $('.navbar-nav.swh-browse-nav a[href="' + hash + '"]').tab('show');
-      window.scrollTo(0, 0);
-    }
-
-    function show_requested_tab() {
-      var hash = window.location.hash;
-      if (hash && browse_tabs_hash.indexOf(hash) == -1) {
-        return;
-      }
-      if (hash) {
-        show_tab(hash);
-      } else {
-        show_tab('#browse');
-      }
-    }
-
-    $('[data-toggle=popover]:not([data-popover-content])').popover();
-    $('[data-toggle=popover][data-popover-content]').popover({
-        html : true,
-        container: 'body',
-        trigger: 'focus',
-        content: function() {
-          var content = $(this).attr("data-popover-content");
-          return $(content).children(".popover-body").html();
-        },
-        title: function() {
-          var title = $(this).attr("data-popover-content");
-          return $(title).children(".popover-heading").html();
-        }
-    }).click(function(e) {
-      e.preventDefault();
-    });
-
-    // show requested tab when loading the page
-    $(document).ready(function() {
-
-      // Change hash for page reload
-      $('.navbar-nav.swh-browse-nav a').on('shown.bs.tab', function (e) {
-        if (e.target.hash != '#browse') {
-          window.location.hash = e.target.hash;
-        } else {
-          removeHash();
-        }
-        show_requested_tab();
-      });
-
-      // update displayed tab when the url fragment changes
-      $(window).on('hashchange', function() {
-        show_requested_tab();
-      });
-
-      show_requested_tab();
-    });
-
+    swh.browse.initMainNavigation();
   </script>
 
 {% endblock %}

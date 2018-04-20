@@ -1,0 +1,19 @@
+.swh-showdown a {
+    outline: none;
+    border: none;
+}
+
+.swh-showdown table {
+    border-collapse: collapse;
+}
+
+.swh-showdown table,
+.swh-showdown table th,
+.swh-showdown table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.swh-showdown table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

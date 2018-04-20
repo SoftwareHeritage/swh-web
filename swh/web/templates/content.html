@@ -1,9 +1,5 @@
 {% extends "browse.html" %}
 
-{% block header %}
-  {% include "includes/content-scripts.html" %}
-{% endblock %}
-
 {% block swh-browse-before-panels %}
   {% if snapshot_context %}
     {% include "includes/snapshot-context.html" %}

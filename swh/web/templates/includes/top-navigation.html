@@ -84,55 +84,6 @@
 </div>
 
 <script>
-
-  function setBranchesTabActive() {
-    $('.swh-releases-switch').parent().removeClass('active');
-    $('.swh-branches-switch').parent().addClass('active');
-    $('#swh-tab-releases').removeClass('active');
-    $('#swh-tab-branches').addClass('active');
-  }
-
-  function setReleasesTabActive() {
-    $('.swh-branches-switch').parent().removeClass('active');
-    $('.swh-releases-switch').parent().addClass('active');
-    $('#swh-tab-branches').removeClass('active');
-    $('#swh-tab-releases').addClass('active');
-  }
-
-  $('.dropdown-menu a.swh-branches-switch').click(function(e) {
-    setBranchesTabActive();
-    e.stopPropagation();
-  });
-
-  $('.dropdown-menu a.swh-releases-switch').click(function(e) {
-    setReleasesTabActive();
-    e.stopPropagation();
-  });
-
-  var dd_resized = false;
-
-  // hack to resize the branches/releases dropdown content,
-  // taking icons into account, in order to make the whole names readable
-  $('#swh-branches-releases-dd').on('show.bs.dropdown', function () {
-    if (dd_resized) return;
-    var dd_width = $('.swh-branches-releases').width();
-    $('.swh-branches-releases').width(dd_width + 25);
-    dd_resized = true;
-  })
-
-  $(document).ready(function() {
-    {% if snapshot_context %}
-      if ('{{ snapshot_context.branch }}' != 'None') {
-        setBranchesTabActive();
-      } else {
-        setReleasesTabActive();
-      }
-    {% endif %}
-    $('.dropdown-submenu a.dropdown-link').on("click", function(e){
-      $(this).next('ul').toggle();
-      e.stopPropagation();
-      e.preventDefault();
-    });
-  });
-
+    var snapshotContext = {{ snapshot_context|jsonify }};
+    swh.browse.initSnapshotNavigation(snapshotContext);
 </script>

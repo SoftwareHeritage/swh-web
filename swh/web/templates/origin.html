@@ -1,6 +1,13 @@
 {% extends "browse.html" %}
+
 {% load static %}
 {% load swh_templatetags %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+  {{ block.super }}
+  {% render_bundle 'origin' %}
+{% endblock %}
 
 {% block swh-browse-before-panels %}
 
@@ -56,9 +63,9 @@
   <h2>Visits history</h2>
 
   <div class="btn-group" data-toggle="buttons" style="margin: auto; width: 50%;display: table;">
-    <button class="btn btn-md btn-swh active swh-visits-button" type="button" onclick="show_full_visits_different_snapshots(event)">Show full visits with different snapshots</button>
-    <button class="btn btn-md btn-swh swh-visits-button" type="button" onclick="show_full_visits(event)">Show all full visits</button>
-    <button class="btn btn-md btn-swh swh-visits-button" type="button" onclick="show_all_visits(event)">Show all visits</button>
+    <button class="btn btn-md btn-swh active swh-visits-button" type="button" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">Show full visits with different snapshots</button>
+    <button class="btn btn-md btn-swh swh-visits-button" type="button" onclick="swh.origin.showFullVisits(event)">Show all full visits</button>
+    <button class="btn btn-md btn-swh swh-visits-button" type="button" onclick="swh.origin.showAllVisits(event)">Show all visits</button>
   </div>
 
   <h3>Timeline</h3>
@@ -75,271 +82,10 @@
 
 </div>
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script language="javascript" type="text/javascript" src="{% static 'js/origin_visits_histogram.js' %}"></script>
-<script language="javascript" type="text/javascript" src="{% static 'js/bootstrap-year-calendar/bootstrap-year-calendar.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/bootstrap-year-calendar.min.css' %}">
-
 <script>
-
   // all origin visits
-  var all_visits = {{ origin_visits | safe }};
-  // will hold filtered visits to display
-  var filtered_visits;
-  // will hold currently displayed year
-  var current_year;
-
-  // process input visits
-  var first_full_visit;
-  all_visits.forEach(function(v, i) {
-    // Turn Unix epoch into Javascript Date object
-      v.date = new Date(Math.floor(v.date * 1000));
-      var v_link = '<a class="swh-visit-' + v.status + '" href="' + v.browse_url + '">' + v.fmt_date + '</a>';
-      if (v.status == 'full') {
-        if (!first_full_visit) {
-          first_full_visit = v;
-          $('#swh-first-full-visit').append($(v_link));
-        } else {
-          $('#swh-last-full-visit')[0].innerHTML = v_link;
-        }
-      }
-      if (i == all_visits.length - 1) {
-        $('#swh-last-visit').append($(v_link));
-      }
-  });
-
-  // function to gather full visits
-  function filter_full_visits(different_snapshots) {
-    var filtered_visits = [];
-    for (var i = 0 ; i < all_visits.length ; ++i) {
-      if (all_visits[i].status != 'full') continue;
-      if (!different_snapshots) {
-        filtered_visits.push(all_visits[i]);
-      } else if (filtered_visits.length == 0) {
-        filtered_visits.push(all_visits[i]);
-      } else {
-        var last_visit = filtered_visits[filtered_visits.length-1];
-        if (all_visits[i].snapshot != last_visit.snapshot) {
-          filtered_visits.push(all_visits[i]);
-        }
-      }
-    }
-    return filtered_visits;
-  }
-
-  var min_size = 15;
-  var max_size = 28;
-  var cur_popover = null;
-  var visits_by_year = [];
-  var visits_by_date = {};
-
-  function close_popover() {
-    if (cur_popover) {
-      $(cur_popover).popover('destroy');
-      cur_popover = null;
-    }
-  }
-
-  // function to update the visits calendar view based on the selected year
-  function update_calendar(year) {
-    visits_by_year = [];
-    visits_by_date = {};
-    for (var i = 0 ; i < filtered_visits.length ; ++i) {
-      if (filtered_visits[i].date.getUTCFullYear() == year) {
-        visits_by_year.push(filtered_visits[i]);
-      }
-    }
-    var max_nb_visits_by_date = 0;
-    var min_date , max_date;
-    for (var i = 0 ; i < visits_by_year.length ; ++i) {
-      visits_by_year[i]['startDate'] = visits_by_year[i]['date'];
-      visits_by_year[i]['endDate'] = visits_by_year[i]['startDate'];
-      var date = new Date(visits_by_year[i]['date']);
-      date.setHours(0, 0, 0, 0);
-      var date_str = date.toDateString();
-      if (!visits_by_date.hasOwnProperty(date_str)) {
-        visits_by_date[date_str] = [visits_by_year[i]];
-      } else {
-        visits_by_date[date_str].push(visits_by_year[i]);
-      }
-      max_nb_visits_by_date = Math.max(max_nb_visits_by_date, visits_by_date[date_str].length);
-      if (i == 0) {
-        min_date = max_date = date;
-      } else {
-        if (date.getTime() < min_date.getTime()) {
-          min_date = date;
-        }
-        if (date.getTime() > max_date.getTime()) {
-          max_date = date;
-        }
-      }
-    }
-
-    close_popover();
-
-    $('#swh-visits-calendar').calendar({
-      dataSource: visits_by_year,
-      style: 'custom',
-      minDate: new Date(year, 0, 1),
-      maxDate: new Date(year, 11, 31),
-      startYear: year,
-      customDataSourceRenderer: function(element, date, events) {
-        var date_str = date.toDateString();
-        var nb_visits = visits_by_date[date_str].length;
-        var t = nb_visits / max_nb_visits_by_date;
-        if (max_nb_visits_by_date == 1) {
-          t = 0;
-        }
-        var size = min_size + t * (max_size - min_size);
-        var offsetX = (max_size - size) / 2 - parseInt($(element).css('padding-left'));
-        var offsetY = (max_size - size) / 2 - parseInt($(element).css('padding-top')) + 1;
-        var cell_wrapper = $('<div></div>');
-        cell_wrapper.css('position', 'relative');
-        var day_number = $('<div></div>');
-        day_number.text($(element).text());
-        var circle = $('<div></div>');
-        var r = 0, g = 0, b = 0;
-        for (var i = 0 ; i < nb_visits ; ++i) {
-          var visit = visits_by_date[date_str][i];
-          if (visit.status == 'full') {
-            g += 255;
-          } else if (visit.status == 'partial') {
-            r += 255;
-            g += 255;
-          } else {
-            r += 255;
-          }
-        }
-        r /= nb_visits;
-        g /= nb_visits;
-        circle.css('background-color', 'rgba(' + r + ', ' + g + ', 0, 0.3)');
-        circle.css('width', size + 'px');
-        circle.css('height', size + 'px');
-        circle.css('border-radius', size + 'px');
-        circle.css('position', 'absolute');
-        circle.css('top', offsetY + 'px');
-        circle.css('left', offsetX + 'px');
-        cell_wrapper.append(day_number);
-        cell_wrapper.append(circle);
-        $(element)[0].innerHTML = $(cell_wrapper)[0].outerHTML;
-      },
-      mouseOnDay: function(e) {
-        if (cur_popover != e.element) {
-          close_popover();
-        }
-        var date_str = e.date.toDateString();
-        if (visits_by_date.hasOwnProperty(date_str)) {
-
-          var visits = visits_by_date[date_str];
-          var content = '<div><h2>' + e.date.toDateString() + '</h2></div>';
-          content += '<ul style="list-style-type: none;">';
-          for (var i = 0 ; i < visits.length; ++i) {
-            var visit_time = visits[i].fmt_date.substr(visits[i].fmt_date.indexOf(',')+2);
-            content += '<li><a class="swh-visit-' + visits[i].status + '" title="' + visits[i].status +
-                       ' visit" href="' + visits[i].browse_url + '">' + visit_time + '</a></li>';
-          }
-          content += '</ul>';
-
-          $(e.element).popover({
-            trigger: 'manual',
-            container: 'body',
-            html: true,
-            content: content
-          });
-
-          $(e.element).popover('show');
-          cur_popover = e.element;
-        }
-      }
-    });
-    $('#swh-visits-timeline').mouseenter(function() {
-      close_popover();
-    });
-    $('#swh-visits-list').mouseenter(function() {
-      close_popover();
-    });
-    $('#swh-visits-calendar.calendar table td').css('width', max_size + 'px');
-    $('#swh-visits-calendar.calendar table td').css('height', max_size + 'px');
-    $('#swh-visits-calendar.calendar table td').css('padding', '0px');
-  }
-
-  // function to update the visits list view based on the selected year
-  function update_visits_list(year) {
-    $('#swh-visits-list').children().remove();
-    var visits_by_year = [];
-    for (var i = 0 ; i < filtered_visits.length ; ++i) {
-      if (filtered_visits[i].date.getUTCFullYear() == year) {
-        visits_by_year.push(filtered_visits[i]);
-      }
-    }
-    var visits_cpt = 0;
-    var nb_visits_by_row = 4;
-    var visits_list_html = '<div class="swh-visits-list-row">';
-    for (var i = 0 ; i < visits_by_year.length ; ++i) {
-      if (visits_cpt > 0 && visits_cpt % nb_visits_by_row == 0) {
-        visits_list_html += '</div><div class="swh-visits-list-row">';
-      }
-      visits_list_html += '<div class="swh-visits-list-column" style="width: ' + 100/nb_visits_by_row + '%;">';
-      visits_list_html += '<a class="swh-visit-' + visits_by_year[i].status + '" title="' + visits_by_year[i].status +
-                          ' visit" href="' + visits_by_year[i].browse_url + '">' + visits_by_year[i].fmt_date + '</a>';
-      visits_list_html += '</div>';
-      ++visits_cpt;
-    }
-    visits_list_html += '</div>';
-    $('#swh-visits-list').append($(visits_list_html));
-  }
-
-  // callback when the user selects a year through the visits histogram
-  function year_clicked(year) {
-    current_year = year;
-    update_calendar(year);
-    update_visits_list(year);
-  }
-
-  // function to update the visits views (histogram, calendar, list)
-  function update_displayed_visits() {
-    if (!current_year) {
-      current_year = filtered_visits[filtered_visits.length-1].date.getUTCFullYear();
-    }
-    create_visits_histogram('.d3-wrapper', filtered_visits, current_year, year_clicked);
-    update_calendar(current_year);
-    update_visits_list(current_year);
-  }
-
-  // callback when the user only wants to see full visits pointing
-  // to different snapshots (default)
-  function show_full_visits_different_snapshots(event) {
-    if (event) {
-      $('.swh-visits-button').removeClass('active');
-      $(event.target).addClass('active');
-    }
-    filtered_visits = filter_full_visits(true);
-    update_displayed_visits();
-  }
-
-  // callback when the user only wants to see full visits
-  function show_full_visits(event) {
-    if (event) {
-      $('.swh-visits-button').removeClass('active');
-      $(event.target).addClass('active');
-    }
-    filtered_visits = filter_full_visits(false);
-    update_displayed_visits();
-  }
-
-  // callback when the user wants to see all visits (including partial, ongoing and failed ones)
-  function show_all_visits(event) {
-    if (event) {
-      $('.swh-visits-button').removeClass('active');
-      $(event.target).addClass('active');
-    }
-    filtered_visits = all_visits;
-    update_displayed_visits();
-  }
-
-  // display full visits pointing to different snapshots by default
-  show_full_visits_different_snapshots();
-
+  var visits = {{ origin_visits|jsonify }};
+  swh.origin.initVisitsReporting(visits);
 </script>
 
 {% endblock %}
