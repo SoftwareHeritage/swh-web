@@ -1,7 +1,12 @@
+beautifulsoup4
 django>=1.10.7
+django_js_reverse
+django_webpack_loader
 djangorestframework>=3.4.0
 docutils
 file_magic>=0.3.0
+htmlmin
+lxml
 pygments
 python-dateutil
 pyyaml

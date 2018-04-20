@@ -1,0 +1,119 @@
+export async function highlightCode(showLineNumbers = true) {
+
+  await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
+
+  // empty hljs language definition
+  function noHighlight(hljs) {
+    return {};
+  }
+  // just a trick to get line numbers working when no highlight
+  // has to be performed
+  hljs.registerLanguage('nohighlight-swh', noHighlight);
+
+  // keep track of the first highlighted line
+  let firstHighlightedLine = null;
+  // highlighting color
+  let lineHighlightColor = 'rgb(193, 255, 193)';
+
+  // function to highlight a line
+  function highlightLine(i) {
+    let lineTd = $(`.swh-content div[data-line-number="${i}"]`).parent().parent();
+    lineTd.css('background-color', lineHighlightColor);
+    return lineTd;
+  }
+
+  function removeHash() {
+    history.replaceState('', document.title, window.location.pathname + window.location.search);
+  }
+
+  // function to reset highlighting
+  function resetHighlightedLines() {
+    firstHighlightedLine = null;
+    $('.swh-content tr').css('background-color', 'inherit');
+  }
+
+  function scrollToLine(lineDomElt) {
+    if ($(lineDomElt).closest('.swh-content').length > 0) {
+      $('html, body').animate({
+        scrollTop: $(lineDomElt).offset().top - 70
+      }, 500);
+    }
+  }
+
+  // function to highlight lines based on a url fragment
+  // in the form '#Lx' or '#Lx-Ly'
+  function parseUrlFragmentForLinesToHighlight() {
+    let lines = [];
+    let linesRegexp = new RegExp(/L(\d+)/g);
+    let line = linesRegexp.exec(window.location.hash);
+    while (line) {
+      lines.push(parseInt(line[1]));
+      line = linesRegexp.exec(window.location.hash);
+    }
+    resetHighlightedLines();
+    if (lines.length === 1) {
+      firstHighlightedLine = parseInt(lines[0]);
+      scrollToLine(highlightLine(lines[0]));
+    } else if (lines[0] < lines[lines.length - 1]) {
+      firstHighlightedLine = parseInt(lines[0]);
+      scrollToLine(highlightLine(lines[0]));
+      for (let i = lines[0] + 1; i <= lines[lines.length - 1]; ++i) {
+        highlightLine(i);
+      }
+    }
+  }
+
+  $(document).ready(() => {
+    // highlight code and add line numbers
+    $('code').each((i, block) => {
+      hljs.highlightBlock(block);
+      if (showLineNumbers) {
+        hljs.lineNumbersBlock(block);
+      }
+    });
+
+    if (!showLineNumbers) {
+      return;
+    }
+
+    // click handler to dynamically highlight line(s)
+    // when the user clicks on a line number (lines range
+    // can also be highlighted while holding the shift key)
+    $('body').click(evt => {
+      if (evt.target.classList.contains('hljs-ln-n')) {
+        let line = parseInt($(evt.target).data('line-number'));
+        if (evt.shiftKey && firstHighlightedLine && line > firstHighlightedLine) {
+          let firstLine = firstHighlightedLine;
+          resetHighlightedLines();
+          for (let i = firstLine; i <= line; ++i) {
+            highlightLine(i);
+          }
+          firstHighlightedLine = firstLine;
+          window.location.hash = `#L${firstLine}-L${line}`;
+        } else {
+          resetHighlightedLines();
+          highlightLine(line);
+          window.location.hash = `#L${line}`;
+          scrollToLine(evt.target);
+        }
+      } else {
+        resetHighlightedLines();
+        removeHash();
+      }
+    });
+
+    // update lines highlighting when the url fragment changes
+    $(window).on('hashchange', () => parseUrlFragmentForLinesToHighlight());
+
+    $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
+
+    // schedule the highlight of lines specified by an url fragment,
+    // as hljs.lineNumbersBlock is async
+    setTimeout(() => {
+      parseUrlFragmentForLinesToHighlight();
+      // remove empty last line added by highlight.js
+      $('.highlightjs tr:last').remove();
+    });
+
+  });
+}

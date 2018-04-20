@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load render_bundle from webpack_loader %}
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -7,28 +8,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    {% render_bundle 'vendors' %}
+    {% render_bundle 'webapp' %}
+
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
     {% block header %}{% endblock %}
 
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap-theme.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap-responsive.min.css' %}">
-
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css" />
-
-    <script src="{% static 'js/bootstrap/bootstrap.min.js' %}"></script>
-    <script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
-
-    <link rel="stylesheet" href="{% static 'css/pygment.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
     <link rel="icon" href="{% static 'img/icons/swh-logo-32x32.png' %}" sizes="32x32" />
     <link rel="icon" href="{% static 'img/icons/swh-logo-archive-192x192.png' %}" sizes="192x192" />
     <link rel="apple-touch-icon-precomposed" href="{% static 'img/icons/swh-logo-archive-180x180.png' %}" />
     <meta name="msapplication-TileImage" content="{% static 'img/icons/swh-logo-archive-270x270.png' %}" />
-    <script>document.domain = "archive.softwareheritage.org";</script>
 
   </head>
   <body>

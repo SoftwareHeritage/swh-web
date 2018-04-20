@@ -1,0 +1,26 @@
+.highlightjs pre {
+    background-color: transparent;
+    border-radius: 0;
+    border-color: transparent;
+}
+
+.hljs {
+    background-color: transparent;
+    white-space: pre;
+}
+
+/* for block of numbers */
+.hljs-ln-numbers {
+    user-select: none;
+    text-align: center;
+    color: #aaa;
+    border-right: 1px solid #ccc;
+    vertical-align: top;
+    padding-right: 5px !important;
+}
+
+/* for block of code */
+.hljs-ln-code {
+    padding-left: 10px !important;
+    width: 100%;
+}

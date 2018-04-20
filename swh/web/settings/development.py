@@ -3,11 +3,21 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+# flake8: noqa
+
 """
 Django development settings for swh-web.
 """
 
-from .common import *  # noqa
+import os
 
-from django.core.cache import cache
-cache.clear()
+# guard to avoid side effects on the django settings when building the
+# Debian package for swh-web
+if os.environ['DJANGO_SETTINGS_MODULE'] == 'swh.web.settings.development':
+
+    from .common import *
+
+    MIDDLEWARE += ['swh.web.common.middlewares.HtmlPrettifyMiddleware']
+
+    from django.core.cache import cache
+    cache.clear()
