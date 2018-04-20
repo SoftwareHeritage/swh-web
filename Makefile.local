@@ -1,10 +1,18 @@
-TOOL=pandoc
+run-django-webpack-devserver:
+	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; npm run start-dev & cd swh/web && python3 manage.py runserver"
 
-run: # works with the default ~/.config/swh/webapp/webapp.yml file
-	cd swh/web && python3 manage.py runserver
+run-django-webpack-dev:
+	npm run build-dev && cd swh/web && python3 manage.py runserver --nostatic
 
-run-prod:
+run-django-webpack-prod:
+	npm run build && cd swh/web && python3 manage.py runserver --nostatic --settings=swh.web.settings.production
+
+run-django-server-dev:
+	cd swh/web && python3 manage.py runserver --nostatic
+
+run-django-server-prod:
+	cd swh/web && python3 manage.py runserver --nostatic --settings=swh.web.settings.production
+
+run-gunicorn-server:
 	gunicorn3 -b 127.0.0.1:5004 swh.web.wsgi
 
-doc:
-	cd swh/web/api/templates/includes/ && pandoc -o apidoc-header.html apidoc-header.md

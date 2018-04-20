@@ -1,0 +1,50 @@
+.swh-browse-top-navigation {
+    border-bottom: 1px solid #ddd;
+    min-height: 42px;
+    padding: 4px 5px 0 5px;
+}
+
+.swh-branches-releases {
+    min-width: 200px;
+}
+
+.swh-branches-switch,
+.swh-releases-switch {
+    padding: 5px 15px !important;
+}
+
+li.swh-branch:hover,
+li.swh-release:hover {
+    background-color: #e8e8e8;
+}
+
+.nav a,
+.swh-branch a,
+.swh-release a {
+    outline: none;
+}
+
+.swh-branch a:hover,
+.swh-release a:hover {
+    text-decoration: none;
+}
+
+.swh-origin-visit-details,
+.swh-snapshot-details {
+    text-align: center;
+}
+
+.swh-origin-visit-details ul,
+.swh-snapshot-details ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.swh-origin-visit-details li,
+.swh-snapshot-details li {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+    margin-right: 10px;
+}

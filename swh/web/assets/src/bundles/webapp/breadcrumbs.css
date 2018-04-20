@@ -1,0 +1,24 @@
+.bread-crumbs {
+    display: inline-block;
+    overflow: hidden;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.bread-crumbs ul {
+    list-style-type: none;
+}
+
+.bread-crumbs li {
+    float: left;
+    list-style-type: none;
+}
+
+.bread-crumbs a {
+    color: rgba(0, 0, 0, 0.75);
+    border-bottom-style: none;
+}
+
+.bread-crumbs a:hover {
+    color: rgba(0, 0, 0, 0.85);
+    text-decoration: underline;
+}

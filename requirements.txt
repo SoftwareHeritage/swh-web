@@ -3,10 +3,15 @@
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
 # Runtime dependencies
+beautifulsoup4
 django >= 1.10.7
 djangorestframework >= 3.4.0
+django_webpack_loader
+django_js_reverse
 docutils
 file_magic >= 0.3.0
+htmlmin
+lxml
 pygments
 python-dateutil
 pyyaml

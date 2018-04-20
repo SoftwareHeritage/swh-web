@@ -1,0 +1,12 @@
+.swh-content {
+    background-image: none;
+    border: none;
+    background-color: white;
+    padding: 0;
+}
+
+.swh-content pre,
+.swh-content pre code {
+    margin: 0;
+    padding: 0;
+}

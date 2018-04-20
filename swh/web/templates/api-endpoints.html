@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
+
 {% load swh_templatetags %}
+
 {% block title %} Endpoints &ndash; Software Heritage API {% endblock %}
 {% block content %}
 
@@ -65,12 +67,10 @@
 <script type="text/javascript">
   $(document).ready(function() {
     $('table.swh-table').DataTable({
-         "paging": false,
-         "info": false,
-         "order": [[1, "asc"]]
-      });
-    $(".dataTables_filter input").addClass("form-control")
-
+      "paging": false,
+      "info": false,
+      "order": [[1, "asc"]]
+    });
   });
 </script>
 {% endblock %}

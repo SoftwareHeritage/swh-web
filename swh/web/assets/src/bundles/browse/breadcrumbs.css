@@ -1,0 +1,11 @@
+.swh-browse-bread-crumbs {
+    font-size: inherit;
+    vertical-align: text-top;
+    margin-bottom: 1px;
+}
+
+.swh-browse-bread-crumbs li:nth-child(n+2)::before {
+    content: "";
+    display: inline-block;
+    margin: 0 2px;
+}

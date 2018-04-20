@@ -1,0 +1,17 @@
+.dataTables_filter {
+    margin-top: 15px;
+}
+
+.dataTables_filter input {
+    width: 70%;
+    float: right;
+}
+
+.dataTables_filter label {
+    font-weight: bold !important;
+    white-space: inherit !important;
+}
+
+.dataTables_wrapper {
+    position: static;
+}
