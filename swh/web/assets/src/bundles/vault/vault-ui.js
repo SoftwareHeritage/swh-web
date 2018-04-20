@@ -51,7 +51,7 @@ function checkVaultCookingTasks() {
       cookingUrl = Urls.vault_cook_revision_gitfast(cookingTask.object_id);
     }
     if (cookingTask.status !== 'done' && cookingTask.status !== 'failed') {
-      cookingTaskRequests.push(fetch(cookingUrl));
+      cookingTaskRequests.push(fetch(cookingUrl, {credentials: 'same-origin'}));
     }
   }
   $('.swh-vault-table tbody tr').each((i, row) => {
