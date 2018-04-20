@@ -55,6 +55,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
+# Compress all assets (static ones and dynamically generated html)
+# served by django in a local development environement context.
+# In a production environment, assets compression will be directly
+# handled by web servers like apache or nginx.
+if swh_web_config['debug']:
+    MIDDLEWARE.insert(0, 'django.middleware.gzip.GZipMiddleware')
+
 ROOT_URLCONF = 'swh.web.urls'
 
 TEMPLATES = [

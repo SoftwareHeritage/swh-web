@@ -2,16 +2,16 @@ run-django-webpack-devserver:
 	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; npm run start-dev & cd swh/web && python3 manage.py runserver"
 
 run-django-webpack-dev:
-	npm run build-dev && cd swh/web && python3 manage.py runserver
+	npm run build-dev && cd swh/web && python3 manage.py runserver --nostatic
 
 run-django-webpack-prod:
-	npm run build && cd swh/web && python3 manage.py runserver --settings=swh.web.settings.production
+	npm run build && cd swh/web && python3 manage.py runserver --nostatic --settings=swh.web.settings.production
 
 run-django-server-dev:
-	cd swh/web && python3 manage.py runserver
+	cd swh/web && python3 manage.py runserver --nostatic
 
 run-django-server-prod:
-	cd swh/web && python3 manage.py runserver --settings=swh.web.settings.production
+	cd swh/web && python3 manage.py runserver --nostatic --settings=swh.web.settings.production
 
 run-gunicorn-server:
 	gunicorn3 -b 127.0.0.1:5004 swh.web.wsgi

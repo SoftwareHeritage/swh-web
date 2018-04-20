@@ -3,10 +3,12 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from django.conf import settings
 from django.conf.urls import (
     url, include, handler400, handler403, handler404, handler500
 )
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.contrib.staticfiles.views import serve
 from django.shortcuts import render
 from django.views.generic.base import RedirectView
 
@@ -32,7 +34,12 @@ urlpatterns = [
     url(r'^jsreverse/$', urls_js, name='js_reverse')
 ]
 
-urlpatterns += staticfiles_urlpatterns()
+# enable to serve compressed assets through django development server
+if settings.DEBUG:
+    static_pattern = r'^%s(?P<path>.*)$' % settings.STATIC_URL[1:]
+    urlpatterns.append(url(static_pattern, serve))
+else:
+    urlpatterns += staticfiles_urlpatterns()
 
 handler400 = swh_handle400 # noqa
 handler403 = swh_handle403 # noqa

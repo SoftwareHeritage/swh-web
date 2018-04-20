@@ -20,7 +20,11 @@ if os.environ['DJANGO_SETTINGS_MODULE'] == 'swh.web.settings.production':
     from .common import REST_FRAMEWORK
 
     # activate per-site caching
-    MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+    if 'GZip' in MIDDLEWARE[0]:
+        MIDDLEWARE.insert(1, 'django.middleware.cache.UpdateCacheMiddleware')
+    else:
+        MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+
     MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
                    'django.middleware.cache.FetchFromCacheMiddleware']
 
