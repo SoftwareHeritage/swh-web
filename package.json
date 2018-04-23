@@ -24,7 +24,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "bootstrap-loader": "^2.2.0",
     "bootstrap-sass": "^3.3.7",
-    "bootstrap-year-calendar": "github:Paul-DS/bootstrap-year-calendar",
+    "bootstrap-year-calendar": "github:Paul-DS/bootstrap-year-calendar#458b3c6ed71da2cf958606dff47d937fbeb3e858",
     "clean-webpack-plugin": "^0.1.19",
     "css-loader": "^0.28.11",
     "d3": "^5.1.0",
