@@ -73,6 +73,7 @@ module.exports = {
   devtool: isDevServer ? 'eval' : 'source-map',
   // webpack-dev-server configuration
   devServer: {
+    clientLogLevel: 'warning',
     port: devServerPort,
     publicPath: devServerPublicPath,
     // enable to serve static assets not managed by webpack
