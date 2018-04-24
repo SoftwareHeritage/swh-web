@@ -30,6 +30,9 @@ fs.readdirSync(bundlesDir).forEach(file => {
 let cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
+    loader: 'cache-loader'
+  },
+  {
     loader: 'css-loader',
     options: {
       sourceMap: !isDevServer
@@ -136,30 +139,34 @@ module.exports = {
       // in a large majority of browsers.
       test: /\.js$/,
       exclude: /node_modules/,
-      use: [{
-        loader: 'babel-loader',
-        options: {
-          presets: [
+      use: [
+        {
+          loader: 'cache-loader'
+        },
+        {
+          loader: 'babel-loader',
+          options: {
+            presets: [
             // use env babel presets to benefit from es6 syntax
-            ['env', {
+              ['env', {
               // Do not transform es6 module syntax to another module type
               // in order to benefit from dead code elimination (aka tree shaking)
               // when running webpack in production mode
-              'loose': true,
-              'modules': false
-            }],
-            // use stage-0 babel presets to benfit from advanced js features (es2017)
-            'stage-0'
-          ],
-          plugins: [
+                'loose': true,
+                'modules': false
+              }],
+              // use stage-0 babel presets to benfit from advanced js features (es2017)
+              'stage-0'
+            ],
+            plugins: [
             // use babel transform-runtime plugin in order to use aync/await syntax
-            ['transform-runtime', {
-              'polyfill': false,
-              'regenerator': true
-            }]
-          ]
-        }
-      }]
+              ['transform-runtime', {
+                'polyfill': false,
+                'regenerator': true
+              }]
+            ]
+          }
+        }]
     },
     // expose jquery to the global context as $ and jQuery when importing it
     {

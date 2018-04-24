@@ -19,6 +19,7 @@ extractStyles: false
 
 styleLoaders:
     - mini-css-extract-plugin/dist/loader
+    - cache-loader
     - css-loader?sourceMap
     - sass-loader?sourceMap
 
