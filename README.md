@@ -1,6 +1,6 @@
 # swh-web
 
-This repository holds the developement of Software Heritage web applications:
+This repository holds the development of Software Heritage web applications:
 
 * SWH Web API (https://archive.softwareheritage.org/api): enables to query the content of the SWH archive through HTTP requests and get responses in JSON or YAML.
 
@@ -25,7 +25,7 @@ Those applications are powered by:
     * assets dependencies management and retrieval through [npm](https://www.npmjs.com/)
     * linting of custom javascript code (through [eslint](https://eslint.org/)) and stylesheets (through [stylelint](https://stylelint.io/))
     * use of [es6](http://es6-features.org) syntax and advanced javascript feature like [async/await](https://javascript.info/async-await) or [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) thanks to [babel](https://babeljs.io/) (es6 to es5 transpiler and polyfills provider)
-    * assets minication (using [UglifyJS](https://github.com/mishoo/UglifyJS2) and [cssnano](http://cssnano.co/)) but also dead code elimination for production use
+    * assets minification (using [UglifyJS](https://github.com/mishoo/UglifyJS2) and [cssnano](http://cssnano.co/)) but also dead code elimination for production use
 
 ## How to build and run
 
@@ -69,9 +69,9 @@ Below is the list of available make targets that can be executed from the root d
 
 * **run-django-webpack-dev-server**: Compile and serve not optimized (without mignification and dead code elimination) frontend static assets using [webpack-dev-server](https://github.com/webpack/webpack-dev-server) and run django server with development settings. This is the recommended target to use when developing swh-web as it enables automatic reloading of backend and frontend part of the applications when modifying source files (*.py, *.js, *.css, *.html).
 
-* **run-django-webpack-dev**: Compile not optimized (no mignification, no dead code elimination) frontend static assets using webpack and run django server with development settings. This is the recommended target when one only wants to develop the backend side of the application.
+* **run-django-webpack-dev**: Compile not optimized (no minification, no dead code elimination) frontend static assets using webpack and run django server with development settings. This is the recommended target when one only wants to develop the backend side of the application.
 
-* **run-django-webpack-prod**: Compile optimized (with mignification and dead code elimination) frontend static assets using webpack and run django server with production settings. This is usefull to test the applications in production mode (with the difference that static assets are served by django). Production settings notably enables advanced django caching and you will need to have [memcached](https://memcached.org/) installed for that feature to work.
+* **run-django-webpack-prod**: Compile optimized (with minification and dead code elimination) frontend static assets using webpack and run django server with production settings. This is useful to test the applications in production mode (with the difference that static assets are served by django). Production settings notably enable advanced django caching and you will need to have [memcached](https://memcached.org/) installed for that feature to work.
 
 * **run-django-server-dev**: Run the django server with development settings but without compiling frontend static assets through webpack.
 
@@ -102,8 +102,3 @@ or if you prefer using yarn:
 ```
 $ yarn <target_name>
 ```
-
-
-
-
-
