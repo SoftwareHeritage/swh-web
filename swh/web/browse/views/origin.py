@@ -164,7 +164,7 @@ def origin_browse(request, origin_type=None, origin_url=None):
                    'heading': 'Origin information',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'SWH origin visits',
+                   'top_panel_text': 'Origin visits',
                    'swh_object_metadata': origin_info,
                    'main_panel_visible': True,
                    'origin_visits': origin_visits,

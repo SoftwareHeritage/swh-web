@@ -225,7 +225,7 @@ def content_display(request, query_string):
                    'heading': 'Content information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Content',
+                   'top_panel_text': 'Content metadata',
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content,

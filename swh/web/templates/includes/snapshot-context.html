@@ -7,12 +7,12 @@
         </div>
       {% endif %}
       <a href="{{ snapshot_context.browse_url }}">
-        <h4 class="text-center">SWH origin: {{ snapshot_context.origin_info.url }}</h4>
+        <h4 class="text-center">Origin: {{ snapshot_context.origin_info.url }}</h4>
         <div class="clearfix"></div>
       </a>
     {% else %}
       <a href="{{ snapshot_context.browse_url }}">
-        <h4 class="text-center">SWH snapshot: {{ snapshot_context.snapshot_id }}</h4>
+        <h4 class="text-center">Snapshot: {{ snapshot_context.snapshot_id }}</h4>
         <div class="clearfix"></div>
       </a>
     {% endif %}
@@ -20,7 +20,7 @@
   <div class="swh-origin-visit-details">
     <ul>
       {% if snapshot_context.visit_info %}
-        <li><i class="fa fa-calendar fa-fw"></i> SWH visit date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.fmt_date }}</a></li>
+        <li><i class="fa fa-calendar fa-fw"></i> Visit date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.fmt_date }}</a></li>
       {% endif %}
       <li><i class="fa fa-code-fork fa-fw"></i> <a href="{{ snapshot_context.branches_url }}">Branches ({{ snapshot_context.branches|length}})</a></li>
       {% if snapshot_context.releases %}

@@ -84,7 +84,7 @@ def release_browse(request, sha1_git):
                    'heading': 'Release information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Release',
+                   'top_panel_text': 'Release metadata',
                    'swh_object_metadata': release_data,
                    'main_panel_visible': True,
                    'release_name': release['name'],

@@ -91,7 +91,7 @@ def directory_browse(request, sha1_git, path=None):
                    'heading': 'Directory information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Directory',
+                   'top_panel_text': 'Directory metadata',
                    'swh_object_metadata': dir_metadata,
                    'main_panel_visible': True,
                    'dirs': dirs,

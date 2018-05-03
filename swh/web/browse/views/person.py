@@ -29,7 +29,7 @@ def person_browse(request, person_id):
                    'heading': 'Person information',
                    'top_panel_visible': True,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'SWH object: Person',
+                   'top_panel_text': 'Person metadata',
                    'swh_object_metadata': person,
                    'main_panel_visible': False,
                    'vault_cooking': None,
