@@ -27,7 +27,7 @@ def default_browse_view(request):
     Args:
         request: input django http request
     """
-    return render(request, 'person.html',
+    return render(request, 'browse.html',
                   {'heading': 'Browse the Software Heritage archive',
                    'empty_browse': True})
 
