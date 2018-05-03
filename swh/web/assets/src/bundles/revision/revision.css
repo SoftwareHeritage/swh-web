@@ -23,3 +23,21 @@ span.no-nl-marker svg {
 span.no-nl-marker svg path {
     fill: currentColor;
 }
+
+.swh-revision-log-entry-id {
+    min-width: 110px;
+    max-width: 110px;
+    width: 110px;
+}
+
+.swh-revision-log-entry-author {
+    min-width: 160px;
+    max-width: 160px;
+    width: 160px;
+}
+
+.swh-revision-log-entry-date {
+    min-width: 230px;
+    max-width: 230px;
+    width: 230px;
+}

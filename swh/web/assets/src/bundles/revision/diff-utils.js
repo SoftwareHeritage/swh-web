@@ -93,7 +93,7 @@ export function computeDiff(diffUrl, diffId) {
       // add a button to force its computation
       if (data.diff_str.indexOf('Large diff') === 0) {
         $(`#${diffId}`)[0].innerHTML = data.diff_str +
-          `<br/><button class="btn btn-md btn-swh" type="button"
+          `<br/><button class="btn btn-default btn-sm" type="button"
            onclick="swh.revision.computeDiff('${diffUrl}&force=true', '${diffId}')">
            Request diff</button>`;
         setDiffVisible(diffId);
@@ -297,7 +297,7 @@ function setDiffVisible(diffId) {
   $(`#${diffId}-highlightjs`).css('display', 'block');
 
   // update displayed counters
-  $('#swh-revision-lines-added').text(`${nbAdditions}' additions`);
+  $('#swh-revision-lines-added').text(`${nbAdditions} additions`);
   $('#swh-revision-lines-deleted').text(`${nbDeletions} deletions`);
   $('#swh-nb-diffs-computed').text(nbDiffsComputed);
 
@@ -322,24 +322,28 @@ function genDiffPanel(diffData) {
     diffPanelTitle = `${diffData.from_path} &rarr; ${diffData.to_path}`;
   }
   let diffPanelHtml =
-  `<div id="panel_${diffData.id}" class="panel panel-default swh-file-diff-panel" style="overflow-x: auto;">
-    <div class="panel-heading">
+  `<div id="panel_${diffData.id}" class="card swh-file-diff-panel">
+    <div class="card-header bg-gray-light border-bottom-0">
       <a data-toggle="collapse" href="#panel_${diffData.id}_content">
         <div class="pull-left swh-title-color">
           <strong>${diffPanelTitle}</strong>
         </div>
       </a>
       <div class="pull-right">
-        <div class="btn-group diff-styles" data-toggle="buttons" style="visibility: hidden;">
-          <button class="btn btn-md btn-swh active unified-diff-button" type="button" onclick="swh.revision.showUnifiedDiff(event, '${diffData.id}')">Unified</button>
-          <button class="btn btn-md btn-swh splitted-diff-button" type="button" onclick="swh.revision.showSplittedDiff(event, '${diffData.id}')">Side-by-side</button>
+        <div class="btn-group btn-group-toggle diff-styles" data-toggle="buttons" style="visibility: hidden;">
+          <label class="btn btn-default btn-sm form-check-label active unified-diff-button" onclick="swh.revision.showUnifiedDiff(event, '${diffData.id}')">
+            <input type="radio" name="diffs-switch" id="unified" autocomplete="off" checked> Unified
+          </label>
+          <label class="btn btn-default btn-sm form-check-label splitted-diff-button" onclick="swh.revision.showSplittedDiff(event, '${diffData.id}')">
+            <input type="radio" name="diffs-switch" id="side-by-side" autocomplete="off"> Side-by-side
+          </label>
         </div>
-        <a href="${diffData.content_url}" class="btn btn-md btn-swh" role="button">View file</a>
+        <a href="${diffData.content_url}" class="btn btn-default btn-sm" role="button">View file</a>
       </div>
       <div class="clearfix"></div>
     </div>
-    <div id="panel_${diffData.id}_content" class="panel-collapse collapse in">
-      <div class="swh-diff-loading" id="${diffData.id}-loading" style="text-align: center;visibility: hidden;">
+    <div id="panel_${diffData.id}_content" class="collapse show">
+      <div class="swh-diff-loading text-center" id="${diffData.id}-loading" style="visibility: hidden;">
         <img src=${swhSpinnerSrc}></img>
         <p>Loading diff ...</p>
       </div>
@@ -348,7 +352,7 @@ function genDiffPanel(diffData) {
           <pre><code class="${diffData.id}" id="${diffData.id}"></code></pre>
         </div>
         <div style="width: 100%; display: none;" id="${diffData.id}-splitted-diff">
-          <pre style="width: 50%; float: left;"><code class="${diffData.id}" id="${diffData.id}-from"></code></pre>
+          <pre class="float-left" style="width: 50%;"><code class="${diffData.id}" id="${diffData.id}-from"></code></pre>
           <pre style="width: 50%"><code class="${diffData.id}" id="${diffData.id}-to"></code></pre>
         </div>
       </div>
@@ -397,16 +401,12 @@ function setupWaypoints() {
 export function showUnifiedDiff(event, diffId) {
   $(`#${diffId}-splitted-diff`).css('display', 'none');
   $(`#${diffId}-unified-diff`).css('display', 'block');
-  $(event.currentTarget).parent().find('.splitted-diff-button').removeClass('active');
-  $(event.currentTarget).parent().find('.unified-diff-button').addClass('active');
 }
 
 // callback to switch from unified diff to side-by-side one
 export function showSplittedDiff(event, diffId) {
   $(`#${diffId}-unified-diff`).css('display', 'none');
   $(`#${diffId}-splitted-diff`).css('display', 'block');
-  $(event.currentTarget).parent().find('.unified-diff-button').removeClass('active');
-  $(event.currentTarget).parent().find('.splitted-diff-button').addClass('active');
 }
 
 // callback when the user clicks on the 'Compute all diffs' button

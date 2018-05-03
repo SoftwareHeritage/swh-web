@@ -1,8 +1,8 @@
-<div class="panel panel-default" style="overflow-x: auto;">
-  <div class="panel-heading">
-      <h2>Download content from the Software Heritage Vault</h2>
+<div class="card">
+  <div class="card-header bg-gray-light">
+    <h4>Download content from the Software Heritage Vault</h4>
   </div>
-  <div class="panel-body">
+  <div class="card-body">
     <p>
       This interface enables to track the status of the different Software Heritage
       Vault cooking tasks created while browsing the archive.
@@ -11,7 +11,7 @@
       Once a cooking task is finished, a link will be made available in order to
       download the associated archive.
     </p>
-    <button type="button" class="btn btn-md btn-swh" id="vault-remove-tasks">Remove selected tasks</button>
+    <button type="button" class="btn btn-default btn-sm" id="vault-remove-tasks">Remove selected tasks</button>
     <div class="table-responsive">
       <table class="table swh-vault-table" id="vault-cooking-tasks">
         <thead>
@@ -32,3 +32,4 @@
 <script>
   swh.vault.initUi();
 </script>
+

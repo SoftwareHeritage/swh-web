@@ -284,14 +284,14 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     browse_dir_link = \
         gen_directory_link(sha1_git, link_text='Browse',
-                           link_attrs={'class': 'btn btn-md btn-swh',
+                           link_attrs={'class': 'btn btn-default btn-sm',
                                        'role': 'button'})
 
     browse_rev_link = \
         gen_revision_link(revision_id,
                           snapshot_context=snapshot_context,
                           link_text='Browse',
-                          link_attrs={'class': 'btn btn-md btn-swh',
+                          link_attrs={'class': 'btn btn-default btn-sm',
                                       'role': 'button'})
 
     dir_metadata = {'id': sha1_git,
@@ -315,7 +315,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                                        query_params=request.GET)
         browse_snapshot_link = \
             gen_link(snapshot_context_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-md btn-swh',
+                     link_attrs={'class': 'btn btn-default btn-sm',
                                  'role': 'button'})
         dir_metadata['snapshot context'] = browse_snapshot_link
 
@@ -413,7 +413,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
 
     browse_content_link = \
         gen_content_link(sha1_git, link_text='Browse',
-                         link_attrs={'class': 'btn btn-md btn-swh',
+                         link_attrs={'class': 'btn btn-default btn-sm',
                                      'role': 'button'})
 
     content_raw_url = reverse('browse-content-raw',
@@ -424,7 +424,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         gen_revision_link(revision_id,
                           snapshot_context=snapshot_context,
                           link_text='Browse',
-                          link_attrs={'class': 'btn btn-md btn-swh',
+                          link_attrs={'class': 'btn btn-default btn-sm',
                                       'role': 'button'})
 
     content_metadata = {
@@ -457,7 +457,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                                       query_params=request.GET)
         browse_snapshot_link = \
             gen_link(browse_snapshot_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-md btn-swh',
+                     link_attrs={'class': 'btn btn-default btn-sm',
                                  'role': 'button'})
         content_metadata['snapshot context'] = browse_snapshot_link
 
@@ -559,12 +559,12 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
             snapshot_context, revision_log[i]['id'],
             link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
                       '</i>Browse files',
-            link_attrs={'class': 'btn btn-md btn-swh',
+            link_attrs={'class': 'btn btn-default btn-sm',
                         'role': 'button'})
 
     browse_log_link = \
         gen_revision_log_link(revision_id, link_text='Browse',
-                              link_attrs={'class': 'btn btn-md btn-swh',
+                              link_attrs={'class': 'btn btn-default btn-sm',
                                           'role': 'button'})
 
     revision_metadata = {
@@ -583,7 +583,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                                       query_params=request.GET)
         browse_snapshot_link = \
             gen_link(browse_snapshot_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-md btn-swh',
+                     link_attrs={'class': 'btn btn-default btn-sm',
                                  'role': 'button'})
         revision_metadata['snapshot context'] = browse_snapshot_link
 

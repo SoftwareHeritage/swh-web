@@ -7,10 +7,9 @@
 {% endblock %}
 
 {% block swh-browse-main-panel-content %}
-
-<div class="panel-heading">
-  <div class="pull-left">
-      <h2>{{ top_panel_text }}</h2>
+<div class="card-header bg-gray-light">
+  <div class="float-left">
+    <h4>{{ top_panel_text }}</h4>
   </div>
   <div class="clearfix"></div>
 </div>
@@ -26,34 +25,35 @@
       </tr>
     </thead>
     <tbody>
-        {% for release in displayed_releases %}
-          <tr class="swh-origin-release">
-            <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
-            <td>{{ release.target_type }}</td>
-            <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
-            <td>{{ release.date }}</td
-          </tr>
-        {% endfor %}
+      {% for release in displayed_releases %}
+        <tr class="swh-origin-release">
+          <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
+          <td>{{ release.target_type }}</td>
+          <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
+          <td>{{ release.date }}</td>
+        </tr>
+      {% endfor %}
     </tbody>
   </table>
 </div>
 {% endblock %}
 
 {% block swh-browse-after-panels %}
-
 {% if prev_releases_url or next_releases_url %}
-  <ul class="pager">
-      {% if prev_releases_url %}
-        <li><a href="{{ prev_releases_url }}">Previous</a></li>
-      {% else %}
-        <li class="disabled"><a>Older</a></li>
-      {% endif %}
-      {% if next_releases_url %}
-        <li><a href="{{ next_releases_url }}">Next</a></li>
-      {% else %}
-        <li class="disabled"><a>Newer</a></li>
-      {% endif %}
+  <ul class="pagination justify-content-center">
+
+    {% if prev_releases_url %}
+      <li class="page-item"><a class="page-link" href="{{ prev_releases_url }}">Previous</a></li>
+    {% else %}
+      <li class="page-item disabled"><a class="page-link">Previous</a></li>
+    {% endif %}
+
+    {% if next_releases_url %}
+      <li class="page-item"><a class="page-link" href="{{ next_releases_url }}">Next</a></li>
+    {% else %}
+      <li class="page-item disabled"><a class="page-link">Next</a></li>
+    {% endif %}
+
   </ul>
 {% endif %}
-
 {% endblock %}

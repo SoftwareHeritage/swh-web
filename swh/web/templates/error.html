@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
+
 {% load static %}
 
 {% block title %}Error {{ error_code }} &ndash; Software Heritage archive {% endblock %}
 
 {% block content %}
-
 <div class="swh-http-error">
   <div class="swh-http-error-head">Error</div>
   <div class="swh-http-error-code">
@@ -29,5 +29,4 @@
     </div>
   </div>
 </div>
-
 {% endblock %}

@@ -1,15 +1,15 @@
 {% if readme_name %}
 
-<div id="readme-panel" class="panel panel-default" style="overflow-x: auto;">
-  <div class="panel-heading">
-    <h2>{{ readme_name }}</h2>
+  <div id="readme-panel" class="card">
+    <div class="card-header bg-gray-light">
+      <h4>{{ readme_name }}</h4>
+    </div>
+    <div id="readme" class="swh-showdown card-body">
+    </div>
   </div>
-  <div id="readme" class="swh-showdown panel-body">
-  </div>
-</div>
 
-<script>
-  swh.webapp.renderMarkdown('#readme', '{{ readme_url }}');
-</script>
+  <script>
+    swh.webapp.renderMarkdown('#readme', '{{ readme_url }}');
+  </script>
 
 {% endif %}

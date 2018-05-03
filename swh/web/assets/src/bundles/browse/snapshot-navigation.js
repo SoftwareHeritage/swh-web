@@ -1,15 +1,15 @@
 export function initSnapshotNavigation(snapshotContext) {
 
   function setBranchesTabActive() {
-    $('.swh-releases-switch').parent().removeClass('active');
-    $('.swh-branches-switch').parent().addClass('active');
+    $('.swh-releases-switch').removeClass('active');
+    $('.swh-branches-switch').addClass('active');
     $('#swh-tab-releases').removeClass('active');
     $('#swh-tab-branches').addClass('active');
   }
 
   function setReleasesTabActive() {
-    $('.swh-branches-switch').parent().removeClass('active');
-    $('.swh-releases-switch').parent().addClass('active');
+    $('.swh-branches-switch').removeClass('active');
+    $('.swh-releases-switch').addClass('active');
     $('#swh-tab-branches').removeClass('active');
     $('#swh-tab-releases').addClass('active');
   }

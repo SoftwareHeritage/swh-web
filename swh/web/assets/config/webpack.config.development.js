@@ -50,7 +50,8 @@ let cssLoaders = [
             'extends': 'stylelint-config-standard',
             'rules': {
               'indentation': 4,
-              'font-family-no-missing-generic-family-keyword': null
+              'font-family-no-missing-generic-family-keyword': null,
+              'no-descending-specificity': null
             },
             'ignoreFiles': 'node_modules/**/*.css'
           }
@@ -292,6 +293,21 @@ module.exports = {
     // define some global variables accessible from js code
     new webpack.DefinePlugin({
       __STATIC__: JSON.stringify(publicPath)
+    }),
+    // needed in order to use bootstrap 4.x
+    new webpack.ProvidePlugin({
+      Popper: ['popper.js', 'default'],
+      Alert: 'exports-loader?Alert!bootstrap/js/dist/alert',
+      Button: 'exports-loader?Button!bootstrap/js/dist/button',
+      Carousel: 'exports-loader?Carousel!bootstrap/js/dist/carousel',
+      Collapse: 'exports-loader?Collapse!bootstrap/js/dist/collapse',
+      Dropdown: 'exports-loader?Dropdown!bootstrap/js/dist/dropdown',
+      Modal: 'exports-loader?Modal!bootstrap/js/dist/modal',
+      Popover: 'exports-loader?Popover!bootstrap/js/dist/popover',
+      Scrollspy: 'exports-loader?Scrollspy!bootstrap/js/dist/scrollspy',
+      Tab: 'exports-loader?Tab!bootstrap/js/dist/tab',
+      Tooltip: 'exports-loader?Tooltip!bootstrap/js/dist/tooltip',
+      Util: 'exports-loader?Util!bootstrap/js/dist/util'
     })
   ],
   // webpack optimizations

@@ -25,8 +25,13 @@ export function initMainNavigation() {
 
   $(document).ready(() => {
 
-    $('.dropdown-submenu a.dropdown-link').on('click', e => {
-      $(e.target).next('ul').toggle();
+    $('.dropdown-submenu a.dropdown-item').on('click', e => {
+      $(e.target).next('div').toggle();
+      if ($(e.target).next('div').css('display') !== 'none') {
+        $(e.target).focus();
+      } else {
+        $(e.target).blur();
+      }
       e.stopPropagation();
       e.preventDefault();
     });

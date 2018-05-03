@@ -1,4 +1,5 @@
 {% extends "browse.html" %}
+
 {% load swh_templatetags %}
 
 {% block swh-browse-before-panels %}
@@ -9,12 +10,13 @@
 
 {% block swh-browse-main-panel-content %}
 <div style="height: 35px;margin: 4px;">
-<i class="fa fa-tag fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b> created by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
+  <i class="fa fa-tag fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
+  created by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
 </div>
 <pre style="white-space: pre-wrap">
-<h2>{{ release_note_header }}</h2>{{ release_note_body }}
+<h6>{{ release_note_header }}</h6>{{ release_note_body }}
 </pre>
 <div style="margin: 4px;">
-{{ release_target_link }}
+  {{ release_target_link }}
 </div>
 {% endblock %}

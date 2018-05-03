@@ -3,8 +3,8 @@
 <div class="swh-browse-top-navigation">
   {% if snapshot_context %}
     {% if snapshot_context.branch or snapshot_context.release %}
-      <div class="dropdown" style="float: left;" id="swh-branches-releases-dd">
-        <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">
+      <div class="dropdown float-left" id="swh-branches-releases-dd">
+        <button class="btn btn-block btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
           {% if snapshot_context.branch %}
             <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
             Branch: <strong>{{ snapshot_context.branch }}</strong>
@@ -15,48 +15,46 @@
           <span class="caret"></span>
         </button>
         <ul class="scrollable-menu dropdown-menu swh-branches-releases">
-          <div class="tabbable tabs-top">
-            <ul class="nav nav-tabs">
-              <li class="active"><a class="swh-branches-switch" data-toggle="tab">Branches</a></li>
-              <li><a class="swh-releases-switch" data-toggle="tab">Releases</a></li>
-            </ul>
-            <div class="tab-content">
-              <div class="tab-pane active" id="swh-tab-branches">
-                {% for b in snapshot_context.branches %}
-                  <li class="swh-branch">
-                    <a href="{{ b.url | safe }}">
-                      <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
-                      {% if b.name == snapshot_context.branch %}
-                        <i class="fa fa-check fa-fw" aria-hidden="true"></i>
-                      {% else %}
-                        <i class="fa fa-fw" aria-hidden="true"></i>
-                      {% endif %}
-                      {{ b.name }}
-                    </a>
-                  </li>
-                {% endfor %}
-              </div>
-              <div class="tab-pane" id="swh-tab-releases">
-                {% if snapshot_context.releases %}
-                  {% for r in snapshot_context.releases %}
-                    {% if r.target_type == 'revision' %}
-                      <li class="swh-release">
-                        <a href="{{ r.url | safe }}">
-                          <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
-                          {% if r.name == snapshot_context.release %}
-                            <i class="fa fa-check fa-fw" aria-hidden="true"></i>
-                          {% else %}
-                            <i class="fa fa-fw" aria-hidden="true"></i>
-                          {% endif %}
-                          {{ r.name }}
-                        </a>
-                      </li>
+          <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="nav-link active swh-branches-switch" data-toggle="tab">Branches</a></li>
+            <li class="nav-item"><a class="nav-link swh-releases-switch" data-toggle="tab">Releases</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="swh-tab-branches">
+              {% for b in snapshot_context.branches %}
+                <li class="swh-branch">
+                  <a href="{{ b.url | safe }}">
+                    <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
+                    {% if b.name == snapshot_context.branch %}
+                      <i class="fa fa-check fa-fw" aria-hidden="true"></i>
+                    {% else %}
+                      <i class="fa fa-fw" aria-hidden="true"></i>
                     {% endif %}
-                  {% endfor %}
-                {% else %}
-                  <span>No releases to show</span>
-                {% endif %}
-              </div>
+                    {{ b.name }}
+                  </a>
+                </li>
+              {% endfor %}
+            </div>
+            <div class="tab-pane" id="swh-tab-releases">
+              {% if snapshot_context.releases %}
+                {% for r in snapshot_context.releases %}
+                  {% if r.target_type == 'revision' %}
+                    <li class="swh-release">
+                      <a href="{{ r.url | safe }}">
+                        <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
+                        {% if r.name == snapshot_context.release %}
+                          <i class="fa fa-check fa-fw" aria-hidden="true"></i>
+                        {% else %}
+                          <i class="fa fa-fw" aria-hidden="true"></i>
+                        {% endif %}
+                        {{ r.name }}
+                      </a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                <span>No releases to show</span>
+              {% endif %}
             </div>
           </div>
         </ul>
@@ -64,16 +62,16 @@
     {% endif %}
   {% endif %}
 
-  <div class="btn-group pull-right">
+  <div class="btn-group float-right">
     {% if top_right_link %}
-      <a href="{{ top_right_link | safe }}" class="btn btn-md btn-swh" role="button">{{ top_right_link_text }}</a>
+      <a href="{{ top_right_link | safe }}" class="btn btn-default btn-sm" role="button">{{ top_right_link_text }}</a>
     {% endif %}
     {% if show_actions_menu %}
-      <button class="btn btn-md btn-swh dropdown-toggle" type="button" data-toggle="dropdown">
+      <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
         <i class="fa fa-bars fa-fw" aria-hidden="true"></i>Actions
         <span class="caret"></span>
       </button>
-      <ul class="dropdown-menu swh-browse-actions-menu">
+      <ul class="dropdown-menu dropdown-menu-right swh-browse-actions-menu">
         {% include "includes/vault-create-tasks.html" %}
       </ul>
     {% endif %}
@@ -84,6 +82,6 @@
 </div>
 
 <script>
-    var snapshotContext = {{ snapshot_context|jsonify }};
-    swh.browse.initSnapshotNavigation(snapshotContext);
+  var snapshotContext = {{ snapshot_context|jsonify }};
+  swh.browse.initSnapshotNavigation(snapshotContext);
 </script>

@@ -77,30 +77,18 @@ function updateDisplayedVisits() {
 // callback when the user only wants to see full visits pointing
 // to different snapshots (default)
 export function showFullVisitsDifferentSnapshots(event) {
-  if (event) {
-    $('.swh-visits-button').removeClass('active');
-    $(event.currentTarget).addClass('active');
-  }
   filteredVisits = filterFullVisits(true);
   updateDisplayedVisits();
 }
 
 // callback when the user only wants to see full visits
 export function showFullVisits(event) {
-  if (event) {
-    $('.swh-visits-button').removeClass('active');
-    $(event.currentTarget).addClass('active');
-  }
   filteredVisits = filterFullVisits(false);
   updateDisplayedVisits();
 }
 
 // callback when the user wants to see all visits (including partial, ongoing and failed ones)
 export function showAllVisits(event) {
-  if (event) {
-    $('.swh-visits-button').removeClass('active');
-    $(event.currentTarget).addClass('active');
-  }
   filteredVisits = allVisits;
   updateDisplayedVisits();
 }

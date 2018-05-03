@@ -225,12 +225,12 @@ def revision_browse(request, sha1_git):
         revision_data['directory'] = \
             gen_snapshot_directory_link(snapshot_context, sha1_git,
                                         link_text='Browse',
-                                        link_attrs={'class': 'btn btn-md btn-swh', # noqa
+                                        link_attrs={'class': 'btn btn-default btn-sm', # noqa
                                                     'role': 'button'})
     else:
         revision_data['directory'] = \
             gen_directory_link(revision['directory'], link_text='Browse',
-                               link_attrs={'class': 'btn btn-md btn-swh',
+                               link_attrs={'class': 'btn btn-default btn-sm',
                                            'role': 'button'})
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
@@ -241,7 +241,7 @@ def revision_browse(request, sha1_git):
     if origin_info:
         revision_data['context-independent revision'] = \
             gen_revision_link(sha1_git, link_text='Browse',
-                              link_attrs={'class': 'btn btn-md btn-swh',
+                              link_attrs={'class': 'btn btn-default btn-sm',
                                           'role': 'button'})
         revision_data['origin id'] = origin_info['id']
         revision_data['origin type'] = origin_info['type']
@@ -249,7 +249,7 @@ def revision_browse(request, sha1_git):
                                                origin_info['url'])
         browse_snapshot_link = \
             gen_snapshot_link(snapshot_id, link_text='Browse',
-                              link_attrs={'class': 'btn btn-md btn-swh',
+                              link_attrs={'class': 'btn btn-default btn-sm',
                                           'role': 'button'})
         revision_data['snapshot'] = browse_snapshot_link
 
@@ -440,7 +440,7 @@ def revision_log_browse(request, sha1_git):
             log['directory'],
             link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
                       '</i>Browse files',
-            link_attrs={'class': 'btn btn-md btn-swh',
+            link_attrs={'class': 'btn btn-default btn-sm',
                         'role': 'button'})
 
     return render(request, 'revision-log.html',

@@ -1,128 +1,123 @@
 {% extends "layout.html" %}
+
 {% load swh_templatetags %}
 {% load render_bundle from webpack_loader %}
 
 {% block title %}{{ heading }} &ndash; Software Heritage archive {% endblock %}
 
 {% block header %}
-  {% render_bundle 'browse' %}
-  {% render_bundle 'vault' %}
+{% render_bundle 'browse' %}
+{% render_bundle 'vault' %}
 {% endblock %}
 
 {% block navbar-content %}
-  <ul class="nav navbar-nav swh-browse-nav">
-    <li class="active">
-      <a href="#search" data-toggle="tab" style="outline:none;">Search</a>
-    </li>
-    <li>
-      <a  href="#help" data-toggle="tab" style="outline:none;">Help</a>
-    </li>
-    <li>
-      <a  href="#vault" data-toggle="tab" style="outline:none;">Vault</a>
-    </li>
-    <li>
-      <a  href="#browse" data-toggle="tab" style="outline:none;">Browse</a>
-    </li>
-  </ul>
+<ul class="nav navbar-nav swh-browse-nav">
+  <li class="nav-item">
+    <a class="nav-link" href="#search" data-toggle="tab">Search</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#help" data-toggle="tab">Help</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#vault" data-toggle="tab">Vault</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#browse" data-toggle="tab">Browse</a>
+  </li>
+</ul>
 {% endblock %}
 
 {% block content %}
+<div class="swh-corner-ribbon">Alpha version</div>
 
-  <div class="swh-corner-ribbon">Alpha version</div>
+<div class="tab-content">
 
-  <div class="tab-content" style="margin-top: 5px;">
+  <div class="tab-pane active" id="search">
+    {% include "includes/origins-search.html" %}
+  </div>
 
-    <div class="tab-pane active" id="search">
-      {% include "includes/origins-search.html" %}
-    </div>
+  <div class="tab-pane" id="help">
+    {% include "includes/browse-help.html" %}
+  </div>
 
-    <div class="tab-pane" id="help">
-      {% include "includes/browse-help.html" %}
-    </div>
+  <div class="tab-pane" id="vault">
+    {% include "includes/vault-ui.html" %}
+  </div>
 
-    <div class="tab-pane" id="vault">
-      {% include "includes/vault-ui.html" %}
-    </div>
+  <div class="tab-pane" id="browse">
 
-    <div class="tab-pane" id="browse">
+    {% if empty_browse %}
 
-      {% if empty_browse %}
-
-        <div class="panel panel-default" style="overflow-x: auto;">
-          <div class="panel-heading">
-            <h2>Browse the Software Heritage archive</h2>
-          </div>
-          <div class ="panel-body">
-            <p>
-              No Software Heritage object currently browsed.
-              <br/>
-              To browse the content of the archive, you can either use
-              the <a href="{% url 'browse-homepage' %}#search">Search</a> interface or refer to the URI scheme described
-              in the <a href="{% url 'browse-homepage' %}#help">Help</a> page.
-            </p>
-          </div>
+      <div class="card">
+        <div class="card-header bg-gray-light">
+          <h4>Browse the Software Heritage archive</h4>
         </div>
-
-      {% else %}
-
-        <div class="panel-group" id="accordion">
-
-          {% block swh-browse-before-panels %}{% endblock %}
-
-          {% if top_panel_visible %}
-            <div class="panel panel-default" style="overflow-x: auto;">
-              <div class="panel-heading">
-                {% if top_panel_collapsible %}
-                  <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse" style="outline:none;">
-                {% endif %}
-                <div class="pull-left">
-                  <h2>{{ top_panel_text }}</h2>
-                </div>
-                <div class="clearfix"></div>
-                {% if top_panel_collapsible %}
-                  </a>
-                {% endif %}
-              </div>
-              {% if top_panel_collapsible %}
-                <div id="swh-browse-top-collapse" class="panel-collapse collapse">
-              {% endif %}
-              <table class="table">
-                <tbody>
-                  {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-                    <tr>
-                      <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
-                      <td class="swh-metadata-table-row swh-metadata-table-value">
-                        <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-              {% if top_panel_collapsible %}
-                </div>
-              {% endif %}
-            </div>
-          {% endif %}
-
-          {% if main_panel_visible %}
-            <div class="panel panel-default" style="overflow-x: visible;">
-              {% block swh-browse-main-panel-content %}{% endblock %}
-            </div>
-          {% endif %}
-
-          {% block swh-browse-panels-group-end %}{% endblock %}
-
+        <div class ="card-body">
+          <p>
+            No Software Heritage object currently browsed.
+            <br/>
+            To browse the content of the archive, you can either use
+            the <a href="{% url 'browse-homepage' %}#search">Search</a> interface or refer to the URI scheme described
+            in the <a href="{% url 'browse-homepage' %}#help">Help</a> page.
+          </p>
         </div>
-
-        {% block swh-browse-after-panels %}{% endblock %}
-
       </div>
+
+    {% else %}
+
+      {% block swh-browse-before-panels %}{% endblock %}
+
+      {% if top_panel_visible %}
+        <div class="card">
+          <div class="card-header bg-gray-light border-bottom-0">
+            {% if top_panel_collapsible %}
+              <a data-toggle="collapse" data-parent="#accordion" href="#swh-browse-top-collapse">
+            {% endif %}
+            <div class="float-left">
+              <h4>{{ top_panel_text }}</h4>
+            </div>
+            <div class="clearfix"></div>
+            {% if top_panel_collapsible %}
+              </a>
+            {% endif %}
+          </div>
+          {% if top_panel_collapsible %}
+            <div id="swh-browse-top-collapse" class="collapse">
+          {% endif %}
+          <table class="table">
+            <tbody>
+              {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+                <tr>
+                  <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
+                  <td class="swh-metadata-table-row swh-metadata-table-value">
+                    <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% if top_panel_collapsible %}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if main_panel_visible %}
+        <div class="card">
+          {% block swh-browse-main-panel-content %}{% endblock %}
+        </div>
+      {% endif %}
+
+      {% block swh-browse-panels-group-end %}{% endblock %}
+
+      {% block swh-browse-after-panels %}{% endblock %}
+
     {% endif %}
 
   </div>
+</div>
 
-  <script>
-    swh.browse.initMainNavigation();
-  </script>
-
+<script>
+  swh.browse.initMainNavigation();
+</script>
 {% endblock %}

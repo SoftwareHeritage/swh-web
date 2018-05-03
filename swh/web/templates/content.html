@@ -1,15 +1,12 @@
 {% extends "browse.html" %}
 
 {% block swh-browse-before-panels %}
-  {% if snapshot_context %}
-    {% include "includes/snapshot-context.html" %}
-  {% endif %}
+{% if snapshot_context %}
+  {% include "includes/snapshot-context.html" %}
+{% endif %}
 {% endblock %}
 
 {% block swh-browse-main-panel-content %}
-
 {% include "includes/top-navigation.html" %}
-
 {% include "includes/content-display.html" %}
-
 {% endblock %}

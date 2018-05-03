@@ -5,25 +5,24 @@
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  {{ block.super }}
-  {% render_bundle 'origin' %}
+{{ block.super }}
+{% render_bundle 'origin' %}
 {% endblock %}
 
 {% block swh-browse-before-panels %}
-
-<div class="panel panel-default" style="overflow-x: auto;">
-  <div class="panel-heading">
+<div class="card">
+  <div class="card-header bg-gray-light border-bottom-0">
     {% if origin_info.url|slice:"0:4" == "http" %}
-      <div class="pull-right">
-        <a href="{{ origin_info.url }}" class="btn btn-md btn-swh" role="button">Go to origin</a>
+      <div class="float-right">
+        <a href="{{ origin_info.url }}" class="btn btn-default btn-sm" role="button">Go to origin</a>
       </div>
     {% endif %}
-    <a data-toggle="collapse" data-parent="#accordion" href="#swh-origin-top-collapse" style="outline:none;">
-      <h2 style="text-align: center">SWH origin: {{ origin_info.url }}</h2>
+    <a data-toggle="collapse" data-parent="#accordion" href="#swh-origin-top-collapse">
+      <h4 class="text-center">SWH origin: {{ origin_info.url }}</h4>
       <div class="clearfix"></div>
     </a>
   </div>
-  <div id="swh-origin-top-collapse" class="panel-collapse collapse">
+  <div id="swh-origin-top-collapse" class="collapse">
     <table class="table">
       <tbody>
         {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
@@ -38,45 +37,50 @@
     </table>
   </div>
 </div>
-
 {% endblock %}
 
 {% block swh-browse-main-panel-content %}
-<div class="panel-heading">
-  <div class="pull-left">
-      <h2>{{ top_panel_text }}</h2>
+<div class="card-header bg-gray-light">
+  <div class="float-left">
+    <h4>{{ top_panel_text }}</h4>
   </div>
   <div class="clearfix"></div>
 </div>
 
-<div class="panel-body">
+<div class="card-body">
 
-  <h2>Visits overview</h2>
+  <h4>Visits overview</h4>
 
-    <ul>
-      <li>Total number of visits: <b>{{ origin_visits|length }}</b></li>
-      <li>Last full visit: <span style="margin-left: 20px;" id="swh-last-full-visit"></span></li>
-      <li>First full visit: <span style="margin-left: 20px;" id="swh-first-full-visit"></span></li>
-      <li>Last visit: <span style="margin-left: 20px;" id="swh-last-visit"></span></li>
-    </ul>
+  <ul>
+    <li>Total number of visits: <b>{{ origin_visits|length }}</b></li>
+    <li>Last full visit: <span style="margin-left: 20px;" id="swh-last-full-visit"></span></li>
+    <li>First full visit: <span style="margin-left: 20px;" id="swh-first-full-visit"></span></li>
+    <li>Last visit: <span style="margin-left: 20px;" id="swh-last-visit"></span></li>
+  </ul>
 
-  <h2>Visits history</h2>
+  <h4>Visits history</h4>
 
-  <div class="btn-group" data-toggle="buttons" style="margin: auto; width: 50%;display: table;">
-    <button class="btn btn-md btn-swh active swh-visits-button" type="button" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">Show full visits with different snapshots</button>
-    <button class="btn btn-md btn-swh swh-visits-button" type="button" onclick="swh.origin.showFullVisits(event)">Show all full visits</button>
-    <button class="btn btn-md btn-swh swh-visits-button" type="button" onclick="swh.origin.showAllVisits(event)">Show all visits</button>
+  <div class="btn-group btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
+    <label class="btn btn-default btn-sm form-check-label active" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
+      <input type="radio" name="options" id="option1" autocomplete="off" checked> Show full visits with different snapshots
+    </label>
+    <label class="btn btn-default btn-sm form-check-label" onclick="swh.origin.showFullVisits(event)">
+      <input type="radio" name="options" id="option2" autocomplete="off"> Show all full visits
+    </label>
+    <label class="btn btn-default btn-sm form-check-label" onclick="swh.origin.showAllVisits(event)">
+      <input type="radio" name="options" id="option3" autocomplete="off"> Show all visits
+    </label>
   </div>
 
-  <h3>Timeline</h3>
+  <h5>Timeline</h5>
 
   <div id="swh-visits-timeline" class="d3-wrapper"></div>
 
-  <h3>Calendar</h3>
+  <h5>Calendar</h5>
 
   <div id="swh-visits-calendar"></div>
 
-  <h3>List</h3>
+  <h5>List</h5>
 
   <div id="swh-visits-list"></div>
 
@@ -87,5 +91,4 @@
   var visits = {{ origin_visits|jsonify }};
   swh.origin.initVisitsReporting(visits);
 </script>
-
 {% endblock %}

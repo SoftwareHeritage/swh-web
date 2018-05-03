@@ -15,3 +15,11 @@
 .dataTables_wrapper {
     position: static;
 }
+
+.swh-table.dataTable {
+    border-collapse: collapse !important;
+}
+
+.swh-table.dataTable th {
+    border-top: none;
+}

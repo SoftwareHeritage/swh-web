@@ -11,7 +11,7 @@ import 'bootstrap-loader/lib/bootstrap.loader?configFilePath=../../../swh/web/as
 
 // jquery datatables
 import 'datatables.net';
-import 'datatables.net-bs/css/dataTables.bootstrap.css';
+import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 import './datatables.css';
 
 // web fonts
