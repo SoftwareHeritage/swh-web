@@ -1,3 +1,5 @@
+{% extends "browse-layout.html" %}
+
 {% comment %}
 Copyright (C) 2017-2018  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
@@ -5,6 +7,9 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load render_bundle from webpack_loader %}
+
+{% block browse-content %}
 <div class="card">
   <div class="card-header bg-gray-light">
     <h4>Download content from the Software Heritage Vault</h4>
@@ -37,6 +42,7 @@ See top-level LICENSE file for more information
 </div>
 
 <script>
+  swh.browse.initBrowse('vault');
   swh.vault.initUi();
 </script>
-
+{% endblock %}

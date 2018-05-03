@@ -18,22 +18,32 @@ import swh.web.browse.views.snapshot # noqa
 from swh.web.browse.browseurls import BrowseUrls
 
 
-def default_browse_view(request):
-    """Default django view used as an entry point
-    for the swh browse ui web application.
-
-    The url that point to it is /browse/.
-
-    Args:
-        request: input django http request
-    """
+def _default_browse_view(request):
     return render(request, 'browse.html',
-                  {'heading': 'Browse the Software Heritage archive',
+                  {'heading': 'Browse',
                    'empty_browse': True})
 
 
+def _browse_help_view(request):
+    return render(request, 'browse-help.html',
+                  {'heading': 'Help'})
+
+
+def _browse_search_view(request):
+    return render(request, 'browse-search.html',
+                  {'heading': 'Search'})
+
+
+def _browse_vault_view(request):
+    return render(request, 'browse-vault-ui.html',
+                  {'heading': 'Vault'})
+
+
 urlpatterns = [
-    url(r'^$', default_browse_view, name='browse-homepage')
+    url(r'^$', _default_browse_view, name='browse-mainpage'),
+    url(r'^help/$', _browse_help_view, name='browse-help'),
+    url(r'^search/$', _browse_search_view, name='browse-search'),
+    url(r'^vault/$', _browse_vault_view, name='browse-vault')
 ]
 
 urlpatterns += BrowseUrls.get_url_patterns()

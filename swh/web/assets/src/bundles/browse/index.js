@@ -14,4 +14,4 @@ import './snapshot-navigation.css';
 
 export * from './snapshot-navigation';
 export * from './origin-search';
-export * from './main-navigation';
+export * from './browse-utils';

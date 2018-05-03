@@ -1,3 +1,5 @@
+{% extends "browse-layout.html" %}
+
 {% comment %}
 Copyright (C) 2017-2018  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
@@ -7,6 +9,7 @@ See top-level LICENSE file for more information
 
 {% load static %}
 
+{% block browse-content %}
 <div class="card">
   <div class="card-header bg-gray-light">
     <h4>Search Software Heritage origins to browse</h4>
@@ -53,5 +56,7 @@ See top-level LICENSE file for more information
 </ul>
 
 <script>
+  swh.browse.initBrowse('search');
   swh.browse.initOriginSearch();
 </script>
+{% endblock %}

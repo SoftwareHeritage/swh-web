@@ -112,7 +112,10 @@ export async function highlightCode(showLineNumbers = true) {
     // update lines highlighting when the url fragment changes
     $(window).on('hashchange', () => parseUrlFragmentForLinesToHighlight());
 
-    $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
+    // schedule lines highlighting if any as hljs.lineNumbersBlock() is async
+    setTimeout(() => {
+      parseUrlFragmentForLinesToHighlight();
+    });
 
   });
 }

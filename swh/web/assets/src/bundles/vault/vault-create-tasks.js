@@ -32,14 +32,14 @@ function addVaultCookingTask(cookingTask) {
         localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
         $('#vault-cook-directory-modal').modal('hide');
         $('#vault-cook-revision-modal').modal('hide');
-        swh.browse.showTab('#vault');
+        window.location = Urls.browse_vault();
       })
       .catch(() => {
         $('#vault-cook-directory-modal').modal('hide');
         $('#vault-cook-revision-modal').modal('hide');
       });
   } else {
-    swh.browse.showTab('#vault');
+    window.location = Urls.browse_vault();
   }
 }
 
