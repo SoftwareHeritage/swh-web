@@ -271,13 +271,6 @@ export function computeDiff(diffUrl, diffId) {
               }
             });
 
-            // remove empty last line added by highlight.js
-            $(`#${diffId} tr:last`).remove();
-            $(`#${diffId}-from tr:last`).remove();
-            $(`#${diffId}-to tr:last`).remove();
-            $(`#${diffId}-from tr:last`).remove();
-            $(`#${diffId}-to tr:last`).remove();
-
             // hide the diff mode switch button in case of not generated diffs
             if (data.diff_str.indexOf('Diffs are not generated for non textual content') !== 0) {
               $(`#panel_${diffId} .diff-styles`).css('visibility', 'visible');

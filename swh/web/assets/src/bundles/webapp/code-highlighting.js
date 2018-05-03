@@ -107,13 +107,5 @@ export async function highlightCode(showLineNumbers = true) {
 
     $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
 
-    // schedule the highlight of lines specified by an url fragment,
-    // as hljs.lineNumbersBlock is async
-    setTimeout(() => {
-      parseUrlFragmentForLinesToHighlight();
-      // remove empty last line added by highlight.js
-      $('.highlightjs tr:last').remove();
-    });
-
   });
 }
