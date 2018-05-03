@@ -804,6 +804,40 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
             'next_revs_breadcrumb': next_revs_breadcrumb}
 
 
+# list of origin types that can be found in the swh archive
+# TODO: retrieve it dynamically in an efficient way instead
+#       of hardcoding it
+_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit']
+
+
+def get_origin_info(origin_url, origin_type=None):
+    """
+    Get info about a SWH origin.
+    Its main purpose is to automatically find an origin type
+    when it is not provided as parameter.
+
+    Args:
+        origin_url (str): complete url of a SWH origin
+        origin_type (str): optionnal origin type
+
+    Returns:
+        A dict with the following entries:
+            * type: the origin type
+            * url: the origin url
+            * id: the SWH internal id of the origin
+    """
+    if origin_type:
+        return service.lookup_origin({'type': origin_type,
+                                      'url': origin_url})
+    else:
+        for origin_type in _swh_origin_types:
+            origin_info = service.lookup_origin({'type': origin_type,
+                                                 'url': origin_url})
+            if origin_info:
+                return origin_info
+    return None
+
+
 def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
                          timestamp=None, visit_id=None):
     """
@@ -848,10 +882,10 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
     branches_url = None
     releases_url = None
     swh_type = 'snapshot'
-    if origin_type and origin_url:
+    if origin_url:
         swh_type = 'origin'
-        origin_info = service.lookup_origin({'type': origin_type,
-                                            'url': origin_url})
+        origin_info = get_origin_info(origin_url, origin_type)
+        origin_info['type'] = origin_type
 
         visit_info = get_origin_visit(origin_info, timestamp, visit_id)
         visit_info['fmt_date'] = format_utc_iso_date(visit_info['date'])

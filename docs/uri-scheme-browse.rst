@@ -53,12 +53,12 @@ Such a fragment is resolved, internally by the SWH archive, to a revision *sha1_
 The already mentioned URLs for revision contexts can therefore be alternatively
 specified by users as:
 
-* :http:get:`/browse/origin/(origin_type)/url/(origin_url)/directory/[(path)/]`
-* :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/directory/[(path)/]`
-* :http:get:`/browse/origin/(origin_type)/url/(origin_url)/content/(path)/`
-* :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/content/(path)/`
-* :http:get:`/browse/origin/(origin_type)/url/(origin_url)/log/`
-* :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/log/`
+* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/directory/[(path)/]`
+* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/directory/[(path)/]`
+* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/content/(path)/`
+* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/content/(path)/`
+* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/log/`
+* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/log/`
 
 Typing:
 
