@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 // webpack configuration for compiling static assets in development mode
 
 // import required node modules and webpack plugins
