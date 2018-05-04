@@ -104,8 +104,8 @@ module.exports = {
   // assets output configuration
   output: {
     path: path.resolve('./swh/web/static/'),
-    filename: 'js/[name].js',
-    chunkFilename: 'js/[name].js',
+    filename: 'js/[name].[chunkhash].js',
+    chunkFilename: 'js/[name].[chunkhash].js',
     publicPath: publicPath,
     // each bundle will be compiled as a umd module with its own namespace
     // in order to easily use them in django templates
@@ -292,8 +292,8 @@ module.exports = {
     }),
     // for extracting all stylesheets in separate css files
     new MiniCssExtractPlugin({
-      filename: 'css/[name].css',
-      chunkFilename: 'css/[name].css'
+      filename: 'css/[name].[chunkhash].css',
+      chunkFilename: 'css/[name].[chunkhash].css'
     }),
     // for removing some warnings in js console about not found source maps
     new RemoveSourceMapUrlPlugin(),
