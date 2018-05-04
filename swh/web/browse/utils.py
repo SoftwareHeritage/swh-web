@@ -871,7 +871,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
         query_params = {'visit_id': visit_id}
 
-        browse_url = reverse('browse-origin',
+        browse_url = reverse('browse-origin-visits',
                              kwargs=url_args)
 
         if timestamp:

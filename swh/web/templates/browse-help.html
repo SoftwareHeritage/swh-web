@@ -8,7 +8,6 @@ See top-level LICENSE file for more information
 {% endcomment %}
 
 {% block browse-content %}
-
 <div class="card">
   <div class="card-header bg-gray-light">
     <h4>How to browse the Software Heritage archive ?</h4>
@@ -47,7 +46,7 @@ See top-level LICENSE file for more information
     <h5>Context-independent browsing</h5>
 
     <p>
-      Context-independent URLs provide information about SWH objects (e.g., revisions, directories, contents, persons, …), independently
+      Context-independent URLs provide information about objects (e.g., revisions, directories, contents, persons, …), independently
       of the contexts where they have been found (e.g., specific software origins, branches, commits, …).
     </p>
 
@@ -106,7 +105,7 @@ See top-level LICENSE file for more information
     <h5>Context-dependent browsing</h5>
 
     <p>
-      Context-dependent URLs provide information about SWH objects, limited to specific contexts where the objects have been found.
+      Context-dependent URLs provide information about objects, limited to specific contexts where the objects have been found.
     </p>
 
     <p>
@@ -116,7 +115,26 @@ See top-level LICENSE file for more information
 
     <ul>
       <li>
-        Display information about the SWH visits of a software
+        Display information about the visits of a software
+        <b>origin</b>:
+        <ul>
+
+          <li>
+            <a href="{% url 'browse-origin-visits' 'git' 'https://github.com/torvalds/linux' %}">
+              {% url 'browse-origin-visits' 'git' 'https://github.com/torvalds/linux' %}
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'browse-origin-visits' 'git' 'https://github.com/python/cpython' %}">
+              {% url 'browse-origin-visits' 'git' 'https://github.com/python/cpython' %}
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        Display the latest archived
+        <b>snapshot</b> for a software
         <b>origin</b>:
         <ul>
 
@@ -171,6 +189,6 @@ See top-level LICENSE file for more information
 </div>
 
 <script>
-    swh.browse.initBrowse('help');
+  swh.browse.initBrowse('help');
 </script>
 {% endblock %}

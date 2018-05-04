@@ -48,13 +48,13 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         mock_service.lookup_origin.return_value = origin_info_test_data
         mock_get_origin_visits.return_value = origin_visits_test_data
 
-        url = reverse('browse-origin',
+        url = reverse('browse-origin-visits',
                       kwargs={'origin_type': origin_info_test_data['type'],
                               'origin_url': origin_info_test_data['url']})
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('origin.html')
+        self.assertTemplateUsed('origin-visits.html')
         self.assertContains(resp, '<pre>%s</pre>' % origin_info_test_data['type'])
         self.assertContains(resp, '<pre><a href="%s">%s</a></pre>' %
                                   (origin_info_test_data['url'],
@@ -494,7 +494,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         mock_origin_service.lookup_origin.side_effect = \
             NotFoundExc('origin not found')
-        url = reverse('browse-origin',
+        url = reverse('browse-origin-visits',
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'bar'})
         resp = self.client.get(url)
