@@ -19,6 +19,9 @@ See top-level LICENSE file for more information
 {% block swh-browse-before-panels %}
 <div class="card">
   <div class="card-header bg-gray-light border-bottom-0">
+    <div class="float-left">
+        <a href="{% url 'browse-origin' origin_info.type origin_info.url %}" class="btn btn-default btn-sm" role="button">Latest snapshot</a>
+    </div>
     {% if origin_info.url|slice:"0:4" == "http" %}
       <div class="float-right">
         <a href="{{ origin_info.url }}" class="btn btn-default btn-sm" role="button">Go to origin</a>
