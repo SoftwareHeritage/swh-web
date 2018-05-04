@@ -1,6 +1,13 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 import {handleFetchErrors} from 'utils/functions';
 
-let progress = `<div class="progress" style="margin-bottom: 0px;">
+let progress = `<div class="progress">
                   <div class="progress-bar progress-bar-success progress-bar-striped"
                        role="progressbar" aria-valuenow="100" aria-valuemin="0"
                        aria-valuemax="100" style="width: 100%;height: 100%;">
@@ -23,7 +30,7 @@ function updateProgressBar(progressBar, cookingTask) {
   }
   progressBar.text(cookingTask.progress_message || cookingTask.status);
   if (cookingTask.status === 'new' || cookingTask.status === 'pending') {
-    progressBar.addClass('active');
+    progressBar.addClass('progress-bar-animated');
   } else {
     progressBar.removeClass('progress-bar-striped');
   }
@@ -98,15 +105,15 @@ function checkVaultCookingTasks() {
           }
           tableRow += '<td><input type="checkbox" class="vault-task-toggle-selection"/></td>';
           if (cookingTask.object_type === 'directory') {
-            tableRow += '<td><i class="fa fa-folder fa-fw" aria-hidden="true"></i>directory</td>';
+            tableRow += '<td style="width: 120px"><i class="fa fa-folder fa-fw" aria-hidden="true"></i>directory</td>';
           } else {
-            tableRow += '<td><i class="octicon octicon-git-commit fa-fw"></i>revision</td>';
+            tableRow += '<td style="width: 120px"><i class="octicon octicon-git-commit fa-fw"></i>revision</td>';
           }
           tableRow += `<td class="vault-object-id" data-object-id="${cookingTask.object_id}"><a href="${browseUrl}">${cookingTask.object_id}</a></td>`;
           tableRow += `<td style="width: 350px">${progressBar.outerHTML}</td>`;
           let downloadLink = 'Waiting for download link to be available';
           if (cookingTask.status === 'done') {
-            downloadLink = `<a class="btn btn-md btn-swh" href="${cookingTask.fetch_url}` +
+            downloadLink = `<a class="btn btn-default btn-sm" href="${cookingTask.fetch_url}` +
                            '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>';
           } else if (cookingTask.status === 'failed') {
             downloadLink = '';
@@ -119,7 +126,7 @@ function checkVaultCookingTasks() {
           updateProgressBar(progressBar, cookingTask);
           let downloadLink = rowTask.find('.vault-dl-link');
           if (cookingTask.status === 'done') {
-            downloadLink[0].innerHTML = `<a class="btn btn-md btn-swh" href="${cookingTask.fetch_url}` +
+            downloadLink[0].innerHTML = `<a class="btn btn-default btn-sm" href="${cookingTask.fetch_url}` +
                                         '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>';
           } else if (cookingTask.status === 'failed') {
             downloadLink[0].innerHTML = '';

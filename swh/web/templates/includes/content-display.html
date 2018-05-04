@@ -1,4 +1,11 @@
-<div class="well well-sm swh-content" style="margin-bottom: 0px">
+{% comment %}
+Copyright (C) 2017-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<div class="swh-content">
   {% if content_size > max_content_size %}
     Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
   {% elif "inode/x-empty" == mimetype %}

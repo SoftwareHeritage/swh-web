@@ -20,3 +20,4 @@ swh/web/static/*.*
 swh/web/static/js/
 swh/web/static/css/
 swh/web/static/fonts/
+.cache-loader/

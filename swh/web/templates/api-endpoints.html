@@ -1,12 +1,19 @@
 {% extends "layout.html" %}
 
+{% comment %}
+Copyright (C) 2015-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
 {% load swh_templatetags %}
 
 {% block title %} Endpoints &ndash; Software Heritage API {% endblock %}
-{% block content %}
 
-<div class="panel panel-default" style="overflow-x: auto;">
-  <div class="panel-heading">
+{% block content %}
+<div class="card">
+  <div class="card-header bg-gray-light">
     <nav class="bread-crumbs">
       <ul>
         <li><a href="/api/">Software Heritage API</a></li>
@@ -15,8 +22,8 @@
       </ul>
     </nav>
   </div>
-  <div class="panel-body">
-    <div class="api-doc">
+  <div class="card-body">
+    <div class="swh-api-doc">
       <p>
         Below you can find a list of the available endpoints for version 1 of the
         Software Heritage API. For a more general introduction please refer to
@@ -31,14 +38,14 @@
 
       <noscript>
         <ul>
-        {% for route, doc in doc_routes %}
-          <li><a href="#{{ route }}">{{ route }}</a></li>
-        {% endfor %}
+          {% for route, doc in doc_routes %}
+            <li><a href="#{{ route }}">{{ route }}</a></li>
+          {% endfor %}
         </ul>
       </noscript>
     </div>
 
-    <div class="api-doc table-responsive">
+    <div class="swh-api-doc table-responsive">
       <table class="table table-striped search-res swh-table">
         <col width="200">
         <thead class="thead-default">
@@ -48,22 +55,23 @@
         </thead>
         <tbody>
           {% for route, doc in doc_routes %}
-          <tr class="api-doc-route{% for tag in doc.tags %} api-doc-route-{{ tag }} {% endfor %}">
-            {% if doc.tags|length > 0 %}
-            <td id="{{ route }}">{% url doc.route_view_name %}</td>
-            <td>{{ doc.tags|join:', ' }}</td>
-            {% else %}
-            <td id="{{ route }}"><a href="{% url doc.route_view_name %}">{% url doc.route_view_name %}</a></td>
-            <td>available</td>
-            {% endif %}
-            <td>{{ doc.doc_intro | safe_docstring_display | safe }}</td>
-          </tr>
+            <tr class="swh-api-doc-route {% for tag in doc.tags %} swh-api-doc-route-{{ tag }} {% endfor %}">
+              {% if doc.tags|length > 0 %}
+                <td id="{{ route }}">{% url doc.route_view_name %}</td>
+                <td>{{ doc.tags|join:', ' }}</td>
+              {% else %}
+                <td id="{{ route }}"><a href="{% url doc.route_view_name %}">{% url doc.route_view_name %}</a></td>
+                <td>available</td>
+              {% endif %}
+              <td>{{ doc.doc_intro | safe_docstring_display | safe }}</td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
 <script type="text/javascript">
   $(document).ready(function() {
     $('table.swh-table').DataTable({

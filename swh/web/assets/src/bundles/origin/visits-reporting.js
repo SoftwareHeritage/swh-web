@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 import {createVisitsHistogram} from './visits-histogram';
 import {updateCalendar} from './visits-calendar';
 import './visits-reporting.css';
@@ -77,30 +84,18 @@ function updateDisplayedVisits() {
 // callback when the user only wants to see full visits pointing
 // to different snapshots (default)
 export function showFullVisitsDifferentSnapshots(event) {
-  if (event) {
-    $('.swh-visits-button').removeClass('active');
-    $(event.currentTarget).addClass('active');
-  }
   filteredVisits = filterFullVisits(true);
   updateDisplayedVisits();
 }
 
 // callback when the user only wants to see full visits
 export function showFullVisits(event) {
-  if (event) {
-    $('.swh-visits-button').removeClass('active');
-    $(event.currentTarget).addClass('active');
-  }
   filteredVisits = filterFullVisits(false);
   updateDisplayedVisits();
 }
 
 // callback when the user wants to see all visits (including partial, ongoing and failed ones)
 export function showAllVisits(event) {
-  if (event) {
-    $('.swh-visits-button').removeClass('active');
-    $(event.currentTarget).addClass('active');
-  }
   filteredVisits = allVisits;
   updateDisplayedVisits();
 }
@@ -118,6 +113,9 @@ export function initVisitsReporting(visits) {
       if (!firstFullVisit) {
         firstFullVisit = v;
         $('#swh-first-full-visit').append($(visitLink));
+        if (allVisits.length === 1) {
+          $('#swh-last-full-visit')[0].innerHTML = visitLink;
+        }
       } else {
         $('#swh-last-full-visit')[0].innerHTML = visitLink;
       }

@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 // webpack configuration for compiling static assets in development mode
 
 // import required node modules and webpack plugins
@@ -30,6 +37,9 @@ fs.readdirSync(bundlesDir).forEach(file => {
 let cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
+    loader: 'cache-loader'
+  },
+  {
     loader: 'css-loader',
     options: {
       sourceMap: !isDevServer
@@ -47,7 +57,8 @@ let cssLoaders = [
             'extends': 'stylelint-config-standard',
             'rules': {
               'indentation': 4,
-              'font-family-no-missing-generic-family-keyword': null
+              'font-family-no-missing-generic-family-keyword': null,
+              'no-descending-specificity': null
             },
             'ignoreFiles': 'node_modules/**/*.css'
           }
@@ -70,6 +81,7 @@ module.exports = {
   devtool: isDevServer ? 'eval' : 'source-map',
   // webpack-dev-server configuration
   devServer: {
+    clientLogLevel: 'warning',
     port: devServerPort,
     publicPath: devServerPublicPath,
     // enable to serve static assets not managed by webpack
@@ -92,8 +104,8 @@ module.exports = {
   // assets output configuration
   output: {
     path: path.resolve('./swh/web/static/'),
-    filename: 'js/[name].js',
-    chunkFilename: 'js/[name].js',
+    filename: 'js/[name].[chunkhash].js',
+    chunkFilename: 'js/[name].[chunkhash].js',
     publicPath: publicPath,
     // each bundle will be compiled as a umd module with its own namespace
     // in order to easily use them in django templates
@@ -136,30 +148,34 @@ module.exports = {
       // in a large majority of browsers.
       test: /\.js$/,
       exclude: /node_modules/,
-      use: [{
-        loader: 'babel-loader',
-        options: {
-          presets: [
+      use: [
+        {
+          loader: 'cache-loader'
+        },
+        {
+          loader: 'babel-loader',
+          options: {
+            presets: [
             // use env babel presets to benefit from es6 syntax
-            ['env', {
+              ['env', {
               // Do not transform es6 module syntax to another module type
               // in order to benefit from dead code elimination (aka tree shaking)
               // when running webpack in production mode
-              'loose': true,
-              'modules': false
-            }],
-            // use stage-0 babel presets to benfit from advanced js features (es2017)
-            'stage-0'
-          ],
-          plugins: [
+                'loose': true,
+                'modules': false
+              }],
+              // use stage-0 babel presets to benfit from advanced js features (es2017)
+              'stage-0'
+            ],
+            plugins: [
             // use babel transform-runtime plugin in order to use aync/await syntax
-            ['transform-runtime', {
-              'polyfill': false,
-              'regenerator': true
-            }]
-          ]
-        }
-      }]
+              ['transform-runtime', {
+                'polyfill': false,
+                'regenerator': true
+              }]
+            ]
+          }
+        }]
     },
     // expose jquery to the global context as $ and jQuery when importing it
     {
@@ -276,14 +292,29 @@ module.exports = {
     }),
     // for extracting all stylesheets in separate css files
     new MiniCssExtractPlugin({
-      filename: 'css/[name].css',
-      chunkFilename: 'css/[name].css'
+      filename: 'css/[name].[chunkhash].css',
+      chunkFilename: 'css/[name].[chunkhash].css'
     }),
     // for removing some warnings in js console about not found source maps
     new RemoveSourceMapUrlPlugin(),
     // define some global variables accessible from js code
     new webpack.DefinePlugin({
       __STATIC__: JSON.stringify(publicPath)
+    }),
+    // needed in order to use bootstrap 4.x
+    new webpack.ProvidePlugin({
+      Popper: ['popper.js', 'default'],
+      Alert: 'exports-loader?Alert!bootstrap/js/dist/alert',
+      Button: 'exports-loader?Button!bootstrap/js/dist/button',
+      Carousel: 'exports-loader?Carousel!bootstrap/js/dist/carousel',
+      Collapse: 'exports-loader?Collapse!bootstrap/js/dist/collapse',
+      Dropdown: 'exports-loader?Dropdown!bootstrap/js/dist/dropdown',
+      Modal: 'exports-loader?Modal!bootstrap/js/dist/modal',
+      Popover: 'exports-loader?Popover!bootstrap/js/dist/popover',
+      Scrollspy: 'exports-loader?Scrollspy!bootstrap/js/dist/scrollspy',
+      Tab: 'exports-loader?Tab!bootstrap/js/dist/tab',
+      Tooltip: 'exports-loader?Tooltip!bootstrap/js/dist/tooltip',
+      Util: 'exports-loader?Util!bootstrap/js/dist/util'
     })
   ],
   // webpack optimizations

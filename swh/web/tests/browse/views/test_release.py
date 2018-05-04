@@ -1,6 +1,6 @@
 # Copyright (C) 2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 # flake8: noqa
@@ -53,7 +53,7 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
         self.assertContains(resp, format_utc_iso_date(release_date))
-        self.assertContains(resp, '<h2>%s</h2>%s' % (message_lines[0],
+        self.assertContains(resp, '<h6>%s</h6>%s' % (message_lines[0],
                                                      '\n'.join(message_lines[1:])))
         self.assertContains(resp, release_id)
         self.assertContains(resp, release_name)
@@ -84,7 +84,7 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
         self.assertContains(resp, format_utc_iso_date(release_date))
-        self.assertContains(resp, '<h2>%s</h2>%s' % (message_lines[0],
+        self.assertContains(resp, '<h6>%s</h6>%s' % (message_lines[0],
                                                      '\n'.join(message_lines[1:])))
         self.assertContains(resp, release_id)
         self.assertContains(resp, release_name)

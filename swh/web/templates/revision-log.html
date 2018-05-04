@@ -1,5 +1,19 @@
 {% extends "browse.html" %}
 
+{% comment %}
+Copyright (C) 2017-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+{{ block.super }}
+{% render_bundle 'revision' %}
+{% endblock %}
+
 {% block swh-browse-before-panels %}
 {% if snapshot_context %}
   {% include "includes/snapshot-context.html" %}
@@ -7,20 +21,19 @@
 {% endblock %}
 
 {% block swh-browse-main-panel-content %}
-
-{% include "includes/top-navigation.html" %}
-
-{% if not snapshot_context %}
-<div class="panel-heading">
-  <div class="panel-title pull-left">
-    <h2>{{ top_panel_text }}</h2>
+{% if snapshot_context %}
+  {% include "includes/top-navigation.html" %}
+{% else %}
+  <div class="card-header bg-gray-light">
+    <div class="card-title float-left">
+      <h4>{{ top_panel_text }}</h4>
+    </div>
+    <div class="clearfix"></div>
   </div>
-  <div class="clearfix"></div>
-</div>
 {% endif %}
 
 <div class="table-responsive">
-  <table class="table swh-table-even-odd">
+  <table class="table table-striped">
     <thead>
       <tr>
         <th><i class="octicon octicon-git-commit fa-fw"></i>Revision</th>
@@ -31,33 +44,31 @@
       </tr>
     </thead>
     <tbody>
-        {% for log in revision_log %}
-          <tr class="swh-revision-log-entry">
-            <td class="swh-revision-log-entry-id"><i class="octicon octicon-git-commit fa-fw"></i>{{ log.revision }}</td>
-            <td class="swh-revision-log-entry-author">{{ log.author }}</td>
-            <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ log.message }}">{{ log.message }}</td>
-            <td class="swh-revision-log-entry-date">{{ log.date }}</td>
-            <td>{{ log.directory }}</td>
-          </tr>
-        {% endfor %}
+      {% for log in revision_log %}
+        <tr class="swh-revision-log-entry">
+          <td class="swh-revision-log-entry-id"><i class="octicon octicon-git-commit fa-fw"></i>{{ log.revision }}</td>
+          <td class="swh-revision-log-entry-author">{{ log.author }}</td>
+          <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ log.message }}">{{ log.message }}</td>
+          <td class="swh-revision-log-entry-date">{{ log.date }}</td>
+          <td>{{ log.directory }}</td>
+        </tr>
+      {% endfor %}
     </tbody>
   </table>
 </div>
 {% endblock %}
 
 {% block swh-browse-after-panels %}
-
-<ul class="pager">
-    {% if next_log_url %}
-      <li><a href="{{ next_log_url }}">Newer</a></li>
-    {% else %}
-      <li class="disabled"><a>Newer</a></li>
-    {% endif %}
-    {% if prev_log_url %}
-      <li><a href="{{ prev_log_url }}">Older</a></li>
-    {% else %}
-      <li class="disabled"><a>Older</a></li>
-    {% endif %}
+<ul class="pagination justify-content-center">
+  {% if next_log_url %}
+    <li class="page-item"><a class="page-link" href="{{ next_log_url }}">Newer</a></li>
+  {% else %}
+    <li class="page-item disabled"><a class="page-link">Newer</a></li>
+  {% endif %}
+  {% if prev_log_url %}
+    <li class="page-item"><a class="page-link" href="{{ prev_log_url }}">Older</a></li>
+  {% else %}
+    <li class="page-item disabled"><a class="page-link">Older</a></li>
+  {% endif %}
 </ul>
-
 {% endblock %}

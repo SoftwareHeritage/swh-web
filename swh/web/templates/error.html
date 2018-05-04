@@ -1,10 +1,17 @@
 {% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2017-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
 {% load static %}
 
 {% block title %}Error {{ error_code }} &ndash; Software Heritage archive {% endblock %}
 
 {% block content %}
-
 <div class="swh-http-error">
   <div class="swh-http-error-head">Error</div>
   <div class="swh-http-error-code">
@@ -29,5 +36,4 @@
     </div>
   </div>
 </div>
-
 {% endblock %}

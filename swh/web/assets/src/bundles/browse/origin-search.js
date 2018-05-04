@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 import {heapsPermute} from 'utils/heaps-permute';
 import {handleFetchError} from 'utils/functions';
 
@@ -24,7 +31,7 @@ function populateOriginSearchResultsTable(data, offset) {
     for (let i = localOffset; i < localOffset + perPage && i < data.length; ++i) {
       let elem = data[i];
       let tableRow = '<tr>';
-      tableRow += '<td style="width: 100px;">' + elem.type + '</td>';
+      tableRow += '<td style="width: 120px;">' + elem.type + '</td>';
       let browseUrl = Urls.browse_origin(elem.type, elem.url);
       tableRow += '<td style="white-space: nowrap;"><a href="' + browseUrl + '">' + browseUrl + '</a></td>';
       tableRow += '<td id="visit-status-origin-' + elem.id + '"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>';

@@ -1,11 +1,20 @@
+{% comment %}
+Copyright (C) 2015-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
 <!DOCTYPE html>
+
 {% load static %}
 {% load render_bundle from webpack_loader %}
+
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{% block title %}{% endblock %}</title>
 
     {% render_bundle 'vendors' %}
@@ -19,47 +28,46 @@
     <link rel="icon" href="{% static 'img/icons/swh-logo-archive-192x192.png' %}" sizes="192x192" />
     <link rel="apple-touch-icon-precomposed" href="{% static 'img/icons/swh-logo-archive-180x180.png' %}" />
     <meta name="msapplication-TileImage" content="{% static 'img/icons/swh-logo-archive-270x270.png' %}" />
-
   </head>
   <body>
-    <a id="top"></a>
-    <nav class="navbar navbar-default navbar-static-top" id="swh-navbar-collapse">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#swh-collapse-navbar" aria-expanded="false">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <div class="logo">
+    <header>
+      <a id="top"></a>
+      <nav class="navbar navbar-expand-lg navbar-light navbar-static-top" id="swh-navbar-collapse">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#swh-collapse-navbar" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
+          </button>
           <a class="navbar-brand" href="{% url 'swh-web-homepage' %}">
-            <img alt="SWH Archive" src="{% static 'img/swh-logo-archive.png' %}" class="swh-logo" />
+            <img alt="SWH Archive" src="{% static 'img/swh-logo-archive.png' %}" width="40" height="40"/>
           </a>
           <a class="navbar-brand sitename" href="{% url 'swh-web-homepage' %}">
             <span class="first-word">Software</span> <span class="second-word">Heritage</span>
           </a>
         </div>
-      </div>
-      <div class="collapse navbar-collapse" id="swh-collapse-navbar">
-        {% block navbar-content %}{% endblock %}
-      </div>
-    </nav>
+        <div class="collapse navbar-collapse" id="swh-collapse-navbar">
+          {% block navbar-content %}{% endblock %}
+        </div>
+      </nav>
+    </header>
 
-    <div class="container content">
+    <main role="main" class="container">
       {% block content %}{% endblock %}
-    </div>
+    </main>
 
-    <div id="footer" class="panel-footer">
-      <a href="https://www.softwareheritage.org">Software Heritage</a> &mdash;
-      Copyright (C) 2015&ndash;{% now "Y" %}, The Software Heritage developers.
-      License: <a href="https://www.gnu.org/licenses/agpl.html">GNU
-      AGPLv3+</a>. <br /> The source code of Software Heritage <em>itself</em>
-      is available on
-      our <a href="https://forge.softwareheritage.org/">development
-      forge</a>. <br /> The source code files <em>archived</em> by Software
-      Heritage are available under their own copyright and licenses. <br />
-      <a href="https://www.softwareheritage.org/software-heritage-api-terms-of-use/">Terms of use</a> -
-      <a href="https://www.softwareheritage.org/contact/">Contact</a>.
-    </div>
+    <footer class="footer">
+      <div class="container text-center">
+        <a href="https://www.softwareheritage.org">Software Heritage</a> &mdash;
+        Copyright (C) 2015&ndash;{% now "Y" %}, The Software Heritage developers.
+        License: <a href="https://www.gnu.org/licenses/agpl.html">GNU
+        AGPLv3+</a>. <br /> The source code of Software Heritage <em>itself</em>
+        is available on
+        our <a href="https://forge.softwareheritage.org/">development
+        forge</a>. <br /> The source code files <em>archived</em> by Software
+        Heritage are available under their own copyright and licenses. <br />
+        <a href="https://www.softwareheritage.org/software-heritage-api-terms-of-use/">Terms of use</a> -
+        <a href="https://www.softwareheritage.org/contact/">Contact</a>.
+      </div>
+    </footer>
     <div id="back-to-top">
       <a href="#top"><img alt="back to top" src="{% static 'img/arrow-up-small.png' %}" /></a>
     </div>

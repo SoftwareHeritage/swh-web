@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 export async function highlightCode(showLineNumbers = true) {
 
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
@@ -105,14 +112,9 @@ export async function highlightCode(showLineNumbers = true) {
     // update lines highlighting when the url fragment changes
     $(window).on('hashchange', () => parseUrlFragmentForLinesToHighlight());
 
-    $('.navbar-nav.swh-browse-nav a[href="#browse"]').tab('show');
-
-    // schedule the highlight of lines specified by an url fragment,
-    // as hljs.lineNumbersBlock is async
+    // schedule lines highlighting if any as hljs.lineNumbersBlock() is async
     setTimeout(() => {
       parseUrlFragmentForLinesToHighlight();
-      // remove empty last line added by highlight.js
-      $('.highlightjs tr:last').remove();
     });
 
   });

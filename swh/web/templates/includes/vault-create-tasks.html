@@ -1,17 +1,24 @@
+{% comment %}
+Copyright (C) 2017-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
 {% if vault_cooking %}
 
   <!-- entry in the Actions menu -->
-  <li class="dropdown-submenu">
-    <a class="dropdown-link dropdown-left" tabindex="-1" href="#"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>
-    <ul class="dropdown-menu">
+  <div class="dropdown-submenu">
+    <a class="dropdown-item dropdown-left" tabindex="-1" href="#"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>
+    <div class="dropdown-menu">
       {% if vault_cooking.directory_context %}
-        <li><a tabindex="-1" href="#" data-toggle="modal" data-target="#vault-cook-directory-modal"><i class="fa fa-folder fa-fw" aria-hidden="true"></i>     Directory</a></li>
+        <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-directory-modal"><i class="fa fa-folder fa-fw" aria-hidden="true"></i>Directory</button>
       {% endif %}
       {% if vault_cooking.revision_context %}
-        <li><a tabindex="-1" href="#" data-toggle="modal" data-target="#vault-cook-revision-modal"><i class="octicon octicon-git-commit fa-fw"></i>Revision</a></li>
+        <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-revision-modal"><i class="octicon octicon-git-commit fa-fw"></i>Revision</button>
       {% endif %}
-    </ul>
-  </li>
+    </div>
+  </div>
 
   <!-- modals related to the creation of vault cooking tasks -->
   <!-- they will be reparented in the script below in order to be able to display them -->
@@ -19,8 +26,10 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="vault-cook-directory-modal-label">Cook and download a directory from the Software Heritage Vault</h4>
+          <h6 class="modal-title" id="vault-cook-directory-modal-label">Cook and download a directory from the Software Heritage Vault</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
           <p>
@@ -38,8 +47,8 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-md btn-swh" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-md btn-swh" onclick="swh.vault.cookDirectoryArchive('{{ vault_cooking.directory_id }}')">Ok</button>
+          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-default btn-sm" onclick="swh.vault.cookDirectoryArchive('{{ vault_cooking.directory_id }}')">Ok</button>
         </div>
       </div>
     </div>
@@ -49,8 +58,10 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="vault-cook-revision-modal-label">Cook and download a revision from the Software Heritage Vault</h4>
+          <h6 class="modal-title" id="vault-cook-revision-modal-label">Cook and download a revision from the Software Heritage Vault</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
           <p>
@@ -68,8 +79,8 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-md btn-swh" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-md btn-swh" onclick="swh.vault.cookRevisionArchive('{{ vault_cooking.revision_id }}')">Ok</button>
+          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-default btn-sm" onclick="swh.vault.cookRevisionArchive('{{ vault_cooking.revision_id }}')">Ok</button>
         </div>
       </div>
     </div>
@@ -86,7 +97,7 @@
           <p>The provided email is not well-formed.</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-md btn-swh" data-dismiss="modal">Ok</button>
+          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Ok</button>
         </div>
       </div>
     </div>

@@ -1,15 +1,22 @@
-export function initSnapshotNavigation(snapshotContext) {
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+export function initSnapshotNavigation(snapshotContext, branch) {
 
   function setBranchesTabActive() {
-    $('.swh-releases-switch').parent().removeClass('active');
-    $('.swh-branches-switch').parent().addClass('active');
+    $('.swh-releases-switch').removeClass('active');
+    $('.swh-branches-switch').addClass('active');
     $('#swh-tab-releases').removeClass('active');
     $('#swh-tab-branches').addClass('active');
   }
 
   function setReleasesTabActive() {
-    $('.swh-branches-switch').parent().removeClass('active');
-    $('.swh-releases-switch').parent().addClass('active');
+    $('.swh-branches-switch').removeClass('active');
+    $('.swh-releases-switch').addClass('active');
     $('#swh-tab-branches').removeClass('active');
     $('#swh-tab-releases').addClass('active');
   }
@@ -37,7 +44,7 @@ export function initSnapshotNavigation(snapshotContext) {
     });
 
     if (snapshotContext) {
-      if (snapshotContext.branch) {
+      if (branch) {
         setBranchesTabActive();
       } else {
         setReleasesTabActive();

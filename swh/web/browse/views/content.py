@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import difflib
@@ -222,10 +222,10 @@ def content_display(request, query_string):
 
     return render(request, 'content.html',
                   {'empty_browse': False,
-                   'heading': 'Content information',
+                   'heading': 'Content',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Content',
+                   'top_panel_text': 'Content metadata',
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content,
