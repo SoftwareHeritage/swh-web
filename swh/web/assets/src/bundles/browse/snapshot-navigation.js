@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-export function initSnapshotNavigation(snapshotContext) {
+export function initSnapshotNavigation(snapshotContext, branch) {
 
   function setBranchesTabActive() {
     $('.swh-releases-switch').removeClass('active');
@@ -44,7 +44,7 @@ export function initSnapshotNavigation(snapshotContext) {
     });
 
     if (snapshotContext) {
-      if (snapshotContext.branch) {
+      if (branch) {
         setBranchesTabActive();
       } else {
         setReleasesTabActive();

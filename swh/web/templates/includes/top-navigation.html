@@ -89,6 +89,11 @@ See top-level LICENSE file for more information
 </div>
 
 <script>
-  var snapshotContext = {{ snapshot_context|jsonify }};
-  swh.browse.initSnapshotNavigation(snapshotContext);
+  var snapshotContext = false;
+  var branch = false;
+  {% if snapshot_context %}
+    snapshotContext = true;
+    branch = {{ snapshot_context.branch|jsonify }};
+  {% endif %}
+  swh.browse.initSnapshotNavigation(snapshotContext, branch);
 </script>
