@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 # flake8: noqa
@@ -142,8 +142,8 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertTemplateUsed('revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
-        self.assertContains(resp, '<li class="disabled"><a>Newer</a></li>')
-        self.assertContains(resp, '<li><a href="%s">Older</a></li>' %
+        self.assertContains(resp, '<li class="page-item disabled"><a class="page-link">Newer</a></li>')
+        self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Older</a></li>' %
                             escape(next_page_url))
 
         for log in revision_history_log_test[:per_page]:
@@ -177,9 +177,9 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertTemplateUsed('revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
-        self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
+        self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Newer</a></li>' %
                             escape(prev_page_url))
-        self.assertContains(resp, '<li><a href="%s">Older</a></li>' %
+        self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Older</a></li>' %
                             escape(next_page_url))
 
         mock_service.lookup_revision_log.return_value = \
@@ -201,9 +201,9 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertTemplateUsed('revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
-        self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
+        self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Newer</a></li>' %
                             escape(prev_page_url))
-        self.assertContains(resp, '<li><a href="%s">Older</a></li>' %
+        self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Older</a></li>' %
                             escape(next_page_url))
 
         mock_service.lookup_revision_log.return_value = \
@@ -220,8 +220,8 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertTemplateUsed('revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page//2)
-        self.assertContains(resp, '<li class="disabled"><a>Older</a></li>')
-        self.assertContains(resp, '<li><a href="%s">Newer</a></li>' %
+        self.assertContains(resp, '<li class="page-item disabled"><a class="page-link">Older</a></li>')
+        self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Newer</a></li>' %
                             escape(prev_page_url))
 
     @patch('swh.web.browse.utils.service')

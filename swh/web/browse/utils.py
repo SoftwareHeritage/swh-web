@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import base64
@@ -871,7 +871,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
         query_params = {'visit_id': visit_id}
 
-        browse_url = reverse('browse-origin',
+        browse_url = reverse('browse-origin-visits',
                              kwargs=url_args)
 
         if timestamp:

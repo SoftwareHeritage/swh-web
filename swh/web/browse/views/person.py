@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 
@@ -26,10 +26,10 @@ def person_browse(request, person_id):
 
     return render(request, 'person.html',
                   {'empty_browse': False,
-                   'heading': 'Person information',
+                   'heading': 'Person',
                    'top_panel_visible': True,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'SWH object: Person',
+                   'top_panel_text': 'Person metadata',
                    'swh_object_metadata': person,
                    'main_panel_visible': False,
                    'vault_cooking': None,

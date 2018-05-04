@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 import {handleFetchError} from 'utils/functions';
 
 function addVaultCookingTask(cookingTask) {
@@ -25,14 +32,14 @@ function addVaultCookingTask(cookingTask) {
         localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
         $('#vault-cook-directory-modal').modal('hide');
         $('#vault-cook-revision-modal').modal('hide');
-        swh.browse.showTab('#vault');
+        window.location = Urls.browse_vault();
       })
       .catch(() => {
         $('#vault-cook-directory-modal').modal('hide');
         $('#vault-cook-revision-modal').modal('hide');
       });
   } else {
-    swh.browse.showTab('#vault');
+    window.location = Urls.browse_vault();
   }
 }
 

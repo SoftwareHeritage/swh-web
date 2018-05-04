@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 import 'bootstrap-year-calendar';
 import 'bootstrap-year-calendar/css/bootstrap-year-calendar.css';
 
@@ -9,7 +16,7 @@ let visitsByDate = {};
 
 function closePopover() {
   if (currentPopover) {
-    $(currentPopover).popover('destroy');
+    $(currentPopover).popover('hide');
     currentPopover = null;
   }
 }
@@ -106,7 +113,7 @@ export function updateCalendar(year, filteredVisits) {
       if (visitsByDate.hasOwnProperty(dateStr)) {
 
         let visits = visitsByDate[dateStr];
-        let content = '<div><h2>' + e.date.toDateString() + '</h2></div>';
+        let content = '<div><h6>' + e.date.toDateString() + '</h6></div>';
         content += '<ul style="list-style-type: none;">';
         for (let i = 0; i < visits.length; ++i) {
           let visitTime = visits[i].fmt_date.substr(visits[i].fmt_date.indexOf(',') + 2);

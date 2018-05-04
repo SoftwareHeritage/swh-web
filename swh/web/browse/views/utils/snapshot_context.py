@@ -1,6 +1,6 @@
 # Copyright (C) 2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 # Utility module implementing Django views for browsing the SWH archive
@@ -284,14 +284,14 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     browse_dir_link = \
         gen_directory_link(sha1_git, link_text='Browse',
-                           link_attrs={'class': 'btn btn-md btn-swh',
+                           link_attrs={'class': 'btn btn-default btn-sm',
                                        'role': 'button'})
 
     browse_rev_link = \
         gen_revision_link(revision_id,
                           snapshot_context=snapshot_context,
                           link_text='Browse',
-                          link_attrs={'class': 'btn btn-md btn-swh',
+                          link_attrs={'class': 'btn btn-default btn-sm',
                                       'role': 'button'})
 
     dir_metadata = {'id': sha1_git,
@@ -308,14 +308,14 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         dir_metadata['origin id'] = origin_info['id']
         dir_metadata['origin type'] = origin_info['type']
         dir_metadata['origin url'] = origin_info['url']
-        dir_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']), # noqa
+        dir_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
         dir_metadata['origin visit id'] = visit_info['visit']
         snapshot_context_url = reverse('browse-snapshot-directory',
                                        kwargs={'snapshot_id': snapshot_id},
                                        query_params=request.GET)
         browse_snapshot_link = \
             gen_link(snapshot_context_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-md btn-swh',
+                     link_attrs={'class': 'btn btn-default btn-sm',
                                  'role': 'button'})
         dir_metadata['snapshot context'] = browse_snapshot_link
 
@@ -328,10 +328,10 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     return render(request, 'directory.html',
                   {'empty_browse': False,
-                   'heading': 'Directory information',
+                   'heading': 'Directory',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Directory',
+                   'top_panel_text': 'Directory metadata',
                    'swh_object_metadata': dir_metadata,
                    'main_panel_visible': True,
                    'dirs': dirs,
@@ -413,7 +413,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
 
     browse_content_link = \
         gen_content_link(sha1_git, link_text='Browse',
-                         link_attrs={'class': 'btn btn-md btn-swh',
+                         link_attrs={'class': 'btn btn-default btn-sm',
                                      'role': 'button'})
 
     content_raw_url = reverse('browse-content-raw',
@@ -424,7 +424,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         gen_revision_link(revision_id,
                           snapshot_context=snapshot_context,
                           link_text='Browse',
-                          link_attrs={'class': 'btn btn-md btn-swh',
+                          link_attrs={'class': 'btn btn-default btn-sm',
                                       'role': 'button'})
 
     content_metadata = {
@@ -446,7 +446,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     }
 
     if origin_info:
-        content_metadata['origin id'] = origin_info['id'],
+        content_metadata['origin id'] = origin_info['id']
         content_metadata['origin type'] = origin_info['type']
         content_metadata['origin url'] = origin_info['url']
         content_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
@@ -457,16 +457,16 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                                       query_params=request.GET)
         browse_snapshot_link = \
             gen_link(browse_snapshot_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-md btn-swh',
+                     link_attrs={'class': 'btn btn-default btn-sm',
                                  'role': 'button'})
         content_metadata['snapshot context'] = browse_snapshot_link
 
     return render(request, 'content.html',
                   {'empty_browse': False,
-                   'heading': 'Content information',
+                   'heading': 'Content',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Content',
+                   'top_panel_text': 'Content metadata',
                    'swh_object_metadata': content_metadata,
                    'main_panel_visible': True,
                    'content': content,
@@ -559,12 +559,12 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
             snapshot_context, revision_log[i]['id'],
             link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
                       '</i>Browse files',
-            link_attrs={'class': 'btn btn-md btn-swh',
+            link_attrs={'class': 'btn btn-default btn-sm',
                         'role': 'button'})
 
     browse_log_link = \
         gen_revision_log_link(revision_id, link_text='Browse',
-                              link_attrs={'class': 'btn btn-md btn-swh',
+                              link_attrs={'class': 'btn btn-default btn-sm',
                                           'role': 'button'})
 
     revision_metadata = {
@@ -583,16 +583,16 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                                       query_params=request.GET)
         browse_snapshot_link = \
             gen_link(browse_snapshot_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-md btn-swh',
+                     link_attrs={'class': 'btn btn-default btn-sm',
                                  'role': 'button'})
         revision_metadata['snapshot context'] = browse_snapshot_link
 
     return render(request, 'revision-log.html',
                   {'empty_browse': False,
-                   'heading': 'Revision history information',
+                   'heading': 'Revision history',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Revision history',
+                   'top_panel_text': 'Revision history metadata',
                    'swh_object_metadata': revision_metadata,
                    'main_panel_visible': True,
                    'revision_log': revision_log_data,
@@ -672,10 +672,10 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
 
     return render(request, 'branches.html',
                   {'empty_browse': False,
-                   'heading': 'Origin branches list',
+                   'heading': 'Origin branches',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'SWH object: Branches list',
+                   'top_panel_text': 'Branches list',
                    'swh_object_metadata': {},
                    'main_panel_visible': True,
                    'top_right_link': None,
@@ -746,10 +746,10 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
 
     return render(request, 'releases.html',
                   {'empty_browse': False,
-                   'heading': 'Origin releases list',
+                   'heading': 'Origin releases',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'SWH object: Releases list',
+                   'top_panel_text': 'Releases list',
                    'swh_object_metadata': {},
                    'main_panel_visible': True,
                    'top_right_link': None,

@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 
@@ -88,10 +88,10 @@ def directory_browse(request, sha1_git, path=None):
 
     return render(request, 'directory.html',
                   {'empty_browse': False,
-                   'heading': 'Directory information',
+                   'heading': 'Directory',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Directory',
+                   'top_panel_text': 'Directory metadata',
                    'swh_object_metadata': dir_metadata,
                    'main_panel_visible': True,
                    'dirs': dirs,
