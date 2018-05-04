@@ -8,12 +8,15 @@ See top-level LICENSE file for more information
 <div class="card">
   <div class="card-header bg-gray-light">
     {% if snapshot_context.origin_info %}
+      <div class="float-left">
+        <a href="{{ snapshot_context.browse_url }}" class="btn btn-default btn-sm" role="button">See visits</a>
+      </div>
       {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
         <div class="float-right">
           <a href="{{ snapshot_context.origin_info.url }}" class="btn btn-default btn-sm" role="button">Go to origin</a>
         </div>
       {% endif %}
-      <a href="{{ snapshot_context.browse_url }}">
+      <a href="{% url 'browse-origin' snapshot_context.origin_info.type snapshot_context.origin_info.url %}">
         <h4 class="text-center">Origin: {{ snapshot_context.origin_info.url }}</h4>
         <div class="clearfix"></div>
       </a>
