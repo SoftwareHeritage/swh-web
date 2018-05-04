@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import hashlib
@@ -225,12 +225,12 @@ def revision_browse(request, sha1_git):
         revision_data['directory'] = \
             gen_snapshot_directory_link(snapshot_context, sha1_git,
                                         link_text='Browse',
-                                        link_attrs={'class': 'btn btn-md btn-swh', # noqa
+                                        link_attrs={'class': 'btn btn-default btn-sm', # noqa
                                                     'role': 'button'})
     else:
         revision_data['directory'] = \
             gen_directory_link(revision['directory'], link_text='Browse',
-                               link_attrs={'class': 'btn btn-md btn-swh',
+                               link_attrs={'class': 'btn btn-default btn-sm',
                                            'role': 'button'})
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
@@ -241,7 +241,7 @@ def revision_browse(request, sha1_git):
     if origin_info:
         revision_data['context-independent revision'] = \
             gen_revision_link(sha1_git, link_text='Browse',
-                              link_attrs={'class': 'btn btn-md btn-swh',
+                              link_attrs={'class': 'btn btn-default btn-sm',
                                           'role': 'button'})
         revision_data['origin id'] = origin_info['id']
         revision_data['origin type'] = origin_info['type']
@@ -249,7 +249,7 @@ def revision_browse(request, sha1_git):
                                                origin_info['url'])
         browse_snapshot_link = \
             gen_snapshot_link(snapshot_id, link_text='Browse',
-                              link_attrs={'class': 'btn btn-md btn-swh',
+                              link_attrs={'class': 'btn btn-default btn-sm',
                                           'role': 'button'})
         revision_data['snapshot'] = browse_snapshot_link
 
@@ -361,10 +361,10 @@ def revision_browse(request, sha1_git):
 
     return render(request, 'revision.html',
                   {'empty_browse': False,
-                   'heading': 'Revision information',
+                   'heading': 'Revision',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Revision',
+                   'top_panel_text': 'Revision metadata',
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],
                    'message_body': '\n'.join(message_lines[1:]),
@@ -440,15 +440,15 @@ def revision_log_browse(request, sha1_git):
             log['directory'],
             link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
                       '</i>Browse files',
-            link_attrs={'class': 'btn btn-md btn-swh',
+            link_attrs={'class': 'btn btn-default btn-sm',
                         'role': 'button'})
 
     return render(request, 'revision-log.html',
                   {'empty_browse': False,
-                   'heading': 'Revision history information',
+                   'heading': 'Revision history',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'SWH object: Revision history',
+                   'top_panel_text': 'Revision history',
                    'swh_object_metadata': None,
                    'main_panel_visible': True,
                    'revision_log': revision_log_data,

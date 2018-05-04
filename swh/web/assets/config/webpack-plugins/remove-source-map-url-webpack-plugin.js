@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 // Adapted and ported to Webpack 4 from
 // https://github.com/rbarilani/remove-source-map-url-webpack-plugin
 // Enable to remove source map url annotation embedded in vendor modules.

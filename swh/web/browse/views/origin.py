@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import json
@@ -8,7 +8,7 @@ import json
 from distutils.util import strtobool
 
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from swh.web.common import service
 from swh.web.common.utils import (
@@ -115,13 +115,13 @@ def origin_releases_browse(request, origin_type, origin_url, timestamp=None):
                                     origin_url=origin_url, timestamp=timestamp)
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
-              view_name='browse-origin')
-def origin_browse(request, origin_type=None, origin_url=None):
-    """Django view that produces an HTML display of a swh origin identified
-    by its id or its url.
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visits/',
+              view_name='browse-origin-visits')
+def origin_visits_browse(request, origin_type=None, origin_url=None):
+    """Django view that produces an HTML display of visits reporting
+    for a swh origin identified by its id or its url.
 
-    The url that points to it is :http:get:`/browse/origin/(origin_type)/url/(origin_url)/`.
+    The url that points to it is :http:get:`/browse/origin/(origin_type)/url/(origin_url)/visits/`.
     """ # noqa
     try:
         origin_info = service.lookup_origin({
@@ -133,7 +133,7 @@ def origin_browse(request, origin_type=None, origin_url=None):
         return handle_view_exception(request, exc)
 
     origin_info['last swh visit browse url'] = \
-        reverse('browse-origin-directory',
+        reverse('browse-origin',
                 kwargs={'origin_type': origin_type,
                         'origin_url': origin_url})
 
@@ -159,12 +159,12 @@ def origin_browse(request, origin_type=None, origin_url=None):
             visit['snapshot'] = ''
         visit['date'] = parse_timestamp(visit['date']).timestamp()
 
-    return render(request, 'origin.html',
+    return render(request, 'origin-visits.html',
                   {'empty_browse': False,
-                   'heading': 'Origin information',
+                   'heading': 'Origin',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'SWH origin visits',
+                   'top_panel_text': 'Origin visits',
                    'swh_object_metadata': origin_info,
                    'main_panel_visible': True,
                    'origin_visits': origin_visits,
@@ -173,6 +173,20 @@ def origin_browse(request, origin_type=None, origin_url=None):
                    (origin_type, origin_url),
                    'vault_cooking': None,
                    'show_actions_menu': False})
+
+
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
+              view_name='browse-origin')
+def origin_browse(request, origin_type=None, origin_url=None):
+    """Django view that redirects to the display of the latest archived
+    snapshot for a given software origin.
+
+    The url that points to it is :http:get:`/browse/origin/(origin_type)/url/(origin_url)/`.
+    """ # noqa
+    last_snapshot_url = reverse('browse-origin-directory',
+                                kwargs={'origin_type': origin_type,
+                                        'origin_url': origin_url})
+    return redirect(last_snapshot_url)
 
 
 @browse_route(r'origin/search/(?P<url_pattern>.+)/',

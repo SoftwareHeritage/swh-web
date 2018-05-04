@@ -1,0 +1,30 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+// override some global boostrap sass variables before generating stylesheets
+
+// global text colors and fonts
+$body-color: rgba(0, 0, 0, 0.55);
+$font-family-sans-serif: "Alegreya Sans", sans-serif;
+$link-color: rgba(0, 0, 0, 0.75);
+$code-color: #c7254e;
+
+// headings
+$headings-line-height: 1.1;
+$headings-color: #e20026;
+$headings-font-family: "Alegreya Sans", sans-serif;
+
+// remove the ugly box shadow from bootstrap 4.x
+$input-btn-focus-width: 0;
+
+// dropdown menu padding
+$dropdown-padding-y: 0.25rem;
+$dropdown-item-padding-x: 0;
+$dropdown-item-padding-y: 0;
+
+// card header padding
+$card-spacer-y: 0.5rem;

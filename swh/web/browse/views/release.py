@@ -1,6 +1,6 @@
 # Copyright (C) 2017-2018  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
+# License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from django.shortcuts import render
@@ -81,10 +81,10 @@ def release_browse(request, sha1_git):
 
     return render(request, 'release.html',
                   {'empty_browse': False,
-                   'heading': 'Release information',
+                   'heading': 'Release',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
-                   'top_panel_text': 'SWH object: Release',
+                   'top_panel_text': 'Release metadata',
                    'swh_object_metadata': release_data,
                    'main_panel_visible': True,
                    'release_name': release['name'],

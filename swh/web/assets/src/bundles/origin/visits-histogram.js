@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
 // Creation of a stacked histogram with D3.js for SWH origin visits history
 // Parameters description:
 //  - container: selector for the div that will contain the histogram

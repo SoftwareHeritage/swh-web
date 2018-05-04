@@ -1,92 +1,96 @@
 {% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2017-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
 {% load static %}
 
 {% block title %}The Software Heritage archive{% endblock %}
 
 {% block content %}
+<h2>Welcome to the Software Heritage archive</h2>
 
-<h1>Welcome to the Software Heritage archive</h1>
-
-<h2>Overview</h2>
+<h4>Overview</h4>
 
 <p>
-The long term goal of the Software Heritage initiative is to <strong>collect</strong>
-all publicly available software in source code form together with its
-development history, replicate it massively to ensure its <strong>preservation</strong>,
-and <strong>share</strong> it with everyone who needs it.
+  The long term goal of the Software Heritage initiative is to <strong>collect</strong>
+  all publicly available software in source code form together with its
+  development history, replicate it massively to ensure its <strong>preservation</strong>,
+  and <strong>share</strong> it with everyone who needs it.
 
-The Software Heritage archive is growing over time as we crawl new source code from software
-projects and development forges. We will incrementally release archive search
-and browse functionalities — as of now you can check whether source code you care
-about is already present in the archive or not.
+  The Software Heritage archive is growing over time as we crawl new source code from software
+  projects and development forges. We will incrementally release archive search
+  and browse functionalities — as of now you can check whether source code you care
+  about is already present in the archive or not.
 </p>
 
-<h2>Content</h2>
+<h4>Content</h4>
 
 <p>
-A significant amount of source code has already been ingested in the Software Heritage
-archive. It currently includes:
-<ul>
+  A significant amount of source code has already been ingested in the Software Heritage
+  archive. It currently includes:
+  <ul>
     <li>public repositories from <a href="https://github.com">GitHub</a></li>
     <li>public repositories from the former <a href="https://gitorious.org/">Gitorious</a> code hosting service</li>
     <li>public repositories from the former <a href="https://code.google.com/archive/">Google Code</a> project hosting service</li>
     <li>source packages from the <a href="https://www.debian.org">Debian</a> distribution (as of August 2015, via the snapshot service)</li>
     <li>releases from the <a href="https://www.gnu.org">GNU</a> project (as of August 2015)</li>
-</ul>
-
+  </ul>
 </p>
 
-<h2>Size</h2>
+<h4>Size</h4>
 
 <p>
-    As of today the archive already contains and keeps safe for you the following amount
-    of objects:
+  As of today the archive already contains and keeps safe for you the following amount
+  of objects:
 
-<div class="row">
-
+  <div class="row">
     <div class="col-md-2" align="center">
-      <h3>Source files</h3>
+      <h5>Source files</h5>
       <span id="nb-files" class="swh-counter"></span>
     </div>
     <div class="col-md-2" align="center">
-      <h3>Directories</h3>
+      <h5>Directories</h5>
         <span id="nb-dirs" class="swh-counter"></span>
       </div>
     <div class="col-md-2" align="center">
-      <h3>Commits</h3>
+      <h5>Commits</h5>
       <span id="nb-commits" class="swh-counter"></span>
     </div>
     <div class="col-md-2" align="center">
-      <h3>Authors</h3>
+      <h5>Authors</h5>
       <span id="nb-authors" class="swh-counter"></span>
     </div>
     <div class="col-md-2" align="center">
-      <h3>Projects</h3>
+      <h5>Projects</h5>
       <span id="nb-projects" class="swh-counter"></span>
     </div>
     <div class="col-md-2" align="center">
-      <h3>Releases</h3>
+      <h5>Releases</h5>
       <span id="nb-releases" class="swh-counter"></span>
     </div>
-</div>
-
+  </div>
 </p>
 
-<h2>Access</h2>
+<h4>Access</h4>
 
 <div class="row">
   <div class="col-md-3" align="center"></div>
   <div class="col-md-3 swh-web-app-link" align="center">
     <a href="{% url 'api-homepage' %}">
       <img id="swh-web-api-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
-      <h3>Web API</h3>
+      <h5>Web API</h5>
       <p>Query the archive programmatically using a RESTful API.</p>
     </a>
   </div>
   <div class="col-md-3 swh-web-app-link" align="center">
-    <a href="{% url 'browse-homepage' %}#search">
+    <a href="{% url 'browse-search' %}">
       <img alt="Browse the Software Heritage archive" src="{% static 'img/swh-browse.png' %}"/>
-      <h3>Browse</h3>
+      <h5>Browse</h5>
       <p>Explore the archive using a dedicated web interface.</p>
     </a>
   </div>
@@ -109,5 +113,4 @@ archive. It currently includes:
     });
   });
 </script>
-
 {% endblock %}

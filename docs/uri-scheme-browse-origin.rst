@@ -11,15 +11,13 @@ performed by Software Heritage:
     * the list of branches of the origin
     * the list of releases of the origin
 
-Origin metadata
-"""""""""""""""
+Origin visits
+"""""""""""""
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/
+.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visits/
 
-    HTML view that displays a SWH origin identified by its type and url.
-
-    The view displays the origin metadata and contains links
-    for browsing its directories and contents for each SWH visit.
+    HTML view that displays a visits reporting for a SWH origin identified by
+    its type and url.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
@@ -30,10 +28,10 @@ Origin metadata
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/`
-        :swh_web_browse:`origin/deb/url/deb://Debian-Security/packages/mediawiki/`
-        :swh_web_browse:`origin/git/url/https://gitorious.org/qt/qtbase.git`
+        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visits/`
+        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/visits/`
+        :swh_web_browse:`origin/deb/url/deb://Debian-Security/packages/mediawiki/visits/`
+        :swh_web_browse:`origin/git/url/https://gitorious.org/qt/qtbase.git/visits/`
 
 
 Origin directory
