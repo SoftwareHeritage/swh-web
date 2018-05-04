@@ -308,7 +308,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         dir_metadata['origin id'] = origin_info['id']
         dir_metadata['origin type'] = origin_info['type']
         dir_metadata['origin url'] = origin_info['url']
-        dir_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']), # noqa
+        dir_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
         dir_metadata['origin visit id'] = visit_info['visit']
         snapshot_context_url = reverse('browse-snapshot-directory',
                                        kwargs={'snapshot_id': snapshot_id},
@@ -446,7 +446,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     }
 
     if origin_info:
-        content_metadata['origin id'] = origin_info['id'],
+        content_metadata['origin id'] = origin_info['id']
         content_metadata['origin type'] = origin_info['type']
         content_metadata['origin url'] = origin_info['url']
         content_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
