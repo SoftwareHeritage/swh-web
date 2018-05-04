@@ -161,7 +161,7 @@ def origin_browse(request, origin_type=None, origin_url=None):
 
     return render(request, 'origin.html',
                   {'empty_browse': False,
-                   'heading': 'Origin information',
+                   'heading': 'Origin',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
                    'top_panel_text': 'Origin visits',

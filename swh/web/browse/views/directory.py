@@ -88,7 +88,7 @@ def directory_browse(request, sha1_git, path=None):
 
     return render(request, 'directory.html',
                   {'empty_browse': False,
-                   'heading': 'Directory information',
+                   'heading': 'Directory',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text': 'Directory metadata',

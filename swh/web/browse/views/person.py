@@ -26,7 +26,7 @@ def person_browse(request, person_id):
 
     return render(request, 'person.html',
                   {'empty_browse': False,
-                   'heading': 'Person information',
+                   'heading': 'Person',
                    'top_panel_visible': True,
                    'top_panel_collapsible': False,
                    'top_panel_text': 'Person metadata',

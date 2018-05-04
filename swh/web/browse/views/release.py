@@ -81,7 +81,7 @@ def release_browse(request, sha1_git):
 
     return render(request, 'release.html',
                   {'empty_browse': False,
-                   'heading': 'Release information',
+                   'heading': 'Release',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text': 'Release metadata',

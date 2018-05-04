@@ -361,7 +361,7 @@ def revision_browse(request, sha1_git):
 
     return render(request, 'revision.html',
                   {'empty_browse': False,
-                   'heading': 'Revision information',
+                   'heading': 'Revision',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text': 'Revision metadata',
@@ -445,7 +445,7 @@ def revision_log_browse(request, sha1_git):
 
     return render(request, 'revision-log.html',
                   {'empty_browse': False,
-                   'heading': 'Revision history information',
+                   'heading': 'Revision history',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
                    'top_panel_text': 'Revision history',

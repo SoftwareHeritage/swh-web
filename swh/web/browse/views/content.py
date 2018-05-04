@@ -222,7 +222,7 @@ def content_display(request, query_string):
 
     return render(request, 'content.html',
                   {'empty_browse': False,
-                   'heading': 'Content information',
+                   'heading': 'Content',
                    'top_panel_visible': True,
                    'top_panel_collapsible': True,
                    'top_panel_text': 'Content metadata',
