@@ -113,6 +113,9 @@ export function initVisitsReporting(visits) {
       if (!firstFullVisit) {
         firstFullVisit = v;
         $('#swh-first-full-visit').append($(visitLink));
+        if (allVisits.length === 1) {
+          $('#swh-last-full-visit')[0].innerHTML = visitLink;
+        }
       } else {
         $('#swh-last-full-visit')[0].innerHTML = visitLink;
       }
