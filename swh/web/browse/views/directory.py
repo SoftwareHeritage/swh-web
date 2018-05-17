@@ -10,7 +10,9 @@ from django.template.defaultfilters import filesizeformat
 from swh.web.common import service
 from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
-from swh.web.browse.utils import get_directory_entries
+from swh.web.browse.utils import (
+    get_directory_entries, get_snapshot_context
+)
 
 from swh.web.browse.browseurls import browse_route
 
@@ -31,6 +33,14 @@ def directory_browse(request, sha1_git, path=None):
             sha1_git = dir_info['target']
 
         dirs, files = get_directory_entries(sha1_git)
+        origin_type = request.GET.get('origin_type', None)
+        origin_url = request.GET.get('origin_url', None)
+        snapshot_context = None
+        if origin_url:
+            snapshot_context = get_snapshot_context(None, origin_type,
+                                                    origin_url)
+        if snapshot_context:
+            snapshot_context['visit_info'] = None
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -101,6 +111,6 @@ def directory_browse(request, sha1_git, path=None):
                    'top_right_link_text': None,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
-                   'snapshot_context': None,
+                   'snapshot_context': snapshot_context,
                    'vault_cooking': vault_cooking,
                    'show_actions_menu': True})

@@ -267,7 +267,8 @@ def get_origin_visits(origin_info):
     return origin_visits
 
 
-def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
+def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
+                     snapshot_id=None):
     """Function that returns information about a SWH visit for
     a given origin.
     The visit is retrieved from a provided timestamp.
@@ -294,6 +295,15 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
         raise NotFoundExc('No SWH visit associated to origin with'
                           ' type %s and url %s!' % (origin_info['type'],
                                                     origin_info['url']))
+
+    if snapshot_id:
+        visit = [v for v in visits if v['snapshot'] == snapshot_id]
+        if len(visit) == 0:
+            raise NotFoundExc(
+                'Visit for snapshot with id %s for origin with type %s'
+                ' and url %s not found!' % (snapshot_id, origin_info['type'],
+                                            origin_info['url']))
+        return visit[0]
 
     if visit_id:
         visit = [v for v in visits if v['visit'] == int(visit_id)]
@@ -422,7 +432,8 @@ def get_snapshot_content(snapshot_id):
     return branches, releases
 
 
-def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
+def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
+                              snapshot_id=None):
     """Returns the lists of branches and releases
     associated to a swh origin for a given visit.
     The visit is expressed by a timestamp. In the latter case,
@@ -449,7 +460,7 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
         NotFoundExc if the origin or its visit are not found
     """
 
-    visit_info = get_origin_visit(origin_info, visit_ts, visit_id)
+    visit_info = get_origin_visit(origin_info, visit_ts, visit_id, snapshot_id)
 
     return get_snapshot_content(visit_info['snapshot'])
 
@@ -887,7 +898,8 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         origin_info = get_origin_info(origin_url, origin_type)
         origin_info['type'] = origin_type
 
-        visit_info = get_origin_visit(origin_info, timestamp, visit_id)
+        visit_info = get_origin_visit(origin_info, timestamp, visit_id,
+                                      snapshot_id)
         visit_info['fmt_date'] = format_utc_iso_date(visit_info['date'])
         snapshot_id = visit_info['snapshot']
 
@@ -898,7 +910,8 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
             timestamp = visit_info['date']
 
         branches, releases = \
-            get_origin_visit_snapshot(origin_info, timestamp, visit_id)
+            get_origin_visit_snapshot(origin_info, timestamp, visit_id,
+                                      snapshot_id)
 
         url_args = {'origin_type': origin_info['type'],
                     'origin_url': origin_info['url']}
