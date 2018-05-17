@@ -142,9 +142,11 @@ def _revision_diff(request, sha1_git):
         snapshot_context = None
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
+        if not origin_url:
+            origin_url = request.GET.get('origin', None)
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
-        if origin_type and origin_url:
+        if origin_url:
             snapshot_context = get_snapshot_context(None, origin_type,
                                                     origin_url,
                                                     timestamp, visit_id)
@@ -179,6 +181,8 @@ def revision_browse(request, sha1_git):
         snapshot_context = None
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
+        if not origin_url:
+            origin_url = request.GET.get('origin', None)
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
         snapshot_id = request.GET.get('snapshot_id', None)
@@ -186,7 +190,7 @@ def revision_browse(request, sha1_git):
         dir_id = None
         dirs, files = None, None
         content_data = None
-        if origin_type and origin_url:
+        if origin_url:
             snapshot_context = get_snapshot_context(None, origin_type,
                                                     origin_url,
                                                     timestamp, visit_id)

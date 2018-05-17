@@ -165,6 +165,8 @@ def content_display(request, query_string):
         content_data = request_content(query_string)
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
+        if not origin_url:
+            origin_url = request.GET.get('origin', None)
         snapshot_context = None
         if origin_url:
             snapshot_context = get_snapshot_context(None, origin_type,
