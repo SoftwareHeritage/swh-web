@@ -88,8 +88,6 @@ SWH Browse Urls
 
 .. include:: uri-scheme-browse-directory.rst
 
-.. include:: uri-scheme-browse-identifiers.rst
-
 .. include:: uri-scheme-browse-origin.rst
 
 .. include:: uri-scheme-browse-person.rst
