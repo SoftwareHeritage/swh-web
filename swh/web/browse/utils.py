@@ -964,3 +964,44 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         'url_args': url_args,
         'query_params': query_params
     }
+
+
+_common_readme_names = [
+    "readme",
+    "readme.markdown",
+    "readme.md",
+    "readme.txt",
+    "readme.rst"
+]
+
+
+def get_readme_to_display(readmes):
+    """
+    Process a list of readme files found in a directory
+    in order to find the adequate one to display.
+
+    Args:
+        readmes: a list of dict where keys are readme file names and values
+            are readme sha1s
+
+    Returns:
+        A tuple (readme_name, readme_sha1)
+    """
+    readme_name = None
+    readme_url = None
+    # try to find a readme file with a common name
+    for name, readme_sha1 in readmes.items():
+        if name.lower() in _common_readme_names:
+            readme_name = name
+            readme_url = reverse('browse-content-raw',
+                                 kwargs={'query_string': readme_sha1})
+            break
+
+    # otherwise pick the first readme like file if any
+    if not readme_name and len(readmes.items()) > 0:
+        readme_name = next(iter(readmes))
+        readme_sha1 = readmes[readme_name]
+        readme_url = reverse('browse-content-raw',
+                             kwargs={'query_string': readme_sha1})
+
+    return readme_name, readme_url

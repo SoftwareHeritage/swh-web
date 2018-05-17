@@ -21,7 +21,7 @@ from swh.web.browse.utils import (
     get_snapshot_context, gen_snapshot_directory_link,
     get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
-    content_display_max_size, gen_snapshot_link
+    content_display_max_size, gen_snapshot_link, get_readme_to_display
 )
 
 
@@ -310,8 +310,7 @@ def revision_browse(request, sha1_git):
     content_size = None
     mimetype = None
     language = None
-    readme_name = None
-    readme_url = None
+    readmes = {}
 
     if content_data:
         breadcrumbs[-1]['url'] = None
@@ -344,10 +343,9 @@ def revision_browse(request, sha1_git):
                                query_params=query_params)
             f['length'] = filesizeformat(f['length'])
             if f['name'].lower().startswith('readme'):
-                readme_name = f['name']
-                readme_sha1 = f['checksums']['sha1']
-                readme_url = reverse('browse-content-raw',
-                                     kwargs={'query_string': readme_sha1})
+                readmes[f['name']] = f['checksums']['sha1']
+
+        readme_name, readme_url = get_readme_to_display(readmes)
 
         top_right_link = get_revision_log_url(sha1_git, snapshot_context)
         top_right_link_text = mark_safe(

@@ -17,7 +17,7 @@ from swh.web.browse.utils import (
     gen_revision_link, request_content, gen_content_link,
     prepare_content_for_display, content_display_max_size,
     prepare_revision_log_for_display, gen_snapshot_directory_link,
-    gen_revision_log_link, gen_link
+    gen_revision_log_link, gen_link, get_readme_to_display
 )
 
 from swh.web.common import service
@@ -255,8 +255,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     sum_file_sizes = 0
 
-    readme_name = None
-    readme_url = None
+    readmes = {}
 
     browse_view_name = 'browse-' + swh_type + '-content'
 
@@ -269,10 +268,9 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         sum_file_sizes += f['length']
         f['length'] = filesizeformat(f['length'])
         if f['name'].lower().startswith('readme'):
-            readme_name = f['name']
-            readme_sha1 = f['checksums']['sha1']
-            readme_url = reverse('browse-content-raw',
-                                 kwargs={'query_string': readme_sha1})
+            readmes[f['name']] = f['checksums']['sha1']
+
+    readme_name, readme_url = get_readme_to_display(readmes)
 
     browse_view_name = 'browse-' + swh_type + '-log'
 

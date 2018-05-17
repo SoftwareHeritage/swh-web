@@ -11,7 +11,8 @@ from swh.web.common import service
 from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
-    get_directory_entries, get_snapshot_context
+    get_directory_entries, get_snapshot_context,
+    get_readme_to_display
 )
 
 from swh.web.browse.browseurls import browse_route
@@ -67,8 +68,7 @@ def directory_browse(request, sha1_git, path=None):
 
     sum_file_sizes = 0
 
-    readme_name = None
-    readme_url = None
+    readmes = {}
 
     for f in files:
         query_string = 'sha1_git:' + f['target']
@@ -79,10 +79,9 @@ def directory_browse(request, sha1_git, path=None):
         sum_file_sizes += f['length']
         f['length'] = filesizeformat(f['length'])
         if f['name'].lower().startswith('readme'):
-            readme_name = f['name']
-            readme_sha1 = f['checksums']['sha1']
-            readme_url = reverse('browse-content-raw',
-                                 kwargs={'query_string': readme_sha1})
+            readmes[f['name']] = f['checksums']['sha1']
+
+    readme_name, readme_url = get_readme_to_display(readmes)
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
