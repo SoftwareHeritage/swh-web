@@ -7,7 +7,7 @@ import hashlib
 import json
 
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
@@ -166,9 +166,84 @@ def _revision_diff(request, sha1_git):
     return HttpResponse(diff_data_json, content_type='application/json')
 
 
+NB_LOG_ENTRIES = 20
+
+
+@browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/log/',
+              view_name='browse-revision-log')
+def revision_log_browse(request, sha1_git):
+    """
+    Django view that produces an HTML display of the history
+    log for a SWH revision identified by its id.
+
+    The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`.
+    """ # noqa
+    try:
+        per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
+        revision_log = service.lookup_revision_log(sha1_git,
+                                                   limit=per_page+1)
+        revision_log = list(revision_log)
+    except Exception as exc:
+        return handle_view_exception(request, exc)
+
+    revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
+
+    revision_log_display_data = prepare_revision_log_for_display(
+        revision_log, per_page, revs_breadcrumb)
+
+    prev_rev = revision_log_display_data['prev_rev']
+    prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
+    prev_log_url = None
+    if prev_rev:
+        prev_log_url = \
+            reverse('browse-revision-log',
+                    kwargs={'sha1_git': prev_rev},
+                    query_params={'revs_breadcrumb': prev_revs_breadcrumb,
+                                  'per_page': per_page})
+
+    next_rev = revision_log_display_data['next_rev']
+    next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
+    next_log_url = None
+    if next_rev:
+        next_log_url = \
+            reverse('browse-revision-log',
+                    kwargs={'sha1_git': next_rev},
+                    query_params={'revs_breadcrumb': next_revs_breadcrumb,
+                                  'per_page': per_page})
+
+    revision_log_data = revision_log_display_data['revision_log_data']
+
+    for log in revision_log_data:
+        log['directory'] = gen_directory_link(
+            log['directory'],
+            link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
+                      '</i>Browse files',
+            link_attrs={'class': 'btn btn-default btn-sm',
+                        'role': 'button'})
+
+    return render(request, 'revision-log.html',
+                  {'empty_browse': False,
+                   'heading': 'Revision history',
+                   'top_panel_visible': False,
+                   'top_panel_collapsible': False,
+                   'top_panel_text': 'Revision history',
+                   'swh_object_metadata': None,
+                   'main_panel_visible': True,
+                   'revision_log': revision_log_data,
+                   'next_log_url': next_log_url,
+                   'prev_log_url': prev_log_url,
+                   'breadcrumbs': None,
+                   'top_right_link': None,
+                   'top_right_link_text': None,
+                   'snapshot_context': None,
+                   'vault_cooking': None,
+                   'show_actions_menu': False})
+
+
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/',
+              r'revision/(?P<sha1_git>[0-9a-f]+)/(?P<extra_path>.+)/',
               view_name='browse-revision')
-def revision_browse(request, sha1_git):
+def revision_browse(request, sha1_git, extra_path=None):
     """
     Django view that produces an HTML display of a SWH revision
     identified by its id.
@@ -177,6 +252,18 @@ def revision_browse(request, sha1_git):
     """
     try:
         revision = service.lookup_revision(sha1_git)
+        # some readme files can reference assets reachable from the
+        # browsed directory, handle that special case in order to
+        # correctly displayed them
+        if extra_path:
+            dir_info = \
+                service.lookup_directory_with_path(revision['directory'],
+                                                   extra_path)
+            if dir_info and dir_info['type'] == 'file':
+                file_raw_url = reverse(
+                    'browse-content-raw',
+                    kwargs={'query_string': dir_info['checksums']['sha1']})
+                return redirect(file_raw_url)
         origin_info = None
         snapshot_context = None
         origin_type = request.GET.get('origin_type', None)
@@ -388,77 +475,3 @@ def revision_browse(request, sha1_git):
                    'vault_cooking': vault_cooking,
                    'diff_revision_url': diff_revision_url,
                    'show_actions_menu': True})
-
-
-NB_LOG_ENTRIES = 20
-
-
-@browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/log/',
-              view_name='browse-revision-log')
-def revision_log_browse(request, sha1_git):
-    """
-    Django view that produces an HTML display of the history
-    log for a SWH revision identified by its id.
-
-    The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`.
-    """ # noqa
-    try:
-        per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
-        revision_log = service.lookup_revision_log(sha1_git,
-                                                   limit=per_page+1)
-        revision_log = list(revision_log)
-    except Exception as exc:
-        return handle_view_exception(request, exc)
-
-    revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
-
-    revision_log_display_data = prepare_revision_log_for_display(
-        revision_log, per_page, revs_breadcrumb)
-
-    prev_rev = revision_log_display_data['prev_rev']
-    prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
-    prev_log_url = None
-    if prev_rev:
-        prev_log_url = \
-            reverse('browse-revision-log',
-                    kwargs={'sha1_git': prev_rev},
-                    query_params={'revs_breadcrumb': prev_revs_breadcrumb,
-                                  'per_page': per_page})
-
-    next_rev = revision_log_display_data['next_rev']
-    next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
-    next_log_url = None
-    if next_rev:
-        next_log_url = \
-            reverse('browse-revision-log',
-                    kwargs={'sha1_git': next_rev},
-                    query_params={'revs_breadcrumb': next_revs_breadcrumb,
-                                  'per_page': per_page})
-
-    revision_log_data = revision_log_display_data['revision_log_data']
-
-    for log in revision_log_data:
-        log['directory'] = gen_directory_link(
-            log['directory'],
-            link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
-                      '</i>Browse files',
-            link_attrs={'class': 'btn btn-default btn-sm',
-                        'role': 'button'})
-
-    return render(request, 'revision-log.html',
-                  {'empty_browse': False,
-                   'heading': 'Revision history',
-                   'top_panel_visible': False,
-                   'top_panel_collapsible': False,
-                   'top_panel_text': 'Revision history',
-                   'swh_object_metadata': None,
-                   'main_panel_visible': True,
-                   'revision_log': revision_log_data,
-                   'next_log_url': next_log_url,
-                   'prev_log_url': prev_log_url,
-                   'breadcrumbs': None,
-                   'top_right_link': None,
-                   'top_right_link_text': None,
-                   'snapshot_context': None,
-                   'vault_cooking': None,
-                   'show_actions_menu': False})

@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
@@ -31,6 +31,14 @@ def directory_browse(request, sha1_git, path=None):
     try:
         if path:
             dir_info = service.lookup_directory_with_path(sha1_git, path)
+            # some readme files can reference assets reachable from the
+            # browsed directory, handle that special case in order to
+            # correctly displayed them
+            if dir_info and dir_info['type'] == 'file':
+                file_raw_url = reverse(
+                    'browse-content-raw',
+                    kwargs={'query_string': dir_info['checksums']['sha1']})
+                return redirect(file_raw_url)
             sha1_git = dir_info['target']
 
         dirs, files = get_directory_entries(sha1_git)

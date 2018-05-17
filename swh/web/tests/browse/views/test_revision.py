@@ -123,6 +123,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
     @istest
     def revision_log_browse(self, mock_service):
         per_page = 10
+
         mock_service.lookup_revision_log.return_value = \
             revision_history_log_test[:per_page+1]
 
