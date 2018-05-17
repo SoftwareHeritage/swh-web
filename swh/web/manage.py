@@ -11,8 +11,12 @@ import sys
 from swh.web import config
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE",
-                          "swh.web.settings.development")
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE",
+                              "swh.web.settings.tests")
+    else:
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE",
+                              "swh.web.settings.development")
     # import root urls module for swh-web before running the django dev server
     # in order to ensure it will be automatically reloaded when source files
     # are modified (as django autoreload feature only works if the modules are
