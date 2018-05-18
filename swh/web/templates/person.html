@@ -7,3 +7,31 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load swh_templatetags %}
+
+{% block swh-browse-before-content %}
+{% if snapshot_context %}
+  {% include "includes/snapshot-context.html" %}
+{% endif %}
+{% endblock %}
+
+{% block swh-browse-content %}
+<div class="card-header bg-gray-light">
+  <div class="float-left">
+    <h4>{{ swh_object_name }}</h4>
+  </div>
+  <div class="clearfix"></div>
+</div>
+<table class="table">
+  <tbody>
+    {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+      <tr>
+        <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
+        <td class="swh-metadata-table-row swh-metadata-table-value">
+          <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

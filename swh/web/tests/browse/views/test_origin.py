@@ -57,10 +57,6 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
-        self.assertContains(resp, '<pre>%s</pre>' % origin_info_test_data['type'])
-        self.assertContains(resp, '<pre><a href="%s">%s</a></pre>' %
-                                  (origin_info_test_data['url'],
-                                   origin_info_test_data['url']))
 
         url = reverse('browse-origin-visits',
                       kwargs={'origin_url': origin_info_test_data['url']})
@@ -68,11 +64,6 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
-        self.assertContains(resp, '<pre>%s</pre>' % origin_info_test_data['type'])
-        self.assertContains(resp, '<pre><a href="%s">%s</a></pre>' %
-                                  (origin_info_test_data['url'],
-                                   origin_info_test_data['url']))
-
 
     @nottest
     def origin_content_view_test(self, origin_info, origin_visits,

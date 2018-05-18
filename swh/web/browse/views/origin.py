@@ -175,12 +175,9 @@ def origin_visits_browse(request, origin_url, origin_type=None):
 
     return render(request, 'origin-visits.html',
                   {'empty_browse': False,
-                   'heading': 'Origin',
-                   'top_panel_visible': False,
-                   'top_panel_collapsible': False,
-                   'top_panel_text': 'Origin visits',
+                   'heading': 'Origin visits',
+                   'swh_object_name': 'Visits',
                    'swh_object_metadata': origin_info,
-                   'main_panel_visible': True,
                    'origin_visits': origin_visits,
                    'origin_info': origin_info,
                    'browse_url_base': '/browse/origin/%s/url/%s/' %

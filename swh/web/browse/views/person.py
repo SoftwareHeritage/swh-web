@@ -8,6 +8,7 @@ from django.shortcuts import render
 from swh.web.common import service
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.browseurls import browse_route
+from swh.web.browse.utils import get_snapshot_context
 
 
 @browse_route(r'person/(?P<person_id>[0-9]+)/',
@@ -20,6 +21,17 @@ def person_browse(request, person_id):
     The url that points to it is :http:get:`/browse/person/(person_id)/`.
     """
     try:
+        snapshot_context = None
+        origin_type = request.GET.get('origin_type', None)
+        origin_url = request.GET.get('origin_url', None)
+        if not origin_url:
+            origin_url = request.GET.get('origin', None)
+        snapshot_id = request.GET.get('snapshot_id', None)
+        if origin_url:
+            snapshot_context = get_snapshot_context(None, origin_type,
+                                                    origin_url)
+        elif snapshot_id:
+            snapshot_context = get_snapshot_context(snapshot_id)
         person = service.lookup_person(person_id)
     except Exception as exc:
         return handle_view_exception(request, exc)
@@ -27,10 +39,8 @@ def person_browse(request, person_id):
     return render(request, 'person.html',
                   {'empty_browse': False,
                    'heading': 'Person',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': False,
-                   'top_panel_text': 'Person metadata',
+                   'swh_object_name': 'Person',
                    'swh_object_metadata': person,
-                   'main_panel_visible': False,
+                   'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': False})

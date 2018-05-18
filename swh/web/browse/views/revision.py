@@ -224,11 +224,8 @@ def revision_log_browse(request, sha1_git):
     return render(request, 'revision-log.html',
                   {'empty_browse': False,
                    'heading': 'Revision history',
-                   'top_panel_visible': False,
-                   'top_panel_collapsible': False,
-                   'top_panel_text': 'Revision history',
+                   'swh_object_name': 'Revision history',
                    'swh_object_metadata': None,
-                   'main_panel_visible': True,
                    'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
@@ -237,7 +234,7 @@ def revision_log_browse(request, sha1_git):
                    'top_right_link_text': None,
                    'snapshot_context': None,
                    'vault_cooking': None,
-                   'show_actions_menu': False})
+                   'show_actions_menu': True})
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/',
@@ -304,10 +301,12 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     revision_data = {}
 
-    revision_data['author'] = gen_person_link(
-        revision['author']['id'], revision['author']['name'])
-    revision_data['committer'] = gen_person_link(
-        revision['committer']['id'], revision['committer']['name'])
+    revision_data['author'] = \
+        gen_person_link(revision['author']['id'], revision['author']['name'],
+                        snapshot_context)
+    revision_data['committer'] = \
+        gen_person_link(revision['committer']['id'],
+                        revision['committer']['name'], snapshot_context)
     revision_data['committer date'] = format_utc_iso_date(
         revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])
@@ -451,14 +450,11 @@ def revision_browse(request, sha1_git, extra_path=None):
     return render(request, 'revision.html',
                   {'empty_browse': False,
                    'heading': 'Revision',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text': 'Revision metadata',
+                   'swh_object_name': 'Revision',
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],
                    'message_body': '\n'.join(message_lines[1:]),
                    'parents_links': mark_safe(parents_links),
-                   'main_panel_visible': True,
                    'snapshot_context': snapshot_context,
                    'dirs': dirs,
                    'files': files,

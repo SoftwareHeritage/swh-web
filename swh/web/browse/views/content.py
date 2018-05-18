@@ -233,11 +233,8 @@ def content_display(request, query_string):
     return render(request, 'content.html',
                   {'empty_browse': False,
                    'heading': 'Content',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text': 'Content metadata',
+                   'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
-                   'main_panel_visible': True,
                    'content': content,
                    'content_size': content_data['length'],
                    'max_content_size': content_display_max_size,
@@ -250,5 +247,5 @@ def content_display(request, query_string):
                        '</i>Raw File'),
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
-                   'show_actions_menu': False
+                   'show_actions_menu': True
                    })

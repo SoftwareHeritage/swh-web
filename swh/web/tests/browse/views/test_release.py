@@ -81,8 +81,8 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('release.html')
 
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (author_url, author_name))
+        self.assertContains(resp, author_url)
+        self.assertContains(resp, author_name)
         self.assertContains(resp, format_utc_iso_date(release_date))
         self.assertContains(resp, '<h6>%s</h6>%s' % (message_lines[0],
                                                      '\n'.join(message_lines[1:])))

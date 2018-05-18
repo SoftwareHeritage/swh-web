@@ -488,7 +488,8 @@ def gen_link(url, link_text, link_attrs={}):
     return mark_safe(link)
 
 
-def gen_person_link(person_id, person_name, link_attrs={}):
+def gen_person_link(person_id, person_name, snapshot_context=None,
+                    link_attrs={}):
     """
     Utility function for generating a link to a SWH person HTML view
     to insert in Django templates.
@@ -503,7 +504,21 @@ def gen_person_link(person_id, person_name, link_attrs={}):
         An HTML link in the form '<a href="person_view_url">person_name</a>'
 
     """
-    person_url = reverse('browse-person', kwargs={'person_id': person_id})
+    query_params = None
+    if snapshot_context and snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
+        query_params = {'origin_type': origin_info['type'],
+                        'origin_url': origin_info['url']}
+        if 'timestamp' in snapshot_context['url_args']:
+            query_params['timestamp'] = \
+                 snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
+            query_params['visit_id'] = \
+                snapshot_context['query_params']['visit_id']
+    elif snapshot_context:
+        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+    person_url = reverse('browse-person', kwargs={'person_id': person_id},
+                         query_params=query_params)
     return gen_link(person_url, person_name, link_attrs)
 
 
@@ -754,7 +769,8 @@ def _format_log_entries(revision_log, per_page, snapshot_context=None):
             break
         revision_log_data.append(
             {'author': gen_person_link(log['author']['id'],
-                                       log['author']['name']),
+                                       log['author']['name'],
+                                       snapshot_context),
              'revision': gen_revision_link(log['id'], True, snapshot_context),
              'message': log['message'],
              'date': format_utc_iso_date(log['date']),
