@@ -966,12 +966,14 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
     }
 
 
+# list of common readme names ordered by preference
+# (lower indices have higher priority)
 _common_readme_names = [
-    "readme",
     "readme.markdown",
     "readme.md",
+    "readme.rst",
     "readme.txt",
-    "readme.rst"
+    "readme"
 ]
 
 
@@ -989,10 +991,16 @@ def get_readme_to_display(readmes):
     """
     readme_name = None
     readme_url = None
-    # try to find a readme file with a common name
-    for name, readme_sha1 in readmes.items():
-        if name.lower() in _common_readme_names:
-            readme_name = name
+
+    lc_readmes = {k.lower(): {'orig_name': k, 'sha1': v}
+                  for k, v in readmes.items()}
+
+    # look for readme names according to the preference order
+    # defined by the _common_readme_names list
+    for common_readme_name in _common_readme_names:
+        if common_readme_name in lc_readmes:
+            readme_name = lc_readmes[common_readme_name]['orig_name']
+            readme_sha1 = lc_readmes[common_readme_name]['sha1']
             readme_url = reverse('browse-content-raw',
                                  kwargs={'query_string': readme_sha1})
             break
