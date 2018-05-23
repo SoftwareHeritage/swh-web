@@ -112,9 +112,17 @@ def request_content(query_string, max_size=content_display_max_size):
         NotFoundExc if the content is not found
     """
     content_data = service.lookup_content(query_string)
-    filetype = service.lookup_content_filetype(query_string)
-    language = service.lookup_content_language(query_string)
-    license = service.lookup_content_license(query_string)
+    filetype = None
+    language = None
+    license = None
+    # requests to the indexer db may fail so properly handle
+    # those cases in order to avoid content display errors
+    try:
+        filetype = service.lookup_content_filetype(query_string)
+        language = service.lookup_content_language(query_string)
+        license = service.lookup_content_license(query_string)
+    except Exception as e:
+        pass
     mimetype = 'unknown'
     encoding = 'unknown'
     if filetype:
