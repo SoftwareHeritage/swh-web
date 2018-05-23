@@ -278,7 +278,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         if f['name'].lower().startswith('readme'):
             readmes[f['name']] = f['checksums']['sha1']
 
-    readme_name, readme_url = get_readme_to_display(readmes)
+    readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
     browse_view_name = 'browse-' + swh_type + '-log'
 
@@ -350,6 +350,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                    ),
                    'readme_name': readme_name,
                    'readme_url': readme_url,
+                   'readme_html': readme_html,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': vault_cooking,
                    'show_actions_menu': True})

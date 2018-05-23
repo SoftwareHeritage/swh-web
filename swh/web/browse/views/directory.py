@@ -89,7 +89,7 @@ def directory_browse(request, sha1_git, path=None):
         if f['name'].lower().startswith('readme'):
             readmes[f['name']] = f['checksums']['sha1']
 
-    readme_name, readme_url = get_readme_to_display(readmes)
+    readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
@@ -120,6 +120,7 @@ def directory_browse(request, sha1_git, path=None):
                    'top_right_link_text': None,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
+                   'readme_html': readme_html,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': vault_cooking,
                    'show_actions_menu': True})

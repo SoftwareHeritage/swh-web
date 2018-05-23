@@ -6,6 +6,7 @@
 import base64
 import magic
 import math
+import pypandoc
 import stat
 
 from django.core.cache import cache
@@ -991,6 +992,8 @@ def get_readme_to_display(readmes):
     """
     readme_name = None
     readme_url = None
+    readme_sha1 = None
+    readme_html = None
 
     lc_readmes = {k.lower(): {'orig_name': k, 'sha1': v}
                   for k, v in readmes.items()}
@@ -1012,4 +1015,18 @@ def get_readme_to_display(readmes):
         readme_url = reverse('browse-content-raw',
                              kwargs={'query_string': readme_sha1})
 
-    return readme_name, readme_url
+    # convert rst README to html server side as there is
+    # no viable solution to perform that task client side
+    if readme_name and readme_name.endswith('.rst'):
+        cache_entry_id = 'readme_%s' % readme_sha1
+        cache_entry = cache.get(cache_entry_id)
+
+        if cache_entry:
+            readme_html = cache_entry
+        else:
+            rst_doc = request_content(readme_sha1)
+            readme_html = pypandoc.convert_text(rst_doc['raw_data'], 'html',
+                                                format='rst')
+            cache.set(cache_entry_id, readme_html)
+
+    return readme_name, readme_url, readme_html

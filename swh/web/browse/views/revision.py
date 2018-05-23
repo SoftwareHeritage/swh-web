@@ -432,7 +432,7 @@ def revision_browse(request, sha1_git, extra_path=None):
             if f['name'].lower().startswith('readme'):
                 readmes[f['name']] = f['checksums']['sha1']
 
-        readme_name, readme_url = get_readme_to_display(readmes)
+        readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
         top_right_link = get_revision_log_url(sha1_git, snapshot_context)
         top_right_link_text = mark_safe(
@@ -469,6 +469,7 @@ def revision_browse(request, sha1_git, extra_path=None):
                    'language': language,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
+                   'readme_html': readme_html,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': top_right_link,
                    'top_right_link_text': top_right_link_text,
