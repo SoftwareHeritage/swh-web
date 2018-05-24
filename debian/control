@@ -25,7 +25,7 @@ Build-Depends: curl,
                python3-swh.model (>= 0.0.15~),
                python3-swh.storage (>= 0.0.101~),
                python3-swh.indexer.storage (>= 0.0.47~),
-               python3-swh.vault (>= 0.0.2~)
+               python3-swh.vault (>= 0.0.20~)
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
@@ -35,7 +35,7 @@ Depends: python3-swh.core (>= 0.0.40~),
          python3-swh.model (>= 0.0.15~),
          python3-swh.storage (>= 0.0.101~),
          python3-swh.indexer.storage (>= 0.0.47~),
-         python3-swh.vault (>= 0.0.2~),
+         python3-swh.vault (>= 0.0.20~),
          ${misc:Depends},
          ${python3:Depends}
 Description: Software Heritage Web Applications
