@@ -35,7 +35,7 @@ ul.navbar-nav a {
     letter-spacing: 1px;
     color: #f0f0f0;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
-    top: 25px;
+    top: 57px;
     right: -50px;
     left: auto;
     transform: rotate(45deg);
@@ -47,15 +47,7 @@ ul.navbar-nav a {
 }
 
 .swh-loading.show {
-    display: inline-block;
-    position: fixed;
-    background: white;
-    border: 1px solid black;
-    top: 50%;
-    left: 50%;
-    margin: -50px 0 0 -50px;
-    text-align: center;
-    z-index: 100;
+    display: block;
 }
 
 .swh-metadata-table-row {
@@ -106,4 +98,13 @@ ul.navbar-nav a {
     min-width: 460px;
     max-width: 460px;
     width: 460px;
+}
+
+.swh-metadata {
+    max-height: 50vh;
+    max-width: 41vw;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 0;
+    padding-right: 1.4em;
 }

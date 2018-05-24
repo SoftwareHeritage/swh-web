@@ -8,7 +8,7 @@ build-webpack-prod:
 
 .PHONY: run-migrations
 run-migrations:
-	cd swh/web && python3 manage.py migrate
+	cd swh/web && python3 manage.py migrate 2>/dev/null
 
 run-django-webpack-devserver: run-migrations
 	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; npm run start-dev & cd swh/web && python3 manage.py runserver"

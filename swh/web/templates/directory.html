@@ -7,17 +7,18 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-{% block swh-browse-before-panels %}
+
+{% block swh-browse-before-content %}
 {% if snapshot_context %}
   {% include "includes/snapshot-context.html" %}
 {% endif %}
 {% endblock %}
 
-{% block swh-browse-main-panel-content %}
+{% block swh-browse-content %}
 {% include "includes/top-navigation.html" %}
 {% include "includes/directory-display.html" %}
 {% endblock %}
 
-{% block swh-browse-panels-group-end %}
+{% block swh-browse-after-content %}
 {% include "includes/readme-display.html" %}
 {% endblock %}

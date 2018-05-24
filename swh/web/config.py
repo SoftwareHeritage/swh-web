@@ -15,12 +15,14 @@ DEFAULT_CONFIG = {
         'cls': 'remote',
         'args': {
             'url': 'http://127.0.0.1:5002/',
+            'timeout': 10,
         },
     }),
     'indexer_storage': ('dict', {
         'cls': 'remote',
         'args': {
             'url': 'http://127.0.0.1:5007/',
+            'timeout': 1,
         }
     }),
     'vault': ('string', 'http://127.0.0.1:5005/'),

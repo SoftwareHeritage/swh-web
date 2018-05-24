@@ -14,19 +14,19 @@ See top-level LICENSE file for more information
 {% render_bundle 'revision' %}
 {% endblock %}
 
-{% block swh-browse-before-panels %}
+{% block swh-browse-before-content %}
 {% if snapshot_context %}
   {% include "includes/snapshot-context.html" %}
 {% endif %}
 {% endblock %}
 
-{% block swh-browse-main-panel-content %}
+{% block swh-browse-content %}
 {% if snapshot_context %}
   {% include "includes/top-navigation.html" %}
 {% else %}
   <div class="card-header bg-gray-light">
     <div class="card-title float-left">
-      <h4>{{ top_panel_text }}</h4>
+      <h4>{{ swh_object_name }}</h4>
     </div>
     <div class="clearfix"></div>
   </div>
@@ -58,7 +58,7 @@ See top-level LICENSE file for more information
 </div>
 {% endblock %}
 
-{% block swh-browse-after-panels %}
+{% block swh-browse-after-content %}
 <ul class="pagination justify-content-center">
   {% if next_log_url %}
     <li class="page-item"><a class="page-link" href="{{ next_log_url }}">Newer</a></li>

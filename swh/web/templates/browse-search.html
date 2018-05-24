@@ -12,7 +12,12 @@ See top-level LICENSE file for more information
 {% block browse-content %}
 <div class="card">
   <div class="card-header bg-gray-light">
-    <h4>Search Software Heritage origins to browse</h4>
+    <div class="float-left">
+      <h4>Search Software Heritage origins to browse</h4>
+    </div>
+    <div class="swh-loading float-right">
+      <img src="{% static 'img/swh-spinner-small.gif' %}"></img>
+    </div>
   </div>
   <div class="card-body">
     <form class="form-horizontal" id="search_origins">
@@ -23,11 +28,6 @@ See top-level LICENSE file for more information
         </div>
       </div>
     </form>
-
-    <div class="swh-loading">
-      <img src="{% static 'img/swh-spinner.gif' %}"></img>
-      <p>Searching origins ...</p>
-    </div>
 
     <div id="swh-origin-search-results" style="display: none;">
       <div class="table-responsive">

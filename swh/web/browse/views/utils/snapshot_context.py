@@ -8,7 +8,7 @@
 # Its purpose is to factorize code for the views reachable from the
 # /origin/.* and /snapshot/.* endpoints.
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.safestring import mark_safe
 from django.template.defaultfilters import filesizeformat
 
@@ -17,7 +17,7 @@ from swh.web.browse.utils import (
     gen_revision_link, request_content, gen_content_link,
     prepare_content_for_display, content_display_max_size,
     prepare_revision_log_for_display, gen_snapshot_directory_link,
-    gen_revision_log_link, gen_link
+    gen_revision_log_link, gen_link, get_readme_to_display
 )
 
 from swh.web.common import service
@@ -212,6 +212,14 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         sha1_git = root_sha1_git
         if path:
             dir_info = service.lookup_directory_with_path(root_sha1_git, path)
+            # some readme files can reference assets reachable from the
+            # browsed directory, handle that special case in order to
+            # correctly displayed them
+            if dir_info and dir_info['type'] == 'file':
+                file_raw_url = reverse(
+                    'browse-content-raw',
+                    kwargs={'query_string': dir_info['checksums']['sha1']})
+                return redirect(file_raw_url)
             sha1_git = dir_info['target']
 
         dirs, files = get_directory_entries(sha1_git)
@@ -255,8 +263,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     sum_file_sizes = 0
 
-    readme_name = None
-    readme_url = None
+    readmes = {}
 
     browse_view_name = 'browse-' + swh_type + '-content'
 
@@ -269,10 +276,9 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         sum_file_sizes += f['length']
         f['length'] = filesizeformat(f['length'])
         if f['name'].lower().startswith('readme'):
-            readme_name = f['name']
-            readme_sha1 = f['checksums']['sha1']
-            readme_url = reverse('browse-content-raw',
-                                 kwargs={'query_string': readme_sha1})
+            readmes[f['name']] = f['checksums']['sha1']
+
+    readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
     browse_view_name = 'browse-' + swh_type + '-log'
 
@@ -329,11 +335,8 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     return render(request, 'directory.html',
                   {'empty_browse': False,
                    'heading': 'Directory',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text': 'Directory metadata',
+                   'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
-                   'main_panel_visible': True,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs,
@@ -344,6 +347,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                    ),
                    'readme_name': readme_name,
                    'readme_url': readme_url,
+                   'readme_html': readme_html,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': vault_cooking,
                    'show_actions_menu': True})
@@ -464,11 +468,8 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     return render(request, 'content.html',
                   {'empty_browse': False,
                    'heading': 'Content',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text': 'Content metadata',
+                   'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
-                   'main_panel_visible': True,
                    'content': content,
                    'content_size': content_data['length'],
                    'max_content_size': content_display_max_size,
@@ -481,7 +482,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                        '</i>Raw File'),
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
-                   'show_actions_menu': False})
+                   'show_actions_menu': True})
 
 
 PER_PAGE = 20
@@ -590,11 +591,8 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     return render(request, 'revision-log.html',
                   {'empty_browse': False,
                    'heading': 'Revision history',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text': 'Revision history metadata',
+                   'swh_object_name': 'Revision history',
                    'swh_object_metadata': revision_metadata,
-                   'main_panel_visible': True,
                    'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
@@ -603,7 +601,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                    'top_right_link_text': None,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
-                   'show_actions_menu': False})
+                   'show_actions_menu': True})
 
 
 def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
@@ -673,11 +671,8 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
     return render(request, 'branches.html',
                   {'empty_browse': False,
                    'heading': 'Origin branches',
-                   'top_panel_visible': False,
-                   'top_panel_collapsible': False,
-                   'top_panel_text': 'Branches list',
+                   'swh_object_name': 'Branches',
                    'swh_object_metadata': {},
-                   'main_panel_visible': True,
                    'top_right_link': None,
                    'top_right_link_text': None,
                    'displayed_branches': displayed_branches,
@@ -749,9 +744,8 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                    'heading': 'Origin releases',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
-                   'top_panel_text': 'Releases list',
+                   'swh_object_name': 'Releases',
                    'swh_object_metadata': {},
-                   'main_panel_visible': True,
                    'top_right_link': None,
                    'top_right_link_text': None,
                    'displayed_releases': displayed_releases,
