@@ -1,5 +1,5 @@
-swh.core >= 0.0.20
+swh.core >= 0.0.40
 swh.model >= 0.0.15
-swh.storage >= 0.0.96
-swh.vault >= 0.0.1
-swh.indexer.storage >= 0.0.46
+swh.storage >= 0.0.101
+swh.vault >= 0.0.2
+swh.indexer.storage >= 0.0.47
