@@ -98,7 +98,8 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
         mock_utils_service.lookup_directory.return_value = \
             stub_sub_directory_data
         mock_directory_service.lookup_directory_with_path.return_value = \
-            {'target': '120c39eeb566c66a77ce0e904d29dfde42228adc'}
+            {'target': '120c39eeb566c66a77ce0e904d29dfde42228adc',
+             'type': 'dir'}
 
         self.directory_view(stub_root_directory_sha1, stub_sub_directory_data,
                             stub_sub_directory_path)

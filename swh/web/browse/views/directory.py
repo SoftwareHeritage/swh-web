@@ -4,13 +4,16 @@
 # See top-level LICENSE file for more information
 
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
 from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
-from swh.web.browse.utils import get_directory_entries
+from swh.web.browse.utils import (
+    get_directory_entries, get_snapshot_context,
+    get_readme_to_display
+)
 
 from swh.web.browse.browseurls import browse_route
 
@@ -28,9 +31,27 @@ def directory_browse(request, sha1_git, path=None):
     try:
         if path:
             dir_info = service.lookup_directory_with_path(sha1_git, path)
+            # some readme files can reference assets reachable from the
+            # browsed directory, handle that special case in order to
+            # correctly displayed them
+            if dir_info and dir_info['type'] == 'file':
+                file_raw_url = reverse(
+                    'browse-content-raw',
+                    kwargs={'query_string': dir_info['checksums']['sha1']})
+                return redirect(file_raw_url)
             sha1_git = dir_info['target']
 
         dirs, files = get_directory_entries(sha1_git)
+        origin_type = request.GET.get('origin_type', None)
+        origin_url = request.GET.get('origin_url', None)
+        if not origin_url:
+            origin_url = request.GET.get('origin', None)
+        snapshot_context = None
+        if origin_url:
+            snapshot_context = get_snapshot_context(None, origin_type,
+                                                    origin_url)
+        if snapshot_context:
+            snapshot_context['visit_info'] = None
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -55,8 +76,7 @@ def directory_browse(request, sha1_git, path=None):
 
     sum_file_sizes = 0
 
-    readme_name = None
-    readme_url = None
+    readmes = {}
 
     for f in files:
         query_string = 'sha1_git:' + f['target']
@@ -67,10 +87,9 @@ def directory_browse(request, sha1_git, path=None):
         sum_file_sizes += f['length']
         f['length'] = filesizeformat(f['length'])
         if f['name'].lower().startswith('readme'):
-            readme_name = f['name']
-            readme_sha1 = f['checksums']['sha1']
-            readme_url = reverse('browse-content-raw',
-                                 kwargs={'query_string': readme_sha1})
+            readmes[f['name']] = f['checksums']['sha1']
+
+    readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
@@ -89,11 +108,8 @@ def directory_browse(request, sha1_git, path=None):
     return render(request, 'directory.html',
                   {'empty_browse': False,
                    'heading': 'Directory',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text': 'Directory metadata',
+                   'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
-                   'main_panel_visible': True,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs,
@@ -101,6 +117,7 @@ def directory_browse(request, sha1_git, path=None):
                    'top_right_link_text': None,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
-                   'snapshot_context': None,
+                   'readme_html': readme_html,
+                   'snapshot_context': snapshot_context,
                    'vault_cooking': vault_cooking,
                    'show_actions_menu': True})

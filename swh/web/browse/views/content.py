@@ -20,7 +20,7 @@ from swh.web.common.utils import reverse, gen_path_info
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
     request_content, prepare_content_for_display,
-    content_display_max_size
+    content_display_max_size, get_snapshot_context
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -163,6 +163,16 @@ def content_display(request, query_string):
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
         content_data = request_content(query_string)
+        origin_type = request.GET.get('origin_type', None)
+        origin_url = request.GET.get('origin_url', None)
+        if not origin_url:
+            origin_url = request.GET.get('origin', None)
+        snapshot_context = None
+        if origin_url:
+            snapshot_context = get_snapshot_context(None, origin_type,
+                                                    origin_url)
+        if snapshot_context:
+            snapshot_context['visit_info'] = None
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -223,11 +233,8 @@ def content_display(request, query_string):
     return render(request, 'content.html',
                   {'empty_browse': False,
                    'heading': 'Content',
-                   'top_panel_visible': True,
-                   'top_panel_collapsible': True,
-                   'top_panel_text': 'Content metadata',
+                   'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
-                   'main_panel_visible': True,
                    'content': content,
                    'content_size': content_data['length'],
                    'max_content_size': content_display_max_size,
@@ -238,7 +245,7 @@ def content_display(request, query_string):
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
                        '</i>Raw File'),
-                   'snapshot_context': None,
+                   'snapshot_context': snapshot_context,
                    'vault_cooking': None,
-                   'show_actions_menu': False
+                   'show_actions_menu': True
                    })

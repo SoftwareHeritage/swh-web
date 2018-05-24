@@ -16,7 +16,11 @@ See top-level LICENSE file for more information
           <a href="{{ snapshot_context.origin_info.url }}" class="btn btn-default btn-sm" role="button">Go to origin</a>
         </div>
       {% endif %}
-      <a href="{% url 'browse-origin' snapshot_context.origin_info.type snapshot_context.origin_info.url %}">
+      {% if snapshot_context.origin_info.type %}
+        <a href="{% url 'browse-origin' snapshot_context.origin_info.type snapshot_context.origin_info.url %}">
+      {% else %}
+        <a href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
+      {% endif %}
         <h4 class="text-center">Origin: {{ snapshot_context.origin_info.url }}</h4>
         <div class="clearfix"></div>
       </a>

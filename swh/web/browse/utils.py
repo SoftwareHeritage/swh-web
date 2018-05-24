@@ -6,6 +6,7 @@
 import base64
 import magic
 import math
+import pypandoc
 import stat
 
 from django.core.cache import cache
@@ -111,9 +112,17 @@ def request_content(query_string, max_size=content_display_max_size):
         NotFoundExc if the content is not found
     """
     content_data = service.lookup_content(query_string)
-    filetype = service.lookup_content_filetype(query_string)
-    language = service.lookup_content_language(query_string)
-    license = service.lookup_content_license(query_string)
+    filetype = None
+    language = None
+    license = None
+    # requests to the indexer db may fail so properly handle
+    # those cases in order to avoid content display errors
+    try:
+        filetype = service.lookup_content_filetype(query_string)
+        language = service.lookup_content_language(query_string)
+        license = service.lookup_content_license(query_string)
+    except Exception as e:
+        pass
     mimetype = 'unknown'
     encoding = 'unknown'
     if filetype:
@@ -267,7 +276,8 @@ def get_origin_visits(origin_info):
     return origin_visits
 
 
-def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
+def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
+                     snapshot_id=None):
     """Function that returns information about a SWH visit for
     a given origin.
     The visit is retrieved from a provided timestamp.
@@ -294,6 +304,15 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None):
         raise NotFoundExc('No SWH visit associated to origin with'
                           ' type %s and url %s!' % (origin_info['type'],
                                                     origin_info['url']))
+
+    if snapshot_id:
+        visit = [v for v in visits if v['snapshot'] == snapshot_id]
+        if len(visit) == 0:
+            raise NotFoundExc(
+                'Visit for snapshot with id %s for origin with type %s'
+                ' and url %s not found!' % (snapshot_id, origin_info['type'],
+                                            origin_info['url']))
+        return visit[0]
 
     if visit_id:
         visit = [v for v in visits if v['visit'] == int(visit_id)]
@@ -422,7 +441,8 @@ def get_snapshot_content(snapshot_id):
     return branches, releases
 
 
-def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
+def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
+                              snapshot_id=None):
     """Returns the lists of branches and releases
     associated to a swh origin for a given visit.
     The visit is expressed by a timestamp. In the latter case,
@@ -449,7 +469,7 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None):
         NotFoundExc if the origin or its visit are not found
     """
 
-    visit_info = get_origin_visit(origin_info, visit_ts, visit_id)
+    visit_info = get_origin_visit(origin_info, visit_ts, visit_id, snapshot_id)
 
     return get_snapshot_content(visit_info['snapshot'])
 
@@ -476,7 +496,8 @@ def gen_link(url, link_text, link_attrs={}):
     return mark_safe(link)
 
 
-def gen_person_link(person_id, person_name, link_attrs={}):
+def gen_person_link(person_id, person_name, snapshot_context=None,
+                    link_attrs={}):
     """
     Utility function for generating a link to a SWH person HTML view
     to insert in Django templates.
@@ -491,7 +512,21 @@ def gen_person_link(person_id, person_name, link_attrs={}):
         An HTML link in the form '<a href="person_view_url">person_name</a>'
 
     """
-    person_url = reverse('browse-person', kwargs={'person_id': person_id})
+    query_params = None
+    if snapshot_context and snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
+        query_params = {'origin_type': origin_info['type'],
+                        'origin_url': origin_info['url']}
+        if 'timestamp' in snapshot_context['url_args']:
+            query_params['timestamp'] = \
+                 snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
+            query_params['visit_id'] = \
+                snapshot_context['query_params']['visit_id']
+    elif snapshot_context:
+        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+    person_url = reverse('browse-person', kwargs={'person_id': person_id},
+                         query_params=query_params)
     return gen_link(person_url, person_name, link_attrs)
 
 
@@ -742,7 +777,8 @@ def _format_log_entries(revision_log, per_page, snapshot_context=None):
             break
         revision_log_data.append(
             {'author': gen_person_link(log['author']['id'],
-                                       log['author']['name']),
+                                       log['author']['name'],
+                                       snapshot_context),
              'revision': gen_revision_link(log['id'], True, snapshot_context),
              'message': log['message'],
              'date': format_utc_iso_date(log['date']),
@@ -804,6 +840,40 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
             'next_revs_breadcrumb': next_revs_breadcrumb}
 
 
+# list of origin types that can be found in the swh archive
+# TODO: retrieve it dynamically in an efficient way instead
+#       of hardcoding it
+_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit']
+
+
+def get_origin_info(origin_url, origin_type=None):
+    """
+    Get info about a SWH origin.
+    Its main purpose is to automatically find an origin type
+    when it is not provided as parameter.
+
+    Args:
+        origin_url (str): complete url of a SWH origin
+        origin_type (str): optionnal origin type
+
+    Returns:
+        A dict with the following entries:
+            * type: the origin type
+            * url: the origin url
+            * id: the SWH internal id of the origin
+    """
+    if origin_type:
+        return service.lookup_origin({'type': origin_type,
+                                      'url': origin_url})
+    else:
+        for origin_type in _swh_origin_types:
+            origin_info = service.lookup_origin({'type': origin_type,
+                                                 'url': origin_url})
+            if origin_info:
+                return origin_info
+    return None
+
+
 def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
                          timestamp=None, visit_id=None):
     """
@@ -848,12 +918,13 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
     branches_url = None
     releases_url = None
     swh_type = 'snapshot'
-    if origin_type and origin_url:
+    if origin_url:
         swh_type = 'origin'
-        origin_info = service.lookup_origin({'type': origin_type,
-                                            'url': origin_url})
+        origin_info = get_origin_info(origin_url, origin_type)
+        origin_info['type'] = origin_type
 
-        visit_info = get_origin_visit(origin_info, timestamp, visit_id)
+        visit_info = get_origin_visit(origin_info, timestamp, visit_id,
+                                      snapshot_id)
         visit_info['fmt_date'] = format_utc_iso_date(visit_info['date'])
         snapshot_id = visit_info['snapshot']
 
@@ -864,7 +935,8 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
             timestamp = visit_info['date']
 
         branches, releases = \
-            get_origin_visit_snapshot(origin_info, timestamp, visit_id)
+            get_origin_visit_snapshot(origin_info, timestamp, visit_id,
+                                      snapshot_id)
 
         url_args = {'origin_type': origin_info['type'],
                     'origin_url': origin_info['url']}
@@ -917,3 +989,68 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         'url_args': url_args,
         'query_params': query_params
     }
+
+
+# list of common readme names ordered by preference
+# (lower indices have higher priority)
+_common_readme_names = [
+    "readme.markdown",
+    "readme.md",
+    "readme.rst",
+    "readme.txt",
+    "readme"
+]
+
+
+def get_readme_to_display(readmes):
+    """
+    Process a list of readme files found in a directory
+    in order to find the adequate one to display.
+
+    Args:
+        readmes: a list of dict where keys are readme file names and values
+            are readme sha1s
+
+    Returns:
+        A tuple (readme_name, readme_sha1)
+    """
+    readme_name = None
+    readme_url = None
+    readme_sha1 = None
+    readme_html = None
+
+    lc_readmes = {k.lower(): {'orig_name': k, 'sha1': v}
+                  for k, v in readmes.items()}
+
+    # look for readme names according to the preference order
+    # defined by the _common_readme_names list
+    for common_readme_name in _common_readme_names:
+        if common_readme_name in lc_readmes:
+            readme_name = lc_readmes[common_readme_name]['orig_name']
+            readme_sha1 = lc_readmes[common_readme_name]['sha1']
+            readme_url = reverse('browse-content-raw',
+                                 kwargs={'query_string': readme_sha1})
+            break
+
+    # otherwise pick the first readme like file if any
+    if not readme_name and len(readmes.items()) > 0:
+        readme_name = next(iter(readmes))
+        readme_sha1 = readmes[readme_name]
+        readme_url = reverse('browse-content-raw',
+                             kwargs={'query_string': readme_sha1})
+
+    # convert rst README to html server side as there is
+    # no viable solution to perform that task client side
+    if readme_name and readme_name.endswith('.rst'):
+        cache_entry_id = 'readme_%s' % readme_sha1
+        cache_entry = cache.get(cache_entry_id)
+
+        if cache_entry:
+            readme_html = cache_entry
+        else:
+            rst_doc = request_content(readme_sha1)
+            readme_html = pypandoc.convert_text(rst_doc['raw_data'], 'html',
+                                                format='rst')
+            cache.set(cache_entry_id, readme_html)
+
+    return readme_name, readme_url, readme_html

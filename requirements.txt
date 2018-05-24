@@ -13,6 +13,7 @@ file_magic >= 0.3.0
 htmlmin
 lxml
 pygments
+pypandoc
 python-dateutil
 pyyaml
 
