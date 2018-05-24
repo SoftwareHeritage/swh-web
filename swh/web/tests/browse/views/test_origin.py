@@ -43,11 +43,14 @@ stub_origin_info_no_type['type'] = None
 
 class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
 
+    @patch('swh.web.browse.views.origin.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.service')
     @istest
-    def origin_browse(self, mock_service, mock_get_origin_visits):
+    def origin_visits_browse(self, mock_service, mock_get_origin_visits,
+                      mock_get_origin_info):
         mock_service.lookup_origin.return_value = origin_info_test_data
+        mock_get_origin_info.return_value = origin_info_test_data
         mock_get_origin_visits.return_value = origin_visits_test_data
 
         url = reverse('browse-origin-visits',
