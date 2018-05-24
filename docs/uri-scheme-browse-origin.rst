@@ -14,7 +14,7 @@ performed by Software Heritage:
 Origin visits
 """""""""""""
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visits/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visits/
 
     HTML view that displays a visits reporting for a SWH origin identified by
     its type and url.
@@ -30,14 +30,14 @@ Origin visits
 
         :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visits/`
         :swh_web_browse:`origin/git/url/https://github.com/python/cpython/visits/`
-        :swh_web_browse:`origin/deb/url/deb://Debian-Security/packages/mediawiki/visits/`
-        :swh_web_browse:`origin/git/url/https://gitorious.org/qt/qtbase.git/visits/`
+        :swh_web_browse:`origin/deb://Debian-Security/packages/mediawiki/visits/`
+        :swh_web_browse:`origin/https://gitorious.org/qt/qtbase.git/visits/`
 
 
 Origin directory
 """"""""""""""""
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/directory/[(path)/]
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from the root directory
     (including itself) associated to the latest full visit of a SWH origin.
@@ -79,12 +79,12 @@ Origin directory
 
         :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/directory/`
         :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/directory/net/ethernet/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/directory/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/directory/Python/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/directory/?branch=refs/heads/2.7`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/Python/`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/?branch=refs/heads/2.7`
 
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/directory/[(path)/]
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from
     the root directory (including itself) associated to a visit of a SWH
@@ -139,7 +139,7 @@ Origin directory
 Origin content
 """"""""""""""
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/content/(path)/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/content/(path)/
 
     HTML view that produces a display of a SWH content
     associated to the latest full visit of a SWH origin.
@@ -186,10 +186,10 @@ Origin content
 
         :swh_web_browse:`origin/git/url/https://github.com/git/git/content/git.c/`
         :swh_web_browse:`origin/git/url/https://github.com/git/git/content/git.c/`
-        :swh_web_browse:`origin/git/url/https://github.com/mozilla/gecko-dev/content/js/src/json.cpp/`
-        :swh_web_browse:`origin/git/url/https://github.com/git/git/content/git.c/?branch=refs/heads/next`
+        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content/js/src/json.cpp/`
+        :swh_web_browse:`origin/https://github.com/git/git/content/git.c/?branch=refs/heads/next`
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/content/(path)/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/content/(path)/
 
     HTML view that produces a display of a SWH content associated to a
     visit of a SWH origin closest to a provided timestamp.
@@ -240,15 +240,15 @@ Origin content
 
         :swh_web_browse:`origin/git/url/https://github.com/git/git/visit/1473933564/content/git.c/`
         :swh_web_browse:`origin/git/url/https://github.com/git/git/visit/2016-05-05T00:0:00+00:00/content/git.c/`
-        :swh_web_browse:`origin/git/url/https://github.com/mozilla/gecko-dev/visit/1490126182/content/js/src/json.cpp/`
-        :swh_web_browse:`origin/git/url/https://github.com/mozilla/gecko-dev/visit/2017-03-21/content/js/src/json.cpp/#L904-L931`
-        :swh_web_browse:`origin/git/url/https://github.com/git/git/visit/2017-09-15/content/git.c/?branch=refs/heads/next`
+        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/visit/1490126182/content/js/src/json.cpp/`
+        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/visit/2017-03-21/content/js/src/json.cpp/#L904-L931`
+        :swh_web_browse:`origin/https://github.com/git/git/visit/2017-09-15/content/git.c/?branch=refs/heads/next`
 
 
 Origin history
 """"""""""""""
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/log/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/log/
 
     HTML view that produces a display of revisions history heading
     to the last revision found during the latest visit of a SWH origin.
@@ -302,11 +302,11 @@ Origin history
     .. parsed-literal::
 
         :swh_web_browse:`origin/git/url/https://github.com/videolan/vlc/log/`
-        :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/log/`
-        :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/log/?branch=refs/heads/release`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release`
 
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/log/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/log/
 
     HTML view that produces a display of revisions history heading
     to the last revision found during a visit of a SWH origin closest
@@ -364,13 +364,13 @@ Origin history
 
         :swh_web_browse:`origin/git/url/https://github.com/videolan/vlc/visit/1459651262/log/`
         :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/2016-04-01/log/`
-        :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/1438116814/log/?branch=refs/heads/release`
-        :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/2017-05-05T03:14:23/log/?branch=refs/heads/release`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/1438116814/log/?branch=refs/heads/release`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2017-05-05T03:14:23/log/?branch=refs/heads/release`
 
 Origin branches
 """""""""""""""
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/branches/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/branches/
 
     HTML view that produces a display of the list of branches
     found during the latest full visit of a SWH origin.
@@ -395,9 +395,9 @@ Origin branches
     .. parsed-literal::
 
         :swh_web_browse:`origin/deb/url/deb://Debian/packages/linux/branches/`
-        :swh_web_browse:`origin/git/url/https://github.com/webpack/webpack/branches/`
+        :swh_web_browse:`origin/https://github.com/webpack/webpack/branches/`
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/branches/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/branches/
 
     HTML view that produces a display of the list of branches
     found during a visit of a SWH origin closest to the provided timestamp.
@@ -424,12 +424,12 @@ Origin branches
     .. parsed-literal::
 
         :swh_web_browse:`origin/git/url/https://github.com/kripken/emscripten/visit/2017-05-05T12:02:03/branches/`
-        :swh_web_browse:`origin/deb/url/deb://Debian/packages/apache2-mod-xforward/visit/2017-11-15T05:15:09/branches/`
+        :swh_web_browse:`origin/deb://Debian/packages/apache2-mod-xforward/visit/2017-11-15T05:15:09/branches/`
 
 Origin releases
 """""""""""""""
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/releases/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/releases/
 
     HTML view that produces a display of the list of releases
     found during the latest full visit of a SWH origin.
@@ -454,9 +454,9 @@ Origin releases
     .. parsed-literal::
 
         :swh_web_browse:`origin/git/url/https://github.com/git/git/releases/`
-        :swh_web_browse:`origin/git/url/https://github.com/webpack/webpack/releases/`
+        :swh_web_browse:`origin/https://github.com/webpack/webpack/releases/`
 
-.. http:get:: /browse/origin/(origin_type)/url/(origin_url)/visit/(timestamp)/releases/
+.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/releases/
 
     HTML view that produces a display of the list of releases
     found during a visit of a SWH origin closest to the provided timestamp.
@@ -483,7 +483,7 @@ Origin releases
     .. parsed-literal::
 
         :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visit/2017-11-21T19:37:42/releases/`
-        :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/2016-09-23T14:06:35/releases/`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2016-09-23T14:06:35/releases/`
 
 .. _highlightjs: https://highlightjs.org/
 .. _dateutil.parser.parse: http://dateutil.readthedocs.io/en/stable/parser.html

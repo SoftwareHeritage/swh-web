@@ -30,7 +30,7 @@ See top-level LICENSE file for more information
 
     <p>
       This web application aims to provide HTML views to easily navigate in the Software Heritage archive. This is an ongoing development
-      and new features and improvements will be progressively added over the time.
+      and new features and improvements will be progressively added over time.
     </p>
 
     <h4 id="uri-scheme">URI scheme</h4>
@@ -155,8 +155,8 @@ See top-level LICENSE file for more information
         Display a
         <b>content</b> from an
         <b>origin</b>:
-        <a href="{% url 'browse-origin-content' 'git' 'https://github.com/git/git' 'git.c' %}">
-          {% url 'browse-origin-content' 'git' 'https://github.com/git/git' 'git.c' %}
+        <a href="{% url 'browse-origin-content' origin_type='git' origin_url='https://github.com/git/git' path='git.c' %}">
+          {% url 'browse-origin-content' origin_type='git' origin_url='https://github.com/git/git' path='git.c' %}
         </a>
       </li>
       <li>
@@ -164,8 +164,8 @@ See top-level LICENSE file for more information
         <b>directory</b> from an
         <b>origin</b>:
 
-        <a href="{% url 'browse-origin-directory' 'git' 'https://github.com/torvalds/linux' 'net/ethernet' %}">
-          {% url 'browse-origin-directory' 'git' 'https://github.com/torvalds/linux' 'net/ethernet' %}
+        <a href="{% url 'browse-origin-directory' origin_type='git' origin_url='https://github.com/torvalds/linux' path='net/ethernet' %}">
+          {% url 'browse-origin-directory' origin_type='git' origin_url='https://github.com/torvalds/linux' path='net/ethernet' %}
         </a>
       </li>
       <li>
@@ -173,8 +173,8 @@ See top-level LICENSE file for more information
         <b>revision history</b> (aka the commit log) from an
         <b>origin</b>:
 
-        <a href="{% url 'browse-origin-log' 'git' 'https://github.com/Kitware/CMake' %}">
-          {% url 'browse-origin-log' 'git' 'https://github.com/Kitware/CMake' %}
+        <a href="{% url 'browse-origin-log' origin_type='git' origin_url='https://github.com/Kitware/CMake' %}">
+          {% url 'browse-origin-log' origin_type='git' origin_url='https://github.com/Kitware/CMake' %}
         </a>
       </li>
     </ul>

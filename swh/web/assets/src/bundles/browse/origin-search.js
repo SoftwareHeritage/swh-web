@@ -21,12 +21,16 @@ function fixTableRowsStyle() {
   });
 }
 
+function clearOriginSearchResultsTable() {
+  $('#origin-search-results tbody tr').remove();
+}
+
 function populateOriginSearchResultsTable(data, offset) {
   let localOffset = offset % limit;
   if (data.length > 0) {
     $('#swh-origin-search-results').show();
     $('#swh-no-origins-found').hide();
-    $('#origin-search-results tbody tr').remove();
+    clearOriginSearchResultsTable();
     let table = $('#origin-search-results tbody');
     for (let i = localOffset; i < localOffset + perPage && i < data.length; ++i) {
       let elem = data[i];
@@ -118,6 +122,7 @@ export function initOriginSearch() {
       let patterns = $('#origins-url-patterns').val();
       offset = 0;
       inSearch = true;
+      clearOriginSearchResultsTable();
       searchOrigins(patterns, limit, offset, offset);
       event.preventDefault();
     });

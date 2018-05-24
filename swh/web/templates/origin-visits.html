@@ -16,7 +16,7 @@ See top-level LICENSE file for more information
 {% render_bundle 'origin' %}
 {% endblock %}
 
-{% block swh-browse-before-panels %}
+{% block swh-browse-before-content %}
 <div class="card">
   <div class="card-header bg-gray-light border-bottom-0">
     <div class="float-left">
@@ -27,39 +27,23 @@ See top-level LICENSE file for more information
         <a href="{{ origin_info.url }}" class="btn btn-default btn-sm" role="button">Go to origin</a>
       </div>
     {% endif %}
-    <a data-toggle="collapse" data-parent="#accordion" href="#swh-origin-top-collapse">
-      <h4 class="text-center">Origin: {{ origin_info.url }}</h4>
-      <div class="clearfix"></div>
-    </a>
-  </div>
-  <div id="swh-origin-top-collapse" class="collapse">
-    <table class="table">
-      <tbody>
-        {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-          <tr>
-            <th class="swh-metadata-table-row">{{ key }}</th>
-            <td class="swh-metadata-table-row">
-              <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <h4 class="text-center">Origin: {{ origin_info.url }}</h4>
+    <div class="clearfix"></div>
   </div>
 </div>
 {% endblock %}
 
-{% block swh-browse-main-panel-content %}
+{% block swh-browse-content %}
 <div class="card-header bg-gray-light">
   <div class="float-left">
-    <h4>{{ top_panel_text }}</h4>
+    <h4>{{ swh_object_name }}</h4>
   </div>
   <div class="clearfix"></div>
 </div>
 
 <div class="card-body">
 
-  <h4>Visits overview</h4>
+  <h4>Overview</h4>
 
   <ul>
     <li>Total number of visits: <b>{{ origin_visits|length }}</b></li>
@@ -68,7 +52,7 @@ See top-level LICENSE file for more information
     <li>Last visit: <span style="margin-left: 20px;" id="swh-last-visit"></span></li>
   </ul>
 
-  <h4>Visits history</h4>
+  <h4>History</h4>
 
   <div class="btn-group btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
     <label class="btn btn-default btn-sm form-check-label active" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">

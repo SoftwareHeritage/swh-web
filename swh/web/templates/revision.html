@@ -16,13 +16,13 @@ See top-level LICENSE file for more information
 {% render_bundle 'revision' %}
 {% endblock %}
 
-{% block swh-browse-before-panels %}
+{% block swh-browse-before-content %}
 {% if snapshot_context %}
   {% include "includes/snapshot-context.html" %}
 {% endif %}
 {% endblock %}
 
-{% block swh-browse-main-panel-content %}
+{% block swh-browse-content %}
 <div style="height: 35px;margin: 4px;">
   <i class="octicon octicon-git-commit fa-fw"></i>Revision <b>{{ swh_object_metadata.id }}</b>
   authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
@@ -104,6 +104,6 @@ Pushing that button will request the immediate computation of all diffs." style=
 </script>
 {% endblock %}
 
-{% block swh-browse-after-panels %}
+{% block swh-browse-after-content %}
 {% include "includes/readme-display.html" %}
 {% endblock %}

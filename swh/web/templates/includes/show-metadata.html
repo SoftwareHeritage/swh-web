@@ -1,0 +1,23 @@
+{% load swh_templatetags %}
+
+<div class="dropdown-submenu">
+  <a class="dropdown-item dropdown-left swh-metadata-toggler" tabindex="-1" href="#" data-toggle="popover" data-popover-content="#metadata-popover"><i class="fa fa-table fa-fw" aria-hidden="true"></i>Show metadata</a>
+</div>
+
+<div id="metadata-popover" style="display:none;">
+  <div class="popover-heading">{{ swh_object_name }} metadata</div>
+  <div class="popover-body">
+    <table class="table">
+      <tbody>
+        {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+          <tr>
+            <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
+            <td class="swh-metadata-table-row swh-metadata-table-value">
+              <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

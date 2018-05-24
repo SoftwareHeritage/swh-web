@@ -5,6 +5,8 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load swh_templatetags %}
+
 {% if readme_name %}
 
   <div id="readme-panel" class="card">
@@ -15,8 +17,14 @@ See top-level LICENSE file for more information
     </div>
   </div>
 
-  <script>
-    swh.webapp.renderMarkdown('#readme', '{{ readme_url }}');
-  </script>
+  {% if readme_html %}
+    <script>
+      $('#readme').html({{ readme_html|jsonify }});
+    </script>
+  {% else %}
+    <script>
+      swh.webapp.renderMarkdown('#readme', '{{ readme_url }}');
+    </script>
+  {% endif %}
 
 {% endif %}

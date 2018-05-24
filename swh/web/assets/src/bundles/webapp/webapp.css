@@ -221,6 +221,7 @@ a.dropdown-left::before {
     width: 100%;
     padding: 5px;
     margin-bottom: 20px;
+    margin-top: 32px;
 }
 
 #back-to-top {
@@ -240,3 +241,38 @@ a.dropdown-left::before {
     overflow: hidden;
 }
 
+.swh-top-bar {
+    direction: ltr;
+    height: 32px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-width: 600px;
+    z-index: 99999;
+    background-color: #262626;
+    color: #fff;
+    text-align: center;
+    font-size: 16px;
+}
+
+.swh-top-bar ul {
+    margin-top: 3px;
+    margin-left: -40px;
+}
+
+.swh-top-bar li {
+    display: inline;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.swh-top-bar a,
+.swh-top-bar a:visited {
+    color: #fecd1b;
+}
+
+.swh-top-bar a.swh-current-site,
+.swh-top-bar a.swh-current-site:visited {
+    color: #e20026;
+}
