@@ -146,8 +146,8 @@ swh/web/settings/production.py
 swh/web/settings/tests.py
 swh/web/static/robots.txt
 swh/web/static/webpack-stats.json
-swh/web/static/css/browse.da339e9d2ee2e1647793.css
-swh/web/static/css/browse.da339e9d2ee2e1647793.css.map
+swh/web/static/css/browse.74e30ccd592bfa734162.css
+swh/web/static/css/browse.74e30ccd592bfa734162.css.map
 swh/web/static/css/highlightjs.e6b629d1646a8578ae07.css
 swh/web/static/css/highlightjs.e6b629d1646a8578ae07.css.map
 swh/web/static/css/origin.a4e0466a08b218dc7ac1.css
@@ -160,8 +160,8 @@ swh/web/static/css/vault.24815777c74d5f5f5a65.css
 swh/web/static/css/vault.24815777c74d5f5f5a65.css.map
 swh/web/static/css/vendors.0b09e27e60903593d18a.css
 swh/web/static/css/vendors.0b09e27e60903593d18a.css.map
-swh/web/static/css/webapp.4e357712d427fe270402.css
-swh/web/static/css/webapp.4e357712d427fe270402.css.map
+swh/web/static/css/webapp.e3651635f1b052d9cf20.css
+swh/web/static/css/webapp.e3651635f1b052d9cf20.css.map
 swh/web/static/fonts/alegreya-latin-400.woff
 swh/web/static/fonts/alegreya-latin-400.woff2
 swh/web/static/fonts/alegreya-latin-400italic.woff
@@ -232,8 +232,8 @@ swh/web/static/img/icons/swh-logo-32x32.png
 swh/web/static/img/icons/swh-logo-archive-180x180.png
 swh/web/static/img/icons/swh-logo-archive-192x192.png
 swh/web/static/img/icons/swh-logo-archive-270x270.png
-swh/web/static/js/browse.da339e9d2ee2e1647793.js
-swh/web/static/js/browse.da339e9d2ee2e1647793.js.map
+swh/web/static/js/browse.74e30ccd592bfa734162.js
+swh/web/static/js/browse.74e30ccd592bfa734162.js.map
 swh/web/static/js/highlightjs.e6b629d1646a8578ae07.js
 swh/web/static/js/highlightjs.e6b629d1646a8578ae07.js.map
 swh/web/static/js/origin.a4e0466a08b218dc7ac1.js
@@ -246,8 +246,8 @@ swh/web/static/js/vault.24815777c74d5f5f5a65.js
 swh/web/static/js/vault.24815777c74d5f5f5a65.js.map
 swh/web/static/js/vendors.0b09e27e60903593d18a.js
 swh/web/static/js/vendors.0b09e27e60903593d18a.js.map
-swh/web/static/js/webapp.4e357712d427fe270402.js
-swh/web/static/js/webapp.4e357712d427fe270402.js.map
+swh/web/static/js/webapp.e3651635f1b052d9cf20.js
+swh/web/static/js/webapp.e3651635f1b052d9cf20.js.map
 swh/web/templates/api-endpoints.html
 swh/web/templates/api.html
 swh/web/templates/apidoc.html
