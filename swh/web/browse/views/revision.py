@@ -396,6 +396,9 @@ def revision_browse(request, sha1_git, extra_path=None):
     content_size = None
     mimetype = None
     language = None
+    readme_name = None
+    readme_url = None
+    readme_html = None
     readmes = {}
 
     if content_data:
