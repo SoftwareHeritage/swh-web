@@ -1,3 +1,7 @@
+function ensureNoFooterOverflow() {
+  $('body').css('padding-bottom', $('footer').outerHeight() + 'px');
+}
+
 $(document).ready(() => {
   // restore previous sidebar state (collapsed/expanded)
   let collapseSidebar = false;
@@ -29,6 +33,14 @@ $(document).ready(() => {
       window.location = lastBrowsePage;
     }
   });
+
+  // ensure footer do not overflow main content for mobile devices
+  // or after resizing the browser window
+  ensureNoFooterOverflow();
+  $(window).resize(function() {
+    ensureNoFooterOverflow();
+  });
+
 });
 
 export function initPage(page) {
