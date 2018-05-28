@@ -11,24 +11,21 @@ See top-level LICENSE file for more information
 
 {% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
 
+{% block navbar-content %}
+<h4>Browse the archive</h4>
+{% endblock %}
+
 {% block browse-content %}
 
 {% if empty_browse %}
 
-  <div class="card">
-    <div class="card-header bg-gray-light">
-      <h4>Browse the Software Heritage archive</h4>
-    </div>
-    <div class ="card-body">
-      <p>
-        No Software Heritage object currently browsed.
-        <br/>
-        To browse the content of the archive, you can either use
-        the <a href="{% url 'browse-search' %}">Search</a> interface or refer to the URI scheme described
-        in the <a href="{% url 'browse-help' %}">Help</a> page.
-      </p>
-    </div>
-  </div>
+<p>
+  No Software Heritage object currently browsed.
+  <br/>
+  To browse the content of the archive, you can either use
+  the <a href="{% url 'browse-search' %}">Search</a> interface or refer to the URI scheme described
+  in the <a href="{% url 'browse-help' %}">Help</a> page.
+</p>
 
 {% else %}
 
@@ -43,7 +40,7 @@ See top-level LICENSE file for more information
 {% endif %}
 
 <script>
-  swh.browse.initBrowse('main');
+  swh.webapp.initPage('browse');
 </script>
 
 {% endblock %}

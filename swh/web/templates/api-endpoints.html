@@ -11,18 +11,17 @@ See top-level LICENSE file for more information
 
 {% block title %} Endpoints &ndash; Software Heritage API {% endblock %}
 
+{% block navbar-content %}
+<div class="bread-crumbs">
+  <ul>
+    <li><a href="/api/"><h4>Web API</h4></a></li>
+    <li class="bc-no-root"><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
+    <li class="bc-no-root">endpoints</li>
+  </ul>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="card">
-  <div class="card-header bg-gray-light">
-    <nav class="bread-crumbs">
-      <ul>
-        <li><a href="/api/">Software Heritage API</a></li>
-        <li><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
-        <li>endpoints</li>
-      </ul>
-    </nav>
-  </div>
-  <div class="card-body">
     <div class="swh-api-doc">
       <p>
         Below you can find a list of the available endpoints for version 1 of the
@@ -69,10 +68,10 @@ See top-level LICENSE file for more information
         </tbody>
       </table>
     </div>
-  </div>
-</div>
 
 <script type="text/javascript">
+  swh.webapp.initPage('api');
+  swh.webapp.highlightCode(false);
   $(document).ready(function() {
     $('table.swh-table').DataTable({
       "paging": false,

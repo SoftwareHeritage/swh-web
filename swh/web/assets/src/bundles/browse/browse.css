@@ -5,20 +5,10 @@
  * See top-level LICENSE file for more information
  */
 
-.navbar-header a,
-ul.dropdown-menu a,
-ul.navbar-nav a {
-    border-bottom-style: none;
-    color: #323232;
-    font-weight: 700;
-}
+
 
 .swh-browse-nav li a {
     border-radius: 4px;
-}
-
-.nav-link.active {
-    background-color: #e7e7e7;
 }
 
 .scrollable-menu {
@@ -44,6 +34,8 @@ ul.navbar-nav a {
 
 .swh-loading {
     display: none;
+    text-align: center;
+    margin-top: 10px;
 }
 
 .swh-loading.show {
@@ -107,4 +99,8 @@ ul.navbar-nav a {
     overflow-x: auto;
     padding: 0;
     padding-right: 1.4em;
+}
+
+.swh-search-pagination {
+    margin-top: 5px;
 }

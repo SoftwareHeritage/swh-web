@@ -11,8 +11,13 @@ See top-level LICENSE file for more information
 
 {% block title %}The Software Heritage archive{% endblock %}
 
+{% block navbar-content %}
+
+<h4>Welcome to the Software Heritage archive</h4>
+
+{% endblock %}
+
 {% block content %}
-<h2>Welcome to the Software Heritage archive</h2>
 
 <h4>Overview</h4>
 
@@ -78,24 +83,26 @@ See top-level LICENSE file for more information
 
 <h4>Access</h4>
 
-<div class="row">
-  <div class="col-md-3" align="center"></div>
-  <div class="col-md-3 swh-web-app-link" align="center">
-    <a href="{% url 'api-homepage' %}">
-      <img id="swh-web-api-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
-      <h5>Web API</h5>
-      <p>Query the archive programmatically using a RESTful API.</p>
-    </a>
+<p>
+  <div class="row">
+    <div class="col-md-3" align="center"></div>
+    <div class="col-md-3 swh-web-app-link" align="center">
+      <a href="{% url 'api-homepage' %}">
+        <img id="swh-web-api-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
+        <h5>Web API</h5>
+        <p>Query the archive programmatically using a RESTful API.</p>
+      </a>
+    </div>
+    <div class="col-md-3 swh-web-app-link" align="center">
+      <a href="{% url 'browse-search' %}">
+        <img alt="Browse the Software Heritage archive" src="{% static 'img/swh-browse.png' %}"/>
+        <h5>Browse</h5>
+        <p>Explore the archive using a dedicated web interface.</p>
+      </a>
+    </div>
+    <div class="col-md-3" align="center"></div>
   </div>
-  <div class="col-md-3 swh-web-app-link" align="center">
-    <a href="{% url 'browse-search' %}">
-      <img alt="Browse the Software Heritage archive" src="{% static 'img/swh-browse.png' %}"/>
-      <h5>Browse</h5>
-      <p>Explore the archive using a dedicated web interface.</p>
-    </a>
-  </div>
-  <div class="col-md-3" align="center"></div>
-</div>
+</p>
 
 <script>
   $(document).ready(function() {

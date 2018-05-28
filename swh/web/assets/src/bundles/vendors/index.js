@@ -21,6 +21,9 @@ import 'datatables.net';
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 import './datatables.css';
 
+// admin-lte scripts
+import 'admin-lte';
+
 // web fonts
 import 'typeface-alegreya';
 import 'typeface-alegreya-sans';
