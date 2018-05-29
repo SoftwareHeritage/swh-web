@@ -37,8 +37,7 @@ def person_browse(request, person_id):
         return handle_view_exception(request, exc)
 
     return render(request, 'person.html',
-                  {'empty_browse': False,
-                   'heading': 'Person',
+                  {'heading': 'Person',
                    'swh_object_name': 'Person',
                    'swh_object_metadata': person,
                    'snapshot_context': snapshot_context,

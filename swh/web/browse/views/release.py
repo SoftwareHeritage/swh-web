@@ -118,8 +118,7 @@ def release_browse(request, sha1_git):
         release_data['snapshot'] = browse_snapshot_link
 
     return render(request, 'release.html',
-                  {'empty_browse': False,
-                   'heading': 'Release',
+                  {'heading': 'Release',
                    'swh_object_name': 'Release',
                    'swh_object_metadata': release_data,
                    'release_name': release['name'],

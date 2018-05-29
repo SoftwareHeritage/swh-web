@@ -26,8 +26,10 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.revision.service')
     @patch('swh.web.browse.utils.service')
+    @patch('swh.web.common.utils.service')
     @istest
-    def revision_browse(self, mock_service_utils, mock_service):
+    def revision_browse(self, mock_service_common, mock_service_utils,
+                        mock_service):
         mock_service.lookup_revision.return_value = revision_metadata_test
 
         url = reverse('browse-revision',
@@ -84,8 +86,8 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         }
 
         mock_service_utils.lookup_origin.return_value = origin_info
-        mock_service_utils.lookup_origin_visits.return_value = stub_origin_visits
-        mock_service_utils.MAX_LIMIT = 20
+        mock_service_common.lookup_origin_visits.return_value = stub_origin_visits
+        mock_service_common.MAX_LIMIT = 20
 
         origin_directory_url = reverse('browse-origin-directory',
                                        kwargs={'origin_type': origin_info['type'],

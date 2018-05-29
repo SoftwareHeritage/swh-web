@@ -17,27 +17,17 @@ See top-level LICENSE file for more information
 
 {% block browse-content %}
 
-{% if empty_browse %}
-
-<p>
-  No Software Heritage object currently browsed.
-  <br/>
-  To browse the content of the archive, you can either use
-  the <a href="{% url 'browse-search' %}">Search</a> interface or refer to the URI scheme described
-  in the <a href="{% url 'browse-help' %}">Help</a> page.
-</p>
-
-{% else %}
-
-  {% block swh-browse-before-content %}{% endblock %}
-
-  <div class="card">
-    {% block swh-browse-content %}{% endblock %}
-  </div>
-
-  {% block swh-browse-after-content %}{% endblock %}
-
+{% block swh-browse-before-content %}
+{% if snapshot_context %}
+  {% include "includes/snapshot-context.html" %}
 {% endif %}
+{% endblock %}
+
+<div class="card">
+  {% block swh-browse-content %}{% endblock %}
+</div>
+
+{% block swh-browse-after-content %}{% endblock %}
 
 <script>
   swh.webapp.initPage('browse');

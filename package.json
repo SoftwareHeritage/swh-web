@@ -24,7 +24,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-0": "^6.24.1",
     "bootstrap": "^4.1.1",
-    "bootstrap-loader": "^2.2.0",
+    "bootstrap-loader": "^3.0.0",
     "bootstrap-year-calendar": "github:anlambert/bootstrap-year-calendar#a51523192c72e037545930d9d0e4306d54c7ce53",
     "cache-loader": "^1.2.2",
     "clean-webpack-plugin": "^0.1.19",

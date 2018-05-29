@@ -12,11 +12,12 @@ from django.shortcuts import render, redirect
 
 from swh.web.common import service
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, parse_timestamp
+    reverse, format_utc_iso_date, parse_timestamp,
+    get_origin_visits
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
-    get_origin_info, get_origin_visits
+    get_origin_info
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -174,8 +175,7 @@ def origin_visits_browse(request, origin_url, origin_type=None):
         visit['date'] = parse_timestamp(visit['date']).timestamp()
 
     return render(request, 'origin-visits.html',
-                  {'empty_browse': False,
-                   'heading': 'Origin visits',
+                  {'heading': 'Origin visits',
                    'swh_object_name': 'Visits',
                    'swh_object_metadata': origin_info,
                    'origin_visits': origin_visits,
