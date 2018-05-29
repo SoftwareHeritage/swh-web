@@ -9,15 +9,15 @@ See top-level LICENSE file for more information
 
 {% block title %} Overview &ndash; Software Heritage API {% endblock %}
 
+{% block navbar-content %}
+<h4>Web API</h4>
+{% endblock %}
+
 {% block content %}
-<div class="card">
-  <div class="card-header bg-gray-light">
-    <h4>Software Heritage Web API</h4>
+  <div class="swh-api-doc">
+    {% include 'includes/apidoc-header.html' %}
   </div>
-  <div class="card-body">
-    <div class="swh-api-doc">
-      {% include 'includes/apidoc-header.html' %}
-    </div>
-  </div>
-</div>
+  <script>
+      swh.webapp.initPage('api');
+    </script>
 {% endblock %}

@@ -44,6 +44,7 @@ To run the backend, you need to have the following Python 3 modules installed:
 * htmlmin
 * lxml
 * pygments
+* pypandoc
 * python-dateutil
 * pyyaml
 

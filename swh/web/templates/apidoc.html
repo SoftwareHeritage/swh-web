@@ -12,150 +12,148 @@ See top-level LICENSE file for more information
 
 {% block title %}{{ heading }} &ndash; Software Heritage API {% endblock %}
 
-{% block content %}
-<div class="card swh-api-doc">
-  <div class="card-header bg-gray-light">
-    <nav class="bread-crumbs">
-      <ul>
-        <li><a href="/api/">Software Heritage API</a></li>
-        <li><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
-        <li><a href="/api/1/">endpoints</a></li>
-        {% for endpoint in endpoint_path %}
-          <li><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
-          <li><a href="{{ '/api/1/'|add:endpoint.path }}">{{ endpoint.name }}</a></li>
-        {% endfor %}
-      </ul>
-    </nav>
-  </div>
-  <div class="card-body">
+{% block navbar-content %}
+<nav class="bread-crumbs">
+  <ul>
+    <li><a href="/api/"><h4>Web API</h4></a></li>
+    <li class="bc-no-root"><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
+    <li class="bc-no-root"><a href="/api/1/">endpoints</a></li>
+    {% for endpoint in endpoint_path %}
+      <li class="bc-no-root"><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
+      <li class="bc-no-root"><a href="{{ '/api/1/'|add:endpoint.path }}">{{ endpoint.name }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endblock %}
 
-    {% if docstring %}
-      <div class="docstring">
-        <h4> Description </h4>
-        {{ docstring | safe_docstring_display | safe }}
-      </div>
-    {% endif %}
-    {% if response_data  %}
-      <div class="response-data">
-        <h4>Request</h4>
-        <pre><strong>{{ request.method }}</strong> {{ request.absolute_uri }}</pre>
-        <hr/>
-        <h4>Response</h4>
-        {% if status_code != 200 %}
-          <h5>Status Code</h5>
-          <pre class="error">{{ status_code }}</pre>
-        {% endif %}
-        {% if headers_data %}
-          <h5>Headers</h5>
-          {% for header_name, header_value in headers_data.items %}
-            <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
-          {% endfor %}
-        {% endif %}
-        <h5>Body</h5>
-        <pre>
-          <code class="json">{{ response_data | urlize_links_and_mails | safe }}</code>
-        </pre>
-      </div>
-    {% endif %}
-    <hr/>
-    {% if urls and urls|length > 0 %}
-      <div class="swh-api-doc-urls">
-        <table class="m-x-auto table">
-          <thead>
-            <tr>
-              <th>URL</th>
-              <th>Allowed Methods</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for url in urls %}
-              <tr>
-                <td>{{ url.rule }}</td>
-                <td>{{ url.methods | dictsort:0 | join:', ' }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      <hr/>
-    {% endif %}
-    {% if args and args|length > 0 %}
-      <div class="swh-api-doc-args">
-        <h4> Arguments </h4>
-        {% for arg in args %}
-          <dl class="swh-api-doc-argslist row">
-            <dt class="col col-md-2"> {{ arg.name }}: {{ arg.type }} </dt>
-            <dd class="col col-md-9"> {{ arg.doc | safe_docstring_display | safe }} </dd>
-          </dl>
-        {% endfor %}
-      </div>
-      <hr/>
-    {% endif %}
-    {% if params and params|length > 0 %}
-      <div class="swh-api-doc-params">
-        <h4> Parameters </h4>
-        {% for param in params %}
-          <dl class="swh-api-doc-paramslist row">
-            <dt class="col col-md-2"> {{ param.name }}: {{ param.type }} </dt>
-            <dd class="col col-md-9"> {{ param.doc | safe_docstring_display | safe }} </dd>
-          </dl>
-        {% endfor %}
-      </div>
-      <hr/>
-    {% endif %}
-    {% if headers and headers|length > 0 %}
-      <div class="swh-api-doc-headers">
-        <h4> Headers </h4>
-        {% for header in headers %}
-          <dl class="swh-api-doc-headers row">
-            <dt class="col col-md-2"> {{ header.name }}: string </dt>
-            <dd class="col col-md-9"> {{ header.doc | safe_docstring_display | safe }} </dd>
-          </dl>
-        {% endfor %}
-      </div>
-    <hr/>
-    {% endif %}
-    {% if returns and returns|length > 0 %}
-      <div class="swh-api-doc-return">
-        <h4> Returns </h4>
-        {% for return in returns %}
-        <dl class="swh-api-doc-return row">
-          <dt class="col col-md-2"> {{ return.type }} </dt>
-          <dd class="col col-md-9"> {{ return.doc | safe_docstring_display | safe }} </dd>
-        </dl>
-        {% endfor %}
-      </div>
-      <hr/>
-    {% endif %}
-    {% if excs and excs|length > 0 %}
-      <div class="swh-api-doc-excs">
-        <h4> Errors </h4>
-        {% for exc in excs %}
-          <dl class="swh-api-doc-excslist row">
-            <dt class="col col-md-2"> {{ exc.exc }} </dt>
-            <dd class="col col-md-9"> {{ exc.doc | safe_docstring_display | safe }} </dd>
-          </dl>
-        {% endfor %}
-      </div>
-      <hr/>
-    {% endif %}
-    {% if examples and examples|length > 0 %}
-      <div class="swh-api-doc-example">
-        <h4> Examples </h4>
-        {% for example in examples %}
-          <dl class="swh-api-doc-example row">
-            <dt class="col col-md-2"></dt>
-            <dd class="col col-md-9">
-              <a href="{{ example }}">{{ example }}</a>
-            </dd>
-          </dl>
-        {% endfor %}
-      </div>
-    {% endif %}
+{% block content %}
+
+{% if docstring %}
+  <div class="docstring">
+    <h4> Description </h4>
+    {{ docstring | safe_docstring_display | safe }}
   </div>
-</div>
+{% endif %}
+{% if response_data  %}
+  <div class="response-data">
+    <h4>Request</h4>
+    <pre><strong>{{ request.method }}</strong> {{ request.absolute_uri }}</pre>
+    <hr/>
+    <h4>Response</h4>
+    {% if status_code != 200 %}
+      <h5>Status Code</h5>
+      <pre class="error">{{ status_code }}</pre>
+    {% endif %}
+    {% if headers_data %}
+      <h5>Headers</h5>
+      {% for header_name, header_value in headers_data.items %}
+        <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
+      {% endfor %}
+    {% endif %}
+    <h5>Body</h5>
+    <pre>
+      <code class="json">{{ response_data | urlize_links_and_mails | safe }}</code>
+    </pre>
+  </div>
+{% endif %}
+<hr/>
+{% if urls and urls|length > 0 %}
+  <div class="swh-api-doc-urls">
+    <table class="m-x-auto table">
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Allowed Methods</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for url in urls %}
+          <tr>
+            <td>{{ url.rule }}</td>
+            <td>{{ url.methods | dictsort:0 | join:', ' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <hr/>
+{% endif %}
+{% if args and args|length > 0 %}
+  <div class="swh-api-doc-args">
+    <h4> Arguments </h4>
+    {% for arg in args %}
+      <dl class="swh-api-doc-argslist row">
+        <dt class="col col-md-2"> {{ arg.name }}: {{ arg.type }} </dt>
+        <dd class="col col-md-9"> {{ arg.doc | safe_docstring_display | safe }} </dd>
+      </dl>
+    {% endfor %}
+  </div>
+  <hr/>
+{% endif %}
+{% if params and params|length > 0 %}
+  <div class="swh-api-doc-params">
+    <h4> Parameters </h4>
+    {% for param in params %}
+      <dl class="swh-api-doc-paramslist row">
+        <dt class="col col-md-2"> {{ param.name }}: {{ param.type }} </dt>
+        <dd class="col col-md-9"> {{ param.doc | safe_docstring_display | safe }} </dd>
+      </dl>
+    {% endfor %}
+  </div>
+  <hr/>
+{% endif %}
+{% if headers and headers|length > 0 %}
+  <div class="swh-api-doc-headers">
+    <h4> Headers </h4>
+    {% for header in headers %}
+      <dl class="swh-api-doc-headers row">
+        <dt class="col col-md-2"> {{ header.name }}: string </dt>
+        <dd class="col col-md-9"> {{ header.doc | safe_docstring_display | safe }} </dd>
+      </dl>
+    {% endfor %}
+  </div>
+<hr/>
+{% endif %}
+{% if returns and returns|length > 0 %}
+  <div class="swh-api-doc-return">
+    <h4> Returns </h4>
+    {% for return in returns %}
+    <dl class="swh-api-doc-return row">
+      <dt class="col col-md-2"> {{ return.type }} </dt>
+      <dd class="col col-md-9"> {{ return.doc | safe_docstring_display | safe }} </dd>
+    </dl>
+    {% endfor %}
+  </div>
+  <hr/>
+{% endif %}
+{% if excs and excs|length > 0 %}
+  <div class="swh-api-doc-excs">
+    <h4> Errors </h4>
+    {% for exc in excs %}
+      <dl class="swh-api-doc-excslist row">
+        <dt class="col col-md-2"> {{ exc.exc }} </dt>
+        <dd class="col col-md-9"> {{ exc.doc | safe_docstring_display | safe }} </dd>
+      </dl>
+    {% endfor %}
+  </div>
+  <hr/>
+{% endif %}
+{% if examples and examples|length > 0 %}
+  <div class="swh-api-doc-example">
+    <h4> Examples </h4>
+    {% for example in examples %}
+      <dl class="swh-api-doc-example row">
+        <dt class="col col-md-2"></dt>
+        <dd class="col col-md-9">
+          <a href="{{ example }}">{{ example }}</a>
+        </dd>
+      </dl>
+    {% endfor %}
+  </div>
+{% endif %}
 
 <script>
+  swh.webapp.initPage('api');
   swh.webapp.highlightCode(false);
 </script>
 {% endblock %}

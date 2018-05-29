@@ -29,8 +29,9 @@ See top-level LICENSE file for more information
     <link rel="apple-touch-icon-precomposed" href="{% static 'img/icons/swh-logo-archive-180x180.png' %}" />
     <meta name="msapplication-TileImage" content="{% static 'img/icons/swh-logo-archive-270x270.png' %}" />
   </head>
-  <body>
-    <header>
+
+  <body class="hold-transition sidebar-mini">
+    <div class="wrapper">
       <a id="top"></a>
       <div class="swh-top-bar">
         <ul>
@@ -43,32 +44,79 @@ See top-level LICENSE file for more information
           <li>
               <a href="https://docs.softwareheritage.org/devel/">Documentation</a>
           </li>
-          <li class="float-right">
+          <li class="swh-donate-item">
             <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
           </li>
         </ul>
       </div>
-      <nav class="navbar navbar-expand-lg navbar-light navbar-static-top" id="swh-navbar-collapse">
+      <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top" id="swh-navbar">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#swh-collapse-navbar" aria-expanded="false">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <a class="navbar-brand" href="{% url 'swh-web-homepage' %}">
-            <img alt="SWH Archive" src="{% static 'img/swh-logo-archive.png' %}" width="40" height="40"/>
-          </a>
-          <a class="navbar-brand sitename" href="{% url 'swh-web-homepage' %}">
-            <span class="first-word">Software</span> <span class="second-word">Heritage</span>
-          </a>
+          <a class="nav-link swh-push-menu" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
         </div>
-        <div class="collapse navbar-collapse" id="swh-collapse-navbar">
-          {% block navbar-content %}{% endblock %}
+        <div class="navbar">
+          <div class="swh-navbar-content">
+            {% block navbar-content %}{% endblock %}
+          </div>
         </div>
       </nav>
-    </header>
+    </div>
 
-    <main role="main" class="container">
-      {% block content %}{% endblock %}
-    </main>
+    <aside class="swh-sidebar main-sidebar sidebar-light-primary elevation-4">
+      <a href="{% url 'swh-web-homepage' %}" class="brand-link">
+        <img class="brand-image" src="{% static 'img/swh-logo-archive.png' %}" alt="SWH Logo">
+        <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
+          <span class="first-word">Software</span> <span class="second-word">Heritage</span>
+        </div>
+      </a>
+
+      <div class="sidebar">
+        <nav class="mt-2">
+          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <li class="nav-header">Archive Access</li>
+            <li class="nav-item swh-api-item" title="Query the archive programmatically using a RESTful API">
+              <a href="{% url 'api-homepage' %}" class="nav-link swh-api-link">
+                <img class="nav-icon" src="{% static 'img/swh-api.png' %}"/>
+                <p>Web API</p>
+              </a>
+            </li>
+            <li class="nav-item swh-browse-item" title="Explore the archive using a dedicated web interface">
+              <a href="{% url 'browse-mainpage' %}" class="nav-link swh-browse-link">
+                <img class="nav-icon" src="{% static 'img/swh-browse.png' %}"/>
+                <p>Browse</p>
+              </a>
+            </li>
+            <li class="nav-header">Features</li>
+            <li class="nav-item swh-search-item" title="Search software origins to browse">
+              <a href="{% url 'browse-search' %}" class="nav-link swh-search-link">
+                <i style="color: #e20026;" class="nav-icon fa fa-search"></i>
+                <p>Search</p>
+              </a>
+            </li>
+            <li class="nav-item swh-vault-item" title="Download archive content from the Vault">
+              <a href="{% url 'browse-vault' %}" class="nav-link swh-vault-link">
+                <img class="nav-icon" src="{% static 'img/swh-vault.png' %}"/>
+                <p>Vault</p>
+              </a>
+            </li>
+            <li class="nav-header">Miscellaneous</li>
+            <li class="nav-item swh-help-item" title="How to browse the archive ?">
+              <a href="{% url 'browse-help' %}" class="nav-link swh-help-link">
+                <i style="color: #e20026;" class="nav-icon fa fa-question"></i>
+                <p>Help</p>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="content-wrapper">
+      <section class="content">
+        <div class="container">
+          {% block content %}{% endblock %}
+        </div>
+      </section>
+    </div>
 
     <footer class="footer">
       <div class="container text-center">

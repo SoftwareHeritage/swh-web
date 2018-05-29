@@ -8,7 +8,6 @@ from django.shortcuts import render
 
 import swh.web.browse.views.directory # noqa
 import swh.web.browse.views.content # noqa
-import swh.web.browse.views.identifiers # noqa
 import swh.web.browse.views.origin # noqa
 import swh.web.browse.views.person # noqa
 import swh.web.browse.views.release # noqa
@@ -16,6 +15,7 @@ import swh.web.browse.views.revision # noqa
 import swh.web.browse.views.snapshot # noqa
 
 from swh.web.browse.browseurls import BrowseUrls
+from swh.web.browse.identifiers import swh_id_browse
 
 
 def _default_browse_view(request):
@@ -43,7 +43,9 @@ urlpatterns = [
     url(r'^$', _default_browse_view, name='browse-mainpage'),
     url(r'^help/$', _browse_help_view, name='browse-help'),
     url(r'^search/$', _browse_search_view, name='browse-search'),
-    url(r'^vault/$', _browse_vault_view, name='browse-vault')
+    url(r'^vault/$', _browse_vault_view, name='browse-vault'),
+    # for backward compatibility
+    url(r'^(?P<swh_id>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$', swh_id_browse)
 ]
 
 urlpatterns += BrowseUrls.get_url_patterns()

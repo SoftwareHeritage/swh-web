@@ -15,6 +15,8 @@ import '../vendors';
 import './webapp.css';
 import './breadcrumbs.css';
 
+export * from './webapp-utils';
+
 // utility js modules
 export * from './code-highlighting';
 export * from './markdown-rendering';
