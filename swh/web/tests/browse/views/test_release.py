@@ -24,8 +24,10 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
 
     @patch('swh.web.browse.views.release.service')
     @patch('swh.web.browse.utils.service')
+    @patch('swh.web.common.utils.service')
     @istest
-    def release_browse(self, mock_service_utils, mock_service):
+    def release_browse(self, mock_service_common, mock_service_utils,
+                       mock_service):
         mock_service.lookup_release.return_value = stub_release
 
         url = reverse('browse-release',
@@ -68,8 +70,8 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         }
 
         mock_service_utils.lookup_origin.return_value = origin_info
-        mock_service_utils.lookup_origin_visits.return_value = stub_origin_visits
-        mock_service_utils.MAX_LIMIT = 20
+        mock_service_common.lookup_origin_visits.return_value = stub_origin_visits
+        mock_service_common.MAX_LIMIT = 20
 
         url = reverse('browse-release',
                       kwargs={'sha1_git': stub_release['id']},
@@ -77,6 +79,7 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
                                     'origin_url': origin_info['url']})
 
         resp = self.client.get(url)
+        print(resp.content)
 
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('release.html')
