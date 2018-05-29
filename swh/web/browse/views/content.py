@@ -231,8 +231,7 @@ def content_display(request, query_string):
     }
 
     return render(request, 'content.html',
-                  {'empty_browse': False,
-                   'heading': 'Content',
+                  {'heading': 'Content',
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
                    'content': content,

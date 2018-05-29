@@ -333,8 +333,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     }
 
     return render(request, 'directory.html',
-                  {'empty_browse': False,
-                   'heading': 'Directory',
+                  {'heading': 'Directory',
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,
@@ -466,8 +465,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         content_metadata['snapshot context'] = browse_snapshot_link
 
     return render(request, 'content.html',
-                  {'empty_browse': False,
-                   'heading': 'Content',
+                  {'heading': 'Content',
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
                    'content': content,
@@ -589,8 +587,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
         revision_metadata['snapshot context'] = browse_snapshot_link
 
     return render(request, 'revision-log.html',
-                  {'empty_browse': False,
-                   'heading': 'Revision history',
+                  {'heading': 'Revision history',
                    'swh_object_name': 'Revision history',
                    'swh_object_metadata': revision_metadata,
                    'revision_log': revision_log_data,
@@ -669,8 +666,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
                                     kwargs=url_args, query_params=query_params)
 
     return render(request, 'branches.html',
-                  {'empty_browse': False,
-                   'heading': 'Origin branches',
+                  {'heading': 'Origin branches',
                    'swh_object_name': 'Branches',
                    'swh_object_metadata': {},
                    'top_right_link': None,
@@ -740,8 +736,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                                     kwargs=url_args, query_params=query_params)
 
     return render(request, 'releases.html',
-                  {'empty_browse': False,
-                   'heading': 'Origin releases',
+                  {'heading': 'Origin releases',
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
                    'swh_object_name': 'Releases',

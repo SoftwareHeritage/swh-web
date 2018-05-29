@@ -174,8 +174,7 @@ def origin_visits_browse(request, origin_url, origin_type=None):
         visit['date'] = parse_timestamp(visit['date']).timestamp()
 
     return render(request, 'origin-visits.html',
-                  {'empty_browse': False,
-                   'heading': 'Origin visits',
+                  {'heading': 'Origin visits',
                    'swh_object_name': 'Visits',
                    'swh_object_metadata': origin_info,
                    'origin_visits': origin_visits,
