@@ -29,7 +29,11 @@ See top-level LICENSE file for more information
 
 {% else %}
 
-  {% block swh-browse-before-content %}{% endblock %}
+  {% block swh-browse-before-content %}
+  {% if snapshot_context %}
+    {% include "includes/snapshot-context.html" %}
+  {% endif %}
+  {% endblock %}
 
   <div class="card">
     {% block swh-browse-content %}{% endblock %}

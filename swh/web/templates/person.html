@@ -9,12 +9,6 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
-{% block swh-browse-before-content %}
-{% if snapshot_context %}
-  {% include "includes/snapshot-context.html" %}
-{% endif %}
-{% endblock %}
-
 {% block swh-browse-content %}
 <div class="card-header bg-gray-light">
   <div class="float-left">
