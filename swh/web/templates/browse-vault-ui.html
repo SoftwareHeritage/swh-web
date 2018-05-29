@@ -9,40 +9,37 @@ See top-level LICENSE file for more information
 
 {% load render_bundle from webpack_loader %}
 
+{% block navbar-content %}
+<h4>Download archive content from the Vault</h4>
+{% endblock %}
+
 {% block browse-content %}
-<div class="card">
-  <div class="card-header bg-gray-light">
-    <h4>Download content from the Software Heritage Vault</h4>
-  </div>
-  <div class="card-body">
-    <p>
-      This interface enables to track the status of the different Software Heritage
-      Vault cooking tasks created while browsing the archive.
-    </p>
-    <p>
-      Once a cooking task is finished, a link will be made available in order to
-      download the associated archive.
-    </p>
-    <button type="button" class="btn btn-default btn-sm" id="vault-remove-tasks">Remove selected tasks</button>
-    <div class="table-responsive">
-      <table class="table swh-vault-table" id="vault-cooking-tasks">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="vault-tasks-toggle-selection"/></th>
-            <th style="width: 100px">Object type</th>
-            <th>Object id</th>
-            <th style="width: 350px">Cooking status</th>
-            <th style="width: 320px"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<p>
+  This interface enables to track the status of the different Software Heritage
+  Vault cooking tasks created while browsing the archive.
+</p>
+<p>
+  Once a cooking task is finished, a link will be made available in order to
+  download the associated archive.
+</p>
+<button type="button" class="btn btn-default btn-sm" id="vault-remove-tasks">Remove selected tasks</button>
+<div class="table-responsive">
+  <table class="table swh-vault-table" id="vault-cooking-tasks">
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="vault-tasks-toggle-selection"/></th>
+        <th style="width: 100px">Object type</th>
+        <th>Object id</th>
+        <th style="width: 350px">Cooking status</th>
+        <th style="width: 320px"></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </div>
 
 <script>
-  swh.browse.initBrowse('vault');
+  swh.webapp.initPage('vault');
   swh.vault.initUi();
 </script>
 {% endblock %}

@@ -17,23 +17,6 @@ See top-level LICENSE file for more information
 {% render_bundle 'vault' %}
 {% endblock %}
 
-{% block navbar-content %}
-<ul class="nav navbar-nav swh-browse-nav">
-  <li class="nav-item browse-search-item">
-    <a class="nav-link browse-search-link" href="{% url 'browse-search' %}">Search</a>
-  </li>
-  <li class="nav-item browse-help-item">
-    <a class="nav-link browse-help-link" href="{% url 'browse-help' %}">Help</a>
-  </li>
-  <li class="nav-item browse-vault-item">
-    <a class="nav-link browse-vault-link" href="{% url 'browse-vault' %}">Vault</a>
-  </li>
-  <li class="nav-item browse-main-item">
-    <a class="nav-link browse-main-link" href="{% url 'browse-mainpage' %}">Browse</a>
-  </li>
-</ul>
-{% endblock %}
-
 {% block content %}
 <div class="swh-corner-ribbon">Alpha version</div>
 {% block browse-content %}{% endblock %}

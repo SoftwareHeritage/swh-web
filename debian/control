@@ -23,7 +23,7 @@ Build-Depends: curl,
                python3-sphinxcontrib.httpdomain,
                python3-yaml,
                python3-swh.core (>= 0.0.40~),
-               python3-swh.model (>= 0.0.15~),
+               python3-swh.model (>= 0.0.23~),
                python3-swh.storage (>= 0.0.101~),
                python3-swh.indexer.storage (>= 0.0.47~),
                python3-swh.vault (>= 0.0.20~)
@@ -33,7 +33,7 @@ Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 Package: python3-swh.web
 Architecture: all
 Depends: python3-swh.core (>= 0.0.40~),
-         python3-swh.model (>= 0.0.15~),
+         python3-swh.model (>= 0.0.23~),
          python3-swh.storage (>= 0.0.101~),
          python3-swh.indexer.storage (>= 0.0.47~),
          python3-swh.vault (>= 0.0.20~),

@@ -11,13 +11,17 @@ See top-level LICENSE file for more information
 
 {% block title %}Error {{ error_code }} &ndash; Software Heritage archive {% endblock %}
 
+{% block navbar-content %}
+<h4>Error</h4>
+{% endblock %}
+
 {% block content %}
 <div class="swh-http-error">
   <div class="swh-http-error-head">Error</div>
   <div class="swh-http-error-code">
-    <img class="hidden-xs" src="{% static 'img/swh-logo.svg' %}" style="width:80px; height:auto;"/>
+    <img class="hidden-xs swh-image-error" src="{% static 'img/swh-logo.svg' %}">
     {{ error_code }}
-    <img class="hidden-xs" src="{% static 'img/swh-logo.svg' %}" style="width:80px; height:auto;"/>
+    <img class="hidden-xs swh-image-error" src="{% static 'img/swh-logo.svg' %}">
   </div>
   <h3>{{ error_message }}</h3>
 
