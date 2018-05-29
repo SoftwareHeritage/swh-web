@@ -9,10 +9,12 @@ from datetime import datetime, timezone
 from dateutil import parser as date_parser
 from dateutil import tz
 
-from swh.web.common.exc import BadInputExc
-
+from django.core.cache import cache
 from django.core import urlresolvers
 from django.http import QueryDict
+
+from swh.web.common import service
+from swh.web.common.exc import BadInputExc
 
 
 def reverse(viewname, args=None, kwargs=None, query_params=None,
@@ -185,3 +187,64 @@ def gen_path_info(path):
             path_info.append({'name': p,
                               'path': path_from_root.strip('/')})
     return path_info
+
+
+def get_origin_visits(origin_info):
+    """Function that returns the list of visits for a swh origin.
+    That list is put in cache in order to speedup the navigation
+    in the swh web browse ui.
+
+    Args:
+        origin_id (int): the id of the swh origin to fetch visits from
+
+    Returns:
+        A list of dict describing the origin visits::
+
+            [{'date': <UTC visit date in ISO format>,
+              'origin': <origin id>,
+              'status': <'full' | 'partial'>,
+              'visit': <visit id>
+             },
+             ...
+            ]
+
+    Raises:
+        NotFoundExc if the origin is not found
+    """
+    cache_entry_id = 'origin_%s_visits' % origin_info['id']
+    cache_entry = cache.get(cache_entry_id)
+
+    if cache_entry:
+        return cache_entry
+
+    origin_visits = []
+
+    per_page = service.MAX_LIMIT
+    last_visit = None
+    while 1:
+        visits = list(service.lookup_origin_visits(origin_info['id'],
+                                                   last_visit=last_visit,
+                                                   per_page=per_page))
+        origin_visits += visits
+        if len(visits) < per_page:
+            break
+        else:
+            if not last_visit:
+                last_visit = per_page
+            else:
+                last_visit += per_page
+
+    def _visit_sort_key(visit):
+        ts = parse_timestamp(visit['date']).timestamp()
+        return ts + (float(visit['visit']) / 10e3)
+
+    for v in origin_visits:
+        if 'metadata' in v:
+            del v['metadata']
+    origin_visits = [dict(t) for t in set([tuple(d.items())
+                                           for d in origin_visits])]
+    origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
+
+    cache.set(cache_entry_id, origin_visits)
+
+    return origin_visits

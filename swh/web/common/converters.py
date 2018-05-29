@@ -8,7 +8,7 @@ import json
 
 from swh.model import hashutil
 from swh.core.utils import decode_with_escape
-from swh.web.api import utils
+from swh.web.common import utils
 
 
 def _group_checksums(data):

@@ -140,6 +140,8 @@ Origin
 .. http:get:: /api/1/origin/(origin_id)/visits/
 
     Get information about all visits of a software origin.
+    Visits are returned sorted in descending order according
+    to their date.
 
     :param int origin_id: a SWH origin identifier
     :query int per_page: specify the number of visits to list, for pagination purposes

@@ -6,7 +6,9 @@
 from distutils.util import strtobool
 
 from swh.web.common import service
-from swh.web.common.utils import reverse
+from swh.web.common.utils import (
+    reverse, get_origin_visits
+)
 from swh.web.api import utils
 from swh.web.api import apidoc as api_doc
 from swh.web.api.apiurls import api_route
@@ -148,8 +150,9 @@ def api_origin_search(request, url_pattern):
 @api_doc.returns(rettype=api_doc.rettypes.list,
                  retdoc="""a list of dictionaries describing individual visits.
                  For each visit, its identifier, timestamp (as UNIX time),
-                 outcome, and visit-specific URL for more information are
-                 given.""")
+                 outcome, snapshot id, and visit-specific URL for more
+                 information are given. Visits are sorted in descending
+                 order according to their timestamp.""")
 def api_origin_visits(request, origin_id):
     """Get information about all visits of a given software origin.
 
@@ -162,8 +165,18 @@ def api_origin_visits(request, origin_id):
 
     def _lookup_origin_visits(
             origin_id, last_visit=last_visit, per_page=per_page):
-        return service.lookup_origin_visits(
-            origin_id, last_visit=last_visit, per_page=per_page)
+        all_visits = get_origin_visits({'id': origin_id})
+        all_visits.reverse()
+        visits = []
+        if not last_visit:
+            visits = all_visits[:per_page]
+        else:
+            for i, v in enumerate(all_visits):
+                if v['visit'] == last_visit:
+                    visits = all_visits[i+1:i+1+per_page]
+                    break
+        for v in visits:
+            yield v
 
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()

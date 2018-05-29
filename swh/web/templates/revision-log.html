@@ -14,12 +14,6 @@ See top-level LICENSE file for more information
 {% render_bundle 'revision' %}
 {% endblock %}
 
-{% block swh-browse-before-content %}
-{% if snapshot_context %}
-  {% include "includes/snapshot-context.html" %}
-{% endif %}
-{% endblock %}
-
 {% block swh-browse-content %}
 {% if snapshot_context %}
   {% include "includes/top-navigation.html" %}

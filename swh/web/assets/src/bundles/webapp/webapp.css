@@ -271,12 +271,12 @@ a.dropdown-left::before {
 
 .swh-top-bar a,
 .swh-top-bar a:visited {
-    color: #fecd1b;
+    color: white;
 }
 
 .swh-top-bar a.swh-current-site,
 .swh-top-bar a.swh-current-site:visited {
-    color: #e20026;
+    color: #fecd1b;
 }
 
 .swh-donate-item {

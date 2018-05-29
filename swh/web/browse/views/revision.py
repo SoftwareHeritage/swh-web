@@ -222,8 +222,7 @@ def revision_log_browse(request, sha1_git):
                         'role': 'button'})
 
     return render(request, 'revision-log.html',
-                  {'empty_browse': False,
-                   'heading': 'Revision history',
+                  {'heading': 'Revision history',
                    'swh_object_name': 'Revision history',
                    'swh_object_metadata': None,
                    'revision_log': revision_log_data,
@@ -451,8 +450,7 @@ def revision_browse(request, sha1_git, extra_path=None):
                                               'visit_id': visit_id})
 
     return render(request, 'revision.html',
-                  {'empty_browse': False,
-                   'heading': 'Revision',
+                  {'heading': 'Revision',
                    'swh_object_name': 'Revision',
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],

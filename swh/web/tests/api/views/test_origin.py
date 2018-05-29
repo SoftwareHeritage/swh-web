@@ -31,11 +31,11 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
             'type': 'ftp'
         }
 
-    @patch('swh.web.api.views.origin.service')
+    @patch('swh.web.api.views.origin.get_origin_visits')
     @istest
-    def api_1_lookup_origin_visits_raise_error(self, mock_service):
+    def api_1_lookup_origin_visits_raise_error(self, mock_get_origin_visits):
         # given
-        mock_service.lookup_origin_visits.side_effect = ValueError(
+        mock_get_origin_visits.side_effect = ValueError(
             'voluntary error to check the bad request middleware.')
         # when
         rv = self.client.get('/api/1/origin/2/visits/')
@@ -46,7 +46,7 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
             'exception': 'ValueError',
             'reason': 'voluntary error to check the bad request middleware.'})
 
-    @patch('swh.web.api.views.origin.service')
+    @patch('swh.web.common.utils.service')
     @istest
     def api_1_lookup_origin_visits_raise_swh_storage_error_db(
             self, mock_service):
@@ -64,7 +64,7 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
             'An unexpected error occurred in the backend: '
             'SWH Storage exploded! Will be back online shortly!'})
 
-    @patch('swh.web.api.views.origin.service')
+    @patch('swh.web.common.utils.service')
     @istest
     def api_1_lookup_origin_visits_raise_swh_storage_error_api(
             self, mock_service):
@@ -84,11 +84,17 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
             'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
         })
 
-    @patch('swh.web.api.views.origin.service')
+    @patch('swh.web.api.views.origin.get_origin_visits')
     @istest
-    def api_1_lookup_origin_visits(self, mock_service):
+    def api_1_lookup_origin_visits(self, mock_get_origin_visits):
         # given
         stub_visits = [
+            {
+                'date': 1293919200.0,
+                'origin': 2,
+                'snapshot': '1234',
+                'visit': 1
+            },
             {
                 'date': 1293919200.0,
                 'origin': 2,
@@ -100,13 +106,19 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
                 'origin': 2,
                 'snapshot': '5678',
                 'visit': 3
+            },
+            {
+                'date': 1420149600.0,
+                'origin': 2,
+                'snapshot': '5678',
+                'visit': 4
             }
         ]
 
-        mock_service.lookup_origin_visits.return_value = stub_visits
+        mock_get_origin_visits.return_value = stub_visits
 
         # when
-        rv = self.client.get('/api/1/origin/2/visits/?per_page=2&last_visit=1')
+        rv = self.client.get('/api/1/origin/2/visits/?per_page=2&last_visit=3')
 
         self.assertEquals(rv.status_code, 200)
         self.assertEquals(rv['Content-Type'], 'application/json')
@@ -120,17 +132,15 @@ class OriginApiTestCase(SWHWebTestBase, APITestCase):
                 'snapshot_url': '/api/1/snapshot/1234/'
             },
             {
-                'date': 1420149600.0,
+                'date': 1293919200.0,
                 'origin': 2,
-                'snapshot': '5678',
-                'visit': 3,
-                'origin_visit_url': '/api/1/origin/2/visit/3/',
-                'snapshot_url': '/api/1/snapshot/5678/'
-            }
-        ])
+                'snapshot': '1234',
+                'visit': 1,
+                'origin_visit_url': '/api/1/origin/2/visit/1/',
+                'snapshot_url': '/api/1/snapshot/1234/'
+            },
 
-        mock_service.lookup_origin_visits.assert_called_once_with(
-            '2', last_visit=1, per_page=2)
+        ])
 
     @patch('swh.web.api.views.origin.service')
     @istest
