@@ -17,7 +17,8 @@ from importlib import reload
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, parse_timestamp
+    reverse, format_utc_iso_date, parse_timestamp,
+    get_origin_visits
 )
 from swh.web.config import get_config
 
@@ -213,67 +214,6 @@ def prepare_content_for_display(content_data, mime_type, path):
 
     return {'content_data': content_data,
             'language': language}
-
-
-def get_origin_visits(origin_info):
-    """Function that returns the list of visits for a swh origin.
-    That list is put in cache in order to speedup the navigation
-    in the swh web browse ui.
-
-    Args:
-        origin_id (int): the id of the swh origin to fetch visits from
-
-    Returns:
-        A list of dict describing the origin visits::
-
-            [{'date': <UTC visit date in ISO format>,
-              'origin': <origin id>,
-              'status': <'full' | 'partial'>,
-              'visit': <visit id>
-             },
-             ...
-            ]
-
-    Raises:
-        NotFoundExc if the origin is not found
-    """
-    cache_entry_id = 'origin_%s_visits' % origin_info['id']
-    cache_entry = cache.get(cache_entry_id)
-
-    if cache_entry:
-        return cache_entry
-
-    origin_visits = []
-
-    per_page = service.MAX_LIMIT
-    last_visit = None
-    while 1:
-        visits = list(service.lookup_origin_visits(origin_info['id'],
-                                                   last_visit=last_visit,
-                                                   per_page=per_page))
-        origin_visits += visits
-        if len(visits) < per_page:
-            break
-        else:
-            if not last_visit:
-                last_visit = per_page
-            else:
-                last_visit += per_page
-
-    def _visit_sort_key(visit):
-        ts = parse_timestamp(visit['date']).timestamp()
-        return ts + (float(visit['visit']) / 10e3)
-
-    for v in origin_visits:
-        if 'metadata' in v:
-            del v['metadata']
-    origin_visits = [dict(t) for t in set([tuple(d.items())
-                                           for d in origin_visits])]
-    origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
-
-    cache.set(cache_entry_id, origin_visits)
-
-    return origin_visits
 
 
 def get_origin_visit(origin_info, visit_ts=None, visit_id=None,

@@ -27,38 +27,6 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         self.assertEqual(utils.get_mimetype_and_encoding_for_content(text),
                          ('text/plain', 'us-ascii'))
 
-    @patch('swh.web.browse.utils.service')
-    @istest
-    def get_origin_visits(self, mock_service):
-        mock_service.MAX_LIMIT = 2
-
-        def _lookup_origin_visits(*args, **kwargs):
-            if kwargs['last_visit'] is None:
-                return [{'visit': 1,
-                         'date': '2017-05-06T00:59:10+00:00',
-                         'metadata': {}},
-                        {'visit': 2,
-                         'date': '2017-08-06T00:59:10+00:00',
-                         'metadata': {}}
-                        ]
-            else:
-                return [{'visit': 3,
-                         'date': '2017-09-06T00:59:10+00:00',
-                         'metadata': {}}
-                        ]
-
-        mock_service.lookup_origin_visits.side_effect = _lookup_origin_visits
-
-        origin_info = {
-            'id': 1,
-            'type': 'git',
-            'url': 'https://github.com/foo/bar',
-        }
-
-        origin_visits = utils.get_origin_visits(origin_info)
-
-        self.assertEqual(len(origin_visits), 3)
-
     @patch('swh.web.browse.utils.get_origin_visits')
     @istest
     def get_origin_visit(self, mock_origin_visits):

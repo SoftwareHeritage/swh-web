@@ -16,12 +16,6 @@ See top-level LICENSE file for more information
 {% render_bundle 'revision' %}
 {% endblock %}
 
-{% block swh-browse-before-content %}
-{% if snapshot_context %}
-  {% include "includes/snapshot-context.html" %}
-{% endif %}
-{% endblock %}
-
 {% block swh-browse-content %}
 <div style="height: 35px;margin: 4px;">
   <i class="octicon octicon-git-commit fa-fw"></i>Revision <b>{{ swh_object_metadata.id }}</b>

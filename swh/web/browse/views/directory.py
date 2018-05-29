@@ -106,8 +106,7 @@ def directory_browse(request, sha1_git, path=None):
     }
 
     return render(request, 'directory.html',
-                  {'empty_browse': False,
-                   'heading': 'Directory',
+                  {'heading': 'Directory',
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,

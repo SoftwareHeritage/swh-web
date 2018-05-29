@@ -18,12 +18,6 @@ from swh.web.browse.browseurls import BrowseUrls
 from swh.web.browse.identifiers import swh_id_browse
 
 
-def _default_browse_view(request):
-    return render(request, 'browse.html',
-                  {'heading': 'Browse',
-                   'empty_browse': True})
-
-
 def _browse_help_view(request):
     return render(request, 'browse-help.html',
                   {'heading': 'Help'})
@@ -40,7 +34,6 @@ def _browse_vault_view(request):
 
 
 urlpatterns = [
-    url(r'^$', _default_browse_view, name='browse-mainpage'),
     url(r'^help/$', _browse_help_view, name='browse-help'),
     url(r'^search/$', _browse_search_view, name='browse-search'),
     url(r'^vault/$', _browse_vault_view, name='browse-vault'),
