@@ -7,7 +7,6 @@ bootstrapVersion: 4
 # Webpack loaders, order matters
 
 styleLoaders:
-  - mini-css-extract-plugin/dist/loader
   - cache-loader
   - css-loader?sourceMap
   - postcss-loader?sourceMap
@@ -18,7 +17,8 @@ styleLoaders:
 # It depends on value of NODE_ENV environment variable
 # This param can also be set in webpack config:
 #   entry: 'bootstrap-loader/extractStyles'
-extractStyles: false
+extractStyles: true
+
 # env:
 #   development:
 #     extractStyles: false
