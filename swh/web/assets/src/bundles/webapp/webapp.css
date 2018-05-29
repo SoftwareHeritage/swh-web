@@ -222,6 +222,8 @@ a.dropdown-left::before {
     padding: 5px;
     margin-bottom: 20px;
     margin-top: 30px;
+    justify-content: normal;
+    flex-wrap: nowrap;
 }
 
 #back-to-top {
@@ -248,7 +250,6 @@ a.dropdown-left::before {
     top: 0;
     left: 0;
     width: 100%;
-    min-width: 600px;
     z-index: 99999;
     background-color: #262626;
     color: #fff;
@@ -258,11 +259,12 @@ a.dropdown-left::before {
 
 .swh-top-bar ul {
     margin-top: 4px;
-    margin-left: 28px;
+    padding-left: 0;
+    white-space: nowrap;
 }
 
 .swh-top-bar li {
-    display: inline;
+    display: inline-block;
     margin-left: 10px;
     margin-right: 10px;
 }
@@ -275,6 +277,11 @@ a.dropdown-left::before {
 .swh-top-bar a.swh-current-site,
 .swh-top-bar a.swh-current-site:visited {
     color: #e20026;
+}
+
+.swh-donate-item {
+    position: absolute;
+    right: 0;
 }
 
 .swh-donate-link {
@@ -328,4 +335,16 @@ ul.nav-sidebar a {
 .swh-sidebar .nav-link.active {
     color: #323232 !important;
     background-color: #e7e7e7 !important;
+}
+
+.swh-image-error {
+    width: 80px;
+    height: auto;
+}
+
+@media (max-width: 600px) {
+    .swh-image-error {
+        width: 40px;
+        height: auto;
+    }
 }

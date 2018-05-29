@@ -18,22 +18,6 @@ $(document).ready(() => {
     e.preventDefault();
   });
 
-  // ensure branches/releases dropdowns are reparented to body to avoid
-  // overflow issues
-  $('#swh-branches-releases-dd').on('shown.bs.dropdown', function() {
-    $('body').append($('#swh-branches-releases-dd').css({
-      position: 'absolute',
-      left: $('#swh-branches-releases-dd').offset().left,
-      top: $('#swh-branches-releases-dd').offset().top
-    }).detach());
-    // ensure breadcrumbs stay at the same position
-    let bcOffsetLeft = $('#swh-branches-releases-dd').offset().left +
-        $('#swh-branches-releases-dd').width();
-    let bcOffsetTop = $('.swh-browse-bread-crumbs').offset().top;
-    $('.swh-browse-bread-crumbs').css('position', 'absolute');
-    $('.swh-browse-bread-crumbs').offset({'left': bcOffsetLeft, 'top': bcOffsetTop});
-  });
-
   $('.swh-metadata-toggler').popover({
     boundary: 'viewport',
     container: 'body',
