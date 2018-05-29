@@ -10,6 +10,7 @@ Software Heritage Web Applications - Development Documentation
    developers-info
    uri-scheme-api
    uri-scheme-browse
+   uri-scheme-identifiers
 
 
 Indices and tables

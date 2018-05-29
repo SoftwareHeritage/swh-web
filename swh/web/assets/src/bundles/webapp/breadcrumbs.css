@@ -13,6 +13,7 @@
 
 .bread-crumbs ul {
     list-style-type: none;
+    height: 100%;
 }
 
 .bread-crumbs li {

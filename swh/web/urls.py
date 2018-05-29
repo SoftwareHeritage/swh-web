@@ -18,6 +18,8 @@ from swh.web.common.exc import (
     swh_handle400, swh_handle403, swh_handle404, swh_handle500
 )
 
+from swh.web.browse.identifiers import swh_id_browse
+
 favicon_view = RedirectView.as_view(url='/static/img/icons/swh-logo-32x32.png',
                                     permanent=True)
 
@@ -31,7 +33,9 @@ urlpatterns = [
     url(r'^api/', include('swh.web.api.urls')),
     url(r'^browse/', include('swh.web.browse.urls')),
     url(r'^$', default_view, name='swh-web-homepage'),
-    url(r'^jsreverse/$', urls_js, name='js_reverse')
+    url(r'^jsreverse/$', urls_js, name='js_reverse'),
+    url(r'^(?P<swh_id>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$',
+        swh_id_browse, name='browse-swh-id')
 ]
 
 # enable to serve compressed assets through django development server

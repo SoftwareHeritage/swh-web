@@ -123,3 +123,22 @@ class SwhBrowseIdTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
         self.assertEquals(resp.status_code, 400)
 
+    @istest
+    def content_id_optional_parts_browse(self):
+        cnt_sha1_git = stub_content_text_data['checksums']['sha1_git']
+        optional_parts = ';lines=4-20;origin=https://github.com/user/repo'
+        swh_id = swh_id_prefix + 'cnt:' + cnt_sha1_git + optional_parts
+        url = reverse('browse-swh-id',
+                      kwargs={'swh_id': swh_id})
+
+        query_string = 'sha1_git:' + cnt_sha1_git
+        content_browse_url = reverse('browse-content',
+                                     kwargs={'query_string': query_string},
+                                     query_params={'origin' : 'https://github.com/user/repo'})
+        content_browse_url += '#L4-L20'
+
+        resp = self.client.get(url)
+
+        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp['location'], content_browse_url)
+

@@ -7,7 +7,7 @@ Archive statistics
 
     :>json number content: current number of content objects (aka files) in the SWH archive
     :>json number directory: current number of directory objects in the SWH archive
-    :>json number directory_entry_dir: current number of SWH directory entries 
+    :>json number directory_entry_dir: current number of SWH directory entries
         pointing to others SWH directories in the SWH archive
     :>json number directory_entry_file: current number of SWH directory entries
         pointing to SWH content objects in the SWH archive
@@ -16,7 +16,7 @@ Archive statistics
     :>json number entity: current number of SWH entities (a SWH entity is either
         a *group_of_entities*, a *group_of_persons*, a *project*, a *person*, an *organization*,
         or a *hosting* service) in the SWH archive
-    :>json number occurrence: current number of SWH occurences (an occurrence may be assimilated
+    :>json number occurrence: current number of SWH occurrences (an occurrence may be assimilated
         to a branch found during a SWH crawl of a repository) in the SWH archive
     :>json number origin: current number of SWH origins (an origin is a "place" where code
         source can be found, e.g. a git repository, a tarball, ...) in the SWH archive
@@ -27,7 +27,7 @@ Archive statistics
     :>json number skipped_content: current number of content objects (aka files) which where
         not inserted in the SWH archive
 
-    :reqheader Accept: the requested response content type, 
+    :reqheader Accept: the requested response content type,
         either *application/json* (default) or *application/yaml*
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
