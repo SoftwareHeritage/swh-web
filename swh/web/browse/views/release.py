@@ -80,20 +80,25 @@ def release_browse(request, sha1_git):
                     kwargs={'sha1_git': release['target']})
         release_data['target'] = gen_link(release_url, release['target'])
 
-    release_note_lines = release['message'].split('\n')
+    release_note_lines = []
+    if release['message']:
+        release_note_lines = release['message'].split('\n')
 
     vault_cooking = None
 
     release_target_link = '<b>Target:</b> '
     if release['target_type'] == 'revision':
         release_target_link += '<i class="octicon octicon-git-commit fa-fw"></i>' # noqa
-        revision = service.lookup_revision(release['target'])
-        vault_cooking = {
-            'directory_context': True,
-            'directory_id': revision['directory'],
-            'revision_context': True,
-            'revision_id': release['target']
-        }
+        try:
+            revision = service.lookup_revision(release['target'])
+            vault_cooking = {
+                'directory_context': True,
+                'directory_id': revision['directory'],
+                'revision_context': True,
+                'revision_id': release['target']
+            }
+        except Exception:
+            pass
     else:
         release_target_link += release['target_type']
     release_target_link += ' ' + release_data['target']
@@ -148,12 +153,16 @@ def release_browse(request, sha1_git):
             'show_options': show_ids_options
         })
 
+    release_note_header = 'None'
+    if len(release_note_lines) > 0:
+        release_note_header = release_note_lines[0]
+
     return render(request, 'release.html',
                   {'heading': 'Release',
                    'swh_object_name': 'Release',
                    'swh_object_metadata': release_data,
                    'release_name': release['name'],
-                   'release_note_header': release_note_lines[0],
+                   'release_note_header': release_note_header,
                    'release_note_body': '\n'.join(release_note_lines[1:]),
                    'release_target_link': mark_safe(release_target_link),
                    'snapshot_context': snapshot_context,
