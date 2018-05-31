@@ -39,6 +39,7 @@ footer {
     width: 100%;
     padding-top: 20px;
     padding-bottom: 20px;
+    z-index: 3000;
 }
 
 footer a,
@@ -361,4 +362,8 @@ ul.nav-sidebar a {
 
 .nav-pills .nav-link:not(.active):hover {
     color: rgba(0, 0, 0, 0.55);
+}
+
+.swh-heading-color {
+    color: #e20026;
 }
