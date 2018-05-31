@@ -1702,19 +1702,19 @@ class ServiceTestCase(unittest.TestCase):
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
             'sha1',
             'directory-id-bin')
-        mock_storage.directory_get.return_value = None
+        mock_storage.directory_ls.return_value = []
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_directory('directory_id')
-            self.assertIn('Directory with sha1_git directory_id not found',
-                          cm.exception.args[0])
+
+        self.assertIn('Directory with sha1_git directory_id not found',
+                      cm.exception.args[0])
 
         # then
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
             'directory_id', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.directory_get.assert_called_with(['directory-id-bin'])
-        mock_storage.directory_ls.called = False
+        mock_storage.directory_ls.assert_called_with('directory-id-bin')
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
@@ -1723,9 +1723,6 @@ class ServiceTestCase(unittest.TestCase):
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
             'sha1',
             'directory-sha1-bin')
-
-        # something that exists is all that matters here
-        mock_storage.directory_get.return_value = {'id': b'directory-sha1-bin'}
 
         # given
         stub_dir_entries = [{
@@ -1766,6 +1763,20 @@ class ServiceTestCase(unittest.TestCase):
             'directory-sha1', ['sha1'], 'Only sha1_git is supported.')
         mock_storage.directory_ls.assert_called_with(
             'directory-sha1-bin')
+
+    @patch('swh.web.common.service.storage')
+    @istest
+    def lookup_directory_empty(self, mock_storage):
+        empty_dir_sha1 = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
+        mock_storage.directory_ls.return_value = []
+
+        # when
+        actual_directory_ls = list(service.lookup_directory(empty_dir_sha1))
+
+        # then
+        self.assertEqual(actual_directory_ls, [])
+
+        self.assertFalse(mock_storage.directory_ls.called)
 
     @patch('swh.web.common.service.storage')
     @istest

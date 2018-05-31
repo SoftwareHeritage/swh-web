@@ -297,14 +297,18 @@ def lookup_directory(sha1_git):
         directory information as dict.
 
     """
+    empty_dir_sha1 = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
+
+    if sha1_git == empty_dir_sha1:
+        return []
+
     sha1_git_bin = _to_sha1_bin(sha1_git)
 
-    dir = _first_element(storage.directory_get([sha1_git_bin]))
-    if not dir:
+    directory_entries = storage.directory_ls(sha1_git_bin)
+    if directory_entries:
+        return map(converters.from_directory_entry, directory_entries)
+    else:
         raise NotFoundExc('Directory with sha1_git %s not found' % sha1_git)
-
-    directory_entries = storage.directory_ls(sha1_git_bin) or []
-    return map(converters.from_directory_entry, directory_entries)
 
 
 def lookup_directory_with_path(directory_sha1_git, path_string):
