@@ -39,6 +39,7 @@ footer {
     width: 100%;
     padding-top: 20px;
     padding-bottom: 20px;
+    z-index: 3000;
 }
 
 footer a,
@@ -165,6 +166,7 @@ pre {
 
 .popover {
     max-width: 100%;
+    z-index: 2000;
 }
 
 .modal {
@@ -347,4 +349,21 @@ ul.nav-sidebar a {
         width: 40px;
         height: auto;
     }
+}
+
+.form-check-label {
+    padding-top: 4px;
+}
+
+.swh-id-option {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.nav-pills .nav-link:not(.active):hover {
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.swh-heading-color {
+    color: #e20026;
 }

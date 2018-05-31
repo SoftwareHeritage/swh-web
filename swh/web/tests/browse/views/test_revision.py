@@ -11,7 +11,9 @@ from django.test import TestCase
 from django.utils.html import escape
 
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse, format_utc_iso_date
+from swh.web.common.utils import (
+    reverse, format_utc_iso_date, get_swh_persistent_id
+)
 from swh.web.tests.testbase import SWHWebTestBase
 
 from .data.revision_test_data import (
@@ -120,6 +122,12 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
 
         self.assertContains(resp, 'vault-cook-directory')
         self.assertContains(resp, 'vault-cook-revision')
+
+        swh_rev_id = get_swh_persistent_id('revision', revision_id_test)
+        swh_rev_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_rev_id})
+        self.assertContains(resp, swh_rev_id)
+        self.assertContains(resp, swh_rev_id_url)
 
     @patch('swh.web.browse.views.revision.service')
     @istest

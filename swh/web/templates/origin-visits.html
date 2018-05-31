@@ -19,16 +19,12 @@ See top-level LICENSE file for more information
 {% block swh-browse-before-content %}
 <div class="card">
   <div class="card-header bg-gray-light border-bottom-0">
-    <div class="float-left">
-        <a href="{% url 'browse-origin' origin_info.type origin_info.url %}" class="btn btn-default btn-sm" role="button">Latest snapshot</a>
-    </div>
-    {% if origin_info.url|slice:"0:4" == "http" %}
-      <div class="float-right">
-        <a href="{{ origin_info.url }}" class="btn btn-default btn-sm" role="button">Go to origin</a>
-      </div>
-    {% endif %}
-    <h4 class="text-center">Origin: {{ origin_info.url }}</h4>
-    <div class="clearfix"></div>
+    <h4 class="text-center">
+      Origin: {{ origin_info.url }}
+      {% if origin_info.url|slice:"0:4" == "http" %}
+        <a href="{{ origin_info.url }}" title="Go to origin"><i class="fa fa-external-link" aria-hidden="true"></i></a>
+      {% endif %}
+      </h4>
   </div>
 </div>
 {% endblock %}

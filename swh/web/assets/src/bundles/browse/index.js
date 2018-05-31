@@ -15,3 +15,4 @@ import './snapshot-navigation.css';
 export * from './snapshot-navigation';
 export * from './origin-search';
 export * from './browse-utils';
+export * from './swh-ids-utils';

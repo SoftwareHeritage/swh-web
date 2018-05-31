@@ -1,0 +1,97 @@
+{% comment %}
+Copyright (C) 2017-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+
+{% if swh_ids %}
+  <div class="dropdown-submenu">
+    <a id="swh-identifiers-toggler" class="dropdown-item dropdown-left swh-popover-toggler" tabindex="-1" href="#" data-toggle="popover" data-popover-content="#swh-identifiers-popover"><i class="fa fa-link fa-fw" aria-hidden="true"></i>Show identifiers</a>
+  </div>
+
+  <div id="swh-identifiers-popover" style="display:none;">
+    <div class="popover-heading">Persistent identifiers</div>
+    <div class="popover-body">
+      <div class="swh-identifiers-popover-body">
+        <p>
+          Objects present in the Software Heritage archive can be pointed by the means
+          of <a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html">persistent identifiers</a> that are guaranteed to remain stable over time.
+          <br/>
+          Select a type of object currently browsed in order to display its associated persistent identifier.
+        </p>
+
+        <ul class="nav nav-pills ml-auto p-2">
+          {% for swh_id in swh_ids %}
+            {% if swh_id.object_type != 'snapshot' %}
+              <li class="nav-item"><a class="nav-link active" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">{{ swh_id.object_type }}</a></li>
+            {% else %}
+              <li class="nav-item"><a class="nav-link" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">{{ swh_id.object_type }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+
+        <div class="tab-content">
+          {% for swh_id in swh_ids %}
+            {% if swh_id.object_type != 'snapshot' %}
+              <div class="tab-pane active" id="swh-id-tab-{{ swh_id.object_type }}">
+            {% else %}
+              <div class="tab-pane" id="swh-id-tab-{{ swh_id.object_type }}">
+            {% endif %}
+              <div class="card">
+                <div class="card-header bg-gray-light">
+                  <h6>{{ swh_id.title }}</h6>
+                </div>
+                <div class="card-body swh-id-ui">
+                  <pre><a class="swh-id" id="{{ swh_id.swh_id }}" href="{{ swh_id.swh_id_url }}">{{ swh_id.swh_id }}</a></pre>
+                  {% if swh_id.show_options %}
+                    <div class="float-left">
+                      <div class="card">
+                        <div class="card-header">
+                          Options
+                        </div>
+                        <div class="card-body">
+                          <form id="swh-id-options">
+                            {% if snapshot_context and snapshot_context.origin_info %}
+                              <div class="form-check swh-id-option">
+                                <input class="form-check-input swh-id-option-origin" value="option-origin" type="checkbox"
+                                      id="swh-id-option-origin"
+                                      data-swh-origin="{{ snapshot_context.origin_info.url }}"
+                                      onclick="swh.browse.swhIdOptionOriginToggled(event)">
+                                <label class="form-check-label" for="swh-id-option-origin">Add origin info</label>
+                              </div>
+                            {% endif %}
+                            {% if swh_id.object_type == 'content' %}
+                              <div class="form-check swh-id-option">
+                                <input class="form-check-input swh-id-option-lines" value="option-lines" type="checkbox"
+                                      id="swh-id-option-lines"
+                                      onclick="swh.browse.swhIdOptionLinesToggled(event)">
+                                <label class="form-check-label" for="swh-id-option-lines">Add selected lines info</label>
+                              </div>
+                            {% endif %}
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  {% endif %}
+                  <div class="float-right">
+                    <button type="button" class="btn btn-default btn-sm btn-swh-id-copy"
+                            title="Copy persistent id to clipboard">
+                      <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy ID
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-swh-id-url-copy"
+                            title="Copy url resolving the persistent id to clipboard">
+                      <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy ID url
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}

@@ -12,7 +12,10 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
 from swh.web.common import service
-from swh.web.common.utils import reverse, format_utc_iso_date, gen_path_info
+from swh.web.common.utils import (
+    reverse, format_utc_iso_date, gen_path_info,
+    get_swh_persistent_id
+)
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
@@ -233,7 +236,8 @@ def revision_log_browse(request, sha1_git):
                    'top_right_link_text': None,
                    'snapshot_context': None,
                    'vault_cooking': None,
-                   'show_actions_menu': True})
+                   'show_actions_menu': True,
+                   'swh_ids': None})
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/',
@@ -449,6 +453,32 @@ def revision_browse(request, sha1_git, extra_path=None):
                                               'timestamp': timestamp,
                                               'visit_id': visit_id})
 
+    swh_rev_id = get_swh_persistent_id('revision', sha1_git)
+    show_ids_options = snapshot_context and \
+        snapshot_context['origin_info'] is not None
+    swh_ids = [
+        {
+            'object_type': 'revision',
+            'title': 'Revision ' + sha1_git,
+            'swh_id': swh_rev_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_rev_id}),
+            'show_options': show_ids_options
+        }
+    ]
+
+    if snapshot_id:
+        swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
+
+        swh_ids.append({
+            'object_type': 'snapshot',
+            'title': 'Snapshot ' + snapshot_id,
+            'swh_id': swh_snp_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_snp_id}),
+            'show_options': show_ids_options
+        })
+
     return render(request, 'revision.html',
                   {'heading': 'Revision',
                    'swh_object_name': 'Revision',
@@ -472,4 +502,5 @@ def revision_browse(request, sha1_git, extra_path=None):
                    'top_right_link_text': top_right_link_text,
                    'vault_cooking': vault_cooking,
                    'diff_revision_url': diff_revision_url,
-                   'show_actions_menu': True})
+                   'show_actions_menu': True,
+                   'swh_ids': swh_ids})

@@ -8,7 +8,9 @@ from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
-from swh.web.common.utils import reverse, gen_path_info
+from swh.web.common.utils import (
+    reverse, gen_path_info, get_swh_persistent_id
+)
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
     get_directory_entries, get_snapshot_context,
@@ -105,6 +107,18 @@ def directory_browse(request, sha1_git, path=None):
         'revision_id': None
     }
 
+    swh_dir_id = get_swh_persistent_id('directory', sha1_git)
+    swh_ids = [
+        {
+            'object_type': 'directory',
+            'title': 'Directory ' + sha1_git,
+            'swh_id': swh_dir_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_dir_id}),
+            'show_options': False
+        }
+    ]
+
     return render(request, 'directory.html',
                   {'heading': 'Directory',
                    'swh_object_name': 'Directory',
@@ -119,4 +133,5 @@ def directory_browse(request, sha1_git, path=None):
                    'readme_html': readme_html,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': vault_cooking,
-                   'show_actions_menu': True})
+                   'show_actions_menu': True,
+                   'swh_ids': swh_ids})
