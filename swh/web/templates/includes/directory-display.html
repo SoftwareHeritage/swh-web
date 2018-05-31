@@ -12,7 +12,6 @@ See top-level LICENSE file for more information
         <th>File</th>
         <th>Mode</th>
         <th>Size</th>
-        <th>Sha1 git</th>
       </tr>
     </thead>
     <tbody>
@@ -24,7 +23,6 @@ See top-level LICENSE file for more information
           </td>
           <td>{{ d.perms }}</td>
           <td></td>
-          <td>{{ d.target }}</td>
         </tr>
       {% endfor %}
       {% for f in files %}
@@ -35,7 +33,6 @@ See top-level LICENSE file for more information
           </td>
           <td>{{ f.perms }}</td>
           <td>{{ f.length }}</td>
-          <td>{{ f.target }}</td>
         </tr>
       {% endfor %}
     </tbody>

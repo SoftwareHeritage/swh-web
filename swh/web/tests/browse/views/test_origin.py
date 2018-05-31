@@ -14,7 +14,7 @@ from django.utils.html import escape
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     reverse, gen_path_info, format_utc_iso_date,
-    parse_timestamp
+    parse_timestamp, get_swh_persistent_id
 )
 from swh.web.tests.testbase import SWHWebTestBase
 
@@ -72,7 +72,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
     def origin_content_view_test(self, origin_info, origin_visits,
                                  origin_branches, origin_releases,
                                  origin_branch,
-                                 root_dir_sha1, content_sha1,
+                                 root_dir_sha1, content_sha1, content_sha1_git,
                                  content_path, content_data,
                                  content_language,
                                  visit_id=None, timestamp=None):
@@ -200,6 +200,12 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('content.html')
 
+        swh_cnt_id = get_swh_persistent_id('content', content_sha1_git)
+        swh_cnt_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_cnt_id})
+        self.assertContains(resp, swh_cnt_id)
+        self.assertContains(resp, swh_cnt_id_url)
+
     @patch('swh.web.browse.utils.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
@@ -211,6 +217,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                             mock_get_origin_visits):
 
         stub_content_text_sha1 = stub_content_text_data['checksums']['sha1']
+        stub_content_text_sha1_git = stub_content_text_data['checksums']['sha1_git']
         mock_get_origin_visits.return_value = stub_content_origin_visits
         mock_get_origin_visit_snapshot.return_value = stub_content_origin_snapshot
         mock_service.lookup_directory_with_path.return_value = \
@@ -225,6 +232,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
+                                      stub_content_text_sha1_git,
                                       stub_content_text_path,
                                       stub_content_text_data['raw_data'],
                                       'cpp')
@@ -236,6 +244,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
+                                      stub_content_text_sha1_git,
                                       stub_content_text_path,
                                       stub_content_text_data['raw_data'],
                                       'cpp',
@@ -248,6 +257,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
+                                      stub_content_text_sha1_git,
                                       stub_content_text_path,
                                       stub_content_text_data['raw_data'],
                                       'cpp',
@@ -260,6 +270,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
                                       stub_content_origin_branch,
                                       stub_content_root_dir,
                                       stub_content_text_sha1,
+                                      stub_content_text_sha1_git,
                                       stub_content_text_path,
                                       stub_content_text_data['raw_data'],
                                       'cpp',
@@ -400,6 +411,12 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, 'vault-cook-directory')
         self.assertContains(resp, 'vault-cook-revision')
 
+        swh_dir_id = get_swh_persistent_id('directory', directory_entries[0]['dir_id']) # noqa
+        swh_dir_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_dir_id})
+        self.assertContains(resp, swh_dir_id)
+        self.assertContains(resp, swh_dir_id_url)
+
 
     @patch('swh.web.browse.utils.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
@@ -494,7 +511,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
         mock_utils_service.lookup_directory.return_value = \
             stub_origin_sub_directory_entries
         mock_origin_service.lookup_directory_with_path.return_value = \
-            {'target': '120c39eeb566c66a77ce0e904d29dfde42228adb',
+            {'target': stub_origin_sub_directory_entries[0]['dir_id'],
              'type' : 'dir'}
         mock_utils_service.lookup_origin.return_value = stub_origin_info
 

@@ -10,6 +10,7 @@ from nose.tools import istest
 from unittest.mock import patch
 
 from swh.web.common import utils
+from swh.web.common.exc import BadInputExc
 
 
 class UtilsTestCase(unittest.TestCase):
@@ -138,3 +139,21 @@ class UtilsTestCase(unittest.TestCase):
         origin_visits = utils.get_origin_visits(origin_info)
 
         self.assertEqual(len(origin_visits), 3)
+
+    @istest
+    def get_swh_persisent_id(self):
+        swh_object_type = 'content'
+        sha1_git = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
+
+        expected_swh_id = 'swh:1:cnt:' + sha1_git
+
+        self.assertEqual(utils.get_swh_persistent_id(swh_object_type, sha1_git), # noqa
+                         expected_swh_id)
+
+        with self.assertRaises(BadInputExc) as cm:
+            utils.get_swh_persistent_id('foo', sha1_git)
+            self.assertIn('Invalid object type', cm.exception.args[0])
+
+        with self.assertRaises(BadInputExc) as cm:
+            utils.get_swh_persistent_id(swh_object_type, 'not a valid id')
+            self.assertIn('Invalid object id', cm.exception.args[0])

@@ -16,7 +16,9 @@ from django.template.defaultfilters import filesizeformat
 from swh.model.hashutil import hash_to_hex
 
 from swh.web.common import query
-from swh.web.common.utils import reverse, gen_path_info
+from swh.web.common.utils import (
+    reverse, gen_path_info, get_swh_persistent_id
+)
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
     request_content, prepare_content_for_display,
@@ -230,6 +232,19 @@ def content_display(request, query_string):
         'licenses': content_data['licenses']
     }
 
+    sha1_git = content_data['checksums']['sha1_git']
+    swh_cnt_id = get_swh_persistent_id('content', sha1_git)
+    swh_ids = [
+        {
+            'object_type': 'content',
+            'title': 'Content ' + sha1_git,
+            'swh_id': swh_cnt_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_cnt_id}),
+            'show_options': True
+        }
+    ]
+
     return render(request, 'content.html',
                   {'heading': 'Content',
                    'swh_object_name': 'Content',
@@ -246,5 +261,5 @@ def content_display(request, query_string):
                        '</i>Raw File'),
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
-                   'show_actions_menu': True
-                   })
+                   'show_actions_menu': True,
+                   'swh_ids': swh_ids})
