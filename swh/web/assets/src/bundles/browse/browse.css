@@ -5,8 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-
-
 .swh-browse-nav li a {
     border-radius: 4px;
 }
@@ -92,7 +90,7 @@
     width: 460px;
 }
 
-.swh-metadata {
+.swh-popover {
     max-height: 50vh;
     max-width: 80vw;
     overflow-y: auto;
@@ -103,4 +101,8 @@
 
 .swh-search-pagination {
     margin-top: 5px;
+}
+
+.swh-identifiers-popover-body {
+    padding: 0.5rem 0.75rem;
 }

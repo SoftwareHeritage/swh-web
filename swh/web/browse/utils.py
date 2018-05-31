@@ -810,7 +810,6 @@ def get_origin_info(origin_url, origin_type=None):
             try:
                 origin_info = service.lookup_origin({'type': origin_type,
                                                      'url': origin_url})
-
                 return origin_info
             except Exception:
                 pass

@@ -103,7 +103,7 @@ export async function highlightCode(showLineNumbers = true) {
           window.location.hash = `#L${line}`;
           scrollToLine(evt.target);
         }
-      } else {
+      } else if ($(evt.target).closest('.hljs').length) {
         resetHighlightedLines();
         removeHash();
       }

@@ -13,7 +13,7 @@ from django.utils.html import escape
 from django.utils.encoding import DjangoUnicodeDecodeError
 
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
 from swh.web.tests.testbase import SWHWebTestBase
 
@@ -37,6 +37,8 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
     def content_view_text(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_data
 
+        sha1_git = stub_content_text_data['checksums']['sha1_git']
+
         url = reverse('browse-content',
                       kwargs={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
 
@@ -52,10 +54,18 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, escape(stub_content_text_data['raw_data']))
         self.assertContains(resp, url_raw)
 
+        swh_cnt_id = get_swh_persistent_id('content', sha1_git)
+        swh_cnt_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_cnt_id})
+        self.assertContains(resp, swh_cnt_id)
+        self.assertContains(resp, swh_cnt_id_url)
+
     @patch('swh.web.browse.views.content.request_content')
     @istest
     def content_view_text_no_highlight(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_no_highlight_data
+
+        sha1_git = stub_content_text_no_highlight_data['checksums']['sha1_git']
 
         url = reverse('browse-content',
                       kwargs={'query_string': stub_content_text_no_highlight_data['checksums']['sha1']}) # noqa
@@ -72,6 +82,13 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, escape(stub_content_text_no_highlight_data['raw_data'])) # noqa
         self.assertContains(resp, url_raw)
 
+        swh_cnt_id = get_swh_persistent_id('content', sha1_git)
+        swh_cnt_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_cnt_id})
+
+        self.assertContains(resp, swh_cnt_id)
+        self.assertContains(resp, swh_cnt_id_url)
+
     @patch('swh.web.browse.utils.service')
     @istest
     def content_view_no_utf8_text(self, mock_service):
@@ -85,6 +102,8 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         mock_service.lookup_content_language.return_value = None
         mock_service.lookup_content_license.return_value = None
 
+        sha1_git = non_utf8_encoded_content_data['checksums']['sha1_git']
+
         url = reverse('browse-content',
                       kwargs={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
 
@@ -92,6 +111,10 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
             resp = self.client.get(url)
             self.assertEquals(resp.status_code, 200)
             self.assertTemplateUsed('content.html')
+            swh_cnt_id = get_swh_persistent_id('content', sha1_git)
+            swh_cnt_id_url = reverse('browse-swh-id',
+                                     kwargs={'swh_id': swh_cnt_id})
+            self.assertContains(resp, swh_cnt_id_url)
             self.assertContains(resp, escape(non_utf8_encoded_content.decode(non_utf8_encoding).encode('utf-8'))) # noqa
         except DjangoUnicodeDecodeError:
             self.fail('Textual content is not encoded in utf-8')
