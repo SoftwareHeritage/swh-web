@@ -9,7 +9,7 @@ import {heapsPermute} from 'utils/heaps-permute';
 import {handleFetchError} from 'utils/functions';
 
 let originPatterns;
-let perPage = 15;
+let perPage = 20;
 let limit = perPage * 10;
 let offset = 0;
 let currentData = null;
@@ -85,6 +85,7 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
   let regex = patternsPermut.join('|');
   let searchUrl = Urls.browse_origin_search(regex) + `?limit=${limit}&offset=${searchOffset}&regexp=true`;
 
+  clearOriginSearchResultsTable();
   $('.swh-loading').addClass('show');
   fetch(searchUrl, {credentials: 'same-origin'})
     .then(handleFetchError)
@@ -122,7 +123,6 @@ export function initOriginSearch() {
       let patterns = $('#origins-url-patterns').val();
       offset = 0;
       inSearch = true;
-      clearOriginSearchResultsTable();
       searchOrigins(patterns, limit, offset, offset);
       event.preventDefault();
     });

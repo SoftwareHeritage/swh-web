@@ -34,6 +34,7 @@ def _browse_vault_view(request):
 
 
 urlpatterns = [
+    url(r'^$', _browse_search_view),
     url(r'^help/$', _browse_help_view, name='browse-help'),
     url(r'^search/$', _browse_search_view, name='browse-search'),
     url(r'^vault/$', _browse_vault_view, name='browse-vault'),

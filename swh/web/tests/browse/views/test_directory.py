@@ -9,7 +9,7 @@ from nose.tools import istest, nottest
 from django.test import TestCase
 
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.utils import reverse
+from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
 from swh.web.tests.testbase import SWHWebTestBase
 
@@ -83,6 +83,12 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
 
         self.assertContains(resp, 'vault-cook-directory')
 
+        swh_dir_id = get_swh_persistent_id('directory', directory_entries[0]['dir_id']) # noqa
+        swh_dir_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_dir_id})
+        self.assertContains(resp, swh_dir_id)
+        self.assertContains(resp, swh_dir_id_url)
+
     @patch('swh.web.browse.utils.service')
     @istest
     def root_directory_view(self, mock_service):
@@ -98,7 +104,7 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
         mock_utils_service.lookup_directory.return_value = \
             stub_sub_directory_data
         mock_directory_service.lookup_directory_with_path.return_value = \
-            {'target': '120c39eeb566c66a77ce0e904d29dfde42228adc',
+            {'target': stub_sub_directory_data[0]['dir_id'],
              'type': 'dir'}
 
         self.directory_view(stub_root_directory_sha1, stub_sub_directory_data,

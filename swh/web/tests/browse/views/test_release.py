@@ -10,7 +10,9 @@ from nose.tools import istest
 from django.test import TestCase
 
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse, format_utc_iso_date
+from swh.web.common.utils import (
+    reverse, format_utc_iso_date, get_swh_persistent_id
+)
 from swh.web.tests.testbase import SWHWebTestBase
 
 from .data.release_test_data import (
@@ -63,6 +65,12 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (target_url, target))
 
+        swh_rel_id = get_swh_persistent_id('release', release_id)
+        swh_rel_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_rel_id})
+        self.assertContains(resp, swh_rel_id)
+        self.assertContains(resp, swh_rel_id_url)
+
         origin_info = {
             'id': 13706355,
             'type': 'git',
@@ -79,7 +87,6 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
                                     'origin_url': origin_info['url']})
 
         resp = self.client.get(url)
-        print(resp.content)
 
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('release.html')

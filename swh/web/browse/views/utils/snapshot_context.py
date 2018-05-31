@@ -25,7 +25,8 @@ from swh.web.common.exc import (
     handle_view_exception, NotFoundExc
 )
 from swh.web.common.utils import (
-    reverse, gen_path_info, format_utc_iso_date
+    reverse, gen_path_info, format_utc_iso_date,
+    get_swh_persistent_id
 )
 
 
@@ -332,6 +333,28 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         'revision_id': revision_id
     }
 
+    swh_dir_id = get_swh_persistent_id('directory', sha1_git)
+    swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
+
+    swh_ids = [
+        {
+            'object_type': 'directory',
+            'title': 'Directory ' + sha1_git,
+            'swh_id': swh_dir_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_dir_id}),
+            'show_options': snapshot_context['origin_info'] is not None
+        },
+        {
+            'object_type': 'snapshot',
+            'title': 'Snapshot ' + snapshot_id,
+            'swh_id': swh_snp_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_snp_id}),
+            'show_options': snapshot_context['origin_info'] is not None
+        }
+    ]
+
     return render(request, 'directory.html',
                   {'heading': 'Directory',
                    'swh_object_name': 'Directory',
@@ -349,7 +372,8 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                    'readme_html': readme_html,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': vault_cooking,
-                   'show_actions_menu': True})
+                   'show_actions_menu': True,
+                   'swh_ids': swh_ids})
 
 
 def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
@@ -464,6 +488,29 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                                  'role': 'button'})
         content_metadata['snapshot context'] = browse_snapshot_link
 
+    cnt_sha1_git = content_data['checksums']['sha1_git']
+    swh_cnt_id = get_swh_persistent_id('content', cnt_sha1_git)
+    swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
+
+    swh_ids = [
+        {
+            'object_type': 'content',
+            'title': 'Content ' + cnt_sha1_git,
+            'swh_id': swh_cnt_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_cnt_id}),
+            'show_options': True
+        },
+        {
+            'object_type': 'snapshot',
+            'title': 'Snapshot ' + snapshot_id,
+            'swh_id': swh_snp_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_snp_id}),
+            'show_options': snapshot_context['origin_info'] is not None
+        }
+    ]
+
     return render(request, 'content.html',
                   {'heading': 'Content',
                    'swh_object_name': 'Content',
@@ -480,7 +527,8 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                        '</i>Raw File'),
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
-                   'show_actions_menu': True})
+                   'show_actions_menu': True,
+                   'swh_ids': swh_ids})
 
 
 PER_PAGE = 20
@@ -586,6 +634,18 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                                  'role': 'button'})
         revision_metadata['snapshot context'] = browse_snapshot_link
 
+    swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
+    swh_ids = [
+        {
+            'object_type': 'snapshot',
+            'title': 'Snapshot ' + snapshot_id,
+            'swh_id': swh_snp_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_snp_id}),
+            'show_options': snapshot_context['origin_info'] is not None
+        }
+    ]
+
     return render(request, 'revision-log.html',
                   {'heading': 'Revision history',
                    'swh_object_name': 'Revision history',
@@ -598,7 +658,8 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                    'top_right_link_text': None,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
-                   'show_actions_menu': True})
+                   'show_actions_menu': True,
+                   'swh_ids': swh_ids})
 
 
 def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,

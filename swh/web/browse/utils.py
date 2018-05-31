@@ -807,10 +807,12 @@ def get_origin_info(origin_url, origin_type=None):
                                       'url': origin_url})
     else:
         for origin_type in _swh_origin_types:
-            origin_info = service.lookup_origin({'type': origin_type,
-                                                 'url': origin_url})
-            if origin_info:
+            try:
+                origin_info = service.lookup_origin({'type': origin_type,
+                                                     'url': origin_url})
                 return origin_info
+            except Exception:
+                pass
     return None
 
 

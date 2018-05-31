@@ -13,6 +13,7 @@ from django.core.cache import cache
 from django.core import urlresolvers
 from django.http import QueryDict
 
+from swh.model.fields.hashes import validate_sha1_git
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc
 
@@ -248,3 +249,48 @@ def get_origin_visits(origin_info):
     cache.set(cache_entry_id, origin_visits)
 
     return origin_visits
+
+
+def get_swh_persistent_id(object_type, object_id, scheme_version=1):
+    """
+    Returns the persistent identifier for a swh object based on:
+
+        * the object type
+        * the object id
+        * the swh identifiers scheme version
+
+    Args:
+        object_type (str): the swh object type
+            (content/directory/release/revision/snapshot)
+        object_id (str): the swh object id (hexadecimal representation
+            of its hash value)
+        schem_version (int): the scheme version of the swh
+            persistent identifiers
+
+    Returns: str: the swh object persistent identifier
+
+    Raises:
+        BadInputExc if the provided parameters do not enable to
+            generate a valid identifier
+    """
+    swh_id = 'swh:%s:' % scheme_version
+    if object_type == 'content':
+        swh_id += 'cnt:'
+    elif object_type == 'directory':
+        swh_id += 'dir:'
+    elif object_type == 'release':
+        swh_id += 'rel:'
+    elif object_type == 'revision':
+        swh_id += 'rev:'
+    elif object_type == 'snapshot':
+        swh_id += 'snp:'
+    else:
+        raise BadInputExc('Invalid object type (%s) for swh persistent id' %
+                          object_type)
+    try:
+        validate_sha1_git(object_id)
+        swh_id += object_id
+    except Exception:
+        raise BadInputExc('Invalid object id (%s) for swh persistent id' %
+                          object_id)
+    return swh_id
