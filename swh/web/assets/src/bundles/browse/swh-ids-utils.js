@@ -26,7 +26,6 @@ $(document).ready(() => {
 
 export function swhIdObjectTypeToggled(event) {
   event.preventDefault();
-  console.log($(event.target));
   $(event.target).tab('show');
 }
 

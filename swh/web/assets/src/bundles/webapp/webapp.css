@@ -367,3 +367,23 @@ ul.nav-sidebar a {
 .swh-heading-color {
     color: #e20026;
 }
+
+.sidebar-mini.sidebar-collapse .main-sidebar:hover {
+    width: 4.6rem;
+}
+
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .user-panel > .info,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-link p,
+.sidebar-mini.sidebar-collapse .main-sidebar:hover .brand-text {
+    visibility: hidden !important;
+}
+
+.sidebar .nav-link p,
+.main-sidebar .brand-text,
+.sidebar .user-panel .info {
+    transition: none;
+}
+
+.sidebar-mini.sidebar-mini.sidebar-collapse .sidebar {
+    padding-right: 0;
+}

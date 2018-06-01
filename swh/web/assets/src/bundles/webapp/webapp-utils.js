@@ -1,3 +1,19 @@
+import {staticAsset} from 'utils/functions';
+
+function setBrandImage(imgPath) {
+  $('.swh-sidebar .brand-image').attr('src', staticAsset(imgPath));
+}
+
+$(document).on('collapsed.lte.pushmenu', event => {
+  if ($('body').width() > 980) {
+    setBrandImage('img/swh-logo-archive-variant.png');
+  }
+});
+
+$(document).on('shown.lte.pushmenu', event => {
+  setBrandImage('img/swh-logo-archive.png');
+});
+
 function ensureNoFooterOverflow() {
   $('body').css('padding-bottom', $('footer').outerHeight() + 'px');
 }
@@ -17,6 +33,7 @@ $(document).ready(() => {
     $('.main-sidebar, .main-sidebar:before').css('transition', 'none');
     $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition', 'none');
     $('body').addClass('sidebar-collapse');
+    setBrandImage('img/swh-logo-archive-variant.png');
     // restore transitions for user navigation
     setTimeout(() => {
       $('.main-sidebar, .main-sidebar:before').css('transition', sidebarTransition);
@@ -39,6 +56,9 @@ $(document).ready(() => {
   ensureNoFooterOverflow();
   $(window).resize(function() {
     ensureNoFooterOverflow();
+    if ($('body').hasClass('sidebar-collapse') && $('body').width() > 980) {
+      setBrandImage('img/swh-logo-archive-variant.png');
+    }
   });
 
 });
