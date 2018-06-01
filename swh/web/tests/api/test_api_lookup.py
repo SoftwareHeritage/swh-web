@@ -27,8 +27,8 @@ class ApiLookupTestCase(unittest.TestCase):
                 test_generic_lookup_fn, 'sha1', 'unused_arg',
                 notfound_msg='This will be raised because None is returned.')
 
-            self.assertIn('This will be raised because None is returned.',
-                          cm.exception.args[0])
+        self.assertIn('This will be raised because None is returned.',
+                      cm.exception.args[0])
 
     @istest
     def generic_api_map_are_enriched_and_transformed_to_list(self):
