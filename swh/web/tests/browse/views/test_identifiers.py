@@ -71,7 +71,7 @@ class SwhBrowseIdTest(SWHWebTestBase, TestCase):
         self.assertEqual(resp['location'], revision_browse_url)
 
         query_params = {'origin_type': 'git',
-                        'origin_url': 'https://github.com/webpack/webpack'}
+                        'origin': 'https://github.com/webpack/webpack'}
 
         url = reverse('browse-swh-id',
                       kwargs={'swh_id': swh_id},
@@ -100,7 +100,7 @@ class SwhBrowseIdTest(SWHWebTestBase, TestCase):
         self.assertEqual(resp['location'], release_browse_url)
 
         query_params = {'origin_type': 'git',
-                        'origin_url': 'https://github.com/python/cpython'}
+                        'origin': 'https://github.com/python/cpython'}
 
         url = reverse('browse-swh-id',
                       kwargs={'swh_id': swh_id},

@@ -720,7 +720,7 @@ class ServiceTestCase(unittest.TestCase):
         with self.assertRaises(BadInputExc) as cm:
             # when
             service.lookup_release('not-a-sha1')
-            self.assertIn('invalid checksum', cm.exception.args[0])
+        self.assertIn('invalid checksum', cm.exception.args[0].lower())
 
         mock_storage.release_get.called = False
 
@@ -735,7 +735,7 @@ class ServiceTestCase(unittest.TestCase):
             service.lookup_release(
                 '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4daf5'
                 '1aea892abe')
-            self.assertIn('sha1_git supported', cm.exception.args[0])
+        self.assertEqual('Only sha1_git is supported.', cm.exception.args[0])
 
         mock_storage.release_get.called = False
 
@@ -816,7 +816,7 @@ class ServiceTestCase(unittest.TestCase):
         # when
         with self.assertRaises(BadInputExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
-            self.assertIn('Only sha1_git is supported', cm.exception.args[0])
+        self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
     @istest
     def lookup_revision_with_context_ko_not_a_sha1_2(self):
@@ -828,7 +828,7 @@ class ServiceTestCase(unittest.TestCase):
         # when
         with self.assertRaises(BadInputExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
-            self.assertIn('Only sha1_git is supported', cm.exception.args[0])
+        self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
     @patch('swh.web.common.service.storage')
     @istest
@@ -846,8 +846,8 @@ class ServiceTestCase(unittest.TestCase):
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
-            self.assertIn('Revision 777777bdf3629f916219feb3dcc7393ded1bc8db'
-                          ' not found', cm.exception.args[0])
+        self.assertIn('Revision 777777bdf3629f916219feb3dcc7393ded1bc8db'
+                      ' not found', cm.exception.args[0])
 
         mock_storage.revision_get.assert_called_once_with(
             [sha1_git_bin])
@@ -869,8 +869,8 @@ class ServiceTestCase(unittest.TestCase):
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
-            self.assertIn('Revision 65a55bbdf3629f916219feb3dcc7393ded1bc8db'
-                          ' not found', cm.exception.args[0])
+        self.assertIn('Revision root 65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+                      ' not found', cm.exception.args[0])
 
         mock_storage.revision_get.assert_has_calls([call([sha1_git_bin]),
                                                     call([sha1_git_root_bin])])
@@ -1042,7 +1042,7 @@ class ServiceTestCase(unittest.TestCase):
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_directory_with_revision('123')
-            self.assertIn('Revision 123 not found', cm.exception.args[0])
+        self.assertIn('Revision 123 not found', cm.exception.args[0])
 
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
         ('123', ['sha1'], 'Only sha1_git is supported.')
@@ -1071,9 +1071,11 @@ class ServiceTestCase(unittest.TestCase):
             service.lookup_directory_with_revision(
                 '123',
                 'path/to/something/unknown')
-            self.assertIn("Directory/File 'path/to/something/unknown' " +
-                          "pointed to by revision 123 not found",
-                          cm.exception.args[0])
+        exception_text = cm.exception.args[0].lower()
+        self.assertIn('directory or file', exception_text)
+        self.assertIn('path/to/something/unknown', exception_text)
+        self.assertIn('revision 123', exception_text)
+        self.assertIn('not found', exception_text)
 
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
         ('123', ['sha1'], 'Only sha1_git is supported.')
@@ -1116,8 +1118,8 @@ class ServiceTestCase(unittest.TestCase):
             service.lookup_directory_with_revision(
                 '123',
                 'some/path/to/rev')
-            self.assertIn("Entity of type 'rev' not implemented.",
-                          cm.exception.args[0])
+        self.assertIn("Entity of type rev not implemented.",
+                      cm.exception.args[0])
 
         # then
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
@@ -1389,12 +1391,13 @@ class ServiceTestCase(unittest.TestCase):
             service.lookup_revision_message(
                 self.SHA1_SAMPLE)
 
-            # then
-            mock_storage.revision_get.assert_called_with(
-                self.SHA1_SAMPLE_BIN)
-            self.assertEqual(cm.exception.args[0], 'No message for revision '
-                             'with sha1_git '
-                             '18d8be353ed3480476f032475e7c233eff7371d5.')
+        # then
+        mock_storage.revision_get.assert_called_with(
+            [self.SHA1_SAMPLE_BIN])
+        self.assertEqual(
+            cm.exception.args[0],
+            'No message for revision with sha1_git %s.' % self.SHA1_SAMPLE,
+        )
 
     @patch('swh.web.common.service.storage')
     @istest
@@ -1407,12 +1410,13 @@ class ServiceTestCase(unittest.TestCase):
             service.lookup_revision_message(
                 self.SHA1_SAMPLE)
 
-            # then
-            mock_storage.revision_get.assert_called_with(
-                self.SHA1_SAMPLE_BIN)
-            self.assertEqual(cm.exception.args[0], 'Revision with sha1_git '
-                             '18d8be353ed3480476f032475e7c233eff7371d5 '
-                             'not found.')
+        # then
+        mock_storage.revision_get.assert_called_with(
+            [self.SHA1_SAMPLE_BIN])
+        self.assertEqual(
+            cm.exception.args[0],
+            'Revision with sha1_git %s not found.' % self.SHA1_SAMPLE,
+        )
 
     @patch('swh.web.common.service.storage')
     @istest
@@ -1574,9 +1578,9 @@ class ServiceTestCase(unittest.TestCase):
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_content_raw('sha1:' + self.SHA1_SAMPLE)
-            self.assertIn(cm.exc.args[0],
-                          'Content with %s checksum equals to %s not found!' %
-                          ('sha1', self.SHA1_SAMPLE))
+        self.assertIn(cm.exception.args[0],
+                      'Content with %s checksum equals to %s not found!' %
+                      ('sha1', self.SHA1_SAMPLE))
 
         mock_storage.content_find.assert_called_with(
             {'sha1': hash_to_bytes(self.SHA1_SAMPLE)})
@@ -1613,9 +1617,9 @@ class ServiceTestCase(unittest.TestCase):
         with self.assertRaises(NotFoundExc) as cm:
             # then
             service.lookup_content('sha1:%s' % self.SHA1_SAMPLE)
-            self.assertIn(cm.exc.args[0],
-                          'Content with %s checksum equals to %s not found!' %
-                          ('sha1', self.SHA1_SAMPLE))
+        self.assertIn(cm.exception.args[0],
+                      'Content with %s checksum equals to %s not found!' %
+                      ('sha1', self.SHA1_SAMPLE))
 
         mock_storage.content_find.assert_called_with(
             {'sha1': self.SHA1_SAMPLE_BIN})
@@ -1702,19 +1706,19 @@ class ServiceTestCase(unittest.TestCase):
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
             'sha1',
             'directory-id-bin')
-        mock_storage.directory_get.return_value = None
+        mock_storage.directory_ls.return_value = []
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_directory('directory_id')
-            self.assertIn('Directory with sha1_git directory_id not found',
-                          cm.exception.args[0])
+
+        self.assertIn('Directory with sha1_git directory_id not found',
+                      cm.exception.args[0])
 
         # then
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
             'directory_id', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.directory_get.assert_called_with(['directory-id-bin'])
-        mock_storage.directory_ls.called = False
+        mock_storage.directory_ls.assert_called_with('directory-id-bin')
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
@@ -1723,9 +1727,6 @@ class ServiceTestCase(unittest.TestCase):
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
             'sha1',
             'directory-sha1-bin')
-
-        # something that exists is all that matters here
-        mock_storage.directory_get.return_value = {'id': b'directory-sha1-bin'}
 
         # given
         stub_dir_entries = [{
@@ -1766,6 +1767,20 @@ class ServiceTestCase(unittest.TestCase):
             'directory-sha1', ['sha1'], 'Only sha1_git is supported.')
         mock_storage.directory_ls.assert_called_with(
             'directory-sha1-bin')
+
+    @patch('swh.web.common.service.storage')
+    @istest
+    def lookup_directory_empty(self, mock_storage):
+        empty_dir_sha1 = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
+        mock_storage.directory_ls.return_value = []
+
+        # when
+        actual_directory_ls = list(service.lookup_directory(empty_dir_sha1))
+
+        # then
+        self.assertEqual(actual_directory_ls, [])
+
+        self.assertFalse(mock_storage.directory_ls.called)
 
     @patch('swh.web.common.service.storage')
     @istest
@@ -1860,21 +1875,21 @@ class ServiceTestCase(unittest.TestCase):
         mock_storage.revision_get_by.return_value = None
 
         # when
+        origin_id = 1
+        branch_name = 'master3'
+        ts = None
         with self.assertRaises(NotFoundExc) as cm:
-            origin_id = 1
-            branch_name = 'master3'
-            ts = None
             service.lookup_revision_with_context_by(origin_id, branch_name, ts,
                                                     'sha1')
-            # then
-            self.assertIn(
-                'Revision with (origin_id: %s, branch_name: %s'
-                ', ts: %s) not found.' % (origin_id,
-                                          branch_name,
-                                          ts), cm.exception.args[0])
+        # then
+        self.assertIn(
+            'Revision with (origin_id: %s, branch_name: %s'
+            ', ts: %s) not found.' % (origin_id,
+                                      branch_name,
+                                      ts), cm.exception.args[0])
 
-            mock_storage.revision_get_by.assert_called_once_with(
-                origin_id, branch_name, ts)
+        mock_storage.revision_get_by.assert_called_once_with(
+            origin_id, branch_name, limit=1, timestamp=ts)
 
     @patch('swh.web.common.service.lookup_revision_with_context')
     @patch('swh.web.common.service.storage')

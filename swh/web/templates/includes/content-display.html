@@ -5,6 +5,8 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load swh_templatetags %}
+
 <div class="swh-content">
   {% if content_size > max_content_size %}
     Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
@@ -16,11 +18,24 @@ See top-level LICENSE file for more information
     </div>
   {% elif "image/" in mimetype and content %}
     <img src="data:{{ mimetype }};base64,{{ content }}"/>
+  {% elif "application/pdf" == mimetype %}
+    <div class="text-center">
+      <div class="py-2">
+        <button class="btn btn-default btn-sm" id="pdf-prev">Previous</button>
+        <span>Page: <span id="pdf-page-num"></span> / <span id="pdf-page-count"></span></span>
+        <button class="btn btn-default btn-sm" id="pdf-next">Next</button>
+      </div>
+      <canvas id="pdf-canvas"></canvas>
+    </div>
   {% else %}
     Content with mime type {{ mimetype }} can not be displayed.
   {% endif %}
 </div>
 
 <script>
-  swh.webapp.highlightCode();
+  {% if "application/pdf" == mimetype %}
+    swh.webapp.renderPdf({{ top_right_link|jsonify }});
+  {% else %}
+    swh.webapp.highlightCode();
+  {% endif %}
 </script>
