@@ -16,6 +16,8 @@ const RobotstxtPlugin = require('robotstxt-webpack-plugin').default;
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const RemoveSourceMapUrlPlugin = require('./webpack-plugins/remove-source-map-url-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
@@ -315,7 +317,14 @@ module.exports = {
       Tab: 'exports-loader?Tab!bootstrap/js/dist/tab',
       Tooltip: 'exports-loader?Tooltip!bootstrap/js/dist/tooltip',
       Util: 'exports-loader?Util!bootstrap/js/dist/util'
-    })
+    }),
+    // needed in order to use pdf.js
+    new webpack.IgnorePlugin(/^\.\/pdf.worker.js$/),
+    new CopyWebpackPlugin([{
+      from: path.join(__dirname, '../../../../node_modules/pdfjs-dist/build/pdf.worker.min.js'),
+      to: path.join(__dirname, '../../static/js/')
+    }])
+
   ],
   // webpack optimizations
   optimization: {

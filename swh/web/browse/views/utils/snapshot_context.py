@@ -699,7 +699,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
             revision_url = reverse('browse-revision',
                                    kwargs={'sha1_git': branch['revision']},
                                    query_params={'origin_type': origin_info['type'], # noqa
-                                                 'origin_url': origin_info['url']}) # noqa
+                                                 'origin': origin_info['url']}) # noqa
         query_params['branch'] = branch['name']
         directory_url = reverse(browse_view_name,
                                 kwargs=url_args,
@@ -773,7 +773,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
             release_url = reverse('browse-release',
                                   kwargs={'sha1_git': release['id']},
                                   query_params={'origin_type': origin_info['type'], # noqa
-                                                'origin_url': origin_info['url']}) # noqa
+                                                'origin': origin_info['url']}) # noqa
         query_params['release'] = release['name']
         del query_params['release']
         release['release_url'] = release_url

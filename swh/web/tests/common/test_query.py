@@ -88,7 +88,7 @@ class QueryTestCase(unittest.TestCase):
                 'sha1:blah',
                 ['sha1'],
                 'useless error message for this use case')
-            self.assertIn('Error input', cm.exception.args[0])
+        self.assertIn('Error input', cm.exception.args[0])
 
         mock_hash.assert_called_once_with('sha1:blah')
 
@@ -104,7 +104,7 @@ class QueryTestCase(unittest.TestCase):
                 'sha1:431',
                 ['sha1_git'],
                 'Only sha1_git!')
-            self.assertIn('Only sha1_git!', cm.exception.args[0])
+        self.assertIn('Only sha1_git!', cm.exception.args[0])
 
         mock_hash.assert_called_once_with('sha1:431')
 
@@ -138,5 +138,5 @@ class QueryTestCase(unittest.TestCase):
         # when
         with self.assertRaises(BadInputExc) as cm:
             query.parse_uuid4('7c33636b-8f11-4bda-89d9-ba8b76a42')
-            self.assertIn('badly formed hexadecimal UUID string',
-                          cm.exception.args[0])
+        self.assertIn('badly formed hexadecimal UUID string',
+                      cm.exception.args[0])
