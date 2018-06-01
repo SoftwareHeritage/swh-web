@@ -11,7 +11,7 @@ See top-level LICENSE file for more information
       {% if snapshot_context.origin_info.type %}
         <a class="swh-heading-color" href="{% url 'browse-origin' snapshot_context.origin_info.type snapshot_context.origin_info.url %}">
       {% else %}
-        <a href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
+        <a class="swh-heading-color" href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
       {% endif %}
         <h4 class="text-center">
           Origin: {{ snapshot_context.origin_info.url }}

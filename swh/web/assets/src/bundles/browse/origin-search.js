@@ -36,7 +36,7 @@ function populateOriginSearchResultsTable(data, offset) {
       let elem = data[i];
       let tableRow = '<tr>';
       tableRow += '<td style="width: 120px;">' + elem.type + '</td>';
-      let browseUrl = Urls.browse_origin(elem.type, elem.url);
+      let browseUrl = Urls.browse_origin(elem.url);
       tableRow += '<td style="white-space: nowrap;"><a href="' + browseUrl + '">' + browseUrl + '</a></td>';
       tableRow += '<td id="visit-status-origin-' + elem.id + '"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>';
       tableRow += '</tr>';

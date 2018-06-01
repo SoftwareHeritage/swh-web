@@ -83,8 +83,7 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
 
         url = reverse('browse-release',
                       kwargs={'sha1_git': stub_release['id']},
-                      query_params={'origin_type': origin_info['type'],
-                                    'origin_url': origin_info['url']})
+                      query_params={'origin': origin_info['url']})
 
         resp = self.client.get(url)
 
@@ -101,8 +100,7 @@ class SwhBrowseReleaseTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, target_type)
 
         target_url = reverse('browse-revision', kwargs={'sha1_git': target},
-                             query_params={'origin_type': origin_info['type'],
-                                           'origin_url': origin_info['url']})
+                             query_params={'origin': origin_info['url']})
 
         self.assertContains(resp, '<a href="%s">%s</a>' % (target_url, target))
 
