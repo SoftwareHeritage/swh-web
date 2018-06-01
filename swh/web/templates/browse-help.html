@@ -118,14 +118,14 @@ See top-level LICENSE file for more information
     <ul>
 
       <li>
-        <a href="{% url 'browse-origin-visits' 'git' 'https://github.com/torvalds/linux' %}">
-          {% url 'browse-origin-visits' 'git' 'https://github.com/torvalds/linux' %}
+        <a href="{% url 'browse-origin-visits' 'https://github.com/torvalds/linux' %}">
+          {% url 'browse-origin-visits' 'https://github.com/torvalds/linux' %}
         </a>
       </li>
 
       <li>
-        <a href="{% url 'browse-origin-visits' 'git' 'https://github.com/python/cpython' %}">
-          {% url 'browse-origin-visits' 'git' 'https://github.com/python/cpython' %}
+        <a href="{% url 'browse-origin-visits' 'https://github.com/python/cpython' %}">
+          {% url 'browse-origin-visits' 'https://github.com/python/cpython' %}
         </a>
       </li>
     </ul>
@@ -137,14 +137,14 @@ See top-level LICENSE file for more information
     <ul>
 
       <li>
-        <a href="{% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}">
-          {% url 'browse-origin' 'git' 'https://github.com/torvalds/linux' %}
+        <a href="{% url 'browse-origin' 'https://github.com/torvalds/linux' %}">
+          {% url 'browse-origin' 'https://github.com/torvalds/linux' %}
         </a>
       </li>
 
       <li>
-        <a href="{% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}">
-          {% url 'browse-origin' 'git' 'https://github.com/python/cpython' %}
+        <a href="{% url 'browse-origin' 'https://github.com/python/cpython' %}">
+          {% url 'browse-origin' 'https://github.com/python/cpython' %}
         </a>
       </li>
     </ul>
@@ -153,8 +153,8 @@ See top-level LICENSE file for more information
     Display a
     <b>content</b> from an
     <b>origin</b>:
-    <a href="{% url 'browse-origin-content' origin_type='git' origin_url='https://github.com/git/git' path='git.c' %}">
-      {% url 'browse-origin-content' origin_type='git' origin_url='https://github.com/git/git' path='git.c' %}
+    <a href="{% url 'browse-origin-content' origin_url='https://github.com/git/git' path='git.c' %}">
+      {% url 'browse-origin-content' origin_url='https://github.com/git/git' path='git.c' %}
     </a>
   </li>
   <li>
@@ -162,8 +162,8 @@ See top-level LICENSE file for more information
     <b>directory</b> from an
     <b>origin</b>:
 
-    <a href="{% url 'browse-origin-directory' origin_type='git' origin_url='https://github.com/torvalds/linux' path='net/ethernet' %}">
-      {% url 'browse-origin-directory' origin_type='git' origin_url='https://github.com/torvalds/linux' path='net/ethernet' %}
+    <a href="{% url 'browse-origin-directory' origin_url='https://github.com/torvalds/linux' path='net/ethernet' %}">
+      {% url 'browse-origin-directory' origin_url='https://github.com/torvalds/linux' path='net/ethernet' %}
     </a>
   </li>
   <li>
@@ -171,8 +171,8 @@ See top-level LICENSE file for more information
     <b>revision history</b> (aka the commit log) from an
     <b>origin</b>:
 
-    <a href="{% url 'browse-origin-log' origin_type='git' origin_url='https://github.com/Kitware/CMake' %}">
-      {% url 'browse-origin-log' origin_type='git' origin_url='https://github.com/Kitware/CMake' %}
+    <a href="{% url 'browse-origin-log' origin_url='https://github.com/Kitware/CMake' %}">
+      {% url 'browse-origin-log' origin_url='https://github.com/Kitware/CMake' %}
     </a>
   </li>
 </ul>

@@ -63,13 +63,14 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
               }]
         mock_origin_visits.return_value = visits
 
+        visit_id = 12
         with self.assertRaises(NotFoundExc) as cm:
-            visit_id = 12
             visit = utils.get_origin_visit(origin_info,
                                            visit_id=visit_id)
-            self.assertIn('Visit with id %s for origin with id %s not found' %
-                          (origin_info['id'], visit_id),
-                          cm.exception.args[0])
+        exception_text = cm.exception.args[0]
+        self.assertIn('Visit with id %s' % visit_id, exception_text)
+        self.assertIn('type %s' % origin_info['type'], exception_text)
+        self.assertIn('url %s' % origin_info['url'], exception_text)
 
         visit = utils.get_origin_visit(origin_info, visit_id=2)
         self.assertEqual(visit, visits[1])

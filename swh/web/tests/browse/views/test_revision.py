@@ -104,7 +104,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         url = reverse('browse-revision',
                       kwargs={'sha1_git': revision_id_test},
                       query_params={'origin_type': origin_info['type'],
-                                    'origin_url': origin_info['url']})
+                                    'origin': origin_info['url']})
 
         resp = self.client.get(url)
 
@@ -116,7 +116,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
             parent_url = reverse('browse-revision',
                                  kwargs={'sha1_git': parent},
                                  query_params={'origin_type': origin_info['type'],
-                                               'origin_url': origin_info['url']})
+                                               'origin': origin_info['url']})
             self.assertContains(resp, '<a href="%s">%s</a>' %
                                 (parent_url, parent))
 
@@ -260,7 +260,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         url = reverse('browse-revision',
                       kwargs={'sha1_git': revision_id_test},
                       query_params={'origin_type': 'git',
-                                    'origin_url': 'https://github.com/foo/bar'})
+                                    'origin': 'https://github.com/foo/bar'})
 
         mock_service.lookup_revision.side_effect = None
         mock_utils_service.lookup_origin.side_effect = \

@@ -372,7 +372,7 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     query_params = {'snapshot_id': snapshot_id,
                     'origin_type': origin_type,
-                    'origin_url': origin_url,
+                    'origin': origin_url,
                     'timestamp': timestamp,
                     'visit_id': visit_id}
 
@@ -449,7 +449,7 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     diff_revision_url = reverse('diff-revision', kwargs={'sha1_git': sha1_git},
                                 query_params={'origin_type': origin_type,
-                                              'origin_url': origin_url,
+                                              'origin': origin_url,
                                               'timestamp': timestamp,
                                               'visit_id': visit_id})
 
