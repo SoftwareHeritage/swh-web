@@ -40,9 +40,9 @@ See top-level LICENSE file for more information
   archive. It currently includes:
   <ul>
     <li>public repositories from <a href="https://github.com">GitHub</a></li>
+    <li>source packages from the <a href="https://www.debian.org">Debian</a> distribution</li>
     <li>public repositories from the former <a href="https://gitorious.org/">Gitorious</a> code hosting service</li>
     <li>public repositories from the former <a href="https://code.google.com/archive/">Google Code</a> project hosting service</li>
-    <li>source packages from the <a href="https://www.debian.org">Debian</a> distribution (as of August 2015, via the snapshot service)</li>
     <li>releases from the <a href="https://www.gnu.org">GNU</a> project (as of August 2015)</li>
   </ul>
 </p>
@@ -87,17 +87,17 @@ See top-level LICENSE file for more information
   <div class="row">
     <div class="col-md-3" align="center"></div>
     <div class="col-md-3 swh-web-app-link" align="center">
-      <a href="{% url 'api-homepage' %}">
-        <img id="swh-web-api-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
-        <h5>Web API</h5>
-        <p>Query the archive programmatically using a RESTful API.</p>
-      </a>
-    </div>
-    <div class="col-md-3 swh-web-app-link" align="center">
       <a href="{% url 'browse-search' %}">
         <img alt="Browse the Software Heritage archive" src="{% static 'img/swh-browse.png' %}"/>
         <h5>Browse</h5>
         <p>Explore the archive using a dedicated web interface.</p>
+      </a>
+    </div>
+    <div class="col-md-3 swh-web-app-link" align="center">
+      <a href="{% url 'api-homepage' %}">
+        <img id="swh-web-api-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
+        <h5>Web API</h5>
+        <p>Query the archive programmatically using a RESTful API.</p>
       </a>
     </div>
     <div class="col-md-3" align="center"></div>
