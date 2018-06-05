@@ -25,7 +25,7 @@ See top-level LICENSE file for more information
 
         <ul class="nav nav-pills ml-auto p-2">
           {% for swh_id in swh_ids %}
-            {% if forloop.counter == 1 %}
+            {% if forloop.first %}
               <li class="nav-item"><a class="nav-link active" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">{{ swh_id.object_type }}</a></li>
             {% else %}
               <li class="nav-item"><a class="nav-link" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">{{ swh_id.object_type }}</a></li>
@@ -35,7 +35,7 @@ See top-level LICENSE file for more information
 
         <div class="tab-content">
           {% for swh_id in swh_ids %}
-            {% if forloop.counter == 1 %}
+            {% if forloop.first %}
               <div class="tab-pane active" id="swh-id-tab-{{ swh_id.object_type }}">
             {% else %}
               <div class="tab-pane" id="swh-id-tab-{{ swh_id.object_type }}">
