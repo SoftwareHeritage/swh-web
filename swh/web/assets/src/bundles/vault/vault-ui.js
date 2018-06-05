@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchErrors} from 'utils/functions';
+import {handleFetchError, handleFetchErrors} from 'utils/functions';
 
 let progress = `<div class="progress">
                   <div class="progress-bar progress-bar-success progress-bar-striped"
@@ -33,6 +33,77 @@ function updateProgressBar(progressBar, cookingTask) {
     progressBar.addClass('progress-bar-animated');
   } else {
     progressBar.removeClass('progress-bar-striped');
+  }
+}
+
+let recookTask;
+
+// called when the user wants to download a cooked archive
+export function fetchCookedObject(fetchUrl) {
+  recookTask = null;
+  // first, check if the link is still available from the vault
+  fetch(fetchUrl, {credentials: 'same-origin'})
+    .then(response => {
+      // link is still alive, proceed to download
+      if (response.ok) {
+        $('#vault-fetch-iframe').attr('src', fetchUrl);
+      // link is dead
+      } else {
+        // get the associated cooking task
+        let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+        for (let i = 0; i < vaultCookingTasks.length; ++i) {
+          if (vaultCookingTasks[i].fetch_url === fetchUrl) {
+            recookTask = vaultCookingTasks[i];
+            break;
+          }
+        }
+        // display a modal asking the user if he wants to recook the archive
+        $('#vault-recook-object-modal').modal('show');
+      }
+    });
+}
+
+// called when the user wants to recook an archive
+// for which the download link is not available anymore
+export function recookObject() {
+  if (recookTask) {
+    // stop cookink tasks status polling
+    clearTimeout(checkVaultId);
+    // build cook request url
+    let cookingUrl;
+    if (recookTask.object_type === 'directory') {
+      cookingUrl = Urls.vault_cook_directory(recookTask.object_id);
+    } else {
+      cookingUrl = Urls.vault_cook_revision_gitfast(recookTask.object_id);
+    }
+    if (recookTask.email) {
+      cookingUrl += '?email=' + recookTask.email;
+    }
+    // request archive cooking
+    fetch(cookingUrl, {credentials: 'same-origin', method: 'POST'})
+      .then(handleFetchError)
+      .then(() => {
+        // update task status
+        recookTask.status = 'new';
+        let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+        for (let i = 0; i < vaultCookingTasks.length; ++i) {
+          if (vaultCookingTasks[i].object_id === recookTask.object_id) {
+            vaultCookingTasks[i] = recookTask;
+            break;
+          }
+        }
+        // save updated tasks to local storage
+        localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
+        // restart cooking tasks status polling
+        checkVaultCookingTasks();
+        // hide recook archive modal
+        $('#vault-recook-object-modal').modal('hide');
+      })
+      // something went wrong
+      .catch(() => {
+        checkVaultCookingTasks();
+        $('#vault-recook-object-modal').modal('hide');
+      });
   }
 }
 
@@ -83,6 +154,7 @@ function checkVaultCookingTasks() {
 
         let rowTask = $('#vault-task-' + cookingTask.object_id);
 
+        let downloadLinkWait = 'Waiting for download link to be available';
         if (!rowTask.length) {
 
           let browseUrl;
@@ -111,10 +183,10 @@ function checkVaultCookingTasks() {
           }
           tableRow += `<td class="vault-object-id" data-object-id="${cookingTask.object_id}"><a href="${browseUrl}">${cookingTask.object_id}</a></td>`;
           tableRow += `<td style="width: 350px">${progressBar.outerHTML}</td>`;
-          let downloadLink = 'Waiting for download link to be available';
+          let downloadLink = downloadLinkWait;
           if (cookingTask.status === 'done') {
-            downloadLink = `<a class="btn btn-default btn-sm" href="${cookingTask.fetch_url}` +
-                           '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>';
+            downloadLink = `<button class="btn btn-default btn-sm" onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')` +
+                           '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</button>';
           } else if (cookingTask.status === 'failed') {
             downloadLink = '';
           }
@@ -126,10 +198,12 @@ function checkVaultCookingTasks() {
           updateProgressBar(progressBar, cookingTask);
           let downloadLink = rowTask.find('.vault-dl-link');
           if (cookingTask.status === 'done') {
-            downloadLink[0].innerHTML = `<a class="btn btn-default btn-sm" href="${cookingTask.fetch_url}` +
-                                        '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>';
+            downloadLink[0].innerHTML = `<button class="btn btn-default btn-sm" onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')` +
+                                        '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</button>';
           } else if (cookingTask.status === 'failed') {
             downloadLink[0].innerHTML = '';
+          } else if (cookingTask.status === 'new') {
+            downloadLink[0].innerHTML = downloadLinkWait;
           }
         }
       }
