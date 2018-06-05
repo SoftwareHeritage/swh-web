@@ -76,16 +76,16 @@ See top-level LICENSE file for more information
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
             <li class="nav-header">Archive Access</li>
-            <li class="nav-item swh-api-item" title="Query the archive programmatically using a RESTful API">
-              <a href="{% url 'api-homepage' %}" class="nav-link swh-api-link">
-                <img class="nav-icon" src="{% static 'img/swh-api.png' %}"/>
-                <p>Web API</p>
-              </a>
-            </li>
             <li class="nav-item swh-browse-item" title="Explore the archive using a dedicated web interface">
               <a href="{% url 'browse-search' %}" class="nav-link swh-browse-link">
                 <img class="nav-icon" src="{% static 'img/swh-browse.png' %}"/>
                 <p>Browse</p>
+              </a>
+            </li>
+            <li class="nav-item swh-api-item" title="Query the archive programmatically using a RESTful API">
+              <a href="{% url 'api-homepage' %}" class="nav-link swh-api-link">
+                <img class="nav-icon" src="{% static 'img/swh-api.png' %}"/>
+                <p>Web API</p>
               </a>
             </li>
             <li class="nav-header">Features</li>
