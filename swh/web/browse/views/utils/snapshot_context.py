@@ -334,6 +334,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     }
 
     swh_dir_id = get_swh_persistent_id('directory', sha1_git)
+    swh_rev_id = get_swh_persistent_id('revision', revision_id)
     swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
 
     swh_ids = [
@@ -343,6 +344,14 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
             'swh_id': swh_dir_id,
             'swh_id_url': reverse('browse-swh-id',
                                   kwargs={'swh_id': swh_dir_id}),
+            'show_options': snapshot_context['origin_info'] is not None
+        },
+        {
+            'object_type': 'revision',
+            'title': 'Revision ' + revision_id,
+            'swh_id': swh_rev_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_rev_id}),
             'show_options': snapshot_context['origin_info'] is not None
         },
         {
@@ -490,6 +499,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
 
     cnt_sha1_git = content_data['checksums']['sha1_git']
     swh_cnt_id = get_swh_persistent_id('content', cnt_sha1_git)
+    swh_rev_id = get_swh_persistent_id('revision', revision_id)
     swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
 
     swh_ids = [
@@ -500,6 +510,14 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
             'swh_id_url': reverse('browse-swh-id',
                                   kwargs={'swh_id': swh_cnt_id}),
             'show_options': True
+        },
+        {
+            'object_type': 'revision',
+            'title': 'Revision ' + revision_id,
+            'swh_id': swh_rev_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_rev_id}),
+            'show_options': snapshot_context['origin_info'] is not None
         },
         {
             'object_type': 'snapshot',
@@ -634,8 +652,17 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                                  'role': 'button'})
         revision_metadata['snapshot context'] = browse_snapshot_link
 
+    swh_rev_id = get_swh_persistent_id('revision', revision_id)
     swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
     swh_ids = [
+        {
+            'object_type': 'revision',
+            'title': 'Revision ' + revision_id,
+            'swh_id': swh_rev_id,
+            'swh_id_url': reverse('browse-swh-id',
+                                  kwargs={'swh_id': swh_rev_id}),
+            'show_options': snapshot_context['origin_info'] is not None
+        },
         {
             'object_type': 'snapshot',
             'title': 'Snapshot ' + snapshot_id,
