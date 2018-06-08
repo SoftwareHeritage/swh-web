@@ -66,11 +66,19 @@ See top-level LICENSE file for more information
 
     <aside class="swh-sidebar main-sidebar sidebar-light-primary elevation-4">
       <a href="{% url 'swh-web-homepage' %}" class="brand-link">
-        <img class="brand-image" src="{% static 'img/swh-logo-archive.png' %}">
+        <img class="brand-image" src="{% static 'img/swh-logo.png' %}">
         <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
           <span class="first-word">Software</span> <span class="second-word">Heritage</span>
         </div>
       </a>
+
+      <div class="swh-words-logo">
+        <div class="swh-words-logo-swh">
+          <span class="first-word">Software</span>
+          <span class="second-word">Heritage</span>
+        </div>
+        <span>Archive</span>
+      </div>
 
       <div class="sidebar">
         <nav class="mt-2">

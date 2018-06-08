@@ -387,3 +387,20 @@ ul.nav-sidebar a {
 .sidebar-mini.sidebar-mini.sidebar-collapse .sidebar {
     padding-right: 0;
 }
+
+.swh-words-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 73px;
+    height: 73px;
+    text-align: center;
+    font-size: 10pt;
+    color: rgba(0, 0, 0, 0.75);
+}
+
+.swh-words-logo-swh {
+    line-height: 1;
+    padding-top: 13px;
+    visibility: hidden;
+}
