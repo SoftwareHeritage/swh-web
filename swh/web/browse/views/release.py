@@ -8,14 +8,14 @@ from django.utils.safestring import mark_safe
 
 from swh.web.common import service
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, get_swh_persistent_id
+    reverse, format_utc_iso_date
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_person_link, gen_revision_link,
     get_snapshot_context, gen_link,
-    gen_snapshot_link
+    gen_snapshot_link, get_swh_persistent_ids
 )
 
 
@@ -124,34 +124,17 @@ def release_browse(request, sha1_git):
                                           'role': 'button'})
         release_data['snapshot'] = browse_snapshot_link
 
-    swh_rel_id = get_swh_persistent_id('release', sha1_git)
-    show_ids_options = snapshot_context and \
-        snapshot_context['origin_info'] is not None
-    swh_ids = [
-        {
-            'object_type': 'release',
-            'title': 'Release ' + sha1_git,
-            'swh_id': swh_rel_id,
-            'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_rel_id}),
-            'show_options': show_ids_options
-        }
-    ]
+    swh_objects = [{'type': 'release',
+                    'id': sha1_git}]
 
     if snapshot_context:
         snapshot_id = snapshot_context['snapshot_id']
 
     if snapshot_id:
-        swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
+        swh_objects.append({'type': 'snapshot',
+                            'id': snapshot_id})
 
-        swh_ids.append({
-            'object_type': 'snapshot',
-            'title': 'Snapshot ' + snapshot_id,
-            'swh_id': swh_snp_id,
-            'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_snp_id}),
-            'show_options': show_ids_options
-        })
+    swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
     release_note_header = 'None'
     if len(release_note_lines) > 0:

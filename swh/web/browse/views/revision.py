@@ -13,8 +13,7 @@ from django.utils.safestring import mark_safe
 
 from swh.web.common import service
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, gen_path_info,
-    get_swh_persistent_id
+    reverse, format_utc_iso_date, gen_path_info
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.browseurls import browse_route
@@ -24,7 +23,8 @@ from swh.web.browse.utils import (
     get_snapshot_context, gen_snapshot_directory_link,
     get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
-    content_display_max_size, gen_snapshot_link, get_readme_to_display
+    content_display_max_size, gen_snapshot_link, get_readme_to_display,
+    get_swh_persistent_ids
 )
 
 
@@ -453,31 +453,14 @@ def revision_browse(request, sha1_git, extra_path=None):
                                               'timestamp': timestamp,
                                               'visit_id': visit_id})
 
-    swh_rev_id = get_swh_persistent_id('revision', sha1_git)
-    show_ids_options = snapshot_context and \
-        snapshot_context['origin_info'] is not None
-    swh_ids = [
-        {
-            'object_type': 'revision',
-            'title': 'Revision ' + sha1_git,
-            'swh_id': swh_rev_id,
-            'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_rev_id}),
-            'show_options': show_ids_options
-        }
-    ]
+    swh_objects = [{'type': 'revision',
+                    'id': sha1_git}]
 
     if snapshot_id:
-        swh_snp_id = get_swh_persistent_id('snapshot', snapshot_id)
+        swh_objects.append({'type': 'snapshot',
+                            'id': snapshot_id})
 
-        swh_ids.append({
-            'object_type': 'snapshot',
-            'title': 'Snapshot ' + snapshot_id,
-            'swh_id': swh_snp_id,
-            'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_snp_id}),
-            'show_options': show_ids_options
-        })
+    swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
     return render(request, 'revision.html',
                   {'heading': 'Revision',
