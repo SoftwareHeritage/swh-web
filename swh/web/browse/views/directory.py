@@ -110,8 +110,13 @@ def directory_browse(request, sha1_git, path=None):
     swh_ids = get_swh_persistent_ids([{'type': 'directory',
                                        'id': sha1_git}])
 
+    heading = 'Directory - %s' % sha1_git
+    if breadcrumbs:
+        dir_path = '/'.join([bc['name'] for bc in breadcrumbs]) + '/'
+        heading += ' - %s' % dir_path
+
     return render(request, 'directory.html',
-                  {'heading': 'Directory',
+                  {'heading': heading,
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,

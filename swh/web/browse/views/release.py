@@ -140,8 +140,15 @@ def release_browse(request, sha1_git):
     if len(release_note_lines) > 0:
         release_note_header = release_note_lines[0]
 
+    heading = 'Release - %s' % release['name']
+    if snapshot_context:
+        context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
+        if origin_info:
+            context_found = 'origin: %s' % origin_info['url']
+        heading += ' - %s' % context_found
+
     return render(request, 'release.html',
-                  {'heading': 'Release',
+                  {'heading': heading,
                    'swh_object_name': 'Release',
                    'swh_object_metadata': release_data,
                    'release_name': release['name'],

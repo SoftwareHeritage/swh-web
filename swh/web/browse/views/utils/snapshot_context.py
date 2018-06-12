@@ -342,8 +342,15 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
+    dir_path = '/'.join([bc['name'] for bc in breadcrumbs]) + '/'
+    context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
+    if origin_info:
+        context_found = 'origin: %s' % origin_info['url']
+    heading = 'Directory - %s - %s - %s' %\
+        (dir_path, snapshot_context['branch'], context_found)
+
     return render(request, 'directory.html',
-                  {'heading': 'Directory',
+                  {'heading': heading,
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,
@@ -485,8 +492,15 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
+    content_path = '/'.join([bc['name'] for bc in breadcrumbs])
+    context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
+    if origin_info:
+        context_found = 'origin: %s' % origin_info['url']
+    heading = 'Content - %s - %s - %s' %\
+        (content_path, snapshot_context['branch'], context_found)
+
     return render(request, 'content.html',
-                  {'heading': 'Content',
+                  {'heading': heading,
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
                    'content': content,
@@ -615,8 +629,14 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
+    context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
+    if origin_info:
+        context_found = 'origin: %s' % origin_info['url']
+    heading = 'Revision history - %s - %s' %\
+        (snapshot_context['branch'], context_found)
+
     return render(request, 'revision-log.html',
-                  {'heading': 'Revision history',
+                  {'heading': heading,
                    'swh_object_name': 'Revision history',
                    'swh_object_metadata': revision_metadata,
                    'revision_log': revision_log_data,
@@ -695,8 +715,14 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
         prev_branches_url = reverse(browse_view_name,
                                     kwargs=url_args, query_params=query_params)
 
+    heading = 'Branches - '
+    if origin_info:
+        heading += 'origin: %s' % origin_info['url']
+    else:
+        heading += 'snapshot: %s' % snapshot_id
+
     return render(request, 'branches.html',
-                  {'heading': 'Origin branches',
+                  {'heading': heading,
                    'swh_object_name': 'Branches',
                    'swh_object_metadata': {},
                    'top_right_link': None,
@@ -765,8 +791,14 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
         prev_releases_url = reverse(browse_view_name,
                                     kwargs=url_args, query_params=query_params)
 
+    heading = 'Releases - '
+    if origin_info:
+        heading += 'origin: %s' % origin_info['url']
+    else:
+        heading += 'snapshot: %s' % snapshot_id
+
     return render(request, 'releases.html',
-                  {'heading': 'Origin releases',
+                  {'heading': heading,
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
                    'swh_object_name': 'Releases',

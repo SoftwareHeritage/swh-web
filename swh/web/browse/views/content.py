@@ -237,8 +237,13 @@ def content_display(request, query_string):
     swh_ids = get_swh_persistent_ids([{'type': 'content',
                                        'id': sha1_git}])
 
+    heading = 'Content - %s' % sha1_git
+    if breadcrumbs:
+        content_path = '/'.join([bc['name'] for bc in breadcrumbs])
+        heading += ' - %s' % content_path
+
     return render(request, 'content.html',
-                  {'heading': 'Content',
+                  {'heading': heading,
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
                    'content': content,

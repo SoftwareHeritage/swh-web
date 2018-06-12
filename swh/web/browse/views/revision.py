@@ -5,6 +5,7 @@
 
 import hashlib
 import json
+import textwrap
 
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -462,8 +463,16 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
+    heading = 'Revision - %s - %s' %\
+        (sha1_git[:7], textwrap.shorten(message_lines[0], width=70))
+    if snapshot_context:
+        context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
+        if origin_info:
+            context_found = 'origin: %s' % origin_info['url']
+        heading += ' - %s' % context_found
+
     return render(request, 'revision.html',
-                  {'heading': 'Revision',
+                  {'heading': heading,
                    'swh_object_name': 'Revision',
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],

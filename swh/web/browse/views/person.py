@@ -36,8 +36,15 @@ def person_browse(request, person_id):
     except Exception as exc:
         return handle_view_exception(request, exc)
 
+    heading = 'Person - %s' % person['fullname']
+    if snapshot_context:
+        context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
+        if origin_url:
+            context_found = 'origin: %s' % origin_url
+        heading += ' - %s' % context_found
+
     return render(request, 'person.html',
-                  {'heading': 'Person',
+                  {'heading': heading,
                    'swh_object_name': 'Person',
                    'swh_object_metadata': person,
                    'snapshot_context': snapshot_context,
