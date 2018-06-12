@@ -10,15 +10,19 @@ See top-level LICENSE file for more information
 {% if swh_ids %}
 
   <div id="swh-identifiers">
-    <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded">How to cite ?</i></a>
+    {% if swh_ids|length > 1 %}
+      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90"></i>Permalinks</a>
+    {% else %}
+      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90"></i>Permalink</a>
+    {% endif %}
     <div id="swh-identifiers-content">
       <p>
-        To reference or cite the objects present in the Software Heritage archive, <a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html">persistent identifiers</a>
+        To reference or cite the objects present in the Software Heritage archive, permalinks based on <a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html">persistent identifiers</a>
         must be used instead of copying and pasting the url from the address bar of the browser (as there is no guarantee the current URI
         scheme will remain the same over time).
         <br/>
         <br/>
-        Select below a type of object currently browsed in order to display its associated persistent identifier.
+        Select below a type of object currently browsed in order to display its associated persistent identifier and permalink.
       </p>
 
       <ul class="nav nav-pills ml-auto p-2">
@@ -73,12 +77,12 @@ See top-level LICENSE file for more information
                 {% endif %}
                 <div class="float-right">
                   <button type="button" class="btn btn-default btn-sm btn-swh-id-copy"
-                          title="Copy persistent id to clipboard">
-                    <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy ID
+                          title="Copy persistent identifier to clipboard">
+                    <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy identifier
                   </button>
                   <button type="button" class="btn btn-default btn-sm btn-swh-id-url-copy"
-                          title="Copy url resolving the persistent id to clipboard">
-                    <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy ID url
+                          title="Copy url resolving the persistent identifier to clipboard">
+                    <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy permalink
                   </button>
                 </div>
               </div>
