@@ -78,10 +78,19 @@ $(document).ready(() => {
     }
   });
 
-  $('#swh-identifiers').tabSlideOut({
-    tabLocation: 'right',
-    otherOffset: '28vh'
-  });
+  if (window.innerWidth * 0.7 > 1000) {
+    $('#swh-identifiers').css('width', '1000px');
+  }
+
+  let tabSlideOptions = {
+    tabLocation: 'right'
+  };
+  // ensure tab scrolling on small screens
+  if (window.innerHeight < 600 || window.innerWidth < 500) {
+    tabSlideOptions['otherOffset'] = '20px';
+  }
+
+  $('#swh-identifiers').tabSlideOut(tabSlideOptions);
 
   $('.swh-id-option-origin').trigger('click');
   $('.swh-id-option-lines').trigger('click');
