@@ -215,10 +215,12 @@ def lookup_content_license(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    lang = _first_element(idx_storage.content_fossology_license_get([sha1]))
-    if not lang:
+    lic = _first_element(idx_storage.content_fossology_license_get([sha1]))
+
+    if not lic:
         return None
-    return converters.from_swh(lang, hashess={'id'})
+    return converters.from_swh({'id': sha1, 'facts': lic[sha1]},
+                               hashess={'id'})
 
 
 def lookup_origin(origin):

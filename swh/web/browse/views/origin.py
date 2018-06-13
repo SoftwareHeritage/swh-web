@@ -174,8 +174,10 @@ def origin_visits_browse(request, origin_url, origin_type=None):
             visit['snapshot'] = ''
         visit['date'] = parse_timestamp(visit['date']).timestamp()
 
+    heading = 'Origin visits - %s' % origin_url
+
     return render(request, 'origin-visits.html',
-                  {'heading': 'Origin visits',
+                  {'heading': heading,
                    'swh_object_name': 'Visits',
                    'swh_object_metadata': origin_info,
                    'origin_visits': origin_visits,

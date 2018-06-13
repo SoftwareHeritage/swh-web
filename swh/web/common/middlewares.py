@@ -44,3 +44,23 @@ class HtmlMinifyMiddleware(object):
             except Exception:
                 pass
         return response
+
+
+class ThrottlingHeadersMiddleware(object):
+    """
+    Django middleware for inserting rate limiting related
+    headers in HTTP response.
+    """
+
+    def __init__(self, get_response=None):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        resp = self.get_response(request)
+        if 'RateLimit-Limit' in request.META:
+            resp['X-RateLimit-Limit'] = request.META['RateLimit-Limit']
+        if 'RateLimit-Remaining' in request.META:
+            resp['X-RateLimit-Remaining'] = request.META['RateLimit-Remaining']
+        if 'RateLimit-Reset' in request.META:
+            resp['X-RateLimit-Reset'] = request.META['RateLimit-Reset']
+        return resp
