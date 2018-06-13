@@ -52,7 +52,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'swh.web.common.middlewares.ThrottlingHeadersMiddleware'
 ]
 
 # Compress all assets (static ones and dynamically generated html)
@@ -154,7 +155,6 @@ for limiter_scope, limiter_conf in throttling['scopes'].items():
         if http_request in limiter_conf['limiter_rate']:
             throttle_rates[limiter_scope + '_' + http_request.lower()] = \
                 limiter_conf['limiter_rate'][http_request]
-
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (

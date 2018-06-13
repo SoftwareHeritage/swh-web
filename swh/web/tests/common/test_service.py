@@ -474,13 +474,17 @@ class ServiceTestCase(unittest.TestCase):
         # given
         mock_idx_storage.content_fossology_license_get = MagicMock(
             return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'lang': 'python',
+                hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'): [{
+                    'licenses': ['GPL-3.0+'],
+                    'tool': {}
+                }]
             }])
         expected_license = {
                 'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'lang': 'python',
+                'facts': [{
+                    'licenses': ['GPL-3.0+'],
+                    'tool': {}
+                }]
         }
 
         # when
@@ -506,14 +510,19 @@ class ServiceTestCase(unittest.TestCase):
         )
         mock_idx_storage.content_fossology_license_get = MagicMock(
             return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'lang': 'haskell',
+                hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'): [{
+                    'licenses': ['BSD-2-Clause'],
+                    'tool': {}
+                }]
+
             }]
         )
         expected_license = {
                 'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'lang': 'haskell',
+                'facts': [{
+                    'licenses': ['BSD-2-Clause'],
+                    'tool': {}
+                }]
         }
 
         # when

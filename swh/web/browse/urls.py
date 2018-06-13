@@ -20,17 +20,17 @@ from swh.web.browse.identifiers import swh_id_browse
 
 def _browse_help_view(request):
     return render(request, 'browse-help.html',
-                  {'heading': 'Help'})
+                  {'heading': 'How to browse the archive ?'})
 
 
 def _browse_search_view(request):
     return render(request, 'browse-search.html',
-                  {'heading': 'Search'})
+                  {'heading': 'Search software origins to browse'})
 
 
 def _browse_vault_view(request):
     return render(request, 'browse-vault-ui.html',
-                  {'heading': 'Vault'})
+                  {'heading': 'Download archive content from the Vault'})
 
 
 urlpatterns = [

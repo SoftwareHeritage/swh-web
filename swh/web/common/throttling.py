@@ -94,17 +94,28 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                 self.scope = default_scope
                 self.rate = self.get_rate()
             self.num_requests, self.duration = self.parse_rate(self.rate)
+
             request_allowed = \
                 super(ScopedRateThrottle, self).allow_request(request, view)
             self.scope = default_scope
 
         exempted_networks = self.get_exempted_networks(default_scope)
+        exempted_ip = False
 
         if exempted_networks:
             remote_address = ipaddress.ip_address(self.get_ident(request))
-            return any(remote_address in network
-                       for network in exempted_networks) or \
-                request_allowed
+            exempted_ip = any(remote_address in network
+                              for network in exempted_networks)
+            request_allowed = exempted_ip or request_allowed
+
+        # set throttling related data in the request metadata
+        # in order for the ThrottlingHeadersMiddleware to
+        # add X-RateLimit-* headers in the HTTP response
+        if not exempted_ip and hasattr(self, 'history'):
+            hit_count = len(self.history)
+            request.META['RateLimit-Limit'] = self.num_requests
+            request.META['RateLimit-Remaining'] = self.num_requests - hit_count
+            request.META['RateLimit-Reset'] = int(self.now + self.wait())
 
         return request_allowed
 

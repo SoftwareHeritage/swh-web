@@ -423,7 +423,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     @istest
-    def test_origin_root_directory_view(self, mock_origin_service,
+    def origin_root_directory_view(self, mock_origin_service,
                                    mock_utils_service,
                                    mock_get_origin_visit_snapshot,
                                    mock_get_origin_visits):
@@ -593,7 +593,7 @@ class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
     @patch('swh.web.browse.views.utils.snapshot_context.service')
     @patch('swh.web.browse.views.origin.get_origin_info')
     @istest
-    def test_origin_request_errors(self, mock_get_origin_info,
+    def origin_request_errors(self, mock_get_origin_info,
                                    mock_snapshot_service,
                                    mock_origin_service,
                                    mock_utils_service,

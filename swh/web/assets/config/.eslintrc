@@ -28,6 +28,7 @@
         "navigator": false,
         "window": false,
         "$": false,
+        "jQuery": false,
         "history": false,
         "localStorage": false,
         "sessionStorage": false,
@@ -36,7 +37,8 @@
         "Waypoint": false,
         "swh": false,
         "fetch": false,
-        "__STATIC__": false
+        "__STATIC__": false,
+        "Image": false
     },
 
     "rules": {
