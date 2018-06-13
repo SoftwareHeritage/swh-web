@@ -161,7 +161,7 @@ def request_content(query_string, max_size=content_display_max_size):
     else:
         content_data['language'] = 'not detected'
     if license:
-        content_data['licenses'] = ', '.join(license['licenses'])
+        content_data['licenses'] = ', '.join(license['facts'][0]['licenses'])
     else:
         content_data['licenses'] = 'not detected'
 
