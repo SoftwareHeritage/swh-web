@@ -154,6 +154,7 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     root_sha1_git = None
     revision_id = request.GET.get('revision', None)
     release_name = request.GET.get('release', None)
+    release_id = None
     branch_name = None
 
     if revision_id:
@@ -170,6 +171,7 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
         if release:
             root_sha1_git = release['directory']
             revision_id = release['target']
+            release_id = release['id']
             query_params['release'] = release_name
         else:
             _branch_not_found("release", release_name, releases, snapshot_id,
@@ -193,6 +195,7 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     snapshot_context['revision_id'] = revision_id
     snapshot_context['branch'] = branch_name
     snapshot_context['release'] = release_name
+    snapshot_context['release_id'] = release_id
 
     return snapshot_context
 
@@ -339,6 +342,11 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                     'id': revision_id},
                    {'type': 'snapshot',
                     'id': snapshot_id}]
+
+    release_id = snapshot_context['release_id']
+    if release_id:
+        swh_objects.append({'type': 'release',
+                            'id': release_id})
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -490,6 +498,11 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                    {'type': 'snapshot',
                     'id': snapshot_id}]
 
+    release_id = snapshot_context['release_id']
+    if release_id:
+        swh_objects.append({'type': 'release',
+                            'id': release_id})
+
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
     content_path = '/'.join([bc['name'] for bc in breadcrumbs])
@@ -626,6 +639,11 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                     'id': revision_id},
                    {'type': 'snapshot',
                     'id': snapshot_id}]
+
+    release_id = snapshot_context['release_id']
+    if release_id:
+        swh_objects.append({'type': 'release',
+                            'id': release_id})
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
