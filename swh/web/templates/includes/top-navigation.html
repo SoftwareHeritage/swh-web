@@ -81,7 +81,6 @@ See top-level LICENSE file for more information
       <ul class="dropdown-menu dropdown-menu-right swh-browse-actions-menu">
         {% include "includes/vault-create-tasks.html" %}
         {% include "includes/show-metadata.html" %}
-        {% include "includes/show-swh-ids.html" %}
       </ul>
     {% endif %}
   </div>
@@ -89,6 +88,8 @@ See top-level LICENSE file for more information
   {% include "includes/breadcrumbs.html" %}
 
 </div>
+
+{% include "includes/show-swh-ids.html" %}
 
 <script>
   var snapshotContext = false;

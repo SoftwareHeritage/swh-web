@@ -6,23 +6,8 @@
  */
 
 import ClipboardJS from 'clipboard';
-
-$(document).ready(() => {
-  new ClipboardJS('.btn-swh-id-copy', {
-    text: trigger => {
-      let swhId = $(trigger).closest('.swh-id-ui').find('.swh-id').text();
-      return swhId;
-
-    }
-  });
-
-  new ClipboardJS('.btn-swh-id-url-copy', {
-    text: trigger => {
-      let swhId = $(trigger).closest('.swh-id-ui').find('.swh-id').text();
-      return window.location.origin + '/' + swhId + '/';
-    }
-  });
-});
+import 'utils/jquery.tabSlideOut';
+import 'utils/jquery.tabSlideOut.css';
 
 export function swhIdObjectTypeToggled(event) {
   event.preventDefault();
@@ -43,12 +28,8 @@ export function swhIdOptionOriginToggled(event) {
   swhIdElt.attr('href', '/' + currentSwhId + '/');
 }
 
-export function swhIdOptionLinesToggled(event) {
-  event.stopPropagation();
-  if (!window.location.hash) {
-    return;
-  }
-  let swhIdElt = $(event.target).closest('.swh-id-ui').find('.swh-id');
+function setIdLinesPart(elt) {
+  let swhIdElt = $(elt).closest('.swh-id-ui').find('.swh-id');
   let currentSwhId = swhIdElt.text();
   let lines = [];
   let linesPart = ';lines=';
@@ -64,7 +45,8 @@ export function swhIdOptionLinesToggled(event) {
   if (lines.length > 1) {
     linesPart += '-' + lines[1];
   }
-  if ($(event.target).prop('checked')) {
+  if ($(elt).prop('checked')) {
+    currentSwhId = currentSwhId.replace(/;lines=\d+-*\d*/g, '');
     currentSwhId += linesPart;
   } else {
     currentSwhId = currentSwhId.replace(linesPart, '');
@@ -72,3 +54,49 @@ export function swhIdOptionLinesToggled(event) {
   swhIdElt.text(currentSwhId);
   swhIdElt.attr('href', '/' + currentSwhId + '/');
 }
+
+export function swhIdOptionLinesToggled(event) {
+  event.stopPropagation();
+  if (!window.location.hash) {
+    return;
+  }
+  setIdLinesPart(event.target);
+}
+
+$(document).ready(() => {
+  new ClipboardJS('.btn-swh-id-copy', {
+    text: trigger => {
+      let swhId = $(trigger).closest('.swh-id-ui').find('.swh-id').text();
+      return swhId;
+    }
+  });
+
+  new ClipboardJS('.btn-swh-id-url-copy', {
+    text: trigger => {
+      let swhId = $(trigger).closest('.swh-id-ui').find('.swh-id').text();
+      return window.location.origin + '/' + swhId + '/';
+    }
+  });
+
+  if (window.innerWidth * 0.7 > 1000) {
+    $('#swh-identifiers').css('width', '1000px');
+  }
+
+  let tabSlideOptions = {
+    tabLocation: 'right'
+  };
+  // ensure tab scrolling on small screens
+  if (window.innerHeight < 600 || window.innerWidth < 500) {
+    tabSlideOptions['otherOffset'] = '20px';
+  }
+
+  $('#swh-identifiers').tabSlideOut(tabSlideOptions);
+
+  $('.swh-id-option-origin').trigger('click');
+  $('.swh-id-option-lines').trigger('click');
+
+  $(window).on('hashchange', () => {
+    setIdLinesPart('.swh-id-option-lines');
+  });
+
+});

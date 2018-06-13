@@ -103,6 +103,25 @@
     margin-top: 5px;
 }
 
-.swh-identifiers-popover-body {
-    padding: 0.5rem 0.75rem;
+.ui-slideouttab-panel {
+    z-index: 30000;
+}
+
+#swh-identifiers {
+    width: 70vw;
+    top: 0;
+    border: 1px solid #e20026;
+}
+
+#swh-identifiers .handle {
+    background-color: #e20026;
+    border: 1px solid #e20026;
+    color: white;
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+}
+
+#swh-identifiers-content {
+    height: 100%;
+    overflow: auto;
 }

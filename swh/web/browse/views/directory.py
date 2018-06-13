@@ -9,12 +9,12 @@ from django.template.defaultfilters import filesizeformat
 
 from swh.web.common import service
 from swh.web.common.utils import (
-    reverse, gen_path_info, get_swh_persistent_id
+    reverse, gen_path_info
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
     get_directory_entries, get_snapshot_context,
-    get_readme_to_display
+    get_readme_to_display, get_swh_persistent_ids
 )
 
 from swh.web.browse.browseurls import browse_route
@@ -107,20 +107,16 @@ def directory_browse(request, sha1_git, path=None):
         'revision_id': None
     }
 
-    swh_dir_id = get_swh_persistent_id('directory', sha1_git)
-    swh_ids = [
-        {
-            'object_type': 'directory',
-            'title': 'Directory ' + sha1_git,
-            'swh_id': swh_dir_id,
-            'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_dir_id}),
-            'show_options': False
-        }
-    ]
+    swh_ids = get_swh_persistent_ids([{'type': 'directory',
+                                       'id': sha1_git}])
+
+    heading = 'Directory - %s' % sha1_git
+    if breadcrumbs:
+        dir_path = '/'.join([bc['name'] for bc in breadcrumbs]) + '/'
+        heading += ' - %s' % dir_path
 
     return render(request, 'directory.html',
-                  {'heading': 'Directory',
+                  {'heading': heading,
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,

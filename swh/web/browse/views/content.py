@@ -17,12 +17,13 @@ from swh.model.hashutil import hash_to_hex
 
 from swh.web.common import query
 from swh.web.common.utils import (
-    reverse, gen_path_info, get_swh_persistent_id
+    reverse, gen_path_info
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
     request_content, prepare_content_for_display,
-    content_display_max_size, get_snapshot_context
+    content_display_max_size, get_snapshot_context,
+    get_swh_persistent_ids
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -233,20 +234,16 @@ def content_display(request, query_string):
     }
 
     sha1_git = content_data['checksums']['sha1_git']
-    swh_cnt_id = get_swh_persistent_id('content', sha1_git)
-    swh_ids = [
-        {
-            'object_type': 'content',
-            'title': 'Content ' + sha1_git,
-            'swh_id': swh_cnt_id,
-            'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_cnt_id}),
-            'show_options': True
-        }
-    ]
+    swh_ids = get_swh_persistent_ids([{'type': 'content',
+                                       'id': sha1_git}])
+
+    heading = 'Content - %s' % sha1_git
+    if breadcrumbs:
+        content_path = '/'.join([bc['name'] for bc in breadcrumbs])
+        heading += ' - %s' % content_path
 
     return render(request, 'content.html',
-                  {'heading': 'Content',
+                  {'heading': heading,
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
                    'content': content,
