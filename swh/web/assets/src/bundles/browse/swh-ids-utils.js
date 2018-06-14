@@ -90,10 +90,15 @@ $(document).ready(() => {
     tabSlideOptions['otherOffset'] = '20px';
   }
 
+  // initiate the sliding identifiers tab
   $('#swh-identifiers').tabSlideOut(tabSlideOptions);
 
-  $('.swh-id-option-origin').trigger('click');
-  $('.swh-id-option-lines').trigger('click');
+  // set the tab visible once the close animation is terminated
+  setTimeout(() => {
+    $('#swh-identifiers').css('visibility', 'visible');
+    $('.swh-id-option-origin').trigger('click');
+    $('.swh-id-option-lines').trigger('click');
+  });
 
   $(window).on('hashchange', () => {
     setIdLinesPart('.swh-id-option-lines');
