@@ -4,41 +4,55 @@
 # See top-level LICENSE file for more information
 
 from swh.web.common import service
-from swh.web.api import apidoc as api_doc
+from swh.web.api.apidoc import api_doc
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
-from swh.web.api.views.utils import (
-    api_lookup, doc_exc_id_not_found, doc_exc_bad_id
-)
+from swh.web.api.views.utils import api_lookup
 
 
 @api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'snapshot')
-@api_doc.route('/snapshot/')
-@api_doc.arg('snapshot_id',
-             default='584b2fe3ce6218a96892e73bd76c2966bbc2a797',
-             argtype=api_doc.argtypes.sha1,
-             argdoc='snapshot identifier')
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc='dictionnary referencing the different'
-                        ' named branches the snapshot contains')
+@api_doc('/snapshot/')
 def api_snapshot(request, snapshot_id):
-    """Get information about a snapshot.
-
-    A snapshot is a set of named branches, which are pointers to objects at any
-    level of the Software Heritage DAG. It represents a full picture of an
-    origin at a given time.
-
-    As well as pointing to other objects in the Software Heritage DAG, branches
-    can also be aliases, in which case their target is the name of another
-    branch in the same snapshot, or dangling, in which case the target is
-    unknown.
-
-    A snapshot identifier is a salted sha1. See the `documentation
-    <https://docs.softwareheritage.org/devel/swh-model/apidoc/swh.model.html#swh.model.identifiers.snapshot_identifier>`_
-    for details about how they are computed.
     """
+    .. http:get:: /api/1/snapshot/(snapshot_id)/
+
+        Get information about a snapshot in the SWH archive.
+
+        A snapshot is a set of named branches, which are pointers to objects at any
+        level of the Software Heritage DAG. It represents a full picture of an
+        origin at a given time.
+
+        As well as pointing to other objects in the Software Heritage DAG, branches
+        can also be aliases, in which case their target is the name of another
+        branch in the same snapshot, or dangling, in which case the target is
+        unknown.
+
+        A snapshot identifier is a salted sha1. See :func:`swh.model.identifiers.snapshot_identifier`
+        in our data model module for details about how they are computed.
+
+        :param sha1 snapshot_id: a SWH snapshot identifier
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json object branches: object containing all branches associated to the snapshot,
+            for each of them the associated SWH target type and id are given but also
+            a link to get information about that target
+        :>json string id: the unique identifier of the snapshot
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid snapshot identifier has been provided
+        :statuscode 404: requested snapshot can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`snapshot/6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a/`
+    """ # noqa
 
     def _enrich_snapshot(snapshot):
         s = snapshot.copy()

@@ -10,12 +10,9 @@ from swh.web.common.utils import (
     reverse, get_origin_visits
 )
 from swh.web.api import utils
-from swh.web.api import apidoc as api_doc
+from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
-from swh.web.api.views.utils import (
-    api_lookup, doc_exc_id_not_found, doc_header_link,
-    doc_arg_last_elt, doc_arg_per_page
-)
+from swh.web.api.views.utils import api_lookup
 
 
 def _enrich_origin(origin):
@@ -31,31 +28,64 @@ def _enrich_origin(origin):
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'origin')
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)',
            'origin')
-@api_doc.route('/origin/')
-@api_doc.arg('origin_id',
-             default=1,
-             argtype=api_doc.argtypes.int,
-             argdoc='origin identifier (when looking up by ID)')
-@api_doc.arg('origin_type',
-             default='git',
-             argtype=api_doc.argtypes.str,
-             argdoc='origin type (when looking up by type+URL)')
-@api_doc.arg('origin_url',
-             default='https://github.com/hylang/hy',
-             argtype=api_doc.argtypes.path,
-             argdoc='origin URL (when looking up by type+URL)')
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""The metadata of the origin corresponding to the given
-                        criteria""")
+@api_doc('/origin/')
 def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
-    """Get information about a software origin.
-
-    Software origins might be looked up by origin type and canonical URL (e.g.,
-    "git" + a "git clone" URL), or by their unique (but otherwise meaningless)
-    identifier.
-
     """
+    .. http:get:: /api/1/origin/(origin_id)/
+
+        Get information about a software origin.
+
+        :param int origin_id: a SWH origin identifier
+
+        :>json number id: the origin unique identifier
+        :>json string origin_visits_url: link to in order to get information about the SWH
+            visits for that origin
+        :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :>json string url: the origin canonical url
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/1/`
+
+    .. http:get:: /api/1/origin/(origin_type)/url/(origin_url)/
+
+        Get information about a software origin.
+
+        :param string origin_type: the origin type (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :param string origin_url: the origin url
+
+        :>json number id: the origin unique identifier
+        :>json string origin_visits_url: link to in order to get information about the SWH
+            visits for that origin
+        :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :>json string url: the origin canonical url
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
+    """ # noqa
     ori_dict = {
         'id': origin_id,
         'type': origin_type,
@@ -76,35 +106,41 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
 @api_route(r'/origin/search/(?P<url_pattern>.+)/',
            'origin-search')
-@api_doc.route('/origin/search/')
-@api_doc.arg('url_pattern',
-             default='python',
-             argtype=api_doc.argtypes.str,
-             argdoc='string pattern to search for in origin urls')
-@api_doc.header('Link', doc=doc_header_link)
-@api_doc.param('offset',
-               default=0,
-               argtype=api_doc.argtypes.int,
-               doc='number of found origins to skip before returning results') # noqa
-@api_doc.param('limit',
-               default=70,
-               argtype=api_doc.argtypes.int,
-               doc='the maximum number of found origins to return')
-@api_doc.param('regexp',
-               default='false',
-               argtype=api_doc.argtypes.str,
-               doc="""if that query parameter is set to 'true', consider provided
-                   pattern as a regular expression and search origins whose
-                   urls match it""")
-@api_doc.returns(rettype=api_doc.rettypes.list,
-                 retdoc="""The metadata of the origins whose urls match
-                        the provided string pattern""")
+@api_doc('/origin/search/')
 def api_origin_search(request, url_pattern):
-    """Search for origins whose urls contain a provided string pattern
-    or match a provided regular expression.
-    The search is performed in a case insensitive way.
-
     """
+    .. http:get:: /api/1/origin/search/(url_pattern)/
+
+        Search for software origins whose urls contain a provided string
+        pattern or match a provided regular expression.
+        The search is performed in a case insensitive way.
+
+        :param string url_pattern: a string pattern or a regular expression
+        :query int offset: the number of found origins to skip before returning results
+        :query int limit: the maximum number of found origins to return
+        :query boolean regexp: if true, consider provided pattern as a regular expression
+            and search origins whose urls match it
+
+        :>jsonarr number id: the origin unique identifier
+        :>jsonarr string origin_visits_url: link to in order to get information about the SWH
+            visits for that origin
+        :>jsonarr string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :>jsonarr string url: the origin canonical url
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/search/python/?limit=2`
+    """ # noqa
     result = {}
     offset = int(request.query_params.get('offset', '0'))
     limit = int(request.query_params.get('limit', '70'))
@@ -134,29 +170,46 @@ def api_origin_search(request, url_pattern):
 
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'origin-visits')
-@api_doc.route('/origin/visits/')
-@api_doc.arg('origin_id',
-             default=1,
-             argtype=api_doc.argtypes.int,
-             argdoc='software origin identifier')
-@api_doc.header('Link', doc=doc_header_link)
-@api_doc.param('last_visit', default=None,
-               argtype=api_doc.argtypes.int,
-               doc=doc_arg_last_elt)
-@api_doc.param('per_page', default=10,
-               argtype=api_doc.argtypes.int,
-               doc=doc_arg_per_page)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.list,
-                 retdoc="""a list of dictionaries describing individual visits.
-                 For each visit, its identifier, timestamp (as UNIX time),
-                 outcome, snapshot id, and visit-specific URL for more
-                 information are given. Visits are sorted in descending
-                 order according to their timestamp.""")
+@api_doc('/origin/visits/')
 def api_origin_visits(request, origin_id):
-    """Get information about all visits of a given software origin.
-
     """
+    .. http:get:: /api/1/origin/(origin_id)/visits/
+
+        Get information about all visits of a software origin.
+        Visits are returned sorted in descending order according
+        to their date.
+
+        :param int origin_id: a SWH origin identifier
+        :query int per_page: specify the number of visits to list, for pagination purposes
+        :query int last_visit: visit to start listing from, for pagination purposes
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Link: indicates that a subsequent result page is available and contains
+            the url pointing to it
+
+        :>jsonarr string date: ISO representation of the visit date (in UTC)
+        :>jsonarr number id: the unique identifier of the origin
+        :>jsonarr string origin_visit_url: link to :http:get:`/api/1/origin/(origin_id)/visit/(visit_id)/`
+            in order to get information about the visit
+        :>jsonarr string snapshot: the snapshot identifier of the visit
+        :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
+            in order to get information about the snapshot of the visit
+        :>jsonarr string status: status of the visit (either *full*, *partial* or *ongoing*)
+        :>jsonarr number visit: the unique identifier of the visit
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/1/visits/`
+    """ # noqa
     result = {}
     per_page = int(request.query_params.get('per_page', '10'))
     last_visit = request.query_params.get('last_visit')
@@ -220,26 +273,43 @@ def api_origin_visits(request, origin_id):
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/',
            'origin-visit')
-@api_doc.route('/origin/visit/')
-@api_doc.arg('origin_id',
-             default=1,
-             argtype=api_doc.argtypes.int,
-             argdoc='software origin identifier')
-@api_doc.arg('visit_id',
-             default=1,
-             argtype=api_doc.argtypes.int,
-             argdoc="""visit identifier, relative to the origin identified by
-             origin_id""")
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""dictionary containing both metadata for the entire
-                 visit (e.g., timestamp as UNIX time, visit outcome, etc.) and
-                 what was at the software origin during the visit (i.e., a
-                 mapping from branches to other archive objects)""")
+@api_doc('/origin/visit/')
 def api_origin_visit(request, origin_id, visit_id):
-    """Get information about a specific visit of a software origin.
-
     """
+    .. http:get:: /api/1/origin/(origin_id)/visit/(visit_id)/
+
+        Get information about a specific visit of a software origin.
+
+        :param int origin_id: a SWH origin identifier
+        :param int visit_id: a visit identifier
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json string date: ISO representation of the visit date (in UTC)
+        :>json object occurrences: object containing all branches associated to the origin found
+            during the visit, for each of them the associated SWH target type and id are given
+            but also a link to get information about that target
+        :>json number origin: the origin unique identifier
+        :>json string origin_url: link to get information about the origin
+        :>jsonarr string snapshot: the snapshot identifier of the visit
+        :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
+            in order to get information about the snapshot of the visit
+        :>json string status: status of the visit (either *full*, *partial* or *ongoing*)
+        :>json number visit: the unique identifier of the visit
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin or visit can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/1500/visit/1/`
+    """ # noqa
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()
         ov['origin_url'] = reverse('origin',

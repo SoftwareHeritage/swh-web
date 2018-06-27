@@ -129,6 +129,12 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         self.assertContains(resp, swh_rev_id)
         self.assertContains(resp, swh_rev_id_url)
 
+        swh_dir_id = get_swh_persistent_id('directory', dir_id)
+        swh_dir_id_url = reverse('browse-swh-id',
+                                 kwargs={'swh_id': swh_dir_id})
+        self.assertContains(resp, swh_dir_id)
+        self.assertContains(resp, swh_dir_id_url)
+
     @patch('swh.web.browse.views.revision.service')
     @istest
     def revision_log_browse(self, mock_service):

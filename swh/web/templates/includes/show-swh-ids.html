@@ -9,11 +9,11 @@ See top-level LICENSE file for more information
 
 {% if swh_ids %}
 
-  <div id="swh-identifiers">
+  <div id="swh-identifiers" style="visibility: hidden;">
     {% if swh_ids|length > 1 %}
-      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90"></i>Permalinks</a>
+      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90 fa-fw"></i>Permalinks</a>
     {% else %}
-      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90"></i>Permalink</a>
+      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90 fa-fw"></i>Permalink</a>
     {% endif %}
     <div id="swh-identifiers-content">
       <p>

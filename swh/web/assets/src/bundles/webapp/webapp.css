@@ -51,6 +51,10 @@ footer a:hover {
     text-decoration: underline;
 }
 
+.link-color {
+    color: #fecd1b;
+}
+
 pre {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
@@ -109,24 +113,6 @@ pre {
 
 .sitename .second-word {
     font-family: 'Alegreya', serif;
-}
-
-.swh-api-doc-route-upcoming > td,
-.swh-api-doc-route-upcoming > td > a {
-    font-size: 90%;
-}
-
-.swh-api-doc-route-deprecated > td,
-.swh-api-doc-route-deprecated > td > a {
-    color: red;
-}
-
-.swh-api-doc p {
-    margin-bottom: 0;
-}
-
-.swh-api-doc dt {
-    text-align: right;
 }
 
 .swh-counter {

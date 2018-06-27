@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import re
-
 from rest_framework.decorators import api_view
 
 from swh.web.common.urlsindex import UrlsIndex
@@ -27,51 +25,6 @@ class APIUrls(UrlsIndex):
     @classmethod
     def get_app_endpoints(cls):
         return cls._apidoc_routes
-
-    @classmethod
-    def get_method_endpoints(cls, f):
-        if f.__name__ not in cls._method_endpoints:
-            cls._method_endpoints[f.__name__] = cls.group_routes_by_method(f)
-        return cls._method_endpoints[f.__name__]
-
-    @classmethod
-    def group_routes_by_method(cls, f):
-        """
-        Group URL endpoints according to their processing method.
-
-        Returns:
-            A dict where keys are the processing method names, and values are
-            the routes that are bound to the key method.
-
-        """
-        rules = []
-        for urlp in cls.get_url_patterns():
-            endpoint = urlp.callback.__name__
-            if endpoint != f.__name__:
-                continue
-            method_names = urlp.callback.http_method_names
-            url_rule = urlp.regex.pattern.replace('^', '/').replace('$', '')
-            url_rule_params = re.findall('\([^)]+\)', url_rule)
-            for param in url_rule_params:
-                param_name = re.findall('<(.*)>', param)
-                param_name = param_name[0] if len(param_name) > 0 else None
-                if param_name and hasattr(f, 'doc_data') and f.doc_data['args']: # noqa
-                    param_index = \
-                        next(i for (i, d) in enumerate(f.doc_data['args'])
-                             if d['name'] == param_name)
-                    if param_index is not None:
-                        url_rule = url_rule.replace(
-                            param, '<' +
-                            f.doc_data['args'][param_index]['name'] +
-                            ': ' + f.doc_data['args'][param_index]['type'] +
-                            '>').replace('.*', '')
-            rule_dict = {'rule': '/api' + url_rule,
-                         'name': urlp.name,
-                         'methods': {method.upper() for method in method_names}
-                         }
-            rules.append(rule_dict)
-
-        return rules
 
     @classmethod
     def add_route(cls, route, docstring, **kwargs):
