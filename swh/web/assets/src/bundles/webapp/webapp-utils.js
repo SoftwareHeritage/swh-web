@@ -1,24 +1,11 @@
-$(document).on('collapsed.lte.pushmenu', event => {
-  if ($('body').width() > 980) {
-    $('.swh-words-logo-swh').css('visibility', 'visible');
-  }
-});
-
-$(document).on('shown.lte.pushmenu', event => {
-  $('.swh-words-logo-swh').css('visibility', 'hidden');
-});
-
-function ensureNoFooterOverflow() {
-  $('body').css('padding-bottom', $('footer').outerHeight() + 'px');
+let collapseSidebar = false;
+let previousSidebarState = localStorage.getItem('swh-sidebar-collapsed');
+if (previousSidebarState !== undefined) {
+  collapseSidebar = JSON.parse(previousSidebarState);
 }
 
-$(document).ready(() => {
+$(document).on('DOMContentLoaded', () => {
   // restore previous sidebar state (collapsed/expanded)
-  let collapseSidebar = false;
-  let previousSidebarState = localStorage.getItem('swh-sidebar-collapsed');
-  if (previousSidebarState !== undefined) {
-    collapseSidebar = JSON.parse(previousSidebarState);
-  }
   if (collapseSidebar) {
     // hack to avoid animated transition for collasping sidebar
     // when loading a page
@@ -34,7 +21,23 @@ $(document).ready(() => {
       $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition', sidebarEltsTransition);
     });
   }
+});
 
+$(document).on('collapsed.lte.pushmenu', event => {
+  if ($('body').width() > 980) {
+    $('.swh-words-logo-swh').css('visibility', 'visible');
+  }
+});
+
+$(document).on('shown.lte.pushmenu', event => {
+  $('.swh-words-logo-swh').css('visibility', 'hidden');
+});
+
+function ensureNoFooterOverflow() {
+  $('body').css('padding-bottom', $('footer').outerHeight() + 'px');
+}
+
+$(document).ready(() => {
   // redirect to last browse page if any when clicking on the 'Browse' entry
   // in the sidebar
   $(`.swh-browse-link`).click(event => {
