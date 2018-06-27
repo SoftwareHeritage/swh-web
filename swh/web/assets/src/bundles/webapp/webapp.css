@@ -51,6 +51,10 @@ footer a:hover {
     text-decoration: underline;
 }
 
+.link-color {
+    color: #fecd1b;
+}
+
 pre {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
