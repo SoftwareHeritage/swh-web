@@ -7,9 +7,14 @@ import os
 
 from sphinxcontrib import httpdomain
 
-from swh.docs.sphinx.conf import setup as orig_setup
-
 from sphinx.ext import autodoc
+
+# guard to avoid ImportError when running tests through sbuild
+# as there is no Debian package built for swh-docs
+try:
+    from swh.docs.sphinx.conf import setup as orig_setup
+except Exception:
+    pass
 
 
 class SimpleDocumenter(autodoc.FunctionDocumenter):
