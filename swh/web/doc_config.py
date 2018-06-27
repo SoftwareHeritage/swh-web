@@ -3,7 +3,34 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import os
+
 from sphinxcontrib import httpdomain
+
+from sphinx.ext import autodoc
+
+# guard to avoid ImportError when running tests through sbuild
+# as there is no Debian package built for swh-docs
+try:
+    from swh.docs.sphinx.conf import setup as orig_setup
+except Exception:
+    pass
+
+
+class SimpleDocumenter(autodoc.FunctionDocumenter):
+    """
+    Custom autodoc directive to display a docstring unindented
+    and without function signature header.
+    """
+    objtype = "simple"
+
+    # do not indent the content
+    content_indent = ""
+
+    # do not add a header to the docstring
+    def add_directive_header(self, sig):
+        pass
+
 
 _swh_web_base_url = 'https://archive.softwareheritage.org'
 _swh_web_api_endpoint = 'api'
@@ -15,6 +42,14 @@ _swh_web_api_url = '%s/%s/%s/' % (_swh_web_base_url,
 _swh_web_browse_endpoint = 'browse'
 _swh_web_browse_url = '%s/%s/' % (_swh_web_base_url,
                                   _swh_web_browse_endpoint)
+
+
+def setup(app):
+    orig_setup(app)
+    app.add_autodocumenter(SimpleDocumenter)
+    # set an environment variable indicating we are currently
+    # building the swh-web documentation
+    os.environ['SWH_WEB_DOC_BUILD'] = '1'
 
 
 def customize_sphinx_conf(sphinx_conf):
@@ -33,3 +68,4 @@ def customize_sphinx_conf(sphinx_conf):
     sphinx_conf.extlinks['swh_web'] = (_swh_web_base_url + '/%s', None)
     sphinx_conf.extlinks['swh_web_api'] = (_swh_web_api_url + '%s', None)
     sphinx_conf.extlinks['swh_web_browse'] = (_swh_web_browse_url + '%s', None)
+    sphinx_conf.setup = setup

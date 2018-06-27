@@ -18,3 +18,5 @@ SWH Web API URLs
 .. include:: uri-scheme-api-snapshot.rst
 
 .. include:: uri-scheme-api-stat.rst
+
+.. include:: uri-scheme-api-vault.rst

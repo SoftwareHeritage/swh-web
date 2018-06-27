@@ -813,7 +813,7 @@ def get_origin_info(origin_url, origin_type=None):
                 return origin_info
             except Exception:
                 pass
-    return None
+    raise NotFoundExc('Origin with url %s not found!' % origin_url)
 
 
 def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,

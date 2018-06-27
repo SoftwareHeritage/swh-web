@@ -287,12 +287,12 @@ def revision_browse(request, sha1_git, extra_path=None):
         elif snapshot_id:
             snapshot_context = get_snapshot_context(snapshot_id)
         if path:
-            path_info = \
+            file_info = \
                 service.lookup_directory_with_path(revision['directory'], path)
-            if path_info['type'] == 'dir':
-                dir_id = path_info['target']
+            if file_info['type'] == 'dir':
+                dir_id = file_info['target']
             else:
-                query_string = 'sha1_git:' + path_info['target']
+                query_string = 'sha1_git:' + file_info['target']
                 content_data = request_content(query_string)
         else:
             dir_id = revision['directory']
@@ -396,6 +396,9 @@ def revision_browse(request, sha1_git, extra_path=None):
         'revision_id': sha1_git
     }
 
+    swh_objects = [{'type': 'revision',
+                    'id': sha1_git}]
+
     content = None
     content_size = None
     mimetype = None
@@ -423,6 +426,9 @@ def revision_browse(request, sha1_git, extra_path=None):
         top_right_link_text = mark_safe(
             '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
             '</i>Raw File')
+
+        swh_objects.append({'type': 'content',
+                            'id': file_info['target']})
     else:
         for d in dirs:
             query_params['path'] = path + d['name']
@@ -448,14 +454,14 @@ def revision_browse(request, sha1_git, extra_path=None):
         vault_cooking['directory_context'] = True
         vault_cooking['directory_id'] = dir_id
 
+        swh_objects.append({'type': 'directory',
+                            'id': dir_id})
+
     diff_revision_url = reverse('diff-revision', kwargs={'sha1_git': sha1_git},
                                 query_params={'origin_type': origin_type,
                                               'origin': origin_url,
                                               'timestamp': timestamp,
                                               'visit_id': visit_id})
-
-    swh_objects = [{'type': 'revision',
-                    'id': sha1_git}]
 
     if snapshot_id:
         swh_objects.append({'type': 'snapshot',

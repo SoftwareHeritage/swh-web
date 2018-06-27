@@ -4,26 +4,41 @@
 # See top-level LICENSE file for more information
 
 from swh.web.common import service
-from swh.web.api import apidoc as api_doc
+from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
-from swh.web.api.views.utils import (
-    api_lookup, doc_exc_id_not_found,
-)
+from swh.web.api.views.utils import api_lookup
 
 
 @api_route(r'/person/(?P<person_id>[0-9]+)/', 'person')
-@api_doc.route('/person/')
-@api_doc.arg('person_id',
-             default=42,
-             argtype=api_doc.argtypes.int,
-             argdoc='person identifier')
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc='The metadata of the person identified by person_id')
+@api_doc('/person/')
 def api_person(request, person_id):
-    """Get information about a person.
-
     """
+    .. http:get:: /api/1/person/(person_id)/
+
+        Get information about a person in the SWH archive.
+
+        :param int person_id: a SWH person identifier
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json string email: the email of the person
+        :>json string fullname: the full name of the person: combination of its name and email
+        :>json number id: the unique identifier of the person
+        :>json string name: the name of the person
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested person can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`person/8275/`
+    """ # noqa
     return api_lookup(
         service.lookup_person, person_id,
         notfound_msg='Person with id {} not found.'.format(person_id))
