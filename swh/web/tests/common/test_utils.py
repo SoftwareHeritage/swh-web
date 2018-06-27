@@ -152,8 +152,8 @@ class UtilsTestCase(unittest.TestCase):
 
         with self.assertRaises(BadInputExc) as cm:
             utils.get_swh_persistent_id('foo', sha1_git)
-        self.assertIn('Invalid object type', cm.exception.args[0])
+        self.assertIn('Invalid object', cm.exception.args[0])
 
         with self.assertRaises(BadInputExc) as cm:
             utils.get_swh_persistent_id(swh_object_type, 'not a valid id')
-        self.assertIn('Invalid object id', cm.exception.args[0])
+        self.assertIn('Invalid object', cm.exception.args[0])

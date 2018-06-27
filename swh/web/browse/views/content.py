@@ -233,6 +233,9 @@ def content_display(request, query_string):
         'licenses': content_data['licenses']
     }
 
+    if filename:
+        content_metadata['filename'] = filename
+
     sha1_git = content_data['checksums']['sha1_git']
     swh_ids = get_swh_persistent_ids([{'type': 'content',
                                        'id': sha1_git}])

@@ -9,18 +9,15 @@ from swh.web.common import service
 from swh.web.common.utils import reverse
 from swh.web.common.utils import parse_timestamp
 from swh.web.api import utils
-from swh.web.api import apidoc as api_doc
+from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
-from swh.web.api.views.utils import (
-    api_lookup, doc_exc_id_not_found, doc_header_link,
-    doc_arg_per_page, doc_exc_bad_id,
-    doc_ret_revision_log, doc_ret_revision_meta
-)
+from swh.web.api.views.utils import api_lookup
 
 
 def _revision_directory_by(revision, path, request_path,
                            limit=100, with_data=False):
-    """Compute the revision matching criterion's directory or content data.
+    """
+    Compute the revision matching criterion's directory or content data.
 
     Args:
         revision: dictionary of criterions representing a revision to lookup
@@ -60,36 +57,62 @@ def _revision_directory_by(revision, path, request_path,
            r'/branch/(?P<branch_name>.+)'
            r'/ts/(?P<ts>.+)/log/',
            'revision-origin-log')
-@api_doc.route('/revision/origin/log/')
-@api_doc.arg('origin_id',
-             default=1,
-             argtype=api_doc.argtypes.int,
-             argdoc="The revision's SWH origin identifier")
-@api_doc.arg('branch_name',
-             default='refs/heads/master',
-             argtype=api_doc.argtypes.path,
-             argdoc="""(Optional) The revision's branch name within the origin specified.
-Defaults to 'refs/heads/master'.""")
-@api_doc.arg('ts',
-             default='2000-01-17T11:23:54+00:00',
-             argtype=api_doc.argtypes.ts,
-             argdoc="""(Optional) A time or timestamp string to parse""")
-@api_doc.header('Link', doc=doc_header_link)
-@api_doc.param('per_page', default=10,
-               argtype=api_doc.argtypes.int,
-               doc=doc_arg_per_page)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_log)
+@api_doc('/revision/origin/log/')
 def api_revision_log_by(request, origin_id,
                         branch_name='refs/heads/master',
                         ts=None):
-    """Show the commit log for a revision, searching for it based on software
-    origin, branch name, and/or visit timestamp.
-
-    This endpoint behaves like ``/log``, but operates on the revision that
-    has been found at a given software origin, close to a given point in time,
-    pointed by a given branch.
     """
+    .. http:get:: /api/1/revision/origin/(origin_id)[/branch/(branch_name)][/ts/(timestamp)]/log
+
+        Show the commit log for a revision, searching for it based on software origin,
+        branch name, and/or visit timestamp.
+
+        This endpoint behaves like :http:get:`/api/1/revision/(sha1_git)[/prev/(prev_sha1s)]/log/`,
+        but operates on the revision that has been found at a given software origin,
+        close to a given point in time, pointed by a given branch.
+
+        :param int origin_id: a SWH origin identifier
+        :param string branch_name: optional parameter specifying a fully-qualified branch name
+            associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
+        :param string timestamp: optional parameter specifying a timestamp close to which the revision
+            pointed by the given branch should be looked up. The timestamp can be expressed either
+            as an ISO date or as a Unix one (in UTC). Defaults to now.
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>jsonarr object author: information about the author of the revision
+        :>jsonarr string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the author of the revision
+        :>jsonarr object committer: information about the committer of the revision
+        :>jsonarr string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the committer of the revision
+        :>jsonarr string committer_date: ISO representation of the commit date (in UTC)
+        :>jsonarr string date: ISO representation of the revision date (in UTC)
+        :>jsonarr string directory: the unique identifier that revision points to
+        :>jsonarr string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
+            to get information about the directory associated to the revision
+        :>jsonarr string id: the revision unique identifier
+        :>jsonarr boolean merge: whether or not the revision corresponds to a merge commit
+        :>jsonarr string message: the message associated to the revision
+        :>jsonarr array parents: the parents of the revision, i.e. the previous revisions
+            that head directly to it, each entry of that array contains an unique parent
+            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
+            to get more informations about it
+        :>jsonarr string type: the type of the revision
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: no revision matching the given criteria could be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`revision/origin/723566/ts/2016-01-17T00:00:00+00:00/log/`
+    """ # noqa
     result = {}
     per_page = int(request.query_params.get('per_page', '10'))
 
@@ -154,35 +177,14 @@ def api_revision_log_by(request, origin_id,
            r'/branch/(?P<branch_name>.+)/ts/(?P<ts>.+)'
            r'/directory/(?P<path>.+)/',
            'revision-directory')
-@api_doc.route('/revision/origin/directory/', tags=['hidden'])
-@api_doc.arg('origin_id',
-             default=1,
-             argtype=api_doc.argtypes.int,
-             argdoc="The revision's origin's SWH identifier")
-@api_doc.arg('branch_name',
-             default='refs/heads/master',
-             argtype=api_doc.argtypes.path,
-             argdoc="""The optional branch for the given origin (default
-                    to master""")
-@api_doc.arg('ts',
-             default='2000-01-17T11:23:54+00:00',
-             argtype=api_doc.argtypes.ts,
-             argdoc="""Optional timestamp (default to the nearest time
-                    crawl of timestamp)""")
-@api_doc.arg('path',
-             default='Dockerfile',
-             argtype=api_doc.argtypes.path,
-             argdoc='The path to the directory or file to display')
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""The metadata of the revision corresponding to the
-                        given criteria""")
+@api_doc('/revision/origin/directory/', tags=['hidden'])
 def api_directory_through_revision_origin(request, origin_id,
                                           branch_name="refs/heads/master",
                                           ts=None,
                                           path=None,
                                           with_data=False):
-    """Display directory or content information through a revision identified
+    """
+    Display directory or content information through a revision identified
     by origin/branch/timestamp.
     """
     if ts:
@@ -206,34 +208,62 @@ def api_directory_through_revision_origin(request, origin_id,
            'revision-origin')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>.+)/',
            'revision-origin')
-@api_doc.route('/revision/origin/')
-@api_doc.arg('origin_id',
-             default=1,
-             argtype=api_doc.argtypes.int,
-             argdoc='software origin identifier')
-@api_doc.arg('branch_name',
-             default='refs/heads/master',
-             argtype=api_doc.argtypes.path,
-             argdoc="""(optional) fully-qualified branch name, e.g.,
-                    "refs/heads/master". Defaults to the master branch.""")
-@api_doc.arg('ts',
-             default=None,
-             argtype=api_doc.argtypes.ts,
-             argdoc="""(optional) timestamp close to which the revision pointed by
-             the given branch should be looked up. Defaults to now.""")
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_meta)
+@api_doc('/revision/origin/')
 def api_revision_with_origin(request, origin_id,
                              branch_name="refs/heads/master",
                              ts=None):
-    """Get information about a revision, searching for it based on software
-    origin, branch name, and/or visit timestamp.
-
-    This endpoint behaves like ``/revision``, but operates on the revision that
-    has been found at a given software origin, close to a given point in time,
-    pointed by a given branch.
-
     """
+    .. http:get:: /api/1/revision/origin/(origin_id)/[branch/(branch_name)/][ts/(timestamp)/]
+
+        Get information about a revision, searching for it based on software origin,
+        branch name, and/or visit timestamp.
+
+        This endpoint behaves like :http:get:`/api/1/revision/(sha1_git)/`,
+        but operates on the revision that has been found at a given software origin,
+        close to a given point in time, pointed by a given branch.
+
+        :param int origin_id: a SWH origin identifier
+        :param string branch_name: optional parameter specifying a fully-qualified branch name
+            associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
+        :param string timestamp: optional parameter specifying a timestamp close to which the revision
+            pointed by the given branch should be looked up. The timestamp can be expressed either
+            as an ISO date or as a Unix one (in UTC). Defaults to now.
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json object author: information about the author of the revision
+        :>json string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the author of the revision
+        :>json object committer: information about the committer of the revision
+        :>json string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the committer of the revision
+        :>json string committer_date: ISO representation of the commit date (in UTC)
+        :>json string date: ISO representation of the revision date (in UTC)
+        :>json string directory: the unique identifier that revision points to
+        :>json string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
+            to get information about the directory associated to the revision
+        :>json string id: the revision unique identifier
+        :>json boolean merge: whether or not the revision corresponds to a merge commit
+        :>json string message: the message associated to the revision
+        :>json array parents: the parents of the revision, i.e. the previous revisions
+            that head directly to it, each entry of that array contains an unique parent
+            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
+            to get more informations about it
+        :>json string type: the type of the revision
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: no revision matching the given criteria could be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`revision/origin/13706355/branch/refs/heads/2.7/`
+    """ # noqa
     ts = parse_timestamp(ts)
     return api_lookup(
         service.lookup_revision_by, origin_id, branch_name, ts,
@@ -245,21 +275,10 @@ def api_revision_with_origin(request, origin_id,
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/prev/(?P<context>[0-9a-f/]+)/',
            'revision-context')
-@api_doc.route('/revision/prev/', tags=['hidden'])
-@api_doc.arg('sha1_git',
-             default='ec72c666fb345ea5f21359b7bc063710ce558e39',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc="The revision's sha1_git identifier")
-@api_doc.arg('context',
-             default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
-             argtype=api_doc.argtypes.path,
-             argdoc='The navigation breadcrumbs -- use at your own risk')
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc='The metadata of the revision identified by sha1_git')
+@api_doc('/revision/prev/', tags=['hidden'])
 def api_revision_with_context(request, sha1_git, context):
-    """Return information about revision with id sha1_git.
+    """
+    Return information about revision with id sha1_git.
     """
     def _enrich_revision(revision, context=context):
         return utils.enrich_revision(revision, context)
@@ -271,23 +290,54 @@ def api_revision_with_context(request, sha1_git, context):
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'revision')
-@api_doc.route('/revision/')
-@api_doc.arg('sha1_git',
-             default='aafb16d69fd30ff58afdd69036a26047f3aebdc6',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc="revision identifier")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_meta)
+@api_doc('/revision/')
 def api_revision(request, sha1_git):
-    """Get information about a revision.
-
-    Revisions are identified by SHA1 checksums, compatible with Git commit
-    identifiers. See the `documentation
-    <https://docs.softwareheritage.org/devel/swh-model/apidoc/swh.model.html#swh.model.identifiers.revision_identifier>`_
-    for details about how they are computed.
-
     """
+    .. http:get:: /api/1/revision/(sha1_git)/
+
+        Get information about a revision in the SWH archive.
+        Revisions are identified by *sha1* checksums, compatible with Git commit identifiers.
+        See :func:`swh.model.identifiers.revision_identifier` in our data model module for details
+        about how they are computed.
+
+        :param string sha1_git: hexadecimal representation of the revision *sha1_git* identifier
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json object author: information about the author of the revision
+        :>json string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the author of the revision
+        :>json object committer: information about the committer of the revision
+        :>json string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the committer of the revision
+        :>json string committer_date: ISO representation of the commit date (in UTC)
+        :>json string date: ISO representation of the revision date (in UTC)
+        :>json string directory: the unique identifier that revision points to
+        :>json string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
+            to get information about the directory associated to the revision
+        :>json string id: the revision unique identifier
+        :>json boolean merge: whether or not the revision corresponds to a merge commit
+        :>json string message: the message associated to the revision
+        :>json array parents: the parents of the revision, i.e. the previous revisions
+            that head directly to it, each entry of that array contains an unique parent
+            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
+            to get more informations about it
+        :>json string type: the type of the revision
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *sha1_git* value has been provided
+        :statuscode 404: requested revision can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`revision/aafb16d69fd30ff58afdd69036a26047f3aebdc6/`
+    """ # noqa
     return api_lookup(
         service.lookup_revision, sha1_git,
         notfound_msg='Revision with sha1_git {} not found.'.format(sha1_git),
@@ -295,16 +345,7 @@ def api_revision(request, sha1_git):
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/raw/', 'revision-raw-message')
-@api_doc.route('/revision/raw/', tags=['hidden'], handle_response=True)
-@api_doc.arg('sha1_git',
-             default='ec72c666fb345ea5f21359b7bc063710ce558e39',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc="The queried revision's sha1_git identifier")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.octet_stream,
-                 retdoc="""The message of the revision identified by sha1_git
-                        as a downloadable octet stream""")
+@api_doc('/revision/raw/', tags=['hidden'], handle_response=True)
 def api_revision_raw_message(request, sha1_git):
     """Return the raw data of the message of revision identified by sha1_git
     """
@@ -320,31 +361,43 @@ def api_revision_raw_message(request, sha1_git):
            'revision-directory')
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/directory/(?P<dir_path>.+)/',
            'revision-directory')
-@api_doc.route('/revision/directory/')
-@api_doc.arg('sha1_git',
-             default='ec72c666fb345ea5f21359b7bc063710ce558e39',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc='revision identifier')
-@api_doc.arg('dir_path',
-             default='Documentation/BUG-HUNTING',
-             argtype=api_doc.argtypes.path,
-             argdoc="""path relative to the root directory of revision identifier by
-                    sha1_git""")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc="""either a list of directory entries with their metadata,
-                        or the metadata of a single directory entry""")
+@api_doc('/revision/directory/')
 def api_revision_directory(request, sha1_git,
                            dir_path=None,
                            with_data=False):
-    """Get information about directory (entry) objects associated to revisions.
-
-    Each revision is associated to a single "root" directory. This endpoint
-    behaves like ``/directory/``, but operates on the root directory associated
-    to a given revision.
-
     """
+    .. http:get:: /api/1/revision/(sha1_git)/directory/[(path)/]
+
+        Get information about directory (entry) objects associated to revisions.
+        Each revision is associated to a single "root" directory.
+        This endpoint behaves like :http:get:`/api/1/directory/(sha1_git)/[(path)/]`,
+        but operates on the root directory associated to a given revision.
+
+        :param string sha1_git: hexadecimal representation of the revision *sha1_git* identifier
+        :param string path: optional parameter to get information about the directory entry
+            pointed by that relative path
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json array content: directory entries as returned by :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
+        :>json string path: path of directory from the revision root one
+        :>json string revision: the unique revision identifier
+        :>json string type: the type of the directory
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *sha1_git* value has been provided
+        :statuscode 404: requested revision can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`revision/f1b94134a4b879bc55c3dacdb496690c8ebdc03f/directory/`
+    """ # noqa
     return _revision_directory_by({'sha1_git': sha1_git},
                                   dir_path, request.path,
                                   with_data=with_data)
@@ -354,28 +407,57 @@ def api_revision_directory(request, sha1_git,
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)'
            r'/prev/(?P<prev_sha1s>[0-9a-f/]+)/log/',
            'revision-log')
-@api_doc.route('/revision/log/')
-@api_doc.arg('sha1_git',
-             default='37fc9e08d0c4b71807a4f1ecb06112e78d91c283',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc='revision identifier')
-@api_doc.arg('prev_sha1s',
-             default='6adc4a22f20bbf3bbc754f1ec8c82be5dfb5c71a',
-             argtype=api_doc.argtypes.path,
-             argdoc="""(Optional) Navigation breadcrumbs (descendant revisions
-previously visited).  If multiple values, use / as delimiter.  """)
-@api_doc.header('Link', doc=doc_header_link)
-@api_doc.param('per_page', default=10,
-               argtype=api_doc.argtypes.int,
-               doc=doc_arg_per_page)
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict, retdoc=doc_ret_revision_log)
+@api_doc('/revision/log/')
 def api_revision_log(request, sha1_git, prev_sha1s=None):
-    """Get a list of all revisions heading to a given one, i.e., show the
-    commit log.
-
     """
+    .. http:get:: /api/1/revision/(sha1_git)[/prev/(prev_sha1s)]/log/
+
+        Get a list of all SWH revisions heading to a given one, in other words show the commit log.
+
+        :param string sha1_git: hexadecimal representation of the revision *sha1_git* identifier
+        :param string prev_sha1s: optional parameter representing the navigation breadcrumbs
+            (descendant revisions previously visited). If multiple values, use / as delimiter.
+            If provided, revisions information will be added at the beginning of the returned list.
+        :query int per_page: number of elements in the returned list, for pagination purpose
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Link: indicates that a subsequent result page is available and contains
+            the url pointing to it
+
+        :>jsonarr object author: information about the author of the revision
+        :>jsonarr string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the author of the revision
+        :>jsonarr object committer: information about the committer of the revision
+        :>jsonarr string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
+            information about the committer of the revision
+        :>jsonarr string committer_date: ISO representation of the commit date (in UTC)
+        :>jsonarr string date: ISO representation of the revision date (in UTC)
+        :>jsonarr string directory: the unique identifier that revision points to
+        :>jsonarr string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
+            to get information about the directory associated to the revision
+        :>jsonarr string id: the revision unique identifier
+        :>jsonarr boolean merge: whether or not the revision corresponds to a merge commit
+        :>jsonarr string message: the message associated to the revision
+        :>jsonarr array parents: the parents of the revision, i.e. the previous revisions
+            that head directly to it, each entry of that array contains an unique parent
+            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
+            to get more informations about it
+        :>jsonarr string type: the type of the revision
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid *sha1_git* value has been provided
+        :statuscode 404: requested revision can not be found in the SWH archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`revision/e1a315fa3fa734e2a6154ed7b5b9ae0eb8987aad/log/`
+    """ # noqa
     result = {}
     per_page = int(request.query_params.get('per_page', '10'))
 

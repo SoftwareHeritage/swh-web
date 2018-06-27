@@ -9,11 +9,9 @@ from django.views.decorators.cache import never_cache
 from swh.model import hashutil
 from swh.web.common import service, query
 from swh.web.common.utils import reverse
-from swh.web.api import apidoc as api_doc
+from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
-from swh.web.api.views.utils import (
-    api_lookup, doc_exc_id_not_found, doc_exc_bad_id,
-)
+from swh.web.api.views.utils import api_lookup
 
 
 # XXX: a bit spaghetti. Would be better with class-based views.
@@ -33,30 +31,49 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
                           .format(object_name, hex_id)))
 
 
-@api_route('/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
+@api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
            'vault-cook-directory', methods=['GET', 'POST'],
            throttle_scope='swh_vault_cooking')
 @never_cache
-@api_doc.route('/vault/directory/', tags=['hidden'])
-@api_doc.arg('dir_id',
-             default='d4a96ba891017d0d26c15e509b4e6515e40d75ee',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc="The directory's sha1 identifier")
-@api_doc.param('email', default=None,
-               argtype=api_doc.argtypes.int,
-               doc="e-mail to notify when the bundle is ready")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc=('dictionary mapping containing the status of '
-                         'the cooking'))
+@api_doc('/vault/directory/', tags=['hidden'])
 def api_vault_cook_directory(request, dir_id):
-    """Requests an archive of the directoy identified by dir_id.
-
-    To import the directory in the current directory, use::
-
-        $ tar xvf path/to/directory.tar.gz
     """
+    .. http:get:: /api/1/vault/directory/(dir_id)/
+    .. http:post:: /api/1/vault/directory/(dir_id)/
+
+        Request the cooking of an archive for a directory or check
+        its cooking status.
+
+        That endpoint enables to create a vault cooking task for a directory
+        through a POST request or check the status of a previously created one
+        through a GET request.
+
+        To import the directory in the current directory, use::
+
+            $ tar xvf path/to/directory.tar.gz
+
+        :param string dir_id: the directory's sha1 identifier
+
+        :query string email: e-mail to notify when the archive is ready
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json string fetch_url: the url from which to download the archive once it has been cooked
+            (see :http:get:`/api/1/vault/directory/(dir_id)/raw/`)
+        :>json string obj_type: the type of object to cook (directory or revision)
+        :>json string progress_message: message describing the cooking task progress
+        :>json number id: the cooking task id
+        :>json string status: the cooking task status (new/pending/done/failed)
+        :>json string obj_id: the identifier of the object to cook
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid directory identifier has been provided
+        :statuscode 404: requested directory can not be found in the SWH archive
+    """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
 
@@ -68,17 +85,26 @@ def api_vault_cook_directory(request, dir_id):
 
 @api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/raw/',
            'vault-fetch-directory')
-@api_doc.route('/vault/directory/raw/', tags=['hidden'], handle_response=True)
-@api_doc.arg('dir_id',
-             default='d4a96ba891017d0d26c15e509b4e6515e40d75ee',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc="The directory's sha1 identifier")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.octet_stream,
-                 retdoc='the cooked directory tarball')
+@api_doc('/vault/directory/raw/', tags=['hidden'], handle_response=True)
 def api_vault_fetch_directory(request, dir_id):
-    """Fetch the archive of the directoy identified by dir_id."""
+    """
+    .. http:get:: /api/1/vault/directory/(dir_id)/raw/
+
+        Fetch the cooked archive for a directory.
+
+        See :http:get:`/api/1/vault/directory/(dir_id)/` to get more
+        details on directory cooking.
+
+        :param string dir_id: the directory's sha1 identifier
+
+        :resheader Content-Type: application/octet-stream
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid directory identifier has been provided
+        :statuscode 404: requested directory can not be found in the SWH archive
+    """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(
@@ -94,28 +120,47 @@ def api_vault_fetch_directory(request, dir_id):
            'vault-cook-revision_gitfast', methods=['GET', 'POST'],
            throttle_scope='swh_vault_cooking')
 @never_cache
-@api_doc.route('/vault/revision/gitfast/', tags=['hidden'])
-@api_doc.arg('rev_id',
-             default='9174026cfe69d73ef80b27890615f8b2ef5c265a',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc="The revision's sha1_git identifier")
-@api_doc.param('email', default=None,
-               argtype=api_doc.argtypes.int,
-               doc="e-mail to notify when the bundle is ready")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.dict,
-                 retdoc='dictionary mapping containing the status of '
-                        'the cooking')
+@api_doc('/vault/revision/gitfast/', tags=['hidden'])
 def api_vault_cook_revision_gitfast(request, rev_id):
-    """Requests an archive of the revision identified by rev_id.
-
-    To import the revision in the current directory, use::
-
-        $ git init
-        $ zcat path/to/revision.gitfast.gz | git fast-import
-        $ git checkout HEAD
     """
+    .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/
+    .. http:post:: /api/1/vault/revision/(rev_id)/gitfast/
+
+        Request the cooking of a gitfast archive for a revision or check
+        its cooking status.
+
+        That endpoint enables to create a vault cooking task for a revision
+        through a POST request or check the status of a previously created one
+        through a GET request.
+
+        To import the revision in the current directory, use::
+
+            $ git init
+            $ zcat path/to/revision.gitfast.gz | git fast-import
+            $ git checkout HEAD
+
+        :param string rev_id: the revision's sha1 identifier
+
+        :query string email: e-mail to notify when the gitfast archive is ready
+
+        :reqheader Accept: the requested response content type,
+            either *application/json* (default) or *application/yaml*
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        :>json string fetch_url: the url from which to download the archive once it has been cooked
+            (see :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`)
+        :>json string obj_type: the type of object to cook (directory or revision)
+        :>json string progress_message: message describing the cooking task progress
+        :>json number id: the cooking task id
+        :>json string status: the cooking task status (new/pending/done/failed)
+        :>json string obj_id: the identifier of the object to cook
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid revision identifier has been provided
+        :statuscode 404: requested revision can not be found in the SWH archive
+    """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
 
@@ -125,20 +170,28 @@ def api_vault_cook_revision_gitfast(request, rev_id):
     return res
 
 
-@api_route('/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
+@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
            'vault-fetch-revision_gitfast')
-@api_doc.route('/vault/revision/gitfast/raw/', tags=['hidden'],
-               handle_response=True)
-@api_doc.arg('rev_id',
-             default='9174026cfe69d73ef80b27890615f8b2ef5c265a',
-             argtype=api_doc.argtypes.sha1_git,
-             argdoc="The revision's sha1_git identifier")
-@api_doc.raises(exc=api_doc.excs.badinput, doc=doc_exc_bad_id)
-@api_doc.raises(exc=api_doc.excs.notfound, doc=doc_exc_id_not_found)
-@api_doc.returns(rettype=api_doc.rettypes.octet_stream,
-                 retdoc='the cooked revision git fast-export')
+@api_doc('/vault/revision/gitfast/raw/', tags=['hidden'], handle_response=True)
 def api_vault_fetch_revision_gitfast(request, rev_id):
-    """Fetch the archive of the revision identified by rev_id."""
+    """
+    .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/raw/
+
+        Fetch the cooked gitfast archive for a revision.
+
+        See :http:get:`/api/1/vault/revision/(rev_id)/gitfast/` to get more
+        details on directory cooking.
+
+        :param string rev_id: the revision's sha1 identifier
+
+        :resheader Content-Type: application/octet-stream
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid revision identifier has been provided
+        :statuscode 404: requested revision can not be found in the SWH archive
+    """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(

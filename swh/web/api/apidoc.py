@@ -3,50 +3,226 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import docutils.nodes
+import docutils.parsers.rst
+import docutils.utils
+import functools
+import os
 import re
 
-from collections import defaultdict
 from functools import wraps
-from enum import Enum
-
 from rest_framework.decorators import api_view
 
-from swh.web.common.utils import reverse
+from swh.web.common.utils import parse_rst
 from swh.web.api.apiurls import APIUrls
 from swh.web.api.apiresponse import make_api_response, error_response
 
 
-class argtypes(Enum):  # noqa: N801
-    """Class for centralizing argument type descriptions
-
+class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
+    """
+    docutils visitor for walking on a parsed rst document containing sphinx
+    httpdomain roles. Its purpose is to extract relevant info regarding swh
+    api endpoints (for instance url arguments) from their docstring written
+    using sphinx httpdomain.
     """
 
-    ts = 'timestamp'
-    int = 'integer'
-    str = 'string'
-    path = 'path'
-    sha1 = 'sha1'
-    uuid = 'uuid'
-    sha1_git = 'sha1_git'
-    algo_and_hash = 'hash_type:hash'
+    # httpdomain roles we want to parse (based on sphinxcontrib.httpdomain 1.6)
+    parameter_roles = ('param', 'parameter', 'arg', 'argument')
+
+    response_json_object_roles = ('resjsonobj', 'resjson', '>jsonobj', '>json')
+
+    response_json_array_roles = ('resjsonarr', '>jsonarr')
+
+    query_parameter_roles = ('queryparameter', 'queryparam', 'qparam', 'query')
+
+    request_header_roles = ('<header', 'reqheader', 'requestheader')
+
+    response_header_roles = ('>header', 'resheader', 'responseheader')
+
+    status_code_roles = ('statuscode', 'status', 'code')
+
+    def __init__(self, document, urls, data):
+        super().__init__(document)
+        self.urls = urls
+        self.url_idx = 0
+        self.data = data
+        self.args_set = set()
+        self.params_set = set()
+        self.returns_set = set()
+        self.status_codes_set = set()
+        self.reqheaders_set = set()
+        self.resheaders_set = set()
+        self.field_list_visited = False
+
+    def process_paragraph(self, par):
+        """
+        Process extracted paragraph text before display.
+        Cleanup document model markups and transform the
+        paragraph into a valid raw rst string (as the apidoc
+        documentation transform rst to html when rendering).
+        """
+        par = par.replace('\n', ' ')
+        # keep empahasized and strong text
+        par = par.replace('<emphasis>', '*')
+        par = par.replace('</emphasis>', '*')
+        par = par.replace('<strong>', '**')
+        par = par.replace('</strong>', '**')
+        # remove parsed document markups
+        par = re.sub('<[^<]+?>', '', par)
+        # api urls cleanup to generate valid links afterwards
+        par = re.sub('\(\w+\)', '', par)
+        par = re.sub('\[.*\]', '', par)
+        par = par.replace('//', '/')
+        # transform references to api endpoints into valid rst links
+        par = re.sub(':http:get:`(.*)`', r'`<\1>`_', par)
+        # transform references to some elements into bold text
+        par = re.sub(':http:header:`(.*)`', r'**\1**', par)
+        par = re.sub(':func:`(.*)`', r'**\1**', par)
+        return par
+
+    def visit_field_list(self, node):
+        """
+        Visit parsed rst field lists to extract relevant info
+        regarding api endpoint.
+        """
+        self.field_list_visited = True
+        for child in node.traverse():
+            # get the parsed field name
+            if isinstance(child, docutils.nodes.field_name):
+                field_name = child.astext()
+            # parse field text
+            elif isinstance(child, docutils.nodes.paragraph):
+                text = self.process_paragraph(str(child))
+                field_data = field_name.split(' ')
+                # Parameters
+                if field_data[0] in self.parameter_roles:
+                    if field_data[2] not in self.args_set:
+                        self.data['args'].append({'name': field_data[2],
+                                                  'type': field_data[1],
+                                                  'doc': text})
+                        self.args_set.add(field_data[2])
+                # Query Parameters
+                if field_data[0] in self.query_parameter_roles:
+                    if field_data[2] not in self.params_set:
+                        self.data['params'].append({'name': field_data[2],
+                                                    'type': field_data[1],
+                                                    'doc': text})
+                        self.params_set.add(field_data[2])
+                # Response type
+                if field_data[0] in self.response_json_array_roles or \
+                        field_data[0] in self.response_json_object_roles:
+                    # array
+                    if field_data[0] in self.response_json_array_roles:
+                        self.data['return_type'] = 'array'
+                    # object
+                    else:
+                        self.data['return_type'] = 'object'
+                    # returned object field
+                    if field_data[2] not in self.returns_set:
+                        self.data['returns'].append({'name': field_data[2],
+                                                     'type': field_data[1],
+                                                     'doc': text})
+                        self.returns_set.add(field_data[2])
+                # Status Codes
+                if field_data[0] in self.status_code_roles:
+                    if field_data[1] not in self.status_codes_set:
+                        self.data['status_codes'].append({'code': field_data[1], # noqa
+                                                          'doc': text})
+                        self.status_codes_set.add(field_data[1])
+                # Request Headers
+                if field_data[0] in self.request_header_roles:
+                    if field_data[1] not in self.reqheaders_set:
+                        self.data['reqheaders'].append({'name': field_data[1],
+                                                        'doc': text})
+                        self.reqheaders_set.add(field_data[1])
+                # Response Headers
+                if field_data[0] in self.response_header_roles:
+                    if field_data[1] not in self.resheaders_set:
+                        resheader = {'name': field_data[1],
+                                     'doc': text}
+                        self.data['resheaders'].append(resheader)
+                        self.resheaders_set.add(field_data[1])
+                        if resheader['name'] == 'Content-Type' and \
+                                resheader['doc'] == 'application/octet-stream':
+                            self.data['return_type'] = 'octet stream'
+
+    def visit_paragraph(self, node):
+        """
+        Visit relevant paragraphs to parse
+        """
+        # only parsed top level paragraphs
+        if isinstance(node.parent, docutils.nodes.block_quote):
+            text = self.process_paragraph(str(node))
+            # endpoint description
+            if not text.startswith('**'):
+                self.data['description'] += '\n\n' if self.data['description'] else '' # noqa
+                self.data['description'] += text
+            # http methods
+            elif text.startswith('**Allowed HTTP Methods:**'):
+                text = text.replace('**Allowed HTTP Methods:**', '')
+                http_methods = text.strip().split(',')
+                http_methods = [m[m.find('`')+1:-1].upper()
+                                for m in http_methods]
+                self.data['urls'].append({'rule': self.urls[self.url_idx],
+                                          'methods': http_methods})
+                self.url_idx += 1
+
+    def visit_literal_block(self, node):
+        """
+        Visit litteral blocks
+        """
+        text = node.astext()
+        # litteral block in endpoint description
+        if not self.field_list_visited:
+            self.data['description'] += ':\n\n\t%s' % text
+        # extract example url
+        if ':swh_web_api:' in text:
+            self.data['examples'].append(
+                '/api/1/' + re.sub('.*`(.*)`.*', r'\1', text))
+
+    def unknown_visit(self, node):
+        pass
+
+    def depart_document(self, node):
+        """
+        End of parsing extra processing
+        """
+        default_methods = ['GET', 'HEAD', 'OPTIONS']
+        # ensure urls info is present and set default http methods
+        if not self.data['urls']:
+            for url in self.urls:
+                self.data['urls'].append({'rule': url,
+                                          'methods': default_methods})
+
+    def unknown_departure(self, node):
+        pass
 
 
-class rettypes(Enum):  # noqa: N801
-    """Class for centralizing return type descriptions
-
-    """
-    octet_stream = 'octet stream'
-    list = 'list'
-    dict = 'dict'
-
-
-class excs(Enum):  # noqa: N801
-    """Class for centralizing exception type descriptions
-
-    """
-
-    badinput = 'BadInputExc'
-    notfound = 'NotFoundExc'
+def _parse_httpdomain_doc(doc, data):
+    doc_lines = doc.split('\n')
+    doc_lines_filtered = []
+    urls = []
+    # httpdomain is a sphinx extension that is unknown to docutils but
+    # fortunately we can still parse its directives' content,
+    # so remove lines with httpdomain directives before executing the
+    # rst parser from docutils
+    for doc_line in doc_lines:
+        if '.. http' not in doc_line:
+            doc_lines_filtered.append(doc_line)
+        else:
+            url = doc_line[doc_line.find('/'):]
+            # emphasize url arguments for html rendering
+            url = re.sub(r'\((\w+)\)', r' **\(\1\)** ', url)
+            urls.append(url)
+    # parse the rst doctring and do not print system messages about
+    # unknown httpdomain roles
+    document = parse_rst('\n'.join(doc_lines_filtered), report_level=5)
+    # remove the system_message nodes from the parsed document
+    for node in document.traverse(docutils.nodes.system_message):
+        node.parent.remove(node)
+    # visit the document nodes to extract relevant endpoint info
+    visitor = _HTTPDomainDocVisitor(document, urls, data)
+    document.walkabout(visitor)
 
 
 class APIDocException(Exception):
@@ -55,25 +231,26 @@ class APIDocException(Exception):
     """
 
 
-class route(object):  # noqa: N801
-    """Decorate an API method to register it in the API doc route index
-    and create the corresponding Flask route.
-
-    This decorator is responsible for bootstrapping the linking of subsequent
-    decorators, as well as traversing the decorator stack to obtain the
-    documentation data from it.
+class api_doc(object):  # noqa: N801
+    """
+    Decorate an API function to register it in the API doc route index
+    and create the corresponding DRF route.
 
     Args:
-        route: documentation page's route
-        noargs: set to True if the route has no arguments, and its
-                result should be displayed anytime its documentation
-                is requested. Default to False
-        hidden: set to True to remove the endpoint from being listed
-                in the /api endpoints. Default to False.
-        tags: Further information on api endpoints. Two values are
-              possibly expected:
-              - hidden: remove the entry points from the listing
-              - upcoming: display the entry point but it is not followable
+        route (str): documentation page's route
+        noargs (boolean): set to True if the route has no arguments, and its
+            result should be displayed anytime its documentation
+            is requested. Default to False
+        tags (list): Further information on api endpoints. Two values are
+            possibly expected:
+
+                * hidden: remove the entry points from the listing
+                * upcoming: display the entry point but it is not followable
+
+        handle_response (boolean): indicate if the decorated function takes
+            care of creating the HTTP response or delegates that task to the
+            apiresponse module
+        api_version (str): api version string
 
     """
     def __init__(self, route, noargs=False, tags=[], handle_response=False,
@@ -85,11 +262,16 @@ class route(object):  # noqa: N801
         self.tags = set(tags)
         self.handle_response = handle_response
 
-    # @apidoc.route() Decorator call
+    # @api_doc() Decorator call
     def __call__(self, f):
+
         # If the route is not hidden, add it to the index
         if 'hidden' not in self.tags:
-            APIUrls.add_route(self.route, f.__doc__, tags=self.tags)
+            doc_data = self.get_doc_data(f)
+            doc_desc = doc_data['description']
+            first_dot_pos = doc_desc.find('.')
+            APIUrls.add_route(self.route, doc_desc[:first_dot_pos+1],
+                              tags=self.tags)
 
         # If the decorated route has arguments, we create a specific
         # documentation view
@@ -108,207 +290,57 @@ class route(object):  # noqa: N801
             doc_data = self.get_doc_data(f)
 
             try:
-                rv = f(request, **kwargs)
+                response = f(request, **kwargs)
             except Exception as exc:
                 return error_response(request, exc, doc_data)
 
             if self.handle_response:
-                return rv
+                return response
             else:
-                return make_api_response(request, rv, doc_data)
+                return make_api_response(request, response, doc_data)
 
         return documented_view
 
-    def filter_api_url(self, endpoint, route_re, noargs):
-        doc_methods = {'GET', 'HEAD', 'OPTIONS'}
-        if re.match(route_re, endpoint['rule']):
-            if endpoint['methods'] == doc_methods and not noargs:
-                return False
-        return True
-
-    def build_examples(self, urls, args):
-        """Build example documentation.
-
-        Args:
-            f: function
-            urls: information relative to url for that function
-            args: information relative to arguments for that function
-
-        Yields:
-            example based on default parameter value if any
-
-        """
-        s = set()
-        r = []
-        for data_url in urls:
-            url = data_url['rule']
-            defaults = {arg['name']: arg['default']
-                        for arg in args
-                        if arg['name'] in url}
-            if defaults and None not in defaults.values():
-                url = reverse(data_url['name'], kwargs=defaults)
-                if url in s:
-                    continue
-                s.add(url)
-                r.append(url)
-
-        return r
-
+    @functools.lru_cache(maxsize=32)
     def get_doc_data(self, f):
-        """Build documentation data for the decorated function"""
+        """
+        Build documentation data for the decorated api endpoint function
+        """
         data = {
-            'docstring': None,
+            'description': '',
             'response_data': None,
-            'urls': None,
-            'args': None,
-            'params': None,
-            'headers': None,
-            'returns': None,
-            'excs': None,
-            'examples': None,
+            'urls': [],
+            'args': [],
+            'params': [],
+            'resheaders': [],
+            'reqheaders': [],
+            'return_type': '',
+            'returns': [],
+            'status_codes': [],
+            'examples': [],
             'route': self.route,
             'noargs': self.noargs
         }
 
-        data.update(getattr(f, 'doc_data', {}))
-
         if not f.__doc__:
-            raise APIDocException('Apidoc %s: expected a docstring'
+            raise APIDocException('apidoc %s: expected a docstring'
                                   ' for function %s'
                                   % (self.__class__.__name__, f.__name__))
-        data['docstring'] = f.__doc__
 
-        route_re = re.compile('.*%s$' % data['route'])
-        endpoint_list = APIUrls.get_method_endpoints(f)
-        data['urls'] = [url for url in endpoint_list if
-                        self.filter_api_url(url, route_re, data['noargs'])]
-
-        if data['args']:
-            data['examples'] = self.build_examples(data['urls'], data['args'])
-
-        data['heading'] = '%s Documentation' % data['route']
+        # use raw docstring as endpoint documentation if sphinx
+        # httpdomain is not used
+        if '.. http' not in f.__doc__:
+            data['description'] = f.__doc__
+        # else parse the sphinx httpdomain docstring with docutils
+        # (except when building the swh-web documentation through autodoc
+        # sphinx extension, not needed and raise errors with sphinx >= 1.7)
+        elif 'SWH_WEB_DOC_BUILD' not in os.environ:
+            _parse_httpdomain_doc(f.__doc__, data)
+            # process returned object info for nicer html display
+            returns_list = ''
+            for ret in data['returns']:
+                returns_list += '\t* **%s (%s)**: %s\n' %\
+                    (ret['name'], ret['type'], ret['doc'])
+            data['returns_list'] = returns_list
 
         return data
-
-
-class DocData(object):
-    """Base description of optional input/output setup for a route.
-
-    """
-    destination = None
-
-    def __init__(self):
-        self.doc_data = {}
-
-    def __call__(self, f):
-        if not hasattr(f, 'doc_data'):
-            f.doc_data = defaultdict(list)
-
-        f.doc_data[self.destination].append(self.doc_data)
-
-        return f
-
-
-class arg(DocData):  # noqa: N801
-    """
-    Decorate an API method to display an argument's information on the doc
-    page specified by @route above.
-
-    Args:
-        name: the argument's name. MUST match the method argument's name to
-        create the example request URL.
-        default: the argument's default value
-        argtype: the argument's type as an Enum value from apidoc.argtypes
-        argdoc: the argument's documentation string
-    """
-    destination = 'args'
-
-    def __init__(self, name, default, argtype, argdoc):
-        super().__init__()
-        self.doc_data = {
-            'name': name,
-            'type': argtype.value,
-            'doc': argdoc,
-            'default': default
-        }
-
-
-class header(DocData):  # noqa: N801
-    """
-    Decorate an API method to display header information the api can
-    potentially return in the response.
-
-    Args:
-        name: the header name
-        doc: the information about that header
-
-    """
-    destination = 'headers'
-
-    def __init__(self, name, doc):
-        super().__init__()
-        self.doc_data = {
-            'name': name,
-            'doc': doc,
-        }
-
-
-class param(DocData):  # noqa: N801
-    """Decorate an API method to display query parameter information the
-    api can potentially accept.
-
-    Args:
-        name: parameter's name
-        default: parameter's default value
-        argtype: parameter's type as an Enum value from apidoc.argtypes
-        doc: the information about that header
-
-    """
-    destination = 'params'
-
-    def __init__(self, name, default, argtype, doc):
-        super().__init__()
-        self.doc_data = {
-            'name': name,
-            'type': argtype.value,
-            'default': default,
-            'doc': doc,
-        }
-
-
-class raises(DocData):  # noqa: N801
-    """Decorate an API method to display information pertaining to an exception
-    that can be raised by this method.
-
-    Args:
-        exc: the exception name as an Enum value from apidoc.excs
-        doc: the exception's documentation string
-
-    """
-    destination = 'excs'
-
-    def __init__(self, exc, doc):
-        super().__init__()
-        self.doc_data = {
-            'exc': exc.value,
-            'doc': doc
-        }
-
-
-class returns(DocData):  # noqa: N801
-    """Decorate an API method to display information about its return value.
-
-    Args:
-        rettype: the return value's type as an Enum value from
-        apidoc.rettypes retdoc: the return value's documentation
-        string
-
-    """
-    destination = 'returns'
-
-    def __init__(self, rettype=None, retdoc=None):
-        super().__init__()
-        self.doc_data = {
-            'type': rettype.value,
-            'doc': retdoc
-        }
