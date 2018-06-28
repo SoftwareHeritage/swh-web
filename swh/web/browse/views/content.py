@@ -183,11 +183,13 @@ def content_display(request, query_string):
 
     content = None
     language = None
+    mimetype = None
     if content_data['raw_data'] is not None:
         content_display_data = prepare_content_for_display(
             content_data['raw_data'], content_data['mimetype'], path)
         content = content_display_data['content_data']
         language = content_display_data['language']
+        mimetype = content_display_data['mimetype']
 
     root_dir = None
     filename = None
@@ -252,7 +254,7 @@ def content_display(request, query_string):
                    'content': content,
                    'content_size': content_data['length'],
                    'max_content_size': content_display_max_size,
-                   'mimetype': content_data['mimetype'],
+                   'mimetype': mimetype,
                    'language': language,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': content_raw_url,
