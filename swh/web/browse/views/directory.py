@@ -50,8 +50,15 @@ def directory_browse(request, sha1_git, path=None):
             origin_url = request.GET.get('origin', None)
         snapshot_context = None
         if origin_url:
-            snapshot_context = get_snapshot_context(None, origin_type,
-                                                    origin_url)
+            try:
+                snapshot_context = get_snapshot_context(None, origin_type,
+                                                        origin_url)
+            except Exception:
+                raise NotFoundExc('The Software Heritage archive has a directory' # noqa
+                                  ' with the hash you provided but the origin '
+                                  'mentioned in your request appears broken: '
+                                  '%s. Please check the URL and try again.' %
+                                  origin_url)
         if snapshot_context:
             snapshot_context['visit_info'] = None
     except Exception as exc:
