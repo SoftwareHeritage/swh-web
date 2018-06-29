@@ -133,7 +133,7 @@ def make_api_response(request, data, doc_data={}, options={}):
         doc_env['request'] = {
             'path': request.path,
             'method': request.method,
-            'absolute_uri': request.build_absolute_uri()
+            'absolute_uri': request.build_absolute_uri(),
         }
         doc_env['heading'] = shorten_path(str(request.path))
 

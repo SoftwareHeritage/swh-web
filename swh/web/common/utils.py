@@ -56,7 +56,7 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
         query_dict = QueryDict('', mutable=True)
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
-        url += ('?' + query_dict.urlencode(safe='/'))
+        url += ('?' + query_dict.urlencode(safe='/;:'))
 
     return url
 
