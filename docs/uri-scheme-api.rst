@@ -7,6 +7,8 @@ SWH Web API URLs
 
 .. include:: uri-scheme-api-directory.rst
 
+.. include:: uri-scheme-api-identifiers.rst
+
 .. include:: uri-scheme-api-origin.rst
 
 .. include:: uri-scheme-api-person.rst

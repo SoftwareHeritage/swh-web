@@ -29,7 +29,7 @@ function populateOriginSearchResultsTable(data, offset) {
   let localOffset = offset % limit;
   if (data.length > 0) {
     $('#swh-origin-search-results').show();
-    $('#swh-no-origins-found').hide();
+    $('#swh-no-result').hide();
     clearOriginSearchResultsTable();
     let table = $('#origin-search-results tbody');
     for (let i = localOffset; i < localOffset + perPage && i < data.length; ++i) {
@@ -58,7 +58,8 @@ function populateOriginSearchResultsTable(data, offset) {
     fixTableRowsStyle();
   } else {
     $('#swh-origin-search-results').hide();
-    $('#swh-no-origins-found').show();
+    $('#swh-no-result').text('No origins matching the search criteria were found.');
+    $('#swh-no-result').show();
   }
   if (data.length - localOffset < perPage ||
       (data.length < limit && (localOffset + perPage) === data.length)) {
@@ -120,11 +121,39 @@ export function initOriginSearch() {
     }
 
     $('#search_origins').submit(event => {
+      event.preventDefault();
+      $('#swh-no-result').hide();
       let patterns = $('#origins-url-patterns').val();
       offset = 0;
       inSearch = true;
-      searchOrigins(patterns, limit, offset, offset);
-      event.preventDefault();
+      // first try to resolve a swh persistent identifier
+      let resolvePidUrl = Urls.resolve_swh_pid(patterns);
+      fetch(resolvePidUrl, {credentials: 'same-origin'})
+        .then(handleFetchError)
+        .then(response => response.json())
+        .then(data => {
+          // pid has been successfully resolved,
+          // so redirect to browse page
+          window.location = data.browse_url;
+        })
+        .catch(response => {
+          // pid resolving failed
+          if (patterns.startsWith('swh:')) {
+            // display a useful error message if the input
+            // looks like a swh pid
+            response.json().then(data => {
+              $('#swh-origin-search-results').hide();
+              $('.swh-search-pagination').hide();
+              $('#swh-no-result').text(data.reason);
+              $('#swh-no-result').show();
+            });
+          } else {
+            // otherwise, proceed with origins search
+            $('#swh-origin-search-results').show();
+            $('.swh-search-pagination').show();
+            searchOrigins(patterns, limit, offset, offset);
+          }
+        });
     });
 
     $('#origins-next-results-button').click(event => {

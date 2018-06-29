@@ -41,7 +41,7 @@ See top-level LICENSE file for more information
 {% if response_data  %}
   <div>
     <h4>Request</h4>
-    <pre><strong>{{ request.method }}</strong> {{ request.absolute_uri }}</pre>
+    <pre><strong>{{ request.method }}</strong> {{ request.path }}</pre>
     <hr/>
     <h4>Response</h4>
     {% if status_code != 200 %}

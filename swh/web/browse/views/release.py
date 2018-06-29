@@ -10,7 +10,7 @@ from swh.web.common import service
 from swh.web.common.utils import (
     reverse, format_utc_iso_date
 )
-from swh.web.common.exc import handle_view_exception
+from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_person_link, gen_revision_link,
@@ -40,9 +40,16 @@ def release_browse(request, sha1_git):
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
         if origin_url:
-            snapshot_context = get_snapshot_context(snapshot_id, origin_type,
-                                                    origin_url, timestamp,
-                                                    visit_id)
+            try:
+                snapshot_context = get_snapshot_context(snapshot_id, origin_type, # noqa
+                                                        origin_url, timestamp,
+                                                        visit_id)
+            except Exception:
+                raise NotFoundExc('The Software Heritage archive has a release'
+                                  ' with the hash you provided but the origin '
+                                  'mentioned in your request appears broken: '
+                                  '%s. Please check the URL and try again.' %
+                                  origin_url)
             origin_info = snapshot_context['origin_info']
         elif snapshot_id:
             snapshot_context = get_snapshot_context(snapshot_id)

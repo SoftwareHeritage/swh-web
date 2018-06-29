@@ -17,7 +17,7 @@ See top-level LICENSE file for more information
 
 <form class="form-horizontal" id="search_origins">
   <div class="input-group">
-    <input class="form-control" placeholder="Enter string pattern(s) to search for in origin urls" type="text" id="origins-url-patterns"/>
+    <input class="form-control" placeholder="Enter a persistent id to resolve or string pattern(s) to search for in origin urls" type="text" id="origins-url-patterns"/>
     <div class="input-group-append">
       <button class="btn btn-default" type="submit"><i class="swh-search-icon fa fa-search"></i></button>
     </div>
@@ -43,9 +43,9 @@ See top-level LICENSE file for more information
   <img src="{% static 'img/swh-spinner.gif' %}"></img>
   <p>Searching origins ...</p>
 </div>
-<p id="swh-no-origins-found" style="display: none;">
+<p id="swh-no-result" style="display: none;">
   <br/>
-  No origins matching the search criteria were found
+  No origins matching the search criteria were found.
 </p>
 
 
