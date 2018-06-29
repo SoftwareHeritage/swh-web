@@ -16,7 +16,10 @@ from django.core import urlresolvers
 from django.http import QueryDict
 
 from swh.model.exceptions import ValidationError
-from swh.model.identifiers import persistent_identifier
+from swh.model.identifiers import (
+    persistent_identifier, parse_persistent_identifier,
+    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+)
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc
 
@@ -284,6 +287,69 @@ def get_swh_persistent_id(object_type, object_id, scheme_version=1):
                           (object_id, e))
     else:
         return swh_id
+
+
+def resolve_swh_persistent_id(swh_id, query_params=None):
+    """
+    Try to resolve a SWH persistent id into an url for
+    browsing the pointed object.
+
+    Args:
+        swh_id (str): a SWH persistent identifier
+        query_params (django.http.QueryDict): optional dict filled with
+            query parameters to append to the browse url
+
+    Returns:
+        dict: a dict with the following keys:
+
+            * **swh_id_parsed (swh.model.identifiers.PersistentId)**: the parsed identifier
+            * **browse_url (str)**: the url for browsing the pointed object
+
+    Raises:
+        BadInputExc: if the provided identifier can not be parsed
+    """ # noqa
+    try:
+        swh_id_parsed = parse_persistent_identifier(swh_id)
+        object_type = swh_id_parsed.object_type
+        object_id = swh_id_parsed.object_id
+        browse_url = None
+        if not query_params:
+            query_params = QueryDict('', mutable=True)
+        if 'origin' in swh_id_parsed.metadata:
+            query_params['origin'] = swh_id_parsed.metadata['origin']
+        if object_type == CONTENT:
+            query_string = 'sha1_git:' + object_id
+            fragment = ''
+            if 'lines' in swh_id_parsed.metadata:
+                lines = swh_id_parsed.metadata['lines'].split('-')
+                fragment += '#L' + lines[0]
+                if len(lines) > 1:
+                    fragment += '-L' + lines[1]
+            browse_url = reverse('browse-content',
+                                 kwargs={'query_string': query_string},
+                                 query_params=query_params) + fragment
+        elif object_type == DIRECTORY:
+            browse_url = reverse('browse-directory',
+                                 kwargs={'sha1_git': object_id},
+                                 query_params=query_params)
+        elif object_type == RELEASE:
+            browse_url = reverse('browse-release',
+                                 kwargs={'sha1_git': object_id},
+                                 query_params=query_params)
+        elif object_type == REVISION:
+            browse_url = reverse('browse-revision',
+                                 kwargs={'sha1_git': object_id},
+                                 query_params=query_params)
+        elif object_type == SNAPSHOT:
+            browse_url = reverse('browse-snapshot',
+                                 kwargs={'snapshot_id': object_id},
+                                 query_params=query_params)
+    except ValidationError as ve:
+        raise BadInputExc('Error when parsing identifier. %s' %
+                          ' '.join(ve.messages))
+    else:
+        return {'swh_id_parsed': swh_id_parsed,
+                'browse_url': browse_url}
 
 
 def parse_rst(text, report_level=2):
