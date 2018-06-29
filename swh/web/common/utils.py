@@ -313,10 +313,12 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
         object_type = swh_id_parsed.object_type
         object_id = swh_id_parsed.object_id
         browse_url = None
-        if not query_params:
-            query_params = QueryDict('', mutable=True)
+        query_dict = QueryDict('', mutable=True)
+        if query_params and len(query_params) > 0:
+            for k in sorted(query_params.keys()):
+                query_dict[k] = query_params[k]
         if 'origin' in swh_id_parsed.metadata:
-            query_params['origin'] = swh_id_parsed.metadata['origin']
+            query_dict['origin'] = swh_id_parsed.metadata['origin']
         if object_type == CONTENT:
             query_string = 'sha1_git:' + object_id
             fragment = ''
@@ -327,23 +329,23 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
                     fragment += '-L' + lines[1]
             browse_url = reverse('browse-content',
                                  kwargs={'query_string': query_string},
-                                 query_params=query_params) + fragment
+                                 query_params=query_dict) + fragment
         elif object_type == DIRECTORY:
             browse_url = reverse('browse-directory',
                                  kwargs={'sha1_git': object_id},
-                                 query_params=query_params)
+                                 query_params=query_dict)
         elif object_type == RELEASE:
             browse_url = reverse('browse-release',
                                  kwargs={'sha1_git': object_id},
-                                 query_params=query_params)
+                                 query_params=query_dict)
         elif object_type == REVISION:
             browse_url = reverse('browse-revision',
                                  kwargs={'sha1_git': object_id},
-                                 query_params=query_params)
+                                 query_params=query_dict)
         elif object_type == SNAPSHOT:
             browse_url = reverse('browse-snapshot',
                                  kwargs={'snapshot_id': object_id},
-                                 query_params=query_params)
+                                 query_params=query_dict)
     except ValidationError as ve:
         raise BadInputExc('Error when parsing identifier. %s' %
                           ' '.join(ve.messages))
