@@ -170,7 +170,8 @@ def request_content(query_string, max_size=content_display_max_size):
 
 _browsers_supported_image_mimes = set(['image/gif', 'image/png',
                                        'image/jpeg', 'image/bmp',
-                                       'image/webp'])
+                                       'image/webp', 'image/svg',
+                                       'image/svg+xml'])
 
 
 def prepare_content_for_display(content_data, mime_type, path):
@@ -212,8 +213,12 @@ def prepare_content_for_display(content_data, mime_type, path):
         else:
             content_data = None
 
+    if mime_type.startswith('image/svg'):
+        mime_type = 'image/svg+xml'
+
     return {'content_data': content_data,
-            'language': language}
+            'language': language,
+            'mimetype': mime_type}
 
 
 def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
