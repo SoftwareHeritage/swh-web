@@ -9,7 +9,7 @@
 
 export function handleFetchError(response) {
   if (!response.ok) {
-    throw Error(response.statusText);
+    throw response;
   }
   return response;
 }
@@ -17,7 +17,7 @@ export function handleFetchError(response) {
 export function handleFetchErrors(responses) {
   for (let i = 0; i < responses.length; ++i) {
     if (!responses[i].ok) {
-      throw Error(responses[i].statusText);
+      throw responses[i];
     }
   }
   return responses;
