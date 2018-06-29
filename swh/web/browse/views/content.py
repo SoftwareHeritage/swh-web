@@ -19,7 +19,7 @@ from swh.web.common import query
 from swh.web.common.utils import (
     reverse, gen_path_info
 )
-from swh.web.common.exc import handle_view_exception
+from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
     request_content, prepare_content_for_display,
     content_display_max_size, get_snapshot_context,
@@ -172,8 +172,15 @@ def content_display(request, query_string):
             origin_url = request.GET.get('origin', None)
         snapshot_context = None
         if origin_url:
-            snapshot_context = get_snapshot_context(None, origin_type,
-                                                    origin_url)
+            try:
+                snapshot_context = get_snapshot_context(None, origin_type,
+                                                        origin_url)
+            except Exception:
+                raise NotFoundExc('The Software Heritage archive has a content'
+                                  ' with the hash you provided but the origin '
+                                  'mentioned in your request appears broken: '
+                                  '%s. Please check the URL and try again.' %
+                                  origin_url)
         if snapshot_context:
             snapshot_context['visit_info'] = None
     except Exception as exc:
