@@ -8,7 +8,6 @@ import json
 
 from swh.model import hashutil
 from swh.core.utils import decode_with_escape
-from swh.web.common import utils
 
 
 def _group_checksums(data):
@@ -23,6 +22,35 @@ def _group_checksums(data):
                 del data[hash]
         if len(checksums) > 0:
             data['checksums'] = checksums
+
+
+def fmap(f, data):
+    """Map f to data at each level.
+
+    This must keep the origin data structure type:
+    - map -> map
+    - dict -> dict
+    - list -> list
+    - None -> None
+
+    Args:
+        f: function that expects one argument.
+        data: data to traverse to apply the f function.
+              list, map, dict or bare value.
+
+    Returns:
+        The same data-structure with modified values by the f function.
+
+    """
+    if data is None:
+        return data
+    if isinstance(data, map):
+        return map(lambda y: fmap(f, y), (x for x in data))
+    if isinstance(data, list):
+        return [fmap(f, x) for x in data]
+    if isinstance(data, dict):
+        return {k: fmap(f, v) for (k, v) in data.items()}
+    return f(data)
 
 
 def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
@@ -129,16 +157,16 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
                                      convert=convert,
                                      convert_fn=convert_fn)
         elif key in hashess:
-            new_dict[key] = utils.fmap(convert_hashes_bytes, value)
+            new_dict[key] = fmap(convert_hashes_bytes, value)
         elif key in bytess:
             try:
-                new_dict[key] = utils.fmap(convert_bytes, value)
+                new_dict[key] = fmap(convert_bytes, value)
             except UnicodeDecodeError:
                 if 'decoding_failures' not in new_dict:
                     new_dict['decoding_failures'] = [key]
                 else:
                     new_dict['decoding_failures'].append(key)
-                new_dict[key] = utils.fmap(decode_with_escape, value)
+                new_dict[key] = fmap(decode_with_escape, value)
         elif key in empty_dict and not value:
             new_dict[key] = {}
         elif key in empty_list and not value:
