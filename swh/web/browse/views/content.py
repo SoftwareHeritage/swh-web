@@ -102,51 +102,58 @@ def _contents_diff(request, from_query_string, to_query_string):
     if from_query_string == to_query_string:
         diff_str = 'File renamed without changes'
     else:
-        text_diff = True
-        if from_query_string:
-            content_from = request_content(from_query_string, max_size=None)
-            content_from_display_data = prepare_content_for_display(
-                    content_from['raw_data'], content_from['mimetype'], path)
-            language = content_from_display_data['language']
-            content_from_size = content_from['length']
-            if not (content_from['mimetype'].startswith('text/') or
-                    content_from['mimetype'] == 'inode/x-empty'):
-                text_diff = False
+        try:
+            text_diff = True
+            if from_query_string:
+                content_from = \
+                    request_content(from_query_string, max_size=None)
+                content_from_display_data = \
+                    prepare_content_for_display(content_from['raw_data'],
+                                                content_from['mimetype'], path)
+                language = content_from_display_data['language']
+                content_from_size = content_from['length']
+                if not (content_from['mimetype'].startswith('text/') or
+                        content_from['mimetype'] == 'inode/x-empty'):
+                    text_diff = False
 
-        if text_diff and to_query_string:
-            content_to = request_content(to_query_string, max_size=None)
-            content_to_display_data = prepare_content_for_display(
-                    content_to['raw_data'], content_to['mimetype'], path)
-            language = content_to_display_data['language']
-            content_to_size = content_to['length']
-            if not (content_to['mimetype'].startswith('text/') or
-                    content_to['mimetype'] == 'inode/x-empty'):
-                text_diff = False
+            if text_diff and to_query_string:
+                content_to = request_content(to_query_string, max_size=None)
+                content_to_display_data = prepare_content_for_display(
+                        content_to['raw_data'], content_to['mimetype'], path)
+                language = content_to_display_data['language']
+                content_to_size = content_to['length']
+                if not (content_to['mimetype'].startswith('text/') or
+                        content_to['mimetype'] == 'inode/x-empty'):
+                    text_diff = False
 
-        diff_size = abs(content_to_size - content_from_size)
+            diff_size = abs(content_to_size - content_from_size)
 
-        if not text_diff:
-            diff_str = 'Diffs are not generated for non textual content'
-            language = 'nohighlight-swh'
-        elif not force and diff_size > _auto_diff_size_limit:
-            diff_str = 'Large diffs are not automatically computed'
-            language = 'nohighlight-swh'
-        else:
-            if content_from:
-                content_from_lines = content_from['raw_data'].decode('utf-8')\
-                                                             .splitlines(True)
-                if content_from_lines and content_from_lines[-1][-1] != '\n':
-                    content_from_lines[-1] += '[swh-no-nl-marker]\n'
+            if not text_diff:
+                diff_str = 'Diffs are not generated for non textual content'
+                language = 'nohighlight-swh'
+            elif not force and diff_size > _auto_diff_size_limit:
+                diff_str = 'Large diffs are not automatically computed'
+                language = 'nohighlight-swh'
+            else:
+                if content_from:
+                    content_from_lines = \
+                        content_from['raw_data'].decode('utf-8')\
+                                                .splitlines(True)
+                    if content_from_lines and \
+                            content_from_lines[-1][-1] != '\n':
+                        content_from_lines[-1] += '[swh-no-nl-marker]\n'
 
-            if content_to:
-                content_to_lines = content_to['raw_data'].decode('utf-8')\
-                                                         .splitlines(True)
-                if content_to_lines and content_to_lines[-1][-1] != '\n':
-                    content_to_lines[-1] += '[swh-no-nl-marker]\n'
+                if content_to:
+                    content_to_lines = content_to['raw_data'].decode('utf-8')\
+                                                            .splitlines(True)
+                    if content_to_lines and content_to_lines[-1][-1] != '\n':
+                        content_to_lines[-1] += '[swh-no-nl-marker]\n'
 
-            diff_lines = difflib.unified_diff(content_from_lines,
-                                              content_to_lines)
-            diff_str = ''.join(list(diff_lines)[2:])
+                diff_lines = difflib.unified_diff(content_from_lines,
+                                                  content_to_lines)
+                diff_str = ''.join(list(diff_lines)[2:])
+        except Exception as e:
+            diff_str = str(e)
 
     diff_data['diff_str'] = diff_str
     diff_data['language'] = language

@@ -995,10 +995,13 @@ def get_readme_to_display(readmes):
         if cache_entry:
             readme_html = cache_entry
         else:
-            rst_doc = request_content(readme_sha1)
-            readme_html = pypandoc.convert_text(rst_doc['raw_data'], 'html',
-                                                format='rst')
-            cache.set(cache_entry_id, readme_html)
+            try:
+                rst_doc = request_content(readme_sha1)
+                readme_html = pypandoc.convert_text(rst_doc['raw_data'],
+                                                    'html', format='rst')
+                cache.set(cache_entry_id, readme_html)
+            except Exception:
+                readme_html = 'Readme bytes are not available'
 
     return readme_name, readme_url, readme_html
 
