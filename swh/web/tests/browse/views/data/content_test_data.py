@@ -143,6 +143,9 @@ stub_content_text_data = {
     'encoding': 'us-ascii',
     'language': 'c++',
     'licenses': 'GPL',
+    'error_code': 200,
+    'error_message': '',
+    'error_description': ''
 }
 
 stub_content_text_no_highlight_data = {
@@ -158,6 +161,9 @@ stub_content_text_no_highlight_data = {
     'encoding': 'us-ascii',
     'language': 'not detected',
     'licenses': 'GPL',
+    'error_code': 200,
+    'error_message': '',
+    'error_description': ''
 }
 
 stub_content_text_path = 'kate/autotests/session_test.h'
@@ -182,6 +188,9 @@ with open(png_file_path, 'rb') as png_file:
         'encoding': 'binary',
         'language': 'not detected',
         'licenses': 'not detected',
+        'error_code': 200,
+        'error_message': '',
+        'error_description': ''
     }
 
 _non_utf8_encoding_file_path = os.path.dirname(__file__) + '/iso-8859-1_encoded_content'
@@ -193,7 +202,10 @@ non_utf8_encoded_content_data = {
         'sha256': 'aaf364ccd3acb546829ccc0e8e5e293e924c8a2e55a67cb739d249016e0034ed',
         'blake2s256': 'b7564932460a7c2697c53bd55bd855272490da511d64b20c5a04f636dc9ac467'
     },
-    'length': 111000
+    'length': 111000,
+    'error_code': 200,
+    'error_message': '',
+    'error_description': ''
 }
 
 non_utf8_encoding = 'iso-8859-1'
@@ -214,4 +226,7 @@ stub_content_too_large_data = {
     'encoding': 'us-ascii',
     'language': 'not detected',
     'licenses': 'GPL',
+    'error_code': 200,
+    'error_message': '',
+    'error_description': ''
 }

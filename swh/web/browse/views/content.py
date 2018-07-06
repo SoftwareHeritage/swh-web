@@ -172,7 +172,8 @@ def content_display(request, query_string):
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
-        content_data = request_content(query_string)
+        content_data = request_content(query_string,
+                                       raise_if_unavailable=False)
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         if not origin_url:
@@ -278,4 +279,8 @@ def content_display(request, query_string):
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,
-                   'swh_ids': swh_ids})
+                   'swh_ids': swh_ids,
+                   'error_code': content_data['error_code'],
+                   'error_message': content_data['error_message'],
+                   'error_description': content_data['error_description']},
+                  status=content_data['error_code'])

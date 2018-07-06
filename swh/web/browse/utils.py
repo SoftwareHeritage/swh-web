@@ -15,7 +15,7 @@ from django.utils.safestring import mark_safe
 from importlib import reload
 
 from swh.web.common import highlightjs, service
-from swh.web.common.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, parse_timestamp,
     get_origin_visits, get_swh_persistent_id
@@ -90,7 +90,8 @@ def get_mimetype_and_encoding_for_content(content):
 content_display_max_size = get_config()['content_display_max_size']
 
 
-def request_content(query_string, max_size=content_display_max_size):
+def request_content(query_string, max_size=content_display_max_size,
+                    raise_if_unavailable=True):
     """Function that retrieves a SWH content from the SWH archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -130,26 +131,42 @@ def request_content(query_string, max_size=content_display_max_size):
         mimetype = filetype['mimetype']
         encoding = filetype['encoding']
 
+    content_data['error_code'] = 200
+    content_data['error_message'] = ''
+    content_data['error_description'] = ''
+
     if not max_size or content_data['length'] < max_size:
-        content_raw = service.lookup_content_raw(query_string)
-        content_data['raw_data'] = content_raw['data']
+        try:
+            content_raw = service.lookup_content_raw(query_string)
+        except Exception as e:
+            if raise_if_unavailable:
+                raise e
+            else:
+                content_data['raw_data'] = None
+                content_data['error_code'] = 404
+                content_data['error_description'] = \
+                    'The bytes of the content are currently not available in the archive.' # noqa
+                content_data['error_message'] = \
+                    http_status_code_message[content_data['error_code']]
+        else:
+            content_data['raw_data'] = content_raw['data']
 
-        if not filetype:
-            mimetype, encoding = \
-                get_mimetype_and_encoding_for_content(content_data['raw_data'])
+            if not filetype:
+                mimetype, encoding = \
+                    get_mimetype_and_encoding_for_content(content_data['raw_data']) # noqa
 
-        # encode textual content to utf-8 if needed
-        if mimetype.startswith('text/'):
-            # probably a malformed UTF-8 content, reencode it
-            # by replacing invalid chars with a substitution one
-            if encoding == 'unknown-8bit':
-                content_data['raw_data'] = \
-                    content_data['raw_data'].decode('utf-8', 'replace')\
-                                            .encode('utf-8')
-            elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']: # noqa
-                content_data['raw_data'] = \
-                    content_data['raw_data'].decode(encoding, 'replace')\
-                                            .encode('utf-8')
+            # encode textual content to utf-8 if needed
+            if mimetype.startswith('text/'):
+                # probably a malformed UTF-8 content, reencode it
+                # by replacing invalid chars with a substitution one
+                if encoding == 'unknown-8bit':
+                    content_data['raw_data'] = \
+                        content_data['raw_data'].decode('utf-8', 'replace')\
+                                                .encode('utf-8')
+                elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']: # noqa
+                    content_data['raw_data'] = \
+                        content_data['raw_data'].decode(encoding, 'replace')\
+                                                .encode('utf-8')
     else:
         content_data['raw_data'] = None
 
