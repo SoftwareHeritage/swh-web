@@ -61,35 +61,6 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
     return url
 
 
-def fmap(f, data):
-    """Map f to data at each level.
-
-    This must keep the origin data structure type:
-    - map -> map
-    - dict -> dict
-    - list -> list
-    - None -> None
-
-    Args:
-        f: function that expects one argument.
-        data: data to traverse to apply the f function.
-              list, map, dict or bare value.
-
-    Returns:
-        The same data-structure with modified values by the f function.
-
-    """
-    if data is None:
-        return data
-    if isinstance(data, map):
-        return map(lambda y: fmap(f, y), (x for x in data))
-    if isinstance(data, list):
-        return [fmap(f, x) for x in data]
-    if isinstance(data, dict):
-        return {k: fmap(f, v) for (k, v) in data.items()}
-    return f(data)
-
-
 def datetime_to_utc(date):
     """Returns datetime in UTC without timezone info
 

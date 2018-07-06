@@ -27,15 +27,17 @@ See top-level LICENSE file for more information
       </div>
       <canvas id="pdf-canvas"></canvas>
     </div>
-  {% else %}
+  {% elif content %}
     Content with mime type {{ mimetype }} can not be displayed.
+  {% else %}
+  {% include "includes/http-error.html" %}
   {% endif %}
 </div>
 
 <script>
   {% if "application/pdf" == mimetype %}
     swh.webapp.renderPdf({{ top_right_link|jsonify }});
-  {% else %}
+  {% elif content %}
     swh.webapp.highlightCode();
   {% endif %}
 </script>
