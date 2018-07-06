@@ -727,7 +727,7 @@ def lookup_content_raw(q):
     if not content:
         algo, hash = query.parse_hash(q)
         raise NotFoundExc('Bytes of content with %s checksum equals to %s '
-                          'not available in SWH storage!' %
+                          'are not available!' %
                           (algo, hashutil.hash_to_hex(hash)))
     return converters.from_content(content)
 

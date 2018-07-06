@@ -269,6 +269,23 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         self.assertEquals(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
 
+    @patch('swh.web.browse.utils.service')
+    @istest
+    def content_bytes_missing(self, mock_service):
+
+        content_data = dict(stub_content_text_data)
+        content_data['raw_data'] = None
+
+        mock_service.lookup_content.return_value = content_data
+        mock_service.lookup_content_raw.side_effect = NotFoundExc('Content bytes not available!') # noqa
+
+        url = reverse('browse-content',
+                      kwargs={'query_string': content_data['checksums']['sha1']}) # noqa
+
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 404)
+        self.assertTemplateUsed('content.html')
+
     @patch('swh.web.browse.views.content.request_content')
     @istest
     def content_too_large(self, mock_request_content):

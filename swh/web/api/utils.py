@@ -3,56 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import re
 
-from swh.web.common.utils import reverse, fmap
+from swh.web.common.utils import reverse
 from swh.web.common.query import parse_hash
-
-
-def filter_endpoints(url_map, prefix_url_rule, blacklist=[]):
-    """Filter endpoints by prefix url rule.
-
-    Args:
-        - url_map: Url Werkzeug.Map of rules
-        - prefix_url_rule: prefix url string
-        - blacklist: blacklist of some url
-
-    Returns:
-        Dictionary of url_rule with values methods and endpoint.
-
-        The key is the url, the associated value is a dictionary of
-        'methods' (possible http methods) and 'endpoint' (python function)
-
-    """
-    out = {}
-    for r in url_map:
-        rule = r['rule']
-        if rule == prefix_url_rule or rule in blacklist:
-            continue
-
-        if rule.startswith(prefix_url_rule):
-            out[rule] = {'methods': sorted(map(str, r['methods'])),
-                         'endpoint': r['endpoint']}
-    return out
-
-
-def prepare_data_for_view(data, encoding='utf-8'):
-    def prepare_data(s):
-        # Note: can only be 'data' key with bytes of raw content
-        if isinstance(s, bytes):
-            try:
-                return s.decode(encoding)
-            except Exception:
-                return "Cannot decode the data bytes, try and set another " \
-                       "encoding in the url (e.g. ?encoding=utf8) or " \
-                       "download directly the " \
-                       "content's raw data."
-        if isinstance(s, str):
-            return re.sub(r'/api/1/', r'/browse/', s)
-
-        return s
-
-    return fmap(prepare_data, data)
 
 
 def filter_field_keys(data, field_keys):

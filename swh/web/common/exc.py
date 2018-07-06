@@ -40,7 +40,7 @@ class ForbiddenExc(Exception):
     pass
 
 
-_html_status_code_message = {
+http_status_code_message = {
     400: "Bad Request",
     401: "Unauthorized",
     403: "Access Denied",
@@ -55,7 +55,7 @@ _html_status_code_message = {
 def _generate_error_page(request, error_code, error_description):
     return render(request, "error.html",
                   {'error_code': error_code,
-                   'error_message': _html_status_code_message[error_code],
+                   'error_message': http_status_code_message[error_code],
                    'error_description': error_description}, status=error_code)
 
 

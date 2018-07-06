@@ -14,6 +14,23 @@ from swh.web.common import converters
 
 
 class ConvertersTestCase(unittest.TestCase):
+
+    @istest
+    def fmap(self):
+        self.assertEquals([2, 3, None, 4],
+                          converters.fmap(lambda x: x+1, [1, 2, None, 3]))
+        self.assertEquals([11, 12, 13],
+                          list(converters.fmap(lambda x: x+10,
+                                               map(lambda x: x, [1, 2, 3]))))
+        self.assertEquals({'a': 2, 'b': 4},
+                          converters.fmap(lambda x: x*2, {'a': 1, 'b': 2}))
+        self.assertEquals(100,
+                          converters.fmap(lambda x: x*10, 10))
+        self.assertEquals({'a': [2, 6], 'b': 4},
+                          converters.fmap(lambda x: x*2, {'a': [1, 3], 'b': 2})) # noqa
+
+        self.assertIsNone(converters.fmap(lambda x: x, None))
+
     @istest
     def from_swh(self):
         some_input = {

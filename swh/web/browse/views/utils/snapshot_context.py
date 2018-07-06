@@ -394,7 +394,8 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         content_info = service.lookup_directory_with_path(root_sha1_git, path)
         sha1_git = content_info['target']
         query_string = 'sha1_git:' + sha1_git
-        content_data = request_content(query_string)
+        content_data = request_content(query_string,
+                                       raise_if_unavailable=False)
 
     except Exception as exc:
         return handle_view_exception(request, exc)
@@ -531,7 +532,11 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,
-                   'swh_ids': swh_ids})
+                   'swh_ids': swh_ids,
+                   'error_code': content_data['error_code'],
+                   'error_message': content_data['error_message'],
+                   'error_description': content_data['error_description']},
+                  status=content_data['error_code'])
 
 
 PER_PAGE = 20
