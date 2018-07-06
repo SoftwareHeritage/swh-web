@@ -300,7 +300,8 @@ def revision_browse(request, sha1_git, extra_path=None):
                 dir_id = file_info['target']
             else:
                 query_string = 'sha1_git:' + file_info['target']
-                content_data = request_content(query_string)
+                content_data = request_content(query_string,
+                                               raise_if_unavailable=False)
         else:
             dir_id = revision['directory']
 
@@ -414,6 +415,9 @@ def revision_browse(request, sha1_git, extra_path=None):
     readme_url = None
     readme_html = None
     readmes = {}
+    error_code = 200
+    error_message = ''
+    error_description = ''
 
     if content_data:
         breadcrumbs[-1]['url'] = None
@@ -436,6 +440,10 @@ def revision_browse(request, sha1_git, extra_path=None):
 
         swh_objects.append({'type': 'content',
                             'id': file_info['target']})
+
+        error_code = content_data['error_code']
+        error_message = content_data['error_message']
+        error_description = content_data['error_description']
     else:
         for d in dirs:
             query_params['path'] = path + d['name']
@@ -508,4 +516,8 @@ def revision_browse(request, sha1_git, extra_path=None):
                    'vault_cooking': vault_cooking,
                    'diff_revision_url': diff_revision_url,
                    'show_actions_menu': True,
-                   'swh_ids': swh_ids})
+                   'swh_ids': swh_ids,
+                   'error_code': error_code,
+                   'error_message': error_message,
+                   'error_description': error_description},
+                  status=error_code)

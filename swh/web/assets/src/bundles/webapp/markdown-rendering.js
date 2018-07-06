@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import {handleFetchError} from 'utils/functions';
+
 export async function renderMarkdown(domElt, markdownDocUrl) {
 
   let showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
@@ -12,9 +14,13 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
   $(document).ready(() => {
     let converter = new showdown.Converter({tables: true});
     fetch(markdownDocUrl, {credentials: 'same-origin'})
+      .then(handleFetchError)
       .then(response => response.text())
       .then(data => {
         $(domElt).html(converter.makeHtml(data));
+      })
+      .catch(() => {
+        $(domElt).text('Readme bytes are not available');
       });
   });
 
