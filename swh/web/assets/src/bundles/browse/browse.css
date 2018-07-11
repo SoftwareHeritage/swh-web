@@ -73,9 +73,9 @@
 }
 
 .swh-log-entry-message {
-    min-width: 460px;
-    max-width: 460px;
-    width: 460px;
+    min-width: 440px;
+    max-width: 440px;
+    width: 440px;
 }
 
 .swh-popover {

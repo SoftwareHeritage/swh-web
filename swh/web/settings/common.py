@@ -88,7 +88,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'swh.web.wsgi.application'
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -232,3 +231,5 @@ WEBPACK_LOADER = { # noqa
 
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = 'admin'
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'

@@ -18,8 +18,9 @@ See top-level LICENSE file for more information
 
 {% block swh-browse-content %}
 <div>
-  <i class="{{ swh_object_icons.revision }} fa-fw"></i>Revision <b>{{ swh_object_metadata.id }}</b>
-  authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
+  <i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>Revision <b>{{ swh_object_metadata.id }}</b>
+  authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>,
+  committed by {{ swh_object_metadata.committer }} on <b>{{ swh_object_metadata|key_value:'committer date' }}</b>
 </div>
 
 <div class="card">

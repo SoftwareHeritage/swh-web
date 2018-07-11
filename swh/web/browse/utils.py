@@ -9,6 +9,7 @@ import magic
 import math
 import pypandoc
 import stat
+import textwrap
 
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
@@ -730,8 +731,7 @@ def gen_snapshot_directory_link(snapshot_context, revision_id=None,
     query_params = {'revision': revision_id}
     if snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
         if 'timestamp' in snapshot_context['url_args']:
             url_args['timestamp'] = \
                 snapshot_context['url_args']['timestamp']
@@ -792,8 +792,7 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     query_params = {'revision': revision_id}
     if snapshot_context and snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
         if 'timestamp' in snapshot_context['url_args']:
             url_args['timestamp'] = \
                 snapshot_context['url_args']['timestamp']
@@ -842,28 +841,7 @@ def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
     return gen_link(revision_log_url, link_text, link_attrs)
 
 
-def _format_log_entries(revision_log, per_page, snapshot_context=None):
-    revision_log_data = []
-    for i, log in enumerate(revision_log):
-        if i == per_page:
-            break
-        author_name = 'None'
-        author_link = 'None'
-        if log['author']:
-            author_name = log['author']['name'] or log['author']['fullname']
-            author_link = gen_person_link(log['author']['id'], author_name,
-                                          snapshot_context)
-        revision_log_data.append(
-            {'author': author_link,
-             'revision': gen_revision_link(log['id'], True, snapshot_context),
-             'message': log['message'],
-             'date': format_utc_iso_date(log['date']),
-             'directory': log['directory']})
-    return revision_log_data
-
-
-def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
-                                     snapshot_context=None):
+def format_log_entries(revision_log, per_page, snapshot_context=None):
     """
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
@@ -872,48 +850,46 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
         * format date in human readable format
         * truncate the message log
 
-    It also computes the data needed to generate the links for navigating back
-    and forth in the history log.
-
     Args:
         revision_log (list): raw revision log as returned by the SWH web api
         per_page (int): number of log entries per page
-        revs_breadcrumb (str): breadcrumbs of revisions navigated so far,
-            in the form 'rev1[/rev2/../revN]'. Each revision corresponds to
-            the first one displayed in the HTML view for history log.
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing link
 
 
     """
-    current_rev = revision_log[0]['id']
-    next_rev = None
-    prev_rev = None
-    next_revs_breadcrumb = None
-    prev_revs_breadcrumb = None
-    if len(revision_log) == per_page + 1:
-        prev_rev = revision_log[-1]['id']
+    revision_log_data = []
+    for i, rev in enumerate(revision_log):
+        if i == per_page:
+            break
+        author_name = 'None'
+        author_fullname = 'None'
+        committer_fullname = 'None'
+        if rev['author']:
+            author_name = rev['author']['name'] or rev['author']['fullname']
+            author_fullname = rev['author']['fullname']
+        if rev['committer']:
+            committer_fullname = rev['committer']['fullname']
+        author_date = format_utc_iso_date(rev['date'])
+        committer_date = format_utc_iso_date(rev['committer_date'])
 
-    prev_rev_bc = current_rev
-    if snapshot_context:
-        prev_rev_bc = prev_rev
+        tooltip = 'revision %s\n' % rev['id']
+        tooltip += 'author: %s\n' % author_fullname
+        tooltip += 'author date: %s\n' % author_date
+        tooltip += 'committer: %s\n' % committer_fullname
+        tooltip += 'committer date: %s\n\n' % committer_date
+        tooltip += textwrap.indent(rev['message'], ' '*4)
 
-    if revs_breadcrumb:
-        revs = revs_breadcrumb.split('/')
-        next_rev = revs[-1]
-        if len(revs) > 1:
-            next_revs_breadcrumb = '/'.join(revs[:-1])
-        if len(revision_log) == per_page + 1:
-            prev_revs_breadcrumb = revs_breadcrumb + '/' + prev_rev_bc
-    else:
-        prev_revs_breadcrumb = prev_rev_bc
-
-    return {'revision_log_data': _format_log_entries(revision_log, per_page,
-                                                     snapshot_context),
-            'prev_rev': prev_rev,
-            'prev_revs_breadcrumb': prev_revs_breadcrumb,
-            'next_rev': next_rev,
-            'next_revs_breadcrumb': next_revs_breadcrumb}
+        revision_log_data.append({
+            'author': author_name,
+            'id': rev['id'][:7],
+            'message': rev['message'],
+            'date': author_date,
+            'commit_date': committer_date,
+            'url': gen_revision_url(rev['id'], snapshot_context),
+            'tooltip': tooltip
+        })
+    return revision_log_data
 
 
 # list of origin types that can be found in the swh archive

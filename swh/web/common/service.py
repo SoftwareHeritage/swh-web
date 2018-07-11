@@ -9,6 +9,8 @@ from collections import defaultdict
 
 from swh.model import hashutil
 
+from swh.storage.algos import revisions_walker
+
 from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import NotFoundExc
@@ -981,3 +983,47 @@ def diff_revision(rev_id):
             change['to_path'] = change['to_path'].decode('utf-8')
 
     return changes
+
+
+class _RevisionsWalkerProxy(object):
+    """
+    Proxy class wrapping a revisions walker iterator from
+    swh-storage and performing needed conversions.
+    """
+    def __init__(self, rev_walker_type, rev_start, *args, **kwargs):
+        rev_start_bin = hashutil.hash_to_bytes(rev_start)
+        self.revisions_walker = \
+            revisions_walker.get_revisions_walker(rev_walker_type,
+                                                  storage,
+                                                  rev_start_bin,
+                                                  *args, **kwargs)
+
+    def export_state(self):
+        return self.revisions_walker.export_state()
+
+    def __next__(self):
+        return converters.from_revision(next(self.revisions_walker))
+
+    def __iter__(self):
+        return self
+
+
+def get_revisions_walker(rev_walker_type, rev_start, *args, **kwargs):
+    """
+    Utility function to instantiate a revisions walker of a given type,
+    see :mod:`swh.storage.algos.revisions_walker`.
+
+    Args:
+        rev_walker_type (str): the type of revisions walker to return,
+            possible values are: *committer_date*, *dfs*, *dfs_post*,
+            *bfs* and *path*
+        rev_start (str): hexadecimal representation of a revision identifier
+        args (list): position arguments to pass to the revisions walker
+            constructor
+        kwargs (dict): keyword arguments to pass to the revisions walker
+            constructor
+
+    """
+    # first check if the provided revision is valid
+    lookup_revision(rev_start)
+    return _RevisionsWalkerProxy(rev_walker_type, rev_start, *args, **kwargs)

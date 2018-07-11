@@ -17,9 +17,8 @@ from swh.web.browse.utils import (
     get_snapshot_context, get_directory_entries, gen_directory_link,
     gen_revision_link, request_content, gen_content_link,
     prepare_content_for_display, content_display_max_size,
-    prepare_revision_log_for_display, gen_snapshot_directory_link,
-    gen_revision_log_link, gen_link, get_readme_to_display,
-    get_swh_persistent_ids, process_snapshot_branches
+    format_log_entries, gen_revision_log_link, gen_link,
+    get_readme_to_display, get_swh_persistent_ids, process_snapshot_branches
 )
 
 from swh.web.common import service
@@ -626,16 +625,33 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                                                      timestamp, browse_context='log') # noqa
 
         revision_id = snapshot_context['revision_id']
-        current_rev = revision_id
-        per_page = int(request.GET.get('per_page', PER_PAGE))
-        revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
 
-        if revs_breadcrumb:
-            current_rev = revs_breadcrumb.split('/')[-1]
-        revision_log = []
-        if current_rev:
-            revision_log = list(service.lookup_revision_log(current_rev,
-                                                            limit=per_page+1))
+        per_page = int(request.GET.get('per_page', PER_PAGE))
+        offset = int(request.GET.get('offset', 0))
+        revs_ordering = request.GET.get('revs_ordering', 'committer_date')
+        session_key = 'rev_%s_log_ordering_%s' % (revision_id, revs_ordering)
+        rev_log_session = request.session.get(session_key, None)
+        rev_log = []
+        revs_walker_state = None
+        if rev_log_session:
+            rev_log = rev_log_session['rev_log']
+            revs_walker_state = rev_log_session['revs_walker_state']
+
+        if len(rev_log) < offset+per_page:
+            revs_walker = \
+                service.get_revisions_walker(revs_ordering,
+                                             revision_id,
+                                             max_revs=offset+per_page+1,
+                                             state=revs_walker_state)
+            rev_log += list(revs_walker)
+            revs_walker_state = revs_walker.export_state()
+
+        revision_log = rev_log[offset:offset+per_page]
+
+        request.session[session_key] = {
+            'rev_log': rev_log,
+            'revs_walker_state': revs_walker_state
+        }
 
     except Exception as exc:
         return handle_view_exception(request, exc)
@@ -648,50 +664,27 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     snapshot_id = snapshot_context['snapshot_id']
 
     query_params['per_page'] = per_page
+    revs_ordering = request.GET.get('revs_ordering', '')
+    query_params['revs_ordering'] = revs_ordering
 
-    revision_log_data = []
-    next_log_url = ''
-    prev_log_url = ''
-    if revision_log:
-        revision_log_display_data = prepare_revision_log_for_display(
-            revision_log, per_page, revs_breadcrumb, snapshot_context)
+    browse_view_name = 'browse-' + swh_type + '-log'
 
-        browse_view_name = 'browse-' + swh_type + '-log'
+    prev_log_url = None
+    if len(rev_log) > offset + per_page:
+        query_params['offset'] = offset + per_page
+        prev_log_url = reverse(browse_view_name,
+                               url_args=url_args,
+                               query_params=query_params)
 
-        prev_rev = revision_log_display_data['prev_rev']
-        prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb'] # noqa
-        prev_log_url = None
-        query_params['revs_breadcrumb'] = prev_revs_breadcrumb
-        if prev_rev:
-            prev_log_url = \
-                reverse(browse_view_name,
-                        url_args=url_args,
-                        query_params=query_params)
+    next_log_url = None
+    if offset != 0:
+        query_params['offset'] = offset - per_page
+        next_log_url = reverse(browse_view_name,
+                               url_args=url_args,
+                               query_params=query_params)
 
-        next_rev = revision_log_display_data['next_rev']
-        next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb'] # noqa
-        next_log_url = None
-        query_params['revs_breadcrumb'] = next_revs_breadcrumb
-        if next_rev:
-            next_log_url = \
-                reverse(browse_view_name,
-                        url_args=url_args,
-                        query_params=query_params)
-
-        revision_log_data = revision_log_display_data['revision_log_data']
-
-    for i, log in enumerate(revision_log_data):
-        params = {
-            'revision': revision_log[i]['id'],
-        }
-        if 'visit_id' in query_params:
-            params['visit_id'] = query_params['visit_id']
-        log['directory'] = gen_snapshot_directory_link(
-            snapshot_context, revision_log[i]['id'],
-            link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
-                      '</i>Browse files',
-            link_attrs={'class': 'btn btn-default btn-sm',
-                        'role': 'button'})
+    revision_log_data = format_log_entries(revision_log, per_page,
+                                           snapshot_context)
 
     browse_log_link = \
         gen_revision_log_link(revision_id, link_text='Browse',
@@ -741,6 +734,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                    'swh_object_name': 'Revisions history',
                    'swh_object_metadata': revision_metadata,
                    'revision_log': revision_log_data,
+                   'revs_ordering': revs_ordering,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,

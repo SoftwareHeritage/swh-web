@@ -31,6 +31,18 @@ span.no-nl-marker svg path {
     fill: currentColor;
 }
 
+tr.swh-revision-log-entry {
+    cursor: pointer;
+}
+
+tr.swh-revision-log-entry:hover td {
+    background: #fecd1b;
+}
+
+tr.swh-revision-log-entry td a {
+    text-decoration: none;
+}
+
 .swh-revision-log-entry-id {
     min-width: 110px;
     max-width: 110px;
@@ -44,7 +56,13 @@ span.no-nl-marker svg path {
 }
 
 .swh-revision-log-entry-date {
-    min-width: 230px;
-    max-width: 230px;
-    width: 230px;
+    min-width: 200px;
+    max-width: 200px;
+    width: 200px;
+}
+
+.swh-revision-log-entry-commit-date {
+    min-width: 200px;
+    max-width: 200px;
+    width: 200px;
 }

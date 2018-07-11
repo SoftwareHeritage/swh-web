@@ -9,3 +9,4 @@
 
 import './revision.css';
 export * from './diff-utils';
+export * from './log-utils';

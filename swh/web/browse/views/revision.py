@@ -21,12 +21,11 @@ from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_link, gen_person_link, gen_revision_link, gen_revision_url,
-    prepare_revision_log_for_display,
     get_snapshot_context, gen_snapshot_directory_link,
     get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
     content_display_max_size, gen_snapshot_link, get_readme_to_display,
-    get_swh_persistent_ids
+    get_swh_persistent_ids, format_log_entries
 )
 
 
@@ -171,7 +170,7 @@ def _revision_diff(request, sha1_git):
     return HttpResponse(diff_data_json, content_type='application/json')
 
 
-NB_LOG_ENTRIES = 20
+NB_LOG_ENTRIES = 100
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/log/',
@@ -181,50 +180,57 @@ def revision_log_browse(request, sha1_git):
     Django view that produces an HTML display of the history
     log for a SWH revision identified by its id.
 
-    The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`.
+    The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`
     """ # noqa
     try:
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
-        revision_log = service.lookup_revision_log(sha1_git,
-                                                   limit=per_page+1)
-        revision_log = list(revision_log)
+        offset = int(request.GET.get('offset', 0))
+        revs_ordering = request.GET.get('revs_ordering', 'committer_date')
+        session_key = 'rev_%s_log_ordering_%s' % (sha1_git, revs_ordering)
+        rev_log_session = request.session.get(session_key, None)
+        rev_log = []
+        revs_walker_state = None
+        if rev_log_session:
+            rev_log = rev_log_session['rev_log']
+            revs_walker_state = rev_log_session['revs_walker_state']
+
+        if len(rev_log) < offset+per_page:
+            revs_walker = \
+                service.get_revisions_walker(revs_ordering, sha1_git,
+                                             max_revs=offset+per_page+1,
+                                             state=revs_walker_state)
+
+            rev_log += list(revs_walker)
+            revs_walker_state = revs_walker.export_state()
+
+        revision_log = rev_log[offset:offset+per_page]
+
+        request.session[session_key] = {
+            'rev_log': rev_log,
+            'revs_walker_state': revs_walker_state
+        }
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
+    revs_ordering = request.GET.get('revs_ordering', '')
 
-    revision_log_display_data = prepare_revision_log_for_display(
-        revision_log, per_page, revs_breadcrumb)
-
-    prev_rev = revision_log_display_data['prev_rev']
-    prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
     prev_log_url = None
-    if prev_rev:
-        prev_log_url = \
-            reverse('browse-revision-log',
-                    url_args={'sha1_git': prev_rev},
-                    query_params={'revs_breadcrumb': prev_revs_breadcrumb,
-                                  'per_page': per_page})
+    if len(rev_log) > offset + per_page:
+        prev_log_url = reverse('browse-revision-log',
+                               url_args={'sha1_git': sha1_git},
+                               query_params={'per_page': per_page,
+                                             'offset': offset + per_page,
+                                             'revs_ordering': revs_ordering})
 
-    next_rev = revision_log_display_data['next_rev']
-    next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
     next_log_url = None
-    if next_rev:
-        next_log_url = \
-            reverse('browse-revision-log',
-                    url_args={'sha1_git': next_rev},
-                    query_params={'revs_breadcrumb': next_revs_breadcrumb,
-                                  'per_page': per_page})
+    if offset != 0:
+        next_log_url = reverse('browse-revision-log',
+                               url_args={'sha1_git': sha1_git},
+                               query_params={'per_page': per_page,
+                                             'offset': offset - per_page,
+                                             'revs_ordering': revs_ordering})
 
-    revision_log_data = revision_log_display_data['revision_log_data']
-
-    for log in revision_log_data:
-        log['directory'] = gen_directory_link(
-            log['directory'],
-            link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
-                      '</i>Browse files',
-            link_attrs={'class': 'btn btn-default btn-sm',
-                        'role': 'button'})
+    revision_log_data = format_log_entries(revision_log, per_page)
 
     swh_rev_id = persistent_identifier('revision', sha1_git)
 
@@ -234,6 +240,7 @@ def revision_log_browse(request, sha1_git):
                    'swh_object_name': 'Revisions history',
                    'swh_object_metadata': None,
                    'revision_log': revision_log_data,
+                   'revs_ordering': revs_ordering,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
@@ -335,8 +342,8 @@ def revision_browse(request, sha1_git, extra_path=None):
         revision_data['committer'] = \
             gen_person_link(revision['committer']['id'],
                             revision['committer']['name'], snapshot_context)
-    revision_data['committer date'] = format_utc_iso_date(
-        revision['committer_date'])
+    revision_data['committer date'] = \
+        format_utc_iso_date(revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])
     if snapshot_context:
         revision_data['snapshot id'] = snapshot_id
