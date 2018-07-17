@@ -80,7 +80,7 @@ export function recookObject() {
       cookingUrl += '?email=' + recookTask.email;
     }
     // request archive cooking
-    fetch(cookingUrl, {method: 'POST'})
+    fetch(cookingUrl, {credentials: 'omit', method: 'POST'})
       .then(handleFetchError)
       .then(() => {
         // update task status

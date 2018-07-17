@@ -221,3 +221,6 @@ WEBPACK_LOADER = {
         'IGNORE': ['.+\.hot-update.js', '.+\.map']
     }
 }
+
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = 'admin'

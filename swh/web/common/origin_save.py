@@ -239,7 +239,6 @@ def create_save_origin_request(origin_type, origin_url):
                                                        origin_url=origin_url,
                                                        status=save_request_status, # noqa
                                                        loading_task_id=task['id']) # noqa
-
     # save request must be manually reviewed for acceptation
     elif save_request_status == SAVE_REQUEST_PENDING:
         # check if there is already such a save request already submitted,
