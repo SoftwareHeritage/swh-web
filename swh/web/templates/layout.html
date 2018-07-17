@@ -56,9 +56,15 @@ See top-level LICENSE file for more information
         <div class="navbar-header">
           <a class="nav-link swh-push-menu" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
         </div>
-        <div class="navbar">
+        <div class="navbar" style="width: 94%;">
           <div class="swh-navbar-content">
             {% block navbar-content %}{% endblock %}
+          </div>
+          <div class="float-right">
+            {% if user.is_authenticated %}
+              Logged in as <strong>{{ user.username }}</strong>,
+              <a href="{% url 'logout' %}">logout</a>
+            {% endif %}
           </div>
         </div>
       </nav>
@@ -116,6 +122,15 @@ See top-level LICENSE file for more information
                 <p>Help</p>
               </a>
             </li>
+            {% if user.is_authenticated %}
+              <li class="nav-header">Administration</li>
+              <li class="nav-item swh-help-item" title="Save origin administration">
+                <a href="{% url 'admin-origin-save' %}" class="nav-link swh-help-link">
+                  <i style="color: #e20026;" class="nav-icon fa fa-download"></i>
+                  <p>Save origin</p>
+                </a>
+              </li>
+            {% endif %}
           </ul>
         </nav>
       </div>
@@ -128,6 +143,8 @@ See top-level LICENSE file for more information
         </div>
       </section>
     </div>
+
+    {% include "includes/global-modals.html" %}
 
     <footer class="footer">
       <div class="container text-center">
