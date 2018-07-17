@@ -6,6 +6,7 @@
 import traceback
 
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
 
 from swh.web.config import get_config
 
@@ -56,7 +57,8 @@ def _generate_error_page(request, error_code, error_description):
     return render(request, "error.html",
                   {'error_code': error_code,
                    'error_message': http_status_code_message[error_code],
-                   'error_description': error_description}, status=error_code)
+                   'error_description': mark_safe(error_description)},
+                  status=error_code)
 
 
 def swh_handle400(request):
