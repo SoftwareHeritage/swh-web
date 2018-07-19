@@ -319,8 +319,9 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     revision_data = {}
 
+    author_name = revision['author']['name'] or revision['author']['fullname']
     revision_data['author'] = \
-        gen_person_link(revision['author']['id'], revision['author']['name'],
+        gen_person_link(revision['author']['id'], author_name,
                         snapshot_context)
     revision_data['committer'] = \
         gen_person_link(revision['committer']['id'],
