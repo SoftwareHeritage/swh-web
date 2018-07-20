@@ -45,11 +45,18 @@ def release_browse(request, sha1_git):
                                                         origin_url, timestamp,
                                                         visit_id)
             except Exception:
-                raise NotFoundExc('The Software Heritage archive has a release'
-                                  ' with the hash you provided but the origin '
-                                  'mentioned in your request appears broken: '
-                                  '%s. Please check the URL and try again.' %
-                                  origin_url)
+                raw_rel_url = reverse('browse-release',
+                                      kwargs={'sha1_git': sha1_git})
+                error_message = \
+                    ('The Software Heritage archive has a release '
+                     'with the hash you provided but the origin '
+                     'mentioned in your request appears broken: %s. '
+                     'Please check the URL and try again.\n\n'
+                     'Nevertheless, you can still browse the release '
+                     'without origin information: %s'
+                        % (gen_link(origin_url), gen_link(raw_rel_url)))
+
+                raise NotFoundExc(error_message)
             origin_info = snapshot_context['origin_info']
         elif snapshot_id:
             snapshot_context = get_snapshot_context(snapshot_id)
@@ -58,8 +65,9 @@ def release_browse(request, sha1_git):
 
     release_data = {}
 
+    author_name = release['author']['name'] or release['author']['fullname']
     release_data['author'] = \
-        gen_person_link(release['author']['id'], release['author']['name'],
+        gen_person_link(release['author']['id'], author_name,
                         snapshot_context)
     release_data['date'] = format_utc_iso_date(release['date'])
     release_data['id'] = sha1_git

@@ -436,14 +436,15 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
     return get_snapshot_content(visit_info['snapshot'])
 
 
-def gen_link(url, link_text, link_attrs={}):
+def gen_link(url, link_text=None, link_attrs={}):
     """
     Utility function for generating an HTML link to insert
     in Django templates.
 
     Args:
         url (str): an url
-        link_text (str): the text for the produced link
+        link_text (str): optional text for the produced link,
+            if not provided the url will be used
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
 
@@ -454,6 +455,8 @@ def gen_link(url, link_text, link_attrs={}):
     attrs = ' '
     for k, v in link_attrs.items():
         attrs += '%s="%s" ' % (k, v)
+    if not link_text:
+        link_text = url
     link = '<a%shref="%s">%s</a>' % (attrs, url, link_text)
     return mark_safe(link)
 
@@ -737,9 +740,10 @@ def _format_log_entries(revision_log, per_page, snapshot_context=None):
     for i, log in enumerate(revision_log):
         if i == per_page:
             break
+        author_name = log['author']['name'] or log['author']['fullname']
         revision_log_data.append(
             {'author': gen_person_link(log['author']['id'],
-                                       log['author']['name'],
+                                       author_name,
                                        snapshot_context),
              'revision': gen_revision_link(log['id'], True, snapshot_context),
              'message': log['message'],

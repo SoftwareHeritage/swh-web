@@ -11,40 +11,36 @@ Django production settings for swh-web.
 
 import os
 
-# guard to avoid side effects on the django settings when building the
-# Debian package for swh-web
-if os.environ['DJANGO_SETTINGS_MODULE'] == 'swh.web.settings.production':
+from .common import *
+from .common import swh_web_config
+from .common import REST_FRAMEWORK
 
-    from .common import *
-    from .common import swh_web_config
-    from .common import REST_FRAMEWORK
+# activate per-site caching
+if 'GZip' in MIDDLEWARE[0]:
+    MIDDLEWARE.insert(1, 'django.middleware.cache.UpdateCacheMiddleware')
+else:
+    MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
 
-    # activate per-site caching
-    if 'GZip' in MIDDLEWARE[0]:
-        MIDDLEWARE.insert(1, 'django.middleware.cache.UpdateCacheMiddleware')
-    else:
-        MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
+                'django.middleware.cache.FetchFromCacheMiddleware']
 
-    MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
-                   'django.middleware.cache.FetchFromCacheMiddleware']
-
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': swh_web_config['throttling']['cache_uri'],
-        }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': swh_web_config['throttling']['cache_uri'],
     }
+}
 
-    # Setup support for proxy headers
-    USE_X_FORWARDED_HOST = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Setup support for proxy headers
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-    # We're going through seven (or, in that case, 2) proxies thanks to Varnish
-    REST_FRAMEWORK['NUM_PROXIES'] = 2
+# We're going through seven (or, in that case, 2) proxies thanks to Varnish
+REST_FRAMEWORK['NUM_PROXIES'] = 2
 
-    ALLOWED_HOSTS += [
-        'archive.softwareheritage.org',
-        'base.softwareheritage.org',
-        'archive.internal.softwareheritage.org',
-    ]
+ALLOWED_HOSTS += [
+    'archive.softwareheritage.org',
+    'base.softwareheritage.org',
+    'archive.internal.softwareheritage.org',
+]
 
