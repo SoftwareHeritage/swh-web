@@ -11,10 +11,11 @@ from swh.web.common import service
 from swh.web.common.utils import (
     reverse, gen_path_info
 )
-from swh.web.common.exc import handle_view_exception
+from swh.web.common.exc import handle_view_exception, NotFoundExc
 from swh.web.browse.utils import (
     get_directory_entries, get_snapshot_context,
-    get_readme_to_display, get_swh_persistent_ids
+    get_readme_to_display, get_swh_persistent_ids,
+    gen_link
 )
 
 from swh.web.browse.browseurls import browse_route
@@ -54,11 +55,18 @@ def directory_browse(request, sha1_git, path=None):
                 snapshot_context = get_snapshot_context(None, origin_type,
                                                         origin_url)
             except Exception:
-                raise NotFoundExc('The Software Heritage archive has a directory' # noqa
-                                  ' with the hash you provided but the origin '
-                                  'mentioned in your request appears broken: '
-                                  '%s. Please check the URL and try again.' %
-                                  origin_url)
+                raw_dir_url = reverse('browse-directory',
+                                      kwargs={'sha1_git': sha1_git})
+                error_message = \
+                    ('The Software Heritage archive has a directory '
+                     'with the hash you provided but the origin '
+                     'mentioned in your request appears broken: %s. '
+                     'Please check the URL and try again.\n\n'
+                     'Nevertheless, you can still browse the directory '
+                     'without origin information: %s'
+                        % (gen_link(origin_url), gen_link(raw_dir_url)))
+
+                raise NotFoundExc(error_message)
         if snapshot_context:
             snapshot_context['visit_info'] = None
     except Exception as exc:

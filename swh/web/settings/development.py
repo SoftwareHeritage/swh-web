@@ -11,13 +11,9 @@ Django development settings for swh-web.
 
 import os
 
-# guard to avoid side effects on the django settings when building the
-# Debian package for swh-web
-if os.environ['DJANGO_SETTINGS_MODULE'] == 'swh.web.settings.development':
+from .common import *
 
-    from .common import *
+MIDDLEWARE += ['swh.web.common.middlewares.HtmlPrettifyMiddleware']
 
-    MIDDLEWARE += ['swh.web.common.middlewares.HtmlPrettifyMiddleware']
-
-    from django.core.cache import cache
-    cache.clear()
+from django.core.cache import cache
+cache.clear()

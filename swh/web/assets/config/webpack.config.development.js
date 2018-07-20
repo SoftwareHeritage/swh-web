@@ -66,7 +66,8 @@ let cssLoaders = [
           }
         }),
         // automatically add vendor prefixes to css rules
-        require('autoprefixer')()
+        require('autoprefixer')(),
+        require('postcss-normalize')()
       ]
     }
   }

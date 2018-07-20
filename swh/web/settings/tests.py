@@ -11,63 +11,59 @@ Django tests settings for swh-web.
 
 import os
 
-# guard to avoid side effects on the django settings when building the
-# Debian package for swh-web
-if os.environ['DJANGO_SETTINGS_MODULE'] == 'swh.web.settings.tests':
+from swh.web.config import get_config
 
-    from swh.web.config import get_config
+scope1_limiter_rate = 3
+scope1_limiter_rate_post = 1
+scope2_limiter_rate = 5
+scope2_limiter_rate_post = 2
+scope3_limiter_rate = 1
+scope3_limiter_rate_post = 1
 
-    scope1_limiter_rate = 3
-    scope1_limiter_rate_post = 1
-    scope2_limiter_rate = 5
-    scope2_limiter_rate_post = 2
-    scope3_limiter_rate = 1
-    scope3_limiter_rate_post = 1
+swh_web_config = get_config()
 
-    swh_web_config = get_config()
-
-    swh_web_config.update({
-        'debug': True,
-        'secret_key': 'test',
-        'throttling': {
-            'cache_uri': None,
-            'scopes': {
-                'swh_api': {
-                    'limiter_rate': {
-                        'default': '60/min'
-                    },
-                    'exempted_networks': ['127.0.0.0/8']
+swh_web_config.update({
+    'debug': True,
+    'secret_key': 'test',
+    'throttling': {
+        'cache_uri': None,
+        'scopes': {
+            'swh_api': {
+                'limiter_rate': {
+                    'default': '60/min'
                 },
-                'swh_vault_cooking': {
-                    'limiter_rate': {
-                        'default': '120/h',
-                        'GET': '60/m'
-                    },
-                    'exempted_networks': ['127.0.0.0/8']
+                'exempted_networks': ['127.0.0.0/8']
+            },
+            'swh_vault_cooking': {
+                'limiter_rate': {
+                    'default': '120/h',
+                    'GET': '60/m'
                 },
-                'scope1': {
-                    'limiter_rate': {
-                        'default': '%s/min' % scope1_limiter_rate,
-                        'POST': '%s/min' % scope1_limiter_rate_post,
-                    }
-                },
-                'scope2': {
-                    'limiter_rate': {
-                        'default': '%s/min' % scope2_limiter_rate,
-                        'POST': '%s/min' % scope2_limiter_rate_post
-                    }
-                },
-                'scope3': {
-                    'limiter_rate': {
-                        'default': '%s/min' % scope3_limiter_rate,
-                        'POST': '%s/min' % scope3_limiter_rate_post
-                    },
-                    'exempted_networks': ['127.0.0.0/8']
+                'exempted_networks': ['127.0.0.0/8']
+            },
+            'scope1': {
+                'limiter_rate': {
+                    'default': '%s/min' % scope1_limiter_rate,
+                    'POST': '%s/min' % scope1_limiter_rate_post,
                 }
+            },
+            'scope2': {
+                'limiter_rate': {
+                    'default': '%s/min' % scope2_limiter_rate,
+                    'POST': '%s/min' % scope2_limiter_rate_post
+                }
+            },
+            'scope3': {
+                'limiter_rate': {
+                    'default': '%s/min' % scope3_limiter_rate,
+                    'POST': '%s/min' % scope3_limiter_rate_post
+                },
+                'exempted_networks': ['127.0.0.0/8']
             }
         }
-    })
+    }
+})
 
-    from .common import *
+from .common import *
 
-    ALLOWED_HOSTS += ['testserver']
+ALLOWED_HOSTS += ['testserver']
