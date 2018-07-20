@@ -284,11 +284,17 @@ def revision_browse(request, sha1_git, extra_path=None):
                                                         origin_url,
                                                         timestamp, visit_id)
             except Exception:
-                raise NotFoundExc('The Software Heritage archive has a revision' # noqa
-                                  ' with the hash you provided but the origin '
-                                  'mentioned in your request appears broken: '
-                                  '%s. Please check the URL and try again.' %
-                                  origin_url)
+                raw_rev_url = reverse('browse-revision',
+                                      kwargs={'sha1_git': sha1_git})
+                error_message = \
+                    ('The Software Heritage archive has a revision '
+                     'with the hash you provided but the origin '
+                     'mentioned in your request appears broken: %s. '
+                     'Please check the URL and try again.\n\n'
+                     'Nevertheless, you can still browse the revision '
+                     'without origin information: %s'
+                        % (gen_link(origin_url), gen_link(raw_rev_url)))
+                raise NotFoundExc(error_message)
             origin_info = snapshot_context['origin_info']
             snapshot_id = snapshot_context['snapshot_id']
         elif snapshot_id:
@@ -313,8 +319,9 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     revision_data = {}
 
+    author_name = revision['author']['name'] or revision['author']['fullname']
     revision_data['author'] = \
-        gen_person_link(revision['author']['id'], revision['author']['name'],
+        gen_person_link(revision['author']['id'], author_name,
                         snapshot_context)
     revision_data['committer'] = \
         gen_person_link(revision['committer']['id'],

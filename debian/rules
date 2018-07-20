@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 export PYBUILD_NAME=swh.web
-export PYBUILD_TEST_ARGS=--with-doctest -sv -a !db,!fs
+export PYBUILD_TEST_ARGS=--with-doctest -sv ./swh/web/tests
 export DJANGO_SETTINGS_MODULE=swh.web.settings.tests
 
 %:
