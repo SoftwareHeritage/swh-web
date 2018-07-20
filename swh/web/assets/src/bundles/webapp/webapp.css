@@ -204,7 +204,8 @@ a.dropdown-left::before {
     border-top-style: none;
     border-left-style: none;
     border-right-style: none;
-    border-bottom: 5px solid;
+    border-bottom-style: solid;
+    border-bottom-width: 5px;
     border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
     width: 100%;
     padding: 5px;
