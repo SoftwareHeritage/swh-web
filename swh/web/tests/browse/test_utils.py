@@ -316,6 +316,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         snapshot_context = {
             'origin_info': {'type': 'git',
                             'url': 'https://github.com/git/git'},
+            'origin_type': 'git',
             'url_args': {},
             'query_params': {}
         }
