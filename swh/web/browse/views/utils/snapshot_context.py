@@ -126,6 +126,8 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     releases = snapshot_context['releases']
     url_args = snapshot_context['url_args']
     query_params = snapshot_context['query_params']
+    timestamp = format_utc_iso_date(snapshot_context['visit_info']['date'],
+                                    '%Y-%m-%dT%H:%M:%SZ')
 
     browse_view_name = 'browse-' + swh_type + '-' + browse_context
 
