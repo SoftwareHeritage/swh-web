@@ -141,7 +141,7 @@ def make_api_response(request, data, doc_data={}, options={}):
             doc_env['endpoint_path'] = gen_path_info(doc_env['route'])
 
         response_args['data'] = doc_env
-        response_args['template_name'] = 'apidoc.html'
+        response_args['template_name'] = 'api/apidoc.html'
 
     # otherwise simply return the raw data and let DRF picks
     # the correct renderer (JSON or YAML)

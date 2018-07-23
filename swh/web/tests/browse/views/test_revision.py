@@ -57,7 +57,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('revision.html')
+        self.assertTemplateUsed('browse/revision.html')
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
         self.assertContains(resp, '<a href="%s">%s</a>' %
@@ -156,7 +156,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('revision-log.html')
+        self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
         self.assertContains(resp, '<li class="page-item disabled"><a class="page-link">Newer</a></li>')
@@ -191,7 +191,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('revision-log.html')
+        self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
         self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Newer</a></li>' %
@@ -215,7 +215,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('revision-log.html')
+        self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
         self.assertContains(resp, '<li class="page-item"><a class="page-link" href="%s">Newer</a></li>' %
@@ -234,7 +234,7 @@ class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
                                               'per_page': per_page})
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('revision-log.html')
+        self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page//2)
         self.assertContains(resp, '<li class="page-item disabled"><a class="page-link">Older</a></li>')

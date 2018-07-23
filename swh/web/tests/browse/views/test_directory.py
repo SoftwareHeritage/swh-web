@@ -40,7 +40,7 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('directory.html')
+        self.assertTemplateUsed('browse/directory.html')
         self.assertContains(resp, '<a href="' + root_dir_url + '">' +
                             root_directory_sha1[:7] + '</a>')
         self.assertContains(resp, '<td class="swh-directory">',
@@ -124,7 +124,7 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
 
         resp = self.client.get(dir_url)
         self.assertEquals(resp.status_code, 400)
-        self.assertTemplateUsed('error.html')
+        self.assertTemplateUsed('browse/error.html')
 
         mock_utils_service.lookup_directory.side_effect = \
             NotFoundExc('directory not found')
@@ -134,4 +134,4 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
 
         resp = self.client.get(dir_url)
         self.assertEquals(resp.status_code, 404)
-        self.assertTemplateUsed('error.html')
+        self.assertTemplateUsed('browse/error.html')

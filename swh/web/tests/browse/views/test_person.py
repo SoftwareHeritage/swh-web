@@ -32,7 +32,7 @@ class SwhBrowsePersonTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('person.html')
+        self.assertTemplateUsed('browse/person.html')
         self.assertContains(resp, '<pre>%s</pre>' % test_person_data['id'])
         self.assertContains(resp, '<pre>%s</pre>' % test_person_data['name'])
         self.assertContains(resp, '<pre><a href="mailto:%s">%s</a></pre>' %

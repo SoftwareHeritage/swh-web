@@ -142,7 +142,7 @@ class RendererTestCase(unittest.TestCase):
             self.assertEqual(rv.data, expected_data)
             self.assertEqual(rv.status_code, 200)
             if mime_type == 'text/html':
-                self.assertEqual(rv.template_name, 'apidoc.html')
+                self.assertEqual(rv.template_name, 'api/apidoc.html')
 
     @istest
     def swh_filter_renderer_do_nothing(self):

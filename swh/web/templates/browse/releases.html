@@ -1,4 +1,4 @@
-{% extends "browse.html" %}
+{% extends "./browse.html" %}
 
 {% comment %}
 Copyright (C) 2017-2018  The Software Heritage developers
@@ -19,19 +19,19 @@ See top-level LICENSE file for more information
   <table class="table swh-table-even-odd">
     <thead>
       <tr>
-        <th><i class="fa fa-code-fork fa-fw"></i>Name</th>
-        <th>Revision</th>
+        <th><i class="fa fa-tag fa-fw"></i>Name</th>
+        <th>Target</th>
         <th>Message</th>
         <th>Date</th>
       </tr>
     </thead>
     <tbody>
-      {% for branch in displayed_branches %}
-        <tr class="swh-origin-branch">
-          <td style="max-width: 300px"><i class="fa fa-code-fork fa-fw"></i><a href="{{ branch.directory_url }}">{{ branch.name }}</a></td>
-          <td><a href="{{ branch.revision_url }}">{{ branch.revision|slice:":7" }}</a></td>
-          <td class="swh-log-entry-message swh-table-cell-text-overflow" style="min-width: 500px" title="{{ branch.message }}">{{ branch.message }}</td>
-          <td style="min-width: 250px">{{ branch.date }}</td
+      {% for release in displayed_releases %}
+        <tr class="swh-origin-release">
+          <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
+          <td>{{ release.target_type }}</td>
+          <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
+          <td>{{ release.date }}</td>
         </tr>
       {% endfor %}
     </tbody>
@@ -40,19 +40,21 @@ See top-level LICENSE file for more information
 {% endblock %}
 
 {% block swh-browse-after-content %}
-{% if prev_branches_url or next_branches_url %}
+{% if prev_releases_url or next_releases_url %}
   <ul class="pagination justify-content-center">
-    {% if prev_branches_url %}
-      <li class="page-item"><a class="page-link" href="{{ prev_branches_url }}">Previous</a></li>
+
+    {% if prev_releases_url %}
+      <li class="page-item"><a class="page-link" href="{{ prev_releases_url }}">Previous</a></li>
     {% else %}
       <li class="page-item disabled"><a class="page-link">Previous</a></li>
     {% endif %}
 
-    {% if next_branches_url %}
-      <li class="page-item"><a class="page-link" href="{{ next_branches_url }}">Next</a></li>
+    {% if next_releases_url %}
+      <li class="page-item"><a class="page-link" href="{{ next_releases_url }}">Next</a></li>
     {% else %}
       <li class="page-item disabled"><a class="page-link">Next</a></li>
     {% endif %}
+
   </ul>
 {% endif %}
 {% endblock %}

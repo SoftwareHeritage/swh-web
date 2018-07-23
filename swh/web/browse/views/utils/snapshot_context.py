@@ -357,7 +357,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     heading = 'Directory - %s - %s - %s' %\
         (dir_path, snapshot_context['branch'], context_found)
 
-    return render(request, 'directory.html',
+    return render(request, 'browse/directory.html',
                   {'heading': heading,
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
@@ -515,7 +515,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     heading = 'Content - %s - %s - %s' %\
         (content_path, snapshot_context['branch'], context_found)
 
-    return render(request, 'content.html',
+    return render(request, 'browse/content.html',
                   {'heading': heading,
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
@@ -660,7 +660,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     heading = 'Revision history - %s - %s' %\
         (snapshot_context['branch'], context_found)
 
-    return render(request, 'revision-log.html',
+    return render(request, 'browse/revision-log.html',
                   {'heading': heading,
                    'swh_object_name': 'Revision history',
                    'swh_object_metadata': revision_metadata,
@@ -746,7 +746,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
     else:
         heading += 'snapshot: %s' % snapshot_id
 
-    return render(request, 'branches.html',
+    return render(request, 'browse/branches.html',
                   {'heading': heading,
                    'swh_object_name': 'Branches',
                    'swh_object_metadata': {},
@@ -822,7 +822,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
     else:
         heading += 'snapshot: %s' % snapshot_id
 
-    return render(request, 'releases.html',
+    return render(request, 'browse/releases.html',
                   {'heading': heading,
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
