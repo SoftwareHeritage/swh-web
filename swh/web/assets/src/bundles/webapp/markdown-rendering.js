@@ -13,7 +13,7 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
 
   $(document).ready(() => {
     let converter = new showdown.Converter({tables: true});
-    fetch(markdownDocUrl, {credentials: 'same-origin'})
+    fetch(markdownDocUrl)
       .then(handleFetchError)
       .then(response => response.text())
       .then(data => {

@@ -86,7 +86,7 @@ export function computeDiff(diffUrl, diffId) {
   $(`#${diffId}-highlightjs`).css('display', 'none');
 
   // request diff computation and process it
-  fetch(diffUrl, {credentials: 'same-origin'})
+  fetch(diffUrl)
     .then(response => response.json())
     .then(data => {
       // increment number of computed diffs
@@ -437,7 +437,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
       // request computation of revision file changes list
       // when navigating to the 'Changes' tab and add diff panels
       // to the DOM when receiving the result
-      fetch(diffRevisionUrl, {credentials: 'same-origin'})
+      fetch(diffRevisionUrl)
         .then(response => response.json())
         .then(data => {
           changes = data.changes;

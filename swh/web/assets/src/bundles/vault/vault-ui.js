@@ -42,7 +42,7 @@ let recookTask;
 export function fetchCookedObject(fetchUrl) {
   recookTask = null;
   // first, check if the link is still available from the vault
-  fetch(fetchUrl, {credentials: 'same-origin'})
+  fetch(fetchUrl)
     .then(response => {
       // link is still alive, proceed to download
       if (response.ok) {
@@ -80,7 +80,7 @@ export function recookObject() {
       cookingUrl += '?email=' + recookTask.email;
     }
     // request archive cooking
-    fetch(cookingUrl, {credentials: 'same-origin', method: 'POST'})
+    fetch(cookingUrl, {method: 'POST'})
       .then(handleFetchError)
       .then(() => {
         // update task status
@@ -129,7 +129,7 @@ function checkVaultCookingTasks() {
       cookingUrl = Urls.vault_cook_revision_gitfast(cookingTask.object_id);
     }
     if (cookingTask.status !== 'done' && cookingTask.status !== 'failed') {
-      cookingTaskRequests.push(fetch(cookingUrl, {credentials: 'same-origin'}));
+      cookingTaskRequests.push(fetch(cookingUrl));
     }
   }
   $('.swh-vault-table tbody tr').each((i, row) => {
