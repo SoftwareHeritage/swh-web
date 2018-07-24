@@ -100,6 +100,10 @@ _save_task_status = {
 
 
 def get_savable_origin_types():
+    return sorted(list(_origin_type_task.keys()))
+
+
+def _check_origin_type_savable(origin_type):
     """
     Get the list of software origin types that can be loaded
     through a save request.
@@ -107,10 +111,6 @@ def get_savable_origin_types():
     Returns:
         list: the list of savable origin types
     """
-    return list(_origin_type_task.keys())
-
-
-def _check_origin_type_savable(origin_type):
     allowed_origin_types = ', '.join(get_savable_origin_types())
     if origin_type not in _origin_type_task:
         raise BadInputExc('Origin of type %s can not be saved! '
@@ -118,7 +118,7 @@ def _check_origin_type_savable(origin_type):
                           (origin_type, allowed_origin_types))
 
 
-_validate_url = URLValidator(schemes=['http', 'https'])
+_validate_url = URLValidator(schemes=['http', 'https', 'svn'])
 
 
 def _check_origin_url_valid(origin_url):
@@ -193,6 +193,7 @@ def create_save_origin_request(origin_type, origin_url):
         elif origin_type == 'hg':
             kwargs['origin_url'] = origin_url
         elif origin_type == 'svn':
+            kwargs['origin_url'] = origin_url
             kwargs['svn_url'] = origin_url
 
         sor = None

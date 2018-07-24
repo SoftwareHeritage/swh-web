@@ -132,7 +132,8 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         save_request_url = reverse('save-origin',
                                    kwargs={'origin_type': origin_type,
                                            'origin_url': origin_url})
-        response = self.client.post(save_request_url)
+        response = self.client.post(save_request_url, data={},
+                                    content_type='application/x-www-form-urlencoded') # noqa
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.data['save_request_status'],
                           SAVE_REQUEST_PENDING)
@@ -180,7 +181,8 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         save_request_url = reverse('save-origin',
                                    kwargs={'origin_type': origin_type,
                                            'origin_url': origin_url})
-        response = self.client.post(save_request_url)
+        response = self.client.post(save_request_url, data={},
+                                    content_type='application/x-www-form-urlencoded') # noqa
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.data['save_request_status'],
                           SAVE_REQUEST_PENDING)

@@ -39,7 +39,8 @@
         "fetch": false,
         "__STATIC__": false,
         "Image": false,
-        "Cookies": false
+        "Cookies": false,
+        "grecaptcha": false
     },
 
     "rules": {

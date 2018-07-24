@@ -16,6 +16,7 @@ pygments
 pypandoc
 python-dateutil
 pyyaml
+requests
 
 #Doc dependencies
 sphinx

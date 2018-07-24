@@ -3,21 +3,24 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
+
 from django.views.decorators.cache import never_cache
 
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
-
 from swh.web.common.origin_save import (
     create_save_origin_request, get_save_origin_requests
 )
+from swh.web.common.exc import ForbiddenExc
+from swh.web.common.utils import is_recaptcha_valid
 
 
 @api_route(r'/origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
            'save-origin', methods=['GET', 'POST'],
            throttle_scope='swh_save_origin')
 @never_cache
-@api_doc('/origin/save/')
+@api_doc('/origin/save/', tags=['hidden'])
 def api_save_origin(request, origin_type, origin_url):
     """
     .. http:get:: /api/1/origin/save/(origin_type)/url/(origin_url)/
@@ -75,6 +78,14 @@ def api_save_origin(request, origin_type, origin_url):
     """ # noqa
 
     if request.method == 'POST':
-        return create_save_origin_request(origin_type, origin_url)
+        body = {}
+        body_unicode = request.body.decode('utf-8')
+        if body_unicode:
+            body = json.loads(body_unicode)
+        if 'g-recaptcha-response' not in body or \
+                is_recaptcha_valid(request, body['g-recaptcha-response']):
+            return create_save_origin_request(origin_type, origin_url)
+        else:
+            raise ForbiddenExc('The reCAPTCHA could not be validated !')
     else:
         return get_save_origin_requests(origin_type, origin_url)
