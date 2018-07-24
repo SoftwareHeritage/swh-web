@@ -6,6 +6,7 @@
 import docutils.parsers.rst
 import docutils.utils
 import re
+import requests
 
 from datetime import datetime, timezone
 from dateutil import parser as date_parser
@@ -22,6 +23,7 @@ from swh.model.identifiers import (
 )
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc
+from swh.web.config import get_config
 
 
 def reverse(viewname, args=None, kwargs=None, query_params=None,
@@ -343,3 +345,44 @@ def parse_rst(text, report_level=2):
     document = docutils.utils.new_document('rst-doc', settings=settings)
     parser.parse(text, document)
     return document
+
+
+def get_client_ip(request):
+    """
+    Return the client IP address from an incoming HTTP request.
+
+    Args:
+        request (django.http.HttpRequest): the incoming HTTP request
+
+    Returns:
+        str: The client IP address
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+def is_recaptcha_valid(request, recaptcha_response):
+    """
+    Verify if the response for Google reCAPTCHA is valid.
+
+    Args:
+        request (django.http.HttpRequest): the incoming HTTP request
+        recaptcha_response (str): the reCAPTCHA response
+
+    Returns:
+        bool: Wether the reCAPTCHA response is valid or not
+    """
+    config = get_config()
+    return requests.post(
+        config['grecaptcha']['validation_url'],
+        data={
+            'secret': config['grecaptcha']['private_key'],
+            'response': recaptcha_response,
+            'remoteip': get_client_ip(request)
+        },
+        verify=True
+    ).json().get("success", False)

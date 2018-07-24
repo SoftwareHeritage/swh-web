@@ -6,15 +6,35 @@
 import json
 
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.http import require_POST
 
 from swh.web.browse.browseurls import browse_route
-
+from swh.web.common.exc import ForbiddenExc
 from swh.web.common.models import SaveOriginRequest
-
+from swh.web.common.utils import is_recaptcha_valid
 from swh.web.common.origin_save import (
-    get_savable_origin_types, get_save_origin_requests_from_queryset
+    create_save_origin_request, get_savable_origin_types,
+    get_save_origin_requests_from_queryset
 )
+
+
+@browse_route(r'origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
+              view_name='browse-origin-save-request')
+@require_POST
+def _browse_origin_save_request(request, origin_type, origin_url):
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+    if is_recaptcha_valid(request, body['g-recaptcha-response']):
+        try:
+            response = json.dumps(create_save_origin_request(origin_type,
+                                                             origin_url),
+                                  separators=(',', ': '))
+            return HttpResponse(response, content_type='application/json')
+        except ForbiddenExc as exc:
+            return HttpResponseForbidden(str(exc))
+    else:
+        return HttpResponseForbidden('The reCAPTCHA could not be validated !')
 
 
 @browse_route(r'origin/save/types/list/',
@@ -55,7 +75,8 @@ def _browse_origin_save_requests_list(request, status):
     if search_value:
         save_requests = \
             [sr for sr in save_requests
-             if search_value.lower() in sr['save_task_status'].lower()
+             if search_value.lower() in sr['save_request_status'].lower()
+             or search_value.lower() in sr['save_task_status'].lower()
              or search_value.lower() in sr['origin_type'].lower()
              or search_value.lower() in sr['origin_url'].lower()]
     if field_order == 'save_task_status':

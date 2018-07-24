@@ -65,6 +65,11 @@ DEFAULT_CONFIG = {
         'args': {
             'url': 'http://localhost:5008/'
         }
+    }),
+    'grecaptcha': ('dict', {
+        'validation_url': 'https://www.google.com/recaptcha/api/siteverify',
+        'site_key': '',
+        'private_key': ''
     })
 }
 
