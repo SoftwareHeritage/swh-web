@@ -6,6 +6,7 @@
 # Functions defined here are NOT DESIGNED FOR PRODUCTION
 
 from django.core.cache import cache
+from django.test import TestCase
 
 from swh.storage.api.client import RemoteStorage as Storage
 
@@ -51,13 +52,13 @@ def create_config(base_url='https://somewhere.org:4321'):
     return swh_config
 
 
-class SWHWebTestBase(object):
+class SWHWebTestCase(TestCase):
     """Testing API class.
 
     """
     @classmethod
     def setUpClass(cls):
-        super(SWHWebTestBase, cls).setUpClass()
+        super(SWHWebTestCase, cls).setUpClass()
         cls.test_config = create_config()
         cls.maxDiff = None
 

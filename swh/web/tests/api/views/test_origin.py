@@ -9,10 +9,10 @@ from unittest.mock import patch
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class OriginApiTestCase(SWHWebTestBase, APITestCase):
+class OriginApiTestCase(SWHWebTestCase, APITestCase):
 
     def setUp(self):
         self.origin_visit1 = {

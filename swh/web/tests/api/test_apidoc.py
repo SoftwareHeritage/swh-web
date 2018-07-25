@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from swh.web.api.apidoc import api_doc, _parse_httpdomain_doc
 from swh.web.api.apiurls import api_route
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 # flake8: noqa
 
@@ -61,7 +61,7 @@ httpdomain_doc = """
 """
 
 
-class APIDocTestCase(SWHWebTestBase, APITestCase):
+class APIDocTestCase(SWHWebTestCase, APITestCase):
 
     @istest
     def apidoc_nodoc_failure(self):

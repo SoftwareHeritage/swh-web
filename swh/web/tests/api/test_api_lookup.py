@@ -3,15 +3,15 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
 
 from nose.tools import istest
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.api.views import utils
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class ApiLookupTestCase(unittest.TestCase):
+class ApiLookupTestCase(SWHWebTestCase):
 
     @istest
     def genericapi_lookup_nothing_is_found(self):

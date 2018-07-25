@@ -7,14 +7,13 @@
 
 from unittest.mock import patch
 from nose.tools import istest
-from django.test import TestCase
 from django.utils.html import escape
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, get_swh_persistent_id
 )
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 from .data.revision_test_data import (
     revision_id_test, revision_metadata_test,
@@ -24,7 +23,7 @@ from .data.revision_test_data import (
 from .data.origin_test_data import stub_origin_visits
 
 
-class SwhBrowseRevisionTest(SWHWebTestBase, TestCase):
+class SwhBrowseRevisionTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.revision.service')
     @patch('swh.web.browse.utils.service')

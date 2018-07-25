@@ -8,14 +8,13 @@ import base64
 from unittest.mock import patch
 from nose.tools import istest
 
-from django.test import TestCase
 from django.utils.html import escape
 from django.utils.encoding import DjangoUnicodeDecodeError
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 from .data.content_test_data import (
     stub_content_text_data,
@@ -30,7 +29,7 @@ from .data.content_test_data import (
 )
 
 
-class SwhBrowseContentTest(SWHWebTestBase, TestCase):
+class SwhBrowseContentTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.content.request_content')
     @istest

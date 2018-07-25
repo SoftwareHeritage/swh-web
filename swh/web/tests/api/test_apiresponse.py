@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import json
-import unittest
 
 from rest_framework.test import APIRequestFactory
 
@@ -15,11 +14,12 @@ from swh.web.api.apiresponse import (
     compute_link_header, transform, make_api_response,
     filter_by_fields
 )
+from swh.web.tests.testcase import SWHWebTestCase
 
 api_request_factory = APIRequestFactory()
 
 
-class SWHComputeLinkHeaderTest(unittest.TestCase):
+class SWHComputeLinkHeaderTest(SWHWebTestCase):
     @istest
     def compute_link_header(self):
         rv = {
@@ -59,7 +59,7 @@ class SWHComputeLinkHeaderTest(unittest.TestCase):
         self.assertEquals(headers, {})
 
 
-class SWHTransformProcessorTest(unittest.TestCase):
+class SWHTransformProcessorTest(SWHWebTestCase):
     @istest
     def transform_only_return_results_1(self):
         rv = {'results': {'some-key': 'some-value'}}
@@ -87,7 +87,7 @@ class SWHTransformProcessorTest(unittest.TestCase):
         self.assertEquals(transform(rv), {'some-key': 'some-value'})
 
 
-class RendererTestCase(unittest.TestCase):
+class RendererTestCase(SWHWebTestCase):
 
     @patch('swh.web.api.apiresponse.json')
     @patch('swh.web.api.apiresponse.filter_by_fields')
