@@ -517,7 +517,8 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
     query_params = None
     if snapshot_context and snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
-        query_params = {'origin_type': origin_info['type'],
+        origin_type = snapshot_context['origin_type']
+        query_params = {'origin_type': origin_type,
                         'origin': origin_info['url']}
         if 'timestamp' in snapshot_context['url_args']:
             query_params['timestamp'] = \
@@ -889,7 +890,6 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
     if origin_url:
         swh_type = 'origin'
         origin_info = get_origin_info(origin_url, origin_type)
-        origin_info['type'] = origin_type
 
         visit_info = get_origin_visit(origin_info, timestamp, visit_id,
                                       snapshot_id)
@@ -906,7 +906,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
             get_origin_visit_snapshot(origin_info, timestamp, visit_id,
                                       snapshot_id)
 
-        url_args = {'origin_type': origin_info['type'],
+        url_args = {'origin_type': origin_type,
                     'origin_url': origin_info['url']}
 
         query_params = {'visit_id': visit_id}
@@ -946,6 +946,8 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         'swh_type': swh_type,
         'snapshot_id': snapshot_id,
         'origin_info': origin_info,
+        # keep track if the origin type was provided as url argument
+        'origin_type': origin_type,
         'visit_info': visit_info,
         'branches': branches,
         'releases': releases,

@@ -43,7 +43,7 @@ def person_browse(request, person_id):
             context_found = 'origin: %s' % origin_url
         heading += ' - %s' % context_found
 
-    return render(request, 'person.html',
+    return render(request, 'browse/person.html',
                   {'heading': heading,
                    'swh_object_name': 'Person',
                    'swh_object_metadata': person,

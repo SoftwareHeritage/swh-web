@@ -5,21 +5,18 @@
 
 # flake8: noqa
 
-import unittest
-
 from unittest.mock import patch
 from nose.tools import istest
-
 
 from swh.web.browse import utils
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 from .views.data.revision_test_data import revision_history_log_test
 
 
-class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
+class SwhBrowseUtilsTestCase(SWHWebTestCase):
 
     @istest
     def get_mimetype_and_encoding_for_content(self):
@@ -316,6 +313,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestBase, unittest.TestCase):
         snapshot_context = {
             'origin_info': {'type': 'git',
                             'url': 'https://github.com/git/git'},
+            'origin_type': 'git',
             'url_args': {},
             'query_params': {}
         }

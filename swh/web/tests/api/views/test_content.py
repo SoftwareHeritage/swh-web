@@ -7,10 +7,10 @@ from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch, MagicMock
 
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class ContentApiTestCase(SWHWebTestBase, APITestCase):
+class ContentApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.content.service')
     @istest
     def api_content_filetype(self, mock_service):

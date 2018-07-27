@@ -5,14 +5,13 @@
 
 from unittest.mock import patch
 from nose.tools import istest
-from django.test import TestCase
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class SwhBrowsePersonTest(SWHWebTestBase, TestCase):
+class SwhBrowsePersonTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.person.service')
     @istest
@@ -32,7 +31,7 @@ class SwhBrowsePersonTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('person.html')
+        self.assertTemplateUsed('browse/person.html')
         self.assertContains(resp, '<pre>%s</pre>' % test_person_data['id'])
         self.assertContains(resp, '<pre>%s</pre>' % test_person_data['name'])
         self.assertContains(resp, '<pre><a href="mailto:%s">%s</a></pre>' %

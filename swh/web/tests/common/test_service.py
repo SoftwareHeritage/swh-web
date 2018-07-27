@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import datetime
-import unittest
 
 from nose.tools import istest
 from unittest.mock import MagicMock, patch, call
@@ -13,9 +12,10 @@ from swh.model.hashutil import hash_to_bytes, hash_to_hex
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class ServiceTestCase(unittest.TestCase):
+class ServiceTestCase(SWHWebTestCase):
 
     def setUp(self):
         self.BLAKE2S256_SAMPLE = ('685395c5dc57cada459364f0946d3dd45b'

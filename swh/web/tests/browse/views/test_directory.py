@@ -6,12 +6,10 @@
 from unittest.mock import patch
 from nose.tools import istest, nottest
 
-from django.test import TestCase
-
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 from .data.directory_test_data import (
     stub_root_directory_sha1, stub_root_directory_data,
@@ -19,7 +17,7 @@ from .data.directory_test_data import (
 )
 
 
-class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
+class SwhBrowseDirectoryTest(SWHWebTestCase):
 
     @nottest
     def directory_view(self, root_directory_sha1, directory_entries,
@@ -40,7 +38,7 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('directory.html')
+        self.assertTemplateUsed('browse/directory.html')
         self.assertContains(resp, '<a href="' + root_dir_url + '">' +
                             root_directory_sha1[:7] + '</a>')
         self.assertContains(resp, '<td class="swh-directory">',
@@ -124,7 +122,7 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
 
         resp = self.client.get(dir_url)
         self.assertEquals(resp.status_code, 400)
-        self.assertTemplateUsed('error.html')
+        self.assertTemplateUsed('browse/error.html')
 
         mock_utils_service.lookup_directory.side_effect = \
             NotFoundExc('directory not found')
@@ -134,4 +132,4 @@ class SwhBrowseDirectoryTest(SWHWebTestBase, TestCase):
 
         resp = self.client.get(dir_url)
         self.assertEquals(resp.status_code, 404)
-        self.assertTemplateUsed('error.html')
+        self.assertTemplateUsed('browse/error.html')

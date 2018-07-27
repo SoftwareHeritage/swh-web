@@ -38,7 +38,7 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
         urlconf: url configuration module
 
     Returns:
-        The url of the requested view with processed arguments and
+        str: the url of the requested view with processed arguments and
         query parameters
     """
 
@@ -68,7 +68,7 @@ def datetime_to_utc(date):
         date (datetime.datetime): input datetime with timezone info
 
     Returns:
-        datetime.datime: datetime in UTC without timezone info
+        datetime.datetime: datetime in UTC without timezone info
     """
     if date.tzinfo:
         return date.astimezone(tz.gettz('UTC')).replace(tzinfo=timezone.utc)
@@ -80,8 +80,8 @@ def parse_timestamp(timestamp):
     """Given a time or timestamp (as string), parse the result as UTC datetime.
 
     Returns:
-        a timezone-aware datetime representing the parsed value.
-        None if the parsing fails.
+        datetime.datetime: a timezone-aware datetime representing the
+            parsed value or None if the parsing fails.
 
     Samples:
         - 2016-01-12
@@ -130,7 +130,7 @@ def format_utc_iso_date(iso_date, fmt='%d %B %Y, %H:%M UTC'):
         fmt (str): optional date formatting string
 
     Returns:
-        A formatted string representation of the input iso date
+        str: a formatted string representation of the input iso date
     """
     if not iso_date:
         return iso_date
@@ -153,7 +153,7 @@ def gen_path_info(path):
         path: a filesystem path
 
     Returns:
-        A list of path data for navigation as illustrated above.
+        list: a list of path data for navigation as illustrated above.
 
     """
     path_info = []
@@ -176,18 +176,16 @@ def get_origin_visits(origin_info):
         origin_id (int): the id of the swh origin to fetch visits from
 
     Returns:
-        A list of dict describing the origin visits::
+        list: A list of dict describing the origin visits with the
+        following keys:
 
-            [{'date': <UTC visit date in ISO format>,
-              'origin': <origin id>,
-              'status': <'full' | 'partial'>,
-              'visit': <visit id>
-             },
-             ...
-            ]
+            * **date**: UTC visit date in ISO format,
+            * **origin**: the origin id
+            * **status**: the visit status, either *full* or *partial*
+            * **visit**: the visit id
 
     Raises:
-        NotFoundExc if the origin is not found
+        NotFoundExc: if the origin is not found
     """
     cache_entry_id = 'origin_%s_visits' % origin_info['id']
     cache_entry = cache.get(cache_entry_id)
@@ -248,7 +246,7 @@ def get_swh_persistent_id(object_type, object_id, scheme_version=1):
         str: the swh object persistent identifier
 
     Raises:
-        BadInputExc if the provided parameters do not enable to
+        BadInputExc: if the provided parameters do not enable to
             generate a valid identifier
     """
     try:
