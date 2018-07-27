@@ -225,7 +225,7 @@ def revision_log_browse(request, sha1_git):
             link_attrs={'class': 'btn btn-default btn-sm',
                         'role': 'button'})
 
-    return render(request, 'revision-log.html',
+    return render(request, 'browse/revision-log.html',
                   {'heading': 'Revision history',
                    'swh_object_name': 'Revision history',
                    'swh_object_metadata': None,
@@ -499,7 +499,7 @@ def revision_browse(request, sha1_git, extra_path=None):
             context_found = 'origin: %s' % origin_info['url']
         heading += ' - %s' % context_found
 
-    return render(request, 'revision.html',
+    return render(request, 'browse/revision.html',
                   {'heading': heading,
                    'swh_object_name': 'Revision',
                    'swh_object_metadata': revision_data,

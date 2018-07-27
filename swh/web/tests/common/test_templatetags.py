@@ -3,14 +3,13 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
-
 from nose.tools import istest
 
 from swh.web.common import swh_templatetags
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class SWHTemplateTagsTest(unittest.TestCase):
+class SWHTemplateTagsTest(SWHWebTestCase):
     @istest
     def urlize_api_links_api(self):
         # update api link with html links content with links

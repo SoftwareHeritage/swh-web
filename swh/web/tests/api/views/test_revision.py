@@ -12,10 +12,10 @@ from swh.web.api.views.revision import (
     _revision_directory_by
 )
 
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class ReleaseApiTestCase(SWHWebTestBase, APITestCase):
+class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.revision.service')
     @istest

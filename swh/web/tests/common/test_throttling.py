@@ -9,7 +9,6 @@ from swh.web.settings.tests import (
     scope3_limiter_rate, scope3_limiter_rate_post
 )
 
-from django.test import TestCase
 from django.conf.urls import url
 from django.core.cache import cache
 from django.test.utils import override_settings
@@ -24,6 +23,7 @@ from nose.tools import istest, nottest
 from swh.web.common.throttling import (
     SwhWebRateThrottle, throttle_scope
 )
+from swh.web.tests.testcase import SWHWebTestCase
 
 
 class MockViewScope1(APIView):
@@ -75,7 +75,7 @@ urlpatterns = [
 
 
 @override_settings(ROOT_URLCONF=__name__)
-class ThrottlingTests(TestCase):
+class ThrottlingTests(SWHWebTestCase):
     def setUp(self):
         """
         Reset the cache so that no throttles will be active

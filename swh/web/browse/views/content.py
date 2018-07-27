@@ -269,7 +269,7 @@ def content_display(request, query_string):
         content_path = '/'.join([bc['name'] for bc in breadcrumbs])
         heading += ' - %s' % content_path
 
-    return render(request, 'content.html',
+    return render(request, 'browse/content.html',
                   {'heading': heading,
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,

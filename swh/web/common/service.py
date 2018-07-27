@@ -239,7 +239,7 @@ def lookup_origin(origin):
         if 'id' in origin and origin['id']:
             msg = 'Origin with id %s not found!' % origin['id']
         else:
-            msg = 'Origin of type %s and url %s not found!' % \
+            msg = 'Origin with type %s and url %s not found!' % \
                 (origin['type'], origin['url'])
         raise NotFoundExc(msg)
     return converters.from_origin(origin_info)

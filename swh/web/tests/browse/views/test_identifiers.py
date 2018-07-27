@@ -7,11 +7,10 @@
 
 from unittest.mock import patch
 from nose.tools import istest
-from django.test import TestCase
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 from .data.content_test_data import stub_content_text_data
 
@@ -24,7 +23,7 @@ from .data.release_test_data import stub_release
 swh_id_prefix = 'swh:1:'
 
 
-class SwhBrowseIdTest(SWHWebTestBase, TestCase):
+class SwhBrowseIdTest(SWHWebTestCase):
 
     @istest
     def content_id_browse(self):

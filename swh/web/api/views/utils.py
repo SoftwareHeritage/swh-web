@@ -52,7 +52,7 @@ def api_lookup(lookup_fn, *args,
 
 @api_view(['GET', 'HEAD'])
 def api_home(request):
-    return Response({}, template_name='api.html')
+    return Response({}, template_name='api/api.html')
 
 
 APIUrls.add_url_pattern(r'^$', api_home, view_name='api-homepage')
@@ -70,4 +70,4 @@ def api_endpoints(request):
     env = {
         'doc_routes': sorted(routes.items())
     }
-    return Response(env, template_name="api-endpoints.html")
+    return Response(env, template_name="api/endpoints.html")

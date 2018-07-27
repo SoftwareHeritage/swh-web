@@ -4,16 +4,16 @@
 # See top-level LICENSE file for more information
 
 import datetime
-import unittest
 
 from nose.tools import istest
 from unittest.mock import patch
 
 from swh.web.common import utils
 from swh.web.common.exc import BadInputExc
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class UtilsTestCase(unittest.TestCase):
+class UtilsTestCase(SWHWebTestCase):
     @istest
     def shorten_path_noop(self):
         noops = [

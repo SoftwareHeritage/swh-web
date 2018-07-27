@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2015-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+
+{% block title %} Endpoints &ndash; Software Heritage API {% endblock %}
+
+{% block navbar-content %}
+<div class="bread-crumbs">
+  <ul>
+    <li><a href="/api/"><h4>Web API</h4></a></li>
+    <li class="bc-no-root"><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
+    <li class="bc-no-root">endpoints</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="swh-api-doc">
+  <p>
+    Below you can find a list of the available endpoints for version 1 of the
+    Software Heritage API. For a more general introduction please refer to
+    the <a href="/api/">API overview</a>.
+  </p>
+
+  <p>
+    Endpoints marked "available" are considered stable for the current version
+    of the API; endpoints marked "upcoming" are work in progress that will be
+    stabilized in the near future.
+  </p>
+
+  <noscript>
+    <ul>
+      {% for route, doc in doc_routes %}
+        <li><a href="#{{ route }}">{{ route }}</a></li>
+      {% endfor %}
+    </ul>
+  </noscript>
+</div>
+
+<div class="swh-api-doc table-responsive">
+  <table class="table table-striped search-res swh-table">
+    <col width="200">
+    <thead class="thead-default">
+      <th>Endpoint</th>
+      <th>Status</th>
+      <th>Description</th>
+    </thead>
+    <tbody>
+      {% for route, doc in doc_routes %}
+        <tr class="swh-api-doc-route {% for tag in doc.tags %} swh-api-doc-route-{{ tag }} {% endfor %}">
+          {% if doc.tags|length > 0 %}
+            <td id="{{ route }}">{% url doc.route_view_name %}</td>
+            <td>{{ doc.tags|join:', ' }}</td>
+          {% else %}
+            <td id="{{ route }}"><a href="{% url doc.route_view_name %}">{% url doc.route_view_name %}</a></td>
+            <td>available</td>
+          {% endif %}
+          <td>{{ doc.doc_intro | safe_docstring_display | safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script type="text/javascript">
+  swh.webapp.initPage('api');
+  swh.webapp.highlightCode(false);
+  $(document).ready(function() {
+    $('table.swh-table').DataTable({
+      "paging": false,
+      "info": false,
+      "order": [[1, "asc"]]
+    });
+  });
+</script>
+{% endblock %}
