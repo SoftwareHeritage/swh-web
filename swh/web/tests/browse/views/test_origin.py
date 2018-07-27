@@ -8,7 +8,6 @@
 from unittest.mock import patch
 from nose.tools import istest, nottest
 
-from django.test import TestCase
 from django.utils.html import escape
 
 from swh.web.common.exc import NotFoundExc
@@ -16,7 +15,7 @@ from swh.web.common.utils import (
     reverse, gen_path_info, format_utc_iso_date,
     parse_timestamp, get_swh_persistent_id
 )
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 from .data.origin_test_data import (
     origin_info_test_data,
@@ -41,7 +40,7 @@ from .data.content_test_data import (
 stub_origin_info_no_type = dict(stub_origin_info)
 stub_origin_info_no_type['type'] = None
 
-class SwhBrowseOriginTest(SWHWebTestBase, TestCase):
+class SwhBrowseOriginTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.origin.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_visits')

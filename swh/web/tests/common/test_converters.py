@@ -4,16 +4,16 @@
 # See top-level LICENSE file for more information
 
 import datetime
-import unittest
 
 from nose.tools import istest
 
 from swh.model import hashutil
 
 from swh.web.common import converters
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class ConvertersTestCase(unittest.TestCase):
+class ConvertersTestCase(SWHWebTestCase):
 
     @istest
     def fmap(self):

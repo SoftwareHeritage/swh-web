@@ -130,7 +130,7 @@ def directory_browse(request, sha1_git, path=None):
         dir_path = '/'.join([bc['name'] for bc in breadcrumbs]) + '/'
         heading += ' - %s' % dir_path
 
-    return render(request, 'directory.html',
+    return render(request, 'browse/directory.html',
                   {'heading': heading,
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,

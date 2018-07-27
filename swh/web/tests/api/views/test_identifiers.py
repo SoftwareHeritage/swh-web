@@ -11,10 +11,10 @@ from swh.model.identifiers import REVISION
 
 from swh.web.common.utils import reverse
 from swh.web.common.exc import NotFoundExc
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class SwhIdsApiTestCase(SWHWebTestBase, APITestCase):
+class SwhIdsApiTestCase(SWHWebTestCase, APITestCase):
 
     @istest
     @patch('swh.web.api.views.identifiers.service')

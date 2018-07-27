@@ -7,10 +7,10 @@ from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class DirectoryApiTestCase(SWHWebTestBase, APITestCase):
+class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.directory.service')
     @istest

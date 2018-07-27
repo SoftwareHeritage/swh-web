@@ -9,10 +9,10 @@ from unittest.mock import patch
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class StatApiTestCase(SWHWebTestBase, APITestCase):
+class StatApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.stat.service')
     @istest
     def api_1_stat_counters_raise_error(self, mock_service):

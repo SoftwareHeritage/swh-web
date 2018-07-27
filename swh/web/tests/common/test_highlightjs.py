@@ -3,14 +3,13 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
-
 from nose.tools import istest
 
 from swh.web.common import highlightjs
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class HighlightJsTestCase(unittest.TestCase):
+class HighlightJsTestCase(SWHWebTestCase):
 
     @istest
     def get_hljs_language_from_mime_type(self):

@@ -126,6 +126,8 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     releases = snapshot_context['releases']
     url_args = snapshot_context['url_args']
     query_params = snapshot_context['query_params']
+    timestamp = format_utc_iso_date(snapshot_context['visit_info']['date'],
+                                    '%Y-%m-%dT%H:%M:%SZ')
 
     browse_view_name = 'browse-' + swh_type + '-' + browse_context
 
@@ -357,7 +359,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     heading = 'Directory - %s - %s - %s' %\
         (dir_path, snapshot_context['branch'], context_found)
 
-    return render(request, 'directory.html',
+    return render(request, 'browse/directory.html',
                   {'heading': heading,
                    'swh_object_name': 'Directory',
                    'swh_object_metadata': dir_metadata,
@@ -515,7 +517,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     heading = 'Content - %s - %s - %s' %\
         (content_path, snapshot_context['branch'], context_found)
 
-    return render(request, 'content.html',
+    return render(request, 'browse/content.html',
                   {'heading': heading,
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
@@ -660,7 +662,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     heading = 'Revision history - %s - %s' %\
         (snapshot_context['branch'], context_found)
 
-    return render(request, 'revision-log.html',
+    return render(request, 'browse/revision-log.html',
                   {'heading': heading,
                    'swh_object_name': 'Revision history',
                    'swh_object_metadata': revision_metadata,
@@ -712,8 +714,8 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
         else:
             revision_url = reverse('browse-revision',
                                    kwargs={'sha1_git': branch['revision']},
-                                   query_params={'origin_type': origin_info['type'], # noqa
-                                                 'origin': origin_info['url']}) # noqa
+                                   query_params={'origin_type': origin_type,
+                                                 'origin': origin_info['url']})
         query_params['branch'] = branch['name']
         directory_url = reverse(browse_view_name,
                                 kwargs=url_args,
@@ -746,7 +748,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
     else:
         heading += 'snapshot: %s' % snapshot_id
 
-    return render(request, 'branches.html',
+    return render(request, 'browse/branches.html',
                   {'heading': heading,
                    'swh_object_name': 'Branches',
                    'swh_object_metadata': {},
@@ -792,8 +794,8 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
         else:
             release_url = reverse('browse-release',
                                   kwargs={'sha1_git': release['id']},
-                                  query_params={'origin_type': origin_info['type'], # noqa
-                                                'origin': origin_info['url']}) # noqa
+                                  query_params={'origin_type': origin_type,
+                                                'origin': origin_info['url']})
         query_params['release'] = release['name']
         del query_params['release']
         release['release_url'] = release_url
@@ -822,7 +824,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
     else:
         heading += 'snapshot: %s' % snapshot_id
 
-    return render(request, 'releases.html',
+    return render(request, 'browse/releases.html',
                   {'heading': heading,
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,

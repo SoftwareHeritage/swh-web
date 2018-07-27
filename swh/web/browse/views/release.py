@@ -162,7 +162,7 @@ def release_browse(request, sha1_git):
             context_found = 'origin: %s' % origin_info['url']
         heading += ' - %s' % context_found
 
-    return render(request, 'release.html',
+    return render(request, 'browse/release.html',
                   {'heading': heading,
                    'swh_object_name': 'Release',
                    'swh_object_metadata': release_data,

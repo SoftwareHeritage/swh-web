@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
-
 from unittest.mock import patch
 from nose.tools import istest
 
@@ -12,9 +10,10 @@ from swh.model import hashutil
 
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class QueryTestCase(unittest.TestCase):
+class QueryTestCase(SWHWebTestCase):
     @istest
     def parse_hash_malformed_query_with_more_than_2_parts(self):
         with self.assertRaises(BadInputExc):

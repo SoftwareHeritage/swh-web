@@ -8,14 +8,13 @@ import base64
 from unittest.mock import patch
 from nose.tools import istest
 
-from django.test import TestCase
 from django.utils.html import escape
 from django.utils.encoding import DjangoUnicodeDecodeError
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 from .data.content_test_data import (
     stub_content_text_data,
@@ -30,7 +29,7 @@ from .data.content_test_data import (
 )
 
 
-class SwhBrowseContentTest(SWHWebTestBase, TestCase):
+class SwhBrowseContentTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.content.request_content')
     @istest
@@ -48,7 +47,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('content.html')
+        self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, '<code class="cpp">')
         self.assertContains(resp, escape(stub_content_text_data['raw_data']))
@@ -76,7 +75,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('content.html')
+        self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, '<code class="nohighlight-swh">')
         self.assertContains(resp, escape(stub_content_text_no_highlight_data['raw_data'])) # noqa
@@ -110,7 +109,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         try:
             resp = self.client.get(url)
             self.assertEquals(resp.status_code, 200)
-            self.assertTemplateUsed('content.html')
+            self.assertTemplateUsed('browse/content.html')
             swh_cnt_id = get_swh_persistent_id('content', sha1_git)
             swh_cnt_id_url = reverse('browse-swh-id',
                                      kwargs={'swh_id': swh_cnt_id})
@@ -135,7 +134,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('content.html')
+        self.assertTemplateUsed('browse/content.html')
 
         pngEncoded = base64.b64encode(stub_content_bin_data['raw_data']) \
                            .decode('utf-8')
@@ -155,7 +154,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
 
         resp = self.client.get(url)
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('content.html')
+        self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, '<code class="cpp">')
         self.assertContains(resp, escape(stub_content_text_data['raw_data']))
@@ -284,7 +283,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
 
         resp = self.client.get(url)
         self.assertEquals(resp.status_code, 404)
-        self.assertTemplateUsed('content.html')
+        self.assertTemplateUsed('browse/content.html')
 
     @patch('swh.web.browse.views.content.request_content')
     @istest
@@ -300,7 +299,7 @@ class SwhBrowseContentTest(SWHWebTestBase, TestCase):
         resp = self.client.get(url)
 
         self.assertEquals(resp.status_code, 200)
-        self.assertTemplateUsed('content.html')
+        self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, 'Content is too large to be displayed')
         self.assertContains(resp, url_raw)

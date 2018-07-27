@@ -9,10 +9,10 @@ from unittest.mock import patch
 
 from swh.web.common.exc import BadInputExc
 
-from swh.web.tests.testbase import SWHWebTestBase
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class EntityApiTestCase(SWHWebTestBase, APITestCase):
+class EntityApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.entity.service')
     @istest

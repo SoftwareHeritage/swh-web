@@ -43,7 +43,7 @@ function populateOriginSearchResultsTable(data, offset) {
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
       let latestSnapshotUrl = Urls.browse_origin_latest_snapshot(elem.id);
-      fetch(latestSnapshotUrl, {credentials: 'same-origin'})
+      fetch(latestSnapshotUrl)
         .then(response => response.json())
         .then(data => {
           let originId = elem.id;
@@ -88,7 +88,7 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
 
   clearOriginSearchResultsTable();
   $('.swh-loading').addClass('show');
-  fetch(searchUrl, {credentials: 'same-origin'})
+  fetch(searchUrl)
     .then(handleFetchError)
     .then(response => response.json())
     .then(data => {
@@ -128,7 +128,7 @@ export function initOriginSearch() {
       inSearch = true;
       // first try to resolve a swh persistent identifier
       let resolvePidUrl = Urls.resolve_swh_pid(patterns);
-      fetch(resolvePidUrl, {credentials: 'same-origin'})
+      fetch(resolvePidUrl)
         .then(handleFetchError)
         .then(response => response.json())
         .then(data => {

@@ -3,15 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import unittest
-
 from unittest.mock import patch, call
 from nose.tools import istest, nottest
 
 from swh.web.api import utils
+from swh.web.tests.testcase import SWHWebTestCase
 
 
-class UtilsTestCase(unittest.TestCase):
+class UtilsTestCase(SWHWebTestCase):
     def setUp(self):
         self.maxDiff = None
         self.url_map = [dict(rule='/other/<slug>',
