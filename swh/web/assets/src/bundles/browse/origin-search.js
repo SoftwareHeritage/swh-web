@@ -73,6 +73,9 @@ function populateOriginSearchResultsTable(data, offset) {
     $('#origins-prev-results-button').addClass('disabled');
   }
   inSearch = false;
+  if (typeof Storage !== 'undefined') {
+    sessionStorage.setItem('last-swh-origin-search-offset', offset);
+  }
   setTimeout(() => {
     window.scrollTo(0, 0);
   });
@@ -116,7 +119,8 @@ export function initOriginSearch() {
       if (data) {
         $('#origins-url-patterns').val(originPatterns);
         offset = parseInt(offset);
-        populateOriginSearchResultsTable(JSON.parse(data), offset);
+        currentData = JSON.parse(data);
+        populateOriginSearchResultsTable(currentData, offset);
       }
     }
 
@@ -162,7 +166,7 @@ export function initOriginSearch() {
       }
       inSearch = true;
       offset += perPage;
-      if (!currentData || offset % limit === 0) {
+      if (!currentData || (offset >= limit && offset % limit === 0)) {
         searchOrigins(originPatterns, limit, offset, offset);
       } else {
         populateOriginSearchResultsTable(currentData, offset);
