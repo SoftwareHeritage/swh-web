@@ -24,7 +24,7 @@ Build-Depends: curl,
                python3-yaml,
                python3-swh.core (>= 0.0.40~),
                python3-swh.model (>= 0.0.25~),
-               python3-swh.storage (>= 0.0.101~),
+               python3-swh.storage (>= 0.0.104~),
                python3-swh.indexer.storage (>= 0.0.52~),
                python3-swh.vault (>= 0.0.20~)
 Standards-Version: 3.9.6
@@ -34,7 +34,7 @@ Package: python3-swh.web
 Architecture: all
 Depends: python3-swh.core (>= 0.0.40~),
          python3-swh.model (>= 0.0.25~),
-         python3-swh.storage (>= 0.0.101~),
+         python3-swh.storage (>= 0.0.104~),
          python3-swh.indexer.storage (>= 0.0.52~),
          python3-swh.vault (>= 0.0.20~),
          ${misc:Depends},

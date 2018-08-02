@@ -95,7 +95,8 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
   let patternsPermut = [];
   heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
   let regex = patternsPermut.join('|');
-  let searchUrl = Urls.browse_origin_search(regex) + `?limit=${limit}&offset=${searchOffset}&regexp=true`;
+  let withVisit = $('#swh-search-origins-with-visit').prop('checked');
+  let searchUrl = Urls.browse_origin_search(regex) + `?limit=${limit}&offset=${searchOffset}&regexp=true&with_visit=${withVisit}`;
 
   clearOriginSearchResultsTable();
   $('.swh-loading').addClass('show');
