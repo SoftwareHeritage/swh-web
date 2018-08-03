@@ -199,6 +199,8 @@ def _origin_search(request, url_pattern):
     limit = int(request.GET.get('limit', '50'))
     regexp = request.GET.get('regexp', 'false')
 
+    url_pattern = url_pattern.replace('///', '\\')
+
     results = service.search_origin(url_pattern, offset, limit,
                                     bool(strtobool(regexp)))
 

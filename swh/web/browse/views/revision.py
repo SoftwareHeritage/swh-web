@@ -371,7 +371,9 @@ def revision_browse(request, sha1_git, extra_path=None):
     revision_data['synthetic'] = revision['synthetic']
     revision_data['type'] = revision['type']
 
-    message_lines = revision['message'].split('\n')
+    message_lines = ['None']
+    if revision['message']:
+        message_lines = revision['message'].split('\n')
 
     parents_links = '<b>%s parent%s</b> ' %  \
         (len(revision['parents']),
