@@ -167,6 +167,19 @@ def request_content(query_string, max_size=content_display_max_size,
                     content_data['raw_data'] = \
                         content_data['raw_data'].decode(encoding, 'replace')\
                                                 .encode('utf-8')
+            else:
+                # file may detect an iso-8859-* encoded content as binary
+                # so try to decode it for display
+                encodings = ['iso-8859-%s' % i for i in range(1, 17)]
+                for encoding in encodings:
+                    try:
+                        content_data['raw_data'] = \
+                                content_data['raw_data'].decode(encoding)\
+                                                        .encode('utf-8')
+                    except Exception:
+                        pass
+                    else:
+                        break
     else:
         content_data['raw_data'] = None
 
