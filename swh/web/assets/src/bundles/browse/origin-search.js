@@ -73,14 +73,25 @@ function populateOriginSearchResultsTable(data, offset) {
     $('#origins-prev-results-button').addClass('disabled');
   }
   inSearch = false;
+  if (typeof Storage !== 'undefined') {
+    sessionStorage.setItem('last-swh-origin-search-offset', offset);
+  }
   setTimeout(() => {
     window.scrollTo(0, 0);
   });
 }
 
+function escapeStringRegexp(str) {
+  let matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
+  return str.replace(matchOperatorsRe, '\\\\\\$&');
+}
+
 function searchOrigins(patterns, limit, searchOffset, offset) {
   originPatterns = patterns;
   let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
+  for (let i = 0; i < patternsArray.length; ++i) {
+    patternsArray[i] = escapeStringRegexp(patternsArray[i]);
+  }
   let patternsPermut = [];
   heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
   let regex = patternsPermut.join('|');
@@ -116,7 +127,8 @@ export function initOriginSearch() {
       if (data) {
         $('#origins-url-patterns').val(originPatterns);
         offset = parseInt(offset);
-        populateOriginSearchResultsTable(JSON.parse(data), offset);
+        currentData = JSON.parse(data);
+        populateOriginSearchResultsTable(currentData, offset);
       }
     }
 
@@ -162,7 +174,7 @@ export function initOriginSearch() {
       }
       inSearch = true;
       offset += perPage;
-      if (!currentData || offset % limit === 0) {
+      if (!currentData || (offset >= limit && offset % limit === 0)) {
         searchOrigins(originPatterns, limit, offset, offset);
       } else {
         populateOriginSearchResultsTable(currentData, offset);
