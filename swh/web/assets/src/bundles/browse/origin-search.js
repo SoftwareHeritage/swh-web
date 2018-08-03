@@ -81,9 +81,17 @@ function populateOriginSearchResultsTable(data, offset) {
   });
 }
 
+function escapeStringRegexp(str) {
+  let matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
+  return str.replace(matchOperatorsRe, '\\\\\\$&');
+}
+
 function searchOrigins(patterns, limit, searchOffset, offset) {
   originPatterns = patterns;
   let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
+  for (let i = 0; i < patternsArray.length; ++i) {
+    patternsArray[i] = escapeStringRegexp(patternsArray[i]);
+  }
   let patternsPermut = [];
   heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
   let regex = patternsPermut.join('|');
