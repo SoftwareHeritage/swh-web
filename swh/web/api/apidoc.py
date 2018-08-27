@@ -180,6 +180,16 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
             self.data['examples'].append(
                 '/api/1/' + re.sub('.*`(.*)`.*', r'\1', text))
 
+    def visit_bullet_list(self, node):
+        # bullet list in endpoint description
+        if not self.field_list_visited:
+            self.data['description'] += '\n\n'
+            for child in node.traverse():
+                # process list item
+                if isinstance(child, docutils.nodes.paragraph):
+                    line_text = self.process_paragraph(str(child))
+                    self.data['description'] += '\t* %s\n' % line_text
+
     def unknown_visit(self, node):
         pass
 

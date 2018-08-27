@@ -7,6 +7,7 @@ from swh.core import config
 from swh.storage import get_storage
 from swh.indexer.storage import get_indexer_storage
 from swh.vault.api.client import RemoteVaultClient
+from swh.scheduler import get_scheduler
 
 
 DEFAULT_CONFIG = {
@@ -49,7 +50,20 @@ DEFAULT_CONFIG = {
                     'GET': '60/m'
                 },
                 'exempted_networks': ['127.0.0.0/8']
+            },
+            'swh_save_origin': {
+                'limiter_rate': {
+                    'default': '120/h',
+                    'POST': '10/h'
+                },
+                'exempted_networks': ['127.0.0.0/8']
             }
+        }
+    }),
+    'scheduler': ('dict', {
+        'cls': 'remote',
+        'args': {
+            'url': 'http://localhost:5008/'
         }
     })
 }
@@ -69,8 +83,9 @@ def get_config(config_file='webapp/webapp'):
         config.prepare_folders(swhweb_config, 'log_dir')
         swhweb_config['storage'] = get_storage(**swhweb_config['storage'])
         swhweb_config['vault'] = RemoteVaultClient(swhweb_config['vault'])
-        swhweb_config['indexer_storage'] = get_indexer_storage(
-            **swhweb_config['indexer_storage'])
+        swhweb_config['indexer_storage'] = \
+            get_indexer_storage(**swhweb_config['indexer_storage'])
+        swhweb_config['scheduler'] = get_scheduler(**swhweb_config['scheduler']) # noqa
     return swhweb_config
 
 
@@ -93,3 +108,10 @@ def indexer_storage():
 
     """
     return get_config()['indexer_storage']
+
+
+def scheduler():
+    """Return the current application's SWH scheduler.
+
+    """
+    return get_config()['scheduler']
