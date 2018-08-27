@@ -754,11 +754,14 @@ def _format_log_entries(revision_log, per_page, snapshot_context=None):
     for i, log in enumerate(revision_log):
         if i == per_page:
             break
-        author_name = log['author']['name'] or log['author']['fullname']
+        author_name = 'None'
+        author_link = 'None'
+        if log['author']:
+            author_name = log['author']['name'] or log['author']['fullname']
+            author_link = gen_person_link(log['author']['id'], author_name,
+                                          snapshot_context)
         revision_log_data.append(
-            {'author': gen_person_link(log['author']['id'],
-                                       author_name,
-                                       snapshot_context),
+            {'author': author_link,
              'revision': gen_revision_link(log['id'], True, snapshot_context),
              'message': log['message'],
              'date': format_utc_iso_date(log['date']),
