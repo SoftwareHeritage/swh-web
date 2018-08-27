@@ -2,6 +2,8 @@
 
 export PYBUILD_NAME=swh.web
 export PYBUILD_TEST_ARGS=--with-doctest -sv ./swh/web/tests
+export PYBUILD_BEFORE_TEST=cd {build_dir}; python3 swh/web/manage.py migrate
+export PYBUILD_AFTER_TEST=cd {build_dir}; rm -f swh/web/settings/testdb.sqlite3
 export DJANGO_SETTINGS_MODULE=swh.web.settings.tests
 
 %:

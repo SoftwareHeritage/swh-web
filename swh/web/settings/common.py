@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'swh.web.common',
     'swh.web.api',
     'swh.web.browse',
     'webpack_loader',
@@ -86,9 +87,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'swh.web.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
     'default': {
