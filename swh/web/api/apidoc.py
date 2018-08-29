@@ -154,7 +154,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         if isinstance(node.parent, docutils.nodes.block_quote):
             text = self.process_paragraph(str(node))
             # endpoint description
-            if not text.startswith('**'):
+            if not text.startswith('**') and self.data['description'] != text:
                 self.data['description'] += '\n\n' if self.data['description'] else '' # noqa
                 self.data['description'] += text
             # http methods
