@@ -91,7 +91,7 @@ content_display_max_size = get_config()['content_display_max_size']
 
 
 def request_content(query_string, max_size=content_display_max_size,
-                    raise_if_unavailable=True):
+                    raise_if_unavailable=True, reencode=True):
     """Function that retrieves a SWH content from the SWH archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -156,7 +156,7 @@ def request_content(query_string, max_size=content_display_max_size,
                     get_mimetype_and_encoding_for_content(content_data['raw_data']) # noqa
 
             # encode textual content to utf-8 if needed
-            if mimetype.startswith('text/'):
+            if reencode and mimetype.startswith('text/'):
                 # probably a malformed UTF-8 content, reencode it
                 # by replacing invalid chars with a substitution one
                 if encoding == 'unknown-8bit':
@@ -167,7 +167,7 @@ def request_content(query_string, max_size=content_display_max_size,
                     content_data['raw_data'] = \
                         content_data['raw_data'].decode(encoding, 'replace')\
                                                 .encode('utf-8')
-            else:
+            elif reencode and mimetype.startswith('application/octet-stream'):
                 # file may detect an iso-8859-* encoded content as binary
                 # so try to decode it for display
                 encodings = ['iso-8859-%s' % i for i in range(1, 17)]
