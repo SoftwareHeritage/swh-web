@@ -120,6 +120,8 @@ def api_origin_search(request, url_pattern):
         :query int limit: the maximum number of found origins to return
         :query boolean regexp: if true, consider provided pattern as a regular expression
             and search origins whose urls match it
+        :query boolean with_visit: if true, only return origins with at least one visit
+            by Software heritage
 
         :>jsonarr number id: the origin unique identifier
         :>jsonarr string origin_visits_url: link to in order to get information about the SWH
@@ -145,9 +147,11 @@ def api_origin_search(request, url_pattern):
     offset = int(request.query_params.get('offset', '0'))
     limit = int(request.query_params.get('limit', '70'))
     regexp = request.query_params.get('regexp', 'false')
+    with_visit = request.query_params.get('with_visit', 'false')
 
     results = api_lookup(service.search_origin, url_pattern, offset, limit,
-                         bool(strtobool(regexp)), enrich_fn=_enrich_origin)
+                         bool(strtobool(regexp)), bool(strtobool(with_visit)),
+                         enrich_fn=_enrich_origin)
 
     nb_results = len(results)
     if nb_results == limit:

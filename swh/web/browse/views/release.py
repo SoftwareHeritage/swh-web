@@ -65,10 +65,14 @@ def release_browse(request, sha1_git):
 
     release_data = {}
 
-    author_name = release['author']['name'] or release['author']['fullname']
-    release_data['author'] = \
-        gen_person_link(release['author']['id'], author_name,
-                        snapshot_context)
+    author_name = 'None'
+    release_data['author'] = 'None'
+    if release['author']:
+        author_name = release['author']['name'] or \
+                      release['author']['fullname']
+        release_data['author'] = \
+            gen_person_link(release['author']['id'], author_name,
+                            snapshot_context)
     release_data['date'] = format_utc_iso_date(release['date'])
     release_data['id'] = sha1_git
     release_data['name'] = release['name']

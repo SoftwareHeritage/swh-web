@@ -11,6 +11,7 @@ from nose.tools import istest
 from django.utils.html import escape
 from django.utils.encoding import DjangoUnicodeDecodeError
 
+from swh.web.browse.utils import get_mimetype_and_encoding_for_content
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
@@ -221,6 +222,27 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEqual(resp['Content-disposition'],
                          'filename=%s' % filename)
         self.assertEqual(resp.content, stub_content_text_data['raw_data'])
+
+    @patch('swh.web.browse.utils.service')
+    @istest
+    def test_content_raw_no_utf8_text(self, mock_service):
+        mock_service.lookup_content.return_value = \
+            non_utf8_encoded_content_data
+
+        mock_service.lookup_content_raw.return_value = \
+            {'data': non_utf8_encoded_content}
+
+        mock_service.lookup_content_filetype.return_value = None
+        mock_service.lookup_content_language.return_value = None
+        mock_service.lookup_content_license.return_value = None
+
+        url = reverse('browse-content-raw',
+                      kwargs={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
+
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 200)
+        _, encoding = get_mimetype_and_encoding_for_content(resp.content)
+        self.assertEqual(encoding, non_utf8_encoding)
 
     @patch('swh.web.browse.views.content.request_content')
     @istest

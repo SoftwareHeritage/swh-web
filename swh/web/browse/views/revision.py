@@ -319,13 +319,19 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     revision_data = {}
 
-    author_name = revision['author']['name'] or revision['author']['fullname']
-    revision_data['author'] = \
-        gen_person_link(revision['author']['id'], author_name,
-                        snapshot_context)
-    revision_data['committer'] = \
-        gen_person_link(revision['committer']['id'],
-                        revision['committer']['name'], snapshot_context)
+    author_name = 'None'
+    revision_data['author'] = 'None'
+    if revision['author']:
+        author_name = revision['author']['name'] or \
+                      revision['author']['fullname']
+        revision_data['author'] = \
+            gen_person_link(revision['author']['id'], author_name,
+                            snapshot_context)
+    revision_data['committer'] = 'None'
+    if revision['committer']:
+        revision_data['committer'] = \
+            gen_person_link(revision['committer']['id'],
+                            revision['committer']['name'], snapshot_context)
     revision_data['committer date'] = format_utc_iso_date(
         revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])

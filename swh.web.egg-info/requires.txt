@@ -16,5 +16,5 @@ sphinxcontrib-httpdomain
 swh.core>=0.0.40
 swh.indexer>=0.0.52
 swh.model>=0.0.25
-swh.storage>=0.0.101
+swh.storage>=0.0.104
 swh.vault>=0.0.20

@@ -245,7 +245,8 @@ def lookup_origin(origin):
     return converters.from_origin(origin_info)
 
 
-def search_origin(url_pattern, offset=0, limit=50, regexp=False):
+def search_origin(url_pattern, offset=0, limit=50, regexp=False,
+                  with_visit=False):
     """Search for origins whose urls contain a provided string pattern
     or match a provided regular expression.
 
@@ -258,7 +259,8 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False):
         lisf of origin information as dict.
 
     """
-    origins = storage.origin_search(url_pattern, offset, limit, regexp)
+    origins = storage.origin_search(url_pattern, offset, limit, regexp,
+                                    with_visit)
     return map(converters.from_origin, origins)
 
 
