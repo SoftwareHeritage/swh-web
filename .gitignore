@@ -13,6 +13,7 @@ docs/build/
 docs/uri-scheme.md
 docs/dev-info.md
 db.sqlite3
+testdb.sqlite3
 .vscode/
 .directory
 node_modules/
