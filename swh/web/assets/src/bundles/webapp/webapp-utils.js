@@ -68,7 +68,7 @@ export function initPage(page) {
     $(`.swh-${page}-link`).addClass('active');
 
     // triggered when unloading the current page
-    window.onunload = () => {
+    $(window).on('unload', () => {
       // backup sidebar state (collapsed/expanded)
       let sidebarCollapsed = $('body').hasClass('sidebar-collapse');
       localStorage.setItem('swh-sidebar-collapsed', JSON.stringify(sidebarCollapsed));
@@ -76,7 +76,7 @@ export function initPage(page) {
       if (page === 'browse') {
         sessionStorage.setItem('last-browse-page', window.location);
       }
-    };
+    });
 
   });
 }
