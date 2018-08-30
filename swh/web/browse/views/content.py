@@ -40,7 +40,8 @@ def content_raw(request, query_string):
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
-        content_data = request_content(query_string, max_size=None)
+        content_data = request_content(query_string, max_size=None,
+                                       reencode=False)
     except Exception as exc:
         return handle_view_exception(request, exc)
 

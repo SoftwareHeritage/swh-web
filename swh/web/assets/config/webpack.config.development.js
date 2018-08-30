@@ -18,7 +18,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const RemoveSourceMapUrlPlugin = require('./webpack-plugins/remove-source-map-url-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
 // webpack-dev-server configuration
@@ -160,22 +159,22 @@ module.exports = {
           options: {
             presets: [
             // use env babel presets to benefit from es6 syntax
-              ['env', {
+              ['@babel/preset-env', {
               // Do not transform es6 module syntax to another module type
               // in order to benefit from dead code elimination (aka tree shaking)
               // when running webpack in production mode
                 'loose': true,
                 'modules': false
-              }],
-              // use stage-0 babel presets to benfit from advanced js features (es2017)
-              'stage-0'
+              }]
             ],
             plugins: [
-            // use babel transform-runtime plugin in order to use aync/await syntax
-              ['transform-runtime', {
-                'polyfill': false,
+              // use babel transform-runtime plugin in order to use aync/await syntax
+              ['@babel/plugin-transform-runtime', {
+                'corejs': 2,
                 'regenerator': true
-              }]
+              }],
+              // use other babel plugins to benefit from advanced js features (es2017)
+              '@babel/plugin-syntax-dynamic-import'
             ]
           }
         }]
