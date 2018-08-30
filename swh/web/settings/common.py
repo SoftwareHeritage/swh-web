@@ -179,6 +179,12 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] [%(levelname)s] %(request)s %(status_code)s', # noqa
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+    },
     'handlers': {
         'console': {
             'level': 'DEBUG',
@@ -190,6 +196,7 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'logging.FileHandler',
             'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
+            'formatter': 'verbose'
         },
     },
     'loggers': {
@@ -197,6 +204,11 @@ LOGGING = {
             'handlers': ['console', 'file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
         }
     },
 }
