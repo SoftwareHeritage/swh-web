@@ -131,6 +131,10 @@ export function initOriginSearch() {
         currentData = JSON.parse(data);
         populateOriginSearchResultsTable(currentData, offset);
       }
+      let withVisit = sessionStorage.getItem('last-swh-origin-with-visit');
+      if (withVisit !== null) {
+        $('#swh-search-origins-with-visit').prop('checked', JSON.parse(withVisit));
+      }
     }
 
     $('#search_origins').submit(event => {
@@ -202,5 +206,13 @@ export function initOriginSearch() {
         fixTableRowsStyle();
       }
     });
+
+    $(window).on('unload', () => {
+      if (typeof Storage !== 'undefined') {
+        sessionStorage.setItem('last-swh-origin-with-visit',
+          JSON.stringify($('#swh-search-origins-with-visit').prop('checked')));
+      }
+    });
+
   });
 }
