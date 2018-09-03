@@ -202,12 +202,15 @@ def _origin_search(request, url_pattern):
 
     url_pattern = url_pattern.replace('///', '\\')
 
-    results = service.search_origin(url_pattern, offset, limit,
-                                    bool(strtobool(regexp)),
-                                    bool(strtobool(with_visit)))
+    try:
+        results = service.search_origin(url_pattern, offset, limit,
+                                        bool(strtobool(regexp)),
+                                        bool(strtobool(with_visit)))
 
-    results = json.dumps(list(results), sort_keys=True, indent=4,
-                         separators=(',', ': '))
+        results = json.dumps(list(results), sort_keys=True, indent=4,
+                             separators=(',', ': '))
+    except Exception as exc:
+        return handle_view_exception(request, exc, html_response=False)
 
     return HttpResponse(results, content_type='application/json')
 
