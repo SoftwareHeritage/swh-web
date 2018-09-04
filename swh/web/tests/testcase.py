@@ -20,7 +20,7 @@ class RemoteStorageAdapter(Storage):
 
 
 def _init_mock_storage(base_url='https://somewhere.org:4321'):
-    """Instanciate a remote storage whose goal is to be mocked in a test
+    """Instantiate a remote storage whose goal is to be mocked in a test
     context.
 
     NOT FOR PRODUCTION

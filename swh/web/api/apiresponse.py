@@ -97,7 +97,7 @@ def make_api_response(request, data, doc_data={}, options={}):
         request: a DRF Request object
         data: raw data to return in the API response
         doc_data: documentation data for HTML response
-        options: optionnal data that can be used to generate the response
+        options: optional data that can be used to generate the response
 
     Returns:
         a DRF Response a object

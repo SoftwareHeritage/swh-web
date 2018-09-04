@@ -44,7 +44,7 @@ httpdomain_doc = """
     :>json array parents: the parents of the revision, i.e. the previous revisions
         that head directly to it, each entry of that array contains an unique parent
         revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-        to get more informations about it
+        to get more information about it
     :>json string type: the type of the revision
 
     **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
@@ -270,7 +270,7 @@ model module for details about how they are computed.'
             {
                 'name': 'parents',
                 'type': 'array',
-                'doc': 'the parents of the revision, i.e. the previous revisions that head directly to it, each entry of that array contains an unique parent revision identifier but also a link to `</api/1/revision/>`_ to get more informations about it'
+                'doc': 'the parents of the revision, i.e. the previous revisions that head directly to it, each entry of that array contains an unique parent revision identifier but also a link to `</api/1/revision/>`_ to get more information about it'
             },
             {
                 'name': 'type',

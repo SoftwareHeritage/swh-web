@@ -50,7 +50,7 @@ Configuration and settings
     * :mod:`swh.web.config`: holds the SWH configuration for the web applications.
     * :mod:`swh.web.doc_config`: utility module used to extend the sphinx configuration
       when building the documentation.
-    * :mod:`swh.web.manage`: Django management module for developpers.
+    * :mod:`swh.web.manage`: Django management module for developers.
     * :mod:`swh.web.urls`: module that holds the whole URI scheme of all
       the web applications.
     * :mod:`swh.web.wsgi`: WSGI module to use when deploying the web applications

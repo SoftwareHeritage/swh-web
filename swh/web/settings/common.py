@@ -57,7 +57,7 @@ MIDDLEWARE = [
 ]
 
 # Compress all assets (static ones and dynamically generated html)
-# served by django in a local development environement context.
+# served by django in a local development environment context.
 # In a production environment, assets compression will be directly
 # handled by web servers like apache or nginx.
 if swh_web_config['debug']:

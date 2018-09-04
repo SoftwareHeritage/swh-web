@@ -31,7 +31,7 @@ def api_stats(request):
             to a branch found during a SWH crawl of a repository) in the SWH archive
         :>json number origin: current number of SWH origins (an origin is a "place" where code
             source can be found, e.g. a git repository, a tarball, ...) in the SWH archive
-        :>json number person: current number of SWH persons (code source authors or commiters)
+        :>json number person: current number of SWH persons (code source authors or committers)
             in the SWH archive
         :>json number release: current number of SWH releases objects in the SWH archive
         :>json number revision: current number of SWH revision objects (aka commits) in the SWH archive
