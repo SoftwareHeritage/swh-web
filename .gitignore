@@ -17,6 +17,8 @@ testdb.sqlite3
 .vscode/
 .directory
 node_modules/
+package-lock.json
+package.json
 swh/web/static/*.*
 swh/web/static/js/
 swh/web/static/css/
