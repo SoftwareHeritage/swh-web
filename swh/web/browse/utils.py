@@ -157,7 +157,7 @@ def request_content(query_string, max_size=content_display_max_size,
 
             # encode textual content to utf-8 if needed
             if reencode and mimetype.startswith('text/'):
-                # probably a malformed UTF-8 content, reencode it
+                # probably a malformed UTF-8 content, re-encode it
                 # by replacing invalid chars with a substitution one
                 if encoding == 'unknown-8bit':
                     content_data['raw_data'] = \
@@ -516,7 +516,7 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
 
     Args:
         revision_id (str): a SWH revision id
-        shorten_id (boolean): wheter to shorten the revision id to 7
+        shorten_id (boolean): whether to shorten the revision id to 7
             characters for the link text
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing link
@@ -837,7 +837,7 @@ def get_origin_info(origin_url, origin_type=None):
 
     Args:
         origin_url (str): complete url of a SWH origin
-        origin_type (str): optionnal origin type
+        origin_type (str): optional origin type
 
     Returns:
         A dict with the following entries:
@@ -889,7 +889,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
             * origin_releases_url': the url to browse the origin releases
             * origin_visit_url: the url to browse the snapshot of the origin
               found during the visit
-            * url_args: dict containg url arguments to use when browsing in
+            * url_args: dict containing url arguments to use when browsing in
               the context of the origin and its visit
     """ # noqa
     origin_info = None

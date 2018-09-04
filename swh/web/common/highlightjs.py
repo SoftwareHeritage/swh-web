@@ -251,7 +251,7 @@ def get_hljs_language_from_filename(filename):
         filename: input filename
 
     Returns:
-        highlight.js language id or None if no correspondance has been found
+        highlight.js language id or None if no correspondence has been found
     """
     _init_pygments_to_hljs_map()
     if filename:
@@ -271,7 +271,7 @@ def get_hljs_language_from_filename(filename):
             lexer = get_lexer_for_filename(filename)
         except Exception:
             pass
-        # if there is a correspondance between the lexer and an hljs
+        # if there is a correspondence between the lexer and an hljs
         # language, return it
         if lexer and lexer.name in _pygments_lexer_to_hljs_language:
             return _pygments_lexer_to_hljs_language[lexer.name]
@@ -293,7 +293,7 @@ def get_hljs_language_from_mime_type(mime_type):
         mime_type: input mime type
 
     Returns:
-        highlight.js language id or None if no correspondance has been found
+        highlight.js language id or None if no correspondence has been found
     """
     _init_pygments_to_hljs_map()
     if mime_type and mime_type in _mime_type_to_hljs_language:

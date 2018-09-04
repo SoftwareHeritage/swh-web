@@ -395,3 +395,9 @@ ul.nav-sidebar a {
     padding-top: 13px;
     visibility: hidden;
 }
+
+hr.swh-faded-line {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to left, #f0f0f0, #8c8b8b, #f0f0f0);
+}

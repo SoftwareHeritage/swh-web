@@ -113,9 +113,14 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
       $('.swh-loading').removeClass('show');
       populateOriginSearchResultsTable(data, offset);
     })
-    .catch(() => {
+    .catch(response => {
       $('.swh-loading').removeClass('show');
       inSearch = false;
+      $('#swh-origin-search-results').hide();
+      response.text().then(errorDescription => {
+        $('#swh-no-result').text(`Error ${response.status}: ${response.statusText}.\n${errorDescription}`);
+        $('#swh-no-result').show();
+      });
     });
 }
 

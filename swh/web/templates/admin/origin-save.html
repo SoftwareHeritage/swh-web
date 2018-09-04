@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+{{ block.super }}
+{% render_bundle 'admin' %}
+{% endblock %}
+
+{% block title %} Save origin administration {% endblock %}
+
+{% block navbar-content %}
+<h4>Save origin administration</h4>
+{% endblock %}
+
+{% block content %}
+
+<ul class="nav nav-tabs" style="padding-left: 5px;">
+  <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="swh-origin-save-requests-nav-item" href="#swh-origin-save-requests">Submitted save origin requests</a></li>
+  <li class="nav-item"><a class="nav-link" data-toggle="tab" id="swh-origin-save-url-filters-nav-item" href="#swh-origin-save-url-filters">Origin urls filtering</a></li>
+</ul>
+
+<div class="tab-content">
+
+  <div id="swh-origin-save-requests" class="tab-pane active">
+    <ul class="nav nav-pills mt-3 mb-3" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="swh-save-requests-pending-tab" data-toggle="pill" href="#swh-save-requests-pending" role="tab" aria-controls="swh-save-requests-pending" aria-selected="true">Pending</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="swh-save-requests-accepted-tab" data-toggle="pill" href="#swh-save-requests-accepted" role="tab" aria-controls="swh-save-requests-accepted" aria-selected="false">Accepted</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="swh-save-requests-rejected-tab" data-toggle="pill" href="#swh-save-requests-rejected" role="tab" aria-controls="swh-save-requests-rejected" aria-selected="false">Rejected</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="swh-save-requests-pending" role="tabpanel" aria-labelledby="swh-save-requests-pending-tab">
+        <table id="swh-origin-save-pending-requests" class="table table-striped swh-table" width="100%">
+          <thead>
+            <tr>
+              <th>Request date</th>
+              <th>Origin type</th>
+              <th>Origin url</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-8">
+          </div>
+          <div class="col-md-2">
+              <button class="btn btn-default" onclick="swh.admin.acceptOriginSaveRequest()">Accept selected</button>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-default" onclick="swh.admin.rejectOriginSaveRequest()">Reject selected</button>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="swh-save-requests-accepted" role="tabpanel" aria-labelledby="swh-save-requests-accepted-tab">
+        <table id="swh-origin-save-accepted-requests" class="table table-striped swh-table" width="100%">
+          <thead>
+            <tr>
+              <th>Request date</th>
+              <th>Origin type</th>
+              <th>Origin url</th>
+              <th>Save task status</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+      <div class="tab-pane fade" id="swh-save-requests-rejected" role="tabpanel" aria-labelledby="swh-save-requests-rejected-tab">
+        <table id="swh-origin-save-rejected-requests" class="table table-striped swh-table" width="100%">
+          <thead>
+            <tr>
+              <th>Request date</th>
+              <th>Origin type</th>
+              <th>Origin url</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="swh-origin-save-url-filters" class="tab-pane">
+    <ul class="nav nav-pills mt-3 mb-3" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="swh-authorized-origins-tab" data-toggle="pill" href="#swh-authorized-origins" role="tab" aria-controls="swh-authorized-origins"
+          aria-selected="true">Authorized urls</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="swh-unauthorized-origins-tab" data-toggle="pill" href="#swh-unauthorized-origins" role="tab" aria-controls="swh-unauthorized-origins"
+          aria-selected="false">Unauthorized urls</a>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="swh-authorized-origins" role="tabpanel" aria-labelledby="swh-authorized-origins-tab">
+        <table id="swh-authorized-origin-urls" class="table table-striped swh-table" width="100%">
+          <thead>
+            <tr>
+              <th>&#8203;</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-10">
+            <div class="input-group">
+              <input class="form-control" placeholder="Enter authorized origin url prefix to add" type="text" id="swh-authorized-url-prefix"/>
+              <div class="input-group-append">
+                <button class="btn btn-default" onclick="swh.admin.addAuthorizedOriginUrl()">Add new</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-default" onclick="swh.admin.removeAuthorizedOriginUrl()">Remove selected</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="swh-unauthorized-origins" role="tabpanel" aria-labelledby="swh-unauthorized-origins-tab">
+        <table id="swh-unauthorized-origin-urls" class="table table-striped swh-table" width="100%">
+          <thead>
+            <tr>
+              <th>&#8203;</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-10">
+            <div class="input-group">
+              <input class="form-control" placeholder="Enter unauthorized origin url prefix to add" type="text" id="swh-unauthorized-url-prefix"/>
+              <div class="input-group-append">
+                <button class="btn btn-default" onclick="swh.admin.addUnauthorizedOriginUrl()">Add new</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-default" onclick="swh.admin.removeUnauthorizedOriginUrl()">Remove selected</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  swh.admin.initOriginSaveAdmin();
+</script>
+{% endblock %}
