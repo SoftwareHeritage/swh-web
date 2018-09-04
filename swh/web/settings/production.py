@@ -44,3 +44,9 @@ ALLOWED_HOSTS += [
     'archive.internal.softwareheritage.org',
 ]
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': swh_web_config['production_db'],
+    }
+}
