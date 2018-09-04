@@ -70,7 +70,8 @@ DEFAULT_CONFIG = {
         'validation_url': 'https://www.google.com/recaptcha/api/siteverify',
         'site_key': '',
         'private_key': ''
-    })
+    }),
+    'production_db': ('string', '/var/lib/swh/web.sqlite3')
 }
 
 swhweb_config = {}
