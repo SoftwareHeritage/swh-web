@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, handleFetchErrors} from 'utils/functions';
+import {handleFetchError, handleFetchErrors, csrfPost} from 'utils/functions';
 
 let progress = `<div class="progress">
                   <div class="progress-bar progress-bar-success progress-bar-striped"
@@ -80,7 +80,7 @@ export function recookObject() {
       cookingUrl += '?email=' + recookTask.email;
     }
     // request archive cooking
-    fetch(cookingUrl, {credentials: 'omit', method: 'POST'})
+    csrfPost(cookingUrl)
       .then(handleFetchError)
       .then(() => {
         // update task status

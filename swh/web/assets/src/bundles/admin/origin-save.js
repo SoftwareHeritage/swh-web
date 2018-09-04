@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError} from 'utils/functions';
+import {handleFetchError, csrfPost} from 'utils/functions';
 
 let authorizedOriginTable;
 let unauthorizedOriginTable;
@@ -158,20 +158,10 @@ export function initOriginSaveAdmin() {
   });
 }
 
-function post(url) {
-  return fetch(url, {
-    credentials: 'include',
-    headers: {
-      'X-CSRFToken': Cookies.get('csrftoken')
-    },
-    method: 'POST'
-  });
-}
-
 export function addAuthorizedOriginUrl() {
   let originUrl = $('#swh-authorized-url-prefix').val();
   let addOriginUrl = Urls.admin_origin_save_add_authorized_url(originUrl);
-  post(addOriginUrl)
+  csrfPost(addOriginUrl)
     .then(handleFetchError)
     .then(() => {
       authorizedOriginTable.row.add({'url': originUrl}).draw();
@@ -186,7 +176,7 @@ export function removeAuthorizedOriginUrl() {
   let originUrl = $('#swh-authorized-origin-urls tr.selected').text();
   if (originUrl) {
     let removeOriginUrl = Urls.admin_origin_save_remove_authorized_url(originUrl);
-    post(removeOriginUrl)
+    csrfPost(removeOriginUrl)
       .then(handleFetchError)
       .then(() => {
         authorizedOriginTable.row('.selected').remove().draw();
@@ -198,7 +188,7 @@ export function removeAuthorizedOriginUrl() {
 export function addUnauthorizedOriginUrl() {
   let originUrl = $('#swh-unauthorized-url-prefix').val();
   let addOriginUrl = Urls.admin_origin_save_add_unauthorized_url(originUrl);
-  post(addOriginUrl)
+  csrfPost(addOriginUrl)
     .then(handleFetchError)
     .then(() => {
       unauthorizedOriginTable.row.add({'url': originUrl}).draw();
@@ -213,7 +203,7 @@ export function removeUnauthorizedOriginUrl() {
   let originUrl = $('#swh-unauthorized-origin-urls tr.selected').text();
   if (originUrl) {
     let removeOriginUrl = Urls.admin_origin_save_remove_unauthorized_url(originUrl);
-    post(removeOriginUrl)
+    csrfPost(removeOriginUrl)
       .then(handleFetchError)
       .then(() => {
         unauthorizedOriginTable.row('.selected').remove().draw();
@@ -228,7 +218,7 @@ export function acceptOriginSaveRequest() {
     let acceptOriginSaveRequestCallback = () => {
       let rowData = selectedRow.data();
       let acceptSaveRequestUrl = Urls.admin_origin_save_request_accept(rowData['origin_type'], rowData['origin_url']);
-      post(acceptSaveRequestUrl)
+      csrfPost(acceptSaveRequestUrl)
         .then(() => {
           pendingSaveRequestsTable.ajax.reload(null, false);
         });
@@ -246,7 +236,7 @@ export function rejectOriginSaveRequest() {
     let rejectOriginSaveRequestCallback = () => {
       let rowData = selectedRow.data();
       let rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(rowData['origin_type'], rowData['origin_url']);
-      post(rejectSaveRequestUrl)
+      csrfPost(rejectSaveRequestUrl)
         .then(() => {
           pendingSaveRequestsTable.ajax.reload(null, false);
         });

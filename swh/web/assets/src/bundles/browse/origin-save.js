@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError} from 'utils/functions';
+import {handleFetchError, csrfPost} from 'utils/functions';
 import {validate} from 'validate.js';
 
 let saveRequestsTable;
@@ -90,15 +90,12 @@ export function initOriginSave() {
         let originUrl = $('#swh-input-origin-url').val();
         let addSaveOriginRequestUrl = Urls.browse_origin_save_request(originType, originUrl);
         let grecaptchaData = {'g-recaptcha-response': grecaptcha.getResponse()};
-        fetch(addSaveOriginRequestUrl, {
-          credentials: 'include',
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': Cookies.get('csrftoken')
-          },
-          body: JSON.stringify(grecaptchaData)})
+        let headers = {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        };
+        let body = JSON.stringify(grecaptchaData);
+        csrfPost(addSaveOriginRequestUrl, headers, body)
           .then(handleFetchError)
           .then(response => response.json())
           .then(data => {
