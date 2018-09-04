@@ -16,3 +16,4 @@ export * from './snapshot-navigation';
 export * from './origin-search';
 export * from './browse-utils';
 export * from './swh-ids-utils';
+export * from './origin-save';

@@ -99,7 +99,7 @@ def api_revision_log_by(request, origin_id,
         :>jsonarr array parents: the parents of the revision, i.e. the previous revisions
             that head directly to it, each entry of that array contains an unique parent
             revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more informations about it
+            to get more information about it
         :>jsonarr string type: the type of the revision
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
@@ -250,7 +250,7 @@ def api_revision_with_origin(request, origin_id,
         :>json array parents: the parents of the revision, i.e. the previous revisions
             that head directly to it, each entry of that array contains an unique parent
             revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more informations about it
+            to get more information about it
         :>json string type: the type of the revision
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
@@ -323,7 +323,7 @@ def api_revision(request, sha1_git):
         :>json array parents: the parents of the revision, i.e. the previous revisions
             that head directly to it, each entry of that array contains an unique parent
             revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more informations about it
+            to get more information about it
         :>json string type: the type of the revision
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
@@ -443,7 +443,7 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         :>jsonarr array parents: the parents of the revision, i.e. the previous revisions
             that head directly to it, each entry of that array contains an unique parent
             revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more informations about it
+            to get more information about it
         :>jsonarr string type: the type of the revision
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`

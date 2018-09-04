@@ -69,7 +69,7 @@ Content
     parameter will be used in order to provide the real name of the file when
     one wants to save it locally.
 
-    :param string algo_hash: optionnal parameter to indicate the algorithm used
+    :param string algo_hash: optional parameter to indicate the algorithm used
         to compute the content checksum (can be either *sha1*,
         *sha1_git*, *sha256* or *blake2s256*, default to *sha1*)
     :param string hash: hexadecimal representation for the checksum from which

@@ -5,6 +5,7 @@
 
 import traceback
 
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
@@ -42,19 +43,19 @@ class ForbiddenExc(Exception):
 
 
 http_status_code_message = {
-    400: "Bad Request",
-    401: "Unauthorized",
-    403: "Access Denied",
-    404: "Resource not found",
-    500: "Internal Server Error",
-    501: "Not Implemented",
-    502: "Bad Gateway",
-    503: "Service unavailable"
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    403: 'Access Denied',
+    404: 'Resource not found',
+    500: 'Internal Server Error',
+    501: 'Not Implemented',
+    502: 'Bad Gateway',
+    503: 'Service unavailable'
 }
 
 
 def _generate_error_page(request, error_code, error_description):
-    return render(request, "error.html",
+    return render(request, 'error.html',
                   {'error_code': error_code,
                    'error_message': http_status_code_message[error_code],
                    'error_description': mark_safe(error_description)},
@@ -99,15 +100,23 @@ def swh_handle500(request):
     return _generate_error_page(request, 500, error_description)
 
 
-def handle_view_exception(request, exc):
+def handle_view_exception(request, exc, html_response=True):
     """
     Function used to generate an error page when an exception
     was raised inside a swh-web browse view.
     """
-    error_code = 400
+    error_code = 500
     error_description = str(exc)
     if get_config()['debug']:
         error_description = traceback.format_exc()
+    if isinstance(exc, BadInputExc):
+        error_code = 400
+    if isinstance(exc, ForbiddenExc):
+        error_code = 403
     if isinstance(exc, NotFoundExc):
         error_code = 404
-    return _generate_error_page(request, error_code, error_description)
+    if html_response:
+        return _generate_error_page(request, error_code, error_description)
+    else:
+        return HttpResponse(error_description, content_type='text/plain',
+                            status=error_code)

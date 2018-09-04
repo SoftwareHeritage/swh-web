@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError} from 'utils/functions';
+import {handleFetchError, csrfPost} from 'utils/functions';
 
 function addVaultCookingTask(cookingTask) {
   let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
@@ -25,7 +25,7 @@ function addVaultCookingTask(cookingTask) {
     if (cookingTask.email) {
       cookingUrl += '?email=' + cookingTask.email;
     }
-    fetch(cookingUrl)
+    csrfPost(cookingUrl)
       .then(handleFetchError)
       .then(() => {
         vaultCookingTasks.push(cookingTask);

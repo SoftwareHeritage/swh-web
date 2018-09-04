@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'swh.web.common',
     'swh.web.api',
     'swh.web.browse',
     'webpack_loader',
@@ -57,7 +58,7 @@ MIDDLEWARE = [
 ]
 
 # Compress all assets (static ones and dynamically generated html)
-# served by django in a local development environement context.
+# served by django in a local development environment context.
 # In a production environment, assets compression will be directly
 # handled by web servers like apache or nginx.
 if swh_web_config['debug']:
@@ -86,9 +87,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'swh.web.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -223,3 +221,6 @@ WEBPACK_LOADER = {
         'IGNORE': ['.+\.hot-update.js', '.+\.map']
     }
 }
+
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = 'admin'

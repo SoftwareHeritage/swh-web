@@ -16,8 +16,12 @@ import 'whatwg-fetch';
 import 'jquery';
 import 'bootstrap-loader/lib/bootstrap.loader?configFilePath=../../../swh/web/assets/config/.bootstraprc!bootstrap-loader/no-op.js';
 
+// js-cookie
+import 'js-cookie';
+
 // jquery datatables
 import 'datatables.net';
+import 'datatables.net-bs4';
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 import './datatables.css';
 

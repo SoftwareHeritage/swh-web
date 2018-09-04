@@ -198,6 +198,13 @@ module.exports = {
         options: 'hljs'
       }]
     },
+    {
+      test: require.resolve('js-cookie'),
+      use: [{
+        loader: 'expose-loader',
+        options: 'Cookies'
+      }]
+    },
     // css import configuration:
     //  - first process it with postcss
     //  - then extract it to a dedicated file associated to each bundle

@@ -30,3 +30,13 @@
 .swh-table.dataTable th {
     border-top: none;
 }
+
+.swh-table.dataTable tr.selected {
+    background: #fecd1b;
+}
+
+.page-item.active .page-link {
+    color: rgba(0, 0, 0, 0.75);
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}

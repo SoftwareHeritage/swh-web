@@ -26,3 +26,13 @@ export function handleFetchErrors(responses) {
 export function staticAsset(asset) {
   return `${__STATIC__}${asset}`;
 }
+
+export function csrfPost(url, headers = {}, body = null) {
+  headers['X-CSRFToken'] = Cookies.get('csrftoken');
+  return fetch(url, {
+    credentials: 'include',
+    headers: headers,
+    method: 'POST',
+    body: body
+  });
+}
