@@ -9,7 +9,7 @@ Release
         * the release date
         * the release name
         * the associated message
-        * the type of target the release points to (revision, directory, content or relase)
+        * the type of target the release points to (revision, directory, content or release)
         * the link to browse the release target
 
     :param string sha1_git: hexadecimal representation for the *sha1_git*

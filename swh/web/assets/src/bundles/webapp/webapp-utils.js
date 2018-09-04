@@ -80,3 +80,21 @@ export function initPage(page) {
 
   });
 }
+
+export function showModalMessage(title, message) {
+  $('#swh-web-modal-message .modal-title').text(title);
+  $('#swh-web-modal-message .modal-content p').text(message);
+  $('#swh-web-modal-message').modal('show');
+}
+
+export function showModalConfirm(title, message, callback) {
+  $('#swh-web-modal-confirm .modal-title').text(title);
+  $('#swh-web-modal-confirm .modal-content p').text(message);
+  $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').bind('click', () => {
+    console.log('click handler');
+    callback();
+    $('#swh-web-modal-confirm').modal('hide');
+    $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').unbind('click');
+  });
+  $('#swh-web-modal-confirm').modal('show');
+}

@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load static %}
+
+{% block title %}Logged out &ndash; Software Heritage archive {% endblock %}
+
+{% block navbar-content %}
+<h4>Logged out</h4>
+{% endblock %}
+
+{% block content %}
+<p>You have been successfully logged out.</p>
+<p><a href="{% url 'login' %}">Log in</a> again.</p>
+{% endblock %}
