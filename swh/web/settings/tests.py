@@ -80,3 +80,6 @@ ALLOWED_HOSTS += ['testserver']
 # So instead use a different database file that will be created on the fly
 # when running the tests.
 DATABASES['default']['NAME'] = os.path.join(PROJECT_DIR, 'testdb.sqlite3')
+
+# Silent DEBUG output when running unit tests
+LOGGING['handlers']['console']['level'] = 'INFO'
