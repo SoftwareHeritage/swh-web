@@ -13,6 +13,7 @@ class SaveAuthorizedOrigin(models.Model):
     url = models.CharField(max_length=200, null=False)
 
     class Meta:
+        app_label = 'swh.web.common'
         db_table = 'save_authorized_origin'
 
     def __str__(self):
@@ -27,6 +28,7 @@ class SaveUnauthorizedOrigin(models.Model):
     url = models.CharField(max_length=200, null=False)
 
     class Meta:
+        app_label = 'swh.web.common'
         db_table = 'save_unauthorized_origin'
 
     def __str__(self):
@@ -57,6 +59,7 @@ class SaveOriginRequest(models.Model):
     loading_task_id = models.IntegerField(default=-1)
 
     class Meta:
+        app_label = 'swh.web.common'
         db_table = 'save_origin_request'
         ordering = ['-id']
 
