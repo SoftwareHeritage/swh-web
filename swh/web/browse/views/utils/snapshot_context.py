@@ -263,11 +263,15 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     path = '' if path is None else (path + '/')
 
     for d in dirs:
-        bc_url_args = dict(url_args)
-        bc_url_args['path'] = path + d['name']
-        d['url'] = reverse(browse_view_name,
-                           kwargs=bc_url_args,
-                           query_params=query_params)
+        if d['type'] == 'rev':
+            d['url'] = reverse('browse-revision',
+                               kwargs={'sha1_git': d['target']})
+        else:
+            bc_url_args = dict(url_args)
+            bc_url_args['path'] = path + d['name']
+            d['url'] = reverse(browse_view_name,
+                               kwargs=bc_url_args,
+                               query_params=query_params)
 
     sum_file_sizes = 0
 

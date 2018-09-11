@@ -87,9 +87,13 @@ def directory_browse(request, sha1_git, path=None):
     path = '' if path is None else (path + '/')
 
     for d in dirs:
-        d['url'] = reverse('browse-directory',
-                           kwargs={'sha1_git': root_sha1_git,
-                                   'path': path + d['name']})
+        if d['type'] == 'rev':
+            d['url'] = reverse('browse-revision',
+                               kwargs={'sha1_git': d['target']})
+        else:
+            d['url'] = reverse('browse-directory',
+                               kwargs={'sha1_git': root_sha1_git,
+                                       'path': path + d['name']})
 
     sum_file_sizes = 0
 
