@@ -1,3 +1,9 @@
+swh-web (0.0.153-1~swh1) unstable-swh; urgency=medium
+
+  * version 0.0.153
+
+ -- Antoine Lambert <antoine.lambert@inria.fr>  Wed, 12 Sep 2018 16:44:06 +0200
+
 swh-web (0.0.152-1~swh1) unstable-swh; urgency=medium
 
   * version 0.0.152
