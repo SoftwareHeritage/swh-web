@@ -22,7 +22,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
     @nottest
     def directory_view(self, root_directory_sha1, directory_entries,
                        path=None):
-        dirs = [e for e in directory_entries if e['type'] == 'dir']
+        dirs = [e for e in directory_entries if e['type'] in ('dir', 'rev')]
         files = [e for e in directory_entries if e['type'] == 'file']
 
         url_args = {'sha1_git': root_directory_sha1}
@@ -47,12 +47,16 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
                             count=len(files))
 
         for d in dirs:
-            dir_path = d['name']
-            if path:
-                dir_path = "%s/%s" % (path, d['name'])
-            dir_url = reverse('browse-directory',
-                              kwargs={'sha1_git': root_directory_sha1,
-                                      'path': dir_path})
+            if d['type'] == 'rev':
+                dir_url = reverse('browse-revision',
+                                  kwargs={'sha1_git': d['target']})
+            else:
+                dir_path = d['name']
+                if path:
+                    dir_path = "%s/%s" % (path, d['name'])
+                dir_url = reverse('browse-directory',
+                                  kwargs={'sha1_git': root_directory_sha1,
+                                          'path': dir_path})
             self.assertContains(resp, dir_url)
 
         for f in files:

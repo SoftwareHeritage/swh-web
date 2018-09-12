@@ -282,7 +282,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                               visit_id=None, timestamp=None, path=None):
 
         dirs = [e for e in directory_entries
-                if e['type'] == 'dir']
+                if e['type'] in ('dir', 'rev')]
         files = [e for e in directory_entries
                  if e['type'] == 'file']
 
@@ -326,14 +326,18 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                                     '%Y-%m-%dT%H:%M:%S')
 
         for d in dirs:
-            dir_path = d['name']
-            if path:
-                dir_path = "%s/%s" % (path, d['name'])
-            dir_url_args = dict(url_args)
-            dir_url_args['path'] = dir_path
-            dir_url = reverse('browse-origin-directory',
-                              kwargs=dir_url_args,
-                              query_params=query_params)
+            if d['type'] == 'rev':
+                dir_url = reverse('browse-revision',
+                                  kwargs={'sha1_git': d['target']})
+            else:
+                dir_path = d['name']
+                if path:
+                    dir_path = "%s/%s" % (path, d['name'])
+                dir_url_args = dict(url_args)
+                dir_url_args['path'] = dir_path
+                dir_url = reverse('browse-origin-directory',
+                                kwargs=dir_url_args,
+                                query_params=query_params)
             self.assertContains(resp, dir_url)
 
         for f in files:

@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import datetime, timedelta
+
 from nose.tools import istest, nottest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
@@ -106,7 +108,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
     def check_save_request_status(self, mock_scheduler, origin_url,
                                   expected_request_status,
                                   expected_task_status,
-                                  scheduler_task_status='next_run_not_scheduled'): # noqa
+                                  scheduler_task_status='next_run_not_scheduled', # noqa
+                                  visit_date=None):
 
         mock_scheduler.get_tasks.return_value = \
             [{
@@ -127,15 +130,17 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                       kwargs={'origin_type': 'git',
                               'origin_url': origin_url})
 
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
+            mock_visit_date.return_value = visit_date
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
 
-        save_request_data = response.data[0]
+            save_request_data = response.data[0]
 
-        self.assertEqual(save_request_data['save_request_status'],
-                         expected_request_status)
-        self.assertEqual(save_request_data['save_task_status'],
-                         expected_task_status)
+            self.assertEqual(save_request_data['save_request_status'],
+                             expected_request_status)
+            self.assertEqual(save_request_data['save_task_status'],
+                             expected_task_status)
 
     @istest
     @patch('swh.web.common.origin_save.scheduler')
@@ -171,8 +176,15 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                        scheduler_task_status='next_run_scheduled') # noqa
         self.check_save_request_status(mock_scheduler, origin_url,
                                        SAVE_REQUEST_ACCEPTED,
+                                       SAVE_TASK_SCHEDULED,
+                                       scheduler_task_status='completed',
+                                       visit_date=None) # noqa
+        visit_date = datetime.now() + timedelta(hours=1)
+        self.check_save_request_status(mock_scheduler, origin_url,
+                                       SAVE_REQUEST_ACCEPTED,
                                        SAVE_TASK_SUCCEED,
-                                       scheduler_task_status='completed') # noqa
+                                       scheduler_task_status='completed',
+                                       visit_date=visit_date) # noqa
 
     @istest
     @patch('swh.web.common.origin_save.scheduler')
