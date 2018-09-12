@@ -55,6 +55,7 @@ See top-level LICENSE file for more information
       <a id="swh-show-origin-save-requests-list" href="#swh-origin-save-requests-list">submitted save requests list</a>.
     </p>
     <form id="swh-save-origin-form" class="needs-validation" novalidate>
+      {% csrf_token %}
       <div class="form-row">
         <div class="col-md-1"></div>
         <div class="form-group col-md-2">
