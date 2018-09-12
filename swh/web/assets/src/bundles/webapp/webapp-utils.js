@@ -91,7 +91,6 @@ export function showModalConfirm(title, message, callback) {
   $('#swh-web-modal-confirm .modal-title').text(title);
   $('#swh-web-modal-confirm .modal-content p').text(message);
   $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').bind('click', () => {
-    console.log('click handler');
     callback();
     $('#swh-web-modal-confirm').modal('hide');
     $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').unbind('click');

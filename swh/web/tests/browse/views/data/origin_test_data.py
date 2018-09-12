@@ -473,7 +473,14 @@ stub_origin_root_directory_entries = [
   'perms': 33188,
   'status': 'visible',
   'target': 'eb8509f70158c231a3fd864aecf2649590bbedf3',
-  'type': 'file'}
+  'type': 'file'},
+  {'dir_id': '3b2cbf1a58e7d2848049cf8f1dc1f9ff22415877',
+   'length': None,
+   'name': 'revision',
+   'perms': 57344,
+   'target': '5da5c4eece39ffb3ae824da433f7e4d004fba217',
+   'target_url': '/api/1/revision/5da5c4eece39ffb3ae824da433f7e4d004fba217/',
+   'type': 'rev'},
 ]
 
 stub_origin_sub_directory_path = 'lib/webworker'
@@ -528,7 +535,14 @@ stub_origin_sub_directory_entries = [
   'perms': 33188,
   'status': 'visible',
   'target': 'd850018bb0d2ad41dd0ae9e5c887dff8a23601e9',
-  'type': 'file'}
+  'type': 'file'},
+  {'dir_id': '3b2cbf1a58e7d2848049cf8f1dc1f9ff22415877',
+   'length': None,
+   'name': 'revision',
+   'perms': 57344,
+   'target': '5da5c4eece39ffb3ae824da433f7e4d004fba217',
+   'target_url': '/api/1/revision/5da5c4eece39ffb3ae824da433f7e4d004fba217/',
+   'type': 'rev'}
 ]
 
 stub_content_origin_info = {

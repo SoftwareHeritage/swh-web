@@ -462,6 +462,15 @@ stub_sub_directory_data = \
         "target": "0fd4ea4c765e454ae0cf064192bd7cec7c106cfd",
         "target_url": "/api/1/content/sha1_git:0fd4ea4c765e454ae0cf064192bd7cec7c106cfd/",
         "type": "file"
+    },
+    {
+        "dir_id": "6cdf1fba5e9559e18242f7aa3fc10e1898c82f32",
+        "length": None,
+        "name": "revision",
+        "perms": 57344,
+        "target": "8750d5607ac066349d60451db1ef211a9cd97515",
+        "target_url": "/api/1/revision/8750d5607ac066349d60451db1ef211a9cd97515/",
+        "type": "rev"
     }
 ]
 

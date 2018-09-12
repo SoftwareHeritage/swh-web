@@ -47,11 +47,18 @@ def get_directory_entries(sha1_git):
         return cache_entry
 
     entries = list(service.lookup_directory(sha1_git))
-    entries = sorted(entries, key=lambda e: e['name'])
-    for entry in entries:
-        entry['perms'] = stat.filemode(entry['perms'])
-    dirs = [e for e in entries if e['type'] == 'dir']
+    for e in entries:
+        e['perms'] = stat.filemode(e['perms'])
+        if e['type'] == 'rev':
+            # modify dir entry name to explicitely show it points
+            # to a revision
+            e['name'] = '%s @ %s' % (e['name'], e['target'][:7])
+
+    dirs = [e for e in entries if e['type'] in ('dir', 'rev')]
     files = [e for e in entries if e['type'] == 'file']
+
+    dirs = sorted(dirs, key=lambda d: d['name'])
+    files = sorted(files, key=lambda f: f['name'])
 
     cache.set(cache_entry_id, (dirs, files))
 

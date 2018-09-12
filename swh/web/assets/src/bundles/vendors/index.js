@@ -10,7 +10,7 @@
 // polyfills in order to use advanded js features (like Promise or fetch)
 // in older browsers
 import '@babel/polyfill';
-import 'whatwg-fetch';
+import 'whatwg-fetch/dist/fetch.umd';
 
 // jquery and bootstrap
 import 'jquery';

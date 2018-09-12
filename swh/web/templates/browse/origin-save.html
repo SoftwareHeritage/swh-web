@@ -13,7 +13,7 @@ See top-level LICENSE file for more information
 {% endblock %}
 
 {% block navbar-content %}
-<h4>Request the saving of a software origin into the archive</h4>
+<h4>Save code now</h4>
 {% endblock %}
 
 {% block browse-content %}
@@ -55,6 +55,7 @@ See top-level LICENSE file for more information
       <a id="swh-show-origin-save-requests-list" href="#swh-origin-save-requests-list">submitted save requests list</a>.
     </p>
     <form id="swh-save-origin-form" class="needs-validation" novalidate>
+      {% csrf_token %}
       <div class="form-row">
         <div class="col-md-1"></div>
         <div class="form-group col-md-2">
@@ -67,7 +68,7 @@ See top-level LICENSE file for more information
         <div class="form-group col-md-6">
           <label for="swh-input-origin-url">Origin url</label>
           <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.browse.validateSaveOriginUrl(this)" required>
-          <div class="invalid-feedback">The origin url is not valid</div>
+          <div class="invalid-feedback">The origin url is not valid or does not reference a code repository</div>
         </div>
         <div class="col-md-2"></div>
       </div>
