@@ -36,3 +36,10 @@ export function csrfPost(url, headers = {}, body = null) {
     body: body
   });
 }
+
+export function isGitRepoUrl(url, domain) {
+  let endOfPattern = '\\/[\\w\\.-]+\\/?(?!=.git)(?:\\.git(?:\\/?|\\#[\\w\\.\\-_]+)?)?$';
+  let pattern = `(?:git|https?|git@)(?:\\:\\/\\/)?${domain}[/|:][A-Za-z0-9-]+?` + endOfPattern;
+  let re = new RegExp(pattern);
+  return re.test(url);
+};

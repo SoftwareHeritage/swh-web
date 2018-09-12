@@ -122,7 +122,7 @@ def _check_origin_type_savable(origin_type):
                           (origin_type, allowed_origin_types))
 
 
-_validate_url = URLValidator(schemes=['http', 'https', 'svn'])
+_validate_url = URLValidator(schemes=['http', 'https', 'svn', 'git'])
 
 
 def _check_origin_url_valid(origin_url):
