@@ -62,6 +62,9 @@ export function initOriginSave() {
           render: (data, type, row) => {
             if (data === 'succeed') {
               let browseOriginUrl = Urls.browse_origin(row.origin_url);
+              if (row.visit_date) {
+                browseOriginUrl += `visit/${row.visit_date}/`;
+              }
               return `<a href="${browseOriginUrl}">${data}</a>`;
             }
             return data;

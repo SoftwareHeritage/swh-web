@@ -57,6 +57,7 @@ class SaveOriginRequest(models.Model):
     status = models.TextField(choices=SAVE_REQUEST_STATUS,
                               default=SAVE_REQUEST_PENDING)
     loading_task_id = models.IntegerField(default=-1)
+    visit_date = models.DateTimeField(null=True)
 
     class Meta:
         app_label = 'swh.web.common'
@@ -69,4 +70,5 @@ class SaveOriginRequest(models.Model):
                     'origin_type': self.origin_type,
                     'origin_url': self.origin_url,
                     'status': self.status,
-                    'loading_task_id': self.loading_task_id})
+                    'loading_task_id': self.loading_task_id,
+                    'visit_date': self.visit_date})

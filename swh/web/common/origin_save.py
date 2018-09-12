@@ -3,16 +3,20 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from bisect import bisect_right
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 
 from swh.web import config
+from swh.web.common import service
 from swh.web.common.exc import BadInputExc, ForbiddenExc
 from swh.web.common.models import (
     SaveUnauthorizedOrigin, SaveAuthorizedOrigin, SaveOriginRequest,
     SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED, SAVE_REQUEST_PENDING
 )
+from swh.web.common.utils import get_origin_visits, parse_timestamp
 
 from swh.scheduler.utils import create_oneshot_task_dict
 
@@ -129,15 +133,44 @@ def _check_origin_url_valid(origin_url):
                           origin_url)
 
 
+def _get_visit_date_for_save_request(save_request):
+    visit_date = None
+    try:
+        origin = {'type': save_request.origin_type,
+                  'url': save_request.origin_url}
+        origin_info = service.lookup_origin(origin)
+        origin_visits = get_origin_visits(origin_info)
+        visit_dates = [parse_timestamp(v['date'])
+                       for v in origin_visits]
+        i = bisect_right(visit_dates, save_request.request_date)
+        if i != len(visit_dates):
+            save_request.visit_date = visit_dates[i]
+            save_request.save()
+            visit_date = visit_dates[i]
+    except Exception:
+        pass
+    return visit_date
+
+
 def _save_request_dict(save_request, task=None):
     save_task_status = SAVE_TASK_NOT_CREATED
+    visit_date = save_request.visit_date
     if task:
         save_task_status = _save_task_status[task['status']]
+        if save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEED) \
+           and not visit_date:
+            visit_date = _get_visit_date_for_save_request(save_request)
+        # Ensure last origin visit is available in database
+        # before reporting the task execution as successful
+        if save_task_status == SAVE_TASK_SUCCEED and not visit_date:
+            save_task_status = SAVE_TASK_SCHEDULED
+
     return {'origin_type': save_request.origin_type,
             'origin_url': save_request.origin_url,
             'save_request_date': save_request.request_date.isoformat(),
             'save_request_status': save_request.status,
-            'save_task_status': save_task_status}
+            'save_task_status': save_task_status,
+            'visit_date': visit_date.isoformat() if visit_date else None}
 
 
 def create_save_origin_request(origin_type, origin_url):
