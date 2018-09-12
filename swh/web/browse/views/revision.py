@@ -461,10 +461,14 @@ def revision_browse(request, sha1_git, extra_path=None):
         error_description = content_data['error_description']
     else:
         for d in dirs:
-            query_params['path'] = path + d['name']
-            d['url'] = reverse('browse-revision',
-                               kwargs={'sha1_git': sha1_git},
-                               query_params=query_params)
+            if d['type'] == 'rev':
+                d['url'] = reverse('browse-revision',
+                                   kwargs={'sha1_git': d['target']})
+            else:
+                query_params['path'] = path + d['name']
+                d['url'] = reverse('browse-revision',
+                                   kwargs={'sha1_git': sha1_git},
+                                   query_params=query_params)
         for f in files:
             query_params['path'] = path + f['name']
             f['url'] = reverse('browse-revision',

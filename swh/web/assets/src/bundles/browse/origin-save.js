@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost} from 'utils/functions';
+import {handleFetchError, csrfPost, isGitRepoUrl} from 'utils/functions';
 import {validate} from 'validate.js';
 
 let saveRequestsTable;
@@ -62,6 +62,9 @@ export function initOriginSave() {
           render: (data, type, row) => {
             if (data === 'succeed') {
               let browseOriginUrl = Urls.browse_origin(row.origin_url);
+              if (row.visit_date) {
+                browseOriginUrl += `visit/${row.visit_date}/`;
+              }
               return `<a href="${browseOriginUrl}">${data}</a>`;
             }
             return data;
@@ -102,11 +105,11 @@ export function initOriginSave() {
             if (data.save_request_status === 'accepted') {
               $('#swh-origin-save-request-status').css('color', 'green');
               $('#swh-origin-save-request-status').text(
-                'The origin save request has been accepted and will be processed as soon as possible.');
+                'The "save code now" request has been accepted and will be processed as soon as possible.');
             } else {
               $('#swh-origin-save-request-status').css('color', '#fecd1b');
               $('#swh-origin-save-request-status').text(
-                'The origin save request has been put in pending state and may be accepted for processing after manual review.');
+                'The "save code now" request has been put in pending state and may be accepted for processing after manual review.');
             }
             grecaptcha.reset();
           })
@@ -114,7 +117,7 @@ export function initOriginSave() {
             if (response.status === 403) {
               $('#swh-origin-save-request-status').css('color', 'red');
               $('#swh-origin-save-request-status').text(
-                'The origin save request has been rejected because the reCAPTCHA could not be validated or the provided origin url is blacklisted.');
+                'The "save code now" request has been rejected because the reCAPTCHA could not be validated or the provided origin url is blacklisted.');
             }
             grecaptcha.reset();
           });
@@ -146,13 +149,30 @@ export function validateSaveOriginUrl(input) {
   let validUrl = validate({website: input.value}, {
     website: {
       url: {
-        schemes: ['http', 'https', 'svn']
+        schemes: ['http', 'https', 'svn', 'git']
       }
     }
-  });
-  if (validUrl === undefined) {
+  }) === undefined;
+  let originType = $('#swh-input-origin-type').val();
+  if (originType === 'git' && validUrl) {
+    // additional checks for well known code hosting providers
+    let githubIdx = input.value.indexOf('://github.com');
+    let gitlabIdx = input.value.indexOf('://gitlab.com');
+    let gitSfIdx = input.value.indexOf('://git.code.sf.net');
+    let bitbucketIdx = input.value.indexOf('://bitbucket.org');
+    if (githubIdx !== -1 && githubIdx <= 5) {
+      validUrl = isGitRepoUrl(input.value, 'github.com');
+    } else if (gitlabIdx !== -1 && gitlabIdx <= 5) {
+      validUrl = isGitRepoUrl(input.value, 'gitlab.com');
+    } else if (gitSfIdx !== -1 && gitSfIdx <= 5) {
+      validUrl = isGitRepoUrl(input.value, 'git.code.sf.net/p');
+    } else if (bitbucketIdx !== -1 && bitbucketIdx <= 5) {
+      validUrl = isGitRepoUrl(input.value, 'bitbucket.org');
+    }
+  }
+  if (validUrl) {
     input.setCustomValidity('');
   } else {
-    input.setCustomValidity('The origin url is not valid');
+    input.setCustomValidity('The origin url is not valid or does not reference a code repository');
   }
 }
