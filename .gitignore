@@ -12,8 +12,7 @@ swh.web.egg-info
 docs/build/
 docs/uri-scheme.md
 docs/dev-info.md
-db.sqlite3
-testdb.sqlite3
+*.sqlite3
 .vscode/
 .directory
 node_modules/
