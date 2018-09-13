@@ -71,7 +71,12 @@ DEFAULT_CONFIG = {
         'site_key': '',
         'private_key': ''
     }),
-    'production_db': ('string', '/var/lib/swh/web.sqlite3')
+    'production_db': ('string', '/var/lib/swh/web.sqlite3'),
+    'deposit': ('dict', {
+        'private_api_url': 'https://deposit.softwareheritage.org/1/private/',
+        'private_api_user': 'swhworker',
+        'private_api_password': ''
+    })
 }
 
 swhweb_config = {}
