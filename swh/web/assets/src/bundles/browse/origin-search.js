@@ -142,7 +142,7 @@ export function initOriginSearch() {
       }
     }
 
-    $('#search_origins').submit(event => {
+    $('#swh-search-origins').submit(event => {
       event.preventDefault();
       $('#swh-no-result').hide();
       let patterns = $('#origins-url-patterns').val();

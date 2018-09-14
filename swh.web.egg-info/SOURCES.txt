@@ -163,6 +163,7 @@ swh/web/common/urlsindex.py
 swh/web/common/utils.py
 swh/web/common/migrations/0001_initial.py
 swh/web/common/migrations/0002_saveoriginrequest_visit_date.py
+swh/web/common/migrations/0003_saveoriginrequest_loading_task_status.py
 swh/web/common/migrations/__init__.py
 swh/web/settings/__init__.py
 swh/web/settings/common.py
@@ -171,8 +172,8 @@ swh/web/settings/production.py
 swh/web/settings/tests.py
 swh/web/static/robots.txt
 swh/web/static/webpack-stats.json
-swh/web/static/css/browse.92378aae87894b0d9972.css
-swh/web/static/css/browse.92378aae87894b0d9972.css.map
+swh/web/static/css/browse.cec637f91d68ef766e5f.css
+swh/web/static/css/browse.cec637f91d68ef766e5f.css.map
 swh/web/static/css/highlightjs.8999b6ccd00337cba3b8.css
 swh/web/static/css/highlightjs.8999b6ccd00337cba3b8.css.map
 swh/web/static/css/origin.c9b9c6c34c7967dc9329.css
@@ -259,8 +260,8 @@ swh/web/static/img/icons/swh-logo-archive-192x192.png
 swh/web/static/img/icons/swh-logo-archive-270x270.png
 swh/web/static/js/admin.a1e42404ef1ac75a42f4.js
 swh/web/static/js/admin.a1e42404ef1ac75a42f4.js.map
-swh/web/static/js/browse.92378aae87894b0d9972.js
-swh/web/static/js/browse.92378aae87894b0d9972.js.map
+swh/web/static/js/browse.cec637f91d68ef766e5f.js
+swh/web/static/js/browse.cec637f91d68ef766e5f.js.map
 swh/web/static/js/highlightjs.8999b6ccd00337cba3b8.js
 swh/web/static/js/highlightjs.8999b6ccd00337cba3b8.js.map
 swh/web/static/js/origin.c9b9c6c34c7967dc9329.js
