@@ -31,7 +31,7 @@ See top-level LICENSE file for more information
           <td style="max-width: 300px"><i class="fa fa-code-fork fa-fw"></i><a href="{{ branch.directory_url }}">{{ branch.name }}</a></td>
           <td><a href="{{ branch.revision_url }}">{{ branch.revision|slice:":7" }}</a></td>
           <td class="swh-log-entry-message swh-table-cell-text-overflow" style="min-width: 500px" title="{{ branch.message }}">{{ branch.message }}</td>
-          <td style="min-width: 250px">{{ branch.date }}</td
+          <td style="min-width: 250px">{{ branch.date }}</td>
         </tr>
       {% endfor %}
     </tbody>

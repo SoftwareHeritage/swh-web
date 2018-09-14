@@ -14,7 +14,9 @@ from swh.web.common import service
 from swh.web.common.exc import BadInputExc, ForbiddenExc
 from swh.web.common.models import (
     SaveUnauthorizedOrigin, SaveAuthorizedOrigin, SaveOriginRequest,
-    SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED, SAVE_REQUEST_PENDING
+    SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED, SAVE_REQUEST_PENDING,
+    SAVE_TASK_NOT_YET_SCHEDULED, SAVE_TASK_SCHEDULED,
+    SAVE_TASK_SUCCEED, SAVE_TASK_FAILED
 )
 from swh.web.common.utils import get_origin_visits, parse_timestamp
 
@@ -88,11 +90,6 @@ _origin_type_task = {
     # 'svn': 'origin-load-svn'
 }
 
-SAVE_TASK_NOT_CREATED = 'not created'
-SAVE_TASK_NOT_YET_SCHEDULED = 'not yet scheduled'
-SAVE_TASK_SCHEDULED = 'scheduled'
-SAVE_TASK_SUCCEED = 'succeed'
-SAVE_TASK_FAILED = 'failed'
 
 # map scheduler task status to origin save status
 _save_task_status = {
@@ -153,7 +150,6 @@ def _get_visit_date_for_save_request(save_request):
 
 
 def _save_request_dict(save_request, task=None):
-    save_task_status = SAVE_TASK_NOT_CREATED
     visit_date = save_request.visit_date
     if task:
         save_task_status = _save_task_status[task['status']]
@@ -164,6 +160,10 @@ def _save_request_dict(save_request, task=None):
         # before reporting the task execution as successful
         if save_task_status == SAVE_TASK_SUCCEED and not visit_date:
             save_task_status = SAVE_TASK_SCHEDULED
+        save_request.loading_task_status = save_task_status
+        save_request.save()
+    else:
+        save_task_status = save_request.loading_task_status
 
     return {'origin_type': save_request.origin_type,
             'origin_url': save_request.origin_url,
@@ -317,15 +317,13 @@ def get_save_origin_requests_from_queryset(requests_queryset):
     """
     requests = []
     for sor in requests_queryset:
-        # rejected saving task or pending for acceptation
-        if sor.loading_task_id == -1:
-            requests.append(_save_request_dict(sor))
-            continue
-        task = scheduler.get_tasks([sor.loading_task_id])
-        # loading task may have been archived, do not return
-        # save request info in that case
-        if task:
-            requests.append(_save_request_dict(sor, task[0]))
+        task = None
+        # save task has not been created, no need to query
+        # the scheduler API
+        if sor.loading_task_id != -1:
+            tasks = scheduler.get_tasks([sor.loading_task_id])
+            task = tasks[0] if tasks else None
+        requests.append(_save_request_dict(sor, task))
     return requests
 
 

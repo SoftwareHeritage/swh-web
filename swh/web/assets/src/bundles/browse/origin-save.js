@@ -132,7 +132,8 @@ export function initOriginSave() {
     });
 
     $('#swh-input-origin-url').on('input', function(event) {
-      let originUrl = $(this).val();
+      let originUrl = $(this).val().trim();
+      $(this).val(originUrl);
       $('#swh-input-origin-type option').each(function() {
         let val = $(this).val();
         if (val && originUrl.includes(val)) {
@@ -157,13 +158,21 @@ export function validateSaveOriginUrl(input) {
   if (originType === 'git' && validUrl) {
     // additional checks for well known code hosting providers
     let githubIdx = input.value.indexOf('://github.com');
-    let gitlabIdx = input.value.indexOf('://gitlab.com');
+    let gitlabIdx = input.value.indexOf('://gitlab.');
     let gitSfIdx = input.value.indexOf('://git.code.sf.net');
     let bitbucketIdx = input.value.indexOf('://bitbucket.org');
     if (githubIdx !== -1 && githubIdx <= 5) {
       validUrl = isGitRepoUrl(input.value, 'github.com');
     } else if (gitlabIdx !== -1 && gitlabIdx <= 5) {
-      validUrl = isGitRepoUrl(input.value, 'gitlab.com');
+      let startIdx = gitlabIdx + 3;
+      let idx = input.value.indexOf('/', startIdx);
+      if (idx !== -1) {
+        let gitlabDomain = input.value.substr(startIdx, idx - startIdx);
+        // GitLab repo url needs to be suffixed by '.git' in order to be successfully loaded
+        validUrl = isGitRepoUrl(input.value, gitlabDomain) && input.value.endsWith('.git');
+      } else {
+        validUrl = false;
+      }
     } else if (gitSfIdx !== -1 && gitSfIdx <= 5) {
       validUrl = isGitRepoUrl(input.value, 'git.code.sf.net/p');
     } else if (bitbucketIdx !== -1 && bitbucketIdx <= 5) {
