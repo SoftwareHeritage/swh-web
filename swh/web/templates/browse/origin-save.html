@@ -9,7 +9,7 @@ See top-level LICENSE file for more information
 
 {% block header %}
 {{ block.super }}
-<script src='https://www.google.com/recaptcha/api.js'></script>
+<script src="https://www.google.com/recaptcha/api.js"></script>
 {% endblock %}
 
 {% block navbar-content %}
@@ -38,7 +38,11 @@ See top-level LICENSE file for more information
           <li><code>svn</code>, for origins using <a href="https://subversion.apache.org/">Subversion</a></li>
         </ul>
       </li>
-      <li><b>Origin url:</b> the url of the remote repository for the software origin.</li>
+      <li><b>Origin url:</b> the url of the remote repository for the software origin.<br/>
+        In order to avoid saving errors from Software Heritage, you should provide the clone/checkout url
+        as given by the provider hosting the software origin. <br/>It can easily be found in the
+        web interface used to browse the software origin.
+      </li>
     </ul>
     <p>
       Once submitted, your save request can either be:

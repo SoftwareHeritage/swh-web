@@ -45,6 +45,20 @@ SAVE_REQUEST_STATUS = [
     (SAVE_REQUEST_PENDING, SAVE_REQUEST_PENDING)
 ]
 
+SAVE_TASK_NOT_CREATED = 'not created'
+SAVE_TASK_NOT_YET_SCHEDULED = 'not yet scheduled'
+SAVE_TASK_SCHEDULED = 'scheduled'
+SAVE_TASK_SUCCEED = 'succeed'
+SAVE_TASK_FAILED = 'failed'
+
+SAVE_TASK_STATUS = [
+    (SAVE_TASK_NOT_CREATED, SAVE_TASK_NOT_CREATED),
+    (SAVE_TASK_NOT_YET_SCHEDULED, SAVE_TASK_NOT_YET_SCHEDULED),
+    (SAVE_TASK_SCHEDULED, SAVE_TASK_SCHEDULED),
+    (SAVE_TASK_SUCCEED, SAVE_TASK_SUCCEED),
+    (SAVE_TASK_FAILED, SAVE_TASK_FAILED)
+]
+
 
 class SaveOriginRequest(models.Model):
     """
@@ -58,6 +72,8 @@ class SaveOriginRequest(models.Model):
                               default=SAVE_REQUEST_PENDING)
     loading_task_id = models.IntegerField(default=-1)
     visit_date = models.DateTimeField(null=True)
+    loading_task_status = models.TextField(choices=SAVE_TASK_STATUS,
+                                           default=SAVE_TASK_NOT_CREATED)
 
     class Meta:
         app_label = 'swh.web.common'
