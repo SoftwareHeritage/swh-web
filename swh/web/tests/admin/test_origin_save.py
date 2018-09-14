@@ -13,8 +13,9 @@ from unittest.mock import patch
 from swh.web.common.models import (
     SaveAuthorizedOrigin, SaveUnauthorizedOrigin
 )
-from swh.web.common.origin_save import (
-    can_save_origin, SAVE_REQUEST_PENDING, SAVE_REQUEST_ACCEPTED,
+from swh.web.common.origin_save import can_save_origin
+from swh.web.common.models import (
+    SAVE_REQUEST_PENDING, SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_REJECTED, SAVE_TASK_NOT_YET_SCHEDULED
 )
 from swh.web.common.utils import reverse

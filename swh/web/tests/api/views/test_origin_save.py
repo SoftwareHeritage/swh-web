@@ -15,7 +15,7 @@ from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED,
     SAVE_REQUEST_PENDING
 )
-from swh.web.common.origin_save import (
+from swh.web.common.models import (
     SAVE_TASK_NOT_CREATED, SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_SCHEDULED, SAVE_TASK_FAILED, SAVE_TASK_SUCCEED
 )
@@ -134,11 +134,19 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
             mock_visit_date.return_value = visit_date
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
-
             save_request_data = response.data[0]
 
             self.assertEqual(save_request_data['save_request_status'],
                              expected_request_status)
+            self.assertEqual(save_request_data['save_task_status'],
+                             expected_task_status)
+
+            # Check that save task status is still available when
+            # the scheduler task has been archived
+            mock_scheduler.get_tasks.return_value = []
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            save_request_data = response.data[0]
             self.assertEqual(save_request_data['save_task_status'],
                              expected_task_status)
 
