@@ -196,6 +196,9 @@ LOGGING = {
             'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
             'formatter': 'verbose'
         },
+        'null': {
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
         'django': {
@@ -207,6 +210,10 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['null'],
+            'propagate': False
         }
     },
 }
