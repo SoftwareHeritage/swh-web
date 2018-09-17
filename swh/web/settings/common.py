@@ -61,7 +61,7 @@ MIDDLEWARE = [
 # served by django in a local development environment context.
 # In a production environment, assets compression will be directly
 # handled by web servers like apache or nginx.
-if swh_web_config['debug']:
+if swh_web_config['serve_assets']:
     MIDDLEWARE.insert(0, 'django.middleware.gzip.GZipMiddleware')
 
 ROOT_URLCONF = 'swh.web.urls'

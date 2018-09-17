@@ -29,6 +29,7 @@ DEFAULT_CONFIG = {
     'vault': ('string', 'http://127.0.0.1:5005/'),
     'log_dir': ('string', '/tmp/swh/log'),
     'debug': ('bool', False),
+    'serve_assets': ('bool', False),
     'host': ('string', '127.0.0.1'),
     'port': ('int', 5004),
     'secret_key': ('string', 'development key'),
