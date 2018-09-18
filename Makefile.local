@@ -20,7 +20,7 @@ run-tests-migrations:
 	django-admin migrate --settings=swh.web.settings.tests 2>/dev/null
 
 run-django-webpack-devserver: run-migrations
-	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; npm run start-dev & cd swh/web && python3 manage.py runserver"
+	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; npm run start-dev & cd swh/web && python3 manage.py runserver --nostatic"
 
 run-django-webpack-dev: build-webpack-dev run-migrations
 	python3 swh/web/manage.py runserver --nostatic

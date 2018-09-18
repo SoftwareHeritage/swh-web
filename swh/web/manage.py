@@ -11,6 +11,11 @@ import sys
 from swh.web import config
 
 if __name__ == "__main__":
+    swh_web_config = config.get_config()
+    # the serving of static assets in development mode is handled
+    # in swh/web/urls.py, we pass the nostatic options to runserver
+    # in order to have gzip compression enabled.
+    swh_web_config['serve_assets'] = '--nostatic' in sys.argv
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
         os.environ.setdefault("DJANGO_SETTINGS_MODULE",
                               "swh.web.settings.tests")
@@ -43,7 +48,6 @@ if __name__ == "__main__":
                 "forget to activate a virtual environment?"
             )
         raise
-    swh_web_config = config.get_config()
     runserver.default_port = swh_web_config['port']
     runserver.default_addr = swh_web_config['host']
     execute_from_command_line(sys.argv)
