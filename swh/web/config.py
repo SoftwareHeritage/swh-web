@@ -83,7 +83,7 @@ DEFAULT_CONFIG = {
 swhweb_config = {}
 
 
-def get_config(config_file='webapp/webapp'):
+def get_config(config_file='web/web'):
     """Read the configuration file `config_file`, update the app with
        parameters (secret_key, conf) and return the parsed configuration as a
        dict. If no configuration file is provided, return a default
