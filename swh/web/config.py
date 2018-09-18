@@ -29,6 +29,7 @@ DEFAULT_CONFIG = {
     'vault': ('string', 'http://127.0.0.1:5005/'),
     'log_dir': ('string', '/tmp/swh/log'),
     'debug': ('bool', False),
+    'serve_assets': ('bool', False),
     'host': ('string', '127.0.0.1'),
     'port': ('int', 5004),
     'secret_key': ('string', 'development key'),
@@ -71,13 +72,18 @@ DEFAULT_CONFIG = {
         'site_key': '',
         'private_key': ''
     }),
-    'production_db': ('string', '/var/lib/swh/web.sqlite3')
+    'production_db': ('string', '/var/lib/swh/web.sqlite3'),
+    'deposit': ('dict', {
+        'private_api_url': 'https://deposit.softwareheritage.org/1/private/',
+        'private_api_user': 'swhworker',
+        'private_api_password': ''
+    })
 }
 
 swhweb_config = {}
 
 
-def get_config(config_file='webapp/webapp'):
+def get_config(config_file='web/web'):
     """Read the configuration file `config_file`, update the app with
        parameters (secret_key, conf) and return the parsed configuration as a
        dict. If no configuration file is provided, return a default

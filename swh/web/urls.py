@@ -7,18 +7,19 @@ from django.conf import settings
 from django.conf.urls import (
     url, include, handler400, handler403, handler404, handler500
 )
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.staticfiles.views import serve
 from django.shortcuts import render
 from django.views.generic.base import RedirectView
 
 from django_js_reverse.views import urls_js
 
+from swh.web.browse.identifiers import swh_id_browse
+from swh.web.config import get_config
 from swh.web.common.exc import (
     swh_handle400, swh_handle403, swh_handle404, swh_handle500
 )
 
-from swh.web.browse.identifiers import swh_id_browse
+swh_web_config = get_config()
 
 favicon_view = RedirectView.as_view(url='/static/img/icons/swh-logo-32x32.png',
                                     permanent=True)
@@ -39,12 +40,18 @@ urlpatterns = [
         swh_id_browse, name='browse-swh-id')
 ]
 
+
+# allow to serve assets through django staticfiles
+# even if settings.DEBUG is False
+def insecure_serve(request, path, **kwargs):
+    return serve(request, path, insecure=True, **kwargs)
+
+
 # enable to serve compressed assets through django development server
-if settings.DEBUG:
+if swh_web_config['serve_assets']:
     static_pattern = r'^%s(?P<path>.*)$' % settings.STATIC_URL[1:]
-    urlpatterns.append(url(static_pattern, serve))
-else:
-    urlpatterns += staticfiles_urlpatterns()
+    urlpatterns.append(url(static_pattern, insecure_serve))
+
 
 handler400 = swh_handle400 # noqa
 handler403 = swh_handle403 # noqa

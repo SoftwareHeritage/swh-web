@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from swh.web.admin.adminurls import AdminUrls
 
 import swh.web.admin.origin_save # noqa
+import swh.web.admin.deposit # noqa
 
 
 def admin_default_view(request):
