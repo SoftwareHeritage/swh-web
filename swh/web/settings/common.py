@@ -61,7 +61,7 @@ MIDDLEWARE = [
 # served by django in a local development environment context.
 # In a production environment, assets compression will be directly
 # handled by web servers like apache or nginx.
-if swh_web_config['debug']:
+if swh_web_config['serve_assets']:
     MIDDLEWARE.insert(0, 'django.middleware.gzip.GZipMiddleware')
 
 ROOT_URLCONF = 'swh.web.urls'
@@ -196,6 +196,9 @@ LOGGING = {
             'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
             'formatter': 'verbose'
         },
+        'null': {
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
         'django': {
@@ -207,6 +210,10 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['null'],
+            'propagate': False
         }
     },
 }

@@ -5,4 +5,5 @@
  * See top-level LICENSE file for more information
  */
 
+export * from './deposit';
 export * from './origin-save';
