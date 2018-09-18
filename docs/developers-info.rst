@@ -4,7 +4,7 @@ Developers Information
 Sample configuration
 --------------------
 
-The configuration will be taken from the default configuration file: *~/.config/swh/webapp/webapp.yml*.
+The configuration will be taken from the default configuration file: *~/.config/swh/web/web.yml*.
 The following introduces a default configuration file:
 
 .. sourcecode:: yaml
