@@ -531,7 +531,7 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
         query_params = {'snapshot_id': snapshot_context['snapshot_id']}
     person_url = reverse('browse-person', kwargs={'person_id': person_id},
                          query_params=query_params)
-    return gen_link(person_url, person_name, link_attrs)
+    return gen_link(person_url, person_name or 'None', link_attrs)
 
 
 def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
