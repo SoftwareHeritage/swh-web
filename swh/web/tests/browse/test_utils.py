@@ -115,6 +115,11 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
 
         mock_service.lookup_snapshot.return_value = \
             {'branches': {
+                 'HEAD': {
+                     'target': '9fbd21adbac36be869514e82e2e98505dc47219c',
+                     'target_type': 'revision',
+                     'target_url': '/api/1/revision/9fbd21adbac36be869514e82e2e98505dc47219c/'
+                 },
                  'refs/heads/master': {
                      'target': '9fbd21adbac36be869514e82e2e98505dc47219c',
                      'target_type': 'revision',
@@ -162,7 +167,12 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
               'message': '0.10.1\n'}]
 
         expected_result = (
-            [{'name': 'refs/heads/master',
+            [{'name': 'HEAD',
+              'message': 'Merge pull request #678 from algernon',
+              'date': '04 August 2015, 10:16 UTC',
+              'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
+              'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'},
+             {'name': 'refs/heads/master',
               'message': 'Merge pull request #678 from algernon',
               'date': '04 August 2015, 10:16 UTC',
               'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
@@ -196,7 +206,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
         self.assertEqual(len(lookup_release_calls), 1)
 
         # Check that we looked up the two expected releases
-        self.assertCountEqual(lookup_release_calls[0][0][0], {
+        self.assertCountEqual(set(lookup_release_calls[0][0][0]), {
             '7045404f3d1c54e6473c71bbb716529fbad4be24',
             'c893f4549c367e68288b0eb74595050410aa0de7',
         })
@@ -205,7 +215,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
         self.assertEqual(len(lookup_revision_calls), 1)
 
         # Check that we looked up the three expected revisions
-        self.assertCountEqual(lookup_revision_calls[0][0][0], {
+        self.assertCountEqual(set(lookup_revision_calls[0][0][0]), {
             '9fbd21adbac36be869514e82e2e98505dc47219c',
             '6072557b6c10cd9a21145781e26ad1f978ed14b9',
             'ecc003b43433e5b46511157598e4857a761007bf',
