@@ -115,37 +115,42 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
 
         mock_service.lookup_snapshot.return_value = \
             {'branches': {
+                 'HEAD': {
+                     'target': '9fbd21adbac36be869514e82e2e98505dc47219c',
+                     'target_type': 'revision',
+                     'target_url': '/api/1/revision/9fbd21adbac36be869514e82e2e98505dc47219c/'
+                 },
                  'refs/heads/master': {
                      'target': '9fbd21adbac36be869514e82e2e98505dc47219c',
                      'target_type': 'revision',
                      'target_url': '/api/1/revision/9fbd21adbac36be869514e82e2e98505dc47219c/'
                  },
                  'refs/tags/0.10.0': {
-                     'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+                     'target': '7045404f3d1c54e6473c71bbb716529fbad4be24',
                      'target_type': 'release',
-                     'target_url': '/api/1/release/6072557b6c10cd9a21145781e26ad1f978ed14b9/'
+                     'target_url': '/api/1/release/7045404f3d1c54e6473c71bbb716529fbad4be24/'
                  },
                  'refs/tags/0.10.1': {
-                     'target': 'ecc003b43433e5b46511157598e4857a761007bf',
+                     'target': 'c893f4549c367e68288b0eb74595050410aa0de7',
                      'target_type': 'release',
-                     'target_url': '/api/1/release/ecc003b43433e5b46511157598e4857a761007bf/'
+                     'target_url': '/api/1/release/c893f4549c367e68288b0eb74595050410aa0de7/'
                  }
              },
              'id': '584b2fe3ce6218a96892e73bd76c2966bbc2a797'}
 
         mock_service.lookup_release_multiple.return_value = \
             [{'name': '0.10.0',
-              'message': 'release 0.10.0',
-              'id': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
-              'date': '2015-08-04T13:16:54+03:00',
+              'message': '0.10: The "Oh fuck it\'s PyCon" release\n',
+              'id': '7045404f3d1c54e6473c71bbb716529fbad4be24',
+              'date': '2014-04-10T23:01:28-04:00',
               'target_type': 'revision',
-              'target': 'e9c6243371087d04848b7686888f6dd29dfaef0e'},
+              'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9'},
              {'name': '0.10.1',
-              'message': 'release 0.10.1',
-              'id': 'ecc003b43433e5b46511157598e4857a761007bf',
-              'date': '2017-08-04T13:16:54+03:00',
+              'message': 'Tagging 0.10.1\n',
+              'id': 'c893f4549c367e68288b0eb74595050410aa0de7',
+              'date': '2014-10-10T09:45:52-04:00',
               'target_type': 'revision',
-              'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9'}]
+              'target': 'ecc003b43433e5b46511157598e4857a761007bf'}]
 
         mock_service.lookup_revision_multiple.return_value = \
             [{'date': '2015-08-04T13:16:54+03:00',
@@ -162,24 +167,29 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
               'message': '0.10.1\n'}]
 
         expected_result = (
-            [{'name': 'refs/heads/master',
+            [{'name': 'HEAD',
+              'message': 'Merge pull request #678 from algernon',
+              'date': '04 August 2015, 10:16 UTC',
+              'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
+              'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'},
+             {'name': 'refs/heads/master',
               'message': 'Merge pull request #678 from algernon',
               'date': '04 August 2015, 10:16 UTC',
               'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
               'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'}],
             [{'name': '0.10.0',
-              'id': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
-              'message': 'release 0.10.0',
-              'date': '04 August 2015, 10:16 UTC',
-              'target_type': 'revision',
-              'target': 'e9c6243371087d04848b7686888f6dd29dfaef0e',
-              'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
-             {'name': '0.10.1',
-              'id': 'ecc003b43433e5b46511157598e4857a761007bf',
-              'message': 'release 0.10.1',
-              'date': '04 August 2017, 10:16 UTC',
+              'id': '7045404f3d1c54e6473c71bbb716529fbad4be24',
+              'message': '0.10: The "Oh fuck it\'s PyCon" release\n',
+              'date': '11 April 2014, 03:01 UTC',
               'target_type': 'revision',
               'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+              'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
+             {'name': '0.10.1',
+              'id': 'c893f4549c367e68288b0eb74595050410aa0de7',
+              'message': 'Tagging 0.10.1\n',
+              'date': '10 October 2014, 13:45 UTC',
+              'target_type': 'revision',
+              'target': 'ecc003b43433e5b46511157598e4857a761007bf',
               'directory': '28ba64f97ef709e54838ae482c2da2619a74a0bd'}]
         )
 
@@ -191,6 +201,25 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
 
         origin_visit_branches = \
             utils.get_origin_visit_snapshot(origin_info, visit_id=1)
+
+        lookup_release_calls = mock_service.lookup_release_multiple.call_args_list
+        self.assertEqual(len(lookup_release_calls), 1)
+
+        # Check that we looked up the two expected releases
+        self.assertCountEqual(set(lookup_release_calls[0][0][0]), {
+            '7045404f3d1c54e6473c71bbb716529fbad4be24',
+            'c893f4549c367e68288b0eb74595050410aa0de7',
+        })
+
+        lookup_revision_calls = mock_service.lookup_revision_multiple.call_args_list
+        self.assertEqual(len(lookup_revision_calls), 1)
+
+        # Check that we looked up the three expected revisions
+        self.assertCountEqual(set(lookup_revision_calls[0][0][0]), {
+            '9fbd21adbac36be869514e82e2e98505dc47219c',
+            '6072557b6c10cd9a21145781e26ad1f978ed14b9',
+            'ecc003b43433e5b46511157598e4857a761007bf',
+        })
 
         self.assertEqual(origin_visit_branches, expected_result)
 

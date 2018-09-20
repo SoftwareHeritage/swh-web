@@ -11,6 +11,7 @@
 // in older browsers
 import '@babel/polyfill';
 import 'whatwg-fetch/dist/fetch.umd';
+import 'url-search-params-polyfill';
 
 // jquery and bootstrap
 import 'jquery';
