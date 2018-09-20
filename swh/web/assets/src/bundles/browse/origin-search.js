@@ -124,6 +124,41 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
     });
 }
 
+function doSearch() {
+  $('#swh-no-result').hide();
+  let patterns = $('#origins-url-patterns').val();
+  offset = 0;
+  inSearch = true;
+  // first try to resolve a swh persistent identifier
+  let resolvePidUrl = Urls.resolve_swh_pid(patterns);
+  fetch(resolvePidUrl)
+    .then(handleFetchError)
+    .then(response => response.json())
+    .then(data => {
+      // pid has been successfully resolved,
+      // so redirect to browse page
+      window.location = data.browse_url;
+    })
+    .catch(response => {
+      // pid resolving failed
+      if (patterns.startsWith('swh:')) {
+        // display a useful error message if the input
+        // looks like a swh pid
+        response.json().then(data => {
+          $('#swh-origin-search-results').hide();
+          $('.swh-search-pagination').hide();
+          $('#swh-no-result').text(data.reason);
+          $('#swh-no-result').show();
+        });
+      } else {
+        // otherwise, proceed with origins search
+        $('#swh-origin-search-results').show();
+        $('.swh-search-pagination').show();
+        searchOrigins(patterns, limit, offset, offset);
+      }
+    });
+}
+
 export function initOriginSearch() {
   $(document).ready(() => {
     if (typeof Storage !== 'undefined') {
@@ -144,38 +179,7 @@ export function initOriginSearch() {
 
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
-      $('#swh-no-result').hide();
-      let patterns = $('#origins-url-patterns').val();
-      offset = 0;
-      inSearch = true;
-      // first try to resolve a swh persistent identifier
-      let resolvePidUrl = Urls.resolve_swh_pid(patterns);
-      fetch(resolvePidUrl)
-        .then(handleFetchError)
-        .then(response => response.json())
-        .then(data => {
-          // pid has been successfully resolved,
-          // so redirect to browse page
-          window.location = data.browse_url;
-        })
-        .catch(response => {
-          // pid resolving failed
-          if (patterns.startsWith('swh:')) {
-            // display a useful error message if the input
-            // looks like a swh pid
-            response.json().then(data => {
-              $('#swh-origin-search-results').hide();
-              $('.swh-search-pagination').hide();
-              $('#swh-no-result').text(data.reason);
-              $('#swh-no-result').show();
-            });
-          } else {
-            // otherwise, proceed with origins search
-            $('#swh-origin-search-results').show();
-            $('.swh-search-pagination').show();
-            searchOrigins(patterns, limit, offset, offset);
-          }
-        });
+      doSearch();
     });
 
     $('#origins-next-results-button').click(event => {
@@ -219,5 +223,15 @@ export function initOriginSearch() {
       }
     });
 
+    let urlParams = new URLSearchParams(window.location.search);
+    let query = urlParams.get('q');
+    let withVisit = urlParams.has('with_visit');
+    if (query) {
+      $('#origins-url-patterns').val(query);
+      if (withVisit) {
+        $('#swh-search-origins-with-visit').prop('checked', true);
+      }
+      doSearch();
+    }
   });
 }

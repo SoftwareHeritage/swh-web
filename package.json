@@ -71,6 +71,7 @@
     "typeface-alegreya-sans": "0.0.54",
     "uglifyjs-webpack-plugin": "^1.3.0",
     "url-loader": "^1.1.1",
+    "url-search-params-polyfill": "^5.0.0",
     "validate.js": "^0.12.0",
     "waypoints": "^4.0.1",
     "webpack": "^4.18.0",
