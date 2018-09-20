@@ -179,7 +179,19 @@ export function initOriginSearch() {
 
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
-      doSearch();
+      let patterns = $('#origins-url-patterns').val().trim();
+      if (typeof Storage !== 'undefined') {
+        sessionStorage.setItem('last-swh-origin-url-patterns', patterns);
+        sessionStorage.setItem('last-swh-origin-search-results', '');
+        sessionStorage.setItem('last-swh-origin-search-offset', '');
+      }
+      let withVisit = $('#swh-search-origins-with-visit').prop('checked');
+      let queryParameters = '?q=' + encodeURI(patterns);
+      if (withVisit) {
+        queryParameters += '&with_visit';
+      }
+      // Update the url, trigering page reload and effective search
+      window.location.search = queryParameters;
     });
 
     $('#origins-next-results-button').click(event => {
