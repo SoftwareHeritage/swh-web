@@ -238,7 +238,8 @@ export function initOriginSearch() {
     let urlParams = new URLSearchParams(window.location.search);
     let query = urlParams.get('q');
     let withVisit = urlParams.has('with_visit');
-    if (query) {
+    let data = sessionStorage.getItem('last-swh-origin-search-results');
+    if (query && !data) {
       $('#origins-url-patterns').val(query);
       if (withVisit) {
         $('#swh-search-origins-with-visit').prop('checked', true);
