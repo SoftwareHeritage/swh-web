@@ -852,7 +852,7 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
 # list of origin types that can be found in the swh archive
 # TODO: retrieve it dynamically in an efficient way instead
 #       of hardcoding it
-_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit']
+_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit', 'pypi']
 
 
 def get_origin_info(origin_url, origin_type=None):
