@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import base64
+from collections import defaultdict
 import magic
 import math
 import pypandoc
@@ -370,57 +371,75 @@ def get_snapshot_content(snapshot_id):
     if cache_entry:
         return cache_entry['branches'], cache_entry['releases']
 
-    branches = []
-    releases = []
+    branches = {}
+    releases = {}
 
     if snapshot_id:
-        revision_ids = []
-        releases_ids = []
+        revision_to_branch = defaultdict(set)
+        revision_to_release = defaultdict(set)
+        release_to_branch = defaultdict(set)
         snapshot = service.lookup_snapshot(snapshot_id)
         snapshot_branches = snapshot['branches']
-        for key in sorted(snapshot_branches.keys()):
-            if not snapshot_branches[key]:
+        for branch_name, target in snapshot_branches.items():
+            if not target:
+                # FIXME: display branches with an unknown target anyway
                 continue
-            if snapshot_branches[key]['target_type'] == 'revision':
-                branches.append({'name': key,
-                                 'revision': snapshot_branches[key]['target']})
-                revision_ids.append(snapshot_branches[key]['target'])
-            elif snapshot_branches[key]['target_type'] == 'release':
-                releases_ids.append(snapshot_branches[key]['target'])
+            target_id = target['target']
+            target_type = target['target_type']
+            if target_type == 'revision':
+                branches[branch_name] = {
+                    'name': branch_name,
+                    'revision': target_id,
+                }
+                revision_to_branch[target_id].add(branch_name)
+            elif target_type == 'release':
+                release_to_branch[target_id].add(branch_name)
+            # FIXME: handle pointers to other object types
+            # FIXME: handle branch aliases
 
-        releases_info = service.lookup_release_multiple(releases_ids)
+        releases_info = service.lookup_release_multiple(
+            release_to_branch.keys()
+        )
         for release in releases_info:
-            releases.append({'name': release['name'],
-                             'date': format_utc_iso_date(release['date']),
-                             'id': release['id'],
-                             'message': release['message'],
-                             'target_type': release['target_type'],
-                             'target': release['target']})
-            revision_ids.append(release['target'])
+            branches_to_update = release_to_branch[release['id']]
+            for branch in branches_to_update:
+                releases[branch] = {
+                    'name': release['name'],
+                    'date': format_utc_iso_date(release['date']),
+                    'id': release['id'],
+                    'message': release['message'],
+                    'target_type': release['target_type'],
+                    'target': release['target'],
+                }
+            if release['target_type'] == 'revision':
+                revision_to_release[release['target']].update(
+                    branches_to_update
+                )
 
-        revisions = service.lookup_revision_multiple(revision_ids)
+        revisions = service.lookup_revision_multiple(
+            set(revision_to_branch.keys()) | set(revision_to_release.keys())
+        )
 
-        branches_to_remove = []
+        for revision in revisions:
+            revision_data = {
+                'directory': revision['directory'],
+                'date': format_utc_iso_date(revision['date']),
+                'message': revision['message'],
+            }
+            for branch in revision_to_branch[revision['id']]:
+                branches[branch].update(revision_data)
+            for release in revision_to_release[revision['id']]:
+                releases[release]['directory'] = revision['directory']
 
-        for idx, revision in enumerate(revisions):
-            if idx < len(branches):
-                if revision:
-                    branches[idx]['directory'] = revision['directory']
-                    branches[idx]['date'] = format_utc_iso_date(revision['date']) # noqa
-                    branches[idx]['message'] = revision['message']
-                else:
-                    branches_to_remove.append(branches[idx])
-            else:
-                rel_idx = idx - len(branches)
-                if revision:
-                    releases[rel_idx]['directory'] = revision['directory']
+    ret_branches = list(sorted(branches.values(), key=lambda b: b['name']))
+    ret_releases = list(sorted(releases.values(), key=lambda b: b['name']))
 
-        for b in branches_to_remove:
-            branches.remove(b)
+    cache.set(cache_entry_id, {
+        'branches': ret_branches,
+        'releases': ret_releases,
+    })
 
-    cache.set(cache_entry_id, {'branches': branches, 'releases': releases})
-
-    return branches, releases
+    return ret_branches, ret_releases
 
 
 def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
@@ -512,7 +531,7 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
         query_params = {'snapshot_id': snapshot_context['snapshot_id']}
     person_url = reverse('browse-person', kwargs={'person_id': person_id},
                          query_params=query_params)
-    return gen_link(person_url, person_name, link_attrs)
+    return gen_link(person_url, person_name or 'None', link_attrs)
 
 
 def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
@@ -833,7 +852,7 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
 # list of origin types that can be found in the swh archive
 # TODO: retrieve it dynamically in an efficient way instead
 #       of hardcoding it
-_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit']
+_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit', 'pypi']
 
 
 def get_origin_info(origin_url, origin_type=None):
