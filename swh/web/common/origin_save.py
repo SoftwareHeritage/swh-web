@@ -87,7 +87,7 @@ def can_save_origin(origin_url):
 _origin_type_task = {
     'git': 'origin-update-git',
     # 'hg': 'origin-load-hg',
-    # 'svn': 'origin-load-svn'
+    'svn': 'origin-load-svn-dump'
 }
 
 
@@ -211,7 +211,7 @@ def create_save_origin_request(origin_type, origin_url):
 
     """
     _check_origin_type_savable(origin_type)
-    _check_origin_url_valid(origin_url)
+    # _check_origin_url_valid(origin_url)
     save_request_status = can_save_origin(origin_url)
     task = None
 
