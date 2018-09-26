@@ -186,7 +186,7 @@ export function initOriginSearch() {
         sessionStorage.setItem('last-swh-origin-search-offset', '');
       }
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-      let queryParameters = '?q=' + encodeURI(patterns);
+      let queryParameters = '?q=' + encodeURIComponent(patterns);
       if (withVisit) {
         queryParameters += '&with_visit';
       }
