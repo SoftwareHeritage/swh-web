@@ -220,7 +220,7 @@ LOGGING = {
 
 WEBPACK_LOADER = {
     'DEFAULT': {
-        'CACHE': not DEBUG,
+        'CACHE': False,
         'BUNDLE_DIR_NAME': './',
         'STATS_FILE': os.path.join(PROJECT_DIR, '../static/webpack-stats.json'), # noqa
         'POLL_INTERVAL': 0.1,

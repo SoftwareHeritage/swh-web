@@ -50,3 +50,5 @@ DATABASES = {
         'NAME': swh_web_config['production_db'],
     }
 }
+
+WEBPACK_LOADER['DEFAULT']['CACHE'] = True
