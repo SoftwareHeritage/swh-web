@@ -249,12 +249,13 @@ def create_save_origin_request(origin_type, origin_url):
             # a task has already been created to load the origin
             elif sor.loading_task_id != -1:
                 # get the scheduler task and its status
-                task = scheduler.get_tasks([sor.loading_task_id])[0]
-                save_task_status = _save_task_status[task['status']]
+                tasks = scheduler.get_tasks([sor.loading_task_id])
+                task = tasks[0] if tasks else None
+                task_status = _save_request_dict(sor, task)['save_task_status']
                 # create a new scheduler task only if the previous one has been
                 # already executed
-                if save_task_status == SAVE_TASK_FAILED or \
-                   save_task_status == SAVE_TASK_SUCCEED:
+                if task_status == SAVE_TASK_FAILED or \
+                   task_status == SAVE_TASK_SUCCEED:
                     can_create_task = True
                     sor = None
                 else:
