@@ -1,3 +1,9 @@
+swh-web (0.0.157-1~swh1~bpo9+1) stretch-swh; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Antoine Lambert <antoine.lambert@inria.fr>  Thu, 27 Sep 2018 17:21:28 +0200
+
 swh-web (0.0.157-1~swh1) unstable-swh; urgency=medium
 
   * version 0.0.157
