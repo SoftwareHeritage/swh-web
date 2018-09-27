@@ -53,7 +53,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
     def check_created_save_request_status(self, mock_scheduler, origin_url,
                                           scheduler_task_status,
                                           expected_request_status,
-                                          expected_task_status=None):
+                                          expected_task_status=None,
+                                          visit_date=None):
 
         if not scheduler_task_status:
             mock_scheduler.get_tasks.return_value = []
@@ -92,17 +93,19 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                       kwargs={'origin_type': 'git',
                               'origin_url': origin_url})
 
-        response = self.client.post(url)
+        with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
+            mock_visit_date.return_value = visit_date
+            response = self.client.post(url)
 
-        if expected_request_status != SAVE_REQUEST_REJECTED:
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data['save_request_status'],
-                             expected_request_status)
-            self.assertEqual(response.data['save_task_status'],
-                             expected_task_status)
+            if expected_request_status != SAVE_REQUEST_REJECTED:
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.data['save_request_status'],
+                                 expected_request_status)
+                self.assertEqual(response.data['save_task_status'],
+                                 expected_task_status)
 
-        else:
-            self.assertEqual(response.status_code, 403)
+            else:
+                self.assertEqual(response.status_code, 403)
 
     @nottest
     def check_save_request_status(self, mock_scheduler, origin_url,
@@ -235,10 +238,12 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                                      origin_url=origin_url))
         self.assertEquals(len(sors), 1)
 
+        visit_date = datetime.now() + timedelta(hours=1)
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                'completed',
                                                SAVE_REQUEST_ACCEPTED,
-                                               SAVE_TASK_NOT_YET_SCHEDULED)
+                                               SAVE_TASK_NOT_YET_SCHEDULED,
+                                               visit_date=visit_date)
         sors = list(SaveOriginRequest.objects.filter(origin_type='git',
                                                      origin_url=origin_url))
         self.assertEquals(len(sors), 2)

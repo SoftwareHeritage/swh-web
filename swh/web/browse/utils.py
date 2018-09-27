@@ -334,7 +334,7 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
                     visit_idx = i+1
                     break
 
-    if visit_idx:
+    if visit_idx is not None:
         visit = visits[visit_idx]
         while visit_idx < len(visits) - 1 and \
                 visit['date'] == visits[visit_idx+1]['date']:
