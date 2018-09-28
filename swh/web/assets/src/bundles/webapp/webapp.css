@@ -268,7 +268,7 @@ a.dropdown-left::before {
     color: #fecd1b;
 }
 
-.swh-donate-item {
+.swh-position-right {
     position: absolute;
     right: 0;
 }
