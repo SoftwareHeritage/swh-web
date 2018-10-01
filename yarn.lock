@@ -3649,9 +3649,9 @@ hex-color-regex@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
 
-highlightjs-line-numbers.js@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/highlightjs-line-numbers.js/-/highlightjs-line-numbers.js-2.3.0.tgz#e6baee2af842410669003cc32144130a2afbe761"
+highlightjs-line-numbers.js@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-line-numbers.js/-/highlightjs-line-numbers.js-2.4.0.tgz#9c59669f4d21683b7acff779871be09fcbdfb866"
 
 highlightjs@^9.10.0:
   version "9.10.0"
@@ -5420,7 +5420,7 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-open-iconic@>=1.1.1:
+open-iconic@>=1.1.1, open-iconic@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/open-iconic/-/open-iconic-1.1.1.tgz#9dcfc8c7cd3c61cdb4a236b1a347894c97adc0c6"
 

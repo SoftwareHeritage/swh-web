@@ -55,6 +55,7 @@
     "node-sass": "^4.9.3",
     "nodemon": "^1.18.4",
     "octicons": "^4.4.0",
+    "open-iconic": "^1.1.1",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "pdfjs-dist": "^2.0.489",
     "popper.js": "^1.14.4",

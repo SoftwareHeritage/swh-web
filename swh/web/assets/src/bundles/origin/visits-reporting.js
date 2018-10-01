@@ -61,10 +61,16 @@ function updateVisitsList(year) {
   $('#swh-visits-list').append($(visitsListHtml));
 }
 
-// callback when the user selects a year through the visits histogram
-function yearClicked(year) {
+function yearChangedCalendar(year) {
   currentYear = year;
-  updateCalendar(year, filteredVisits);
+  updateVisitsList(year);
+  createVisitsHistogram('.d3-wrapper', filteredVisits, currentYear, yearClickedTimeline);
+}
+
+// callback when the user selects a year through the visits histogram
+function yearClickedTimeline(year) {
+  currentYear = year;
+  updateCalendar(year, filteredVisits, yearChangedCalendar);
   updateVisitsList(year);
 }
 
@@ -76,8 +82,8 @@ function updateDisplayedVisits() {
   if (!currentYear) {
     currentYear = filteredVisits[filteredVisits.length - 1].date.getUTCFullYear();
   }
-  createVisitsHistogram('.d3-wrapper', filteredVisits, currentYear, yearClicked);
-  updateCalendar(currentYear, filteredVisits);
+  createVisitsHistogram('.d3-wrapper', filteredVisits, currentYear, yearClickedTimeline);
+  updateCalendar(currentYear, filteredVisits, yearChangedCalendar);
   updateVisitsList(currentYear);
 }
 
@@ -101,31 +107,32 @@ export function showAllVisits(event) {
 }
 
 export function initVisitsReporting(visits) {
-
-  allVisits = visits;
-  // process input visits
-  let firstFullVisit;
-  allVisits.forEach((v, i) => {
-    // Turn Unix epoch into Javascript Date object
-    v.date = new Date(Math.floor(v.date * 1000));
-    let visitLink = '<a class="swh-visit-' + v.status + '" href="' + v.browse_url + '">' + v.fmt_date + '</a>';
-    if (v.status === 'full') {
-      if (!firstFullVisit) {
-        firstFullVisit = v;
-        $('#swh-first-full-visit').append($(visitLink));
-        if (allVisits.length === 1) {
+  $(document).ready(() => {
+    allVisits = visits;
+    // process input visits
+    let firstFullVisit;
+    allVisits.forEach((v, i) => {
+      // Turn Unix epoch into Javascript Date object
+      v.date = new Date(Math.floor(v.date * 1000));
+      let visitLink = '<a class="swh-visit-' + v.status + '" href="' + v.browse_url + '">' + v.fmt_date + '</a>';
+      if (v.status === 'full') {
+        if (!firstFullVisit) {
+          firstFullVisit = v;
+          $('#swh-first-full-visit').append($(visitLink));
+          if (allVisits.length === 1) {
+            $('#swh-last-full-visit')[0].innerHTML = visitLink;
+          }
+        } else {
           $('#swh-last-full-visit')[0].innerHTML = visitLink;
         }
-      } else {
-        $('#swh-last-full-visit')[0].innerHTML = visitLink;
       }
-    }
-    if (i === allVisits.length - 1) {
-      $('#swh-last-visit').append($(visitLink));
-    }
-  });
+      if (i === allVisits.length - 1) {
+        $('#swh-last-visit').append($(visitLink));
+      }
+    });
 
-  // display full visits pointing to different snapshots by default
-  showFullVisitsDifferentSnapshots();
+    // display full visits pointing to different snapshots by default
+    showFullVisitsDifferentSnapshots();
+  });
 
 }
