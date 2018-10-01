@@ -218,7 +218,7 @@ LOGGING = {
     },
 }
 
-WEBPACK_LOADER = {
+WEBPACK_LOADER = { # noqa
     'DEFAULT': {
         'CACHE': False,
         'BUNDLE_DIR_NAME': './',
