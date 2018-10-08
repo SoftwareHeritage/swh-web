@@ -148,12 +148,6 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         # given
         origin_visit = self.origin_visit1.copy()
         origin_visit.update({
-            'occurrences': {
-                'master': {
-                    'target_type': 'revision',
-                    'target': '98564',
-                }
-            },
             'snapshot': '57478754'
         })
 
@@ -162,13 +156,6 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         expected_origin_visit = self.origin_visit1.copy()
         expected_origin_visit.update({
             'origin_url': '/api/1/origin/10/',
-            'occurrences': {
-                'master': {
-                    'target_type': 'revision',
-                    'target': '98564',
-                    'target_url': '/api/1/revision/98564/'
-                }
-            },
             'snapshot': '57478754',
             'snapshot_url': '/api/1/snapshot/57478754/'
         })

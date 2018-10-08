@@ -340,14 +340,6 @@ def from_origin_visit(visit):
                   dates={'date'},
                   empty_dict={'metadata'})
 
-    # TODO: remove that piece of code once snapshot migration
-    # is totally effective in storage (no more occurrences)
-    if ov and 'occurrences' in ov:
-        ov['occurrences'] = {
-            decode_with_escape(k): v
-            for k, v in ov['occurrences'].items()
-        }
-
     return ov
 
 
