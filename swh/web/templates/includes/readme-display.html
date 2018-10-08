@@ -13,13 +13,17 @@ See top-level LICENSE file for more information
     <div class="card-header bg-gray-light">
       <h4>{{ readme_name }}</h4>
     </div>
-    <div id="readme" class="swh-showdown card-body">
+    <div id="readme" class="card-body">
     </div>
   </div>
 
   {% if readme_html %}
     <script>
       $('#readme').html({{ readme_html|jsonify }});
+    </script>
+  {% elif readme_name.lower == 'readme' or readme_name.lower == 'readme.txt' %}
+    <script>
+      swh.webapp.renderTxt('#readme', '{{ readme_url }}');
     </script>
   {% else %}
     <script>

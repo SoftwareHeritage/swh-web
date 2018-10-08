@@ -19,5 +19,5 @@ export * from './webapp-utils';
 
 // utility js modules
 export * from './code-highlighting';
-export * from './markdown-rendering';
+export * from './readme-rendering';
 export * from './pdf-rendering';
