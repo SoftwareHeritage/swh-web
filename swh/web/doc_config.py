@@ -23,6 +23,9 @@ class SimpleDocumenter(autodoc.FunctionDocumenter):
     and without function signature header.
     """
     objtype = "simple"
+    # ensure the priority is lesser than the base FunctionDocumenter
+    # to avoid side effects with autodoc processing
+    priority = -1
 
     # do not indent the content
     content_indent = ""
