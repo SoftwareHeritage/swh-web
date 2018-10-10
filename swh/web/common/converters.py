@@ -200,8 +200,7 @@ def from_origin(origin):
     """Convert from an SWH origin to an origin dictionary.
 
     """
-    return from_swh(origin,
-                    removables_if_empty={'lister', 'project'})
+    return from_swh(origin)
 
 
 def from_release(release):

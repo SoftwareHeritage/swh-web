@@ -25,8 +25,6 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
 
         self.origin1 = {
             'id': 1234,
-            'lister': 'uuid-lister-0',
-            'project': 'uuid-project-0',
             'url': 'ftp://some/url/to/origin/0',
             'type': 'ftp'
         }

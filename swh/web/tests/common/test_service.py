@@ -700,8 +700,6 @@ class ServiceTestCase(SWHWebTestCase):
         # given
         mock_storage.origin_get = MagicMock(return_value={
             'id': 'origin-id',
-            'lister': 'uuid-lister',
-            'project': 'uuid-project',
             'url': 'ftp://some/url/to/origin',
             'type': 'ftp'})
 
@@ -710,8 +708,6 @@ class ServiceTestCase(SWHWebTestCase):
 
         # then
         self.assertEqual(actual_origin, {'id': 'origin-id',
-                                         'lister': 'uuid-lister',
-                                         'project': 'uuid-project',
                                          'url': 'ftp://some/url/to/origin',
                                          'type': 'ftp'})
 
