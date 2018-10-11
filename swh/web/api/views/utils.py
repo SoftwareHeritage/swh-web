@@ -39,7 +39,7 @@ def api_lookup(lookup_fn, *args,
     Raises:
         NotFoundExp or whatever `lookup_fn` raises.
 
-    """
+    """ # noqa
     if enrich_fn is None:
         enrich_fn = (lambda x: x)
     res = lookup_fn(*args)

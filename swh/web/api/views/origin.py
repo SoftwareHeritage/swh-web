@@ -9,7 +9,6 @@ from swh.web.common import service
 from swh.web.common.utils import (
     reverse, get_origin_visits
 )
-from swh.web.api import utils
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
@@ -292,9 +291,6 @@ def api_origin_visit(request, origin_id, visit_id):
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json string date: ISO representation of the visit date (in UTC)
-        :>json object occurrences: object containing all branches associated to the origin found
-            during the visit, for each of them the associated SWH target type and id are given
-            but also a link to get information about that target
         :>json number origin: the origin unique identifier
         :>json string origin_url: link to get information about the origin
         :>jsonarr string snapshot: the snapshot identifier of the visit
@@ -325,13 +321,6 @@ def api_origin_visit(request, origin_id, visit_id):
         else:
             ov['snapshot_url'] = None
 
-        # TODO: remove that piece of code once the snapshot migration
-        # is totally effective in storage (no more occurrences)
-        if 'occurrences' in ov:
-            ov['occurrences'] = {
-                k: utils.enrich_object(v) if v else None
-                for k, v in ov['occurrences'].items()
-            }
         return ov
 
     return api_lookup(

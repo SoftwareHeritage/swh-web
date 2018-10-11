@@ -176,17 +176,20 @@ def request_content(query_string, max_size=content_display_max_size,
                         content_data['raw_data'].decode(encoding, 'replace')\
                                                 .encode('utf-8')
             elif reencode and mimetype.startswith('application/octet-stream'):
-                # file may detect an iso-8859-* encoded content as binary
+                # file may detect a text content as binary
                 # so try to decode it for display
-                encodings = ['iso-8859-%s' % i for i in range(1, 17)]
+                encodings = ['us-ascii']
+                encodings += ['iso-8859-%s' % i for i in range(1, 17)]
                 for encoding in encodings:
                     try:
                         content_data['raw_data'] = \
                                 content_data['raw_data'].decode(encoding)\
                                                         .encode('utf-8')
-                    except Exception:
+                    except Exception as e:
                         pass
                     else:
+                        # ensure display in content view
+                        mimetype = 'text/plain'
                         break
     else:
         content_data['raw_data'] = None

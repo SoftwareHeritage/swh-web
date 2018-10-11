@@ -18,6 +18,7 @@ from swh.web.config import get_config
 from swh.web.common.exc import (
     swh_handle400, swh_handle403, swh_handle404, swh_handle500
 )
+from swh.web.misc.coverage import swh_coverage
 
 swh_web_config = get_config()
 
@@ -37,7 +38,8 @@ urlpatterns = [
     url(r'^$', default_view, name='swh-web-homepage'),
     url(r'^jsreverse/$', urls_js, name='js_reverse'),
     url(r'^(?P<swh_id>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$',
-        swh_id_browse, name='browse-swh-id')
+        swh_id_browse, name='browse-swh-id'),
+    url(r'^coverage/$', swh_coverage, name='swh-coverage')
 ]
 
 

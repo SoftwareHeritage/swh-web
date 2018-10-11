@@ -70,8 +70,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         # remove parsed document markups
         par = re.sub('<[^<]+?>', '', par)
         # api urls cleanup to generate valid links afterwards
-        par = re.sub('\(\w+\)', '', par)
-        par = re.sub('\[.*\]', '', par)
+        par = re.sub('\(\w+\)', '', par) # noqa
+        par = re.sub('\[.*\]', '', par) # noqa
         par = par.replace('//', '/')
         # transform references to api endpoints into valid rst links
         par = re.sub(':http:get:`(.*)`', r'`<\1>`_', par)
