@@ -211,8 +211,6 @@ class ConvertersTestCase(SWHWebTestCase):
             'id': 9,
             'type': 'ftp',
             'url': 'rsync://ftp.gnu.org/gnu/octave',
-            'project': None,
-            'lister': None,
         }
 
         expected_origin = {

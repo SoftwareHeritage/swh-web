@@ -47,8 +47,9 @@ To run the backend, you need to have the following Python 3 modules installed:
 * pypandoc
 * python-dateutil
 * pyyaml
+* requests
 
-To compile the frontend assets, you need to have [nodejs](https://nodejs.org/en/) > 4.x (preferably version 8.x) and [npm](https://www.npmjs.com/) (or [yarn](https://yarnpkg.com/en/)) installed. If you are on Debian, you can easily install an up to date nodejs/npm by following the instructions located at https://github.com/nodesource/distributions.
+To compile the frontend assets, you need to have [nodejs](https://nodejs.org/en/) >= 8.x (preferably version 8.x LTS) and [npm](https://www.npmjs.com/) (or [yarn](https://yarnpkg.com/en/)) installed. If you are on Debian stretch, you can easily install an up to date nodejs/npm from the stretch-backports repository or by following the instructions located at https://github.com/nodesource/distributions.
 
 Once you have installed nodejs, issue the following command in the root directory of swh-web in order to retrieve all the frontend dependencies:
 

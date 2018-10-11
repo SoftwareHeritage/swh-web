@@ -27,8 +27,6 @@ def api_stats(request):
         :>json number entity: current number of SWH entities (a SWH entity is either
             a *group_of_entities*, a *group_of_persons*, a *project*, a *person*, an *organization*,
             or a *hosting* service) in the SWH archive
-        :>json number occurrence: current number of SWH occurrences (an occurrence may be assimilated
-            to a branch found during a SWH crawl of a repository) in the SWH archive
         :>json number origin: current number of SWH origins (an origin is a "place" where code
             source can be found, e.g. a git repository, a tarball, ...) in the SWH archive
         :>json number person: current number of SWH persons (code source authors or committers)

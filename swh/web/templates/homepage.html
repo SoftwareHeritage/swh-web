@@ -38,14 +38,8 @@ See top-level LICENSE file for more information
 <p>
   A significant amount of source code has already been ingested in the Software Heritage
   archive. It currently includes:
-  <ul>
-    <li>public repositories from <a href="https://github.com">GitHub</a></li>
-    <li>source packages from the <a href="https://www.debian.org">Debian</a> distribution</li>
-    <li>public repositories from the former <a href="https://gitorious.org/">Gitorious</a> code hosting service</li>
-    <li>public repositories from the former <a href="https://code.google.com/archive/">Google Code</a> project hosting service</li>
-    <li>releases from the <a href="https://www.gnu.org">GNU</a> project (as of August 2015)</li>
-  </ul>
 </p>
+<iframe class="swh-coverage-list" src="{% url 'swh-coverage' %}"></iframe>
 
 <h4>Size</h4>
 
@@ -118,6 +112,7 @@ See top-level LICENSE file for more information
         $('#nb-releases').html(data.release.toLocaleString());
       }
     });
+    $('.swh-coverage-list').iFrameResize({heightCalculationMethod: 'taggedElement'});
   });
   swh.webapp.initPage('home');
 </script>

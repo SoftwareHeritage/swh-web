@@ -17,7 +17,25 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
       .then(handleFetchError)
       .then(response => response.text())
       .then(data => {
+        $(domElt).addClass('swh-showdown');
         $(domElt).html(converter.makeHtml(data));
+      })
+      .catch(() => {
+        $(domElt).text('Readme bytes are not available');
+      });
+  });
+
+}
+
+export function renderTxt(domElt, txtDocUrl) {
+
+  $(document).ready(() => {
+    fetch(txtDocUrl)
+      .then(handleFetchError)
+      .then(response => response.text())
+      .then(data => {
+        $(domElt).addClass('swh-readme-txt');
+        $(domElt).html(`<pre>${data}</pre>`);
       })
       .catch(() => {
         $(domElt).text('Readme bytes are not available');

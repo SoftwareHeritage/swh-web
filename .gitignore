@@ -21,3 +21,5 @@ swh/web/static/js/
 swh/web/static/css/
 swh/web/static/fonts/
 .cache-loader/
+build/
+dist/

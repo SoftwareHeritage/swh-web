@@ -1,3 +1,5 @@
+TEST_DIRS := ./swh/web/tests
+
 .PHONY: build-webpack-dev
 build-webpack-dev:
 	npm run build-dev

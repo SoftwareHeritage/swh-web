@@ -76,8 +76,6 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             "directory_entry_rev": 0,
             "entity": 0,
             "entity_history": 0,
-            "occurrence": 0,
-            "occurrence_history": 19600,
             "origin": 1096,
             "person": 0,
             "release": 8584,
