@@ -601,8 +601,6 @@ class ServiceTestCase(SWHWebTestCase):
             "directory_entry_rev": 0,
             "entity": 0,
             "entity_history": 0,
-            "occurrence": 0,
-            "occurrence_history": 19600,
             "origin": 1096,
             "person": 0,
             "release": 8584,
@@ -702,8 +700,6 @@ class ServiceTestCase(SWHWebTestCase):
         # given
         mock_storage.origin_get = MagicMock(return_value={
             'id': 'origin-id',
-            'lister': 'uuid-lister',
-            'project': 'uuid-project',
             'url': 'ftp://some/url/to/origin',
             'type': 'ftp'})
 
@@ -712,8 +708,6 @@ class ServiceTestCase(SWHWebTestCase):
 
         # then
         self.assertEqual(actual_origin, {'id': 'origin-id',
-                                         'lister': 'uuid-lister',
-                                         'project': 'uuid-project',
                                          'url': 'ftp://some/url/to/origin',
                                          'type': 'ftp'})
 

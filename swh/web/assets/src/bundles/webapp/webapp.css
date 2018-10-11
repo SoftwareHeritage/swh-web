@@ -268,7 +268,7 @@ a.dropdown-left::before {
     color: #fecd1b;
 }
 
-.swh-donate-item {
+.swh-position-right {
     position: absolute;
     right: 0;
 }
@@ -400,4 +400,36 @@ hr.swh-faded-line {
     border: 0;
     height: 1px;
     background-image: linear-gradient(to left, #f0f0f0, #8c8b8b, #f0f0f0);
+}
+
+.swh-readme-txt pre {
+    background: none;
+    border: none;
+}
+
+.swh-coverage {
+    height: 65px;
+    padding-top: 0.3rem;
+}
+
+.swh-coverage a {
+    text-decoration: none;
+}
+
+.swh-coverage-logo {
+    display: block;
+    width: 100%;
+    height: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+
+    /* polyfill for old browsers, see https://github.com/bfred-it/object-fit-images */
+    font-family: 'object-fit: contain;';
+}
+
+.swh-coverage-list {
+    width: 100%;
+    height: 320px;
+    border: none;
 }

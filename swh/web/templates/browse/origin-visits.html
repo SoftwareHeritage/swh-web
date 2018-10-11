@@ -42,29 +42,31 @@ See top-level LICENSE file for more information
   <h4>Overview</h4>
 
   <ul>
-    <li>Total number of visits: <b>{{ origin_visits|length }}</b></li>
-    <li>Last full visit: <span style="margin-left: 20px;" id="swh-last-full-visit"></span></li>
-    <li>First full visit: <span style="margin-left: 20px;" id="swh-first-full-visit"></span></li>
-    <li>Last visit: <span style="margin-left: 20px;" id="swh-last-visit"></span></li>
+    <li class="d-inline-block"><b>Total number of visits: </b>{{ origin_visits|length }}<b>,</b> </li>
+    <li class="d-inline-block"><b>Last full visit: </b><span style="margin-left: 20px;" id="swh-last-full-visit"></span><b>,</b> </li>
+    <li class="d-inline-block"><b>First full visit: </b><span style="margin-left: 20px;" id="swh-first-full-visit"></span><b>,</b> </li>
+    <li class="d-inline-block"><b>Last visit: </b><span style="margin-left: 20px;" id="swh-last-visit"></span></li>
   </ul>
 
   <h4>History</h4>
 
-  <div class="btn-group btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
-    <label class="btn btn-default btn-sm form-check-label active" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
-      <input type="radio" name="options" id="option1" autocomplete="off" checked> Show full visits with different snapshots
-    </label>
-    <label class="btn btn-default btn-sm form-check-label" onclick="swh.origin.showFullVisits(event)">
-      <input type="radio" name="options" id="option2" autocomplete="off"> Show all full visits
-    </label>
-    <label class="btn btn-default btn-sm form-check-label" onclick="swh.origin.showAllVisits(event)">
-      <input type="radio" name="options" id="option3" autocomplete="off"> Show all visits
-    </label>
+  <div class="text-center">
+    <div class="form-check-inline">
+      <label class="form-check-label active" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
+        <input type="radio" class="form-check-input" name="optradio" checked>Show full visits with different snapshots
+      </label>
+    </div>
+    <div class="form-check-inline">
+      <label class="form-check-label" onclick="swh.origin.showFullVisits(event)">
+        <input type="radio" class="form-check-input" name="optradio">Show all full visits
+      </label>
+    </div>
+    <div class="form-check-inline disabled">
+      <label class="form-check-label" onclick="swh.origin.showAllVisits(event)">
+        <input type="radio" class="form-check-input" name="optradio">Show all visits
+      </label>
+    </div>
   </div>
-
-  <h5>Timeline</h5>
-
-  <div id="swh-visits-timeline" class="d3-wrapper"></div>
 
   <h5>Calendar</h5>
 
@@ -73,6 +75,10 @@ See top-level LICENSE file for more information
   <h5>List</h5>
 
   <div id="swh-visits-list"></div>
+
+  <h5>Timeline</h5>
+
+  <div id="swh-visits-timeline" class="d3-wrapper"></div>
 
 </div>
 

@@ -26,6 +26,9 @@ import 'datatables.net-bs4';
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 import './datatables.css';
 
+// iframe-resizer
+import 'iframe-resizer';
+
 // admin-lte scripts
 import 'admin-lte';
 
@@ -34,3 +37,4 @@ import 'typeface-alegreya';
 import 'typeface-alegreya-sans';
 import 'font-awesome/css/font-awesome.css';
 import 'octicons/build/font/octicons.css';
+import 'open-iconic/font/css/open-iconic-bootstrap.css';

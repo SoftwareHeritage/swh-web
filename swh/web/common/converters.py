@@ -200,8 +200,7 @@ def from_origin(origin):
     """Convert from an SWH origin to an origin dictionary.
 
     """
-    return from_swh(origin,
-                    removables_if_empty={'lister', 'project'})
+    return from_swh(origin)
 
 
 def from_release(release):
@@ -339,14 +338,6 @@ def from_origin_visit(visit):
                   bytess={'branch'},
                   dates={'date'},
                   empty_dict={'metadata'})
-
-    # TODO: remove that piece of code once snapshot migration
-    # is totally effective in storage (no more occurrences)
-    if ov and 'occurrences' in ov:
-        ov['occurrences'] = {
-            decode_with_escape(k): v
-            for k, v in ov['occurrences'].items()
-        }
 
     return ov
 

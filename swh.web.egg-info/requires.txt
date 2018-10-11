@@ -1,5 +1,5 @@
+Django<2.0,>=1.10.7
 beautifulsoup4
-django>=1.10.7
 django_js_reverse
 django_webpack_loader
 djangorestframework>=3.4.0
@@ -20,3 +20,6 @@ swh.model>=0.0.25
 swh.scheduler>=0.0.31
 swh.storage>=0.0.104
 swh.vault>=0.0.20
+
+[testing]
+nose

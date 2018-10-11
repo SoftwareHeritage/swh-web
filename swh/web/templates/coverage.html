@@ -1,0 +1,43 @@
+{% comment %}
+Copyright (C) 2015-2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<!DOCTYPE html>
+
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Software Heritage archive coverage</title>
+    {% render_bundle 'vendors' %}
+    {% render_bundle 'webapp' %}
+    <base target="_parent">
+  </head>
+
+  <body style="padding-bottom: 0;">
+    <div class="content-wrapper" data-iframe-height>
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            {% for provider in providers %}
+              <div class="col-md-4">
+                <div class="card swh-coverage" title="{{ provider.provider_info }}">
+                  <a href="{{ provider.provider_url }}">
+                    <img class="card-img-top swh-coverage-logo" src="{% static provider.provider_logo %}">
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

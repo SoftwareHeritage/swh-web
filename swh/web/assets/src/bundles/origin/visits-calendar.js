@@ -11,7 +11,6 @@ import 'bootstrap-year-calendar/css/bootstrap-year-calendar.css';
 let minSize = 15;
 let maxSize = 28;
 let currentPopover = null;
-let visitsByYear = [];
 let visitsByDate = {};
 
 function closePopover() {
@@ -22,26 +21,20 @@ function closePopover() {
 }
 
 // function to update the visits calendar view based on the selected year
-export function updateCalendar(year, filteredVisits) {
-  visitsByYear = [];
+export function updateCalendar(year, filteredVisits, yearClickedCallback) {
   visitsByDate = {};
-  for (let i = 0; i < filteredVisits.length; ++i) {
-    if (filteredVisits[i].date.getUTCFullYear() === year) {
-      visitsByYear.push(filteredVisits[i]);
-    }
-  }
   let maxNbVisitsByDate = 0;
   let minDate, maxDate;
-  for (let i = 0; i < visitsByYear.length; ++i) {
-    visitsByYear[i]['startDate'] = visitsByYear[i]['date'];
-    visitsByYear[i]['endDate'] = visitsByYear[i]['startDate'];
-    let date = new Date(visitsByYear[i]['date']);
+  for (let i = 0; i < filteredVisits.length; ++i) {
+    filteredVisits[i]['startDate'] = filteredVisits[i]['date'];
+    filteredVisits[i]['endDate'] = filteredVisits[i]['startDate'];
+    let date = new Date(filteredVisits[i]['date']);
     date.setHours(0, 0, 0, 0);
     let dateStr = date.toDateString();
     if (!visitsByDate.hasOwnProperty(dateStr)) {
-      visitsByDate[dateStr] = [visitsByYear[i]];
+      visitsByDate[dateStr] = [filteredVisits[i]];
     } else {
-      visitsByDate[dateStr].push(visitsByYear[i]);
+      visitsByDate[dateStr].push(filteredVisits[i]);
     }
     maxNbVisitsByDate = Math.max(maxNbVisitsByDate, visitsByDate[dateStr].length);
     if (i === 0) {
@@ -59,11 +52,12 @@ export function updateCalendar(year, filteredVisits) {
   closePopover();
 
   $('#swh-visits-calendar').calendar({
-    dataSource: visitsByYear,
+    dataSource: filteredVisits,
     style: 'custom',
-    minDate: new Date(year, 0, 1),
-    maxDate: new Date(year, 11, 31),
+    minDate: minDate,
+    maxDate: maxDate,
     startYear: year,
+    renderEnd: e => yearClickedCallback(e.currentYear),
     customDataSourceRenderer: (element, date, events) => {
       let dateStr = date.toDateString();
       let nbVisits = visitsByDate[dateStr].length;

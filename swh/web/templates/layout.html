@@ -47,8 +47,13 @@ See top-level LICENSE file for more information
           <li>
               <a href="https://docs.softwareheritage.org/devel/">Documentation</a>
           </li>
-          <li class="swh-donate-item">
+          <li class="swh-position-right">
+            {% if user.is_authenticated and user.is_staff %}
+              Logged in as <strong>{{ user.username }}</strong>,
+              <a href="{% url 'logout' %}">logout</a>
+            {% else %}
             <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
+            {% endif %}
           </li>
         </ul>
       </div>
@@ -59,12 +64,6 @@ See top-level LICENSE file for more information
         <div class="navbar" style="width: 94%;">
           <div class="swh-navbar-content">
             {% block navbar-content %}{% endblock %}
-          </div>
-          <div class="float-right">
-            {% if user.is_authenticated %}
-              Logged in as <strong>{{ user.username }}</strong>,
-              <a href="{% url 'logout' %}">logout</a>
-            {% endif %}
           </div>
         </div>
       </nav>

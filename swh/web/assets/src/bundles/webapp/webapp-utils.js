@@ -1,3 +1,5 @@
+import objectFitImages from 'object-fit-images';
+
 let collapseSidebar = false;
 let previousSidebarState = localStorage.getItem('swh-sidebar-collapsed');
 if (previousSidebarState !== undefined) {
@@ -57,7 +59,8 @@ $(document).ready(() => {
       $('.swh-words-logo-swh').css('visibility', 'visible');
     }
   });
-
+  // activate css polyfill 'object-fit: contain' in old browsers
+  objectFitImages();
 });
 
 export function initPage(page) {
