@@ -26,6 +26,9 @@ import 'datatables.net-bs4';
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 import './datatables.css';
 
+// iframe-resizer
+import 'iframe-resizer';
+
 // admin-lte scripts
 import 'admin-lte';
 

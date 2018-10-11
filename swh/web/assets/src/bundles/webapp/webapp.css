@@ -406,3 +406,30 @@ hr.swh-faded-line {
     background: none;
     border: none;
 }
+
+.swh-coverage {
+    height: 65px;
+    padding-top: 0.3rem;
+}
+
+.swh-coverage a {
+    text-decoration: none;
+}
+
+.swh-coverage-logo {
+    display: block;
+    width: 100%;
+    height: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+
+    /* polyfill for old browsers, see https://github.com/bfred-it/object-fit-images */
+    font-family: 'object-fit: contain;';
+}
+
+.swh-coverage-list {
+    width: 100%;
+    height: 320px;
+    border: none;
+}
