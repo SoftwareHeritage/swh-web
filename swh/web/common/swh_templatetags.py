@@ -84,8 +84,15 @@ def urlize_header_links(text):
         The text as is otherwise.
 
     """
-    return re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
-                  text)
+    links = text.split(',')
+    ret = ''
+    for i, link in enumerate(links):
+        ret += re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
+                      link)
+        # add one link per line and align them
+        if i != len(links) - 1:
+            ret += '\n     '
+    return ret
 
 
 @register.filter
