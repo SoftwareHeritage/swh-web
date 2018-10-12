@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.shortcuts import render
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 # Current coverage list of the archive
 # TODO: Retrieve that list dynamically instead of hardcoding it
@@ -64,5 +65,6 @@ _code_providers = [
 ]
 
 
+@xframe_options_exempt
 def swh_coverage(request):
     return render(request, 'coverage.html', {'providers': _code_providers})
