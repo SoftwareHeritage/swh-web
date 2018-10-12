@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -14,8 +13,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 
 class StatApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.stat.service')
-    @istest
-    def api_1_stat_counters_raise_error(self, mock_service):
+    def test_api_1_stat_counters_raise_error(self, mock_service):
         # given
         mock_service.stat_counters.side_effect = ValueError(
             'voluntary error to check the bad request middleware.')
@@ -29,8 +27,7 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             'reason': 'voluntary error to check the bad request middleware.'})
 
     @patch('swh.web.api.views.stat.service')
-    @istest
-    def api_1_stat_counters_raise_swh_storage_error_db(self, mock_service):
+    def test_api_1_stat_counters_raise_from_db(self, mock_service):
         # given
         mock_service.stat_counters.side_effect = StorageDBError(
             'SWH Storage exploded! Will be back online shortly!')
@@ -46,8 +43,7 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             'SWH Storage exploded! Will be back online shortly!'})
 
     @patch('swh.web.api.views.stat.service')
-    @istest
-    def api_1_stat_counters_raise_swh_storage_error_api(self, mock_service):
+    def test_api_1_stat_counters_raise_from_api(self, mock_service):
         # given
         mock_service.stat_counters.side_effect = StorageAPIError(
             'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
@@ -65,8 +61,7 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
         })
 
     @patch('swh.web.api.views.stat.service')
-    @istest
-    def api_1_stat_counters(self, mock_service):
+    def test_api_1_stat_counters(self, mock_service):
         # given
         stub_stats = {
             "content": 1770830,

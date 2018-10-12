@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -13,8 +12,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.directory.service')
-    @istest
-    def api_directory(self, mock_service):
+    def test_api_directory(self, mock_service):
         # given
         stub_directories = [
             {
@@ -59,8 +57,7 @@ class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.api.views.directory.service')
-    @istest
-    def api_directory_not_found(self, mock_service):
+    def test_api_directory_not_found(self, mock_service):
         # given
         mock_service.lookup_directory.return_value = []
 
@@ -77,8 +74,7 @@ class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
             '66618d8be353ed3480476f032475e7c233eff737 not found.'})
 
     @patch('swh.web.api.views.directory.service')
-    @istest
-    def api_directory_with_path_found(self, mock_service):
+    def test_api_directory_with_path_found(self, mock_service):
         # given
         expected_dir = {
                 'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
@@ -104,8 +100,7 @@ class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
             '18d8be353ed3480476f032475e7c233eff7371d5', 'bla')
 
     @patch('swh.web.api.views.directory.service')
-    @istest
-    def api_directory_with_path_not_found(self, mock_service):
+    def test_api_directory_with_path_not_found(self, mock_service):
         # given
         mock_service.lookup_directory_with_path.return_value = None
         path = 'some/path/to/dir/'

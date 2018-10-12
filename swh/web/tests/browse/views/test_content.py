@@ -6,7 +6,6 @@
 import base64
 
 from unittest.mock import patch
-from nose.tools import istest
 
 from django.utils.html import escape
 from django.utils.encoding import DjangoUnicodeDecodeError
@@ -33,8 +32,7 @@ from .data.content_test_data import (
 class SwhBrowseContentTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_view_text(self, mock_request_content):
+    def test_content_view_text(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_data
 
         sha1_git = stub_content_text_data['checksums']['sha1_git']
@@ -61,8 +59,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertContains(resp, swh_cnt_id_url)
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_view_text_no_highlight(self, mock_request_content):
+    def test_content_view_text_no_highlight(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_no_highlight_data
 
         sha1_git = stub_content_text_no_highlight_data['checksums']['sha1_git']
@@ -90,8 +87,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertContains(resp, swh_cnt_id_url)
 
     @patch('swh.web.browse.utils.service')
-    @istest
-    def content_view_no_utf8_text(self, mock_service):
+    def test_content_view_no_utf8_text(self, mock_service):
         mock_service.lookup_content.return_value = \
             non_utf8_encoded_content_data
 
@@ -120,8 +116,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
             self.fail('Textual content is not encoded in utf-8')
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_view_image(self, mock_request_content):
+    def test_content_view_image(self, mock_request_content):
 
         mime_type = 'image/png'
         mock_request_content.return_value = stub_content_bin_data
@@ -137,16 +132,15 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
-        pngEncoded = base64.b64encode(stub_content_bin_data['raw_data']) \
-                           .decode('utf-8')
+        png_encoded = base64.b64encode(stub_content_bin_data['raw_data']) \
+                            .decode('utf-8')
 
         self.assertContains(resp, '<img src="data:%s;base64,%s"/>'
-                                  % (mime_type, pngEncoded))
+                                  % (mime_type, png_encoded))
         self.assertContains(resp, url_raw)
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_view_with_path(self, mock_request_content):
+    def test_content_view_with_path(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_data
 
         url = reverse('browse-content',
@@ -194,8 +188,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertContains(resp, url_raw)
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_raw_text(self, mock_request_content):
+    def test_content_raw_text(self, mock_request_content):
         mock_request_content.return_value = stub_content_text_data
 
         url = reverse('browse-content-raw',
@@ -224,7 +217,6 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEqual(resp.content, stub_content_text_data['raw_data'])
 
     @patch('swh.web.browse.utils.service')
-    @istest
     def test_content_raw_no_utf8_text(self, mock_service):
         mock_service.lookup_content.return_value = \
             non_utf8_encoded_content_data
@@ -245,8 +237,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEqual(encoding, non_utf8_encoding)
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_raw_bin(self, mock_request_content):
+    def test_content_raw_bin(self, mock_request_content):
         mock_request_content.return_value = stub_content_bin_data
 
         url = reverse('browse-content-raw',
@@ -274,8 +265,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEqual(resp.content, stub_content_bin_data['raw_data'])
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_request_errors(self, mock_request_content):
+    def test_content_request_errors(self, mock_request_content):
 
         url = reverse('browse-content', kwargs={'query_string': '123456'})
         resp = self.client.get(url)
@@ -291,8 +281,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertTemplateUsed('error.html')
 
     @patch('swh.web.browse.utils.service')
-    @istest
-    def content_bytes_missing(self, mock_service):
+    def test_content_bytes_missing(self, mock_service):
 
         content_data = dict(stub_content_text_data)
         content_data['raw_data'] = None
@@ -308,8 +297,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertTemplateUsed('browse/content.html')
 
     @patch('swh.web.browse.views.content.request_content')
-    @istest
-    def content_too_large(self, mock_request_content):
+    def test_content_too_large(self, mock_request_content):
         mock_request_content.return_value = stub_content_too_large_data
 
         url = reverse('browse-content',

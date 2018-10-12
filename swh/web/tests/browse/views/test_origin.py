@@ -6,7 +6,6 @@
 # flake8: noqa
 
 from unittest.mock import patch
-from nose.tools import istest, nottest
 
 from django.utils.html import escape
 
@@ -45,8 +44,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.views.origin.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.service')
-    @istest
-    def origin_visits_browse(self, mock_service, mock_get_origin_visits,
+    def test_origin_visits_browse(self, mock_service, mock_get_origin_visits,
                       mock_get_origin_info):
         mock_service.lookup_origin.return_value = origin_info_test_data
         mock_get_origin_info.return_value = origin_info_test_data
@@ -67,14 +65,13 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
 
-    @nottest
-    def origin_content_view_test(self, origin_info, origin_visits,
-                                 origin_branches, origin_releases,
-                                 origin_branch,
-                                 root_dir_sha1, content_sha1, content_sha1_git,
-                                 content_path, content_data,
-                                 content_language,
-                                 visit_id=None, timestamp=None):
+    def origin_content_view_helper(self, origin_info, origin_visits,
+                                   origin_branches, origin_releases,
+                                   origin_branch,
+                                   root_dir_sha1, content_sha1, content_sha1_git,
+                                   content_path, content_data,
+                                   content_language,
+                                   visit_id=None, timestamp=None):
 
         url_args = {'origin_type': origin_info['type'],
                     'origin_url': origin_info['url'],
@@ -210,8 +207,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.views.utils.snapshot_context.service')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.utils.snapshot_context.request_content')
-    @istest
-    def origin_content_view(self, mock_request_content, mock_utils_service,
+    def test_origin_content_view(self, mock_request_content, mock_utils_service,
                             mock_service, mock_get_origin_visit_snapshot,
                             mock_get_origin_visits):
 
@@ -224,62 +220,61 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         mock_request_content.return_value = stub_content_text_data
         mock_utils_service.lookup_origin.return_value = stub_content_origin_info
 
-        self.origin_content_view_test(stub_content_origin_info,
-                                      stub_content_origin_visits,
-                                      stub_content_origin_snapshot[0],
-                                      stub_content_origin_snapshot[1],
-                                      stub_content_origin_branch,
-                                      stub_content_root_dir,
-                                      stub_content_text_sha1,
-                                      stub_content_text_sha1_git,
-                                      stub_content_text_path,
-                                      stub_content_text_data['raw_data'],
-                                      'cpp')
+        self.origin_content_view_helper(stub_content_origin_info,
+                                        stub_content_origin_visits,
+                                        stub_content_origin_snapshot[0],
+                                        stub_content_origin_snapshot[1],
+                                        stub_content_origin_branch,
+                                        stub_content_root_dir,
+                                        stub_content_text_sha1,
+                                        stub_content_text_sha1_git,
+                                        stub_content_text_path,
+                                        stub_content_text_data['raw_data'],
+                                        'cpp')
 
-        self.origin_content_view_test(stub_content_origin_info,
-                                      stub_content_origin_visits,
-                                      stub_content_origin_snapshot[0],
-                                      stub_content_origin_snapshot[1],
-                                      stub_content_origin_branch,
-                                      stub_content_root_dir,
-                                      stub_content_text_sha1,
-                                      stub_content_text_sha1_git,
-                                      stub_content_text_path,
-                                      stub_content_text_data['raw_data'],
-                                      'cpp',
-                                      visit_id=stub_content_origin_visit_id)
+        self.origin_content_view_helper(stub_content_origin_info,
+                                        stub_content_origin_visits,
+                                        stub_content_origin_snapshot[0],
+                                        stub_content_origin_snapshot[1],
+                                        stub_content_origin_branch,
+                                        stub_content_root_dir,
+                                        stub_content_text_sha1,
+                                        stub_content_text_sha1_git,
+                                        stub_content_text_path,
+                                        stub_content_text_data['raw_data'],
+                                        'cpp',
+                                        visit_id=stub_content_origin_visit_id)
 
-        self.origin_content_view_test(stub_content_origin_info,
-                                      stub_content_origin_visits,
-                                      stub_content_origin_snapshot[0],
-                                      stub_content_origin_snapshot[1],
-                                      stub_content_origin_branch,
-                                      stub_content_root_dir,
-                                      stub_content_text_sha1,
-                                      stub_content_text_sha1_git,
-                                      stub_content_text_path,
-                                      stub_content_text_data['raw_data'],
-                                      'cpp',
-                                      timestamp=stub_content_origin_visit_unix_ts)
+        self.origin_content_view_helper(stub_content_origin_info,
+                                        stub_content_origin_visits,
+                                        stub_content_origin_snapshot[0],
+                                        stub_content_origin_snapshot[1],
+                                        stub_content_origin_branch,
+                                        stub_content_root_dir,
+                                        stub_content_text_sha1,
+                                        stub_content_text_sha1_git,
+                                        stub_content_text_path,
+                                        stub_content_text_data['raw_data'],
+                                        'cpp',
+                                        timestamp=stub_content_origin_visit_unix_ts)
 
-        self.origin_content_view_test(stub_content_origin_info,
-                                      stub_content_origin_visits,
-                                      stub_content_origin_snapshot[0],
-                                      stub_content_origin_snapshot[1],
-                                      stub_content_origin_branch,
-                                      stub_content_root_dir,
-                                      stub_content_text_sha1,
-                                      stub_content_text_sha1_git,
-                                      stub_content_text_path,
-                                      stub_content_text_data['raw_data'],
-                                      'cpp',
-                                      timestamp=stub_content_origin_visit_iso_date)
+        self.origin_content_view_helper(stub_content_origin_info,
+                                        stub_content_origin_visits,
+                                        stub_content_origin_snapshot[0],
+                                        stub_content_origin_snapshot[1],
+                                        stub_content_origin_branch,
+                                        stub_content_root_dir,
+                                        stub_content_text_sha1,
+                                        stub_content_text_sha1_git,
+                                        stub_content_text_path,
+                                        stub_content_text_data['raw_data'],
+                                        'cpp',
+                                        timestamp=stub_content_origin_visit_iso_date)
 
-    @nottest
-    def origin_directory_view(self, origin_info, origin_visits,
-                              origin_branches, origin_releases, origin_branch,
-                              root_directory_sha1, directory_entries,
-                              visit_id=None, timestamp=None, path=None):
+    def origin_directory_view_helper(self, origin_info, origin_visits,
+                                     origin_branches, origin_releases, origin_branch,
+                                     root_directory_sha1, directory_entries,
+                                     visit_id=None, timestamp=None, path=None):
 
         dirs = [e for e in directory_entries
                 if e['type'] in ('dir', 'rev')]
@@ -425,8 +420,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
-    @istest
-    def origin_root_directory_view(self, mock_origin_service,
+    def test_origin_root_directory_view(self, mock_origin_service,
                                    mock_utils_service,
                                    mock_get_origin_visit_snapshot,
                                    mock_get_origin_visits):
@@ -437,74 +431,73 @@ class SwhBrowseOriginTest(SWHWebTestCase):
             stub_origin_root_directory_entries
         mock_utils_service.lookup_origin.return_value = stub_origin_info
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries)
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   visit_id=stub_visit_id)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries,
+                                          visit_id=stub_visit_id)
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   timestamp=stub_visit_unix_ts)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries,
+                                          timestamp=stub_visit_unix_ts)
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   timestamp=stub_visit_iso_date)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries,
+                                          timestamp=stub_visit_iso_date)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   visit_id=stub_visit_id)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries,
+                                          visit_id=stub_visit_id)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   timestamp=stub_visit_unix_ts)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries,
+                                          timestamp=stub_visit_unix_ts)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_root_directory_entries,
-                                   timestamp=stub_visit_iso_date)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_root_directory_entries,
+                                          timestamp=stub_visit_iso_date)
 
     @patch('swh.web.browse.utils.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
-    @istest
-    def origin_sub_directory_view(self, mock_origin_service,
+    def test_origin_sub_directory_view(self, mock_origin_service,
                                   mock_utils_service,
                                   mock_get_origin_visit_snapshot,
                                   mock_get_origin_visits):
@@ -518,75 +511,75 @@ class SwhBrowseOriginTest(SWHWebTestCase):
              'type' : 'dir'}
         mock_utils_service.lookup_origin.return_value = stub_origin_info
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          path=stub_origin_sub_directory_path)
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   visit_id=stub_visit_id,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          visit_id=stub_visit_id,
+                                          path=stub_origin_sub_directory_path)
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   timestamp=stub_visit_unix_ts,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          timestamp=stub_visit_unix_ts,
+                                          path=stub_origin_sub_directory_path)
 
-        self.origin_directory_view(stub_origin_info, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   timestamp=stub_visit_iso_date,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          timestamp=stub_visit_iso_date,
+                                          path=stub_origin_sub_directory_path)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          path=stub_origin_sub_directory_path)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   visit_id=stub_visit_id,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          visit_id=stub_visit_id,
+                                          path=stub_origin_sub_directory_path)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   timestamp=stub_visit_unix_ts,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          timestamp=stub_visit_unix_ts,
+                                          path=stub_origin_sub_directory_path)
 
-        self.origin_directory_view(stub_origin_info_no_type, stub_origin_visits,
-                                   stub_origin_snapshot[0],
-                                   stub_origin_snapshot[1],
-                                   stub_origin_master_branch,
-                                   stub_origin_root_directory_sha1,
-                                   stub_origin_sub_directory_entries,
-                                   timestamp=stub_visit_iso_date,
-                                   path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
+                                          stub_origin_snapshot[0],
+                                          stub_origin_snapshot[1],
+                                          stub_origin_master_branch,
+                                          stub_origin_root_directory_sha1,
+                                          stub_origin_sub_directory_entries,
+                                          timestamp=stub_visit_iso_date,
+                                          path=stub_origin_sub_directory_path)
 
     @patch('swh.web.browse.views.utils.snapshot_context.request_content')
     @patch('swh.web.browse.utils.get_origin_visits')
@@ -595,8 +588,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.views.origin.service')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
     @patch('swh.web.browse.views.origin.get_origin_info')
-    @istest
-    def origin_request_errors(self, mock_get_origin_info,
+    def test_origin_request_errors(self, mock_get_origin_info,
                                    mock_snapshot_service,
                                    mock_origin_service,
                                    mock_utils_service,
@@ -713,8 +705,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertContains(resp, 'Content not found', status_code=404)
 
 
-    @nottest
-    def origin_branches_test(self, origin_info, origin_snapshot):
+    def origin_branches_helper(self, origin_info, origin_snapshot):
         url_args = {'origin_type': origin_info['type'],
                     'origin_url': origin_info['url']}
 
@@ -764,8 +755,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
-    @istest
-    def origin_branches(self, mock_origin_service,
+    def test_origin_branches(self, mock_origin_service,
                         mock_utils_service,
                         mock_get_origin_visit_snapshot,
                         mock_get_origin_visits):
@@ -773,13 +763,12 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
         mock_utils_service.lookup_origin.return_value = stub_origin_info
 
-        self.origin_branches_test(stub_origin_info, stub_origin_snapshot)
+        self.origin_branches_helper(stub_origin_info, stub_origin_snapshot)
 
-        self.origin_branches_test(stub_origin_info_no_type, stub_origin_snapshot)
+        self.origin_branches_helper(stub_origin_info_no_type, stub_origin_snapshot)
 
 
-    @nottest
-    def origin_releases_test(self, origin_info, origin_snapshot):
+    def origin_releases_helper(self, origin_info, origin_snapshot):
         url_args = {'origin_type': origin_info['type'],
                     'origin_url': origin_info['url']}
 
@@ -822,8 +811,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
-    @istest
-    def origin_releases(self, mock_origin_service,
+    def test_origin_releases(self, mock_origin_service,
                         mock_utils_service,
                         mock_get_origin_visit_snapshot,
                         mock_get_origin_visits):
@@ -831,6 +819,6 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
         mock_utils_service.lookup_origin.return_value = stub_origin_info
 
-        self.origin_releases_test(stub_origin_info, stub_origin_snapshot)
-        self.origin_releases_test(stub_origin_info_no_type, stub_origin_snapshot)
+        self.origin_releases_helper(stub_origin_info, stub_origin_snapshot)
+        self.origin_releases_helper(stub_origin_info_no_type, stub_origin_snapshot)
 

@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -15,8 +14,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 class EntityApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.entity.service')
-    @istest
-    def api_lookup_entity_by_uuid_not_found(self, mock_service):
+    def test_api_lookup_entity_by_uuid_not_found(self, mock_service):
         # when
         mock_service.lookup_entity_by_uuid.return_value = []
 
@@ -36,8 +34,7 @@ class EntityApiTestCase(SWHWebTestCase, APITestCase):
             '5f4d4c51-498a-4e28-88b3-b3e4e8396cba')
 
     @patch('swh.web.api.views.entity.service')
-    @istest
-    def api_lookup_entity_by_uuid_bad_request(self, mock_service):
+    def test_api_lookup_entity_by_uuid_bad_request(self, mock_service):
         # when
         mock_service.lookup_entity_by_uuid.side_effect = BadInputExc(
             'bad input: uuid malformed!')
@@ -54,8 +51,7 @@ class EntityApiTestCase(SWHWebTestCase, APITestCase):
             'uuid malformed')
 
     @patch('swh.web.api.views.entity.service')
-    @istest
-    def api_lookup_entity_by_uuid(self, mock_service):
+    def test_api_lookup_entity_by_uuid(self, mock_service):
         # when
         stub_entities = [
             {
