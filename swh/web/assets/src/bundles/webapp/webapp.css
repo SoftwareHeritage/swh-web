@@ -410,6 +410,7 @@ hr.swh-faded-line {
 .swh-coverage {
     height: 65px;
     padding-top: 0.3rem;
+    border: none;
 }
 
 .swh-coverage a {

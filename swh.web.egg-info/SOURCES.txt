@@ -191,8 +191,8 @@ swh/web/static/css/vault.6a63b96a1075316fe27b.css
 swh/web/static/css/vault.6a63b96a1075316fe27b.css.map
 swh/web/static/css/vendors.1f5966896101381a1dc8.css
 swh/web/static/css/vendors.1f5966896101381a1dc8.css.map
-swh/web/static/css/webapp.2b685a2dbf4dbcafb6b3.css
-swh/web/static/css/webapp.2b685a2dbf4dbcafb6b3.css.map
+swh/web/static/css/webapp.ed96ae754d210fdc290b.css
+swh/web/static/css/webapp.ed96ae754d210fdc290b.css.map
 swh/web/static/fonts/alegreya-latin-400.woff
 swh/web/static/fonts/alegreya-latin-400.woff2
 swh/web/static/fonts/alegreya-latin-400italic.woff
@@ -296,8 +296,8 @@ swh/web/static/js/vault.6a63b96a1075316fe27b.js
 swh/web/static/js/vault.6a63b96a1075316fe27b.js.map
 swh/web/static/js/vendors.1f5966896101381a1dc8.js
 swh/web/static/js/vendors.1f5966896101381a1dc8.js.map
-swh/web/static/js/webapp.2b685a2dbf4dbcafb6b3.js
-swh/web/static/js/webapp.2b685a2dbf4dbcafb6b3.js.map
+swh/web/static/js/webapp.ed96ae754d210fdc290b.js
+swh/web/static/js/webapp.ed96ae754d210fdc290b.js.map
 swh/web/templates/coverage.html
 swh/web/templates/error.html
 swh/web/templates/homepage.html
