@@ -794,18 +794,48 @@ def lookup_origin_visit(origin_id, visit_id):
     return converters.from_origin_visit(visit)
 
 
-def lookup_snapshot(snapshot_id):
+def lookup_snapshot_size(snapshot_id):
+    """Count the number of branches in the snapshot with the given id
+
+    Args:
+        snapshot_id (str): sha1 identifier of the snapshot
+
+    Returns:
+        dict: A dict whose keys are the target types of branches and
+        values their corresponding amount
+    """
+    snapshot_id_bin = _to_sha1_bin(snapshot_id)
+    snapshot_size = storage.snapshot_count_branches(snapshot_id_bin)
+    if not snapshot_size:
+        raise NotFoundExc('Snapshot with id %s not found!' % snapshot_id)
+    if 'release' not in snapshot_size:
+        snapshot_size['release'] = 0
+    return snapshot_size
+
+
+def lookup_snapshot(snapshot_id, branches_from='', branches_count=None,
+                    target_types=None):
     """Return information about a snapshot, aka the list of named
     branches found during a specific visit of an origin.
 
     Args:
-        snapshot_id: sha1 identifier of the snapshot
+        snapshot_id (str): sha1 identifier of the snapshot
+        branches_from (str): optional parameter used to skip branches
+            whose name is lesser than it before returning them
+        branches_count (int): optional parameter used to restrain
+            the amount of returned branches
+        target_types (list): optional parameter used to filter the
+            target types of branch to return (possible values that can be
+            contained in that list are `'content', 'directory',
+            'revision', 'release', 'snapshot', 'alias'`)
 
     Returns:
         A dict filled with the snapshot content.
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    snapshot = storage.snapshot_get(snapshot_id_bin)
+    snapshot = storage.snapshot_get_branches(snapshot_id_bin,
+                                             branches_from.encode(),
+                                             branches_count, target_types)
     if not snapshot:
         raise NotFoundExc('Snapshot with id %s not found!' % snapshot_id)
     return converters.from_snapshot(snapshot)
@@ -813,6 +843,9 @@ def lookup_snapshot(snapshot_id):
 
 def lookup_latest_origin_snapshot(origin_id, allowed_statuses=None):
     """Return information about the latest snapshot of an origin.
+
+    .. warning:: At most 1000 branches contained in the snapshot
+        will be returned for performance reasons.
 
     Args:
         origin_id: integer identifier of the origin

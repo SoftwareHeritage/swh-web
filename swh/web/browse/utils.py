@@ -97,6 +97,8 @@ def get_mimetype_and_encoding_for_content(content):
 # with code highlighting
 content_display_max_size = get_config()['content_display_max_size']
 
+snapshot_content_max_size = get_config()['snapshot_content_max_size']
+
 
 def request_content(query_string, max_size=content_display_max_size,
                     raise_if_unavailable=True, reencode=True):
@@ -350,11 +352,92 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
             (visit_ts, origin_info['type'], origin_info['url']))
 
 
+def process_snapshot_branches(snapshot_branches):
+    """
+    Process a dictionary describing snapshot branches: extract those
+    targeting revisions and releases, put them in two different lists,
+    then sort those lists in lexicographical order of the branches' names.
+
+    Args:
+        snapshot_branches (dict): A dict describing the branches of a snapshot
+            as returned for instance by :func:`swh.web.common.service.lookup_snapshot`
+
+    Returns:
+        tuple: A tuple whose first member is the sorted list of branches
+            targeting revisions and second member the sorted list of branches
+            targeting releases
+    """ # noqa
+    branches = {}
+    releases = {}
+    revision_to_branch = defaultdict(set)
+    revision_to_release = defaultdict(set)
+    release_to_branch = defaultdict(set)
+    for branch_name, target in snapshot_branches.items():
+        if not target:
+            # FIXME: display branches with an unknown target anyway
+            continue
+        target_id = target['target']
+        target_type = target['target_type']
+        if target_type == 'revision':
+            branches[branch_name] = {
+                'name': branch_name,
+                'revision': target_id,
+            }
+            revision_to_branch[target_id].add(branch_name)
+        elif target_type == 'release':
+            release_to_branch[target_id].add(branch_name)
+        # FIXME: handle pointers to other object types
+        # FIXME: handle branch aliases
+
+    releases_info = service.lookup_release_multiple(
+        release_to_branch.keys()
+    )
+    for release in releases_info:
+        branches_to_update = release_to_branch[release['id']]
+        for branch in branches_to_update:
+            releases[branch] = {
+                'name': release['name'],
+                'branch_name': branch,
+                'date': format_utc_iso_date(release['date']),
+                'id': release['id'],
+                'message': release['message'],
+                'target_type': release['target_type'],
+                'target': release['target'],
+            }
+        if release['target_type'] == 'revision':
+            revision_to_release[release['target']].update(
+                branches_to_update
+            )
+
+    revisions = service.lookup_revision_multiple(
+        set(revision_to_branch.keys()) | set(revision_to_release.keys())
+    )
+
+    for revision in revisions:
+        revision_data = {
+            'directory': revision['directory'],
+            'date': format_utc_iso_date(revision['date']),
+            'message': revision['message'],
+        }
+        for branch in revision_to_branch[revision['id']]:
+            branches[branch].update(revision_data)
+        for release in revision_to_release[revision['id']]:
+            releases[release]['directory'] = revision['directory']
+
+    ret_branches = list(sorted(branches.values(), key=lambda b: b['name']))
+    ret_releases = list(sorted(releases.values(), key=lambda b: b['name']))
+
+    return ret_branches, ret_releases
+
+
 def get_snapshot_content(snapshot_id):
     """Returns the lists of branches and releases
     associated to a swh snapshot.
     That list is put in  cache in order to speedup the navigation
     in the swh-web/browse ui.
+
+    .. warning:: At most 1000 branches contained in the snapshot
+        will be returned for performance reasons.
 
     Args:
         snapshot_id (str): hexadecimal representation of the snapshot
@@ -374,75 +457,20 @@ def get_snapshot_content(snapshot_id):
     if cache_entry:
         return cache_entry['branches'], cache_entry['releases']
 
-    branches = {}
-    releases = {}
+    branches = []
+    releases = []
 
     if snapshot_id:
-        revision_to_branch = defaultdict(set)
-        revision_to_release = defaultdict(set)
-        release_to_branch = defaultdict(set)
-        snapshot = service.lookup_snapshot(snapshot_id)
-        snapshot_branches = snapshot['branches']
-        for branch_name, target in snapshot_branches.items():
-            if not target:
-                # FIXME: display branches with an unknown target anyway
-                continue
-            target_id = target['target']
-            target_type = target['target_type']
-            if target_type == 'revision':
-                branches[branch_name] = {
-                    'name': branch_name,
-                    'revision': target_id,
-                }
-                revision_to_branch[target_id].add(branch_name)
-            elif target_type == 'release':
-                release_to_branch[target_id].add(branch_name)
-            # FIXME: handle pointers to other object types
-            # FIXME: handle branch aliases
-
-        releases_info = service.lookup_release_multiple(
-            release_to_branch.keys()
-        )
-        for release in releases_info:
-            branches_to_update = release_to_branch[release['id']]
-            for branch in branches_to_update:
-                releases[branch] = {
-                    'name': release['name'],
-                    'date': format_utc_iso_date(release['date']),
-                    'id': release['id'],
-                    'message': release['message'],
-                    'target_type': release['target_type'],
-                    'target': release['target'],
-                }
-            if release['target_type'] == 'revision':
-                revision_to_release[release['target']].update(
-                    branches_to_update
-                )
-
-        revisions = service.lookup_revision_multiple(
-            set(revision_to_branch.keys()) | set(revision_to_release.keys())
-        )
-
-        for revision in revisions:
-            revision_data = {
-                'directory': revision['directory'],
-                'date': format_utc_iso_date(revision['date']),
-                'message': revision['message'],
-            }
-            for branch in revision_to_branch[revision['id']]:
-                branches[branch].update(revision_data)
-            for release in revision_to_release[revision['id']]:
-                releases[release]['directory'] = revision['directory']
-
-    ret_branches = list(sorted(branches.values(), key=lambda b: b['name']))
-    ret_releases = list(sorted(releases.values(), key=lambda b: b['name']))
+        snapshot = service.lookup_snapshot(
+            snapshot_id, branches_count=snapshot_content_max_size)
+        branches, releases = process_snapshot_branches(snapshot['branches'])
 
     cache.set(cache_entry_id, {
-        'branches': ret_branches,
-        'releases': ret_releases,
+        'branches': branches,
+        'releases': releases,
     })
 
-    return ret_branches, ret_releases
+    return branches, releases
 
 
 def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
@@ -455,6 +483,9 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
     found for the latest visit.
     That list is put in  cache in order to speedup the navigation
     in the swh-web/browse ui.
+
+    .. warning:: At most 1000 branches contained in the snapshot
+        will be returned for performance reasons.
 
     Args:
         origin_info (dict): a dict filled with origin information
@@ -987,9 +1018,12 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
     releases = list(reversed(releases))
 
+    snapshot_size = service.lookup_snapshot_size(snapshot_id)
+
     return {
         'swh_type': swh_type,
         'snapshot_id': snapshot_id,
+        'snapshot_size': snapshot_size,
         'origin_info': origin_info,
         # keep track if the origin type was provided as url argument
         'origin_type': origin_type,

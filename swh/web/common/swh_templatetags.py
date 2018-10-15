@@ -108,3 +108,31 @@ def jsonify(obj):
 
     """
     return mark_safe(json.dumps(obj, cls=DjangoJSONEncoder))
+
+
+@register.filter
+def sub(value, arg):
+    """Django template filter for subtracting two numbers
+
+    Args:
+        value (int/float): the value to subtract from
+        arg (int/float): the value to subtract to
+
+    Returns:
+        int/float: The subtraction result
+    """
+    return value - arg
+
+
+@register.filter
+def mul(value, arg):
+    """Django template filter for multiplying two numbers
+
+    Args:
+        value (int/float): the value to multiply from
+        arg (int/float): the value to multiply with
+
+    Returns:
+        int/float: The multiplication result
+    """
+    return value * arg

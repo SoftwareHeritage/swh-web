@@ -39,13 +39,29 @@ from .data.content_test_data import (
 stub_origin_info_no_type = dict(stub_origin_info)
 stub_origin_info_no_type['type'] = None
 
+def _to_snapshot_dict(branches=None, releases=None):
+    snp = {'branches': {}}
+    if branches:
+        for b in branches:
+            snp['branches'][b['name']] = {
+                'target': b['revision'],
+                'target_type': 'revision'
+            }
+    if releases:
+        for r in releases:
+            snp['branches'][r['branch_name']] =  {
+                'target': r['id'],
+                'target_type': 'release'
+            }
+    return snp
+
 class SwhBrowseOriginTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.origin.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.service')
     def test_origin_visits_browse(self, mock_service, mock_get_origin_visits,
-                      mock_get_origin_info):
+                                  mock_get_origin_info):
         mock_service.lookup_origin.return_value = origin_info_test_data
         mock_get_origin_info.return_value = origin_info_test_data
         mock_get_origin_visits.return_value = origin_visits_test_data
@@ -208,8 +224,8 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.utils.snapshot_context.request_content')
     def test_origin_content_view(self, mock_request_content, mock_utils_service,
-                            mock_service, mock_get_origin_visit_snapshot,
-                            mock_get_origin_visits):
+                                 mock_service, mock_get_origin_visit_snapshot,
+                                 mock_get_origin_visits):
 
         stub_content_text_sha1 = stub_content_text_data['checksums']['sha1']
         stub_content_text_sha1_git = stub_content_text_data['checksums']['sha1_git']
@@ -219,6 +235,10 @@ class SwhBrowseOriginTest(SWHWebTestCase):
             {'target': stub_content_text_sha1}
         mock_request_content.return_value = stub_content_text_data
         mock_utils_service.lookup_origin.return_value = stub_content_origin_info
+        mock_utils_service.lookup_snapshot_size.return_value = {
+            'revision': len(stub_content_origin_snapshot[0]),
+            'release': len(stub_content_origin_snapshot[1])
+        }
 
         self.origin_content_view_helper(stub_content_origin_info,
                                         stub_content_origin_visits,
@@ -284,8 +304,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         if not visit_id:
             visit_id = origin_visits[-1]['visit']
 
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
 
         query_params = {}
 
@@ -421,15 +440,19 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     def test_origin_root_directory_view(self, mock_origin_service,
-                                   mock_utils_service,
-                                   mock_get_origin_visit_snapshot,
-                                   mock_get_origin_visits):
+                                        mock_utils_service,
+                                        mock_get_origin_visit_snapshot,
+                                        mock_get_origin_visits):
 
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
         mock_utils_service.lookup_directory.return_value = \
             stub_origin_root_directory_entries
         mock_utils_service.lookup_origin.return_value = stub_origin_info
+        mock_utils_service.lookup_snapshot_size.return_value = {
+            'revision': len(stub_origin_snapshot[0]),
+            'release': len(stub_origin_snapshot[1])
+        }
 
         self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
                                           stub_origin_snapshot[0],
@@ -498,9 +521,9 @@ class SwhBrowseOriginTest(SWHWebTestCase):
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
     def test_origin_sub_directory_view(self, mock_origin_service,
-                                  mock_utils_service,
-                                  mock_get_origin_visit_snapshot,
-                                  mock_get_origin_visits):
+                                       mock_utils_service,
+                                       mock_get_origin_visit_snapshot,
+                                       mock_get_origin_visits):
 
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
@@ -510,6 +533,10 @@ class SwhBrowseOriginTest(SWHWebTestCase):
             {'target': stub_origin_sub_directory_entries[0]['dir_id'],
              'type' : 'dir'}
         mock_utils_service.lookup_origin.return_value = stub_origin_info
+        mock_utils_service.lookup_snapshot_size.return_value = {
+            'revision': len(stub_origin_snapshot[0]),
+            'release': len(stub_origin_snapshot[1])
+        }
 
         self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
                                           stub_origin_snapshot[0],
@@ -751,17 +778,26 @@ class SwhBrowseOriginTest(SWHWebTestCase):
             self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_revision_url), branch['revision'][:7]))
 
 
+    @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')
+    @patch('swh.web.browse.views.utils.snapshot_context.service')
     @patch('swh.web.browse.utils.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     def test_origin_branches(self, mock_origin_service,
-                        mock_utils_service,
-                        mock_get_origin_visit_snapshot,
-                        mock_get_origin_visits):
+                             mock_utils_service,
+                             mock_get_origin_visit_snapshot,
+                             mock_get_origin_visits,
+                             mock_snp_ctx_service,
+                             mock_snp_ctx_process_branches):
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
         mock_utils_service.lookup_origin.return_value = stub_origin_info
+        mock_utils_service.lookup_snapshot_size.return_value = \
+            {'revision': len(stub_origin_snapshot[0]), 'release': len(stub_origin_snapshot[1])}
+        mock_snp_ctx_service.lookup_snapshot.return_value = \
+            _to_snapshot_dict(branches=stub_origin_snapshot[0])
+        mock_snp_ctx_process_branches.return_value = stub_origin_snapshot
 
         self.origin_branches_helper(stub_origin_info, stub_origin_snapshot)
 
@@ -807,17 +843,26 @@ class SwhBrowseOriginTest(SWHWebTestCase):
             self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_release_url), release['name']))
 
 
+    @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')
+    @patch('swh.web.browse.views.utils.snapshot_context.service')
     @patch('swh.web.browse.utils.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     def test_origin_releases(self, mock_origin_service,
-                        mock_utils_service,
-                        mock_get_origin_visit_snapshot,
-                        mock_get_origin_visits):
+                             mock_utils_service,
+                             mock_get_origin_visit_snapshot,
+                             mock_get_origin_visits,
+                             mock_snp_ctx_service,
+                             mock_snp_ctx_process_branches):
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
         mock_utils_service.lookup_origin.return_value = stub_origin_info
+        mock_utils_service.lookup_snapshot_size.return_value = \
+            {'revision': len(stub_origin_snapshot[0]), 'release': len(stub_origin_snapshot[1])}
+        mock_snp_ctx_service.lookup_snapshot.return_value = \
+            _to_snapshot_dict(releases=stub_origin_snapshot[1])
+        mock_snp_ctx_process_branches.return_value = stub_origin_snapshot
 
         self.origin_releases_helper(stub_origin_info, stub_origin_snapshot)
         self.origin_releases_helper(stub_origin_info_no_type, stub_origin_snapshot)
