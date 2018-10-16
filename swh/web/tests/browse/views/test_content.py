@@ -75,7 +75,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEquals(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
-        self.assertContains(resp, '<code class="nohighlight-swh">')
+        self.assertContains(resp, '<code class="nohighlight">')
         self.assertContains(resp, escape(stub_content_text_no_highlight_data['raw_data'])) # noqa
         self.assertContains(resp, url_raw)
 

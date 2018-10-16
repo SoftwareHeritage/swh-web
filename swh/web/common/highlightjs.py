@@ -171,7 +171,7 @@ _hljs_languages_aliases = {
     'rb': 'ruby',
     'routeros': 'routeros',
     'rs': 'rust',
-    'rst': 'nohighlight-swh',
+    'rst': 'nohighlight',
     'rss': 'xml',
     'ru': 'ruby',
     'scad': 'openscad',

@@ -244,7 +244,7 @@ def prepare_content_for_display(content_data, mime_type, path):
         language = highlightjs.get_hljs_language_from_mime_type(mime_type)
 
     if not language:
-        language = 'nohighlight-swh'
+        language = 'nohighlight'
     elif mime_type.startswith('application/'):
         mime_type = mime_type.replace('application/', 'text/')
 
