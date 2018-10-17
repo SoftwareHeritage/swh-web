@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -19,8 +18,7 @@ OBJECT_TYPES = {'directory': ('directory', None),
 
 class VaultApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.vault.service')
-    @istest
-    def api_vault_cook(self, mock_service):
+    def test_api_vault_cook(self, mock_service):
         stub_cook = {
             'fetch_url': ('http://127.0.0.1:5004/api/1/vault/directory/{}/raw/'
                           .format(TEST_OBJ_ID)),
@@ -59,8 +57,7 @@ class VaultApiTestCase(SWHWebTestCase, APITestCase):
                 obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID))
 
     @patch('swh.web.api.views.vault.service')
-    @istest
-    def api_vault_cook_notfound(self, mock_service):
+    def test_api_vault_cook_notfound(self, mock_service):
         mock_service.vault_cook.return_value = None
         mock_service.vault_fetch.return_value = None
 

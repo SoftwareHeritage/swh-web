@@ -5,7 +5,6 @@
 
 import datetime
 
-from nose.tools import istest
 from unittest.mock import patch
 
 from swh.web.common import utils
@@ -14,8 +13,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 
 
 class UtilsTestCase(SWHWebTestCase):
-    @istest
-    def shorten_path_noop(self):
+    def test_shorten_path_noop(self):
         noops = [
             '/api/',
             '/browse/',
@@ -28,8 +26,7 @@ class UtilsTestCase(SWHWebTestCase):
                 noop
             )
 
-    @istest
-    def shorten_path_sha1(self):
+    def test_shorten_path_sha1(self):
         sha1 = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
         short_sha1 = sha1[:8] + '...'
 
@@ -46,8 +43,7 @@ class UtilsTestCase(SWHWebTestCase):
                 template % short_sha1
             )
 
-    @istest
-    def shorten_path_sha256(self):
+    def test_shorten_path_sha256(self):
         sha256 = ('aafb16d69fd30ff58afdd69036a26047'
                   '213add102934013a014dfca031c41aef')
         short_sha256 = sha256[:8] + '...'
@@ -64,8 +60,7 @@ class UtilsTestCase(SWHWebTestCase):
                 template % short_sha256
             )
 
-    @istest
-    def parse_timestamp(self):
+    def test_parse_timestamp(self):
         input_timestamps = [
             None,
             '2016-01-12',
@@ -87,13 +82,11 @@ class UtilsTestCase(SWHWebTestCase):
         for ts, exp_date in zip(input_timestamps, output_dates):
             self.assertEquals(utils.parse_timestamp(ts), exp_date)
 
-    @istest
-    def format_utc_iso_date(self):
+    def test_format_utc_iso_date(self):
         self.assertEqual(utils.format_utc_iso_date('2017-05-04T13:27:13+02:00'), # noqa
                          '04 May 2017, 11:27 UTC')
 
-    @istest
-    def gen_path_info(self):
+    def test_gen_path_info(self):
         input_path = '/home/user/swh-environment/swh-web/'
         expected_result = [
             {'name': 'home', 'path': 'home'},
@@ -109,8 +102,7 @@ class UtilsTestCase(SWHWebTestCase):
         self.assertEquals(path_info, expected_result)
 
     @patch('swh.web.common.utils.service')
-    @istest
-    def get_origin_visits(self, mock_service):
+    def test_get_origin_visits(self, mock_service):
         mock_service.MAX_LIMIT = 2
 
         def _lookup_origin_visits(*args, **kwargs):
@@ -140,8 +132,7 @@ class UtilsTestCase(SWHWebTestCase):
 
         self.assertEqual(len(origin_visits), 3)
 
-    @istest
-    def get_swh_persisent_id(self):
+    def test_get_swh_persisent_id(self):
         swh_object_type = 'content'
         sha1_git = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
 

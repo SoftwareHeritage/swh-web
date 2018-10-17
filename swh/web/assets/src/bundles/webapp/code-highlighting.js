@@ -9,14 +9,6 @@ export async function highlightCode(showLineNumbers = true) {
 
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
-  // empty hljs language definition
-  function noHighlight(hljs) {
-    return {};
-  }
-  // just a trick to get line numbers working when no highlight
-  // has to be performed
-  hljs.registerLanguage('nohighlight-swh', noHighlight);
-
   // keep track of the first highlighted line
   let firstHighlightedLine = null;
   // highlighting color

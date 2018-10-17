@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 from unittest.mock import patch, call
-from nose.tools import istest, nottest
 
 from swh.web.api import utils
 from swh.web.tests.testcase import SWHWebTestCase
@@ -37,8 +36,7 @@ class UtilsTestCase(SWHWebTestCase):
                        'd78a4a71ba1ad064770f0c9')
         }
 
-    @istest
-    def filter_field_keys_dict_unknown_keys(self):
+    def test_filter_field_keys_dict_unknown_keys(self):
         # when
         actual_res = utils.filter_field_keys(
             {'directory': 1, 'file': 2, 'link': 3},
@@ -47,8 +45,7 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_res, {})
 
-    @istest
-    def filter_field_keys_dict(self):
+    def test_filter_field_keys_dict(self):
         # when
         actual_res = utils.filter_field_keys(
             {'directory': 1, 'file': 2, 'link': 3},
@@ -57,8 +54,7 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_res, {'directory': 1, 'link': 3})
 
-    @istest
-    def filter_field_keys_list_unknown_keys(self):
+    def test_filter_field_keys_list_unknown_keys(self):
         # when
         actual_res = utils.filter_field_keys(
             [{'directory': 1, 'file': 2, 'link': 3},
@@ -68,8 +64,7 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_res, [{}, {}])
 
-    @istest
-    def filter_field_keys_map(self):
+    def test_filter_field_keys_map(self):
         # when
         actual_res = utils.filter_field_keys(
             map(lambda x: {'i': x['i']+1, 'j': x['j']},
@@ -81,8 +76,7 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(list(actual_res), [{'i': 2}, {'i': 3}, {'i': 4}])
 
-    @istest
-    def filter_field_keys_list(self):
+    def test_filter_field_keys_list(self):
         # when
         actual_res = utils.filter_field_keys(
             [{'directory': 1, 'file': 2, 'link': 3},
@@ -92,8 +86,7 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_res, [{'directory': 1}, {'dir': 1}])
 
-    @istest
-    def filter_field_keys_other(self):
+    def test_filter_field_keys_other(self):
         # given
         input_set = {1, 2}
 
@@ -103,14 +96,12 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_res, input_set)
 
-    @istest
-    def person_to_string(self):
+    def test_person_to_string(self):
         self.assertEqual(utils.person_to_string(dict(name='raboof',
                                                      email='foo@bar')),
                          'raboof <foo@bar>')
 
-    @istest
-    def enrich_release_0(self):
+    def test_enrich_release_0(self):
         # when
         actual_release = utils.enrich_release({})
 
@@ -118,8 +109,7 @@ class UtilsTestCase(SWHWebTestCase):
         self.assertEqual(actual_release, {})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_release_1(self, mock_django_reverse):
+    def test_enrich_release_1(self, mock_django_reverse):
         # given
 
         def reverse_test_context(view_name, kwargs):
@@ -165,8 +155,7 @@ class UtilsTestCase(SWHWebTestCase):
         ])
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_release_2(self, mock_django_reverse):
+    def test_enrich_release_2(self, mock_django_reverse):
         # given
         mock_django_reverse.return_value = '/api/1/dir/23/'
 
@@ -185,8 +174,7 @@ class UtilsTestCase(SWHWebTestCase):
                                                     kwargs={'sha1_git': '23'})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_release_3(self, mock_django_reverse):
+    def test_enrich_release_3(self, mock_django_reverse):
         # given
         mock_django_reverse.return_value = '/api/1/rev/3/'
 
@@ -205,8 +193,7 @@ class UtilsTestCase(SWHWebTestCase):
                                                     kwargs={'sha1_git': '3'})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_release_4(self, mock_django_reverse):
+    def test_enrich_release_4(self, mock_django_reverse):
         # given
         mock_django_reverse.return_value = '/api/1/rev/4/'
 
@@ -225,8 +212,7 @@ class UtilsTestCase(SWHWebTestCase):
                                                     kwargs={'sha1_git': '4'})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_directory_no_type(self, mock_django_reverse):
+    def test_enrich_directory_no_type(self, mock_django_reverse):
         # when/then
         self.assertEqual(utils.enrich_directory({'id': 'dir-id'}),
                          {'id': 'dir-id'})
@@ -253,8 +239,9 @@ class UtilsTestCase(SWHWebTestCase):
             'content', kwargs={'q': 'sha1_git:123'})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_directory_with_context_and_type_file(self, mock_django_reverse):
+    def test_enrich_directory_with_context_and_type_file(
+        self, mock_django_reverse,
+    ):
         # given
         mock_django_reverse.return_value = '/api/content/sha1_git:123/'
 
@@ -281,8 +268,9 @@ class UtilsTestCase(SWHWebTestCase):
             'content', kwargs={'q': 'sha1_git:789'})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_directory_with_context_and_type_dir(self, mock_django_reverse):
+    def test_enrich_directory_with_context_and_type_dir(
+        self, mock_django_reverse,
+    ):
         # given
         mock_django_reverse.return_value = '/api/directory/456/'
 
@@ -310,15 +298,13 @@ class UtilsTestCase(SWHWebTestCase):
         mock_django_reverse.assert_called_once_with('directory',
                                                     kwargs={'sha1_git': '456'})
 
-    @istest
-    def enrich_content_without_hashes(self):
+    def test_enrich_content_without_hashes(self):
         # when/then
         self.assertEqual(utils.enrich_content({'id': '123'}),
                          {'id': '123'})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_content_with_hashes(self, mock_django_reverse):
+    def test_enrich_content_with_hashes(self, mock_django_reverse):
 
         for algo, hash in self.sample_content_hashes.items():
 
@@ -362,9 +348,8 @@ class UtilsTestCase(SWHWebTestCase):
             mock_django_reverse.reset()
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_content_with_hashes_and_top_level_url(self,
-                                                     mock_django_reverse):
+    def test_enrich_content_with_hashes_and_top_level_url(self,
+                                                          mock_django_reverse):
 
         for algo, hash in self.sample_content_hashes.items():
 
@@ -411,15 +396,13 @@ class UtilsTestCase(SWHWebTestCase):
 
             mock_django_reverse.reset()
 
-    @istest
-    def enrich_entity_identity(self):
+    def test_enrich_entity_identity(self):
         # when/then
         self.assertEqual(utils.enrich_content({'id': '123'}),
                          {'id': '123'})
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_entity_with_sha1(self, mock_django_reverse):
+    def test_enrich_entity_with_sha1(self, mock_django_reverse):
         # given
         def reverse_test(view_name, kwargs):
             return '/api/entity/' + kwargs['uuid'] + '/'
@@ -446,7 +429,6 @@ class UtilsTestCase(SWHWebTestCase):
             [call('entity', kwargs={'uuid': 'uuid-1'}),
              call('entity', kwargs={'uuid': 'uuid-parent'})])
 
-    @nottest
     def _reverse_context_test(self, view_name, kwargs):
         if view_name == 'revision':
             return '/api/revision/%s/' % kwargs['sha1_git']
@@ -459,8 +441,9 @@ class UtilsTestCase(SWHWebTestCase):
                 return '/api/revision/%s/log/' % kwargs['sha1_git']
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_revision_without_children_or_parent(self, mock_django_reverse):
+    def test_enrich_revision_without_children_or_parent(
+        self, mock_django_reverse,
+    ):
         # given
         def reverse_test(view_name, kwargs):
             if view_name == 'revision':
@@ -505,9 +488,9 @@ class UtilsTestCase(SWHWebTestCase):
              call('directory', kwargs={'sha1_git': '123'})])
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_revision_with_children_and_parent_no_dir(self,
-                                                        mock_django_reverse):
+    def test_enrich_revision_with_children_and_parent_no_dir(
+        self, mock_django_reverse,
+    ):
         # given
         mock_django_reverse.side_effect = self._reverse_context_test
 
@@ -542,8 +525,7 @@ class UtilsTestCase(SWHWebTestCase):
              call('revision', kwargs={'sha1_git': '456'})])
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_revision_no_context(self, mock_django_reverse):
+    def test_enrich_revision_no_context(self, mock_django_reverse):
         # given
         mock_django_reverse.side_effect = self._reverse_context_test
 
@@ -573,8 +555,9 @@ class UtilsTestCase(SWHWebTestCase):
              call('revision', kwargs={'sha1_git': '456'})])
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_revision_context_empty_prev_list(self, mock_django_reverse):
+    def test_enrich_revision_context_empty_prev_list(
+        self, mock_django_reverse,
+    ):
         # given
         mock_django_reverse.side_effect = self._reverse_context_test
 
@@ -609,8 +592,7 @@ class UtilsTestCase(SWHWebTestCase):
              call('revision', kwargs={'sha1_git': '456'})])
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_revision_context_some_prev_list(self, mock_django_reverse):
+    def test_enrich_revision_context_some_prev_list(self, mock_django_reverse):
         # given
         mock_django_reverse.side_effect = self._reverse_context_test
 
@@ -644,7 +626,6 @@ class UtilsTestCase(SWHWebTestCase):
              call('revision', kwargs={'sha1_git': '123'}),
              call('revision', kwargs={'sha1_git': '456'})])
 
-    @nottest
     def _reverse_rev_message_test(self, view_name, kwargs):
         if view_name == 'revision':
             return '/api/revision/%s/' % kwargs['sha1_git']
@@ -659,8 +640,7 @@ class UtilsTestCase(SWHWebTestCase):
             return '/api/revision/%s/prev/%s/' % (kwargs['sha1_git'], kwargs['context'])  # noqa
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_revision_with_no_message(self, mock_django_reverse):
+    def test_enrich_revision_with_no_message(self, mock_django_reverse):
         # given
         mock_django_reverse.side_effect = self._reverse_rev_message_test
 
@@ -699,8 +679,7 @@ class UtilsTestCase(SWHWebTestCase):
         )
 
     @patch('swh.web.api.utils.reverse')
-    @istest
-    def enrich_revision_with_invalid_message(self, mock_django_reverse):
+    def test_enrich_revision_with_invalid_message(self, mock_django_reverse):
         # given
         mock_django_reverse.side_effect = self._reverse_rev_message_test
 

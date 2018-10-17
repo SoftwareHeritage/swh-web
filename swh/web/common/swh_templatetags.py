@@ -84,8 +84,15 @@ def urlize_header_links(text):
         The text as is otherwise.
 
     """
-    return re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
-                  text)
+    links = text.split(',')
+    ret = ''
+    for i, link in enumerate(links):
+        ret += re.sub(r'<(/api/.*|/browse/.*)>', r'<<a href="\1">\1</a>>',
+                      link)
+        # add one link per line and align them
+        if i != len(links) - 1:
+            ret += '\n     '
+    return ret
 
 
 @register.filter
@@ -101,3 +108,31 @@ def jsonify(obj):
 
     """
     return mark_safe(json.dumps(obj, cls=DjangoJSONEncoder))
+
+
+@register.filter
+def sub(value, arg):
+    """Django template filter for subtracting two numbers
+
+    Args:
+        value (int/float): the value to subtract from
+        arg (int/float): the value to subtract to
+
+    Returns:
+        int/float: The subtraction result
+    """
+    return value - arg
+
+
+@register.filter
+def mul(value, arg):
+    """Django template filter for multiplying two numbers
+
+    Args:
+        value (int/float): the value to multiply from
+        arg (int/float): the value to multiply with
+
+    Returns:
+        int/float: The multiplication result
+    """
+    return value * arg

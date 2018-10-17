@@ -7,7 +7,6 @@ import json
 
 from rest_framework.test import APIRequestFactory
 
-from nose.tools import istest
 from unittest.mock import patch
 
 from swh.web.api.apiresponse import (
@@ -20,8 +19,7 @@ api_request_factory = APIRequestFactory()
 
 
 class SWHComputeLinkHeaderTest(SWHWebTestCase):
-    @istest
-    def compute_link_header(self):
+    def test_compute_link_header(self):
         rv = {
             'headers': {'link-next': 'foo', 'link-prev': 'bar'},
             'results': [1, 2, 3]
@@ -36,8 +34,7 @@ class SWHComputeLinkHeaderTest(SWHWebTestCase):
             'Link': '<foo>; rel="next",<bar>; rel="previous"',
         })
 
-    @istest
-    def compute_link_header_nothing_changed(self):
+    def test_compute_link_header_nothing_changed(self):
         rv = {}
         options = {}
 
@@ -47,8 +44,7 @@ class SWHComputeLinkHeaderTest(SWHWebTestCase):
 
         self.assertEquals(headers, {})
 
-    @istest
-    def compute_link_header_nothing_changed_2(self):
+    def test_compute_link_header_nothing_changed_2(self):
         rv = {'headers': {}}
         options = {}
 
@@ -60,28 +56,24 @@ class SWHComputeLinkHeaderTest(SWHWebTestCase):
 
 
 class SWHTransformProcessorTest(SWHWebTestCase):
-    @istest
-    def transform_only_return_results_1(self):
+    def test_transform_only_return_results_1(self):
         rv = {'results': {'some-key': 'some-value'}}
 
         self.assertEquals(transform(rv), {'some-key': 'some-value'})
 
-    @istest
-    def transform_only_return_results_2(self):
+    def test_transform_only_return_results_2(self):
         rv = {'headers': {'something': 'do changes'},
               'results': {'some-key': 'some-value'}}
 
         self.assertEquals(transform(rv), {'some-key': 'some-value'})
 
-    @istest
-    def transform_do_remove_headers(self):
+    def test_transform_do_remove_headers(self):
         rv = {'headers': {'something': 'do changes'},
               'some-key': 'some-value'}
 
         self.assertEquals(transform(rv), {'some-key': 'some-value'})
 
-    @istest
-    def transform_do_nothing(self):
+    def test_transform_do_nothing(self):
         rv = {'some-key': 'some-value'}
 
         self.assertEquals(transform(rv), {'some-key': 'some-value'})
@@ -92,9 +84,8 @@ class RendererTestCase(SWHWebTestCase):
     @patch('swh.web.api.apiresponse.json')
     @patch('swh.web.api.apiresponse.filter_by_fields')
     @patch('swh.web.api.apiresponse.shorten_path')
-    @istest
-    def swh_multi_response_mimetype(self, mock_shorten_path,
-                                    mock_filter, mock_json):
+    def test_swh_multi_response_mimetype(self, mock_shorten_path,
+                                         mock_filter, mock_json):
         # given
         data = {
             'data': [12, 34],
@@ -144,8 +135,7 @@ class RendererTestCase(SWHWebTestCase):
             if mime_type == 'text/html':
                 self.assertEqual(rv.template_name, 'api/apidoc.html')
 
-    @istest
-    def swh_filter_renderer_do_nothing(self):
+    def test_swh_filter_renderer_do_nothing(self):
         # given
         input_data = {'a': 'some-data'}
 
@@ -159,8 +149,7 @@ class RendererTestCase(SWHWebTestCase):
         self.assertEquals(actual_data, input_data)
 
     @patch('swh.web.api.apiresponse.utils.filter_field_keys')
-    @istest
-    def swh_filter_renderer_do_filter(self, mock_ffk):
+    def test_swh_filter_renderer_do_filter(self, mock_ffk):
         # given
         mock_ffk.return_value = {'a': 'some-data'}
 

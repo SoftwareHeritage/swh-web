@@ -5,7 +5,6 @@
 
 from datetime import datetime, timedelta
 
-from nose.tools import istest, nottest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -25,14 +24,13 @@ from swh.web.tests.testcase import SWHWebTestCase
 class SaveApiTestCase(SWHWebTestCase, APITestCase):
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls):  # noqa: N802
         SaveUnauthorizedOrigin.objects.create(
             url='https://github.com/user/illegal_repo')
         SaveUnauthorizedOrigin.objects.create(
             url='https://gitlab.com/user_to_exclude')
 
-    @istest
-    def invalid_origin_type(self):
+    def test_invalid_origin_type(self):
         url = reverse('save-origin',
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'https://github.com/torvalds/linux'}) # noqa
@@ -40,8 +38,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
         response = self.client.post(url)
         self.assertEquals(response.status_code, 400)
 
-    @istest
-    def invalid_origin_url(self):
+    def test_invalid_origin_url(self):
         url = reverse('save-origin',
                       kwargs={'origin_type': 'git',
                               'origin_url': 'bar'})
@@ -49,7 +46,6 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
         response = self.client.post(url)
         self.assertEquals(response.status_code, 400)
 
-    @nottest
     def check_created_save_request_status(self, mock_scheduler, origin_url,
                                           scheduler_task_status,
                                           expected_request_status,
@@ -107,7 +103,6 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
             else:
                 self.assertEqual(response.status_code, 403)
 
-    @nottest
     def check_save_request_status(self, mock_scheduler, origin_url,
                                   expected_request_status,
                                   expected_task_status,
@@ -153,9 +148,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
             self.assertEqual(save_request_data['save_task_status'],
                              expected_task_status)
 
-    @istest
     @patch('swh.web.common.origin_save.scheduler')
-    def save_request_rejected(self, mock_scheduler):
+    def test_save_request_rejected(self, mock_scheduler):
         origin_url = 'https://github.com/user/illegal_repo'
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                None, SAVE_REQUEST_REJECTED)
@@ -163,9 +157,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                        SAVE_REQUEST_REJECTED,
                                        SAVE_TASK_NOT_CREATED)
 
-    @istest
     @patch('swh.web.common.origin_save.scheduler')
-    def save_request_pending(self, mock_scheduler):
+    def test_save_request_pending(self, mock_scheduler):
         origin_url = 'https://unkwownforge.com/user/repo'
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                None, SAVE_REQUEST_PENDING,
@@ -174,9 +167,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                        SAVE_REQUEST_PENDING,
                                        SAVE_TASK_NOT_CREATED)
 
-    @istest
     @patch('swh.web.common.origin_save.scheduler')
-    def save_request_succeed(self, mock_scheduler):
+    def test_save_request_succeed(self, mock_scheduler):
         origin_url = 'https://github.com/Kitware/CMake'
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                None, SAVE_REQUEST_ACCEPTED,
@@ -197,9 +189,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                        scheduler_task_status='completed',
                                        visit_date=visit_date) # noqa
 
-    @istest
     @patch('swh.web.common.origin_save.scheduler')
-    def save_request_failed(self, mock_scheduler):
+    def test_save_request_failed(self, mock_scheduler):
         origin_url = 'https://gitlab.com/inkscape/inkscape'
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                None, SAVE_REQUEST_ACCEPTED,
@@ -213,9 +204,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                        SAVE_TASK_FAILED,
                                        scheduler_task_status='disabled') # noqa
 
-    @istest
     @patch('swh.web.common.origin_save.scheduler')
-    def create_save_request_only_when_needed(self, mock_scheduler):
+    def test_create_save_request_only_when_needed(self, mock_scheduler):
         origin_url = 'https://gitlab.com/webpack/webpack'
         SaveOriginRequest.objects.create(origin_type='git',
                                          origin_url=origin_url,

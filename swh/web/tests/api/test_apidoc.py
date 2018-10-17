@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest, nottest
 from rest_framework.test import APITestCase
 from rest_framework.response import Response
 
@@ -63,8 +62,7 @@ httpdomain_doc = """
 
 class APIDocTestCase(SWHWebTestCase, APITestCase):
 
-    @istest
-    def apidoc_nodoc_failure(self):
+    def test_apidoc_nodoc_failure(self):
         with self.assertRaises(Exception):
             @api_doc('/my/nodoc/url/')
             def apidoc_nodoc_tester(request, arga=0, argb=0):
@@ -74,15 +72,13 @@ class APIDocTestCase(SWHWebTestCase, APITestCase):
     @api_route(r'/some/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',
                'some-doc-route')
     @api_doc('/some/doc/route/')
-    @nottest
-    def apidoc_route_tester(request, myarg, myotherarg, akw=0):
+    def apidoc_route(request, myarg, myotherarg, akw=0):
         """
         Sample doc
         """
         return {'result': int(myarg) + int(myotherarg) + akw}
 
-    @istest
-    def apidoc_route_doc(self):
+    def test_apidoc_route_doc(self):
         # when
         rv = self.client.get('/api/1/some/doc/route/')
 
@@ -90,8 +86,7 @@ class APIDocTestCase(SWHWebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertTemplateUsed('api/apidoc.html')
 
-    @istest
-    def apidoc_route_fn(self):
+    def test_apidoc_route_fn(self):
 
         # when
         rv = self.client.get('/api/1/some/1/1/')
@@ -103,15 +98,13 @@ class APIDocTestCase(SWHWebTestCase, APITestCase):
     @api_route(r'/some/full/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',
                'some-complete-doc-route')
     @api_doc('/some/complete/doc/route/')
-    @nottest
-    def apidoc_full_stack_tester(request, myarg, myotherarg, akw=0):
+    def apidoc_full_stack(request, myarg, myotherarg, akw=0):
         """
         Sample doc
         """
         return {'result': int(myarg) + int(myotherarg) + akw}
 
-    @istest
-    def apidoc_full_stack_doc(self):
+    def test_apidoc_full_stack_doc(self):
         # when
         rv = self.client.get('/api/1/some/complete/doc/route/')
 
@@ -119,15 +112,13 @@ class APIDocTestCase(SWHWebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertTemplateUsed('api/apidoc.html')
 
-    @istest
-    def apidoc_full_stack_fn(self):
+    def test_apidoc_full_stack_fn(self):
         # when
         rv = self.client.get('/api/1/some/full/1/1/')
 
         # then
         self.assertEqual(rv.status_code, 200)
 
-    @istest
     def test_api_doc_parse_httpdomain(self):
         doc_data = {
             'description': '',

@@ -7,7 +7,6 @@ from urllib.parse import unquote
 
 
 from django.contrib.auth import get_user_model
-from nose.tools import istest, nottest
 from unittest.mock import patch
 
 from swh.web.common.models import (
@@ -32,22 +31,20 @@ _unauthorized_origin_url = 'https://www.softwareheritage.org/'
 class OriginSaveAdminTestCase(SWHWebTestCase):
 
     @classmethod
-    def setUpTestData(cls):
-        User = get_user_model()
+    def setUpTestData(cls):  # noqa: N802
+        User = get_user_model()  # noqa: N806
         user = User.objects.create_user(_user_name, _user_mail, _user_password)
         user.is_staff = True
         user.save()
         SaveAuthorizedOrigin.objects.create(url=_authorized_origin_url)
         SaveUnauthorizedOrigin.objects.create(url=_unauthorized_origin_url)
 
-    @nottest
     def check_not_login(self, url):
         login_url = reverse('login', query_params={'next': url})
         response = self.client.post(url)
         self.assertEquals(response.status_code, 302)
         self.assertEquals(unquote(response.url), login_url)
 
-    @istest
     def test_add_authorized_origin_url(self):
         authorized_url = 'https://scm.adullact.net/anonscm/'
         self.assertEquals(can_save_origin(authorized_url),
@@ -67,7 +64,6 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         self.assertEquals(can_save_origin(authorized_url),
                           SAVE_REQUEST_ACCEPTED)
 
-    @istest
     def test_remove_authorized_origin_url(self):
         self.assertEquals(can_save_origin(_authorized_origin_url),
                           SAVE_REQUEST_ACCEPTED)
@@ -86,7 +82,6 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         self.assertEquals(can_save_origin(_authorized_origin_url),
                           SAVE_REQUEST_PENDING)
 
-    @istest
     def test_add_unauthorized_origin_url(self):
         unauthorized_url = 'https://www.yahoo./'
         self.assertEquals(can_save_origin(unauthorized_url),
@@ -106,7 +101,6 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         self.assertEquals(can_save_origin(unauthorized_url),
                           SAVE_REQUEST_REJECTED)
 
-    @istest
     def test_remove_unauthorized_origin_url(self):
         self.assertEquals(can_save_origin(_unauthorized_origin_url),
                           SAVE_REQUEST_REJECTED)
@@ -125,7 +119,6 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         self.assertEquals(can_save_origin(_unauthorized_origin_url),
                           SAVE_REQUEST_PENDING)
 
-    @istest
     @patch('swh.web.common.origin_save.scheduler')
     def test_accept_pending_save_request(self, mock_scheduler):
         origin_type = 'git'
@@ -175,7 +168,6 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         self.assertEquals(response.data[0]['save_task_status'],
                           SAVE_TASK_NOT_YET_SCHEDULED)
 
-    @istest
     def test_reject_pending_save_request(self):
         origin_type = 'git'
         origin_url = 'https://wikipedia.com'
