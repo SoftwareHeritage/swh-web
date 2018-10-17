@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -13,8 +12,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.release.service')
-    @istest
-    def api_release(self, mock_service):
+    def test_api_release(self, mock_service):
         release_id = '7045404f3d1c54e6473'
         target_id = '6072557b6c10cd9a211'
         # given
@@ -59,8 +57,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_release.assert_called_once_with(release_id)
 
     @patch('swh.web.api.views.release.service')
-    @istest
-    def api_release_target_type_not_a_revision(self, mock_service):
+    def test_api_release_target_type_not_a_revision(self, mock_service):
         release = '8d56a78'
         target = '9a5c3f'
         # given
@@ -104,8 +101,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_release.assert_called_once_with(release)
 
     @patch('swh.web.api.views.release.service')
-    @istest
-    def api_release_not_found(self, mock_service):
+    def test_api_release_not_found(self, mock_service):
         # given
         mock_service.lookup_release.return_value = None
 

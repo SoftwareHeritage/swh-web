@@ -110,7 +110,7 @@ export function computeDiff(diffUrl, diffId) {
       } else {
 
         // prepare code highlighting
-        $(`.${diffId}`).removeClass('nohighlight-swh');
+        $(`.${diffId}`).removeClass('nohighlight');
         $(`.${diffId}`).addClass(data.language);
 
         // set unified diff text

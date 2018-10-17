@@ -6,7 +6,6 @@
 # flake8: noqa
 
 from unittest.mock import patch
-from nose.tools import istest
 from django.utils.html import escape
 
 from swh.web.common.exc import NotFoundExc
@@ -28,8 +27,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
     @patch('swh.web.browse.views.revision.service')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.common.utils.service')
-    @istest
-    def revision_browse(self, mock_service_common, mock_service_utils,
+    def test_revision_browse(self, mock_service_common, mock_service_utils,
                         mock_service):
         mock_service.lookup_revision.return_value = revision_metadata_test
 
@@ -135,8 +133,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
         self.assertContains(resp, swh_dir_id_url)
 
     @patch('swh.web.browse.views.revision.service')
-    @istest
-    def revision_log_browse(self, mock_service):
+    def test_revision_log_browse(self, mock_service):
         per_page = 10
 
         mock_service.lookup_revision_log.return_value = \
@@ -242,8 +239,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
 
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.revision.service')
-    @istest
-    def revision_request_errors(self, mock_service, mock_utils_service):
+    def test_revision_request_errors(self, mock_service, mock_utils_service):
         mock_service.lookup_revision.side_effect = \
             NotFoundExc('Revision not found')
         url = reverse('browse-revision',

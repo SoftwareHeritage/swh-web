@@ -18,7 +18,7 @@ from swh.web.browse.utils import (
     prepare_content_for_display, content_display_max_size,
     prepare_revision_log_for_display, gen_snapshot_directory_link,
     gen_revision_log_link, gen_link, get_readme_to_display,
-    get_swh_persistent_ids
+    get_swh_persistent_ids, process_snapshot_branches
 )
 
 from swh.web.common import service
@@ -30,7 +30,7 @@ from swh.web.common.utils import (
 )
 
 
-def _get_branch(branches, branch_name):
+def _get_branch(branches, branch_name, snapshot_id):
     """
     Utility function to get a specific branch from a branches list.
     Its purpose is to get the default HEAD branch as some SWH origin
@@ -48,6 +48,16 @@ def _get_branch(branches, branch_name):
             return filtered_branches[0]
         elif len(branches) > 0:
             return branches[0]
+    else:
+        # case where a large branches list has been truncated
+        snp_branch = service.lookup_snapshot(snapshot_id,
+                                             branches_from=branch_name,
+                                             branches_count=1,
+                                             target_types=['revision'])
+        snp_branch, _ = process_snapshot_branches(snp_branch['branches'])
+        if snp_branch:
+            branches.append(snp_branch[0])
+            return snp_branch[0]
     return None
 
 
@@ -133,28 +143,6 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
 
     browse_view_name = 'browse-' + swh_type + '-' + browse_context
 
-    for b in branches:
-        branch_url_args = dict(url_args)
-        branch_query_params = dict(query_params)
-        branch_query_params['branch'] = b['name']
-        if path:
-            b['path'] = path
-            branch_url_args['path'] = path
-        b['url'] = reverse(browse_view_name,
-                           kwargs=branch_url_args,
-                           query_params=branch_query_params)
-
-    for r in releases:
-        release_url_args = dict(url_args)
-        release_query_params = dict(query_params)
-        release_query_params['release'] = r['name']
-        if path:
-            r['path'] = path
-            release_url_args['path'] = path
-        r['url'] = reverse(browse_view_name,
-                           kwargs=release_url_args,
-                           query_params=release_query_params)
-
     root_sha1_git = None
     revision_id = request.GET.get('revision', None)
     release_name = request.GET.get('release', None)
@@ -184,7 +172,8 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
         branch_name = request.GET.get('branch', None)
         if branch_name:
             query_params['branch'] = branch_name
-        branch = _get_branch(branches, branch_name or 'HEAD')
+        branch = _get_branch(branches, branch_name or 'HEAD',
+                             snapshot_context['snapshot_id'])
         if branch:
             branch_name = branch['name']
             root_sha1_git = branch['directory']
@@ -193,6 +182,28 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
         else:
             _branch_not_found("branch", branch_name, branches, snapshot_id,
                               origin_info, timestamp, visit_id)
+
+    for b in branches:
+        branch_url_args = dict(url_args)
+        branch_query_params = dict(query_params)
+        branch_query_params['branch'] = b['name']
+        if path:
+            b['path'] = path
+            branch_url_args['path'] = path
+        b['url'] = reverse(browse_view_name,
+                           kwargs=branch_url_args,
+                           query_params=branch_query_params)
+
+    for r in releases:
+        release_url_args = dict(url_args)
+        release_query_params = dict(query_params)
+        release_query_params['release'] = r['name']
+        if path:
+            r['path'] = path
+            release_url_args['path'] = path
+        r['url'] = reverse(browse_view_name,
+                           kwargs=release_url_args,
+                           query_params=release_query_params)
 
     snapshot_context['query_params'] = query_params
     snapshot_context['root_sha1_git'] = root_sha1_git
@@ -547,7 +558,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                   status=content_data['error_code'])
 
 
-PER_PAGE = 20
+PER_PAGE = 100
 
 
 def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
@@ -695,22 +706,26 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
                                                      origin_type, origin_url,
                                                      timestamp)
 
+        branches_bc = request.GET.get('branches_breadcrumbs', '')
+        branches_bc = \
+            branches_bc.split(',') if branches_bc else []
+        branches_from = branches_bc[-1] if branches_bc else ''
+
+        swh_type = snapshot_context['swh_type']
+        origin_info = snapshot_context['origin_info']
+        url_args = snapshot_context['url_args']
+        query_params = snapshot_context['query_params']
+
+        browse_view_name = 'browse-' + swh_type + '-directory'
+
+        displayed_branches = \
+            service.lookup_snapshot(snapshot_context['snapshot_id'],
+                                    branches_from, PER_PAGE+1,
+                                    target_types=['revision'])['branches']
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    branches_offset = int(request.GET.get('branches_offset', 0))
-
-    swh_type = snapshot_context['swh_type']
-    origin_info = snapshot_context['origin_info']
-    url_args = snapshot_context['url_args']
-    query_params = snapshot_context['query_params']
-
-    browse_view_name = 'browse-' + swh_type + '-directory'
-
-    branches = snapshot_context['branches']
-
-    displayed_branches = \
-        branches[branches_offset:branches_offset+PER_PAGE]
+    displayed_branches, _ = process_snapshot_branches(displayed_branches)
 
     for branch in displayed_branches:
         if snapshot_id:
@@ -735,18 +750,26 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
     prev_branches_url = None
     next_branches_url = None
 
-    next_offset = branches_offset + PER_PAGE
-    prev_offset = branches_offset - PER_PAGE
-    if next_offset < len(branches):
-        query_params['branches_offset'] = next_offset
-        next_branches_url = reverse(browse_view_name,
-                                    kwargs=url_args, query_params=query_params)
-    query_params['branches_offset'] = None
-    if prev_offset >= 0:
-        if prev_offset != 0:
-            query_params['branches_offset'] = prev_offset
-        prev_branches_url = reverse(browse_view_name,
-                                    kwargs=url_args, query_params=query_params)
+    if branches_bc:
+        query_params_prev = dict(query_params)
+
+        query_params_prev['branches_breadcrumbs'] = \
+            ','.join(branches_bc[:-1])
+        prev_branches_url = reverse(browse_view_name, kwargs=url_args,
+                                    query_params=query_params_prev)
+    elif branches_from:
+        prev_branches_url = reverse(browse_view_name, kwargs=url_args,
+                                    query_params=query_params)
+
+    if len(displayed_branches) > PER_PAGE:
+        query_params_next = dict(query_params)
+        next_branch = displayed_branches[-1]['name']
+        del displayed_branches[-1]
+        branches_bc.append(next_branch)
+        query_params_next['branches_breadcrumbs'] = \
+            ','.join(branches_bc)
+        next_branches_url = reverse(browse_view_name, kwargs=url_args,
+                                    query_params=query_params_next)
 
     heading = 'Branches - '
     if origin_info:
@@ -777,20 +800,24 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                                                      origin_type, origin_url,
                                                      timestamp)
 
+        rel_bc = request.GET.get('releases_breadcrumbs', '')
+        rel_bc = \
+            rel_bc.split(',') if rel_bc else []
+        rel_from = rel_bc[-1] if rel_bc else ''
+
+        swh_type = snapshot_context['swh_type']
+        origin_info = snapshot_context['origin_info']
+        url_args = snapshot_context['url_args']
+        query_params = snapshot_context['query_params']
+
+        displayed_releases = \
+            service.lookup_snapshot(snapshot_context['snapshot_id'],
+                                    rel_from, PER_PAGE+1,
+                                    target_types=['release'])['branches']
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    releases_offset = int(request.GET.get('releases_offset', 0))
-
-    swh_type = snapshot_context['swh_type']
-    origin_info = snapshot_context['origin_info']
-    url_args = snapshot_context['url_args']
-    query_params = snapshot_context['query_params']
-
-    releases = snapshot_context['releases']
-
-    displayed_releases = \
-        releases[releases_offset:releases_offset+PER_PAGE]
+    _, displayed_releases = process_snapshot_branches(displayed_releases)
 
     for release in displayed_releases:
         if snapshot_id:
@@ -811,18 +838,26 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
     prev_releases_url = None
     next_releases_url = None
 
-    next_offset = releases_offset + PER_PAGE
-    prev_offset = releases_offset - PER_PAGE
-    if next_offset < len(releases):
-        query_params['releases_offset'] = next_offset
-        next_releases_url = reverse(browse_view_name,
-                                    kwargs=url_args, query_params=query_params)
-    query_params['releases_offset'] = None
-    if prev_offset >= 0:
-        if prev_offset != 0:
-            query_params['releases_offset'] = prev_offset
-        prev_releases_url = reverse(browse_view_name,
-                                    kwargs=url_args, query_params=query_params)
+    if rel_bc:
+        query_params_prev = dict(query_params)
+
+        query_params_prev['releases_breadcrumbs'] = \
+            ','.join(rel_bc[:-1])
+        prev_releases_url = reverse(browse_view_name, kwargs=url_args,
+                                    query_params=query_params_prev)
+    elif rel_from:
+        prev_releases_url = reverse(browse_view_name, kwargs=url_args,
+                                    query_params=query_params)
+
+    if len(displayed_releases) > PER_PAGE:
+        query_params_next = dict(query_params)
+        next_rel = displayed_releases[-1]['branch_name']
+        del displayed_releases[-1]
+        rel_bc.append(next_rel)
+        query_params_next['releases_breadcrumbs'] = \
+            ','.join(rel_bc)
+        next_releases_url = reverse(browse_view_name, kwargs=url_args,
+                                    query_params=query_params_next)
 
     heading = 'Releases - '
     if origin_info:

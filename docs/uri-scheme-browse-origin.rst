@@ -383,7 +383,7 @@ Origin branches
         * last commit message
         * last commit date
 
-    That list of branches is paginated, each page displaying a maximum of 20 branches.
+    That list of branches is paginated, each page displaying a maximum of 100 branches.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
@@ -410,7 +410,7 @@ Origin branches
         * last commit message
         * last commit date
 
-    That list of branches is paginated, each page displaying a maximum of 20 branches.
+    That list of branches is paginated, each page displaying a maximum of 100 branches.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
@@ -442,7 +442,7 @@ Origin releases
         * its associated message
         * its date
 
-    That list of releases is paginated, each page displaying a maximum of 20 releases.
+    That list of releases is paginated, each page displaying a maximum of 100 releases.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
@@ -469,7 +469,7 @@ Origin releases
         * its associated message
         * its date
 
-    That list of releases is paginated, each page displaying a maximum of 20 releases.
+    That list of releases is paginated, each page displaying a maximum of 100 releases.
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)

@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -13,8 +12,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 class PersonApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.person.service')
-    @istest
-    def api_person(self, mock_service):
+    def test_api_person(self, mock_service):
         # given
         stub_person = {
             'id': '198003',
@@ -32,8 +30,7 @@ class PersonApiTestCase(SWHWebTestCase, APITestCase):
         self.assertEquals(rv.data, stub_person)
 
     @patch('swh.web.api.views.person.service')
-    @istest
-    def api_person_not_found(self, mock_service):
+    def test_api_person_not_found(self, mock_service):
         # given
         mock_service.lookup_person.return_value = None
 

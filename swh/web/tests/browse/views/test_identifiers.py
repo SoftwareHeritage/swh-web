@@ -6,7 +6,6 @@
 # flake8: noqa
 
 from unittest.mock import patch
-from nose.tools import istest
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
@@ -25,8 +24,7 @@ swh_id_prefix = 'swh:1:'
 
 class SwhBrowseIdTest(SWHWebTestCase):
 
-    @istest
-    def content_id_browse(self):
+    def test_content_id_browse(self):
         cnt_sha1_git = stub_content_text_data['checksums']['sha1_git']
         swh_id = swh_id_prefix + 'cnt:' + cnt_sha1_git
         url = reverse('browse-swh-id',
@@ -41,8 +39,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
         self.assertEquals(resp.status_code, 302)
         self.assertEqual(resp['location'], content_browse_url)
 
-    @istest
-    def directory_id_browse(self):
+    def test_directory_id_browse(self):
         swh_id = swh_id_prefix + 'dir:' + stub_root_directory_sha1
         url = reverse('browse-swh-id',
                       kwargs={'swh_id': swh_id})
@@ -55,8 +52,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
         self.assertEquals(resp.status_code, 302)
         self.assertEqual(resp['location'], directory_browse_url)
 
-    @istest
-    def revision_id_browse(self):
+    def test_revision_id_browse(self):
         swh_id = swh_id_prefix + 'rev:' + revision_id_test
         url = reverse('browse-swh-id',
                       kwargs={'swh_id': swh_id})
@@ -84,8 +80,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
         self.assertEquals(resp.status_code, 302)
         self.assertEqual(resp['location'], revision_browse_url)
 
-    @istest
-    def release_id_browse(self):
+    def test_release_id_browse(self):
         swh_id = swh_id_prefix + 'rel:' + stub_release['id']
         url = reverse('browse-swh-id',
                       kwargs={'swh_id': swh_id})
@@ -113,8 +108,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
         self.assertEquals(resp.status_code, 302)
         self.assertEqual(resp['location'], release_browse_url)
 
-    @istest
-    def bad_id_browse(self):
+    def test_bad_id_browse(self):
         swh_id = swh_id_prefix + 'foo:' + stub_release['id']
         url = reverse('browse-swh-id',
                       kwargs={'swh_id': swh_id})
@@ -122,8 +116,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
         resp = self.client.get(url)
         self.assertEquals(resp.status_code, 400)
 
-    @istest
-    def content_id_optional_parts_browse(self):
+    def test_content_id_optional_parts_browse(self):
         cnt_sha1_git = stub_content_text_data['checksums']['sha1_git']
         optional_parts = ';lines=4-20;origin=https://github.com/user/repo'
         swh_id = swh_id_prefix + 'cnt:' + cnt_sha1_git + optional_parts

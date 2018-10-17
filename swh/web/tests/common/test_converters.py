@@ -5,7 +5,6 @@
 
 import datetime
 
-from nose.tools import istest
 
 from swh.model import hashutil
 
@@ -15,8 +14,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 
 class ConvertersTestCase(SWHWebTestCase):
 
-    @istest
-    def fmap(self):
+    def test_fmap(self):
         self.assertEquals([2, 3, None, 4],
                           converters.fmap(lambda x: x+1, [1, 2, None, 3]))
         self.assertEquals([11, 12, 13],
@@ -31,8 +29,7 @@ class ConvertersTestCase(SWHWebTestCase):
 
         self.assertIsNone(converters.fmap(lambda x: x, None))
 
-    @istest
-    def from_swh(self):
+    def test_from_swh(self):
         some_input = {
             'a': 'something',
             'b': 'someone',
@@ -115,8 +112,7 @@ class ConvertersTestCase(SWHWebTestCase):
 
         self.assertEquals(expected_output, actual_output)
 
-    @istest
-    def from_swh_edge_cases_do_no_conversion_if_none_or_not_bytes(self):
+    def test_from_swh_edge_cases_do_no_conversion_if_none_or_not_bytes(self):
         some_input = {
             'a': 'something',
             'b': None,
@@ -140,8 +136,7 @@ class ConvertersTestCase(SWHWebTestCase):
 
         self.assertEquals(expected_output, actual_output)
 
-    @istest
-    def from_swh_edge_cases_convert_invalid_utf8_bytes(self):
+    def test_from_swh_edge_cases_convert_invalid_utf8_bytes(self):
         some_input = {
             'a': 'something',
             'b': 'someone',
@@ -167,18 +162,15 @@ class ConvertersTestCase(SWHWebTestCase):
         for v in expected_output['decoding_failures']:
             self.assertTrue(v in actual_output['decoding_failures'])
 
-    @istest
-    def from_swh_empty(self):
+    def test_from_swh_empty(self):
         # when
         self.assertEquals({}, converters.from_swh({}))
 
-    @istest
-    def from_swh_none(self):
+    def test_from_swh_none(self):
         # when
         self.assertIsNone(converters.from_swh(None))
 
-    @istest
-    def from_provenance(self):
+    def test_from_provenance(self):
         # given
         input_provenance = {
             'origin': 10,
@@ -204,8 +196,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_provenance, expected_provenance)
 
-    @istest
-    def from_origin(self):
+    def test_from_origin(self):
         # given
         origin_input = {
             'id': 9,
@@ -225,8 +216,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_origin, expected_origin)
 
-    @istest
-    def from_origin_visit(self):
+    def test_from_origin_visit(self):
         snap_hash = 'b5f0b7f716735ebffe38505c60145c4fd9da6ca3'
 
         for snap in [snap_hash, None]:
@@ -261,8 +251,7 @@ class ConvertersTestCase(SWHWebTestCase):
             # then
             self.assertEqual(actual_visit, expected_visit)
 
-    @istest
-    def from_release(self):
+    def test_from_release(self):
         release_input = {
             'id': hashutil.hash_to_bytes(
                 'aad23fa492a0c5fed0708a6703be875448c86884'),
@@ -308,8 +297,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_release, expected_release)
 
-    @istest
-    def from_release_no_revision(self):
+    def test_from_release_no_revision(self):
         release_input = {
             'id': hashutil.hash_to_bytes(
                 'b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e'),
@@ -352,8 +340,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_release, expected_release)
 
-    @istest
-    def from_revision(self):
+    def test_from_revision(self):
         revision_input = {
             'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
@@ -455,8 +442,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_revision, expected_revision)
 
-    @istest
-    def from_revision_nomerge(self):
+    def test_from_revision_nomerge(self):
         revision_input = {
             'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
@@ -480,8 +466,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_revision, expected_revision)
 
-    @istest
-    def from_revision_noparents(self):
+    def test_from_revision_noparents(self):
         revision_input = {
             'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
@@ -570,8 +555,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_revision, expected_revision)
 
-    @istest
-    def from_revision_invalid(self):
+    def test_from_revision_invalid(self):
         revision_input = {
             'id': hashutil.hash_to_bytes(
                 '18d8be353ed3480476f032475e7c233eff7371d5'),
@@ -672,12 +656,10 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_revision, expected_revision)
 
-    @istest
-    def from_content_none(self):
+    def test_from_content_none(self):
         self.assertIsNone(converters.from_content(None))
 
-    @istest
-    def from_content(self):
+    def test_from_content(self):
         content_input = {
             'sha1': hashutil.hash_to_bytes(
                 '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),
@@ -716,8 +698,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_content, expected_content)
 
-    @istest
-    def from_person(self):
+    def test_from_person(self):
         person_input = {
             'id': 10,
             'anything': 'else',
@@ -740,8 +721,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_person, expected_person)
 
-    @istest
-    def from_directory_entries(self):
+    def test_from_directory_entries(self):
         dir_entries_input = {
             'sha1': hashutil.hash_to_bytes(
                 '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),
@@ -784,8 +764,7 @@ class ConvertersTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_dir_entries, expected_dir_entries)
 
-    @istest
-    def from_filetype(self):
+    def test_from_filetype(self):
         content_filetype = {
             'id': hashutil.hash_to_bytes(
                 '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),

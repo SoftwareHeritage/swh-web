@@ -18,7 +18,6 @@ from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory
 from rest_framework.decorators import api_view
 
-from nose.tools import istest, nottest
 
 from swh.web.common.throttling import (
     SwhWebRateThrottle, throttle_scope
@@ -83,7 +82,6 @@ class ThrottlingTests(SWHWebTestCase):
         cache.clear()
         self.factory = APIRequestFactory()
 
-    @nottest
     def check_response(self, response, status_code,
                        limit=None, remaining=None):
         assert response.status_code == status_code
@@ -96,8 +94,7 @@ class ThrottlingTests(SWHWebTestCase):
         else:
             assert 'X-RateLimit-Remaining' not in response
 
-    @istest
-    def scope1_requests_are_throttled(self):
+    def test_scope1_requests_are_throttled(self):
         """
         Ensure request rate is limited in scope1
         """
@@ -117,8 +114,7 @@ class ThrottlingTests(SWHWebTestCase):
         response = self.client.post('/scope1_class')
         self.check_response(response, 429, scope1_limiter_rate_post, 0)
 
-    @istest
-    def scope2_requests_are_throttled(self):
+    def test_scope2_requests_are_throttled(self):
         """
         Ensure request rate is limited in scope2
         """
@@ -138,8 +134,7 @@ class ThrottlingTests(SWHWebTestCase):
         response = self.client.post('/scope2_func')
         self.check_response(response, 429, scope2_limiter_rate_post, 0)
 
-    @istest
-    def scope3_requests_are_throttled_exempted(self):
+    def test_scope3_requests_are_throttled_exempted(self):
         """
         Ensure request rate is not limited in scope3 as
         requests coming from localhost are exempted from rate limit.

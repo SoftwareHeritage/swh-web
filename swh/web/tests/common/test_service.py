@@ -5,7 +5,6 @@
 
 import datetime
 
-from nose.tools import istest
 from unittest.mock import MagicMock, patch, call
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
@@ -116,8 +115,7 @@ class ServiceTestCase(SWHWebTestCase):
         }
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_multiple_hashes_ball_missing(self, mock_storage):
+    def test_lookup_multiple_hashes_ball_missing(self, mock_storage):
         # given
         mock_storage.content_missing_per_sha1 = MagicMock(return_value=[])
 
@@ -139,8 +137,7 @@ class ServiceTestCase(SWHWebTestCase):
         ])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_multiple_hashes_some_missing(self, mock_storage):
+    def test_lookup_multiple_hashes_some_missing(self, mock_storage):
         # given
         mock_storage.content_missing_per_sha1 = MagicMock(return_value=[
             hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')
@@ -164,8 +161,7 @@ class ServiceTestCase(SWHWebTestCase):
         ])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_hash_does_not_exist(self, mock_storage):
+    def test_lookup_hash_does_not_exist(self, mock_storage):
         # given
         mock_storage.content_find = MagicMock(return_value=None)
 
@@ -183,8 +179,7 @@ class ServiceTestCase(SWHWebTestCase):
              hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_hash_exist(self, mock_storage):
+    def test_lookup_hash_exist(self, mock_storage):
         # given
         stub_content = {
                 'sha1': hash_to_bytes(
@@ -206,8 +201,7 @@ class ServiceTestCase(SWHWebTestCase):
         )
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def search_hash_does_not_exist(self, mock_storage):
+    def test_search_hash_does_not_exist(self, mock_storage):
         # given
         mock_storage.content_find = MagicMock(return_value=None)
 
@@ -224,8 +218,7 @@ class ServiceTestCase(SWHWebTestCase):
              hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def search_hash_exist(self, mock_storage):
+    def test_search_hash_exist(self, mock_storage):
         # given
         stub_content = {
                 'sha1': hash_to_bytes(
@@ -246,8 +239,7 @@ class ServiceTestCase(SWHWebTestCase):
         )
 
     @patch('swh.web.common.service.idx_storage')
-    @istest
-    def lookup_content_ctags(self, mock_idx_storage):
+    def test_lookup_content_ctags(self, mock_idx_storage):
         # given
         mock_idx_storage.content_ctags_get = MagicMock(
             return_value=[{
@@ -279,8 +271,7 @@ class ServiceTestCase(SWHWebTestCase):
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
     @patch('swh.web.common.service.idx_storage')
-    @istest
-    def lookup_content_ctags_no_hash(self, mock_idx_storage):
+    def test_lookup_content_ctags_no_hash(self, mock_idx_storage):
         # given
         mock_idx_storage.content_ctags_get = MagicMock(return_value=[])
 
@@ -292,8 +283,7 @@ class ServiceTestCase(SWHWebTestCase):
         self.assertEqual(actual_ctags, [])
 
     @patch('swh.web.common.service.idx_storage')
-    @istest
-    def lookup_content_filetype(self, mock_idx_storage):
+    def test_lookup_content_filetype(self, mock_idx_storage):
         # given
         mock_idx_storage.content_mimetype_get = MagicMock(
             return_value=[{
@@ -320,8 +310,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.idx_storage')
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_filetype_2(self, mock_storage, mock_idx_storage):
+    def test_lookup_content_filetype_2(self, mock_storage, mock_idx_storage):
         # given
         mock_storage.content_find = MagicMock(
             return_value={
@@ -358,8 +347,7 @@ class ServiceTestCase(SWHWebTestCase):
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
     @patch('swh.web.common.service.idx_storage')
-    @istest
-    def lookup_content_language(self, mock_idx_storage):
+    def test_lookup_content_language(self, mock_idx_storage):
         # given
         mock_idx_storage.content_language_get = MagicMock(
             return_value=[{
@@ -384,8 +372,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.idx_storage')
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_language_2(self, mock_storage, mock_idx_storage):
+    def test_lookup_content_language_2(self, mock_storage, mock_idx_storage):
         # given
         mock_storage.content_find = MagicMock(
             return_value={
@@ -420,8 +407,7 @@ class ServiceTestCase(SWHWebTestCase):
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
     @patch('swh.web.common.service.idx_storage')
-    @istest
-    def lookup_expression(self, mock_idx_storage):
+    def test_lookup_expression(self, mock_idx_storage):
         # given
         mock_idx_storage.content_ctags_search = MagicMock(
             return_value=[{
@@ -451,8 +437,7 @@ class ServiceTestCase(SWHWebTestCase):
             'foobar', last_sha1='hash', limit=10)
 
     @patch('swh.web.common.service.idx_storage')
-    @istest
-    def lookup_expression_no_result(self, mock_idx_storage):
+    def test_lookup_expression_no_result(self, mock_idx_storage):
         # given
         mock_idx_storage.content_ctags_search = MagicMock(
             return_value=[])
@@ -469,8 +454,7 @@ class ServiceTestCase(SWHWebTestCase):
             'barfoo', last_sha1='hash', limit=10)
 
     @patch('swh.web.common.service.idx_storage')
-    @istest
-    def lookup_content_license(self, mock_idx_storage):
+    def test_lookup_content_license(self, mock_idx_storage):
         # given
         mock_idx_storage.content_fossology_license_get = MagicMock(
             return_value=[{
@@ -499,8 +483,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.idx_storage')
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_license_2(self, mock_storage, mock_idx_storage):
+    def test_lookup_content_license_2(self, mock_storage, mock_idx_storage):
         # given
         mock_storage.content_find = MagicMock(
             return_value={
@@ -540,8 +523,7 @@ class ServiceTestCase(SWHWebTestCase):
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_provenance(self, mock_storage):
+    def test_lookup_content_provenance(self, mock_storage):
         # given
         mock_storage.content_find_provenance = MagicMock(
             return_value=(p for p in [{
@@ -573,8 +555,7 @@ class ServiceTestCase(SWHWebTestCase):
              hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_provenance_not_found(self, mock_storage):
+    def test_lookup_content_provenance_not_found(self, mock_storage):
         # given
         mock_storage.content_find_provenance = MagicMock(return_value=None)
 
@@ -590,8 +571,7 @@ class ServiceTestCase(SWHWebTestCase):
              hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def stat_counters(self, mock_storage):
+    def test_stat_counters(self, mock_storage):
         # given
         input_stats = {
             "content": 1770830,
@@ -620,8 +600,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.stat_counters.assert_called_with()
 
     @patch('swh.web.common.service._lookup_origin_visits')
-    @istest
-    def lookup_origin_visits(self, mock_lookup_visits):
+    def test_lookup_origin_visits(self, mock_lookup_visits):
         # given
         date_origin_visit2 = datetime.datetime(
             2013, 7, 1, 20, 0, 0,
@@ -674,8 +653,7 @@ class ServiceTestCase(SWHWebTestCase):
             6, last_visit=None, limit=10)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_origin_visit(self, mock_storage):
+    def test_lookup_origin_visit(self, mock_storage):
         # given
         stub_result = self.origin_visit1
         mock_storage.origin_visit_get_by.return_value = stub_result
@@ -695,8 +673,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.origin_visit_get_by.assert_called_once_with(1, 1)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_origin(self, mock_storage):
+    def test_lookup_origin(self, mock_storage):
         # given
         mock_storage.origin_get = MagicMock(return_value={
             'id': 'origin-id',
@@ -714,9 +691,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.origin_get.assert_called_with({'id': 'origin-id'})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_release_ko_id_checksum_not_ok_because_not_a_sha1(self,
-                                                                mock_storage):
+    def test_lookup_release_ko_id_checksum_not_a_sha1(self, mock_storage):
         # given
         mock_storage.release_get = MagicMock()
 
@@ -728,8 +703,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.release_get.called = False
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_release_ko_id_checksum_ok_but_not_a_sha1(self, mock_storage):
+    def test_lookup_release_ko_id_checksum_too_long(self, mock_storage):
         # given
         mock_storage.release_get = MagicMock()
 
@@ -743,8 +717,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.release_get.called = False
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_directory_with_path_not_found(self, mock_storage):
+    def test_lookup_directory_with_path_not_found(self, mock_storage):
         # given
         mock_storage.lookup_directory_with_path = MagicMock(return_value=None)
 
@@ -757,8 +730,7 @@ class ServiceTestCase(SWHWebTestCase):
         self.assertIsNone(actual_directory)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_directory_with_path_found(self, mock_storage):
+    def test_lookup_directory_with_path_found(self, mock_storage):
         # given
         sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         entry = {'id': 'dir-id',
@@ -774,8 +746,7 @@ class ServiceTestCase(SWHWebTestCase):
         self.assertEqual(entry, actual_directory)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_release(self, mock_storage):
+    def test_lookup_release(self, mock_storage):
         # given
         mock_storage.release_get = MagicMock(return_value=[{
             'id': hash_to_bytes('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
@@ -809,8 +780,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.release_get.assert_called_with(
             [hash_to_bytes('65a55bbdf3629f916219feb3dcc7393ded1bc8db')])
 
-    @istest
-    def lookup_revision_with_context_ko_not_a_sha1_1(self):
+    def test_lookup_revision_with_context_ko_not_a_sha1_1(self):
         # given
         sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4' \
                    'daf51aea892abe'
@@ -821,8 +791,7 @@ class ServiceTestCase(SWHWebTestCase):
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
         self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
-    @istest
-    def lookup_revision_with_context_ko_not_a_sha1_2(self):
+    def test_lookup_revision_with_context_ko_not_a_sha1_2(self):
         # given
         sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
         sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f6' \
@@ -834,8 +803,7 @@ class ServiceTestCase(SWHWebTestCase):
         self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_with_context_ko_sha1_git_does_not_exist(
+    def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
             self,
             mock_storage):
         # given
@@ -856,8 +824,7 @@ class ServiceTestCase(SWHWebTestCase):
             [sha1_git_bin])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
+    def test_lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
             self,
             mock_storage):
         # given
@@ -880,8 +847,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_revision_with_context(self, mock_query, mock_storage):
+    def test_lookup_revision_with_context(self, mock_query, mock_storage):
         # given
         sha1_git_root = '666'
         sha1_git = '883'
@@ -959,8 +925,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_revision_with_context_sha1_git_root_already_retrieved_as_dict(
+    def test_lookup_revision_with_context_retrieved_as_dict(
             self, mock_query, mock_storage):
         # given
         sha1_git = '883'
@@ -1033,10 +998,9 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_with_revision_ko_revision_not_found(self,
-                                                             mock_query,
-                                                             mock_storage):
+    def test_lookup_directory_with_revision_not_found(self,
+                                                      mock_query,
+                                                      mock_storage):
         # given
         mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
                                                                         b'123')
@@ -1053,8 +1017,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_with_revision_ko_revision_with_path_to_nowhere(
+    def test_lookup_directory_with_revision_ko_revision_with_path_to_nowhere(
             self,
             mock_query,
             mock_storage):
@@ -1088,8 +1051,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_with_revision_ko_type_not_implemented(
+    def test_lookup_directory_with_revision_ko_type_not_implemented(
             self,
             mock_query,
             mock_storage):
@@ -1133,10 +1095,9 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_with_revision_revision_without_path(self,
-                                                             mock_query,
-                                                             mock_storage):
+    def test_lookup_directory_with_revision_revision_without_path(
+        self, mock_query, mock_storage,
+    ):
         # given
         mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
                                                                         b'123')
@@ -1171,10 +1132,9 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_with_revision_revision_with_path_to_dir(self,
-                                                                 mock_query,
-                                                                 mock_storage):
+    def test_lookup_directory_with_revision_with_path_to_dir(self,
+                                                             mock_query,
+                                                             mock_storage):
         # given
         mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
                                                                         b'123')
@@ -1220,8 +1180,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_with_revision_revision_with_path_to_file_without_data(
+    def test_lookup_directory_with_revision_with_path_to_file_wo_data(
             self,
             mock_query,
             mock_storage):
@@ -1267,8 +1226,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_with_revision_revision_with_path_to_file_with_data(
+    def test_lookup_directory_with_revision_with_path_to_file_w_data(
             self,
             mock_query,
             mock_storage):
@@ -1328,8 +1286,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.content_get.assert_called_once_with([b'content-sha1'])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision(self, mock_storage):
+    def test_lookup_revision(self, mock_storage):
         # given
         mock_storage.revision_get = MagicMock(
             return_value=[self.SAMPLE_REVISION_RAW])
@@ -1345,8 +1302,7 @@ class ServiceTestCase(SWHWebTestCase):
             [self.SHA1_SAMPLE_BIN])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_invalid_msg(self, mock_storage):
+    def test_lookup_revision_invalid_msg(self, mock_storage):
         # given
         stub_rev = self.SAMPLE_REVISION_RAW
         stub_rev['message'] = b'elegant fix for bug \xff'
@@ -1367,8 +1323,7 @@ class ServiceTestCase(SWHWebTestCase):
             [self.SHA1_SAMPLE_BIN])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_msg_ok(self, mock_storage):
+    def test_lookup_revision_msg_ok(self, mock_storage):
         # given
         mock_storage.revision_get.return_value = [self.SAMPLE_REVISION_RAW]
 
@@ -1382,8 +1337,7 @@ class ServiceTestCase(SWHWebTestCase):
             [self.SHA1_SAMPLE_BIN])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_msg_absent(self, mock_storage):
+    def test_lookup_revision_msg_absent(self, mock_storage):
         # given
         stub_revision = self.SAMPLE_REVISION_RAW
         del stub_revision['message']
@@ -1403,8 +1357,7 @@ class ServiceTestCase(SWHWebTestCase):
         )
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_msg_norev(self, mock_storage):
+    def test_lookup_revision_msg_norev(self, mock_storage):
         # given
         mock_storage.revision_get.return_value = None
 
@@ -1422,8 +1375,7 @@ class ServiceTestCase(SWHWebTestCase):
         )
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_multiple(self, mock_storage):
+    def test_lookup_revision_multiple(self, mock_storage):
         # given
         sha1 = self.SHA1_SAMPLE
         sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
@@ -1504,8 +1456,7 @@ class ServiceTestCase(SWHWebTestCase):
              hash_to_bytes(sha1_other)])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_multiple_none_found(self, mock_storage):
+    def test_lookup_revision_multiple_none_found(self, mock_storage):
         # given
         sha1_bin = self.SHA1_SAMPLE
         sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
@@ -1524,8 +1475,7 @@ class ServiceTestCase(SWHWebTestCase):
              hash_to_bytes(sha1_other)])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_log(self, mock_storage):
+    def test_lookup_revision_log(self, mock_storage):
         # given
         stub_revision_log = [self.SAMPLE_REVISION_RAW]
         mock_storage.revision_log = MagicMock(return_value=stub_revision_log)
@@ -1542,8 +1492,7 @@ class ServiceTestCase(SWHWebTestCase):
             [hash_to_bytes('abcdbe353ed3480476f032475e7c233eff7371d5')], 25)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_log_by(self, mock_storage):
+    def test_lookup_revision_log_by(self, mock_storage):
         # given
         stub_revision_log = [self.SAMPLE_REVISION_RAW]
         mock_storage.revision_log_by = MagicMock(
@@ -1559,8 +1508,7 @@ class ServiceTestCase(SWHWebTestCase):
             1, 'refs/heads/master', None, limit=100)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_log_by_nolog(self, mock_storage):
+    def test_lookup_revision_log_by_nolog(self, mock_storage):
         # given
         mock_storage.revision_log_by = MagicMock(return_value=None)
 
@@ -1573,8 +1521,7 @@ class ServiceTestCase(SWHWebTestCase):
             1, 'refs/heads/master', None, limit=100)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_raw_not_found(self, mock_storage):
+    def test_lookup_content_raw_not_found(self, mock_storage):
         # given
         mock_storage.content_find = MagicMock(return_value=None)
 
@@ -1589,8 +1536,7 @@ class ServiceTestCase(SWHWebTestCase):
             {'sha1': hash_to_bytes(self.SHA1_SAMPLE)})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_raw(self, mock_storage):
+    def test_lookup_content_raw(self, mock_storage):
         # given
         mock_storage.content_find = MagicMock(return_value={
             'sha1': self.SHA1_SAMPLE,
@@ -1611,8 +1557,7 @@ class ServiceTestCase(SWHWebTestCase):
             [self.SHA1_SAMPLE])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_not_found(self, mock_storage):
+    def test_lookup_content_not_found(self, mock_storage):
         # given
         mock_storage.content_find = MagicMock(return_value=None)
 
@@ -1628,8 +1573,7 @@ class ServiceTestCase(SWHWebTestCase):
             {'sha1': self.SHA1_SAMPLE_BIN})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_with_sha1(self, mock_storage):
+    def test_lookup_content_with_sha1(self, mock_storage):
         # given
         mock_storage.content_find = MagicMock(
             return_value=self.SAMPLE_CONTENT_RAW)
@@ -1645,8 +1589,7 @@ class ServiceTestCase(SWHWebTestCase):
             {'sha1': hash_to_bytes(self.SHA1_SAMPLE)})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_content_with_sha256(self, mock_storage):
+    def test_lookup_content_with_sha256(self, mock_storage):
         # given
         stub_content = self.SAMPLE_CONTENT_RAW
         stub_content['status'] = 'visible'
@@ -1667,8 +1610,7 @@ class ServiceTestCase(SWHWebTestCase):
             {'sha256': self.SHA256_SAMPLE_BIN})
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_person(self, mock_storage):
+    def test_lookup_person(self, mock_storage):
         # given
         mock_storage.person_get = MagicMock(return_value=[{
             'id': 'person_id',
@@ -1689,8 +1631,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.person_get.assert_called_with(['person_id'])
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_directory_bad_checksum(self, mock_storage):
+    def test_lookup_directory_bad_checksum(self, mock_storage):
         # given
         mock_storage.directory_ls = MagicMock()
 
@@ -1703,8 +1644,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory_not_found(self, mock_query, mock_storage):
+    def test_lookup_directory_not_found(self, mock_query, mock_storage):
         # given
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
             'sha1',
@@ -1725,8 +1665,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_directory(self, mock_query, mock_storage):
+    def test_lookup_directory(self, mock_query, mock_storage):
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
             'sha1',
             'directory-sha1-bin')
@@ -1772,8 +1711,7 @@ class ServiceTestCase(SWHWebTestCase):
             'directory-sha1-bin')
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_directory_empty(self, mock_storage):
+    def test_lookup_directory_empty(self, mock_storage):
         empty_dir_sha1 = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
         mock_storage.directory_ls.return_value = []
 
@@ -1786,8 +1724,7 @@ class ServiceTestCase(SWHWebTestCase):
         self.assertFalse(mock_storage.directory_ls.called)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_by_nothing_found(self, mock_storage):
+    def test_lookup_revision_by_nothing_found(self, mock_storage):
         # given
         mock_storage.revision_get_by.return_value = None
 
@@ -1801,8 +1738,7 @@ class ServiceTestCase(SWHWebTestCase):
                                                             timestamp=None)
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_by(self, mock_storage):
+    def test_lookup_revision_by(self, mock_storage):
         # given
         stub_rev = self.SAMPLE_REVISION_RAW
 
@@ -1821,8 +1757,7 @@ class ServiceTestCase(SWHWebTestCase):
                                                         timestamp='some-ts')
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_by_nomerge(self, mock_storage):
+    def test_lookup_revision_by_nomerge(self, mock_storage):
         # given
         stub_rev = self.SAMPLE_REVISION_RAW
         stub_rev['parents'] = [
@@ -1843,8 +1778,7 @@ class ServiceTestCase(SWHWebTestCase):
                                                         timestamp='some-ts')
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_by_merge(self, mock_storage):
+    def test_lookup_revision_by_merge(self, mock_storage):
         # given
         stub_rev = self.SAMPLE_REVISION_RAW
         stub_rev['parents'] = [
@@ -1872,8 +1806,7 @@ class ServiceTestCase(SWHWebTestCase):
                                                         timestamp='some-ts')
 
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_with_context_by_ko(self, mock_storage):
+    def test_lookup_revision_with_context_by_ko(self, mock_storage):
         # given
         mock_storage.revision_get_by.return_value = None
 
@@ -1896,9 +1829,9 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.lookup_revision_with_context')
     @patch('swh.web.common.service.storage')
-    @istest
-    def lookup_revision_with_context_by(self, mock_storage,
-                                        mock_lookup_revision_with_context):
+    def test_lookup_revision_with_context_by(
+            self, mock_storage, mock_lookup_revision_with_context,
+    ):
         # given
         stub_root_rev = {'id': 'root-rev-id'}
         mock_storage.revision_get_by.return_value = [{'id': 'root-rev-id'}]
@@ -1924,8 +1857,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
-    @istest
-    def lookup_entity_by_uuid(self, mock_query, mock_storage):
+    def test_lookup_entity_by_uuid(self, mock_query, mock_storage):
         # given
         uuid_test = 'correct-uuid'
         mock_query.parse_uuid4.return_value = uuid_test
@@ -1942,8 +1874,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_query.parse_uuid4.assert_called_once_with(uuid_test)
         mock_storage.entity_get.assert_called_once_with(uuid_test)
 
-    @istest
-    def lookup_revision_through_ko_not_implemented(self):
+    def test_lookup_revision_through_ko_not_implemented(self):
         # then
         with self.assertRaises(NotImplementedError):
             service.lookup_revision_through({
@@ -1951,8 +1882,7 @@ class ServiceTestCase(SWHWebTestCase):
             })
 
     @patch('swh.web.common.service.lookup_revision_with_context_by')
-    @istest
-    def lookup_revision_through_with_context_by(self, mock_lookup):
+    def test_lookup_revision_through_with_context_by(self, mock_lookup):
         # given
         stub_rev = {'id': 'rev'}
         mock_lookup.return_value = stub_rev
@@ -1972,8 +1902,7 @@ class ServiceTestCase(SWHWebTestCase):
             1, 'master', None, 'sha1-git', 1000)
 
     @patch('swh.web.common.service.lookup_revision_by')
-    @istest
-    def lookup_revision_through_with_revision_by(self, mock_lookup):
+    def test_lookup_revision_through_with_revision_by(self, mock_lookup):
         # given
         stub_rev = {'id': 'rev'}
         mock_lookup.return_value = stub_rev
@@ -1992,8 +1921,7 @@ class ServiceTestCase(SWHWebTestCase):
             2, 'master2', 'some-ts')
 
     @patch('swh.web.common.service.lookup_revision_with_context')
-    @istest
-    def lookup_revision_through_with_context(self, mock_lookup):
+    def test_lookup_revision_through_with_context(self, mock_lookup):
         # given
         stub_rev = {'id': 'rev'}
         mock_lookup.return_value = stub_rev
@@ -2011,8 +1939,7 @@ class ServiceTestCase(SWHWebTestCase):
             'some-sha1-root', 'some-sha1', 100)
 
     @patch('swh.web.common.service.lookup_revision')
-    @istest
-    def lookup_revision_through_with_revision(self, mock_lookup):
+    def test_lookup_revision_through_with_revision(self, mock_lookup):
         # given
         stub_rev = {'id': 'rev'}
         mock_lookup.return_value = stub_rev
@@ -2029,8 +1956,7 @@ class ServiceTestCase(SWHWebTestCase):
             'some-sha1')
 
     @patch('swh.web.common.service.lookup_revision_through')
-    @istest
-    def lookup_directory_through_revision_ko_not_found(
+    def test_lookup_directory_through_revision_ko_not_found(
             self, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = None
@@ -2044,8 +1970,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.lookup_revision_through')
     @patch('swh.web.common.service.lookup_directory_with_revision')
-    @istest
-    def lookup_directory_through_revision_ok_with_data(
+    def test_lookup_directory_through_revision_ok_with_data(
             self, mock_lookup_dir, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = {'id': 'rev-id'}
@@ -2065,8 +1990,7 @@ class ServiceTestCase(SWHWebTestCase):
 
     @patch('swh.web.common.service.lookup_revision_through')
     @patch('swh.web.common.service.lookup_directory_with_revision')
-    @istest
-    def lookup_directory_through_revision_ok_with_content(
+    def test_lookup_directory_through_revision_ok_with_content(
             self, mock_lookup_dir, mock_lookup_rev):
         # given
         mock_lookup_rev.return_value = {'id': 'rev-id'}
