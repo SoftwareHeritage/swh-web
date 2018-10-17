@@ -7,7 +7,7 @@
 
 // highlightjs chunk that will be lazily loaded
 
-import 'highlightjs';
+import 'highlight.js';
 import 'highlightjs-line-numbers.js';
-import 'highlightjs/styles/github.css';
+import 'highlight.js/styles/github.css';
 import './highlightjs.css';
