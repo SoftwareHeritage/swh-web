@@ -347,7 +347,8 @@ def from_snapshot(snapshot):
 
     """
     sv = from_swh(snapshot,
-                  hashess={'id', 'target'})
+                  hashess={'id', 'target'},
+                  bytess={'next_branch'})
 
     if sv and 'branches' in sv:
         sv['branches'] = {

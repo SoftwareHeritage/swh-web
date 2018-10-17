@@ -3,15 +3,13 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 
 from swh.web.common import swh_templatetags
 from swh.web.tests.testcase import SWHWebTestCase
 
 
 class SWHTemplateTagsTest(SWHWebTestCase):
-    @istest
-    def urlize_api_links_api(self):
+    def test_urlize_api_links_api(self):
         # update api link with html links content with links
         content = '{"url": "/api/1/abc/"}'
         expected_content = ('{"url": "<a href="/api/1/abc/">/api/1/abc/</a>"}')
@@ -19,8 +17,7 @@ class SWHTemplateTagsTest(SWHWebTestCase):
         self.assertEquals(swh_templatetags.urlize_links_and_mails(content),
                           expected_content)
 
-    @istest
-    def urlize_api_links_browse(self):
+    def test_urlize_api_links_browse(self):
         # update /browse link with html links content with links
         content = '{"url": "/browse/def/"}'
         expected_content = ('{"url": "<a href="/browse/def/">'
@@ -28,8 +25,7 @@ class SWHTemplateTagsTest(SWHWebTestCase):
         self.assertEquals(swh_templatetags.urlize_links_and_mails(content),
                           expected_content)
 
-    @istest
-    def urlize_header_links(self):
+    def test_urlize_header_links(self):
         # update api link with html links content with links
         content = """</api/1/abc/>; rel="next"
 </api/1/def/>; rel="prev"
@@ -41,8 +37,7 @@ class SWHTemplateTagsTest(SWHWebTestCase):
         self.assertEquals(swh_templatetags.urlize_header_links(content),
                           expected_content)
 
-    @istest
-    def safe_docstring_display(self):
+    def test_safe_docstring_display(self):
         # update api link with html links content with links
         docstring = """This is my list header:
 

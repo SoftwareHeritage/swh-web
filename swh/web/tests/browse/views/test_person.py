@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 from unittest.mock import patch
-from nose.tools import istest
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
@@ -14,8 +13,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 class SwhBrowsePersonTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.person.service')
-    @istest
-    def person_browse(self, mock_service):
+    def test_person_browse(self, mock_service):
         test_person_data = \
             {
                 "email": "j.adams440@gmail.com",
@@ -43,8 +41,7 @@ class SwhBrowsePersonTest(SWHWebTestCase):
                                    test_person_data['email']))
 
     @patch('swh.web.browse.views.person.service')
-    @istest
-    def person_request_error(self, mock_service):
+    def test_person_request_error(self, mock_service):
         mock_service.lookup_person.side_effect = \
             NotFoundExc('Person not found')
 

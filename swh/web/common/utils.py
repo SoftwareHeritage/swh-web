@@ -45,14 +45,14 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
     """
 
     if kwargs:
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        kwargs = {k: v for k, v in kwargs.items() if v}
 
     url = urlresolvers.reverse(
             viewname, urlconf=urlconf, args=args,
             kwargs=kwargs, current_app=current_app)
 
     if query_params:
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        query_params = {k: v for k, v in query_params.items() if v}
 
     if query_params and len(query_params) > 0:
         query_dict = QueryDict('', mutable=True)

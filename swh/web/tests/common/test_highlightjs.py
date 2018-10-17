@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 
 from swh.web.common import highlightjs
 from swh.web.tests.testcase import SWHWebTestCase
@@ -11,8 +10,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 
 class HighlightJsTestCase(SWHWebTestCase):
 
-    @istest
-    def get_hljs_language_from_mime_type(self):
+    def test_get_hljs_language_from_mime_type(self):
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/plain')
         self.assertEquals(lang, None)
@@ -50,8 +48,7 @@ class HighlightJsTestCase(SWHWebTestCase):
         lang = highlightjs.get_hljs_language_from_mime_type('image/png')
         self.assertEquals(lang, None)
 
-    @istest
-    def get_hljs_language_from_filename(self):
+    def test_get_hljs_language_from_filename(self):
 
         lang = highlightjs.get_hljs_language_from_filename('foo')
         self.assertEquals(lang, None)

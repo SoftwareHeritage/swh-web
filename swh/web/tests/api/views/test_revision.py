@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -18,8 +17,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision(self, mock_service):
+    def test_api_revision(self, mock_service):
         # given
         stub_revision = {
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
@@ -93,8 +91,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_not_found(self, mock_service):
+    def test_api_revision_not_found(self, mock_service):
         # given
         mock_service.lookup_revision.return_value = None
 
@@ -109,8 +106,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             'reason': 'Revision with sha1_git 12345 not found.'})
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_raw_ok(self, mock_service):
+    def test_api_revision_raw_ok(self, mock_service):
         # given
         stub_revision = {'message': 'synthetic revision message'}
 
@@ -128,8 +124,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_raw_ok_no_msg(self, mock_service):
+    def test_api_revision_raw_ok_no_msg(self, mock_service):
         # given
         mock_service.lookup_revision_message.side_effect = NotFoundExc(
             'No message for revision')
@@ -150,8 +145,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_raw_ko_no_rev(self, mock_service):
+    def test_api_revision_raw_ko_no_rev(self, mock_service):
         # given
         mock_service.lookup_revision_message.side_effect = NotFoundExc(
             'No revision found')
@@ -171,8 +165,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_with_origin_not_found(self, mock_service):
+    def test_api_revision_with_origin_not_found(self, mock_service):
         mock_service.lookup_revision_by.return_value = None
 
         rv = self.client.get('/api/1/revision/origin/123/')
@@ -190,8 +183,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             None)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_with_origin(self, mock_service):
+    def test_api_revision_with_origin(self, mock_service):
         mock_revision = {
             'id': '32',
             'directory': '21',
@@ -222,8 +214,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             None)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_with_origin_and_branch_name(self, mock_service):
+    def test_api_revision_with_origin_and_branch_name(self, mock_service):
         mock_revision = {
             'id': '12',
             'directory': '23',
@@ -258,8 +249,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision.service')
     @patch('swh.web.api.views.revision.utils')
-    @istest
-    def api_revision_with_origin_and_branch_name_and_timestamp(self,
+    def test_api_revision_with_origin_and_branch_name_and_timestamp(self,
                                                                mock_utils,
                                                                mock_service,
                                                                mock_parse_timestamp): # noqa
@@ -305,8 +295,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision.service')
     @patch('swh.web.api.views.revision.utils')
-    @istest
-    def api_revision_with_origin_and_branch_name_and_timestamp_with_escapes(
+    def test_api_revision_with_origin_and_branch_name_and_timestamp_escapes(
             self,
             mock_utils,
             mock_service,
@@ -346,8 +335,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             mock_revision)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def revision_directory_by_ko_raise(self, mock_service):
+    def test_revision_directory_by_ko_raise(self, mock_service):
         # given
         mock_service.lookup_directory_through_revision.side_effect = NotFoundExc('not')  # noqa
 
@@ -364,8 +352,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             None, limit=100, with_data=False)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def revision_directory_by_type_dir(self, mock_service):
+    def test_revision_directory_by_type_dir(self, mock_service):
         # given
         mock_service.lookup_directory_through_revision.return_value = (
             'rev-id',
@@ -393,8 +380,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             'some/path', limit=100, with_data=False)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def revision_directory_by_type_file(self, mock_service):
+    def test_revision_directory_by_type_file(self, mock_service):
         # given
         mock_service.lookup_directory_through_revision.return_value = (
             'rev-id',
@@ -426,8 +412,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision._revision_directory_by')
     @patch('swh.web.api.views.revision.utils')
-    @istest
-    def api_directory_through_revision_origin_ko_not_found(self,
+    def test_api_directory_through_revision_origin_ko_not_found(self,
                                                            mock_utils,
                                                            mock_rev_dir,
                                                            mock_parse_timestamp): # noqa
@@ -459,9 +444,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             with_data=False)
 
     @patch('swh.web.api.views.revision._revision_directory_by')
-    @istest
-    def api_directory_through_revision_origin(self,
-                                              mock_revision_dir):
+    def test_api_directory_through_revision_origin(self,
+                                                   mock_revision_dir):
         expected_res = [{
             'id': '123'
         }]
@@ -481,8 +465,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                                                   with_data=False)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_log(self, mock_service):
+    def test_api_revision_log(self, mock_service):
         # given
         stub_revisions = [{
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
@@ -538,8 +521,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 11)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_log_with_next(self, mock_service):
+    def test_api_revision_log_with_next(self, mock_service):
         # given
         stub_revisions = []
         for i in range(27):
@@ -567,8 +549,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 26)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_log_not_found(self, mock_service):
+    def test_api_revision_log_not_found(self, mock_service):
         # given
         mock_service.lookup_revision_log.return_value = None
 
@@ -589,8 +570,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 11)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_log_context(self, mock_service):
+    def test_api_revision_log_context(self, mock_service):
         # given
         stub_revisions = [{
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
@@ -688,8 +668,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             ['21145781e26ad1f978e'])
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_log_by(self, mock_service):
+    def test_api_revision_log_by(self, mock_service):
         # given
         stub_revisions = [{
             'id': '18d8be353ed3480476f032475e7c233eff7371d5',
@@ -743,8 +722,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '1', 'refs/heads/master', None, 11)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_log_by_with_next(self, mock_service):
+    def test_api_revision_log_by_with_next(self, mock_service):
         # given
         stub_revisions = []
         for i in range(27):
@@ -770,8 +748,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '1', 'refs/heads/master', None, 26)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_log_by_norev(self, mock_service):
+    def test_api_revision_log_by_norev(self, mock_service):
         # given
         mock_service.lookup_revision_log_by.side_effect = NotFoundExc(
             'No revision')
@@ -790,8 +767,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             '1', 'refs/heads/master', None, 11)
 
     @patch('swh.web.api.views.revision.service')
-    @istest
-    def api_revision_history(self, mock_service):
+    def test_api_revision_history(self, mock_service):
         # for readability purposes, we use:
         # - sha1 as 3 letters (url are way too long otherwise to respect pep8)
         # - only keys with modification steps (all other keys are kept as is)
@@ -827,8 +803,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_revision.assert_called_once_with('883')
 
     @patch('swh.web.api.views.revision._revision_directory_by')
-    @istest
-    def api_revision_directory_ko_not_found(self, mock_rev_dir):
+    def test_api_revision_directory_ko_not_found(self, mock_rev_dir):
         # given
         mock_rev_dir.side_effect = NotFoundExc('Not found')
 
@@ -848,8 +823,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             with_data=False)
 
     @patch('swh.web.api.views.revision._revision_directory_by')
-    @istest
-    def api_revision_directory_ok_returns_dir_entries(self, mock_rev_dir):
+    def test_api_revision_directory_ok_returns_dir_entries(self, mock_rev_dir):
         stub_dir = {
             'type': 'dir',
             'revision': '999',
@@ -891,8 +865,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             with_data=False)
 
     @patch('swh.web.api.views.revision._revision_directory_by')
-    @istest
-    def api_revision_directory_ok_returns_content(self, mock_rev_dir):
+    def test_api_revision_directory_ok_returns_content(self, mock_rev_dir):
         stub_content = {
             'type': 'file',
             'revision': '999',

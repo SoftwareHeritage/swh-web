@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch, MagicMock
 
@@ -12,8 +11,7 @@ from swh.web.tests.testcase import SWHWebTestCase
 
 class ContentApiTestCase(SWHWebTestCase, APITestCase):
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_filetype(self, mock_service):
+    def test_api_content_filetype(self, mock_service):
         stub_filetype = {
             'accepted_media_type': 'application/xml',
             'encoding': 'ascii',
@@ -41,8 +39,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_filetype_sha_not_found(self, mock_service):
+    def test_api_content_filetype_sha_not_found(self, mock_service):
         # given
         mock_service.lookup_content_filetype.return_value = None
 
@@ -64,8 +61,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_language(self, mock_service):
+    def test_api_content_language(self, mock_service):
         stub_language = {
             'lang': 'lisp',
             'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
@@ -91,8 +87,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_language_sha_not_found(self, mock_service):
+    def test_api_content_language_sha_not_found(self, mock_service):
         # given
         mock_service.lookup_content_language.return_value = None
 
@@ -114,8 +109,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_symbol(self, mock_service):
+    def test_api_content_symbol(self, mock_service):
         stub_ctag = [{
             'sha1': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'name': 'foobar',
@@ -152,8 +146,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'foo', 'sha1', 10)
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_symbol_2(self, mock_service):
+    def test_api_content_symbol_2(self, mock_service):
         stub_ctag = [{
             'sha1': '12371b8614fcd89ccd17ca2b1d9e66c5b00a6456',
             'name': 'foobar',
@@ -183,8 +176,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'foo', 'prev-sha1', 2)
 
     @patch('swh.web.api.views.content.service')
-    # @istest
-    def api_content_symbol_3(self, mock_service):
+    def test_api_content_symbol_3(self, mock_service):
         stub_ctag = [{
             'sha1': '67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'name': 'foo',
@@ -220,8 +212,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_expression.assert_called_once_with('foo', None, 10)
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_symbol_not_found(self, mock_service):
+    def test_api_content_symbol_not_found(self, mock_service):
         # given
         mock_service.lookup_expression.return_value = []
 
@@ -241,8 +232,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'bar', 'hash', 10)
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_ctags(self, mock_service):
+    def test_api_content_ctags(self, mock_service):
         stub_ctags = {
             'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'ctags': []
@@ -268,8 +258,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_license(self, mock_service):
+    def test_api_content_license(self, mock_service):
         stub_license = {
             'licenses': ['No_license_found', 'Apache-2.0'],
             'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
@@ -297,8 +286,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_license_sha_not_found(self, mock_service):
+    def test_api_content_license_sha_not_found(self, mock_service):
         # given
         mock_service.lookup_content_license.return_value = None
 
@@ -320,8 +308,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_provenance(self, mock_service):
+    def test_api_content_provenance(self, mock_service):
         stub_provenances = [{
             'origin': 1,
             'visit': 2,
@@ -358,8 +345,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_provenance_sha_not_found(self, mock_service):
+    def test_api_content_provenance_sha_not_found(self, mock_service):
         # given
         mock_service.lookup_content_provenance.return_value = None
 
@@ -381,8 +367,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_metadata(self, mock_service):
+    def test_api_content_metadata(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
             'checksums': {
@@ -428,8 +413,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_not_found_as_json(self, mock_service):
+    def test_api_content_not_found_as_json(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
         mock_service.lookup_content_provenance = MagicMock()
@@ -453,8 +437,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_content_provenance.called = False
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_not_found_as_yaml(self, mock_service):
+    def test_api_content_not_found_as_yaml(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
         mock_service.lookup_content_provenance = MagicMock()
@@ -480,8 +463,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_content_provenance.called = False
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_raw_ko_not_found(self, mock_service):
+    def test_api_content_raw_ko_not_found(self, mock_service):
         # given
         mock_service.lookup_content_raw.return_value = None
 
@@ -502,8 +484,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_raw_text(self, mock_service):
+    def test_api_content_raw_text(self, mock_service):
         # given
         stub_content = {'data': b'some content data'}
         mock_service.lookup_content_raw.return_value = stub_content
@@ -532,8 +513,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_raw_text_with_filename(self, mock_service):
+    def test_api_content_raw_text_with_filename(self, mock_service):
         # given
         stub_content = {'data': b'some content data'}
         mock_service.lookup_content_raw.return_value = stub_content
@@ -561,8 +541,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_raw_no_accepted_media_type_text_is_not_available_for_download( # noqa
+    def test_api_content_raw_no_accepted_media_type_text_is_not_available_for_download( # noqa
             self, mock_service):
         # given
         stub_content = {'data': b'some content data'}
@@ -590,8 +569,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_content_raw_no_accepted_media_type_found_so_not_available_for_download( # noqa
+    def test_api_content_raw_no_accepted_media_type_found_so_not_available_for_download( # noqa
             self, mock_service):
         # given
         stub_content = {'data': b'some content data'}
@@ -617,8 +595,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_check_content_known(self, mock_service):
+    def test_api_check_content_known(self, mock_service):
         # given
         mock_service.lookup_multiple_hashes.return_value = [
             {'found': True,
@@ -642,8 +619,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             [{'filename': None, 'sha1': 'sha1:blah'}])
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_check_content_known_as_yaml(self, mock_service):
+    def test_api_check_content_known_as_yaml(self, mock_service):
         # given
         mock_service.lookup_multiple_hashes.return_value = [
             {'found': True,
@@ -675,8 +651,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
              {'filename': None, 'sha1': 'sha1_git:hello'}])
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_check_content_known_post_as_yaml(self, mock_service):
+    def test_api_check_content_known_post_as_yaml(self, mock_service):
         # given
         stub_result = [{'sha1': '7e62b1fe10c88a3eddbba930b156bee2956b2435',
                         'found': True},
@@ -708,8 +683,7 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         self.assertEquals(rv.data, expected_result)
 
     @patch('swh.web.api.views.content.service')
-    @istest
-    def api_check_content_known_not_found(self, mock_service):
+    def test_api_check_content_known_not_found(self, mock_service):
         # given
         stub_result = [{'sha1': 'sha1:halb',
                         'found': False}]

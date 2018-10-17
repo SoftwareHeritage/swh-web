@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 from unittest.mock import patch
-from nose.tools import istest, nottest
 
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
@@ -19,7 +18,6 @@ from .data.directory_test_data import (
 
 class SwhBrowseDirectoryTest(SWHWebTestCase):
 
-    @nottest
     def directory_view(self, root_directory_sha1, directory_entries,
                        path=None):
         dirs = [e for e in directory_entries if e['type'] in ('dir', 'rev')]
@@ -92,8 +90,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
         self.assertContains(resp, swh_dir_id_url)
 
     @patch('swh.web.browse.utils.service')
-    @istest
-    def root_directory_view(self, mock_service):
+    def test_root_directory_view(self, mock_service):
         mock_service.lookup_directory.return_value = \
             stub_root_directory_data
 
@@ -101,8 +98,8 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
 
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.directory.service')
-    @istest
-    def sub_directory_view(self, mock_directory_service, mock_utils_service):
+    def test_sub_directory_view(self, mock_directory_service,
+                                mock_utils_service):
         mock_utils_service.lookup_directory.return_value = \
             stub_sub_directory_data
         mock_directory_service.lookup_directory_with_path.return_value = \
@@ -114,9 +111,8 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
 
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.directory.service')
-    @istest
-    def directory_request_errors(self, mock_directory_service,
-                                 mock_utils_service):
+    def test_directory_request_errors(self, mock_directory_service,
+                                      mock_utils_service):
 
         mock_utils_service.lookup_directory.side_effect = \
             BadInputExc('directory not found')

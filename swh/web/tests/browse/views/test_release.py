@@ -6,7 +6,6 @@
 # flake8: noqa
 
 from unittest.mock import patch
-from nose.tools import istest
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
@@ -26,8 +25,7 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
     @patch('swh.web.browse.views.release.service')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.common.utils.service')
-    @istest
-    def release_browse(self, mock_service_common, mock_service_utils,
+    def test_release_browse(self, mock_service_common, mock_service_utils,
                        mock_service):
         mock_service.lookup_release.return_value = stub_release
 

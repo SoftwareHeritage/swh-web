@@ -192,7 +192,7 @@ module.exports = {
     },
     // expose highlightjs to the global context as hljs when importing it
     {
-      test: require.resolve('highlightjs'),
+      test: require.resolve('highlight.js'),
       use: [{
         loader: 'expose-loader',
         options: 'hljs'

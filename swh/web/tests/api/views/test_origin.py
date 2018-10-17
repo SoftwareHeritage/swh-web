@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from nose.tools import istest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -30,8 +29,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         }
 
     @patch('swh.web.api.views.origin.get_origin_visits')
-    @istest
-    def api_1_lookup_origin_visits_raise_error(self, mock_get_origin_visits):
+    def test_api_1_lookup_origin_visits_raise_error(
+        self, mock_get_origin_visits,
+    ):
         # given
         mock_get_origin_visits.side_effect = ValueError(
             'voluntary error to check the bad request middleware.')
@@ -45,8 +45,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
             'reason': 'voluntary error to check the bad request middleware.'})
 
     @patch('swh.web.common.utils.service')
-    @istest
-    def api_1_lookup_origin_visits_raise_swh_storage_error_db(
+    def test_api_1_lookup_origin_visits_raise_swh_storage_error_db(
             self, mock_service):
         # given
         mock_service.lookup_origin_visits.side_effect = StorageDBError(
@@ -63,8 +62,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
             'SWH Storage exploded! Will be back online shortly!'})
 
     @patch('swh.web.common.utils.service')
-    @istest
-    def api_1_lookup_origin_visits_raise_swh_storage_error_api(
+    def test_api_1_lookup_origin_visits_raise_swh_storage_error_api(
             self, mock_service):
         # given
         mock_service.lookup_origin_visits.side_effect = StorageAPIError(
@@ -83,8 +81,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         })
 
     @patch('swh.web.api.views.origin.get_origin_visits')
-    @istest
-    def api_1_lookup_origin_visits(self, mock_get_origin_visits):
+    def test_api_1_lookup_origin_visits(self, mock_get_origin_visits):
         # given
         stub_visits = [
             {
@@ -141,8 +138,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         ])
 
     @patch('swh.web.api.views.origin.service')
-    @istest
-    def api_1_lookup_origin_visit(self, mock_service):
+    def test_api_1_lookup_origin_visit(self, mock_service):
         # given
         origin_visit = self.origin_visit1.copy()
         origin_visit.update({
@@ -168,8 +164,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_origin_visit.assert_called_once_with('10', '100')
 
     @patch('swh.web.api.views.origin.service')
-    @istest
-    def api_1_lookup_origin_visit_not_found(self, mock_service):
+    def test_api_1_lookup_origin_visit_not_found(self, mock_service):
         # given
         mock_service.lookup_origin_visit.return_value = None
 
@@ -186,8 +181,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_origin_visit.assert_called_once_with('1', '1000')
 
     @patch('swh.web.api.views.origin.service')
-    @istest
-    def api_origin_by_id(self, mock_service):
+    def test_api_origin_by_id(self, mock_service):
         # given
         mock_service.lookup_origin.return_value = self.origin1
 
@@ -207,8 +201,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_origin.assert_called_with({'id': '1234'})
 
     @patch('swh.web.api.views.origin.service')
-    @istest
-    def api_origin_by_type_url(self, mock_service):
+    def test_api_origin_by_type_url(self, mock_service):
         # given
         stub_origin = self.origin1.copy()
         stub_origin.update({
@@ -235,8 +228,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
              'type': 'ftp'})
 
     @patch('swh.web.api.views.origin.service')
-    @istest
-    def api_origin_not_found(self, mock_service):
+    def test_api_origin_not_found(self, mock_service):
         # given
         mock_service.lookup_origin.return_value = None
 

@@ -6,7 +6,6 @@
 # flake8: noqa
 
 from unittest.mock import patch
-from nose.tools import istest
 
 from swh.web.browse import utils
 from swh.web.common.exc import NotFoundExc
@@ -18,15 +17,13 @@ from .views.data.revision_test_data import revision_history_log_test
 
 class SwhBrowseUtilsTestCase(SWHWebTestCase):
 
-    @istest
-    def get_mimetype_and_encoding_for_content(self):
+    def test_get_mimetype_and_encoding_for_content(self):
         text = b'Hello world!'
         self.assertEqual(utils.get_mimetype_and_encoding_for_content(text),
                          ('text/plain', 'us-ascii'))
 
     @patch('swh.web.browse.utils.get_origin_visits')
-    @istest
-    def get_origin_visit(self, mock_origin_visits):
+    def test_get_origin_visit(self, mock_origin_visits):
         origin_info = {
             'id': 2,
             'type': 'git',
@@ -102,8 +99,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
 
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.utils.get_origin_visit')
-    @istest
-    def get_origin_visit_snapshot(self, mock_get_origin_visit,
+    def test_get_origin_visit_snapshot(self, mock_get_origin_visit,
                                   mock_service):
 
         mock_get_origin_visit.return_value = \
@@ -178,6 +174,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
               'revision': '9fbd21adbac36be869514e82e2e98505dc47219c',
               'directory': '828da2b80e41aa958b2c98526f4a1d2cc7d298b7'}],
             [{'name': '0.10.0',
+              'branch_name': 'refs/tags/0.10.0',
               'id': '7045404f3d1c54e6473c71bbb716529fbad4be24',
               'message': '0.10: The "Oh fuck it\'s PyCon" release\n',
               'date': '11 April 2014, 03:01 UTC',
@@ -185,6 +182,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
               'target': '6072557b6c10cd9a21145781e26ad1f978ed14b9',
               'directory': '2df4cd84ecc65b50b1d5318d3727e02a39b8a4cf'},
              {'name': '0.10.1',
+              'branch_name': 'refs/tags/0.10.1',
               'id': 'c893f4549c367e68288b0eb74595050410aa0de7',
               'message': 'Tagging 0.10.1\n',
               'date': '10 October 2014, 13:45 UTC',
@@ -223,13 +221,11 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
 
         self.assertEqual(origin_visit_branches, expected_result)
 
-    @istest
-    def gen_link(self):
+    def test_gen_link(self):
         self.assertEqual(utils.gen_link('https://www.softwareheritage.org/', 'SWH'),
                          '<a href="https://www.softwareheritage.org/">SWH</a>')
 
-    @istest
-    def gen_person_link(self):
+    def test_gen_person_link(self):
         person_id = 8221896
         person_name = 'Antoine Lambert'
         person_url = reverse('browse-person', kwargs={'person_id': person_id})
@@ -237,8 +233,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
         self.assertEqual(utils.gen_person_link(person_id, person_name),
                          '<a href="%s">%s</a>' % (person_url, person_name))
 
-    @istest
-    def gen_revision_link(self):
+    def test_gen_revision_link(self):
         revision_id = '28a0bc4120d38a394499382ba21d6965a67a3703'
         revision_url = reverse('browse-revision',
                                kwargs={'sha1_git': revision_id})
@@ -248,8 +243,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
         self.assertEqual(utils.gen_revision_link(revision_id, shorten_id=True),
                          '<a href="%s">%s</a>' % (revision_url, revision_id[:7]))
 
-    @istest
-    def prepare_revision_log_for_display_no_contex(self):
+    def test_prepare_revision_log_for_display_no_contex(self):
         per_page = 10
         first_page_logs_data = revision_history_log_test[:per_page+1]
         second_page_logs_data = revision_history_log_test[per_page:2*per_page+1]
@@ -331,8 +325,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
         self.assertEqual(revision_log_display_data['next_revs_breadcrumb'],
                          '/'.join(old_prev_revs_bc.split('/')[:-1]))
 
-    @istest
-    def prepare_revision_log_for_display_snapshot_context(self):
+    def test_prepare_revision_log_for_display_snapshot_context(self):
         per_page = 10
         first_page_logs_data = revision_history_log_test[:per_page+1]
         second_page_logs_data = revision_history_log_test[per_page:2*per_page+1]
