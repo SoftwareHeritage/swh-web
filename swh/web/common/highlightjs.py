@@ -212,6 +212,11 @@ _mime_type_to_hljs_language = {
     'text/x-shellscript': 'bash',
 }
 
+# dictionary mapping filenames to hljs languages
+_filename_to_hljs_language = {
+    'cmakelists.txt': 'cmake'
+}
+
 
 # function to fill the above dictionnaries
 def _init_pygments_to_hljs_map():
@@ -244,7 +249,10 @@ def get_hljs_language_from_filename(filename):
     """
     _init_pygments_to_hljs_map()
     if filename:
-        exts = filename.lower().split('.')
+        filename_lower = filename.lower()
+        if filename_lower in _filename_to_hljs_language:
+            return _filename_to_hljs_language[filename_lower]
+        exts = filename_lower.split('.')
         # check if file extension matches an hljs language
         # also handle .ext.in cases
         for ext in reversed(exts[-2:]):
