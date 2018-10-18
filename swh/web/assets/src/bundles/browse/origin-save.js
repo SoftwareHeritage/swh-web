@@ -76,10 +76,6 @@ export function initOriginSave() {
       order: [[0, 'desc']]
     });
 
-    setInterval(() => {
-      saveRequestsTable.ajax.reload(null, false);
-    }, 5000);
-
     $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
       saveRequestsTable.draw();
     });

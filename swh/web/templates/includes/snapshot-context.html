@@ -5,42 +5,21 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-<div class="card">
-  <div class="card-header bg-gray-light">
+<hr class="mt-1 mb-1">
+<div class="swh-origin-visit-details">
+  <ul>
     {% if snapshot_context.origin_info %}
-      {% if snapshot_context.origin_info.type %}
-        <a class="swh-heading-color" href="{% url 'browse-origin' snapshot_context.origin_info.type snapshot_context.origin_info.url %}">
-      {% else %}
-        <a class="swh-heading-color" href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
-      {% endif %}
-        <h4 class="text-center">
-          Origin: {{ snapshot_context.origin_info.url }}
-          {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
-            <a href="{{ snapshot_context.origin_info.url }}" title="Go to origin"><i class="fa fa-external-link" aria-hidden="true"></i></a>
-          {% endif %}
-        </h4>
-      </a>
-
-    {% else %}
-      <a href="{{ snapshot_context.browse_url }}">
-        <h4 class="text-center">Snapshot: {{ snapshot_context.snapshot_id }}</h4>
-      </a>
+      <li><i class="fa fa-calendar fa-fw"></i><a href="{{ snapshot_context.browse_url }}">Visits</a></li>
     {% endif %}
-  </div>
-  <div class="swh-origin-visit-details">
-    <ul>
-      {% if snapshot_context.origin_info %}
-        <li><i class="fa fa-calendar fa-fw"></i><a href="{{ snapshot_context.browse_url }}">Visits</a></li>
-      {% endif %}
-      {% if snapshot_context.visit_info %}
-        <li><i class="fa fa-camera fa-fw"></i> Snapshot date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.fmt_date }}</a></li>
-      {% endif %}
-      <li><i class="fa fa-code-fork fa-fw"></i> <a href="{{ snapshot_context.branches_url }}">Branches ({{ snapshot_context.snapshot_size.revision}})</a></li>
-      {% if not snapshot_context.snapshot_size.release %}
-        <li><i class="fa fa-tag fa-fw"></i> Releases (0)</li>
-      {% else %}
-        <li><i class="fa fa-tag fa-fw"></i> <a href="{{ snapshot_context.releases_url }}">Releases ({{ snapshot_context.snapshot_size.release }})</a></li>
-      {% endif %}
-    </ul>
-  </div>
+    {% if snapshot_context.visit_info %}
+      <li><i class="fa fa-camera fa-fw"></i> Snapshot date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.fmt_date }}</a></li>
+    {% endif %}
+    <li><i class="fa fa-code-fork fa-fw"></i> <a href="{{ snapshot_context.branches_url }}">Branches ({{ snapshot_context.snapshot_size.revision}})</a></li>
+    {% if not snapshot_context.snapshot_size.release %}
+      <li><i class="fa fa-tag fa-fw"></i> Releases (0)</li>
+    {% else %}
+      <li><i class="fa fa-tag fa-fw"></i> <a href="{{ snapshot_context.releases_url }}">Releases ({{ snapshot_context.snapshot_size.release }})</a></li>
+    {% endif %}
+  </ul>
 </div>
+<hr class="mt-1 mb-1">

@@ -94,7 +94,7 @@ See top-level LICENSE file for more information
   </div>
 
   <div id="swh-origin-save-requests-list" class="tab-pane mt-3">
-    <table id="swh-origin-save-requests" class="table table-striped swh-table" width="100%">
+    <table id="swh-origin-save-requests" class="table swh-table swh-table-striped" width="100%">
       <thead>
         <tr>
           <th>Request date</th>
@@ -109,6 +109,7 @@ See top-level LICENSE file for more information
 </div>
 
 <script>
+  swh.webapp.initPage('origin-save');
   swh.browse.initOriginSave();
 </script>
 

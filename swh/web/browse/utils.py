@@ -15,6 +15,7 @@ from django.utils.safestring import mark_safe
 
 from importlib import reload
 
+from swh.model.identifiers import persistent_identifier
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.utils import (
@@ -1020,8 +1021,11 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
     snapshot_size = service.lookup_snapshot_size(snapshot_id)
 
+    swh_snp_id = persistent_identifier('snapshot', snapshot_id)
+
     return {
         'swh_type': swh_type,
+        'swh_object_id': swh_snp_id,
         'snapshot_id': snapshot_id,
         'snapshot_size': snapshot_size,
         'origin_info': origin_info,

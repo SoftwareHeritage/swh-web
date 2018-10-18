@@ -12,7 +12,35 @@ See top-level LICENSE file for more information
 {% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
 
 {% block navbar-content %}
-<h4>Browse archived software</h4>
+{% if snapshot_context %}
+  <h4>
+    {% if snapshot_context.origin_info %}
+      Browse archived software origin:
+        <a href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
+          {{ snapshot_context.origin_info.url }}
+        </a>
+        {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
+          <a href="{{ snapshot_context.origin_info.url }}" title="Go to origin">
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+        {% endif %}
+
+    {% else %}
+      Browse archived software snapshot:
+        <a href="{% url 'browse-swh-id' snapshot_context.swh_object_id %}">
+          {{ snapshot_context.swh_object_id }}
+        </a>
+    {% endif %}
+    <i class="fa fa-ellipsis-v fa-fw" aria-hidden="true"></i> {{ swh_object_name }}
+  </h4>
+{% else %}
+  <h4>
+    Browse archived software {{ swh_object_name.lower }}:
+    <a href="{% url 'browse-swh-id' swh_object_id %}">
+      {{ swh_object_id }}
+    </a>
+  </h4>
+{% endif %}
 {% endblock %}
 
 {% block browse-content %}
@@ -23,9 +51,7 @@ See top-level LICENSE file for more information
 {% endif %}
 {% endblock %}
 
-<div class="card" style="min-height: 200px;">
-  {% block swh-browse-content %}{% endblock %}
-</div>
+{% block swh-browse-content %}{% endblock %}
 
 {% block swh-browse-after-content %}{% endblock %}
 

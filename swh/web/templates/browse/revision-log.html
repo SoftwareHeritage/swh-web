@@ -17,17 +17,10 @@ See top-level LICENSE file for more information
 {% block swh-browse-content %}
 {% if snapshot_context %}
   {% include "includes/top-navigation.html" %}
-{% else %}
-  <div class="card-header bg-gray-light">
-    <div class="card-title float-left">
-      <h4>{{ swh_object_name }}</h4>
-    </div>
-    <div class="clearfix"></div>
-  </div>
 {% endif %}
 
-<div class="table-responsive">
-  <table class="table table-striped">
+<div class="table-responsive mb-3">
+  <table class="table swh-table swh-table-striped">
     <thead>
       <tr>
         <th><i class="octicon octicon-git-commit fa-fw"></i>Revision</th>
