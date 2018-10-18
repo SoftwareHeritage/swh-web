@@ -16,71 +16,60 @@ See top-level LICENSE file for more information
 {% render_bundle 'origin' %}
 {% endblock %}
 
-{% block swh-browse-before-content %}
-<div class="card">
-  <div class="card-header bg-gray-light border-bottom-0">
-    <h4 class="text-center">
-      Origin: {{ origin_info.url }}
-      {% if origin_info.url|slice:"0:4" == "http" %}
-        <a href="{{ origin_info.url }}" title="Go to origin"><i class="fa fa-external-link" aria-hidden="true"></i></a>
-      {% endif %}
-      </h4>
-  </div>
-</div>
-{% endblock %}
-
 {% block swh-browse-content %}
-<div class="card-header bg-gray-light">
-  <div class="float-left">
-    <h4>{{ swh_object_name }}</h4>
+
+<h4>Overview</h4>
+
+<ul>
+  <li class="d-inline-block">
+    <b>Total number of visits: </b>{{ origin_visits|length }}
+    <i class="fa fa-fw" aria-hidden="true"></i>
+  </li>
+  <li class="d-inline-block">
+    <b>Last full visit: </b><span style="margin-left: 20px;" id="swh-last-full-visit"></span>
+    <i class="fa fa-fw" aria-hidden="true"></i>
+  </li>
+  <li class="d-inline-block">
+    <b>First full visit: </b><span style="margin-left: 20px;" id="swh-first-full-visit"></span>
+    <i class="fa fa-fw" aria-hidden="true"></i>
+  </li>
+  <li class="d-inline-block">
+    <b>Last visit: </b><span style="margin-left: 20px;" id="swh-last-visit"></span>
+    <i class="fa fa-fw" aria-hidden="true"></i>
+  </li>
+</ul>
+
+<h4>History</h4>
+
+<div class="text-center">
+  <div class="form-check-inline">
+    <label class="form-check-label active" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
+      <input type="radio" class="form-check-input" name="optradio" checked>Show full visits with different snapshots
+    </label>
   </div>
-  <div class="clearfix"></div>
+  <div class="form-check-inline">
+    <label class="form-check-label" onclick="swh.origin.showFullVisits(event)">
+      <input type="radio" class="form-check-input" name="optradio">Show all full visits
+    </label>
+  </div>
+  <div class="form-check-inline disabled">
+    <label class="form-check-label" onclick="swh.origin.showAllVisits(event)">
+      <input type="radio" class="form-check-input" name="optradio">Show all visits
+    </label>
+  </div>
 </div>
 
-<div class="card-body">
+<h5>Calendar</h5>
 
-  <h4>Overview</h4>
+<div id="swh-visits-calendar"></div>
 
-  <ul>
-    <li class="d-inline-block"><b>Total number of visits: </b>{{ origin_visits|length }}<b>,</b> </li>
-    <li class="d-inline-block"><b>Last full visit: </b><span style="margin-left: 20px;" id="swh-last-full-visit"></span><b>,</b> </li>
-    <li class="d-inline-block"><b>First full visit: </b><span style="margin-left: 20px;" id="swh-first-full-visit"></span><b>,</b> </li>
-    <li class="d-inline-block"><b>Last visit: </b><span style="margin-left: 20px;" id="swh-last-visit"></span></li>
-  </ul>
+<h5>List</h5>
 
-  <h4>History</h4>
+<div id="swh-visits-list"></div>
 
-  <div class="text-center">
-    <div class="form-check-inline">
-      <label class="form-check-label active" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
-        <input type="radio" class="form-check-input" name="optradio" checked>Show full visits with different snapshots
-      </label>
-    </div>
-    <div class="form-check-inline">
-      <label class="form-check-label" onclick="swh.origin.showFullVisits(event)">
-        <input type="radio" class="form-check-input" name="optradio">Show all full visits
-      </label>
-    </div>
-    <div class="form-check-inline disabled">
-      <label class="form-check-label" onclick="swh.origin.showAllVisits(event)">
-        <input type="radio" class="form-check-input" name="optradio">Show all visits
-      </label>
-    </div>
-  </div>
+<h5>Timeline</h5>
 
-  <h5>Calendar</h5>
-
-  <div id="swh-visits-calendar"></div>
-
-  <h5>List</h5>
-
-  <div id="swh-visits-list"></div>
-
-  <h5>Timeline</h5>
-
-  <div id="swh-visits-timeline" class="d3-wrapper"></div>
-
-</div>
+<div id="swh-visits-timeline" class="d3-wrapper"></div>
 
 <script>
   // all origin visits

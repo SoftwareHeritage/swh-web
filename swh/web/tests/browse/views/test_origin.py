@@ -57,14 +57,28 @@ def _to_snapshot_dict(branches=None, releases=None):
 
 class SwhBrowseOriginTest(SWHWebTestCase):
 
+    @patch('swh.web.browse.utils.service')
+    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
+    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.browse.utils.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_visits')
     @patch('swh.web.browse.views.origin.service')
     def test_origin_visits_browse(self, mock_service, mock_get_origin_visits,
-                                  mock_get_origin_info):
+                                  mock_get_origin_info, mock_get_origin_info_utils,
+                                  mock_get_origin_visits_utils,
+                                  mock_get_origin_visit_snapshot,
+                                  mock_utils_service):
         mock_service.lookup_origin.return_value = origin_info_test_data
         mock_get_origin_info.return_value = origin_info_test_data
+        mock_get_origin_info_utils.return_value = origin_info_test_data
         mock_get_origin_visits.return_value = origin_visits_test_data
+        mock_get_origin_visits_utils.return_value = origin_visits_test_data
+        mock_get_origin_visit_snapshot.return_value = stub_content_origin_snapshot
+        mock_utils_service.lookup_snapshot_size.return_value = {
+            'revision': len(stub_content_origin_snapshot[0]),
+            'release': len(stub_content_origin_snapshot[1])
+        }
 
         url = reverse('browse-origin-visits',
                       kwargs={'origin_type': origin_info_test_data['type'],

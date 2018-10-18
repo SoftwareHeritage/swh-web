@@ -255,7 +255,8 @@ def content_display(request, query_string):
         'encoding': content_data['encoding'],
         'size': filesizeformat(content_data['length']),
         'language': content_data['language'],
-        'licenses': content_data['licenses']
+        'licenses': content_data['licenses'],
+        'filename': filename
     }
 
     if filename:
@@ -272,6 +273,7 @@ def content_display(request, query_string):
 
     return render(request, 'browse/content.html',
                   {'heading': heading,
+                   'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
                    'content': content,
