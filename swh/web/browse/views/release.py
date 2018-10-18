@@ -168,6 +168,7 @@ def release_browse(request, sha1_git):
 
     return render(request, 'browse/release.html',
                   {'heading': heading,
+                   'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Release',
                    'swh_object_metadata': release_data,
                    'release_name': release['name'],

@@ -40,3 +40,7 @@
     background-color: #e9ecef;
     border-color: #dee2e6;
 }
+
+.dataTables_scrollBody .swh-table.dataTable thead {
+    border-top: none;
+}

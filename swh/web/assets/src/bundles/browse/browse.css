@@ -54,18 +54,6 @@
     white-space: pre-wrap;
 }
 
-.swh-table-even-odd th {
-    border-top: none;
-}
-
-.swh-table-even-odd tr:nth-child(even) {
-    background-color: #f5f5f5;
-}
-
-.swh-table-even-odd tr:nth-child(odd) {
-    background-color: #fff;
-}
-
 .swh-table-cell-text-overflow {
     white-space: nowrap;
     overflow: hidden;

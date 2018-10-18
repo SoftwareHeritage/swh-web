@@ -12,6 +12,7 @@ from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
+from swh.model.identifiers import persistent_identifier
 from swh.web.common import service
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, gen_path_info
@@ -225,8 +226,11 @@ def revision_log_browse(request, sha1_git):
             link_attrs={'class': 'btn btn-default btn-sm',
                         'role': 'button'})
 
+    swh_rev_id = persistent_identifier('revision', sha1_git)
+
     return render(request, 'browse/revision-log.html',
                   {'heading': 'Revision history',
+                   'swh_object_id': swh_rev_id,
                    'swh_object_name': 'Revision history',
                    'swh_object_metadata': None,
                    'revision_log': revision_log_data,
@@ -513,6 +517,7 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     return render(request, 'browse/revision.html',
                   {'heading': heading,
+                   'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Revision',
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],

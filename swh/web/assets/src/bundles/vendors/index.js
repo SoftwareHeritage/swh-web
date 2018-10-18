@@ -17,6 +17,9 @@ import 'url-search-params-polyfill';
 import 'jquery';
 import 'bootstrap-loader/lib/bootstrap.loader?configFilePath=../../../swh/web/assets/config/.bootstraprc!bootstrap-loader/no-op.js';
 
+// admin-lte scripts
+import 'admin-lte';
+
 // js-cookie
 import 'js-cookie';
 
@@ -28,9 +31,6 @@ import './datatables.css';
 
 // iframe-resizer
 import 'iframe-resizer';
-
-// admin-lte scripts
-import 'admin-lte';
 
 // web fonts
 import 'typeface-alegreya';

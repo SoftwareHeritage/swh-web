@@ -17,7 +17,7 @@ from swh.web.common.utils import (
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
-    get_origin_info
+    get_origin_info, get_snapshot_context
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -144,13 +144,10 @@ def origin_visits_browse(request, origin_url, origin_type=None):
     try:
         origin_info = get_origin_info(origin_url, origin_type)
         origin_visits = get_origin_visits(origin_info)
+        snapshot_context = get_snapshot_context(origin_type=origin_type,
+                                                origin_url=origin_url)
     except Exception as exc:
         return handle_view_exception(request, exc)
-
-    origin_info['last swh visit browse url'] = \
-        reverse('browse-origin-directory',
-                kwargs={'origin_url': origin_url,
-                        'origin_type': origin_type})
 
     for i, visit in enumerate(origin_visits):
         url_date = format_utc_iso_date(visit['date'], '%Y-%m-%dT%H:%M:%SZ')
@@ -182,8 +179,7 @@ def origin_visits_browse(request, origin_url, origin_type=None):
                    'swh_object_metadata': origin_info,
                    'origin_visits': origin_visits,
                    'origin_info': origin_info,
-                   'browse_url_base': '/browse/origin/%s/url/%s/' %
-                   (origin_type, origin_url),
+                   'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': False})
 

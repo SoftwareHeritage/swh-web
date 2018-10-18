@@ -9,14 +9,19 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
+{% block navbar-content %}
+{% if not snapshot_context %}
+  <h4>
+    Browse person
+  </h4>
+{% else %}
+  {{ block.super }}
+{% endif %}
+{% endblock %}
+
+
 {% block swh-browse-content %}
-<div class="card-header bg-gray-light">
-  <div class="float-left">
-    <h4>{{ swh_object_name }}</h4>
-  </div>
-  <div class="clearfix"></div>
-</div>
-<table class="table">
+<table class="table mt-3">
   <tbody>
     {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
       <tr>

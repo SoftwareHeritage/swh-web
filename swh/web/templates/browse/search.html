@@ -28,10 +28,10 @@ See top-level LICENSE file for more information
     <label class="form-check-label" for="swh-search-origins-with-visit">only show origins visited at least once</label>
   </div>
 </form>
-<hr class="swh-faded-line">
-<div id="swh-origin-search-results" style="display: none;">
+<hr>
+<div id="swh-origin-search-results" class="mb-3" style="display: none;">
   <div class="table-responsive">
-    <table class="table swh-table-even-odd" id="origin-search-results">
+    <table class="table swh-table swh-table-striped" id="origin-search-results">
       <thead>
         <tr>
           <th>Origin type</th>
@@ -52,7 +52,6 @@ See top-level LICENSE file for more information
   <br/>
   No origins matching the search criteria were found.
 </p>
-
 
 <ul class="pagination justify-content-center swh-search-pagination">
   <li class="disabled page-item" id="origins-prev-results-button"><a class="page-link" tabindex="-1">Previous</a></li>
