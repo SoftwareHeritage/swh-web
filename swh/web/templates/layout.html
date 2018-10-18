@@ -129,14 +129,14 @@ See top-level LICENSE file for more information
             </li>
             {% if user.is_authenticated %}
               <li class="nav-header">Administration</li>
-              <li class="nav-item swh-help-item" title="Save code now administration">
-                <a href="{% url 'admin-origin-save' %}" class="nav-link swh-help-link">
+              <li class="nav-item swh-origin-save-admin-item" title="Save code now administration">
+                <a href="{% url 'admin-origin-save' %}" class="nav-link swh-origin-save-admin-link">
                   <i style="color: #fecd1b;" class="nav-icon fa fa-download"></i>
                   <p>Save code now</p>
                 </a>
               </li>
-              <li class="nav-item swh-help-item" title="Deposit administration">
-                <a href="{% url 'admin-deposit' %}" class="nav-link swh-help-link">
+              <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
+                <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
                   <i style="color: #fecd1b;" class="nav-icon fa fa-download"></i>
                   <p>Deposit</p>
                 </a>

@@ -44,7 +44,7 @@ See top-level LICENSE file for more information
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="swh-save-requests-pending" role="tabpanel" aria-labelledby="swh-save-requests-pending-tab">
-        <table id="swh-origin-save-pending-requests" class="table table-striped swh-table" width="100%">
+        <table id="swh-origin-save-pending-requests" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
               <th>Request date</th>
@@ -65,7 +65,7 @@ See top-level LICENSE file for more information
         </div>
       </div>
       <div class="tab-pane fade" id="swh-save-requests-accepted" role="tabpanel" aria-labelledby="swh-save-requests-accepted-tab">
-        <table id="swh-origin-save-accepted-requests" class="table table-striped swh-table" width="100%">
+        <table id="swh-origin-save-accepted-requests" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
               <th>Request date</th>
@@ -77,7 +77,7 @@ See top-level LICENSE file for more information
         </table>
       </div>
       <div class="tab-pane fade" id="swh-save-requests-rejected" role="tabpanel" aria-labelledby="swh-save-requests-rejected-tab">
-        <table id="swh-origin-save-rejected-requests" class="table table-striped swh-table" width="100%">
+        <table id="swh-origin-save-rejected-requests" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
               <th>Request date</th>
@@ -104,10 +104,10 @@ See top-level LICENSE file for more information
 
     <div class="tab-content">
       <div class="tab-pane fade show active" id="swh-authorized-origins" role="tabpanel" aria-labelledby="swh-authorized-origins-tab">
-        <table id="swh-authorized-origin-urls" class="table table-striped swh-table" width="100%">
+        <table id="swh-authorized-origin-urls" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
-              <th>&#8203;</th>
+              <th>Url</th>
             </tr>
           </thead>
         </table>
@@ -127,10 +127,10 @@ See top-level LICENSE file for more information
       </div>
 
       <div class="tab-pane fade" id="swh-unauthorized-origins" role="tabpanel" aria-labelledby="swh-unauthorized-origins-tab">
-        <table id="swh-unauthorized-origin-urls" class="table table-striped swh-table" width="100%">
+        <table id="swh-unauthorized-origin-urls" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
-              <th>&#8203;</th>
+              <th>Url</th>
             </tr>
           </thead>
         </table>
@@ -153,6 +153,7 @@ See top-level LICENSE file for more information
 </div>
 
 <script>
+  swh.webapp.initPage('origin-save-admin');
   swh.admin.initOriginSaveAdmin();
 </script>
 {% endblock %}

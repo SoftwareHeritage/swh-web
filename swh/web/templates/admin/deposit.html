@@ -26,7 +26,7 @@ See top-level LICENSE file for more information
     The table below displays the whole list of software deposits into the archive
     submitted through <a href="https://hal.archives-ouvertes.fr/">HAL</a>.
   </p>
-  <table id="swh-admin-deposit-list" class="table table-striped swh-table" width="100%">
+  <table id="swh-admin-deposit-list" class="table swh-table swh-table-striped" width="100%">
     <thead>
       <tr>
         <th>deposit id</th>
@@ -40,6 +40,7 @@ See top-level LICENSE file for more information
   </table>
   <p id="swh-admin-deposit-list-error"></p>
   <script>
+    swh.webapp.initPage('deposit-admin');
     swh.admin.initDepositAdmin();
   </script>
 {% endblock content %}
