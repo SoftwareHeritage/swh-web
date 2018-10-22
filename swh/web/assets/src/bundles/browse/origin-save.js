@@ -14,6 +14,8 @@ export function initOriginSave() {
 
   $(document).ready(() => {
 
+    $.fn.dataTable.ext.errMode = 'throw';
+
     fetch(Urls.browse_origin_save_types_list())
       .then(response => response.json())
       .then(data => {
