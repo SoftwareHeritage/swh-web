@@ -525,11 +525,11 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         # given
         stub_revisions = []
         for i in range(27):
-            stub_revisions.append({'id': i})
+            stub_revisions.append({'id': str(i)})
 
         mock_service.lookup_revision_log.return_value = stub_revisions[:26]
 
-        expected_revisions = [x for x in stub_revisions if x['id'] < 25]
+        expected_revisions = [x for x in stub_revisions if int(x['id']) < 25]
         for e in expected_revisions:
             e['url'] = '/api/1/revision/%s/' % e['id']
             e['history_url'] = '/api/1/revision/%s/log/' % e['id']
@@ -726,11 +726,11 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         # given
         stub_revisions = []
         for i in range(27):
-            stub_revisions.append({'id': i})
+            stub_revisions.append({'id': str(i)})
 
         mock_service.lookup_revision_log_by.return_value = stub_revisions[:26]
 
-        expected_revisions = [x for x in stub_revisions if x['id'] < 25]
+        expected_revisions = [x for x in stub_revisions if int(x['id']) < 25]
         for e in expected_revisions:
             e['url'] = '/api/1/revision/%s/' % e['id']
             e['history_url'] = '/api/1/revision/%s/log/' % e['id']
@@ -740,6 +740,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
 
         # then
         self.assertEquals(rv.status_code, 200)
+
         self.assertEquals(rv['Content-Type'], 'application/json')
         self.assertIsNotNone(rv['Link'])
         self.assertEquals(rv.data, expected_revisions)

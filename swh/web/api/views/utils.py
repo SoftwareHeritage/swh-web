@@ -58,7 +58,7 @@ def api_home(request):
 APIUrls.add_url_pattern(r'^$', api_home, view_name='api-homepage')
 
 
-@api_route(r'/', 'endpoints')
+@api_route(r'/', 'api-endpoints')
 def api_endpoints(request):
     """Display the list of opened api endpoints.
 

@@ -123,7 +123,7 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
     def test_accept_pending_save_request(self, mock_scheduler):
         origin_type = 'git'
         origin_url = 'https://v2.pikacode.com/bthate/botlib.git'
-        save_request_url = reverse('save-origin',
+        save_request_url = reverse('api-save-origin',
                                    kwargs={'origin_type': origin_type,
                                            'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},
@@ -171,7 +171,7 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
     def test_reject_pending_save_request(self):
         origin_type = 'git'
         origin_url = 'https://wikipedia.com'
-        save_request_url = reverse('save-origin',
+        save_request_url = reverse('api-save-origin',
                                    kwargs={'origin_type': origin_type,
                                            'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},

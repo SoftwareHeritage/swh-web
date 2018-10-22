@@ -31,7 +31,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
             url='https://gitlab.com/user_to_exclude')
 
     def test_invalid_origin_type(self):
-        url = reverse('save-origin',
+        url = reverse('api-save-origin',
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'https://github.com/torvalds/linux'}) # noqa
 
@@ -39,7 +39,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
         self.assertEquals(response.status_code, 400)
 
     def test_invalid_origin_url(self):
-        url = reverse('save-origin',
+        url = reverse('api-save-origin',
                       kwargs={'origin_type': 'git',
                               'origin_url': 'bar'})
 
@@ -85,7 +85,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                 'id': 1,
              }]
 
-        url = reverse('save-origin',
+        url = reverse('api-save-origin',
                       kwargs={'origin_type': 'git',
                               'origin_url': origin_url})
 
@@ -124,7 +124,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                 'id': 1,
              }]
 
-        url = reverse('save-origin',
+        url = reverse('api-save-origin',
                       kwargs={'origin_type': 'git',
                               'origin_url': origin_url})
 

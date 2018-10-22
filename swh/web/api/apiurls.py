@@ -31,7 +31,7 @@ class APIUrls(UrlsIndex):
         """
         Add a route to the self-documenting API reference
         """
-        route_view_name = route[1:-1].replace('/', '-')
+        route_view_name = 'api-%s' % route[1:-1].replace('/', '-')
         if route not in cls._apidoc_routes:
             d = {'docstring': docstring,
                  'route_view_name': route_view_name}

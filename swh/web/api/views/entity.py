@@ -10,7 +10,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/entity/(?P<uuid>.+)/', 'entity')
+@api_route(r'/entity/(?P<uuid>.+)/', 'api-entity')
 @api_doc('/entity/', tags=['hidden'])
 def api_entity_by_uuid(request, uuid):
     """Return content information if content is found.
