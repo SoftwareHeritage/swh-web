@@ -45,7 +45,7 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
     """
 
     if kwargs:
-        kwargs = {k: v for k, v in kwargs.items() if v}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
     url = urlresolvers.reverse(
             viewname, urlconf=urlconf, args=args,
