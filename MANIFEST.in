@@ -1,6 +1,8 @@
 include Makefile
+include pytest.ini
 include requirements.txt
 include requirements-swh.txt
+include requirements-test.txt
 include version.txt
 recursive-include swh/web/static *
 recursive-include swh/web/templates *

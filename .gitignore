@@ -24,4 +24,5 @@ swh/web/static/fonts/
 build/
 dist/
 .hypothesis
+.cache
 .pytest_cache
