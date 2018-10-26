@@ -25,9 +25,9 @@ class PersonApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/person/198003/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, stub_person)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, stub_person)
 
     @patch('swh.web.api.views.person.service')
     def test_api_person_not_found(self, mock_service):
@@ -38,8 +38,8 @@ class PersonApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/person/666/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Person with id 666 not found.'})

@@ -104,11 +104,11 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
         url = reverse('api-snapshot',
                       kwargs={'snapshot_id': _snapshot_id})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         expected_data = _lookup_snapshot(_snapshot_id)
         expected_data = _enrich_snapshot_data(expected_data)
-        self.assertEquals(rv.data, expected_data)
+        self.assertEqual(rv.data, expected_data)
 
     def test_api_snapshot_paginated(self, mock_service):
         mock_service.lookup_snapshot.side_effect = _lookup_snapshot
@@ -125,12 +125,12 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
                           query_params={'branches_from': branches_from,
                                         'branches_count': branches_count})
             rv = self.client.get(url)
-            self.assertEquals(rv.status_code, 200)
-            self.assertEquals(rv['Content-Type'], 'application/json')
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
             expected_data = _lookup_snapshot(_snapshot_id, branches_from,
                                              branches_count)
             expected_data = _enrich_snapshot_data(expected_data)
-            self.assertEquals(rv.data, expected_data)
+            self.assertEqual(rv.data, expected_data)
             whole_snapshot['branches'].update(expected_data['branches'])
             branches_offset += branches_count
 
@@ -140,16 +140,16 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
                                    kwargs={'snapshot_id': _snapshot_id},
                                    query_params={'branches_from': next_branch,
                                                  'branches_count': branches_count}) # noqa
-                self.assertEquals(rv['Link'], '<%s>; rel="next"' % next_url)
+                self.assertEqual(rv['Link'], '<%s>; rel="next"' % next_url)
             else:
                 self.assertFalse(rv.has_header('Link'))
 
         url = reverse('api-snapshot',
                       kwargs={'snapshot_id': _snapshot_id})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, whole_snapshot)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, whole_snapshot)
 
     def test_api_snapshot_filtered(self, mock_service):
         mock_service.lookup_snapshot.side_effect = _lookup_snapshot
@@ -160,12 +160,12 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
                       kwargs={'snapshot_id': _snapshot_id},
                       query_params={'target_types': target_types})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         expected_data = _lookup_snapshot(_snapshot_id,
                                          target_types=target_types.split(','))
         expected_data = _enrich_snapshot_data(expected_data)
-        self.assertEquals(rv.data, expected_data)
+        self.assertEqual(rv.data, expected_data)
 
     def test_api_snapshot_errors(self, mock_service):
         mock_service.lookup_snapshot.side_effect = \
@@ -174,7 +174,7 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
         url = reverse('api-snapshot',
                       kwargs={'snapshot_id': '63ce369'})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 400)
 
         mock_service.lookup_snapshot.side_effect = \
             NotFoundExc('Snapshot not found!')
@@ -183,4 +183,4 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
         url = reverse('api-snapshot',
                       kwargs={'snapshot_id': snapshot_inexistent})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404)

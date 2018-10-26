@@ -30,7 +30,7 @@ class SWHComputeLinkHeaderTest(SWHWebTestCase):
         headers = compute_link_header(
             rv, options)
 
-        self.assertEquals(headers, {
+        self.assertEqual(headers, {
             'Link': '<foo>; rel="next",<bar>; rel="previous"',
         })
 
@@ -42,7 +42,7 @@ class SWHComputeLinkHeaderTest(SWHWebTestCase):
         headers = compute_link_header(
             rv, options)
 
-        self.assertEquals(headers, {})
+        self.assertEqual(headers, {})
 
     def test_compute_link_header_nothing_changed_2(self):
         rv = {'headers': {}}
@@ -52,31 +52,31 @@ class SWHComputeLinkHeaderTest(SWHWebTestCase):
         headers = compute_link_header(
             rv, options)
 
-        self.assertEquals(headers, {})
+        self.assertEqual(headers, {})
 
 
 class SWHTransformProcessorTest(SWHWebTestCase):
     def test_transform_only_return_results_1(self):
         rv = {'results': {'some-key': 'some-value'}}
 
-        self.assertEquals(transform(rv), {'some-key': 'some-value'})
+        self.assertEqual(transform(rv), {'some-key': 'some-value'})
 
     def test_transform_only_return_results_2(self):
         rv = {'headers': {'something': 'do changes'},
               'results': {'some-key': 'some-value'}}
 
-        self.assertEquals(transform(rv), {'some-key': 'some-value'})
+        self.assertEqual(transform(rv), {'some-key': 'some-value'})
 
     def test_transform_do_remove_headers(self):
         rv = {'headers': {'something': 'do changes'},
               'some-key': 'some-value'}
 
-        self.assertEquals(transform(rv), {'some-key': 'some-value'})
+        self.assertEqual(transform(rv), {'some-key': 'some-value'})
 
     def test_transform_do_nothing(self):
         rv = {'some-key': 'some-value'}
 
-        self.assertEquals(transform(rv), {'some-key': 'some-value'})
+        self.assertEqual(transform(rv), {'some-key': 'some-value'})
 
 
 class RendererTestCase(SWHWebTestCase):
@@ -146,7 +146,7 @@ class RendererTestCase(SWHWebTestCase):
         actual_data = filter_by_fields(request, input_data)
 
         # then
-        self.assertEquals(actual_data, input_data)
+        self.assertEqual(actual_data, input_data)
 
     @patch('swh.web.api.apiresponse.utils.filter_field_keys')
     def test_swh_filter_renderer_do_filter(self, mock_ffk):
@@ -164,6 +164,6 @@ class RendererTestCase(SWHWebTestCase):
         actual_data = filter_by_fields(request, input_data)
 
         # then
-        self.assertEquals(actual_data, {'a': 'some-data'})
+        self.assertEqual(actual_data, {'a': 'some-data'})
 
         mock_ffk.assert_called_once_with(input_data, {'a', 'c'})

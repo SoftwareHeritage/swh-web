@@ -13,7 +13,7 @@ from dateutil import parser as date_parser
 from dateutil import tz
 
 from django.core.cache import cache
-from django.core import urlresolvers
+from django.urls import reverse as django_reverse
 from django.http import QueryDict
 
 from swh.model.exceptions import ValidationError
@@ -47,7 +47,7 @@ def reverse(viewname, args=None, kwargs=None, query_params=None,
     if kwargs:
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
-    url = urlresolvers.reverse(
+    url = django_reverse(
             viewname, urlconf=urlconf, args=args,
             kwargs=kwargs, current_app=current_app)
 

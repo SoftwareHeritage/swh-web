@@ -85,7 +85,7 @@ def get_mimetype_and_encoding_for_content(content):
             mime_type = magic_result.mime_type
             encoding = magic_result.encoding
             break
-        except Exception as exc:
+        except Exception:
             # workaround an issue with the magic module who can fail
             # if detect_from_content is called multiple times in
             # a short amount of time
@@ -134,7 +134,7 @@ def request_content(query_string, max_size=content_display_max_size,
         filetype = service.lookup_content_filetype(query_string)
         language = service.lookup_content_language(query_string)
         license = service.lookup_content_license(query_string)
-    except Exception as e:
+    except Exception:
         pass
     mimetype = 'unknown'
     encoding = 'unknown'
@@ -188,7 +188,7 @@ def request_content(query_string, max_size=content_display_max_size,
                         content_data['raw_data'] = \
                                 content_data['raw_data'].decode(encoding)\
                                                         .encode('utf-8')
-                    except Exception as e:
+                    except Exception:
                         pass
                     else:
                         # ensure display in content view

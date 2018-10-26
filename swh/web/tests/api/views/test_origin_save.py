@@ -36,7 +36,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                               'origin_url': 'https://github.com/torvalds/linux'}) # noqa
 
         response = self.client.post(url)
-        self.assertEquals(response.status_code, 400)
+        self.assertEqual(response.status_code, 400)
 
     def test_invalid_origin_url(self):
         url = reverse('api-save-origin',
@@ -44,7 +44,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                               'origin_url': 'bar'})
 
         response = self.client.post(url)
-        self.assertEquals(response.status_code, 400)
+        self.assertEqual(response.status_code, 400)
 
     def check_created_save_request_status(self, mock_scheduler, origin_url,
                                           scheduler_task_status,
@@ -218,7 +218,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                                SAVE_TASK_NOT_YET_SCHEDULED)
         sors = list(SaveOriginRequest.objects.filter(origin_type='git',
                                                      origin_url=origin_url))
-        self.assertEquals(len(sors), 1)
+        self.assertEqual(len(sors), 1)
 
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                'next_run_scheduled',
@@ -226,7 +226,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                                SAVE_TASK_SCHEDULED)
         sors = list(SaveOriginRequest.objects.filter(origin_type='git',
                                                      origin_url=origin_url))
-        self.assertEquals(len(sors), 1)
+        self.assertEqual(len(sors), 1)
 
         visit_date = datetime.now() + timedelta(hours=1)
         self.check_created_save_request_status(mock_scheduler, origin_url,
@@ -236,7 +236,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                                visit_date=visit_date)
         sors = list(SaveOriginRequest.objects.filter(origin_type='git',
                                                      origin_url=origin_url))
-        self.assertEquals(len(sors), 2)
+        self.assertEqual(len(sors), 2)
 
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                'disabled',
@@ -244,4 +244,4 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                                SAVE_TASK_NOT_YET_SCHEDULED)
         sors = list(SaveOriginRequest.objects.filter(origin_type='git',
                                                      origin_url=origin_url))
-        self.assertEquals(len(sors), 3)
+        self.assertEqual(len(sors), 3)

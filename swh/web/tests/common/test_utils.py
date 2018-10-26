@@ -80,7 +80,7 @@ class UtilsTestCase(SWHWebTestCase):
         ]
 
         for ts, exp_date in zip(input_timestamps, output_dates):
-            self.assertEquals(utils.parse_timestamp(ts), exp_date)
+            self.assertEqual(utils.parse_timestamp(ts), exp_date)
 
     def test_format_utc_iso_date(self):
         self.assertEqual(utils.format_utc_iso_date('2017-05-04T13:27:13+02:00'), # noqa
@@ -95,11 +95,11 @@ class UtilsTestCase(SWHWebTestCase):
             {'name': 'swh-web', 'path': 'home/user/swh-environment/swh-web'}
         ]
         path_info = utils.gen_path_info(input_path)
-        self.assertEquals(path_info, expected_result)
+        self.assertEqual(path_info, expected_result)
 
         input_path = 'home/user/swh-environment/swh-web'
         path_info = utils.gen_path_info(input_path)
-        self.assertEquals(path_info, expected_result)
+        self.assertEqual(path_info, expected_result)
 
     @patch('swh.web.common.utils.service')
     def test_get_origin_visits(self, mock_service):
