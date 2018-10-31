@@ -25,7 +25,7 @@ def _enrich_origin(origin):
 
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-origin')
-@api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)',
+@api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
            'api-origin')
 @api_doc('/origin/')
 def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
