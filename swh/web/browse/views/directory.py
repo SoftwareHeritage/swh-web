@@ -100,6 +100,8 @@ def directory_browse(request, sha1_git, path=None):
     readmes = {}
 
     for f in files:
+        if f['length'] is None:
+            continue
         query_string = 'sha1_git:' + f['target']
         f['url'] = reverse('browse-content',
                            kwargs={'query_string': query_string},
