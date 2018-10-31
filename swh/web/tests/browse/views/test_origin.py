@@ -693,6 +693,18 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Directory not found', status_code=404)
 
+        with patch('swh.web.browse.views.utils.snapshot_context.get_snapshot_context') \
+                as mock_get_snapshot_context:
+            mock_get_snapshot_context.side_effect = \
+                NotFoundExc('Snapshot not found')
+            url = reverse('browse-origin-directory',
+                        kwargs={'origin_type': 'foo',
+                                'origin_url': 'bar'})
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 404)
+            self.assertTemplateUsed('error.html')
+            self.assertContains(resp, 'Snapshot not found', status_code=404)
+
         mock_origin_service.lookup_origin.side_effect = None
         mock_origin_service.lookup_origin.return_value = origin_info_test_data
         mock_get_origin_visits.return_value = []

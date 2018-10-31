@@ -952,6 +952,9 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
               found during the visit
             * url_args: dict containing url arguments to use when browsing in
               the context of the origin and its visit
+
+    Raises:
+        NotFoundExc: if no snapshot is found for the visit of an origin.
     """ # noqa
     origin_info = None
     visit_info = None
@@ -970,8 +973,13 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
         visit_info = get_origin_visit(origin_info, timestamp, visit_id,
                                       snapshot_id)
-        visit_info['fmt_date'] = format_utc_iso_date(visit_info['date'])
+        fmt_date = format_utc_iso_date(visit_info['date'])
+        visit_info['fmt_date'] = fmt_date
         snapshot_id = visit_info['snapshot']
+
+        if not snapshot_id:
+            raise NotFoundExc('No snapshot associated to the visit of origin '
+                              '%s on %s' % (origin_url, fmt_date))
 
         # provided timestamp is not necessarily equals to the one
         # of the retrieved visit, so get the exact one in order
