@@ -72,9 +72,9 @@ export function recookObject() {
     // build cook request url
     let cookingUrl;
     if (recookTask.object_type === 'directory') {
-      cookingUrl = Urls.vault_cook_directory(recookTask.object_id);
+      cookingUrl = Urls.api_vault_cook_directory(recookTask.object_id);
     } else {
-      cookingUrl = Urls.vault_cook_revision_gitfast(recookTask.object_id);
+      cookingUrl = Urls.api_vault_cook_revision_gitfast(recookTask.object_id);
     }
     if (recookTask.email) {
       cookingUrl += '?email=' + recookTask.email;
@@ -124,9 +124,9 @@ function checkVaultCookingTasks() {
     tasks[cookingTask.object_id] = cookingTask;
     let cookingUrl;
     if (cookingTask.object_type === 'directory') {
-      cookingUrl = Urls.vault_cook_directory(cookingTask.object_id);
+      cookingUrl = Urls.api_vault_cook_directory(cookingTask.object_id);
     } else {
-      cookingUrl = Urls.vault_cook_revision_gitfast(cookingTask.object_id);
+      cookingUrl = Urls.api_vault_cook_revision_gitfast(cookingTask.object_id);
     }
     if (cookingTask.status !== 'done' && cookingTask.status !== 'failed') {
       cookingTaskRequests.push(fetch(cookingUrl));

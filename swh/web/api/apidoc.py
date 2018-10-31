@@ -292,7 +292,7 @@ class api_doc(object):  # noqa: N801
                 doc_data = self.get_doc_data(f)
                 return make_api_response(request, None, doc_data)
 
-            view_name = self.route[1:-1].replace('/', '-')
+            view_name = 'api-%s' % self.route[1:-1].replace('/', '-')
             APIUrls.add_url_pattern(self.urlpattern, doc_view, view_name)
 
         @wraps(f)

@@ -10,8 +10,9 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/directory/(?P<sha1_git>[0-9a-f]+)/', 'directory')
-@api_route(r'/directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/', 'directory')
+@api_route(r'/directory/(?P<sha1_git>[0-9a-f]+)/', 'api-directory')
+@api_route(r'/directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/',
+           'api-directory')
 @api_doc('/directory/')
 def api_directory(request, sha1_git, path=None):
     """

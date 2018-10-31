@@ -16,7 +16,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/content/(?P<q>.+)/provenance/', 'content-provenance')
+@api_route(r'/content/(?P<q>.+)/provenance/', 'api-content-provenance')
 @api_doc('/content/provenance/', tags=['hidden'])
 def api_content_provenance(request, q):
     """Return content's provenance information if any.
@@ -25,18 +25,20 @@ def api_content_provenance(request, q):
     def _enrich_revision(provenance):
         p = provenance.copy()
         p['revision_url'] = \
-            reverse('revision', kwargs={'sha1_git': provenance['revision']})
+            reverse('api-revision',
+                    kwargs={'sha1_git': provenance['revision']})
         p['content_url'] = \
-            reverse('content',
+            reverse('api-content',
                     kwargs={'q': 'sha1_git:%s' % provenance['content']})
         p['origin_url'] = \
-            reverse('origin', kwargs={'origin_id': provenance['origin']})
+            reverse('api-origin', kwargs={'origin_id': provenance['origin']})
         p['origin_visits_url'] = \
-            reverse('origin-visits',
+            reverse('api-origin-visits',
                     kwargs={'origin_id': provenance['origin']})
         p['origin_visit_url'] = \
-            reverse('origin-visit', kwargs={'origin_id': provenance['origin'],
-                                            'visit_id': provenance['visit']})
+            reverse('api-origin-visit',
+                    kwargs={'origin_id': provenance['origin'],
+                            'visit_id': provenance['visit']})
         return p
 
     return api_lookup(
@@ -45,7 +47,7 @@ def api_content_provenance(request, q):
         enrich_fn=_enrich_revision)
 
 
-@api_route(r'/content/(?P<q>.+)/filetype/', 'content-filetype')
+@api_route(r'/content/(?P<q>.+)/filetype/', 'api-content-filetype')
 @api_doc('/content/filetype/')
 def api_content_filetype(request, q):
     """
@@ -89,7 +91,7 @@ def api_content_filetype(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/language/', 'content-language')
+@api_route(r'/content/(?P<q>.+)/language/', 'api-content-language')
 @api_doc('/content/language/')
 def api_content_language(request, q):
     """
@@ -132,7 +134,7 @@ def api_content_language(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/license/', 'content-license')
+@api_route(r'/content/(?P<q>.+)/license/', 'api-content-license')
 @api_doc('/content/license/')
 def api_content_license(request, q):
     """
@@ -175,7 +177,7 @@ def api_content_license(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/ctags/', 'content-ctags')
+@api_route(r'/content/(?P<q>.+)/ctags/', 'api-content-ctags')
 @api_doc('/content/ctags/', tags=['hidden'])
 def api_content_ctags(request, q):
     """
@@ -188,7 +190,7 @@ def api_content_ctags(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/raw/', 'content-raw')
+@api_route(r'/content/(?P<q>.+)/raw/', 'api-content-raw')
 @api_doc('/content/raw/', handle_response=True)
 def api_content_raw(request, q):
     """
@@ -244,7 +246,7 @@ def api_content_raw(request, q):
     return response
 
 
-@api_route(r'/content/symbol/(?P<q>.+)/', 'content-symbol')
+@api_route(r'/content/symbol/(?P<q>.+)/', 'api-content-symbol')
 @api_doc('/content/symbol/', tags=['hidden'])
 def api_content_symbol(request, q=None):
     """Search content objects by `Ctags <http://ctags.sourceforge.net/>`_-style
@@ -274,7 +276,7 @@ def api_content_symbol(request, q=None):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('content-symbol', kwargs={'q': q},
+                'link-next': reverse('api-content-symbol', kwargs={'q': q},
                                      query_params=query_params)
             }
 
@@ -285,8 +287,8 @@ def api_content_symbol(request, q=None):
     return result
 
 
-@api_route(r'/content/known/search/', 'content-known', methods=['POST'])
-@api_route(r'/content/known/(?P<q>(?!search).*)/', 'content-known')
+@api_route(r'/content/known/search/', 'api-content-known', methods=['POST'])
+@api_route(r'/content/known/(?P<q>(?!search).*)/', 'api-content-known')
 @api_doc('/content/known/', tags=['hidden'])
 def api_check_content_known(request, q=None):
     """
@@ -361,7 +363,7 @@ def api_check_content_known(request, q=None):
     return response
 
 
-@api_route(r'/content/(?P<q>.+)/', 'content')
+@api_route(r'/content/(?P<q>.+)/', 'api-content')
 @api_doc('/content/')
 def api_content_metadata(request, q):
     """

@@ -36,7 +36,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], content_browse_url)
 
     def test_directory_id_browse(self):
@@ -49,7 +49,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], directory_browse_url)
 
     def test_revision_id_browse(self):
@@ -62,7 +62,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], revision_browse_url)
 
         query_params = {'origin_type': 'git',
@@ -77,7 +77,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
                                        query_params=query_params)
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], revision_browse_url)
 
     def test_release_id_browse(self):
@@ -90,7 +90,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], release_browse_url)
 
         query_params = {'origin_type': 'git',
@@ -105,7 +105,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
                                      query_params=query_params)
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], release_browse_url)
 
     def test_bad_id_browse(self):
@@ -114,7 +114,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
                       kwargs={'swh_id': swh_id})
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 400)
 
     def test_content_id_optional_parts_browse(self):
         cnt_sha1_git = stub_content_text_data['checksums']['sha1_git']
@@ -131,6 +131,6 @@ class SwhBrowseIdTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], content_browse_url)
 

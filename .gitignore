@@ -23,3 +23,7 @@ swh/web/static/fonts/
 .cache-loader/
 build/
 dist/
+.hypothesis
+.cache
+.pytest_cache
+.tox/

@@ -53,7 +53,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision.html')
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
@@ -151,7 +151,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
                                 query_params={'revs_breadcrumb': revision_id_test,
                                               'per_page': per_page})
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
@@ -186,7 +186,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
                                 query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev,
                                               'per_page': per_page})
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
@@ -210,7 +210,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
                                 query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev + '/' + prev_prev_rev,
                                               'per_page': per_page})
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page)
@@ -229,7 +229,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
                                 query_params={'revs_breadcrumb': revision_id_test + '/' + prev_rev,
                                               'per_page': per_page})
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision-log.html')
         self.assertContains(resp, '<tr class="swh-revision-log-entry">',
                             count=per_page//2)
@@ -245,7 +245,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
         url = reverse('browse-revision',
                       kwargs={'sha1_git': revision_id_test})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Revision not found', status_code=404)
 
@@ -254,7 +254,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
         url = reverse('browse-revision-log',
                       kwargs={'sha1_git': revision_id_test})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Revision not found', status_code=404)
 
@@ -268,6 +268,6 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
             NotFoundExc('Origin not found')
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Origin not found', status_code=404)
