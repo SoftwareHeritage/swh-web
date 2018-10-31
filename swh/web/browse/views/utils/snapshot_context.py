@@ -291,15 +291,14 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     browse_view_name = 'browse-' + swh_type + '-content'
 
     for f in files:
-        if f['length'] is None:
-            continue
         bc_url_args = dict(url_args)
         bc_url_args['path'] = path + f['name']
         f['url'] = reverse(browse_view_name,
                            kwargs=bc_url_args,
                            query_params=query_params)
-        sum_file_sizes += f['length']
-        f['length'] = filesizeformat(f['length'])
+        if f['length'] is not None:
+            sum_file_sizes += f['length']
+            f['length'] = filesizeformat(f['length'])
         if f['name'].lower().startswith('readme'):
             readmes[f['name']] = f['checksums']['sha1']
 

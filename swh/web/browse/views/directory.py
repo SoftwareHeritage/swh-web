@@ -100,15 +100,14 @@ def directory_browse(request, sha1_git, path=None):
     readmes = {}
 
     for f in files:
-        if f['length'] is None:
-            continue
         query_string = 'sha1_git:' + f['target']
         f['url'] = reverse('browse-content',
                            kwargs={'query_string': query_string},
                            query_params={'path': root_sha1_git + '/' +
                                          path + f['name']})
-        sum_file_sizes += f['length']
-        f['length'] = filesizeformat(f['length'])
+        if f['length'] is not None:
+            sum_file_sizes += f['length']
+            f['length'] = filesizeformat(f['length'])
         if f['name'].lower().startswith('readme'):
             readmes[f['name']] = f['checksums']['sha1']
 
