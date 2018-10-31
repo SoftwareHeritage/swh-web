@@ -291,6 +291,8 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     browse_view_name = 'browse-' + swh_type + '-content'
 
     for f in files:
+        if f['length'] is None:
+            continue
         bc_url_args = dict(url_args)
         bc_url_args['path'] = path + f['name']
         f['url'] = reverse(browse_view_name,

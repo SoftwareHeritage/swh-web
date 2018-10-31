@@ -474,6 +474,8 @@ def revision_browse(request, sha1_git, extra_path=None):
                                    kwargs={'sha1_git': sha1_git},
                                    query_params=query_params)
         for f in files:
+            if f['length'] is None:
+                continue
             query_params['path'] = path + f['name']
             f['url'] = reverse('browse-revision',
                                kwargs={'sha1_git': sha1_git},
