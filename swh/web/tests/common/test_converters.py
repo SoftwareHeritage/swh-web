@@ -15,16 +15,16 @@ from swh.web.tests.testcase import SWHWebTestCase
 class ConvertersTestCase(SWHWebTestCase):
 
     def test_fmap(self):
-        self.assertEquals([2, 3, None, 4],
-                          converters.fmap(lambda x: x+1, [1, 2, None, 3]))
-        self.assertEquals([11, 12, 13],
-                          list(converters.fmap(lambda x: x+10,
-                                               map(lambda x: x, [1, 2, 3]))))
-        self.assertEquals({'a': 2, 'b': 4},
-                          converters.fmap(lambda x: x*2, {'a': 1, 'b': 2}))
-        self.assertEquals(100,
-                          converters.fmap(lambda x: x*10, 10))
-        self.assertEquals({'a': [2, 6], 'b': 4},
+        self.assertEqual([2, 3, None, 4],
+                         converters.fmap(lambda x: x+1, [1, 2, None, 3]))
+        self.assertEqual([11, 12, 13],
+                         list(converters.fmap(lambda x: x+10,
+                                              map(lambda x: x, [1, 2, 3]))))
+        self.assertEqual({'a': 2, 'b': 4},
+                         converters.fmap(lambda x: x*2, {'a': 1, 'b': 2}))
+        self.assertEqual(100,
+                         converters.fmap(lambda x: x*10, 10))
+        self.assertEqual({'a': [2, 6], 'b': 4},
                           converters.fmap(lambda x: x*2, {'a': [1, 3], 'b': 2})) # noqa
 
         self.assertIsNone(converters.fmap(lambda x: x, None))
@@ -110,7 +110,7 @@ class ConvertersTestCase(SWHWebTestCase):
             convert={'p', 'q', 'w'},
             convert_fn=converters.convert_revision_metadata)
 
-        self.assertEquals(expected_output, actual_output)
+        self.assertEqual(expected_output, actual_output)
 
     def test_from_swh_edge_cases_do_no_conversion_if_none_or_not_bytes(self):
         some_input = {
@@ -134,7 +134,7 @@ class ConvertersTestCase(SWHWebTestCase):
                                             bytess={'c', 'd'},
                                             dates={'e'})
 
-        self.assertEquals(expected_output, actual_output)
+        self.assertEqual(expected_output, actual_output)
 
     def test_from_swh_edge_cases_convert_invalid_utf8_bytes(self):
         some_input = {
@@ -164,7 +164,7 @@ class ConvertersTestCase(SWHWebTestCase):
 
     def test_from_swh_empty(self):
         # when
-        self.assertEquals({}, converters.from_swh({}))
+        self.assertEqual({}, converters.from_swh({}))
 
     def test_from_swh_none(self):
         # when

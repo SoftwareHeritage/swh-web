@@ -18,15 +18,15 @@ def _enrich_origin(origin):
     if 'id' in origin:
         o = origin.copy()
         o['origin_visits_url'] = \
-            reverse('origin-visits', kwargs={'origin_id': origin['id']})
+            reverse('api-origin-visits', kwargs={'origin_id': origin['id']})
         return o
 
     return origin
 
 
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'origin')
-@api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)',
-           'origin')
+@api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-origin')
+@api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
+           'api-origin')
 @api_doc('/origin/')
 def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
     """
@@ -104,7 +104,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
 
 @api_route(r'/origin/search/(?P<url_pattern>.+)/',
-           'origin-search')
+           'api-origin-search')
 @api_doc('/origin/search/')
 def api_origin_search(request, url_pattern):
     """
@@ -160,7 +160,7 @@ def api_origin_search(request, url_pattern):
         query_params['regexp'] = regexp
 
         result['headers'] = {
-            'link-next': reverse('origin-search',
+            'link-next': reverse('api-origin-search',
                                  kwargs={'url_pattern': url_pattern},
                                  query_params=query_params)
         }
@@ -172,7 +172,7 @@ def api_origin_search(request, url_pattern):
     return result
 
 
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'origin-visits')
+@api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'api-origin-visits')
 @api_doc('/origin/visits/')
 def api_origin_visits(request, origin_id):
     """
@@ -236,12 +236,12 @@ def api_origin_visits(request, origin_id):
 
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()
-        ov['origin_visit_url'] = reverse('origin-visit',
+        ov['origin_visit_url'] = reverse('api-origin-visit',
                                          kwargs={'origin_id': origin_id,
                                                  'visit_id': ov['visit']})
         snapshot = ov['snapshot']
         if snapshot:
-            ov['snapshot_url'] = reverse('snapshot',
+            ov['snapshot_url'] = reverse('api-snapshot',
                                          kwargs={'snapshot_id': snapshot})
         else:
             ov['snapshot_url'] = None
@@ -262,7 +262,7 @@ def api_origin_visits(request, origin_id):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('origin-visits',
+                'link-next': reverse('api-origin-visits',
                                      kwargs={'origin_id': origin_id},
                                      query_params=query_params)
             }
@@ -275,7 +275,7 @@ def api_origin_visits(request, origin_id):
 
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/',
-           'origin-visit')
+           'api-origin-visit')
 @api_doc('/origin/visit/')
 def api_origin_visit(request, origin_id, visit_id):
     """
@@ -312,11 +312,11 @@ def api_origin_visit(request, origin_id, visit_id):
     """ # noqa
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()
-        ov['origin_url'] = reverse('origin',
+        ov['origin_url'] = reverse('api-origin',
                                    kwargs={'origin_id': ov['origin']})
         snapshot = ov['snapshot']
         if snapshot:
-            ov['snapshot_url'] = reverse('snapshot',
+            ov['snapshot_url'] = reverse('api-snapshot',
                                          kwargs={'snapshot_id': snapshot})
         else:
             ov['snapshot_url'] = None

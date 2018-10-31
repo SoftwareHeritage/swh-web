@@ -49,7 +49,7 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/release.html')
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
@@ -84,7 +84,7 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/release.html')
 
         self.assertContains(resp, author_url)
@@ -106,6 +106,6 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
         url = reverse('browse-release',
                       kwargs={'sha1_git': 'ffff'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Release not found', status_code=404)

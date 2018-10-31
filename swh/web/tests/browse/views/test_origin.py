@@ -85,14 +85,14 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                               'origin_url': origin_info_test_data['url']})
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
 
         url = reverse('browse-origin-visits',
                       kwargs={'origin_url': origin_info_test_data['url']})
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
 
     def origin_content_view_helper(self, origin_info, origin_visits,
@@ -123,7 +123,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                       query_params=query_params)
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('content.html')
 
         self.assertContains(resp, '<code class="%s">' % content_language)
@@ -223,7 +223,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                       query_params=query_params)
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('content.html')
 
         swh_cnt_id = get_swh_persistent_id('content', content_sha1_git)
@@ -336,10 +336,10 @@ class SwhBrowseOriginTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('directory.html')
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('directory.html')
 
 
@@ -643,7 +643,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'bar'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'origin not found', status_code=404)
 
@@ -654,7 +654,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'bar'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, "No SWH visit", status_code=404)
 
@@ -666,7 +666,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                               'origin_url': 'bar'},
                       query_params={'visit_id': len(stub_origin_visits)+1})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'), 'Visit.*not found')
 
@@ -677,7 +677,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'bar'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'),
                          'Origin.*has an empty list of branches')
@@ -689,9 +689,21 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                       kwargs={'origin_type': 'foo',
                               'origin_url': 'bar'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Directory not found', status_code=404)
+
+        with patch('swh.web.browse.views.utils.snapshot_context.get_snapshot_context') \
+                as mock_get_snapshot_context:
+            mock_get_snapshot_context.side_effect = \
+                NotFoundExc('Snapshot not found')
+            url = reverse('browse-origin-directory',
+                        kwargs={'origin_type': 'foo',
+                                'origin_url': 'bar'})
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 404)
+            self.assertTemplateUsed('error.html')
+            self.assertContains(resp, 'Snapshot not found', status_code=404)
 
         mock_origin_service.lookup_origin.side_effect = None
         mock_origin_service.lookup_origin.return_value = origin_info_test_data
@@ -701,7 +713,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                               'origin_url': 'bar',
                               'path': 'foo'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, "No SWH visit", status_code=404)
 
@@ -714,7 +726,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                               'path': 'foo'},
                       query_params={'visit_id': len(stub_origin_visits)+1})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'), 'Visit.*not found')
 
@@ -726,7 +738,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                               'origin_url': 'bar',
                               'path': 'baz'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'),
                          'Origin.*has an empty list of branches')
@@ -741,7 +753,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                               'origin_url': 'bar',
                               'path': 'baz'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Content not found', status_code=404)
 
@@ -755,7 +767,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('branches.html')
 
         origin_branches = origin_snapshot[0]
@@ -826,7 +838,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                       kwargs=url_args)
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('releases.html')
 
         origin_branches = origin_snapshot[0]

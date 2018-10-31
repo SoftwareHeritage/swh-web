@@ -50,9 +50,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/release/%s/' % release_id)
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_release)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_release)
 
         mock_service.lookup_release.assert_called_once_with(release_id)
 
@@ -94,9 +94,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/release/%s/' % release)
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_release)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_release)
 
         mock_service.lookup_release.assert_called_once_with(release)
 
@@ -109,9 +109,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/release/c54e6473c71bbb716529/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Release with sha1_git c54e6473c71bbb716529 not found.'
         })

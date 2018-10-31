@@ -22,4 +22,5 @@ swh.storage>=0.0.107
 swh.vault>=0.0.20
 
 [testing]
-nose
+pytest
+pytest-django

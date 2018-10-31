@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import pytest
 
 from swh.web.common import swh_templatetags
 from swh.web.tests.testcase import SWHWebTestCase
@@ -14,16 +15,16 @@ class SWHTemplateTagsTest(SWHWebTestCase):
         content = '{"url": "/api/1/abc/"}'
         expected_content = ('{"url": "<a href="/api/1/abc/">/api/1/abc/</a>"}')
 
-        self.assertEquals(swh_templatetags.urlize_links_and_mails(content),
-                          expected_content)
+        self.assertEqual(swh_templatetags.urlize_links_and_mails(content),
+                         expected_content)
 
     def test_urlize_api_links_browse(self):
         # update /browse link with html links content with links
         content = '{"url": "/browse/def/"}'
         expected_content = ('{"url": "<a href="/browse/def/">'
                             '/browse/def/</a>"}')
-        self.assertEquals(swh_templatetags.urlize_links_and_mails(content),
-                          expected_content)
+        self.assertEqual(swh_templatetags.urlize_links_and_mails(content),
+                         expected_content)
 
     def test_urlize_header_links(self):
         # update api link with html links content with links
@@ -34,9 +35,11 @@ class SWHTemplateTagsTest(SWHWebTestCase):
 <<a href="/api/1/def/">/api/1/def/</a>>; rel="prev"
 """
 
-        self.assertEquals(swh_templatetags.urlize_header_links(content),
-                          expected_content)
+        self.assertEqual(swh_templatetags.urlize_header_links(content),
+                         expected_content)
 
+    # remove deprecation warnings related to docutils
+    @pytest.mark.filterwarnings('ignore:.*U.*mode is deprecated:DeprecationWarning') # noqa
     def test_safe_docstring_display(self):
         # update api link with html links content with links
         docstring = """This is my list header:
@@ -56,5 +59,5 @@ line right here</li>
 <p>Here is something that is not part of the list</p>
 """
 
-        self.assertEquals(swh_templatetags.safe_docstring_display(docstring),
-                          expected_docstring)
+        self.assertEqual(swh_templatetags.safe_docstring_display(docstring),
+                         expected_docstring)

@@ -13,7 +13,7 @@ from swh.web.common.origin_save import (
 
 
 @api_route(r'/origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
-           'save-origin', methods=['GET', 'POST'],
+           'api-save-origin', methods=['GET', 'POST'],
            throttle_scope='swh_save_origin')
 @never_cache
 @api_doc('/origin/save/')
@@ -50,7 +50,7 @@ def api_save_origin(request, origin_type, origin_url):
         return an array of objects (as multiple save requests might have been submitted
         for the same origin).
 
-        :param string origin_type: the type of origin to save 
+        :param string origin_type: the type of origin to save
             (currently only *git* but *hg* and *svn* will soon be available)
         :param string origin_url: the url of the origin to save
 

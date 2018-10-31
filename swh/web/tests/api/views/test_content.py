@@ -25,9 +25,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/filetype/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'accepted_media_type': 'application/xml',
             'encoding': 'ascii',
             'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
@@ -49,9 +49,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'filetype/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No filetype information found for content '
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
@@ -74,9 +74,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/language/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'lang': 'lisp',
             'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'content_url': '/api/1/content/'
@@ -97,9 +97,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/language/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No language information found for content '
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
@@ -122,9 +122,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/content/symbol/foo/?last_sha1=sha1')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, [{
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, [{
             'sha1': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'name': 'foobar',
             'kind': 'Haskell',
@@ -165,9 +165,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/api/1/content/symbol/foo/?last_sha1=prev-sha1&per_page=2')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, stub_ctag)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, stub_ctag)
         self.assertTrue(
             rv['Link'] ==  '</api/1/content/symbol/foo/?last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6678&per_page=2>; rel="next"' or  # noqa
             rv['Link'] ==  '</api/1/content/symbol/foo/?per_page=2&last_sha1=34571b8614fcd89ccd17ca2b1d9e66c5b00a6678>; rel="next"'    # noqa
@@ -189,9 +189,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/content/symbol/foo/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, [{
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, [{
             'sha1': '67891b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'name': 'foo',
             'kind': 'variable',
@@ -220,9 +220,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/content/symbol/bar/?last_sha1=hash')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No indexed raw content match expression \'bar\'.'
         })
@@ -245,9 +245,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/ctags/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'ctags': [],
             'content_url': '/api/1/content/'
@@ -272,9 +272,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:b04caf10e9535160d90e874b45aa426de762f19f/license/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'licenses': ['No_license_found', 'Apache-2.0'],
             'id': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
             'tool_name': 'nomos',
@@ -296,9 +296,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'license/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No license information found for content '
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03.'
@@ -324,9 +324,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/provenance/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, [{
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, [{
             'origin': 1,
             'visit': 2,
             'origin_url': '/api/1/origin/1/',
@@ -355,9 +355,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'provenance/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 not found.'
@@ -386,9 +386,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get(
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'checksums': {
                 'blake2s256': '685395c5dc57cada459364f0946d3dd45bad5f'
                               'cbabc1048edb44380f1d31d0aa',
@@ -423,9 +423,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/api/1/content/sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
             'be4735637006560c/')
 
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
             '68b3be4735637006560c not found.'
@@ -448,10 +448,10 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'be4735637006560c/',
             HTTP_ACCEPT='application/yaml')
 
-        self.assertEquals(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404)
         self.assertTrue('application/yaml' in rv['Content-Type'])
 
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content with sha256:83c0e67cc80f60caf1fcbec2d84b0ccd79'
             '68b3be4735637006560c not found.'
@@ -472,9 +472,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
             '/raw/')
 
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content sha1:40e71b8614fcd89ccd17ca2b1d9e6'
             '6c5b00a6d03 is not found.'
@@ -497,15 +497,15 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
             '/raw/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/octet-stream')
-        self.assertEquals(
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/octet-stream')
+        self.assertEqual(
             rv['Content-disposition'],
             'attachment; filename=content_sha1_'
             '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03_raw')
-        self.assertEquals(
+        self.assertEqual(
             rv['Content-Type'], 'application/octet-stream')
-        self.assertEquals(rv.content, stub_content['data'])
+        self.assertEqual(rv.content, stub_content['data'])
 
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
@@ -526,14 +526,14 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
             '/raw/?filename=filename.txt')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/octet-stream')
-        self.assertEquals(
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/octet-stream')
+        self.assertEqual(
             rv['Content-disposition'],
             'attachment; filename=filename.txt')
-        self.assertEquals(
+        self.assertEqual(
             rv['Content-Type'], 'application/octet-stream')
-        self.assertEquals(rv.content, stub_content['data'])
+        self.assertEqual(rv.content, stub_content['data'])
 
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
@@ -555,9 +555,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
             '/raw/')
 
-        self.assertEquals(rv.status_code, 403)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 403)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'ForbiddenExc',
             'reason': 'Only textual content is available for download. '
                       'Actual content mimetype is application/octet-stream.'
@@ -581,9 +581,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
             '/raw/')
 
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03 '
                       'is not available for download.'
@@ -612,9 +612,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/content/known/sha1:blah/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_result)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_result)
         mock_service.lookup_multiple_hashes.assert_called_once_with(
             [{'filename': None, 'sha1': 'sha1:blah'}])
 
@@ -642,9 +642,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/content/known/sha1:halb,sha1_git:hello/',
                              HTTP_ACCEPT='application/yaml')
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assertTrue('application/yaml' in rv['Content-Type'])
-        self.assertEquals(rv.data, expected_result)
+        self.assertEqual(rv.data, expected_result)
 
         mock_service.lookup_multiple_hashes.assert_called_once_with(
             [{'filename': None, 'sha1': 'sha1:halb'},
@@ -678,9 +678,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             HTTP_ACCEPT='application/yaml'
         )
 
-        self.assertEquals(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200)
         self.assertTrue('application/yaml' in rv['Content-Type'])
-        self.assertEquals(rv.data, expected_result)
+        self.assertEqual(rv.data, expected_result)
 
     @patch('swh.web.api.views.content.service')
     def test_api_check_content_known_not_found(self, mock_service):
@@ -697,9 +697,9 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/content/known/sha1:halb/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_result)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_result)
 
         mock_service.lookup_multiple_hashes.assert_called_once_with(
             [{'filename': None, 'sha1': 'sha1:halb'}])

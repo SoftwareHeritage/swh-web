@@ -22,9 +22,9 @@ class EntityApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/entity/'
                              '5f4d4c51-498a-4e28-88b3-b3e4e8396cba/')
 
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason':
             "Entity with uuid '5f4d4c51-498a-4e28-88b3-b3e4e8396cba' not " +
@@ -42,9 +42,9 @@ class EntityApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/entity/uuid malformed/')
 
-        self.assertEquals(rv.status_code, 400)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'BadInputExc',
             'reason': 'bad input: uuid malformed!'})
         mock_service.lookup_entity_by_uuid.assert_called_once_with(
@@ -84,8 +84,8 @@ class EntityApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/entity'
                              '/34bd6b1b-463f-43e5-a697-785107f598e4/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_entities)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_entities)
         mock_service.lookup_entity_by_uuid.assert_called_once_with(
             '34bd6b1b-463f-43e5-a697-785107f598e4')

@@ -128,7 +128,7 @@ function doSearch() {
   offset = 0;
   inSearch = true;
   // first try to resolve a swh persistent identifier
-  let resolvePidUrl = Urls.resolve_swh_pid(patterns);
+  let resolvePidUrl = Urls.api_resolve_swh_pid(patterns);
   fetch(resolvePidUrl)
     .then(handleFetchError)
     .then(response => response.json())

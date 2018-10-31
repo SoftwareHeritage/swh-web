@@ -83,9 +83,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              '18d8be353ed3480476f032475e7c233eff7371d5/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(expected_revision, rv.data)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(expected_revision, rv.data)
 
         mock_service.lookup_revision.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
@@ -99,9 +99,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/12345/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Revision with sha1_git 12345 not found.'})
 
@@ -116,9 +116,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/18d8be353ed3480476f032475e7c2'
                              '33eff7371d5/raw/')
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/octet-stream')
-        self.assertEquals(rv.content, b'synthetic revision message')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/octet-stream')
+        self.assertEqual(rv.content, b'synthetic revision message')
 
         mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
@@ -134,13 +134,13 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No message for revision'})
 
-        self.assertEquals
+        self.assertEqual
         mock_service.lookup_revision_message.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
 
@@ -155,9 +155,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No revision found'})
 
@@ -171,8 +171,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/origin/123/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertIn('Revision with (origin_id: 123', rv.data['reason'])
         self.assertIn('not found', rv.data['reason'])
         self.assertEqual('NotFoundExc', rv.data['exception'])
@@ -204,8 +204,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/origin/1/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
         mock_service.lookup_revision_by.assert_called_once_with(
@@ -237,8 +237,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              '/branch/refs/origin/dev/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
         mock_service.lookup_revision_by.assert_called_once_with(
@@ -280,8 +280,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              '/ts/1452591542/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
         mock_service.lookup_revision_by.assert_called_once_with(
@@ -321,8 +321,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              'January%201,%202047%20at%208:21:00AM/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
         mock_service.lookup_revision_by.assert_called_once_with(
@@ -368,7 +368,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             'some/path', '/api/1/revision/sha1/directory/')
 
         # then
-        self.assertEquals(actual_dir_content, {
+        self.assertEqual(actual_dir_content, {
             'type': 'dir',
             'revision': 'rev-id',
             'path': 'some/path',
@@ -398,7 +398,7 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
             limit=1000, with_data=True)
 
         # then
-        self.assertEquals(actual_dir_content, {
+        self.assertEqual(actual_dir_content, {
                 'type': 'file',
                 'revision': 'rev-id',
                 'path': 'some/path',
@@ -426,8 +426,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              '/directory/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'not found'})
@@ -454,8 +454,8 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/origin/3/directory/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_res)
 
         mock_revision_dir.assert_called_once_with({
@@ -511,10 +511,10 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              'b7e2a44e6/log/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
 
-        self.assertEquals(rv.data, expected_revisions)
+        self.assertEqual(rv.data, expected_revisions)
         self.assertFalse(rv.has_header('Link'))
 
         mock_service.lookup_revision_log.assert_called_once_with(
@@ -525,11 +525,11 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         # given
         stub_revisions = []
         for i in range(27):
-            stub_revisions.append({'id': i})
+            stub_revisions.append({'id': str(i)})
 
         mock_service.lookup_revision_log.return_value = stub_revisions[:26]
 
-        expected_revisions = [x for x in stub_revisions if x['id'] < 25]
+        expected_revisions = [x for x in stub_revisions if int(x['id']) < 25]
         for e in expected_revisions:
             e['url'] = '/api/1/revision/%s/' % e['id']
             e['history_url'] = '/api/1/revision/%s/log/' % e['id']
@@ -539,11 +539,11 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              'b7e2a44e6/log/?per_page=25')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_revisions)
-        self.assertEquals(rv['Link'],
-                          '</api/1/revision/25/log/?per_page=25>; rel="next"')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_revisions)
+        self.assertEqual(rv['Link'],
+                         '</api/1/revision/25/log/?per_page=25>; rel="next"')
 
         mock_service.lookup_revision_log.assert_called_once_with(
             '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 26)
@@ -558,9 +558,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              'a42b7e2a44e6/log/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Revision with sha1_git'
             ' 8834ef7e7c357ce2af928115c6c6a42b7e2a44e6 not found.'})
@@ -657,9 +657,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
                              '6ad1f978e/log/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(expected_revisions, rv.data)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(expected_revisions, rv.data)
         self.assertFalse(rv.has_header('Link'))
 
         mock_service.lookup_revision_log.assert_called_once_with(
@@ -713,9 +713,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/origin/1/log/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_revisions)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_revisions)
         self.assertFalse(rv.has_header('Link'))
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
@@ -726,11 +726,11 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         # given
         stub_revisions = []
         for i in range(27):
-            stub_revisions.append({'id': i})
+            stub_revisions.append({'id': str(i)})
 
         mock_service.lookup_revision_log_by.return_value = stub_revisions[:26]
 
-        expected_revisions = [x for x in stub_revisions if x['id'] < 25]
+        expected_revisions = [x for x in stub_revisions if int(x['id']) < 25]
         for e in expected_revisions:
             e['url'] = '/api/1/revision/%s/' % e['id']
             e['history_url'] = '/api/1/revision/%s/log/' % e['id']
@@ -739,10 +739,11 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/origin/1/log/?per_page=25')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertIsNotNone(rv['Link'])
-        self.assertEquals(rv.data, expected_revisions)
+        self.assertEqual(rv.data, expected_revisions)
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
             '1', 'refs/heads/master', None, 26)
@@ -757,11 +758,11 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/revision/origin/1/log/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertFalse(rv.has_header('Link'))
-        self.assertEquals(rv.data, {'exception': 'NotFoundExc',
-                                    'reason': 'No revision'})
+        self.assertEqual(rv.data, {'exception': 'NotFoundExc',
+                                   'reason': 'No revision'})
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
             '1', 'refs/heads/master', None, 11)
@@ -785,9 +786,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         # then
         rv = self.client.get('/api/1/revision/883/prev/999/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'id': '883',
             'url': '/api/1/revision/883/',
             'history_url': '/api/1/revision/883/log/',
@@ -810,9 +811,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         # then
         rv = self.client.get('/api/1/revision/999/directory/some/path/to/dir/')
 
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Not found'})
 
@@ -854,9 +855,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         # then
         rv = self.client.get('/api/1/revision/999/directory/some/path/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, stub_dir)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, stub_dir)
 
         mock_rev_dir.assert_called_once_with(
             {'sha1_git': '999'},
@@ -883,9 +884,9 @@ class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
         url = '/api/1/revision/666/directory/some/other/path/'
         rv = self.client.get(url)
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, stub_content)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, stub_content)
 
         mock_rev_dir.assert_called_once_with(
             {'sha1_git': '666'}, 'some/other/path', url, with_data=False)

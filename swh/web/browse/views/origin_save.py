@@ -66,8 +66,7 @@ def _browse_origin_save_requests_list(request, status):
     if order_dir == 'desc':
         field_order = '-' + field_order
 
-    if 'save_task_status' not in field_order:
-        save_requests = save_requests.order_by(field_order)
+    save_requests = save_requests.order_by(field_order)
 
     length = int(request.GET['length'])
     page = int(request.GET['start']) / length + 1
@@ -79,11 +78,7 @@ def _browse_origin_save_requests_list(request, status):
              or search_value.lower() in sr['save_task_status'].lower()
              or search_value.lower() in sr['origin_type'].lower()
              or search_value.lower() in sr['origin_url'].lower()]
-    if field_order == 'save_task_status':
-        save_requests = sorted(save_requests,
-                               key=lambda sr: sr['save_task_status'])
-        if order_dir == 'desc':
-            save_requests = reversed(save_requests)
+
     table_data['recordsFiltered'] = len(save_requests)
     paginator = Paginator(save_requests, length)
     table_data['data'] = paginator.page(page).object_list

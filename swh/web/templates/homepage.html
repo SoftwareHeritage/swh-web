@@ -101,7 +101,7 @@ See top-level LICENSE file for more information
 <script>
   $(document).ready(function() {
     $.ajax({
-      url: Urls.stat_counters(),
+      url: Urls.api_stat_counters(),
       dataType: 'json',
       success: function (data) {
         $('#nb-files').html(data.content.toLocaleString());

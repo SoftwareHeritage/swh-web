@@ -10,7 +10,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/release/(?P<sha1_git>[0-9a-f]+)/', 'release')
+@api_route(r'/release/(?P<sha1_git>[0-9a-f]+)/', 'api-release')
 @api_doc('/release/')
 def api_release(request, sha1_git):
     """

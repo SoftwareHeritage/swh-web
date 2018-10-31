@@ -45,7 +45,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, '<code class="cpp">')
@@ -72,7 +72,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, '<code class="nohighlight">')
@@ -105,7 +105,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         try:
             resp = self.client.get(url)
-            self.assertEquals(resp.status_code, 200)
+            self.assertEqual(resp.status_code, 200)
             self.assertTemplateUsed('browse/content.html')
             swh_cnt_id = get_swh_persistent_id('content', sha1_git)
             swh_cnt_id_url = reverse('browse-swh-id',
@@ -129,7 +129,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
         png_encoded = base64.b64encode(stub_content_bin_data['raw_data']) \
@@ -148,7 +148,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
                       query_params={'path': stub_content_text_path_with_root_dir}) # noqa
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, '<code class="cpp">')
@@ -196,7 +196,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'text/plain')
         self.assertEqual(resp['Content-disposition'],
                          'filename=%s_%s' % ('sha1', stub_content_text_data['checksums']['sha1'])) # noqa
@@ -210,7 +210,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'text/plain')
         self.assertEqual(resp['Content-disposition'],
                          'filename=%s' % filename)
@@ -232,7 +232,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
                       kwargs={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         _, encoding = get_mimetype_and_encoding_for_content(resp.content)
         self.assertEqual(encoding, non_utf8_encoding)
 
@@ -245,7 +245,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/octet-stream')
         self.assertEqual(resp['Content-disposition'],
                          'attachment; filename=%s_%s' %
@@ -258,7 +258,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/octet-stream')
         self.assertEqual(resp['Content-disposition'],
                          'attachment; filename=%s' % stub_content_bin_filename)
@@ -269,7 +269,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         url = reverse('browse-content', kwargs={'query_string': '123456'})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 400)
         self.assertTemplateUsed('error.html')
 
         mock_request_content.side_effect = NotFoundExc('content not found')
@@ -277,7 +277,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         url = reverse('browse-content',
                       kwargs={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
 
     @patch('swh.web.browse.utils.service')
@@ -293,7 +293,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
                       kwargs={'query_string': content_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('browse/content.html')
 
     @patch('swh.web.browse.views.content.request_content')
@@ -308,7 +308,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
         self.assertContains(resp, 'Content is too large to be displayed')
