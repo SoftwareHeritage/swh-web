@@ -38,9 +38,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/origin/2/visits/')
         # then
-        self.assertEquals(rv.status_code, 400)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'ValueError',
             'reason': 'voluntary error to check the bad request middleware.'})
 
@@ -53,9 +53,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/origin/2/visits/')
         # then
-        self.assertEquals(rv.status_code, 503)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'StorageDBError',
             'reason':
             'An unexpected error occurred in the backend: '
@@ -71,9 +71,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/origin/2/visits/')
         # then
-        self.assertEquals(rv.status_code, 503)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'StorageAPIError',
             'reason':
             'An unexpected error occurred in the api backend: '
@@ -115,9 +115,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/origin/2/visits/?per_page=2&last_visit=3')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, [
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, [
             {
                 'date': 1293919200.0,
                 'origin': 2,
@@ -157,9 +157,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/origin/10/visit/100/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_origin_visit)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_origin_visit)
 
         mock_service.lookup_origin_visit.assert_called_once_with('10', '100')
 
@@ -171,9 +171,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/origin/1/visit/1000/')
 
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No visit 1000 for origin 1 found'
         })
@@ -194,9 +194,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/origin/1234/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_origin)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_origin)
 
         mock_service.lookup_origin.assert_called_with({'id': '1234'})
 
@@ -219,12 +219,12 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
                              '/ftp://some/url/to/origin/0/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_origin)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_origin)
 
         mock_service.lookup_origin.assert_called_with(
-            {'url': 'ftp://some/url/to/origin/0/',
+            {'url': 'ftp://some/url/to/origin/0',
              'type': 'ftp'})
 
     @patch('swh.web.api.views.origin.service')
@@ -236,9 +236,9 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         rv = self.client.get('/api/1/origin/4321/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Origin with id 4321 not found.'
         })

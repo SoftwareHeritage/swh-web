@@ -49,9 +49,9 @@ class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
                              '18d8be353ed3480476f032475e7c233eff7371d5/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_directories)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_directories)
 
         mock_service.lookup_directory.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5')
@@ -66,9 +66,9 @@ class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
                              '66618d8be353ed3480476f032475e7c233eff737/')
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Directory with sha1_git '
             '66618d8be353ed3480476f032475e7c233eff737 not found.'})
@@ -92,9 +92,9 @@ class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
                              '18d8be353ed3480476f032475e7c233eff7371d5/bla/')
 
         # then
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, expected_dir)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_dir)
 
         mock_service.lookup_directory_with_path.assert_called_once_with(
             '18d8be353ed3480476f032475e7c233eff7371d5', 'bla')
@@ -112,9 +112,9 @@ class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
         path = path.strip('/')  # Path stripped of lead/trail separators
 
         # then
-        self.assertEquals(rv.status_code, 404)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': (('Entry with path %s relative to '
                         'directory with sha1_git '

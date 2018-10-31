@@ -26,6 +26,9 @@ function enableRowSelection(tableSel) {
 
 export function initOriginSaveAdmin() {
   $(document).ready(() => {
+
+    $.fn.dataTable.ext.errMode = 'throw';
+
     authorizedOriginTable = $('#swh-authorized-origin-urls').DataTable({
       serverSide: true,
       ajax: Urls.admin_origin_save_authorized_urls_list(),

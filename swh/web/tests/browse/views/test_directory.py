@@ -35,7 +35,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/directory.html')
         self.assertContains(resp, '<a href="' + root_dir_url + '">' +
                             root_directory_sha1[:7] + '</a>')
@@ -121,7 +121,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
                           kwargs={'sha1_git': '1253456'})
 
         resp = self.client.get(dir_url)
-        self.assertEquals(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 400)
         self.assertTemplateUsed('browse/error.html')
 
         mock_utils_service.lookup_directory.side_effect = \
@@ -131,5 +131,5 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
                           kwargs={'sha1_git': '1253456'})
 
         resp = self.client.get(dir_url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('browse/error.html')

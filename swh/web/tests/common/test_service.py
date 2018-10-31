@@ -127,7 +127,7 @@ class ServiceTestCase(SWHWebTestCase):
               'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
 
         # then
-        self.assertEquals(actual_lookup, [
+        self.assertEqual(actual_lookup, [
             {'filename': 'a',
              'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
              'found': True},
@@ -151,7 +151,7 @@ class ServiceTestCase(SWHWebTestCase):
               'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
 
         # then
-        self.assertEquals(actual_lookup, [
+        self.assertEqual(actual_lookup, [
             {'filename': 'a',
              'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
              'found': False},
@@ -170,8 +170,8 @@ class ServiceTestCase(SWHWebTestCase):
             'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': None,
-                           'algo': 'sha1_git'}, actual_lookup)
+        self.assertEqual({'found': None,
+                          'algo': 'sha1_git'}, actual_lookup)
 
         # check the function has been called with parameters
         mock_storage.content_find.assert_called_with(
@@ -192,8 +192,8 @@ class ServiceTestCase(SWHWebTestCase):
             'sha1:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': stub_content,
-                           'algo': 'sha1'}, actual_lookup)
+        self.assertEqual({'found': stub_content,
+                          'algo': 'sha1'}, actual_lookup)
 
         mock_storage.content_find.assert_called_with(
             {'sha1':
@@ -210,7 +210,7 @@ class ServiceTestCase(SWHWebTestCase):
             'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': False}, actual_lookup)
+        self.assertEqual({'found': False}, actual_lookup)
 
         # check the function has been called with parameters
         mock_storage.content_find.assert_called_with(
@@ -231,7 +231,7 @@ class ServiceTestCase(SWHWebTestCase):
             'sha1:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEquals({'found': True}, actual_lookup)
+        self.assertEqual({'found': True}, actual_lookup)
 
         mock_storage.content_find.assert_called_with(
             {'sha1':
@@ -908,7 +908,7 @@ class ServiceTestCase(SWHWebTestCase):
             sha1_git)
 
         # then
-        self.assertEquals(actual_revision, {
+        self.assertEqual(actual_revision, {
             'id': hash_to_hex(sha1_git_bin),
             'parents': [],
             'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
@@ -980,7 +980,7 @@ class ServiceTestCase(SWHWebTestCase):
             sha1_git)
 
         # then
-        self.assertEquals(actual_revision, {
+        self.assertEqual(actual_revision, {
             'id': hash_to_hex(sha1_git_bin),
             'parents': [],
             'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
@@ -1332,7 +1332,7 @@ class ServiceTestCase(SWHWebTestCase):
             self.SHA1_SAMPLE)
 
         # then
-        self.assertEquals(rv, {'message': self.SAMPLE_MESSAGE_BIN})
+        self.assertEqual(rv, {'message': self.SAMPLE_MESSAGE_BIN})
         mock_storage.revision_get.assert_called_with(
             [self.SHA1_SAMPLE_BIN])
 
@@ -1516,7 +1516,7 @@ class ServiceTestCase(SWHWebTestCase):
         res = service.lookup_revision_log_by(
             1, 'refs/heads/master', None, limit=100)
         # then
-        self.assertEquals(res, None)
+        self.assertEqual(res, None)
         mock_storage.revision_log_by.assert_called_with(
             1, 'refs/heads/master', None, limit=100)
 
@@ -1549,7 +1549,7 @@ class ServiceTestCase(SWHWebTestCase):
             'sha256:%s' % self.SHA256_SAMPLE)
 
         # then
-        self.assertEquals(actual_content, {'data': b'binary data'})
+        self.assertEqual(actual_content, {'data': b'binary data'})
 
         mock_storage.content_find.assert_called_once_with(
             {'sha256': self.SHA256_SAMPLE_BIN})
@@ -1750,7 +1750,7 @@ class ServiceTestCase(SWHWebTestCase):
         actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
 
         # then
-        self.assertEquals(actual_revision, expected_rev)
+        self.assertEqual(actual_revision, expected_rev)
 
         mock_storage.revision_get_by.assert_called_with(10, 'master2',
                                                         limit=1,
@@ -1771,7 +1771,7 @@ class ServiceTestCase(SWHWebTestCase):
         actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
 
         # then
-        self.assertEquals(actual_revision, expected_rev)
+        self.assertEqual(actual_revision, expected_rev)
 
         mock_storage.revision_get_by.assert_called_with(10, 'master2',
                                                         limit=1,
@@ -1799,7 +1799,7 @@ class ServiceTestCase(SWHWebTestCase):
         actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
 
         # then
-        self.assertEquals(actual_revision, expected_rev)
+        self.assertEqual(actual_revision, expected_rev)
 
         mock_storage.revision_get_by.assert_called_with(10, 'master2',
                                                         limit=1,
@@ -1847,8 +1847,8 @@ class ServiceTestCase(SWHWebTestCase):
             origin_id, branch_name, ts, sha1_git)
 
         # then
-        self.assertEquals(actual_root_rev, stub_root_rev)
-        self.assertEquals(actual_rev, stub_rev)
+        self.assertEqual(actual_root_rev, stub_root_rev)
+        self.assertEqual(actual_rev, stub_rev)
 
         mock_storage.revision_get_by.assert_called_once_with(
             origin_id, branch_name, limit=1, timestamp=ts)
@@ -1869,7 +1869,7 @@ class ServiceTestCase(SWHWebTestCase):
         actual_entities = list(service.lookup_entity_by_uuid(uuid_test))
 
         # then
-        self.assertEquals(actual_entities, stub_entities)
+        self.assertEqual(actual_entities, stub_entities)
 
         mock_query.parse_uuid4.assert_called_once_with(uuid_test)
         mock_storage.entity_get.assert_called_once_with(uuid_test)
@@ -1896,7 +1896,7 @@ class ServiceTestCase(SWHWebTestCase):
         }, limit=1000)
 
         # then
-        self.assertEquals(actual_revision, stub_rev)
+        self.assertEqual(actual_revision, stub_rev)
 
         mock_lookup.assert_called_once_with(
             1, 'master', None, 'sha1-git', 1000)
@@ -1915,7 +1915,7 @@ class ServiceTestCase(SWHWebTestCase):
         }, limit=10)
 
         # then
-        self.assertEquals(actual_revision, stub_rev)
+        self.assertEqual(actual_revision, stub_rev)
 
         mock_lookup.assert_called_once_with(
             2, 'master2', 'some-ts')
@@ -1933,7 +1933,7 @@ class ServiceTestCase(SWHWebTestCase):
         })
 
         # then
-        self.assertEquals(actual_revision, stub_rev)
+        self.assertEqual(actual_revision, stub_rev)
 
         mock_lookup.assert_called_once_with(
             'some-sha1-root', 'some-sha1', 100)
@@ -1950,7 +1950,7 @@ class ServiceTestCase(SWHWebTestCase):
         })
 
         # then
-        self.assertEquals(actual_revision, stub_rev)
+        self.assertEqual(actual_revision, stub_rev)
 
         mock_lookup.assert_called_once_with(
             'some-sha1')
@@ -1981,9 +1981,9 @@ class ServiceTestCase(SWHWebTestCase):
         rev_id, dir_result = service.lookup_directory_through_revision(
             {'id': 'rev'}, 'some/path', 100)
         # then
-        self.assertEquals(rev_id, 'rev-id')
-        self.assertEquals(dir_result, {'type': 'dir',
-                                       'content': []})
+        self.assertEqual(rev_id, 'rev-id')
+        self.assertEqual(dir_result, {'type': 'dir',
+                                      'content': []})
 
         mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
         mock_lookup_dir.assert_called_once_with('rev-id', 'some/path', False)
@@ -2004,8 +2004,8 @@ class ServiceTestCase(SWHWebTestCase):
         rev_id, dir_result = service.lookup_directory_through_revision(
             {'id': 'rev'}, 'some/path', 10, with_data=True)
         # then
-        self.assertEquals(rev_id, 'rev-id')
-        self.assertEquals(dir_result, stub_result)
+        self.assertEqual(rev_id, 'rev-id')
+        self.assertEqual(dir_result, stub_result)
 
         mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 10)
         mock_lookup_dir.assert_called_once_with('rev-id', 'some/path', True)

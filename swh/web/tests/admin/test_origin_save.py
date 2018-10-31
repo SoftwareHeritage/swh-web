@@ -42,95 +42,95 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
     def check_not_login(self, url):
         login_url = reverse('login', query_params={'next': url})
         response = self.client.post(url)
-        self.assertEquals(response.status_code, 302)
-        self.assertEquals(unquote(response.url), login_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(unquote(response.url), login_url)
 
     def test_add_authorized_origin_url(self):
         authorized_url = 'https://scm.adullact.net/anonscm/'
-        self.assertEquals(can_save_origin(authorized_url),
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(can_save_origin(authorized_url),
+                         SAVE_REQUEST_PENDING)
 
         url = reverse('admin-origin-save-add-authorized-url',
                       kwargs={'origin_url': authorized_url})
 
         self.check_not_login(url)
 
-        self.assertEquals(can_save_origin(authorized_url),
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(can_save_origin(authorized_url),
+                         SAVE_REQUEST_PENDING)
 
         self.client.login(username=_user_name, password=_user_password)
         response = self.client.post(url)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(can_save_origin(authorized_url),
-                          SAVE_REQUEST_ACCEPTED)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(can_save_origin(authorized_url),
+                         SAVE_REQUEST_ACCEPTED)
 
     def test_remove_authorized_origin_url(self):
-        self.assertEquals(can_save_origin(_authorized_origin_url),
-                          SAVE_REQUEST_ACCEPTED)
+        self.assertEqual(can_save_origin(_authorized_origin_url),
+                         SAVE_REQUEST_ACCEPTED)
 
         url = reverse('admin-origin-save-remove-authorized-url',
                       kwargs={'origin_url': _authorized_origin_url})
 
         self.check_not_login(url)
 
-        self.assertEquals(can_save_origin(_authorized_origin_url),
-                          SAVE_REQUEST_ACCEPTED)
+        self.assertEqual(can_save_origin(_authorized_origin_url),
+                         SAVE_REQUEST_ACCEPTED)
 
         self.client.login(username=_user_name, password=_user_password)
         response = self.client.post(url)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(can_save_origin(_authorized_origin_url),
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(can_save_origin(_authorized_origin_url),
+                         SAVE_REQUEST_PENDING)
 
     def test_add_unauthorized_origin_url(self):
         unauthorized_url = 'https://www.yahoo./'
-        self.assertEquals(can_save_origin(unauthorized_url),
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(can_save_origin(unauthorized_url),
+                         SAVE_REQUEST_PENDING)
 
         url = reverse('admin-origin-save-add-unauthorized-url',
                       kwargs={'origin_url': unauthorized_url})
 
         self.check_not_login(url)
 
-        self.assertEquals(can_save_origin(unauthorized_url),
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(can_save_origin(unauthorized_url),
+                         SAVE_REQUEST_PENDING)
 
         self.client.login(username=_user_name, password=_user_password)
         response = self.client.post(url)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(can_save_origin(unauthorized_url),
-                          SAVE_REQUEST_REJECTED)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(can_save_origin(unauthorized_url),
+                         SAVE_REQUEST_REJECTED)
 
     def test_remove_unauthorized_origin_url(self):
-        self.assertEquals(can_save_origin(_unauthorized_origin_url),
-                          SAVE_REQUEST_REJECTED)
+        self.assertEqual(can_save_origin(_unauthorized_origin_url),
+                         SAVE_REQUEST_REJECTED)
 
         url = reverse('admin-origin-save-remove-unauthorized-url',
                       kwargs={'origin_url': _unauthorized_origin_url})
 
         self.check_not_login(url)
 
-        self.assertEquals(can_save_origin(_unauthorized_origin_url),
-                          SAVE_REQUEST_REJECTED)
+        self.assertEqual(can_save_origin(_unauthorized_origin_url),
+                         SAVE_REQUEST_REJECTED)
 
         self.client.login(username=_user_name, password=_user_password)
         response = self.client.post(url)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(can_save_origin(_unauthorized_origin_url),
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(can_save_origin(_unauthorized_origin_url),
+                         SAVE_REQUEST_PENDING)
 
     @patch('swh.web.common.origin_save.scheduler')
     def test_accept_pending_save_request(self, mock_scheduler):
         origin_type = 'git'
         origin_url = 'https://v2.pikacode.com/bthate/botlib.git'
-        save_request_url = reverse('save-origin',
+        save_request_url = reverse('api-save-origin',
                                    kwargs={'origin_type': origin_type,
                                            'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},
                                     content_type='application/x-www-form-urlencoded') # noqa
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.data['save_request_status'],
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['save_request_status'],
+                         SAVE_REQUEST_PENDING)
 
         accept_request_url = reverse('admin-origin-save-request-accept',
                                      kwargs={'origin_type': origin_type,
@@ -159,26 +159,27 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
 
         self.client.login(username=_user_name, password=_user_password)
         response = self.client.post(accept_request_url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         response = self.client.get(save_request_url)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.data[0]['save_request_status'],
-                          SAVE_REQUEST_ACCEPTED)
-        self.assertEquals(response.data[0]['save_task_status'],
-                          SAVE_TASK_NOT_YET_SCHEDULED)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]['save_request_status'],
+                         SAVE_REQUEST_ACCEPTED)
+        self.assertEqual(response.data[0]['save_task_status'],
+                         SAVE_TASK_NOT_YET_SCHEDULED)
 
-    def test_reject_pending_save_request(self):
+    @patch('swh.web.common.origin_save.scheduler')
+    def test_reject_pending_save_request(self, mock_scheduler):
         origin_type = 'git'
         origin_url = 'https://wikipedia.com'
-        save_request_url = reverse('save-origin',
+        save_request_url = reverse('api-save-origin',
                                    kwargs={'origin_type': origin_type,
                                            'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},
                                     content_type='application/x-www-form-urlencoded') # noqa
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.data['save_request_status'],
-                          SAVE_REQUEST_PENDING)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['save_request_status'],
+                         SAVE_REQUEST_PENDING)
 
         reject_request_url = reverse('admin-origin-save-request-reject',
                                      kwargs={'origin_type': origin_type,
@@ -188,9 +189,28 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
 
         self.client.login(username=_user_name, password=_user_password)
         response = self.client.post(reject_request_url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
+
+        tasks_data = [
+            {
+                'priority': 'high',
+                'policy': 'oneshot',
+                'type': 'origin-update-git',
+                'arguments': {
+                    'kwargs': {
+                        'repo_url': origin_url
+                    },
+                    'args': []
+                },
+                'status': 'next_run_not_scheduled',
+                'id': 1,
+             }
+        ]
+
+        mock_scheduler.create_tasks.return_value = tasks_data
+        mock_scheduler.get_tasks.return_value = tasks_data
 
         response = self.client.get(save_request_url)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.data[0]['save_request_status'],
-                          SAVE_REQUEST_REJECTED)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]['save_request_status'],
+                         SAVE_REQUEST_REJECTED)

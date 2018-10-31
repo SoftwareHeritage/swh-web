@@ -8,7 +8,7 @@ from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 
 
-@api_route(r'/stat/counters/', 'stat-counters')
+@api_route(r'/stat/counters/', 'api-stat-counters')
 @api_doc('/stat/counters/', noargs=True)
 def api_stats(request):
     """

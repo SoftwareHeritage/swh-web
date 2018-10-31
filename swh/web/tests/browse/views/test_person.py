@@ -28,7 +28,7 @@ class SwhBrowsePersonTest(SWHWebTestCase):
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/person.html')
         self.assertContains(resp, '<pre>%s</pre>' % test_person_data['id'])
         self.assertContains(resp, '<pre>%s</pre>' % test_person_data['name'])
@@ -47,6 +47,6 @@ class SwhBrowsePersonTest(SWHWebTestCase):
 
         url = reverse('browse-person', kwargs={'person_id': 457587})
         resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Person not found', status_code=404)

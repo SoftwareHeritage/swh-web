@@ -20,9 +20,9 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/stat/counters/')
         # then
-        self.assertEquals(rv.status_code, 400)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'ValueError',
             'reason': 'voluntary error to check the bad request middleware.'})
 
@@ -34,9 +34,9 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/stat/counters/')
         # then
-        self.assertEquals(rv.status_code, 503)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'StorageDBError',
             'reason':
             'An unexpected error occurred in the backend: '
@@ -51,9 +51,9 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/stat/counters/')
         # then
-        self.assertEquals(rv.status_code, 503)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, {
+        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
             'exception': 'StorageAPIError',
             'reason':
             'An unexpected error occurred in the api backend: '
@@ -83,8 +83,8 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
         # when
         rv = self.client.get('/api/1/stat/counters/')
 
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, stub_stats)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, stub_stats)
 
         mock_service.stat_counters.assert_called_once_with()

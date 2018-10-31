@@ -15,7 +15,7 @@ from swh.web.api.apiurls import api_route
 
 
 @api_route(r'/resolve/(?P<swh_id>.*)/',
-           'resolve-swh-pid')
+           'api-resolve-swh-pid')
 @api_doc('/resolve/')
 def api_resolve_swh_pid(request, swh_id):
     """

@@ -75,11 +75,5 @@ from .common import *
 
 ALLOWED_HOSTS += ['testserver']
 
-# As nose is used as a test runner, we cannot benefit from the in-memory
-# django test database used when running tests through '$ python3 manage.py test'.
-# So instead use a different database file that will be created on the fly
-# when running the tests.
-DATABASES['default']['NAME'] = os.path.join(PROJECT_DIR, 'testdb.sqlite3')
-
 # Silent DEBUG output when running unit tests
 LOGGING['handlers']['console']['level'] = 'INFO'

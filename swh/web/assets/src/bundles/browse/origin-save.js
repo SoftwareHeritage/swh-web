@@ -14,6 +14,8 @@ export function initOriginSave() {
 
   $(document).ready(() => {
 
+    $.fn.dataTable.ext.errMode = 'throw';
+
     fetch(Urls.browse_origin_save_types_list())
       .then(response => response.json())
       .then(data => {
@@ -58,7 +60,7 @@ export function initOriginSave() {
         },
         {
           data: 'save_task_status',
-          name: 'save_task_status',
+          name: 'loading_task_status',
           render: (data, type, row) => {
             if (data === 'succeed') {
               let browseOriginUrl = Urls.browse_origin(row.origin_url);
@@ -80,9 +82,25 @@ export function initOriginSave() {
       saveRequestsTable.draw();
     });
 
+    let saveRequestAcceptedALert =
+      `<div class="alert alert-success" role="alert">
+        The "save code now" request has been accepted and will be processed as soon as possible.
+      </div>`;
+
+    let saveRequestPendingAlert =
+      `<div class="alert alert-warning" role="alert">
+        The "save code now" request has been put in pending state and may be accepted for processing after manual review.
+      </div>`;
+
+    let saveRequestRejectedAlert =
+      `<div class="alert alert-danger" role="alert">
+        The "save code now" request has been rejected because the reCAPTCHA could not be validated or the provided origin url is blacklisted.
+      </div>`;
+
     $('#swh-save-origin-form').submit(event => {
       event.preventDefault();
       event.stopPropagation();
+      $('.alert').alert('close');
       if (event.target.checkValidity()) {
         $(event.target).removeClass('was-validated');
         let originType = $('#swh-input-origin-type').val();
@@ -99,21 +117,17 @@ export function initOriginSave() {
           .then(response => response.json())
           .then(data => {
             if (data.save_request_status === 'accepted') {
-              $('#swh-origin-save-request-status').css('color', 'green');
-              $('#swh-origin-save-request-status').text(
-                'The "save code now" request has been accepted and will be processed as soon as possible.');
+              $('#swh-origin-save-request-status').html(saveRequestAcceptedALert);
             } else {
-              $('#swh-origin-save-request-status').css('color', '#fecd1b');
-              $('#swh-origin-save-request-status').text(
-                'The "save code now" request has been put in pending state and may be accepted for processing after manual review.');
+              $('#swh-origin-save-request-status').html(saveRequestPendingAlert);
             }
             grecaptcha.reset();
           })
           .catch(response => {
+            console.log(response);
             if (response.status === 403) {
               $('#swh-origin-save-request-status').css('color', 'red');
-              $('#swh-origin-save-request-status').text(
-                'The "save code now" request has been rejected because the reCAPTCHA could not be validated or the provided origin url is blacklisted.');
+              $('#swh-origin-save-request-status').html(saveRequestRejectedAlert);
             }
             grecaptcha.reset();
           });

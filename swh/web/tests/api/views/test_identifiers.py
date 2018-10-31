@@ -20,7 +20,7 @@ class SwhIdsApiTestCase(SWHWebTestCase, APITestCase):
         rev_id = '96db9023b881d7cd9f379b0c154650d6c108e9a3'
         origin = 'https://github.com/openssl/openssl'
         swh_id = 'swh:1:rev:%s;origin=%s' % (rev_id, origin)
-        url = reverse('resolve-swh-pid', kwargs={'swh_id': swh_id})
+        url = reverse('api-resolve-swh-pid', kwargs={'swh_id': swh_id})
 
         mock_service.lookup_revision.return_value = {}
 
@@ -39,27 +39,27 @@ class SwhIdsApiTestCase(SWHWebTestCase, APITestCase):
             'scheme_version': 1
         }
 
-        self.assertEquals(resp.status_code, 200)
-        self.assertEquals(resp.data, expected_result)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data, expected_result)
 
     def test_swh_id_resolve_invalid(self):
         rev_id_invalid = '96db9023b8_foo_50d6c108e9a3'
         swh_id = 'swh:1:rev:%s' % rev_id_invalid
-        url = reverse('resolve-swh-pid', kwargs={'swh_id': swh_id})
+        url = reverse('api-resolve-swh-pid', kwargs={'swh_id': swh_id})
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 400)
 
     @patch('swh.web.api.views.identifiers.service')
     def test_swh_id_resolve_not_found(self, mock_service):
         rev_id_not_found = '56db90232881d7cd9e379b0c154650d6c108e9a1'
 
         swh_id = 'swh:1:rev:%s' % rev_id_not_found
-        url = reverse('resolve-swh-pid', kwargs={'swh_id': swh_id})
+        url = reverse('api-resolve-swh-pid', kwargs={'swh_id': swh_id})
 
         mock_service.lookup_revision.side_effect = NotFoundExc('Revision not found !') # noqa
 
         resp = self.client.get(url)
 
-        self.assertEquals(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 404)

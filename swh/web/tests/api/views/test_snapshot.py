@@ -88,10 +88,10 @@ def _enrich_snapshot_data(snapshot_data):
         target = snapshot_data['branches'][branch]['target']
         if snapshot_data['branches'][branch]['target_type'] == 'revision': # noqa
             snapshot_data['branches'][branch]['target_url'] = \
-                reverse('revision', kwargs={'sha1_git': target})
+                reverse('api-revision', kwargs={'sha1_git': target})
         if snapshot_data['branches'][branch]['target_type'] == 'release': # noqa
             snapshot_data['branches'][branch]['target_url'] = \
-                reverse('release', kwargs={'sha1_git': target})
+                reverse('api-release', kwargs={'sha1_git': target})
     return snapshot_data
 
 
@@ -101,14 +101,14 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
     def test_api_snapshot(self, mock_service):
         mock_service.lookup_snapshot.side_effect = _lookup_snapshot
 
-        url = reverse('snapshot',
+        url = reverse('api-snapshot',
                       kwargs={'snapshot_id': _snapshot_id})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         expected_data = _lookup_snapshot(_snapshot_id)
         expected_data = _enrich_snapshot_data(expected_data)
-        self.assertEquals(rv.data, expected_data)
+        self.assertEqual(rv.data, expected_data)
 
     def test_api_snapshot_paginated(self, mock_service):
         mock_service.lookup_snapshot.side_effect = _lookup_snapshot
@@ -120,67 +120,67 @@ class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
 
         while branches_offset < len(_snapshot_branches):
             branches_from = _snapshot_branches[branches_offset]['name']
-            url = reverse('snapshot',
+            url = reverse('api-snapshot',
                           kwargs={'snapshot_id': _snapshot_id},
                           query_params={'branches_from': branches_from,
                                         'branches_count': branches_count})
             rv = self.client.get(url)
-            self.assertEquals(rv.status_code, 200)
-            self.assertEquals(rv['Content-Type'], 'application/json')
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
             expected_data = _lookup_snapshot(_snapshot_id, branches_from,
                                              branches_count)
             expected_data = _enrich_snapshot_data(expected_data)
-            self.assertEquals(rv.data, expected_data)
+            self.assertEqual(rv.data, expected_data)
             whole_snapshot['branches'].update(expected_data['branches'])
             branches_offset += branches_count
 
             if branches_offset < len(_snapshot_branches):
                 next_branch = _snapshot_branches[branches_offset]['name'] # noqa
-                next_url = reverse('snapshot',
+                next_url = reverse('api-snapshot',
                                    kwargs={'snapshot_id': _snapshot_id},
                                    query_params={'branches_from': next_branch,
                                                  'branches_count': branches_count}) # noqa
-                self.assertEquals(rv['Link'], '<%s>; rel="next"' % next_url)
+                self.assertEqual(rv['Link'], '<%s>; rel="next"' % next_url)
             else:
                 self.assertFalse(rv.has_header('Link'))
 
-        url = reverse('snapshot',
+        url = reverse('api-snapshot',
                       kwargs={'snapshot_id': _snapshot_id})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
-        self.assertEquals(rv.data, whole_snapshot)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, whole_snapshot)
 
     def test_api_snapshot_filtered(self, mock_service):
         mock_service.lookup_snapshot.side_effect = _lookup_snapshot
 
         target_types = 'release'
 
-        url = reverse('snapshot',
+        url = reverse('api-snapshot',
                       kwargs={'snapshot_id': _snapshot_id},
                       query_params={'target_types': target_types})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 200)
-        self.assertEquals(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
         expected_data = _lookup_snapshot(_snapshot_id,
                                          target_types=target_types.split(','))
         expected_data = _enrich_snapshot_data(expected_data)
-        self.assertEquals(rv.data, expected_data)
+        self.assertEqual(rv.data, expected_data)
 
     def test_api_snapshot_errors(self, mock_service):
         mock_service.lookup_snapshot.side_effect = \
             BadInputExc('Invalid snapshot id!')
 
-        url = reverse('snapshot',
+        url = reverse('api-snapshot',
                       kwargs={'snapshot_id': '63ce369'})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 400)
 
         mock_service.lookup_snapshot.side_effect = \
             NotFoundExc('Snapshot not found!')
 
         snapshot_inexistent = '63ce36946fcd0f79bdfc40727af4acfce81f67fa'
-        url = reverse('snapshot',
+        url = reverse('api-snapshot',
                       kwargs={'snapshot_id': snapshot_inexistent})
         rv = self.client.get(url)
-        self.assertEquals(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404)

@@ -32,7 +32,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
 
 
 @api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
-           'vault-cook-directory', methods=['GET', 'POST'],
+           'api-vault-cook-directory', methods=['GET', 'POST'],
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/directory/', tags=['hidden'])
@@ -78,13 +78,13 @@ def api_vault_cook_directory(request, dir_id):
         dir_id, ['sha1'], 'Only sha1_git is supported.')
 
     res = _dispatch_cook_progress(request, 'directory', obj_id)
-    res['fetch_url'] = reverse('vault-fetch-directory',
+    res['fetch_url'] = reverse('api-vault-fetch-directory',
                                kwargs={'dir_id': dir_id})
     return res
 
 
 @api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/raw/',
-           'vault-fetch-directory')
+           'api-vault-fetch-directory')
 @api_doc('/vault/directory/raw/', tags=['hidden'], handle_response=True)
 def api_vault_fetch_directory(request, dir_id):
     """
@@ -117,7 +117,7 @@ def api_vault_fetch_directory(request, dir_id):
 
 
 @api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/',
-           'vault-cook-revision_gitfast', methods=['GET', 'POST'],
+           'api-vault-cook-revision_gitfast', methods=['GET', 'POST'],
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/revision/gitfast/', tags=['hidden'])
@@ -165,13 +165,13 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         rev_id, ['sha1'], 'Only sha1_git is supported.')
 
     res = _dispatch_cook_progress(request, 'revision_gitfast', obj_id)
-    res['fetch_url'] = reverse('vault-fetch-revision_gitfast',
+    res['fetch_url'] = reverse('api-vault-fetch-revision_gitfast',
                                kwargs={'rev_id': rev_id})
     return res
 
 
 @api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
-           'vault-fetch-revision_gitfast')
+           'api-vault-fetch-revision_gitfast')
 @api_doc('/vault/revision/gitfast/raw/', tags=['hidden'], handle_response=True)
 def api_vault_fetch_revision_gitfast(request, rev_id):
     """

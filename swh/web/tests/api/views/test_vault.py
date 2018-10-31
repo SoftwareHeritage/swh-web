@@ -39,10 +39,10 @@ class VaultApiTestCase(SWHWebTestCase, APITestCase):
                 url += '{}/'.format(obj_type_format)
             rv = self.client.post(url, {'email': 'test@test.mail'})
 
-            self.assertEquals(rv.status_code, 200)
-            self.assertEquals(rv['Content-Type'], 'application/json')
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
 
-            self.assertEquals(rv.data, stub_cook)
+            self.assertEqual(rv.data, stub_cook)
             mock_service.vault_cook.assert_called_with(
                 obj_type,
                 hashutil.hash_to_bytes(TEST_OBJ_ID),
@@ -50,9 +50,9 @@ class VaultApiTestCase(SWHWebTestCase, APITestCase):
 
             rv = self.client.get(url + 'raw/')
 
-            self.assertEquals(rv.status_code, 200)
-            self.assertEquals(rv['Content-Type'], 'application/gzip')
-            self.assertEquals(rv.content, stub_fetch)
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/gzip')
+            self.assertEqual(rv.content, stub_fetch)
             mock_service.vault_fetch.assert_called_with(
                 obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID))
 
@@ -67,17 +67,17 @@ class VaultApiTestCase(SWHWebTestCase, APITestCase):
                 url += '{}/'.format(obj_type_format)
             rv = self.client.post(url)
 
-            self.assertEquals(rv.status_code, 404)
-            self.assertEquals(rv['Content-Type'], 'application/json')
+            self.assertEqual(rv.status_code, 404)
+            self.assertEqual(rv['Content-Type'], 'application/json')
 
-            self.assertEquals(rv.data['exception'], 'NotFoundExc')
+            self.assertEqual(rv.data['exception'], 'NotFoundExc')
             mock_service.vault_cook.assert_called_with(
                 obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID), None)
 
             rv = self.client.get(url + 'raw/')
 
-            self.assertEquals(rv.status_code, 404)
-            self.assertEquals(rv['Content-Type'], 'application/json')
-            self.assertEquals(rv.data['exception'], 'NotFoundExc')
+            self.assertEqual(rv.status_code, 404)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            self.assertEqual(rv.data['exception'], 'NotFoundExc')
             mock_service.vault_fetch.assert_called_with(
                 obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID))

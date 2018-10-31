@@ -12,7 +12,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'snapshot')
+@api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-snapshot')
 @api_doc('/snapshot/')
 def api_snapshot(request, snapshot_id):
     """
@@ -98,7 +98,7 @@ def api_snapshot(request, snapshot_id):
 
     if next_branch:
         response['headers']['link-next'] = \
-            reverse('snapshot',
+            reverse('api-snapshot',
                     kwargs={'snapshot_id': snapshot_id},
                     query_params={'branches_from': next_branch,
                                   'branches_count': branches_count,

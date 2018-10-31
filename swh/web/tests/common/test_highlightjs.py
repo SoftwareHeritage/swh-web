@@ -13,114 +13,114 @@ class HighlightJsTestCase(SWHWebTestCase):
     def test_get_hljs_language_from_mime_type(self):
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/plain')
-        self.assertEquals(lang, None)
+        self.assertEqual(lang, None)
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-c')
-        self.assertEquals(lang, 'cpp')
+        self.assertEqual(lang, 'cpp')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-c++')
-        self.assertEquals(lang, 'cpp')
+        self.assertEqual(lang, 'cpp')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-perl')
-        self.assertEquals(lang, 'perl')
+        self.assertEqual(lang, 'perl')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-python')
-        self.assertEquals(lang, 'python')
+        self.assertEqual(lang, 'python')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-msdos-batch') # noqa
-        self.assertEquals(lang, 'dos')
+        self.assertEqual(lang, 'dos')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-tex')
-        self.assertEquals(lang, 'tex')
+        self.assertEqual(lang, 'tex')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-lisp')
-        self.assertEquals(lang, 'lisp')
+        self.assertEqual(lang, 'lisp')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-java')
-        self.assertEquals(lang, 'java')
+        self.assertEqual(lang, 'java')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-makefile')
-        self.assertEquals(lang, 'makefile')
+        self.assertEqual(lang, 'makefile')
 
         lang = highlightjs.get_hljs_language_from_mime_type('text/x-shellscript') # noqa
-        self.assertEquals(lang, 'bash')
+        self.assertEqual(lang, 'bash')
 
         lang = highlightjs.get_hljs_language_from_mime_type('image/png')
-        self.assertEquals(lang, None)
+        self.assertEqual(lang, None)
 
     def test_get_hljs_language_from_filename(self):
 
         lang = highlightjs.get_hljs_language_from_filename('foo')
-        self.assertEquals(lang, None)
+        self.assertEqual(lang, None)
 
         lang = highlightjs.get_hljs_language_from_filename('foo.h')
-        self.assertEquals(lang, 'cpp')
+        self.assertEqual(lang, 'cpp')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.c')
-        self.assertEquals(lang, 'cpp')
+        self.assertEqual(lang, 'cpp')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.c.in')
-        self.assertEquals(lang, 'cpp')
+        self.assertEqual(lang, 'cpp')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.cpp')
-        self.assertEquals(lang, 'cpp')
+        self.assertEqual(lang, 'cpp')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.pl')
-        self.assertEquals(lang, 'perl')
+        self.assertEqual(lang, 'perl')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.py')
-        self.assertEquals(lang, 'python')
+        self.assertEqual(lang, 'python')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.md')
-        self.assertEquals(lang, 'markdown')
+        self.assertEqual(lang, 'markdown')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.js')
-        self.assertEquals(lang, 'javascript')
+        self.assertEqual(lang, 'javascript')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.bat')
-        self.assertEquals(lang, 'dos')
+        self.assertEqual(lang, 'dos')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.json')
-        self.assertEquals(lang, 'json')
+        self.assertEqual(lang, 'json')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.yml')
-        self.assertEquals(lang, 'yaml')
+        self.assertEqual(lang, 'yaml')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.ini')
-        self.assertEquals(lang, 'ini')
+        self.assertEqual(lang, 'ini')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.cfg')
-        self.assertEquals(lang, 'ini')
+        self.assertEqual(lang, 'ini')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.hy')
-        self.assertEquals(lang, 'hy')
+        self.assertEqual(lang, 'hy')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.lisp')
-        self.assertEquals(lang, 'lisp')
+        self.assertEqual(lang, 'lisp')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.java')
-        self.assertEquals(lang, 'java')
+        self.assertEqual(lang, 'java')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.sh')
-        self.assertEquals(lang, 'bash')
+        self.assertEqual(lang, 'bash')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.cmake')
-        self.assertEquals(lang, 'cmake')
+        self.assertEqual(lang, 'cmake')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.ml')
-        self.assertEquals(lang, 'ocaml')
+        self.assertEqual(lang, 'ocaml')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.mli')
-        self.assertEquals(lang, 'ocaml')
+        self.assertEqual(lang, 'ocaml')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.rb')
-        self.assertEquals(lang, 'ruby')
+        self.assertEqual(lang, 'ruby')
 
         lang = highlightjs.get_hljs_language_from_filename('foo.jl')
-        self.assertEquals(lang, 'julia')
+        self.assertEqual(lang, 'julia')
 
         lang = highlightjs.get_hljs_language_from_filename('Makefile')
-        self.assertEquals(lang, 'makefile')
+        self.assertEqual(lang, 'makefile')
 
         lang = highlightjs.get_hljs_language_from_filename('CMakeLists.txt')
-        self.assertEquals(lang, 'cmake')
+        self.assertEqual(lang, 'cmake')
