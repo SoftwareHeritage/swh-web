@@ -141,8 +141,6 @@ def _get_visit_date_for_save_request(save_request):
                        for v in origin_visits]
         i = bisect_right(visit_dates, save_request.request_date)
         if i != len(visit_dates):
-            save_request.visit_date = visit_dates[i]
-            save_request.save()
             visit_date = visit_dates[i]
     except Exception:
         pass
@@ -150,18 +148,24 @@ def _get_visit_date_for_save_request(save_request):
 
 
 def _save_request_dict(save_request, task=None):
+    must_save = False
     visit_date = save_request.visit_date
     if task:
         save_task_status = _save_task_status[task['status']]
         if save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEED) \
-           and not visit_date:
+                and not visit_date:
             visit_date = _get_visit_date_for_save_request(save_request)
+            save_request.visit_date = visit_date
+            must_save = True
         # Ensure last origin visit is available in database
         # before reporting the task execution as successful
         if save_task_status == SAVE_TASK_SUCCEED and not visit_date:
             save_task_status = SAVE_TASK_SCHEDULED
-        save_request.loading_task_status = save_task_status
-        save_request.save()
+        if save_request.loading_task_status != save_task_status:
+            save_request.loading_task_status = save_task_status
+            must_save = True
+        if must_save:
+            save_request.save()
     else:
         save_task_status = save_request.loading_task_status
 
@@ -316,15 +320,15 @@ def get_save_origin_requests_from_queryset(requests_queryset):
         list: A list of save origin requests dict as described in
         :func:`swh.web.common.origin_save.create_save_origin_request`
     """
+    task_ids = []
+    for sor in requests_queryset:
+        task_ids.append(sor.loading_task_id)
+    tasks = scheduler.get_tasks(task_ids)
+    tasks = {task['id']: task for task in tasks}
     requests = []
     for sor in requests_queryset:
-        task = None
-        # save task has not been created, no need to query
-        # the scheduler API
-        if sor.loading_task_id != -1:
-            tasks = scheduler.get_tasks([sor.loading_task_id])
-            task = tasks[0] if tasks else None
-        requests.append(_save_request_dict(sor, task))
+        sr_dict = _save_request_dict(sor, tasks.get(sor.loading_task_id, None))
+        requests.append(sr_dict)
     return requests
 
 
