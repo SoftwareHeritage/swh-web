@@ -168,7 +168,8 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         self.assertEqual(response.data[0]['save_task_status'],
                          SAVE_TASK_NOT_YET_SCHEDULED)
 
-    def test_reject_pending_save_request(self):
+    @patch('swh.web.common.origin_save.scheduler')
+    def test_reject_pending_save_request(self, mock_scheduler):
         origin_type = 'git'
         origin_url = 'https://wikipedia.com'
         save_request_url = reverse('api-save-origin',
@@ -189,6 +190,25 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         self.client.login(username=_user_name, password=_user_password)
         response = self.client.post(reject_request_url)
         self.assertEqual(response.status_code, 200)
+
+        tasks_data = [
+            {
+                'priority': 'high',
+                'policy': 'oneshot',
+                'type': 'origin-update-git',
+                'arguments': {
+                    'kwargs': {
+                        'repo_url': origin_url
+                    },
+                    'args': []
+                },
+                'status': 'next_run_not_scheduled',
+                'id': 1,
+             }
+        ]
+
+        mock_scheduler.create_tasks.return_value = tasks_data
+        mock_scheduler.get_tasks.return_value = tasks_data
 
         response = self.client.get(save_request_url)
         self.assertEqual(response.status_code, 200)
