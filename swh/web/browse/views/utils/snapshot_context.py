@@ -194,6 +194,8 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     for b in branches:
         branch_url_args = dict(url_args)
         branch_query_params = dict(query_params)
+        if 'release' in branch_query_params:
+            del branch_query_params['release']
         branch_query_params['branch'] = b['name']
         if path:
             b['path'] = path
@@ -205,6 +207,8 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     for r in releases:
         release_url_args = dict(url_args)
         release_query_params = dict(query_params)
+        if 'branch' in release_query_params:
+            del release_query_params['branch']
         release_query_params['release'] = r['name']
         if path:
             r['path'] = path
