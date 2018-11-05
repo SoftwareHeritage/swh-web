@@ -415,6 +415,8 @@ def process_snapshot_branches(snapshot_branches):
     )
 
     for revision in revisions:
+        if not revision:
+            continue
         revision_data = {
             'directory': revision['directory'],
             'date': format_utc_iso_date(revision['date']),
