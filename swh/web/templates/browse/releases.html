@@ -8,34 +8,37 @@ See top-level LICENSE file for more information
 {% endcomment %}
 
 {% block swh-browse-content %}
-<div class="table-responsive mt-3 mb-3">
-  <table class="table swh-table swh-table-striped">
-    <thead>
-      <tr>
-        <th><i class="fa fa-tag fa-fw"></i>Name</th>
-        <th>Target</th>
-        <th>Message</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for release in displayed_releases %}
-        <tr class="swh-origin-release">
-          <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
-          <td>{{ release.target_type }}</td>
-          <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
-          <td>{{ release.date }}</td>
+{% if displayed_releases|length > 0 %}
+  <div class="table-responsive mt-3 mb-3">
+    <table class="table swh-table swh-table-striped">
+      <thead>
+        <tr>
+          <th><i class="fa fa-tag fa-fw"></i>Name</th>
+          <th>Target</th>
+          <th>Message</th>
+          <th>Date</th>
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        {% for release in displayed_releases %}
+          <tr class="swh-origin-release">
+            <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
+            <td>{{ release.target_type }}</td>
+            <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
+            <td>{{ release.date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <i>The list of releases is empty !</i>
+{% endif %}
 {% endblock %}
 
 {% block swh-browse-after-content %}
 {% if prev_releases_url or next_releases_url %}
   <ul class="pagination justify-content-center">
-
     {% if prev_releases_url %}
       <li class="page-item"><a class="page-link" href="{{ prev_releases_url }}">Previous</a></li>
     {% else %}
@@ -47,7 +50,6 @@ See top-level LICENSE file for more information
     {% else %}
       <li class="page-item disabled"><a class="page-link">Next</a></li>
     {% endif %}
-
   </ul>
 {% endif %}
 {% endblock %}

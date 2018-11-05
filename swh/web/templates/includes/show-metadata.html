@@ -17,12 +17,14 @@ See top-level LICENSE file for more information
     <table class="table">
       <tbody>
         {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-          <tr>
-            <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
-            <td class="swh-metadata-table-row swh-metadata-table-value">
-              <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
-            </td>
-          </tr>
+          {% if val is not None and val != '' %}
+            <tr>
+              <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
+              <td class="swh-metadata-table-row swh-metadata-table-value">
+                <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+              </td>
+            </tr>
+          {% endif %}
         {% endfor %}
       </tbody>
     </table>

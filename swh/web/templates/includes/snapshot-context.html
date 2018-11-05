@@ -14,7 +14,11 @@ See top-level LICENSE file for more information
     {% if snapshot_context.visit_info %}
       <li><i class="fa fa-camera fa-fw"></i> Snapshot date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.fmt_date }}</a></li>
     {% endif %}
-    <li><i class="fa fa-code-fork fa-fw"></i> <a href="{{ snapshot_context.branches_url }}">Branches ({{ snapshot_context.snapshot_size.revision}})</a></li>
+    {% if not snapshot_context.snapshot_size.revision %}
+      <li><i class="fa fa-code-fork fa-fw"></i> Branches (0)</li>
+    {% else %}
+      <li><i class="fa fa-code-fork fa-fw"></i> <a href="{{ snapshot_context.branches_url }}">Branches ({{ snapshot_context.snapshot_size.revision}})</a></li>
+    {% endif %}
     {% if not snapshot_context.snapshot_size.release %}
       <li><i class="fa fa-tag fa-fw"></i> Releases (0)</li>
     {% else %}

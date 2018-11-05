@@ -12,6 +12,8 @@ from django.shortcuts import render, redirect
 from django.utils.safestring import mark_safe
 from django.template.defaultfilters import filesizeformat
 
+from swh.model.identifiers import snapshot_identifier
+
 from swh.web.browse.utils import (
     get_snapshot_context, get_directory_entries, gen_directory_link,
     gen_revision_link, request_content, gen_content_link,
@@ -28,6 +30,8 @@ from swh.web.common.exc import (
 from swh.web.common.utils import (
     reverse, gen_path_info, format_utc_iso_date
 )
+
+_empty_snapshot_id = snapshot_identifier({'branches': {}})
 
 
 def _get_branch(branches, branch_name, snapshot_id):
@@ -140,6 +144,8 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     if snapshot_context['visit_info']:
         timestamp = format_utc_iso_date(snapshot_context['visit_info']['date'],
                                         '%Y-%m-%dT%H:%M:%SZ')
+        snapshot_context['timestamp'] = \
+            format_utc_iso_date(snapshot_context['visit_info']['date'])
 
     browse_view_name = 'browse-' + swh_type + '-' + browse_context
 
@@ -149,7 +155,9 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     release_id = None
     branch_name = None
 
-    if revision_id:
+    snapshot_total_size = sum(snapshot_context['snapshot_size'].values())
+
+    if snapshot_total_size and revision_id:
         revision = service.lookup_revision(revision_id)
         root_sha1_git = revision['directory']
         branches.append({'name': revision_id,
@@ -158,7 +166,7 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
                          'url': None})
         branch_name = revision_id
         query_params['revision'] = revision_id
-    elif release_name:
+    elif snapshot_total_size and release_name:
         release = _get_release(releases, release_name)
         if release:
             root_sha1_git = release['directory']
@@ -168,7 +176,7 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
         else:
             _branch_not_found("release", release_name, releases, snapshot_id,
                               origin_info, timestamp, visit_id)
-    else:
+    elif snapshot_total_size:
         branch_name = request.GET.get('branch', None)
         if branch_name:
             query_params['branch'] = branch_name
@@ -229,7 +237,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
         root_sha1_git = snapshot_context['root_sha1_git']
         sha1_git = root_sha1_git
-        if path:
+        if root_sha1_git and path:
             dir_info = service.lookup_directory_with_path(root_sha1_git, path)
             # some readme files can reference assets reachable from the
             # browsed directory, handle that special case in order to
@@ -241,7 +249,10 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                 return redirect(file_raw_url)
             sha1_git = dir_info['target']
 
-        dirs, files = get_directory_entries(sha1_git)
+        dirs = []
+        files = []
+        if sha1_git:
+            dirs, files = get_directory_entries(sha1_git)
 
     except Exception as exc:
         return handle_view_exception(request, exc)
@@ -259,10 +270,11 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     browse_view_name = 'browse-' + swh_type + '-directory'
 
     breadcrumbs = []
-    breadcrumbs.append({'name': root_sha1_git[:7],
-                        'url': reverse(browse_view_name,
-                                       kwargs=url_args,
-                                       query_params=query_params)})
+    if root_sha1_git:
+        breadcrumbs.append({'name': root_sha1_git[:7],
+                            'url': reverse(browse_view_name,
+                                           kwargs=url_args,
+                                           query_params=query_params)})
     for pi in path_info:
         bc_url_args = dict(url_args)
         bc_url_args['path'] = pi['path']
@@ -306,11 +318,21 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     browse_view_name = 'browse-' + swh_type + '-log'
 
-    history_url = reverse(browse_view_name,
-                          kwargs=url_args,
-                          query_params=query_params)
+    history_url = None
+    if snapshot_id != _empty_snapshot_id:
+        history_url = reverse(browse_view_name,
+                              kwargs=url_args,
+                              query_params=query_params)
 
-    sum_file_sizes = filesizeformat(sum_file_sizes)
+    nb_files = None
+    nb_dirs = None
+    sum_file_sizes = None
+    dir_path = None
+    if root_sha1_git:
+        nb_files = len(files)
+        nb_dirs = len(dirs)
+        sum_file_sizes = filesizeformat(sum_file_sizes)
+        dir_path = '/' + path
 
     browse_dir_link = \
         gen_directory_link(sha1_git, link_text='Browse',
@@ -326,10 +348,10 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     dir_metadata = {'id': sha1_git,
                     'context-independent directory': browse_dir_link,
-                    'number of regular files': len(files),
-                    'number of subdirectories': len(dirs),
+                    'number of regular files': nb_files,
+                    'number of subdirectories': nb_dirs,
                     'sum of regular file sizes': sum_file_sizes,
-                    'path': '/' + path,
+                    'path': dir_path,
                     'revision id': revision_id,
                     'revision': browse_rev_link,
                     'snapshot id': snapshot_id}
@@ -383,7 +405,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,
                    'files': files,
-                   'breadcrumbs': breadcrumbs,
+                   'breadcrumbs': breadcrumbs if root_sha1_git else [],
                    'top_right_link': history_url,
                    'top_right_link_text': mark_safe(
                      '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
@@ -411,11 +433,16 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                                                      browse_context='content')
 
         root_sha1_git = snapshot_context['root_sha1_git']
-        content_info = service.lookup_directory_with_path(root_sha1_git, path)
-        sha1_git = content_info['target']
-        query_string = 'sha1_git:' + sha1_git
-        content_data = request_content(query_string,
-                                       raise_if_unavailable=False)
+        sha1_git = None
+        query_string = None
+        content_data = None
+        if root_sha1_git:
+            content_info = service.lookup_directory_with_path(root_sha1_git,
+                                                              path)
+            sha1_git = content_info['target']
+            query_string = 'sha1_git:' + sha1_git
+            content_data = request_content(query_string,
+                                           raise_if_unavailable=False)
 
     except Exception as exc:
         return handle_view_exception(request, exc)
@@ -431,7 +458,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     content = None
     language = None
     mimetype = None
-    if content_data['raw_data'] is not None:
+    if content_data and content_data['raw_data'] is not None:
         content_display_data = prepare_content_for_display(
             content_data['raw_data'], content_data['mimetype'], path)
         content = content_display_data['content_data']
@@ -448,10 +475,11 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     split_path = path.split('/')
     filename = split_path[-1]
     path_info = gen_path_info(path[:-len(filename)])
-    breadcrumbs.append({'name': root_sha1_git[:7],
-                        'url': reverse(browse_view_name,
-                                       kwargs=url_args,
-                                       query_params=query_params)})
+    if root_sha1_git:
+        breadcrumbs.append({'name': root_sha1_git[:7],
+                            'url': reverse(browse_view_name,
+                                           kwargs=url_args,
+                                           query_params=query_params)})
     for pi in path_info:
         bc_url_args = dict(url_args)
         bc_url_args['path'] = pi['path']
@@ -468,9 +496,11 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                          link_attrs={'class': 'btn btn-default btn-sm',
                                      'role': 'button'})
 
-    content_raw_url = reverse('browse-content-raw',
-                              kwargs={'query_string': query_string},
-                              query_params={'filename': filename})
+    content_raw_url = None
+    if query_string:
+        content_raw_url = reverse('browse-content-raw',
+                                  kwargs={'query_string': query_string},
+                                  query_params={'filename': filename})
 
     browse_rev_link = \
         gen_revision_link(revision_id,
@@ -481,21 +511,40 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
 
     content_metadata = {
         'context-independent content': browse_content_link,
-        'sha1 checksum': content_data['checksums']['sha1'],
-        'sha1_git checksum': content_data['checksums']['sha1_git'],
-        'sha256 checksum': content_data['checksums']['sha256'],
-        'blake2s256 checksum': content_data['checksums']['blake2s256'],
-        'mime type': content_data['mimetype'],
-        'encoding': content_data['encoding'],
-        'size': filesizeformat(content_data['length']),
-        'language': content_data['language'],
-        'licenses': content_data['licenses'],
-        'path': '/' + path[:-len(filename)],
-        'filename': filename,
+        'path': None,
+        'filename': None,
         'revision id': revision_id,
         'revision': browse_rev_link,
         'snapshot id': snapshot_id
     }
+
+    cnt_sha1_git = None
+    content_size = None
+    error_code = 200
+    error_description = ''
+    error_message = ''
+    if content_data:
+        content_metadata['sha1 checksum'] = \
+            content_data['checksums']['sha1']
+        content_metadata['sha1_git checksum'] = \
+            content_data['checksums']['sha1_git']
+        content_metadata['sha256 checksum'] = \
+            content_data['checksums']['sha256']
+        content_metadata['blake2s256 checksum'] = \
+            content_data['checksums']['blake2s256']
+        content_metadata['mime type'] = content_data['mimetype']
+        content_metadata['encoding'] = content_data['encoding']
+        content_metadata['size'] = filesizeformat(content_data['length'])
+        content_metadata['language'] = content_data['language']
+        content_metadata['licenses'] = content_data['licenses']
+        content_metadata['path'] = '/' + path[:-len(filename)]
+        content_metadata['filename'] = filename
+
+        cnt_sha1_git = content_data['checksums']['sha1_git']
+        content_size = content_data['length']
+        error_code = content_data['error_code']
+        error_message = content_data['error_message']
+        error_description = content_data['error_description']
 
     if origin_info:
         content_metadata['origin id'] = origin_info['id']
@@ -513,7 +562,6 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                                  'role': 'button'})
         content_metadata['snapshot context'] = browse_snapshot_link
 
-    cnt_sha1_git = content_data['checksums']['sha1_git']
     swh_objects = [{'type': 'content',
                     'id': cnt_sha1_git},
                    {'type': 'revision',
@@ -540,11 +588,11 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                    'swh_object_name': 'Content',
                    'swh_object_metadata': content_metadata,
                    'content': content,
-                   'content_size': content_data['length'],
+                   'content_size': content_size,
                    'max_content_size': content_display_max_size,
                    'mimetype': mimetype,
                    'language': language,
-                   'breadcrumbs': breadcrumbs,
+                   'breadcrumbs': breadcrumbs if root_sha1_git else [],
                    'top_right_link': content_raw_url,
                    'top_right_link_text': mark_safe(
                        '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
@@ -553,10 +601,10 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                    'vault_cooking': None,
                    'show_actions_menu': True,
                    'swh_ids': swh_ids,
-                   'error_code': content_data['error_code'],
-                   'error_message': content_data['error_message'],
-                   'error_description': content_data['error_description']},
-                  status=content_data['error_code'])
+                   'error_code': error_code,
+                   'error_message': error_message,
+                   'error_description': error_description},
+                  status=error_code)
 
 
 PER_PAGE = 100
@@ -581,9 +629,10 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
 
         if revs_breadcrumb:
             current_rev = revs_breadcrumb.split('/')[-1]
-        revision_log = service.lookup_revision_log(current_rev,
-                                                   limit=per_page+1)
-        revision_log = list(revision_log)
+        revision_log = []
+        if current_rev:
+            revision_log = list(service.lookup_revision_log(current_rev,
+                                                            limit=per_page+1))
 
     except Exception as exc:
         return handle_view_exception(request, exc)
@@ -597,32 +646,36 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
 
     query_params['per_page'] = per_page
 
-    revision_log_display_data = prepare_revision_log_for_display(
-        revision_log, per_page, revs_breadcrumb, snapshot_context)
+    revision_log_data = []
+    next_log_url = ''
+    prev_log_url = ''
+    if revision_log:
+        revision_log_display_data = prepare_revision_log_for_display(
+            revision_log, per_page, revs_breadcrumb, snapshot_context)
 
-    browse_view_name = 'browse-' + swh_type + '-log'
+        browse_view_name = 'browse-' + swh_type + '-log'
 
-    prev_rev = revision_log_display_data['prev_rev']
-    prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
-    prev_log_url = None
-    query_params['revs_breadcrumb'] = prev_revs_breadcrumb
-    if prev_rev:
-        prev_log_url = \
-            reverse(browse_view_name,
-                    kwargs=url_args,
-                    query_params=query_params)
+        prev_rev = revision_log_display_data['prev_rev']
+        prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb'] # noqa
+        prev_log_url = None
+        query_params['revs_breadcrumb'] = prev_revs_breadcrumb
+        if prev_rev:
+            prev_log_url = \
+                reverse(browse_view_name,
+                        kwargs=url_args,
+                        query_params=query_params)
 
-    next_rev = revision_log_display_data['next_rev']
-    next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
-    next_log_url = None
-    query_params['revs_breadcrumb'] = next_revs_breadcrumb
-    if next_rev:
-        next_log_url = \
-            reverse(browse_view_name,
-                    kwargs=url_args,
-                    query_params=query_params)
+        next_rev = revision_log_display_data['next_rev']
+        next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb'] # noqa
+        next_log_url = None
+        query_params['revs_breadcrumb'] = next_revs_breadcrumb
+        if next_rev:
+            next_log_url = \
+                reverse(browse_view_name,
+                        kwargs=url_args,
+                        query_params=query_params)
 
-    revision_log_data = revision_log_display_data['revision_log_data']
+        revision_log_data = revision_log_display_data['revision_log_data']
 
     for i, log in enumerate(revision_log_data):
         params = {

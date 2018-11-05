@@ -5,37 +5,43 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-<div class="table-responsive">
-  <table class="table swh-table swh-directory-table">
-    <thead>
-      <tr>
-        <th>File</th>
-        <th>Mode</th>
-        <th>Size</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for d in dirs %}
+{% if snapshot_context and snapshot_context.is_empty %}
+  {% include "includes/empty-snapshot.html" %}
+{% elif dirs|length > 0 or files|length > 0 %}
+  <div class="table-responsive">
+    <table class="table swh-table swh-directory-table">
+      <thead>
         <tr>
-          <td class="swh-directory">
-            <i class="fa fa-folder fa-fw" aria-hidden="true"></i>
-            <a href="{{ d.url | safe }}">{{ d.name }}</a>
-          </td>
-          <td>{{ d.perms }}</td>
-          <td></td>
+          <th>File</th>
+          <th>Mode</th>
+          <th>Size</th>
         </tr>
-      {% endfor %}
-      {% for f in files %}
-        <tr>
-          <td class="swh-content">
-            <i class="fa fa-file-text fa-fw" aria-hidden="true"></i>
-            <a href="{{ f.url | safe }}">{{ f.name }}</a>
-          </td>
-          <td>{{ f.perms }}</td>
-          <td>{{ f.length }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-<hr class="mt-0 mb-2">
+      </thead>
+      <tbody>
+        {% for d in dirs %}
+          <tr>
+            <td class="swh-directory">
+              <i class="fa fa-folder fa-fw" aria-hidden="true"></i>
+              <a href="{{ d.url | safe }}">{{ d.name }}</a>
+            </td>
+            <td>{{ d.perms }}</td>
+            <td></td>
+          </tr>
+        {% endfor %}
+        {% for f in files %}
+          <tr>
+            <td class="swh-content">
+              <i class="fa fa-file-text fa-fw" aria-hidden="true"></i>
+              <a href="{{ f.url | safe }}">{{ f.name }}</a>
+            </td>
+            <td>{{ f.perms }}</td>
+            <td>{{ f.length }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <hr class="mt-0 mb-2">
+{% elif dirs|length == 0 and files|length == 0 %}
+  <i>Directory is empty</i>
+{% endif %}
