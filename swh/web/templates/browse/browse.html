@@ -14,28 +14,29 @@ See top-level LICENSE file for more information
 {% block navbar-content %}
 {% if snapshot_context %}
   <h4>
+    <i class="{{ swh_object_icon }} fa-fw" aria-hidden="true"></i>
+    Browse archived {{ swh_object_name.lower }}
     {% if snapshot_context.origin_info %}
-      Browse archived software origin:
-        <a href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
-          {{ snapshot_context.origin_info.url }}
+      for origin
+      <a href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
+        {{ snapshot_context.origin_info.url }}
+      </a>
+      {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
+        <a href="{{ snapshot_context.origin_info.url }}" title="Go to origin">
+          <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
-        {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
-          <a href="{{ snapshot_context.origin_info.url }}" title="Go to origin">
-            <i class="fa fa-external-link" aria-hidden="true"></i>
-          </a>
-        {% endif %}
-
+      {% endif %}
     {% else %}
-      Browse archived software snapshot:
-        <a href="{% url 'browse-swh-id' snapshot_context.swh_object_id %}">
-          {{ snapshot_context.swh_object_id }}
-        </a>
+      for snapshot
+      <a href="{% url 'browse-swh-id' snapshot_context.swh_object_id %}">
+        {{ snapshot_context.swh_object_id }}
+      </a>
     {% endif %}
-    <i class="fa fa-ellipsis-v fa-fw" aria-hidden="true"></i> {{ swh_object_name }}
   </h4>
 {% else %}
   <h4>
-    Browse archived software {{ swh_object_name.lower }}:
+    <i class="{{ swh_object_icon }} fa-fw" aria-hidden="true"></i>
+    Browse archived {{ swh_object_name.lower }}
     <a href="{% url 'browse-swh-id' swh_object_id %}">
       {{ swh_object_id }}
     </a>

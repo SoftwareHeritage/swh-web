@@ -95,7 +95,9 @@ See top-level LICENSE file for more information
         <span class="caret"></span>
       </button>
       <ul class="dropdown-menu dropdown-menu-right swh-browse-actions-menu">
-        {% include "includes/vault-create-tasks.html" %}
+        {% if not snapshot_context or not snapshot_context.is_empty %}
+          {% include "includes/vault-create-tasks.html" %}
+        {% endif %}
         {% include "includes/show-metadata.html" %}
       </ul>
     {% endif %}
