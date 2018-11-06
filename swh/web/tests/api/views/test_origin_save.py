@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 from rest_framework.test import APITestCase
 from unittest.mock import patch
@@ -182,7 +183,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                        SAVE_TASK_SCHEDULED,
                                        scheduler_task_status='completed',
                                        visit_date=None) # noqa
-        visit_date = datetime.now() + timedelta(hours=1)
+        visit_date = datetime.now(tz=timezone.utc) + timedelta(hours=1)
         self.check_save_request_status(mock_scheduler, origin_url,
                                        SAVE_REQUEST_ACCEPTED,
                                        SAVE_TASK_SUCCEED,
@@ -228,7 +229,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                                      origin_url=origin_url))
         self.assertEqual(len(sors), 1)
 
-        visit_date = datetime.now() + timedelta(hours=1)
+        visit_date = datetime.now(tz=timezone.utc) + timedelta(hours=1)
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                'completed',
                                                SAVE_REQUEST_ACCEPTED,
