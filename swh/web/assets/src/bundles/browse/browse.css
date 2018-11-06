@@ -113,3 +113,7 @@
     height: 100%;
     overflow: auto;
 }
+
+.swh-empty-snapshot {
+    white-space: pre-line;
+}

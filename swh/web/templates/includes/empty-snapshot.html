@@ -1,0 +1,17 @@
+{% comment %}
+Copyright (C) 2018  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load static %}
+
+<pre class="swh-empty-snapshot text-center">
+  <img src="{% static 'img/swh-logo.svg' %}">
+  {% if snapshot_context and snapshot_context.origin_info %}
+    <h3>The snapshot associated to the visit of origin {{ snapshot_context.origin_info.url }} on {{ snapshot_context.timestamp }} is empty !</h3>
+  {% else %}
+    <h3>The snapshot is empty !</h3>
+  {% endif %}
+</pre>

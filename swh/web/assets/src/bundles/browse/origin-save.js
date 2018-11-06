@@ -124,7 +124,6 @@ export function initOriginSave() {
             grecaptcha.reset();
           })
           .catch(response => {
-            console.log(response);
             if (response.status === 403) {
               $('#swh-origin-save-request-status').css('color', 'red');
               $('#swh-origin-save-request-status').html(saveRequestRejectedAlert);

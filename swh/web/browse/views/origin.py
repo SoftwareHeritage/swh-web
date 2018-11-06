@@ -176,6 +176,7 @@ def origin_visits_browse(request, origin_url, origin_type=None):
     return render(request, 'browse/origin-visits.html',
                   {'heading': heading,
                    'swh_object_name': 'Visits',
+                   'swh_object_icon': 'fa fa-calendar',
                    'swh_object_metadata': origin_info,
                    'origin_visits': origin_visits,
                    'origin_info': origin_info,

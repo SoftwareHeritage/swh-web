@@ -672,17 +672,11 @@ class SwhBrowseOriginTest(SWHWebTestCase):
 
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.side_effect = None
-        mock_get_origin_visit_snapshot.return_value = ([], [])
-        url = reverse('browse-origin-directory',
-                      kwargs={'origin_type': 'foo',
-                              'origin_url': 'bar'})
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 404)
-        self.assertTemplateUsed('error.html')
-        self.assertRegex(resp.content.decode('utf-8'),
-                         'Origin.*has an empty list of branches')
-
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
+        mock_utils_service.lookup_snapshot_size.return_value = {
+            'revision': len(stub_origin_snapshot[0]),
+            'release': len(stub_origin_snapshot[1])
+        }
         mock_utils_service.lookup_directory.side_effect = \
             NotFoundExc('Directory not found')
         url = reverse('browse-origin-directory',
@@ -757,6 +751,27 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Content not found', status_code=404)
 
+
+    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
+    @patch('swh.web.browse.utils.service')
+    def test_origin_empty_snapshot(self, mock_utils_service,
+                                   mock_get_origin_visit_snapshot,
+                                   mock_get_origin_visits):
+
+        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visit_snapshot.return_value = ([], [])
+        mock_utils_service.lookup_snapshot_size.return_value = {
+            'revision': 0,
+            'release': 0
+        }
+        url = reverse('browse-origin-directory',
+                      kwargs={'origin_type': 'foo',
+                              'origin_url': 'bar'})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed('content.html')
+        self.assertRegex(resp.content.decode('utf-8'), 'snapshot.*is empty')
 
     def origin_branches_helper(self, origin_info, origin_snapshot):
         url_args = {'origin_type': origin_info['type'],
