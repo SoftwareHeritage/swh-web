@@ -19,16 +19,17 @@ from .data.revision_test_data import (
     revision_history_log_test
 )
 
-from .data.origin_test_data import stub_origin_visits
+from .data.origin_test_data import stub_origin_visits, stub_origin_snapshot
 
 
 class SwhBrowseRevisionTest(SWHWebTestCase):
 
+    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.views.revision.service')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.common.utils.service')
     def test_revision_browse(self, mock_service_common, mock_service_utils,
-                        mock_service):
+                             mock_service, mock_get_origin_visit_snapshot):
         mock_service.lookup_revision.return_value = revision_metadata_test
 
         url = reverse('browse-revision',
@@ -86,6 +87,11 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
 
         mock_service_utils.lookup_origin.return_value = origin_info
         mock_service_common.lookup_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
+        mock_service_utils.lookup_snapshot_size.return_value = {
+            'revision': len(stub_origin_snapshot[0]),
+            'release': len(stub_origin_snapshot[1])
+        }
         mock_service_common.MAX_LIMIT = 20
 
         origin_directory_url = reverse('browse-origin-directory',

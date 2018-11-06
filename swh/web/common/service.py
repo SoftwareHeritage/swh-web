@@ -806,8 +806,8 @@ def lookup_snapshot_size(snapshot_id):
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
     snapshot_size = storage.snapshot_count_branches(snapshot_id_bin)
-    if not snapshot_size:
-        raise NotFoundExc('Snapshot with id %s not found!' % snapshot_id)
+    if 'revision' not in snapshot_size:
+        snapshot_size['revision'] = 0
     if 'release' not in snapshot_size:
         snapshot_size['release'] = 0
     return snapshot_size

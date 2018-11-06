@@ -275,6 +275,7 @@ def content_display(request, query_string):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Content',
+                   'swh_object_icon': 'fa fa-file-text',
                    'swh_object_metadata': content_metadata,
                    'content': content,
                    'content_size': content_data['length'],

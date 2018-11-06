@@ -415,6 +415,8 @@ def process_snapshot_branches(snapshot_branches):
     )
 
     for revision in revisions:
+        if not revision:
+            continue
         revision_data = {
             'directory': revision['directory'],
             'date': format_utc_iso_date(revision['date']),
@@ -588,6 +590,8 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
         An HTML link in the form '<a href="revision_view_url">revision_id</a>'
 
     """
+    if not revision_id:
+        return None
     query_params = None
     if snapshot_context and snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
@@ -652,8 +656,12 @@ def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
         An HTML link in the form '<a href="directory_view_url">link_text</a>'
 
     """
+    if not sha1_git:
+        return None
+
     directory_url = reverse('browse-directory',
                             kwargs={'sha1_git': sha1_git})
+
     if not link_text:
         link_text = directory_url
     return gen_link(directory_url, link_text, link_attrs)
@@ -741,6 +749,8 @@ def gen_content_link(sha1_git, link_text=None, link_attrs={}):
         An HTML link in the form '<a href="content_view_url">link_text</a>'
 
     """
+    if not sha1_git:
+        return None
     content_url = reverse('browse-content',
                           kwargs={'query_string': 'sha1_git:' + sha1_git})
     if not link_text:
@@ -803,8 +813,11 @@ def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
         An HTML link in the form
         '<a href="revision_log_view_url">link_text</a>'
     """
+    if not revision_id:
+        return None
 
     revision_log_url = get_revision_log_url(revision_id, snapshot_context)
+
     if not link_text:
         link_text = revision_log_url
     return gen_link(revision_log_url, link_text, link_attrs)
@@ -1029,6 +1042,8 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
     snapshot_size = service.lookup_snapshot_size(snapshot_id)
 
+    is_empty = sum(snapshot_size.values()) == 0
+
     swh_snp_id = persistent_identifier('snapshot', snapshot_id)
 
     return {
@@ -1036,6 +1051,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         'swh_object_id': swh_snp_id,
         'snapshot_id': snapshot_id,
         'snapshot_size': snapshot_size,
+        'is_empty': is_empty,
         'origin_info': origin_info,
         # keep track if the origin type was provided as url argument
         'origin_type': origin_type,
@@ -1143,6 +1159,8 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
     """ # noqa
     swh_ids = []
     for swh_object in swh_objects:
+        if not swh_object['id']:
+            continue
         swh_id = get_swh_persistent_id(swh_object['type'], swh_object['id'])
         show_options = swh_object['type'] == 'content' or \
             (snapshot_context and snapshot_context['origin_info'] is not None)

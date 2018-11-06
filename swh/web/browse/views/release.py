@@ -170,6 +170,7 @@ def release_browse(request, sha1_git):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Release',
+                   'swh_object_icon': 'fa fa-tag',
                    'swh_object_metadata': release_data,
                    'release_name': release['name'],
                    'release_note_header': release_note_header,
