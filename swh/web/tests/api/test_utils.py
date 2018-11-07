@@ -112,12 +112,12 @@ class UtilsTestCase(SWHWebTestCase):
     def test_enrich_release_1(self, mock_django_reverse):
         # given
 
-        def reverse_test_context(view_name, kwargs):
+        def reverse_test_context(view_name, url_args):
             if view_name == 'api-content':
-                id = kwargs['q']
+                id = url_args['q']
                 return '/api/1/content/%s/' % id
             elif view_name == 'api-person':
-                id = kwargs['person_id']
+                id = url_args['person_id']
                 return '/api/1/person/%s/' % id
             else:
                 raise ValueError(
@@ -150,8 +150,8 @@ class UtilsTestCase(SWHWebTestCase):
         })
 
         mock_django_reverse.assert_has_calls([
-                call('api-content', kwargs={'q': 'sha1_git:123'}),
-                call('api-person', kwargs={'person_id': 100})
+                call('api-content', url_args={'q': 'sha1_git:123'}),
+                call('api-person', url_args={'person_id': 100})
         ])
 
     @patch('swh.web.api.utils.reverse')
@@ -171,7 +171,7 @@ class UtilsTestCase(SWHWebTestCase):
         })
 
         mock_django_reverse.assert_called_once_with('api-directory',
-                                                    kwargs={'sha1_git': '23'})
+                                                    url_args={'sha1_git': '23'}) # noqa
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_release_3(self, mock_django_reverse):
@@ -190,7 +190,7 @@ class UtilsTestCase(SWHWebTestCase):
         })
 
         mock_django_reverse.assert_called_once_with('api-revision',
-                                                    kwargs={'sha1_git': '3'})
+                                                    url_args={'sha1_git': '3'})
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_release_4(self, mock_django_reverse):
@@ -209,7 +209,7 @@ class UtilsTestCase(SWHWebTestCase):
         })
 
         mock_django_reverse.assert_called_once_with('api-release',
-                                                    kwargs={'sha1_git': '4'})
+                                                    url_args={'sha1_git': '4'})
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_directory_no_type(self, mock_django_reverse):
@@ -236,7 +236,7 @@ class UtilsTestCase(SWHWebTestCase):
         })
 
         mock_django_reverse.assert_called_once_with(
-            'api-content', kwargs={'q': 'sha1_git:123'})
+            'api-content', url_args={'q': 'sha1_git:123'})
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_directory_with_context_and_type_file(
@@ -265,7 +265,7 @@ class UtilsTestCase(SWHWebTestCase):
         })
 
         mock_django_reverse.assert_called_once_with(
-            'api-content', kwargs={'q': 'sha1_git:789'})
+            'api-content', url_args={'q': 'sha1_git:789'})
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_directory_with_context_and_type_dir(
@@ -296,7 +296,7 @@ class UtilsTestCase(SWHWebTestCase):
         })
 
         mock_django_reverse.assert_called_once_with('api-directory',
-                                                    kwargs={'sha1_git': '456'})
+                                                    url_args={'sha1_git': '456'}) # noqa
 
     def test_enrich_content_without_hashes(self):
         # when/then
@@ -339,10 +339,10 @@ class UtilsTestCase(SWHWebTestCase):
             )
 
             mock_django_reverse.assert_has_calls([
-                call('api-content-raw', kwargs={'q': query_string}),
-                call('api-content-filetype', kwargs={'q': query_string}),
-                call('api-content-language', kwargs={'q': query_string}),
-                call('api-content-license', kwargs={'q': query_string}),
+                call('api-content-raw', url_args={'q': query_string}),
+                call('api-content-filetype', url_args={'q': query_string}),
+                call('api-content-language', url_args={'q': query_string}),
+                call('api-content-license', url_args={'q': query_string}),
             ])
 
             mock_django_reverse.reset()
@@ -387,11 +387,11 @@ class UtilsTestCase(SWHWebTestCase):
             )
 
             mock_django_reverse.assert_has_calls([
-                call('api-content', kwargs={'q': query_string}),
-                call('api-content-raw', kwargs={'q': query_string}),
-                call('api-content-filetype', kwargs={'q': query_string}),
-                call('api-content-language', kwargs={'q': query_string}),
-                call('api-content-license', kwargs={'q': query_string}),
+                call('api-content', url_args={'q': query_string}),
+                call('api-content-raw', url_args={'q': query_string}),
+                call('api-content-filetype', url_args={'q': query_string}),
+                call('api-content-language', url_args={'q': query_string}),
+                call('api-content-license', url_args={'q': query_string}),
             ])
 
             mock_django_reverse.reset()
@@ -404,8 +404,8 @@ class UtilsTestCase(SWHWebTestCase):
     @patch('swh.web.api.utils.reverse')
     def test_enrich_entity_with_sha1(self, mock_django_reverse):
         # given
-        def reverse_test(view_name, kwargs):
-            return '/api/entity/' + kwargs['uuid'] + '/'
+        def reverse_test(view_name, url_args):
+            return '/api/entity/' + url_args['uuid'] + '/'
 
         mock_django_reverse.side_effect = reverse_test
 
@@ -426,34 +426,34 @@ class UtilsTestCase(SWHWebTestCase):
             })
 
         mock_django_reverse.assert_has_calls(
-            [call('api-entity', kwargs={'uuid': 'uuid-1'}),
-             call('api-entity', kwargs={'uuid': 'uuid-parent'})])
+            [call('api-entity', url_args={'uuid': 'uuid-1'}),
+             call('api-entity', url_args={'uuid': 'uuid-parent'})])
 
-    def _reverse_context_test(self, view_name, kwargs):
+    def _reverse_context_test(self, view_name, url_args):
         if view_name == 'api-revision':
-            return '/api/revision/%s/' % kwargs['sha1_git']
+            return '/api/revision/%s/' % url_args['sha1_git']
         elif view_name == 'api-revision-context':
-            return '/api/revision/%s/prev/%s/' % (kwargs['sha1_git'], kwargs['context'])  # noqa
+            return '/api/revision/%s/prev/%s/' % (url_args['sha1_git'], url_args['context'])  # noqa
         elif view_name == 'api-revision-log':
-            if 'prev_sha1s' in kwargs:
-                return '/api/revision/%s/prev/%s/log/' % (kwargs['sha1_git'], kwargs['prev_sha1s'])  # noqa
+            if 'prev_sha1s' in url_args:
+                return '/api/revision/%s/prev/%s/log/' % (url_args['sha1_git'], url_args['prev_sha1s'])  # noqa
             else:
-                return '/api/revision/%s/log/' % kwargs['sha1_git']
+                return '/api/revision/%s/log/' % url_args['sha1_git']
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_revision_without_children_or_parent(
         self, mock_django_reverse,
     ):
         # given
-        def reverse_test(view_name, kwargs):
+        def reverse_test(view_name, url_args):
             if view_name == 'api-revision':
-                return '/api/revision/' + kwargs['sha1_git'] + '/'
+                return '/api/revision/' + url_args['sha1_git'] + '/'
             elif view_name == 'api-revision-log':
-                return '/api/revision/' + kwargs['sha1_git'] + '/log/'
+                return '/api/revision/' + url_args['sha1_git'] + '/log/'
             elif view_name == 'api-directory':
-                return '/api/directory/' + kwargs['sha1_git'] + '/'
+                return '/api/directory/' + url_args['sha1_git'] + '/'
             elif view_name == 'api-person':
-                return '/api/person/' + kwargs['person_id'] + '/'
+                return '/api/person/' + url_args['person_id'] + '/'
 
         mock_django_reverse.side_effect = reverse_test
 
@@ -481,11 +481,11 @@ class UtilsTestCase(SWHWebTestCase):
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id'}),
-             call('api-person', kwargs={'person_id': '1'}),
-             call('api-person', kwargs={'person_id': '2'}),
-             call('api-directory', kwargs={'sha1_git': '123'})])
+            [call('api-revision', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
+             call('api-person', url_args={'person_id': '1'}),
+             call('api-person', url_args={'person_id': '2'}),
+             call('api-directory', url_args={'sha1_git': '123'})])
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_revision_with_children_and_parent_no_dir(
@@ -516,13 +516,13 @@ class UtilsTestCase(SWHWebTestCase):
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', kwargs={'sha1_git': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id',
-                                              'prev_sha1s': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': '123'}),
-             call('api-revision', kwargs={'sha1_git': '456'})])
+            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id',
+                                                'prev_sha1s': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': '123'}),
+             call('api-revision', url_args={'sha1_git': '456'})])
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_revision_no_context(self, mock_django_reverse):
@@ -549,10 +549,10 @@ class UtilsTestCase(SWHWebTestCase):
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision', kwargs={'sha1_git': '123'}),
-             call('api-revision', kwargs={'sha1_git': '456'})])
+            [call('api-revision', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision', url_args={'sha1_git': '123'}),
+             call('api-revision', url_args={'sha1_git': '456'})])
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_revision_context_empty_prev_list(
@@ -583,13 +583,13 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_revision, expected_revision)
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', kwargs={'sha1_git': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id',
-                                              'prev_sha1s': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': '123'}),
-             call('api-revision', kwargs={'sha1_git': '456'})])
+            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id',
+                                                'prev_sha1s': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': '123'}),
+             call('api-revision', url_args={'sha1_git': '456'})])
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_revision_context_some_prev_list(self, mock_django_reverse):
@@ -617,27 +617,27 @@ class UtilsTestCase(SWHWebTestCase):
         # then
         self.assertEqual(actual_revision, expected_revision)
         mock_django_reverse.assert_has_calls(
-            [call('api-revision-context', kwargs={'context': 'prev1-rev',
+            [call('api-revision-context', url_args={'context': 'prev1-rev',
                                                   'sha1_git': 'prev0-rev'}),
-             call('api-revision', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'prev_sha1s': 'prev1-rev/prev0-rev', # noqa
+             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'prev_sha1s': 'prev1-rev/prev0-rev', # noqa
                                               'sha1_git': 'rev-id'}),
-             call('api-revision', kwargs={'sha1_git': '123'}),
-             call('api-revision', kwargs={'sha1_git': '456'})])
+             call('api-revision', url_args={'sha1_git': '123'}),
+             call('api-revision', url_args={'sha1_git': '456'})])
 
-    def _reverse_rev_message_test(self, view_name, kwargs):
+    def _reverse_rev_message_test(self, view_name, url_args):
         if view_name == 'api-revision':
-            return '/api/revision/%s/' % kwargs['sha1_git']
+            return '/api/revision/%s/' % url_args['sha1_git']
         elif view_name == 'api-revision-log':
-            if 'prev_sha1s' in kwargs and kwargs['prev_sha1s'] is not None:
-                return '/api/revision/%s/prev/%s/log/' % (kwargs['sha1_git'], kwargs['prev_sha1s'])  # noqa
+            if 'prev_sha1s' in url_args and url_args['prev_sha1s'] is not None:
+                return '/api/revision/%s/prev/%s/log/' % (url_args['sha1_git'], url_args['prev_sha1s'])  # noqa
             else:
-                return '/api/revision/%s/log/' % kwargs['sha1_git']
+                return '/api/revision/%s/log/' % url_args['sha1_git']
         elif view_name == 'api-revision-raw-message':
-            return '/api/revision/' + kwargs['sha1_git'] + '/raw/'
+            return '/api/revision/' + url_args['sha1_git'] + '/raw/'
         else:
-            return '/api/revision/%s/prev/%s/' % (kwargs['sha1_git'], kwargs['context'])  # noqa
+            return '/api/revision/%s/prev/%s/' % (url_args['sha1_git'], url_args['context'])  # noqa
 
     @patch('swh.web.api.utils.reverse')
     def test_enrich_revision_with_no_message(self, mock_django_reverse):
@@ -669,13 +669,13 @@ class UtilsTestCase(SWHWebTestCase):
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', kwargs={'sha1_git': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id',
-                                              'prev_sha1s': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': '123'}),
-             call('api-revision', kwargs={'sha1_git': '456'})]
+            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id',
+                                                'prev_sha1s': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': '123'}),
+             call('api-revision', url_args={'sha1_git': '456'})]
         )
 
     @patch('swh.web.api.utils.reverse')
@@ -711,11 +711,11 @@ class UtilsTestCase(SWHWebTestCase):
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', kwargs={'sha1_git': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id'}),
-             call('api-revision-log', kwargs={'sha1_git': 'rev-id',
-                                              'prev_sha1s': 'prev-rev'}),
-             call('api-revision', kwargs={'sha1_git': '123'}),
-             call('api-revision', kwargs={'sha1_git': '456'}),
-             call('api-revision-raw-message', kwargs={'sha1_git': 'rev-id'})])
+            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
+             call('api-revision-log', url_args={'sha1_git': 'rev-id',
+                                                'prev_sha1s': 'prev-rev'}),
+             call('api-revision', url_args={'sha1_git': '123'}),
+             call('api-revision', url_args={'sha1_git': '456'}),
+             call('api-revision-raw-message', url_args={'sha1_git': 'rev-id'})]) # noqa

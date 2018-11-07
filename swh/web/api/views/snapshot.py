@@ -99,7 +99,7 @@ def api_snapshot(request, snapshot_id):
     if next_branch:
         response['headers']['link-next'] = \
             reverse('api-snapshot',
-                    kwargs={'snapshot_id': snapshot_id},
+                    url_args={'snapshot_id': snapshot_id},
                     query_params={'branches_from': next_branch,
                                   'branches_count': branches_count,
                                   'target_types': target_types})

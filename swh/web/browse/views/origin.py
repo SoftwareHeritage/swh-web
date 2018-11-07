@@ -163,9 +163,9 @@ def origin_visits_browse(request, origin_url, origin_type=None):
         snapshot = visit['snapshot'] if visit['snapshot'] else ''
 
         visit['browse_url'] = reverse('browse-origin-directory',
-                                      kwargs={'origin_type': origin_type,
-                                              'origin_url': origin_url,
-                                              'timestamp': url_date},
+                                      url_args={'origin_type': origin_type,
+                                                'origin_url': origin_url,
+                                                'timestamp': url_date},
                                       query_params=query_params)
         if not snapshot:
             visit['snapshot'] = ''
@@ -236,6 +236,6 @@ def origin_browse(request, origin_url, origin_type=None):
     snapshot for a given software origin.
     """ # noqa
     last_snapshot_url = reverse('browse-origin-directory',
-                                kwargs={'origin_type': origin_type,
-                                        'origin_url': origin_url})
+                                url_args={'origin_type': origin_type,
+                                          'origin_url': origin_url})
     return redirect(last_snapshot_url)

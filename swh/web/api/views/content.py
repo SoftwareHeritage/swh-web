@@ -26,19 +26,19 @@ def api_content_provenance(request, q):
         p = provenance.copy()
         p['revision_url'] = \
             reverse('api-revision',
-                    kwargs={'sha1_git': provenance['revision']})
+                    url_args={'sha1_git': provenance['revision']})
         p['content_url'] = \
             reverse('api-content',
-                    kwargs={'q': 'sha1_git:%s' % provenance['content']})
+                    url_args={'q': 'sha1_git:%s' % provenance['content']})
         p['origin_url'] = \
-            reverse('api-origin', kwargs={'origin_id': provenance['origin']})
+            reverse('api-origin', url_args={'origin_id': provenance['origin']})
         p['origin_visits_url'] = \
             reverse('api-origin-visits',
-                    kwargs={'origin_id': provenance['origin']})
+                    url_args={'origin_id': provenance['origin']})
         p['origin_visit_url'] = \
             reverse('api-origin-visit',
-                    kwargs={'origin_id': provenance['origin'],
-                            'visit_id': provenance['visit']})
+                    url_args={'origin_id': provenance['origin'],
+                              'visit_id': provenance['visit']})
         return p
 
     return api_lookup(
@@ -276,7 +276,7 @@ def api_content_symbol(request, q=None):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('api-content-symbol', kwargs={'q': q},
+                'link-next': reverse('api-content-symbol', url_args={'q': q},
                                      query_params=query_params)
             }
 

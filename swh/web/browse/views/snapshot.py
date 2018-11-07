@@ -24,7 +24,7 @@ def snapshot_browse(request, snapshot_id):
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/`
     """
     browse_snapshot_url = reverse('browse-snapshot-directory',
-                                  kwargs={'snapshot_id': snapshot_id},
+                                  url_args={'snapshot_id': snapshot_id},
                                   query_params=request.GET)
     return redirect(browse_snapshot_url)
 

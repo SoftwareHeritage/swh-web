@@ -228,7 +228,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
     def test_gen_person_link(self):
         person_id = 8221896
         person_name = 'Antoine Lambert'
-        person_url = reverse('browse-person', kwargs={'person_id': person_id})
+        person_url = reverse('browse-person', url_args={'person_id': person_id})
 
         self.assertEqual(utils.gen_person_link(person_id, person_name),
                          '<a href="%s">%s</a>' % (person_url, person_name))
@@ -236,7 +236,7 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
     def test_gen_revision_link(self):
         revision_id = '28a0bc4120d38a394499382ba21d6965a67a3703'
         revision_url = reverse('browse-revision',
-                               kwargs={'sha1_git': revision_id})
+                               url_args={'sha1_git': revision_id})
 
         self.assertEqual(utils.gen_revision_link(revision_id),
                          '<a href="%s">%s</a>' % (revision_url, revision_id))

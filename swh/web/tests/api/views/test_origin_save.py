@@ -33,16 +33,16 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
 
     def test_invalid_origin_type(self):
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'foo',
-                              'origin_url': 'https://github.com/torvalds/linux'}) # noqa
+                      url_args={'origin_type': 'foo',
+                                'origin_url': 'https://github.com/torvalds/linux'}) # noqa
 
         response = self.client.post(url)
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_origin_url(self):
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'git',
-                              'origin_url': 'bar'})
+                      url_args={'origin_type': 'git',
+                                'origin_url': 'bar'})
 
         response = self.client.post(url)
         self.assertEqual(response.status_code, 400)
@@ -87,8 +87,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
              }]
 
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'git',
-                              'origin_url': origin_url})
+                      url_args={'origin_type': 'git',
+                                'origin_url': origin_url})
 
         with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
             mock_visit_date.return_value = visit_date
@@ -126,8 +126,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
              }]
 
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'git',
-                              'origin_url': origin_url})
+                      url_args={'origin_type': 'git',
+                                'origin_url': origin_url})
 
         with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
             mock_visit_date.return_value = visit_date

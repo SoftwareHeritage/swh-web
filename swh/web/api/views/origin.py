@@ -18,7 +18,7 @@ def _enrich_origin(origin):
     if 'id' in origin:
         o = origin.copy()
         o['origin_visits_url'] = \
-            reverse('api-origin-visits', kwargs={'origin_id': origin['id']})
+            reverse('api-origin-visits', url_args={'origin_id': origin['id']})
         return o
 
     return origin
@@ -161,7 +161,7 @@ def api_origin_search(request, url_pattern):
 
         result['headers'] = {
             'link-next': reverse('api-origin-search',
-                                 kwargs={'url_pattern': url_pattern},
+                                 url_args={'url_pattern': url_pattern},
                                  query_params=query_params)
         }
 
@@ -237,12 +237,12 @@ def api_origin_visits(request, origin_id):
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()
         ov['origin_visit_url'] = reverse('api-origin-visit',
-                                         kwargs={'origin_id': origin_id,
-                                                 'visit_id': ov['visit']})
+                                         url_args={'origin_id': origin_id,
+                                                   'visit_id': ov['visit']})
         snapshot = ov['snapshot']
         if snapshot:
             ov['snapshot_url'] = reverse('api-snapshot',
-                                         kwargs={'snapshot_id': snapshot})
+                                         url_args={'snapshot_id': snapshot})
         else:
             ov['snapshot_url'] = None
         return ov
@@ -263,7 +263,7 @@ def api_origin_visits(request, origin_id):
 
             result['headers'] = {
                 'link-next': reverse('api-origin-visits',
-                                     kwargs={'origin_id': origin_id},
+                                     url_args={'origin_id': origin_id},
                                      query_params=query_params)
             }
 
@@ -313,11 +313,11 @@ def api_origin_visit(request, origin_id, visit_id):
     def _enrich_origin_visit(origin_visit):
         ov = origin_visit.copy()
         ov['origin_url'] = reverse('api-origin',
-                                   kwargs={'origin_id': ov['origin']})
+                                   url_args={'origin_id': ov['origin']})
         snapshot = ov['snapshot']
         if snapshot:
             ov['snapshot_url'] = reverse('api-snapshot',
-                                         kwargs={'snapshot_id': snapshot})
+                                         url_args={'snapshot_id': snapshot})
         else:
             ov['snapshot_url'] = None
 

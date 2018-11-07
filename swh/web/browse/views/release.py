@@ -46,7 +46,7 @@ def release_browse(request, sha1_git):
                                                         visit_id)
             except Exception:
                 raw_rel_url = reverse('browse-release',
-                                      kwargs={'sha1_git': sha1_git})
+                                      url_args={'sha1_git': sha1_git})
                 error_message = \
                     ('The Software Heritage archive has a release '
                      'with the hash you provided but the origin '
@@ -86,17 +86,17 @@ def release_browse(request, sha1_git):
     elif release['target_type'] == 'content':
         content_url = \
             reverse('browse-content',
-                    kwargs={'query_string': 'sha1_git:' + release['target']})
+                    url_args={'query_string': 'sha1_git:' + release['target']})
         release_data['target'] = gen_link(content_url, release['target'])
     elif release['target_type'] == 'directory':
         directory_url = \
             reverse('browse-directory',
-                    kwargs={'sha1_git': release['target']})
+                    url_args={'sha1_git': release['target']})
         release_data['target'] = gen_link(directory_url, release['target'])
     elif release['target_type'] == 'release':
         release_url = \
             reverse('browse-release',
-                    kwargs={'sha1_git': release['target']})
+                    url_args={'sha1_git': release['target']})
         release_data['target'] = gen_link(release_url, release['target'])
 
     release_note_lines = []
@@ -127,7 +127,7 @@ def release_browse(request, sha1_git):
 
     if origin_info:
         release_url = reverse('browse-release',
-                              kwargs={'sha1_git': release['id']})
+                              url_args={'sha1_git': release['id']})
         release_data['context-independent release'] = \
             gen_link(release_url, link_text='Browse',
                      link_attrs={'class': 'btn btn-default btn-sm',

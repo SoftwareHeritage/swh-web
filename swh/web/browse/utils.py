@@ -566,7 +566,7 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
                 snapshot_context['query_params']['visit_id']
     elif snapshot_context:
         query_params = {'snapshot_id': snapshot_context['snapshot_id']}
-    person_url = reverse('browse-person', kwargs={'person_id': person_id},
+    person_url = reverse('browse-person', url_args={'person_id': person_id},
                          query_params=query_params)
     return gen_link(person_url, person_name or 'None', link_attrs)
 
@@ -608,7 +608,7 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
         query_params = {'snapshot_id': snapshot_context['snapshot_id']}
 
     revision_url = reverse('browse-revision',
-                           kwargs={'sha1_git': revision_id},
+                           url_args={'sha1_git': revision_id},
                            query_params=query_params)
     if shorten_id:
         return gen_link(revision_url, revision_id[:7], link_attrs)
@@ -634,8 +634,8 @@ def gen_origin_link(origin_info, link_attrs={}):
 
     """ # noqa
     origin_browse_url = reverse('browse-origin',
-                                kwargs={'origin_type': origin_info['type'],
-                                        'origin_url': origin_info['url']})
+                                url_args={'origin_type': origin_info['type'],
+                                          'origin_url': origin_info['url']})
     return gen_link(origin_browse_url,
                     'Origin: ' + origin_info['url'], link_attrs)
 
@@ -660,7 +660,7 @@ def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
         return None
 
     directory_url = reverse('browse-directory',
-                            kwargs={'sha1_git': sha1_git})
+                            url_args={'sha1_git': sha1_git})
 
     if not link_text:
         link_text = directory_url
@@ -684,7 +684,7 @@ def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
 
     """
     snapshot_url = reverse('browse-snapshot',
-                           kwargs={'snapshot_id': snapshot_id})
+                           url_args={'snapshot_id': snapshot_id})
     if not link_text:
         link_text = snapshot_url
     return gen_link(snapshot_url, link_text, link_attrs)
@@ -720,12 +720,12 @@ def gen_snapshot_directory_link(snapshot_context, revision_id=None,
             query_params['visit_id'] = \
                 snapshot_context['query_params']['visit_id']
         directory_url = reverse('browse-origin-directory',
-                                kwargs=url_args,
+                                url_args=url_args,
                                 query_params=query_params)
     else:
         url_args = {'snapshot_id': snapshot_context['snapshot_id']}
         directory_url = reverse('browse-snapshot-directory',
-                                kwargs=url_args,
+                                url_args=url_args,
                                 query_params=query_params)
 
     if not link_text:
@@ -752,7 +752,7 @@ def gen_content_link(sha1_git, link_text=None, link_attrs={}):
     if not sha1_git:
         return None
     content_url = reverse('browse-content',
-                          kwargs={'query_string': 'sha1_git:' + sha1_git})
+                          url_args={'query_string': 'sha1_git:' + sha1_git})
     if not link_text:
         link_text = content_url
     return gen_link(content_url, link_text, link_attrs)
@@ -782,16 +782,16 @@ def get_revision_log_url(revision_id, snapshot_context=None):
             query_params['visit_id'] = \
                 snapshot_context['query_params']['visit_id']
         revision_log_url = reverse('browse-origin-log',
-                                   kwargs=url_args,
+                                   url_args=url_args,
                                    query_params=query_params)
     elif snapshot_context:
         url_args = {'snapshot_id': snapshot_context['snapshot_id']}
         revision_log_url = reverse('browse-snapshot-log',
-                                   kwargs=url_args,
+                                   url_args=url_args,
                                    query_params=query_params)
     else:
         revision_log_url = reverse('browse-revision-log',
-                                   kwargs={'sha1_git': revision_id})
+                                   url_args={'sha1_git': revision_id})
     return revision_log_url
 
 
@@ -1010,33 +1010,33 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         query_params = {'visit_id': visit_id}
 
         browse_url = reverse('browse-origin-visits',
-                             kwargs=url_args)
+                             url_args=url_args)
 
         if timestamp:
             url_args['timestamp'] = format_utc_iso_date(timestamp,
                                                         '%Y-%m-%dT%H:%M:%S')
         visit_url = reverse('browse-origin-directory',
-                            kwargs=url_args,
+                            url_args=url_args,
                             query_params=query_params)
         visit_info['url'] = visit_url
 
         branches_url = reverse('browse-origin-branches',
-                               kwargs=url_args,
+                               url_args=url_args,
                                query_params=query_params)
 
         releases_url = reverse('browse-origin-releases',
-                               kwargs=url_args,
+                               url_args=url_args,
                                query_params=query_params)
     elif snapshot_id:
         branches, releases = get_snapshot_content(snapshot_id)
         url_args = {'snapshot_id': snapshot_id}
         browse_url = reverse('browse-snapshot',
-                             kwargs=url_args)
+                             url_args=url_args)
         branches_url = reverse('browse-snapshot-branches',
-                               kwargs=url_args)
+                               url_args=url_args)
 
         releases_url = reverse('browse-snapshot-releases',
-                               kwargs=url_args)
+                               url_args=url_args)
 
     releases = list(reversed(releases))
 
@@ -1106,7 +1106,7 @@ def get_readme_to_display(readmes):
             readme_name = lc_readmes[common_readme_name]['orig_name']
             readme_sha1 = lc_readmes[common_readme_name]['sha1']
             readme_url = reverse('browse-content-raw',
-                                 kwargs={'query_string': readme_sha1})
+                                 url_args={'query_string': readme_sha1})
             break
 
     # otherwise pick the first readme like file if any
@@ -1114,7 +1114,7 @@ def get_readme_to_display(readmes):
         readme_name = next(iter(readmes))
         readme_sha1 = readmes[readme_name]
         readme_url = reverse('browse-content-raw',
-                             kwargs={'query_string': readme_sha1})
+                             url_args={'query_string': readme_sha1})
 
     # convert rst README to html server side as there is
     # no viable solution to perform that task client side
@@ -1180,7 +1180,7 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
             'object_icon': object_icon,
             'swh_id': swh_id,
             'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_id}),
+                                  url_args={'swh_id': swh_id}),
             'show_options': show_options
         })
     return swh_ids

@@ -186,7 +186,7 @@ def content_display(request, query_string):
                                                         origin_url)
             except Exception:
                 raw_cnt_url = reverse('browse-content',
-                                      kwargs={'query_string': query_string})
+                                      url_args={'query_string': query_string})
                 error_message = \
                     ('The Software Heritage archive has a content '
                      'with the hash you provided but the origin '
@@ -229,12 +229,12 @@ def content_display(request, query_string):
         path_info = gen_path_info(path)
         breadcrumbs.append({'name': root_dir[:7],
                             'url': reverse('browse-directory',
-                                           kwargs={'sha1_git': root_dir})})
+                                           url_args={'sha1_git': root_dir})})
         for pi in path_info:
             breadcrumbs.append({'name': pi['name'],
                                 'url': reverse('browse-directory',
-                                               kwargs={'sha1_git': root_dir,
-                                                       'path': pi['path']})})
+                                               url_args={'sha1_git': root_dir,
+                                                         'path': pi['path']})})
         breadcrumbs.append({'name': filename,
                             'url': None})
 
@@ -243,7 +243,7 @@ def content_display(request, query_string):
         query_params = {'filename': filename}
 
     content_raw_url = reverse('browse-content-raw',
-                              kwargs={'query_string': query_string},
+                              url_args={'query_string': query_string},
                               query_params=query_params)
 
     content_metadata = {
