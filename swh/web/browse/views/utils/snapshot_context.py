@@ -168,12 +168,12 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
         query_params['revision'] = revision_id
     elif snapshot_total_size and release_name:
         release = _get_release(releases, release_name)
-        if release:
+        try:
             root_sha1_git = release['directory']
             revision_id = release['target']
             release_id = release['id']
             query_params['release'] = release_name
-        else:
+        except Exception:
             _branch_not_found("release", release_name, releases, snapshot_id,
                               origin_info, timestamp, visit_id)
     elif snapshot_total_size:
@@ -182,12 +182,11 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
             query_params['branch'] = branch_name
         branch = _get_branch(branches, branch_name or 'HEAD',
                              snapshot_context['snapshot_id'])
-        if branch:
+        try:
             branch_name = branch['name']
-            root_sha1_git = branch['directory']
             revision_id = branch['revision']
-
-        else:
+            root_sha1_git = branch['directory']
+        except Exception:
             _branch_not_found("branch", branch_name, branches, snapshot_id,
                               origin_info, timestamp, visit_id)
 
