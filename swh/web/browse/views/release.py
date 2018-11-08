@@ -181,5 +181,4 @@ def release_browse(request, sha1_git):
                    'breadcrumbs': None,
                    'vault_cooking': vault_cooking,
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'swh_ids': swh_ids})

@@ -9,7 +9,6 @@ import json
 from distutils.util import strtobool
 
 from django.http import HttpResponse
-from django.utils.safestring import mark_safe
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 
@@ -283,10 +282,11 @@ def content_display(request, query_string):
                    'mimetype': mimetype,
                    'language': language,
                    'breadcrumbs': breadcrumbs,
-                   'top_right_link': content_raw_url,
-                   'top_right_link_text': mark_safe(
-                       '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
-                       '</i>Raw File'),
+                   'top_right_link': {
+                        'url': content_raw_url,
+                        'icon': 'fa fa-file-text',
+                        'text': 'Raw File'
+                   },
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,

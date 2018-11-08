@@ -239,7 +239,6 @@ def revision_log_browse(request, sha1_git):
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'snapshot_context': None,
                    'vault_cooking': None,
                    'show_actions_menu': True,
@@ -451,12 +450,14 @@ def revision_browse(request, sha1_git, extra_path=None):
         query_params = {}
         if path:
             query_params['filename'] = path_info[-1]['name']
-        top_right_link = reverse('browse-content-raw',
-                                 url_args={'query_string': query_string},
-                                 query_params=query_params)
-        top_right_link_text = mark_safe(
-            '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
-            '</i>Raw File')
+
+        top_right_link = {
+            'url': reverse('browse-content-raw',
+                           url_args={'query_string': query_string},
+                           query_params=query_params),
+            'icon': 'fa fa-file-text',
+            'text': 'Raw File'
+        }
 
         swh_objects.append({'type': 'content',
                             'id': file_info['target']})
@@ -486,10 +487,11 @@ def revision_browse(request, sha1_git, extra_path=None):
 
         readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
-        top_right_link = get_revision_log_url(sha1_git, snapshot_context)
-        top_right_link_text = mark_safe(
-            '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
-            'History')
+        top_right_link = {
+            'url': get_revision_log_url(sha1_git, snapshot_context),
+            'icon': 'fa fa-history',
+            'text': 'History'
+        }
 
         vault_cooking['directory_context'] = True
         vault_cooking['directory_id'] = dir_id
@@ -540,7 +542,6 @@ def revision_browse(request, sha1_git, extra_path=None):
                    'readme_html': readme_html,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': top_right_link,
-                   'top_right_link_text': top_right_link_text,
                    'vault_cooking': vault_cooking,
                    'diff_revision_url': diff_revision_url,
                    'show_actions_menu': True,

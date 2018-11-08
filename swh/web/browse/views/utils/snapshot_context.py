@@ -9,7 +9,6 @@
 # /origin/.* and /snapshot/.* endpoints.
 
 from django.shortcuts import render, redirect
-from django.utils.safestring import mark_safe
 from django.template.defaultfilters import filesizeformat
 
 from swh.model.identifiers import snapshot_identifier
@@ -410,11 +409,11 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
-                   'top_right_link': history_url,
-                   'top_right_link_text': mark_safe(
-                     '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
-                     'History'
-                   ),
+                   'top_right_link': {
+                       'url': history_url,
+                       'icon': 'fa fa-history',
+                       'text': 'History'
+                    },
                    'readme_name': readme_name,
                    'readme_url': readme_url,
                    'readme_html': readme_html,
@@ -598,10 +597,11 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                    'mimetype': mimetype,
                    'language': language,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
-                   'top_right_link': content_raw_url,
-                   'top_right_link_text': mark_safe(
-                       '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
-                       '</i>Raw File'),
+                   'top_right_link': {
+                        'url': content_raw_url,
+                        'icon': 'fa fa-file-text',
+                        'text': 'Raw File'
+                    },
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,
@@ -748,7 +748,6 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,
@@ -843,7 +842,6 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
                    'swh_object_icon': 'fa fa-code-fork',
                    'swh_object_metadata': {},
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'displayed_branches': displayed_branches,
                    'prev_branches_url': prev_branches_url,
                    'next_branches_url': next_branches_url,
@@ -934,7 +932,6 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                    'swh_object_icon': 'fa fa-tag',
                    'swh_object_metadata': {},
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'displayed_releases': displayed_releases,
                    'prev_releases_url': prev_releases_url,
                    'next_releases_url': next_releases_url,

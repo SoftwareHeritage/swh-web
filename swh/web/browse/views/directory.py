@@ -145,7 +145,6 @@ def directory_browse(request, sha1_git, path=None):
                    'files': files,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
                    'readme_html': readme_html,

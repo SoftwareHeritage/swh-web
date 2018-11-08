@@ -87,7 +87,12 @@ See top-level LICENSE file for more information
 
   <div class="btn-group float-right swh-actions-dropdown">
     {% if top_right_link %}
-      <a href="{{ top_right_link | safe }}" class="btn btn-default btn-sm" role="button">{{ top_right_link_text }}</a>
+      <a href="{{ top_right_link.url | safe }}" class="btn btn-default btn-sm" role="button">
+        {% if top_right_link.icon %}
+          <i class="{{ top_right_link.icon }} fa-fw"></i>
+        {% endif %}
+        {{ top_right_link.text }}
+      </a>
     {% endif %}
     {% if show_actions_menu %}
       <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
