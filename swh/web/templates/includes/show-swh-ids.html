@@ -28,9 +28,17 @@ See top-level LICENSE file for more information
       <ul class="nav nav-pills ml-auto p-2">
         {% for swh_id in swh_ids %}
           {% if forloop.first %}
-            <li class="nav-item"><a class="nav-link active" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">{{ swh_id.object_icon }}{{ swh_id.object_type }}</a></li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                <i class="{{ swh_id.object_icon }} fa-fw"></i>{{ swh_id.object_type }}
+              </a>
+            </li>
           {% else %}
-            <li class="nav-item"><a class="nav-link" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">{{ swh_id.object_icon }}{{ swh_id.object_type }}</a></li>
+            <li class="nav-item">
+              <a class="nav-link" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                  <i class="{{ swh_id.object_icon }} fa-fw"></i>{{ swh_id.object_type }}
+              </a>
+            </li>
           {% endif %}
         {% endfor %}
       </ul>

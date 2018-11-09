@@ -20,7 +20,8 @@ from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, parse_timestamp,
-    get_origin_visits, get_swh_persistent_id
+    get_origin_visits, get_swh_persistent_id,
+    swh_object_icons
 )
 from swh.web.config import get_config
 
@@ -571,6 +572,39 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
     return gen_link(person_url, person_name or 'None', link_attrs)
 
 
+def gen_revision_url(revision_id, snapshot_context=None):
+    """
+    Utility function for generating an url to a SWH revision.
+
+    Args:
+        revision_id (str): a SWH revision id
+        snapshot_context (dict): if provided, generate snapshot-dependent
+            browsing url
+
+    Returns:
+        str: The url to browse the revision
+
+    """
+    query_params = None
+    if snapshot_context and snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
+        origin_type = snapshot_context['origin_type']
+        query_params = {'origin_type': origin_type,
+                        'origin': origin_info['url']}
+        if 'timestamp' in snapshot_context['url_args']:
+            query_params['timestamp'] = \
+                 snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
+            query_params['visit_id'] = \
+                snapshot_context['query_params']['visit_id']
+    elif snapshot_context:
+        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+
+    return reverse('browse-revision',
+                   url_args={'sha1_git': revision_id},
+                   query_params=query_params)
+
+
 def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
                       link_text=None, link_attrs={}):
     """
@@ -587,29 +621,14 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
             to add to the link
 
     Returns:
-        An HTML link in the form '<a href="revision_view_url">revision_id</a>'
+        str: An HTML link in the form '<a href="revision_url">revision_id</a>'
 
     """
     if not revision_id:
         return None
-    query_params = None
-    if snapshot_context and snapshot_context['origin_info']:
-        origin_info = snapshot_context['origin_info']
-        origin_type = snapshot_context['origin_type']
-        query_params = {'origin_type': origin_type,
-                        'origin': origin_info['url']}
-        if 'timestamp' in snapshot_context['url_args']:
-            query_params['timestamp'] = \
-                 snapshot_context['url_args']['timestamp']
-        if 'visit_id' in snapshot_context['query_params']:
-            query_params['visit_id'] = \
-                snapshot_context['query_params']['visit_id']
-    elif snapshot_context:
-        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
 
-    revision_url = reverse('browse-revision',
-                           url_args={'sha1_git': revision_id},
-                           query_params=query_params)
+    revision_url = gen_revision_url(revision_id, snapshot_context)
+
     if shorten_id:
         return gen_link(revision_url, revision_id[:7], link_attrs)
     else:
@@ -1165,15 +1184,7 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
         show_options = swh_object['type'] == 'content' or \
             (snapshot_context and snapshot_context['origin_info'] is not None)
 
-        object_icon = mark_safe('<i class="fa fa-file-text fa-fw"></i>')
-        if swh_object['type'] == 'directory':
-            object_icon = mark_safe('<i class="fa fa-folder fa-fw"></i>')
-        elif swh_object['type'] == 'release':
-            object_icon = mark_safe('<i class="fa fa-tag fa-fw"></i>')
-        elif swh_object['type'] == 'revision':
-            object_icon = mark_safe('<i class="octicon octicon-git-commit fa-fw"></i>') # noqa
-        elif swh_object['type'] == 'snapshot':
-            object_icon = mark_safe('<i class="fa fa-camera fa-fw"></i>')
+        object_icon = swh_object_icons[swh_object['type']]
 
         swh_ids.append({
             'object_type': swh_object['type'],

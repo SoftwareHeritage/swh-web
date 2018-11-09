@@ -77,6 +77,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'swh.web.common.utils.context_processor'
             ],
             'libraries': {
                 'swh_templatetags': 'swh.web.common.swh_templatetags',

@@ -25,6 +25,20 @@ from swh.web.common import service
 from swh.web.common.exc import BadInputExc
 from swh.web.config import get_config
 
+swh_object_icons = {
+    'branch': 'fa fa-code-fork',
+    'branches': 'fa fa-code-fork',
+    'content': 'fa fa-file-text',
+    'directory': 'fa fa-folder',
+    'person': 'fa fa-user',
+    'revisions history': 'fa fa-history',
+    'release': 'fa fa-tag',
+    'releases': 'fa fa-tag',
+    'revision': 'octicon octicon-git-commit',
+    'snapshot': 'fa fa-camera',
+    'visits': 'fa fa-calendar',
+}
+
 
 def reverse(viewname, url_args=None, query_params=None,
             current_app=None, urlconf=None):
@@ -388,3 +402,11 @@ def is_recaptcha_valid(request, recaptcha_response):
         },
         verify=True
     ).json().get("success", False)
+
+
+def context_processor(request):
+    """
+    Django context processor used to inject variables
+    in all swh-web templates.
+    """
+    return {'swh_object_icons': swh_object_icons}

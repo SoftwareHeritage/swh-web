@@ -8,6 +8,7 @@ See top-level LICENSE file for more information
 {% endcomment %}
 
 {% load render_bundle from webpack_loader %}
+{% load swh_templatetags %}
 
 {% block header %}
 {{ block.super }}
@@ -26,7 +27,7 @@ See top-level LICENSE file for more information
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="octicon octicon-git-commit fa-fw"></i>Revision</th>
+          <th><i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>Revision</th>
           <th>Author</th>
           <th>Message</th>
           <th>Date</th>
@@ -36,7 +37,7 @@ See top-level LICENSE file for more information
       <tbody>
         {% for log in revision_log %}
           <tr class="swh-revision-log-entry">
-            <td class="swh-revision-log-entry-id"><i class="octicon octicon-git-commit fa-fw"></i>{{ log.revision }}</td>
+            <td class="swh-revision-log-entry-id"><i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>{{ log.revision }}</td>
             <td class="swh-revision-log-entry-author">{{ log.author }}</td>
             <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ log.message }}">{{ log.message }}</td>
             <td class="swh-revision-log-entry-date">{{ log.date }}</td>

@@ -27,7 +27,7 @@ from swh.web.common.exc import (
     handle_view_exception, NotFoundExc
 )
 from swh.web.common.utils import (
-    reverse, gen_path_info, format_utc_iso_date
+    reverse, gen_path_info, format_utc_iso_date, swh_object_icons
 )
 
 _empty_snapshot_id = snapshot_identifier({'branches': {}})
@@ -404,14 +404,13 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     return render(request, 'browse/directory.html',
                   {'heading': heading,
                    'swh_object_name': 'Directory',
-                   'swh_object_icon': 'fa fa-folder',
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
                    'top_right_link': {
                        'url': history_url,
-                       'icon': 'fa fa-history',
+                       'icon': swh_object_icons['revisions history'],
                        'text': 'History'
                     },
                    'readme_name': readme_name,
@@ -589,7 +588,6 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     return render(request, 'browse/content.html',
                   {'heading': heading,
                    'swh_object_name': 'Content',
-                   'swh_object_icon': 'fa fa-file-text',
                    'swh_object_metadata': content_metadata,
                    'content': content,
                    'content_size': content_size,
@@ -599,7 +597,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
                    'top_right_link': {
                         'url': content_raw_url,
-                        'icon': 'fa fa-file-text',
+                        'icon': swh_object_icons['content'],
                         'text': 'Raw File'
                     },
                    'snapshot_context': snapshot_context,
@@ -741,7 +739,6 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     return render(request, 'browse/revision-log.html',
                   {'heading': heading,
                    'swh_object_name': 'Revisions history',
-                   'swh_object_icon': 'fa fa-history',
                    'swh_object_metadata': revision_metadata,
                    'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
@@ -839,7 +836,6 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
     return render(request, 'browse/branches.html',
                   {'heading': heading,
                    'swh_object_name': 'Branches',
-                   'swh_object_icon': 'fa fa-code-fork',
                    'swh_object_metadata': {},
                    'top_right_link': None,
                    'displayed_branches': displayed_branches,
@@ -887,31 +883,25 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                               url_args={'sha1_git': release['id']},
                               query_params=query_params_tgt)
 
-        target_icon = ''
         target_url = ''
         if release['target_type'] == 'revision':
-            target_icon = "octicon octicon-git-commit"
             target_url = reverse('browse-revision',
                                  url_args={'sha1_git': release['target']},
                                  query_params=query_params_tgt)
         elif release['target_type'] == 'directory':
-            target_icon = "fa fa-folder"
             target_url = reverse('browse-directory',
                                  url_args={'sha1_git': release['target']},
                                  query_params=query_params_tgt)
         elif release['target_type'] == 'content':
-            target_icon = "fa fa-file-text"
             target_url = reverse('browse-content',
                                  url_args={'sha1_git': release['target']},
                                  query_params=query_params_tgt)
         elif release['target_type'] == 'release':
-            target_icon = "fa fa-tag"
             target_url = reverse('browse-release',
                                  url_args={'sha1_git': release['target']},
                                  query_params=query_params_tgt)
 
         release['release_url'] = release_url
-        release['target_icon'] = target_icon
         release['target_url'] = target_url
 
     browse_view_name = 'browse-' + swh_type + '-releases'
@@ -951,7 +941,6 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                    'top_panel_visible': False,
                    'top_panel_collapsible': False,
                    'swh_object_name': 'Releases',
-                   'swh_object_icon': 'fa fa-tag',
                    'swh_object_metadata': {},
                    'top_right_link': None,
                    'displayed_releases': displayed_releases,

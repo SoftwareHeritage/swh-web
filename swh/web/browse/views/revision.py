@@ -15,12 +15,12 @@ from django.utils.safestring import mark_safe
 from swh.model.identifiers import persistent_identifier
 from swh.web.common import service
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, gen_path_info
+    reverse, format_utc_iso_date, gen_path_info, swh_object_icons
 )
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
-    gen_link, gen_person_link, gen_revision_link,
+    gen_link, gen_person_link, gen_revision_link, gen_revision_url,
     prepare_revision_log_for_display,
     get_snapshot_context, gen_snapshot_directory_link,
     get_revision_log_url, get_directory_entries,
@@ -232,7 +232,6 @@ def revision_log_browse(request, sha1_git):
                   {'heading': 'Revision history',
                    'swh_object_id': swh_rev_id,
                    'swh_object_name': 'Revisions history',
-                   'swh_object_icon': 'fa fa-history',
                    'swh_object_metadata': None,
                    'revision_log': revision_log_data,
                    'next_log_url': next_log_url,
@@ -385,16 +384,10 @@ def revision_browse(request, sha1_git, extra_path=None):
     if revision['message']:
         message_lines = revision['message'].split('\n')
 
-    parents_links = '<b>%s parent%s</b> ' %  \
-        (len(revision['parents']),
-         '' if len(revision['parents']) == 1 else 's')
-    parents_links += '<i class="octicon octicon-git-commit fa-fw"></i> '
+    parents = []
     for p in revision['parents']:
-        parent_link = gen_revision_link(p, shorten_id=True,
-                                        snapshot_context=snapshot_context)
-        parents_links += parent_link
-        if p != revision['parents'][-1]:
-            parents_links += ' + '
+        parent_url = gen_revision_url(p, snapshot_context)
+        parents.append({'id': p, 'url': parent_url})
 
     path_info = gen_path_info(path)
 
@@ -455,7 +448,7 @@ def revision_browse(request, sha1_git, extra_path=None):
             'url': reverse('browse-content-raw',
                            url_args={'query_string': query_string},
                            query_params=query_params),
-            'icon': 'fa fa-file-text',
+            'icon': swh_object_icons['content'],
             'text': 'Raw File'
         }
 
@@ -489,7 +482,7 @@ def revision_browse(request, sha1_git, extra_path=None):
 
         top_right_link = {
             'url': get_revision_log_url(sha1_git, snapshot_context),
-            'icon': 'fa fa-history',
+            'icon': swh_object_icons['revisions history'],
             'text': 'History'
         }
 
@@ -524,11 +517,10 @@ def revision_browse(request, sha1_git, extra_path=None):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Revision',
-                   'swh_object_icon': 'octicon octicon-git-commit',
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],
                    'message_body': '\n'.join(message_lines[1:]),
-                   'parents_links': mark_safe(parents_links),
+                   'parents': parents,
                    'snapshot_context': snapshot_context,
                    'dirs': dirs,
                    'files': files,

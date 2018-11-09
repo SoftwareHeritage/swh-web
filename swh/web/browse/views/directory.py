@@ -139,7 +139,6 @@ def directory_browse(request, sha1_git, path=None):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Directory',
-                   'swh_object_icon': 'fa fa-folder',
                    'swh_object_metadata': dir_metadata,
                    'dirs': dirs,
                    'files': files,

@@ -7,16 +7,19 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load swh_templatetags %}
+
 {% block swh-browse-content %}
 {% include "includes/top-navigation.html" %}
 <div style="height: 35px;margin: 4px;">
-  <i class="fa fa-tag fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
+  <i class="{{ swh_object_icons|key_value:'release' }} fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
   created by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
 </div>
 <pre style="white-space: pre-wrap">
 <h6>{{ release.note_header }}</h6>{{ release.note_body }}
 </pre>
 <div style="margin: 4px;">
-  <b>Target:</b> <i class="{{ release.target_icon }} fa-fw"></i> <a href="{{ release.target_url}}">{{ release.target }}</a>
+  <b>Target:</b> <i class="{{ swh_object_icons|key_value:release.target_type }} fa-fw"></i>
+  <a href="{{ release.target_url}}">{{ release.target }}</a>
 </div>
 {% endblock %}

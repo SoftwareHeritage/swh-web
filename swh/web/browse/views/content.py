@@ -16,7 +16,7 @@ from swh.model.hashutil import hash_to_hex
 
 from swh.web.common import query
 from swh.web.common.utils import (
-    reverse, gen_path_info
+    reverse, gen_path_info, swh_object_icons
 )
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
@@ -274,7 +274,6 @@ def content_display(request, query_string):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Content',
-                   'swh_object_icon': 'fa fa-file-text',
                    'swh_object_metadata': content_metadata,
                    'content': content,
                    'content_size': content_data['length'],
@@ -284,7 +283,7 @@ def content_display(request, query_string):
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': {
                         'url': content_raw_url,
-                        'icon': 'fa fa-file-text',
+                        'icon': swh_object_icons['content'],
                         'text': 'Raw File'
                    },
                    'snapshot_context': snapshot_context,

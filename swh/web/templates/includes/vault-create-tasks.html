@@ -5,17 +5,25 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load swh_templatetags %}
+
 {% if vault_cooking %}
 
   <!-- entry in the Actions menu -->
   <div class="dropdown-submenu swh-vault-menu">
-    <a class="dropdown-item dropdown-left" tabindex="-1" href="#"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</a>
+    <a class="dropdown-item dropdown-left" tabindex="-1" href="#">
+      <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download
+    </a>
     <div class="dropdown-menu">
       {% if vault_cooking.directory_context %}
-        <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-directory-modal"><i class="fa fa-folder fa-fw" aria-hidden="true"></i>Directory</button>
+        <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-directory-modal">
+          <i class="{{ swh_object_icons|key_value:'directory' }} fa-fw" aria-hidden="true"></i>Directory
+        </button>
       {% endif %}
       {% if vault_cooking.revision_context %}
-        <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-revision-modal"><i class="octicon octicon-git-commit fa-fw"></i>Revision</button>
+        <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-revision-modal">
+          <i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>Revision
+        </button>
       {% endif %}
     </div>
   </div>

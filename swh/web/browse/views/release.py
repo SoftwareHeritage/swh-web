@@ -111,10 +111,8 @@ def release_browse(request, sha1_git):
     elif origin_info:
         query_params = {'origin': origin_info['url']}
 
-    target_icon = ''
     target_url = ''
     if release['target_type'] == 'revision':
-        target_icon = 'octicon octicon-git-commit'
         target_url = reverse('browse-revision',
                              url_args={'sha1_git': release['target']},
                              query_params=query_params)
@@ -129,7 +127,6 @@ def release_browse(request, sha1_git):
         except Exception:
             pass
     elif release['target_type'] == 'directory':
-        target_icon = 'fa fa-folder'
         target_url = reverse('browse-directory',
                              url_args={'sha1_git': release['target']},
                              query_params=query_params)
@@ -144,17 +141,14 @@ def release_browse(request, sha1_git):
         except Exception:
             pass
     elif release['target_type'] == 'content':
-        target_icon = 'fa fa-file-text'
         target_url = reverse('browse-content',
                              url_args={'sha1_git': release['target']},
                              query_params=query_params)
     elif release['target_type'] == 'release':
-        target_icon = 'fa fa-tag'
         target_url = reverse('browse-release',
                              url_args={'sha1_git': release['target']},
                              query_params=query_params)
 
-    release['target_icon'] = target_icon
     release['target_url'] = target_url
 
     if snapshot_context:
@@ -208,7 +202,6 @@ def release_browse(request, sha1_git):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Release',
-                   'swh_object_icon': 'fa fa-tag',
                    'swh_object_metadata': release_data,
                    'release': release,
                    'snapshot_context': snapshot_context,

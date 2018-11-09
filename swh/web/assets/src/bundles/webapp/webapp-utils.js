@@ -115,3 +115,13 @@ export function showModalConfirm(title, message, callback) {
   });
   $('#swh-web-modal-confirm').modal('show');
 }
+
+let swhObjectIcons;
+
+export function setSwhObjectIcons(icons) {
+  swhObjectIcons = icons;
+}
+
+export function getSwhObjectIcon(swhObjectType) {
+  return swhObjectIcons[swhObjectType];
+}
