@@ -879,9 +879,13 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         for release in origin_releases:
             browse_release_url = reverse('browse-release',
                                          url_args={'sha1_git': release['id']},
-                                         query_params={'origin_type': origin_info['type'],
-                                                       'origin': origin_info['url']})
+                                         query_params={'origin': origin_info['url']})
+            browse_revision_url = reverse('browse-revision',
+                                          url_args={'sha1_git': release['target']},
+                                          query_params={'origin': origin_info['url']})
+
             self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_release_url), release['name']))
+            self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_revision_url), release['target'][:7]))
 
 
     @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')

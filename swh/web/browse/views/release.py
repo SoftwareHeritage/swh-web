@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 from django.shortcuts import render
-from django.utils.safestring import mark_safe
 
 from swh.web.common import service
 from swh.web.common.utils import (
@@ -41,9 +40,10 @@ def release_browse(request, sha1_git):
         visit_id = request.GET.get('visit_id', None)
         if origin_url:
             try:
-                snapshot_context = get_snapshot_context(snapshot_id, origin_type, # noqa
-                                                        origin_url, timestamp,
-                                                        visit_id)
+                snapshot_context = \
+                    get_snapshot_context(snapshot_id, origin_type,
+                                         origin_url, timestamp,
+                                         visit_id)
             except Exception:
                 raw_rel_url = reverse('browse-release',
                                       url_args={'sha1_git': sha1_git})
@@ -105,9 +105,19 @@ def release_browse(request, sha1_git):
 
     vault_cooking = None
 
-    release_target_link = '<b>Target:</b> '
+    query_params = {}
+    if snapshot_id:
+        query_params = {'snapshot_id': snapshot_id}
+    elif origin_info:
+        query_params = {'origin': origin_info['url']}
+
+    target_icon = ''
+    target_url = ''
     if release['target_type'] == 'revision':
-        release_target_link += '<i class="octicon octicon-git-commit fa-fw"></i>' # noqa
+        target_icon = 'octicon octicon-git-commit'
+        target_url = reverse('browse-revision',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
         try:
             revision = service.lookup_revision(release['target'])
             vault_cooking = {
@@ -118,9 +128,34 @@ def release_browse(request, sha1_git):
             }
         except Exception:
             pass
-    else:
-        release_target_link += release['target_type']
-    release_target_link += ' ' + release_data['target']
+    elif release['target_type'] == 'directory':
+        target_icon = 'fa fa-folder'
+        target_url = reverse('browse-directory',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
+        try:
+            revision = service.lookup_directory(release['target'])
+            vault_cooking = {
+                'directory_context': True,
+                'directory_id': revision['directory'],
+                'revision_context': False,
+                'revision_id': None
+            }
+        except Exception:
+            pass
+    elif release['target_type'] == 'content':
+        target_icon = 'fa fa-file-text'
+        target_url = reverse('browse-content',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
+    elif release['target_type'] == 'release':
+        target_icon = 'fa fa-tag'
+        target_url = reverse('browse-release',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
+
+    release['target_icon'] = target_icon
+    release['target_url'] = target_url
 
     if snapshot_context:
         release_data['snapshot id'] = snapshot_context['snapshot_id']
@@ -155,9 +190,12 @@ def release_browse(request, sha1_git):
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
-    release_note_header = 'None'
+    note_header = 'None'
     if len(release_note_lines) > 0:
-        release_note_header = release_note_lines[0]
+        note_header = release_note_lines[0]
+
+    release['note_header'] = note_header
+    release['note_body'] = '\n'.join(release_note_lines[1:])
 
     heading = 'Release - %s' % release['name']
     if snapshot_context:
@@ -172,10 +210,7 @@ def release_browse(request, sha1_git):
                    'swh_object_name': 'Release',
                    'swh_object_icon': 'fa fa-tag',
                    'swh_object_metadata': release_data,
-                   'release_name': release['name'],
-                   'release_note_header': release_note_header,
-                   'release_note_body': '\n'.join(release_note_lines[1:]),
-                   'release_target_link': mark_safe(release_target_link),
+                   'release': release,
                    'snapshot_context': snapshot_context,
                    'show_actions_menu': True,
                    'breadcrumbs': None,

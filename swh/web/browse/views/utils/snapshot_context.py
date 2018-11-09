@@ -880,17 +880,39 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
 
     for release in displayed_releases:
         if snapshot_id:
-            release_url = reverse('browse-release',
-                                  url_args={'sha1_git': release['id']},
-                                  query_params={'snapshot_id': snapshot_id})
+            query_params_tgt = {'snapshot_id': snapshot_id}
         else:
-            release_url = reverse('browse-release',
-                                  url_args={'sha1_git': release['id']},
-                                  query_params={'origin_type': origin_type,
-                                                'origin': origin_info['url']})
-        query_params['release'] = release['name']
-        del query_params['release']
+            query_params_tgt = {'origin': origin_info['url']}
+        release_url = reverse('browse-release',
+                              url_args={'sha1_git': release['id']},
+                              query_params=query_params_tgt)
+
+        target_icon = ''
+        target_url = ''
+        if release['target_type'] == 'revision':
+            target_icon = "octicon octicon-git-commit"
+            target_url = reverse('browse-revision',
+                                 url_args={'sha1_git': release['target']},
+                                 query_params=query_params_tgt)
+        elif release['target_type'] == 'directory':
+            target_icon = "fa fa-folder"
+            target_url = reverse('browse-directory',
+                                 url_args={'sha1_git': release['target']},
+                                 query_params=query_params_tgt)
+        elif release['target_type'] == 'content':
+            target_icon = "fa fa-file-text"
+            target_url = reverse('browse-content',
+                                 url_args={'sha1_git': release['target']},
+                                 query_params=query_params_tgt)
+        elif release['target_type'] == 'release':
+            target_icon = "fa fa-tag"
+            target_url = reverse('browse-release',
+                                 url_args={'sha1_git': release['target']},
+                                 query_params=query_params_tgt)
+
         release['release_url'] = release_url
+        release['target_icon'] = target_icon
+        release['target_url'] = target_url
 
     browse_view_name = 'browse-' + swh_type + '-releases'
 
