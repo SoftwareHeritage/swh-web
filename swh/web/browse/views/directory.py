@@ -74,26 +74,32 @@ def directory_browse(request, sha1_git, path=None):
 
     path_info = gen_path_info(path)
 
+    query_params = {'origin': origin_url}
+
     breadcrumbs = []
     breadcrumbs.append({'name': root_sha1_git[:7],
                         'url': reverse('browse-directory',
-                                       url_args={'sha1_git': root_sha1_git})})
+                                       url_args={'sha1_git': root_sha1_git},
+                                       query_params=query_params)})
     for pi in path_info:
         breadcrumbs.append({'name': pi['name'],
                             'url': reverse('browse-directory',
                                            url_args={'sha1_git': root_sha1_git,
-                                                     'path': pi['path']})})
+                                                     'path': pi['path']},
+                                           query_params=query_params)})
 
     path = '' if path is None else (path + '/')
 
     for d in dirs:
         if d['type'] == 'rev':
             d['url'] = reverse('browse-revision',
-                               url_args={'sha1_git': d['target']})
+                               url_args={'sha1_git': d['target']},
+                               query_params=query_params)
         else:
             d['url'] = reverse('browse-directory',
                                url_args={'sha1_git': root_sha1_git,
-                                         'path': path + d['name']})
+                                         'path': path + d['name']},
+                               query_params=query_params)
 
     sum_file_sizes = 0
 
@@ -104,7 +110,8 @@ def directory_browse(request, sha1_git, path=None):
         f['url'] = reverse('browse-content',
                            url_args={'query_string': query_string},
                            query_params={'path': root_sha1_git + '/' +
-                                         path + f['name']})
+                                         path + f['name'],
+                                         'origin': origin_url})
         if f['length'] is not None:
             sum_file_sizes += f['length']
             f['length'] = filesizeformat(f['length'])

@@ -217,6 +217,8 @@ def content_display(request, query_string):
     filename = None
     path_info = None
 
+    query_params = {'origin': origin_url}
+
     breadcrumbs = []
 
     if path:
@@ -228,18 +230,18 @@ def content_display(request, query_string):
         path_info = gen_path_info(path)
         breadcrumbs.append({'name': root_dir[:7],
                             'url': reverse('browse-directory',
-                                           url_args={'sha1_git': root_dir})})
+                                           url_args={'sha1_git': root_dir},
+                                           query_params=query_params)})
         for pi in path_info:
             breadcrumbs.append({'name': pi['name'],
                                 'url': reverse('browse-directory',
                                                url_args={'sha1_git': root_dir,
-                                                         'path': pi['path']})})
+                                                         'path': pi['path']},
+                                               query_params=query_params)})
         breadcrumbs.append({'name': filename,
                             'url': None})
 
-    query_params = None
-    if filename:
-        query_params = {'filename': filename}
+    query_params = {'filename': filename}
 
     content_raw_url = reverse('browse-content-raw',
                               url_args={'query_string': query_string},
