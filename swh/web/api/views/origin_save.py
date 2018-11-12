@@ -30,7 +30,7 @@ def api_save_origin(request, origin_type, origin_url):
 
         Depending of the provided origin url, the save request can either be:
 
-            * immediately **accepted**, for well kwown code hosting providers
+            * immediately **accepted**, for well known code hosting providers
               like for instance GitHub or GitLab
             * **rejected**, in case the url is blacklisted by Software Heritage
             * **put in pending state** until a manual check is done in order to

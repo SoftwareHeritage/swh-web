@@ -46,7 +46,6 @@ def person_browse(request, person_id):
     return render(request, 'browse/person.html',
                   {'heading': heading,
                    'swh_object_name': 'Person',
-                   'swh_object_icon': 'fa fa-user',
                    'swh_object_metadata': person,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,

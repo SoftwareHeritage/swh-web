@@ -136,3 +136,17 @@ def mul(value, arg):
         int/float: The multiplication result
     """
     return value * arg
+
+
+@register.filter
+def key_value(dict, key):
+    """Django template filter to get a value in a dictionary.
+
+        Args:
+            dict (dict): a dictionary
+            key (str): the key to lookup value
+
+        Returns:
+            The requested value in the dictionary
+    """
+    return dict[key]

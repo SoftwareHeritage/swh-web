@@ -19,29 +19,51 @@ See top-level LICENSE file for more information
       </thead>
       <tbody>
         {% for d in dirs %}
-          <tr>
+          <tr class="swh-directory-entry swh-tr-hover-highlight" data-href="{{ d.url | safe }}">
             <td class="swh-directory">
-              <i class="fa fa-folder fa-fw" aria-hidden="true"></i>
-              <a href="{{ d.url | safe }}">{{ d.name }}</a>
+              <a href="{{ d.url | safe }}">
+                <i class="{{ swh_object_icons.directory }} fa-fw" aria-hidden="true"></i>
+                {{ d.name }}
+              </a>
             </td>
-            <td>{{ d.perms }}</td>
-            <td></td>
+            <td>
+              <a href="{{ d.url | safe }}">
+                {{ d.perms }}
+              </a>
+            </td>
+            <td>
+              <a href="{{ d.url | safe }}">
+              </a>
+            </td>
           </tr>
         {% endfor %}
         {% for f in files %}
-          <tr>
+          <tr class="swh-directory-entry swh-tr-hover-highlight" data-href="{{ f.url | safe }}">
             <td class="swh-content">
-              <i class="fa fa-file-text fa-fw" aria-hidden="true"></i>
-              <a href="{{ f.url | safe }}">{{ f.name }}</a>
+              <a href="{{ f.url | safe }}">
+                <i class="{{ swh_object_icons.content }} fa-fw" aria-hidden="true"></i>
+                {{ f.name }}
+              </a>
             </td>
-            <td>{{ f.perms }}</td>
-            <td>{{ f.length }}</td>
+            <td>
+              <a href="{{ f.url | safe }}">
+                {{ f.perms }}
+              </a>
+            </td>
+            <td>
+              <a href="{{ f.url | safe }}">
+                {{ f.length }}
+              </a>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   <hr class="mt-0 mb-2">
+  <script>
+    swh.webapp.initTableRowLinks('tr.swh-directory-entry');
+  </script>
 {% elif dirs|length == 0 and files|length == 0 %}
   <i>Directory is empty</i>
 {% endif %}

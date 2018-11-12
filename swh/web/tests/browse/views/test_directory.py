@@ -28,10 +28,10 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
             url_args['path'] = path
 
         url = reverse('browse-directory',
-                      kwargs=url_args)
+                      url_args=url_args)
 
         root_dir_url = reverse('browse-directory',
-                               kwargs={'sha1_git': root_directory_sha1})
+                               url_args={'sha1_git': root_directory_sha1})
 
         resp = self.client.get(url)
 
@@ -47,14 +47,14 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
         for d in dirs:
             if d['type'] == 'rev':
                 dir_url = reverse('browse-revision',
-                                  kwargs={'sha1_git': d['target']})
+                                  url_args={'sha1_git': d['target']})
             else:
                 dir_path = d['name']
                 if path:
                     dir_path = "%s/%s" % (path, d['name'])
                 dir_url = reverse('browse-directory',
-                                  kwargs={'sha1_git': root_directory_sha1,
-                                          'path': dir_path})
+                                  url_args={'sha1_git': root_directory_sha1,
+                                            'path': dir_path})
             self.assertContains(resp, dir_url)
 
         for f in files:
@@ -63,7 +63,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
                 file_path = "%s/%s/%s" % (root_directory_sha1, path, f['name'])
             query_string = 'sha1_git:' + f['target']
             file_url = reverse('browse-content',
-                               kwargs={'query_string': query_string},
+                               url_args={'query_string': query_string},
                                query_params={'path': file_path})
             self.assertContains(resp, file_url)
 
@@ -76,8 +76,8 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
 
         for p in path_info:
             dir_url = reverse('browse-directory',
-                              kwargs={'sha1_git': root_directory_sha1,
-                                      'path': p['path']})
+                              url_args={'sha1_git': root_directory_sha1,
+                                        'path': p['path']})
             self.assertContains(resp, '<a href="%s">%s</a>' %
                                       (dir_url, p['name']))
 
@@ -85,7 +85,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
 
         swh_dir_id = get_swh_persistent_id('directory', directory_entries[0]['dir_id']) # noqa
         swh_dir_id_url = reverse('browse-swh-id',
-                                 kwargs={'swh_id': swh_dir_id})
+                                 url_args={'swh_id': swh_dir_id})
         self.assertContains(resp, swh_dir_id)
         self.assertContains(resp, swh_dir_id_url)
 
@@ -118,7 +118,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
             BadInputExc('directory not found')
 
         dir_url = reverse('browse-directory',
-                          kwargs={'sha1_git': '1253456'})
+                          url_args={'sha1_git': '1253456'})
 
         resp = self.client.get(dir_url)
         self.assertEqual(resp.status_code, 400)
@@ -128,7 +128,7 @@ class SwhBrowseDirectoryTest(SWHWebTestCase):
             NotFoundExc('directory not found')
 
         dir_url = reverse('browse-directory',
-                          kwargs={'sha1_git': '1253456'})
+                          url_args={'sha1_git': '1253456'})
 
         resp = self.client.get(dir_url)
         self.assertEqual(resp.status_code, 404)

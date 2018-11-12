@@ -106,7 +106,7 @@ def handle_view_exception(request, exc, html_response=True):
     was raised inside a swh-web browse view.
     """
     error_code = 500
-    error_description = str(exc)
+    error_description = '%s: %s' % (type(exc).__name__, str(exc))
     if get_config()['debug']:
         error_description = traceback.format_exc()
     if isinstance(exc, BadInputExc):

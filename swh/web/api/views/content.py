@@ -9,7 +9,7 @@ from django.http import HttpResponse
 
 from swh.web.common import service
 from swh.web.common.utils import reverse
-from swh.web.common.exc import NotFoundExc, ForbiddenExc
+from swh.web.common.exc import NotFoundExc
 from swh.web.api.apidoc import api_doc
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
@@ -26,19 +26,19 @@ def api_content_provenance(request, q):
         p = provenance.copy()
         p['revision_url'] = \
             reverse('api-revision',
-                    kwargs={'sha1_git': provenance['revision']})
+                    url_args={'sha1_git': provenance['revision']})
         p['content_url'] = \
             reverse('api-content',
-                    kwargs={'q': 'sha1_git:%s' % provenance['content']})
+                    url_args={'q': 'sha1_git:%s' % provenance['content']})
         p['origin_url'] = \
-            reverse('api-origin', kwargs={'origin_id': provenance['origin']})
+            reverse('api-origin', url_args={'origin_id': provenance['origin']})
         p['origin_visits_url'] = \
             reverse('api-origin-visits',
-                    kwargs={'origin_id': provenance['origin']})
+                    url_args={'origin_id': provenance['origin']})
         p['origin_visit_url'] = \
             reverse('api-origin-visit',
-                    kwargs={'origin_id': provenance['origin'],
-                            'visit_id': provenance['visit']})
+                    url_args={'origin_id': provenance['origin'],
+                              'visit_id': provenance['visit']})
         return p
 
     return api_lookup(
@@ -227,15 +227,6 @@ def api_content_raw(request, q):
     if not content_raw:
         raise NotFoundExc('Content %s is not found.' % q)
 
-    content_filetype = service.lookup_content_filetype(q)
-    if not content_filetype:
-        raise NotFoundExc('Content %s is not available for download.' % q)
-
-    mimetype = content_filetype['mimetype']
-    if 'text/' not in mimetype:
-        raise ForbiddenExc('Only textual content is available for download. '
-                           'Actual content mimetype is %s.' % mimetype)
-
     filename = request.query_params.get('filename')
     if not filename:
         filename = 'content_%s_raw' % q.replace(':', '_')
@@ -276,7 +267,7 @@ def api_content_symbol(request, q=None):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('api-content-symbol', kwargs={'q': q},
+                'link-next': reverse('api-content-symbol', url_args={'q': q},
                                      query_params=query_params)
             }
 

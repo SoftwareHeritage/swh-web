@@ -9,6 +9,7 @@ import magic
 import math
 import pypandoc
 import stat
+import textwrap
 
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
@@ -20,7 +21,8 @@ from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, parse_timestamp,
-    get_origin_visits, get_swh_persistent_id
+    get_origin_visits, get_swh_persistent_id,
+    swh_object_icons
 )
 from swh.web.config import get_config
 
@@ -52,7 +54,7 @@ def get_directory_entries(sha1_git):
     for e in entries:
         e['perms'] = stat.filemode(e['perms'])
         if e['type'] == 'rev':
-            # modify dir entry name to explicitely show it points
+            # modify dir entry name to explicitly show it points
             # to a revision
             e['name'] = '%s @ %s' % (e['name'], e['target'][:7])
 
@@ -494,7 +496,7 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
         origin_info (dict): a dict filled with origin information
             (id, url, type)
         visit_ts (int or str): an ISO date string or Unix timestamp to parse
-        visit_id (int): optional visit id for desambiguation in case
+        visit_id (int): optional visit id for disambiguation in case
             several visits have the same timestamp
 
     Returns:
@@ -566,9 +568,42 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
                 snapshot_context['query_params']['visit_id']
     elif snapshot_context:
         query_params = {'snapshot_id': snapshot_context['snapshot_id']}
-    person_url = reverse('browse-person', kwargs={'person_id': person_id},
+    person_url = reverse('browse-person', url_args={'person_id': person_id},
                          query_params=query_params)
     return gen_link(person_url, person_name or 'None', link_attrs)
+
+
+def gen_revision_url(revision_id, snapshot_context=None):
+    """
+    Utility function for generating an url to a SWH revision.
+
+    Args:
+        revision_id (str): a SWH revision id
+        snapshot_context (dict): if provided, generate snapshot-dependent
+            browsing url
+
+    Returns:
+        str: The url to browse the revision
+
+    """
+    query_params = None
+    if snapshot_context and snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
+        origin_type = snapshot_context['origin_type']
+        query_params = {'origin_type': origin_type,
+                        'origin': origin_info['url']}
+        if 'timestamp' in snapshot_context['url_args']:
+            query_params['timestamp'] = \
+                 snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
+            query_params['visit_id'] = \
+                snapshot_context['query_params']['visit_id']
+    elif snapshot_context:
+        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+
+    return reverse('browse-revision',
+                   url_args={'sha1_git': revision_id},
+                   query_params=query_params)
 
 
 def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
@@ -587,29 +622,14 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
             to add to the link
 
     Returns:
-        An HTML link in the form '<a href="revision_view_url">revision_id</a>'
+        str: An HTML link in the form '<a href="revision_url">revision_id</a>'
 
     """
     if not revision_id:
         return None
-    query_params = None
-    if snapshot_context and snapshot_context['origin_info']:
-        origin_info = snapshot_context['origin_info']
-        origin_type = snapshot_context['origin_type']
-        query_params = {'origin_type': origin_type,
-                        'origin': origin_info['url']}
-        if 'timestamp' in snapshot_context['url_args']:
-            query_params['timestamp'] = \
-                 snapshot_context['url_args']['timestamp']
-        if 'visit_id' in snapshot_context['query_params']:
-            query_params['visit_id'] = \
-                snapshot_context['query_params']['visit_id']
-    elif snapshot_context:
-        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
 
-    revision_url = reverse('browse-revision',
-                           kwargs={'sha1_git': revision_id},
-                           query_params=query_params)
+    revision_url = gen_revision_url(revision_id, snapshot_context)
+
     if shorten_id:
         return gen_link(revision_url, revision_id[:7], link_attrs)
     else:
@@ -624,7 +644,7 @@ def gen_origin_link(origin_info, link_attrs={}):
     to insert in Django templates.
 
     Args:
-        origin_info (dict): a dicted filled with origin information
+        origin_info (dict): a dict filled with origin information
             (id, type, url)
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
@@ -634,8 +654,8 @@ def gen_origin_link(origin_info, link_attrs={}):
 
     """ # noqa
     origin_browse_url = reverse('browse-origin',
-                                kwargs={'origin_type': origin_info['type'],
-                                        'origin_url': origin_info['url']})
+                                url_args={'origin_type': origin_info['type'],
+                                          'origin_url': origin_info['url']})
     return gen_link(origin_browse_url,
                     'Origin: ' + origin_info['url'], link_attrs)
 
@@ -660,7 +680,7 @@ def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
         return None
 
     directory_url = reverse('browse-directory',
-                            kwargs={'sha1_git': sha1_git})
+                            url_args={'sha1_git': sha1_git})
 
     if not link_text:
         link_text = directory_url
@@ -684,7 +704,7 @@ def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
 
     """
     snapshot_url = reverse('browse-snapshot',
-                           kwargs={'snapshot_id': snapshot_id})
+                           url_args={'snapshot_id': snapshot_id})
     if not link_text:
         link_text = snapshot_url
     return gen_link(snapshot_url, link_text, link_attrs)
@@ -711,8 +731,7 @@ def gen_snapshot_directory_link(snapshot_context, revision_id=None,
     query_params = {'revision': revision_id}
     if snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
         if 'timestamp' in snapshot_context['url_args']:
             url_args['timestamp'] = \
                 snapshot_context['url_args']['timestamp']
@@ -720,12 +739,12 @@ def gen_snapshot_directory_link(snapshot_context, revision_id=None,
             query_params['visit_id'] = \
                 snapshot_context['query_params']['visit_id']
         directory_url = reverse('browse-origin-directory',
-                                kwargs=url_args,
+                                url_args=url_args,
                                 query_params=query_params)
     else:
         url_args = {'snapshot_id': snapshot_context['snapshot_id']}
         directory_url = reverse('browse-snapshot-directory',
-                                kwargs=url_args,
+                                url_args=url_args,
                                 query_params=query_params)
 
     if not link_text:
@@ -752,7 +771,7 @@ def gen_content_link(sha1_git, link_text=None, link_attrs={}):
     if not sha1_git:
         return None
     content_url = reverse('browse-content',
-                          kwargs={'query_string': 'sha1_git:' + sha1_git})
+                          url_args={'query_string': 'sha1_git:' + sha1_git})
     if not link_text:
         link_text = content_url
     return gen_link(content_url, link_text, link_attrs)
@@ -773,8 +792,7 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     query_params = {'revision': revision_id}
     if snapshot_context and snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
         if 'timestamp' in snapshot_context['url_args']:
             url_args['timestamp'] = \
                 snapshot_context['url_args']['timestamp']
@@ -782,16 +800,16 @@ def get_revision_log_url(revision_id, snapshot_context=None):
             query_params['visit_id'] = \
                 snapshot_context['query_params']['visit_id']
         revision_log_url = reverse('browse-origin-log',
-                                   kwargs=url_args,
+                                   url_args=url_args,
                                    query_params=query_params)
     elif snapshot_context:
         url_args = {'snapshot_id': snapshot_context['snapshot_id']}
         revision_log_url = reverse('browse-snapshot-log',
-                                   kwargs=url_args,
+                                   url_args=url_args,
                                    query_params=query_params)
     else:
         revision_log_url = reverse('browse-revision-log',
-                                   kwargs={'sha1_git': revision_id})
+                                   url_args={'sha1_git': revision_id})
     return revision_log_url
 
 
@@ -823,28 +841,7 @@ def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
     return gen_link(revision_log_url, link_text, link_attrs)
 
 
-def _format_log_entries(revision_log, per_page, snapshot_context=None):
-    revision_log_data = []
-    for i, log in enumerate(revision_log):
-        if i == per_page:
-            break
-        author_name = 'None'
-        author_link = 'None'
-        if log['author']:
-            author_name = log['author']['name'] or log['author']['fullname']
-            author_link = gen_person_link(log['author']['id'], author_name,
-                                          snapshot_context)
-        revision_log_data.append(
-            {'author': author_link,
-             'revision': gen_revision_link(log['id'], True, snapshot_context),
-             'message': log['message'],
-             'date': format_utc_iso_date(log['date']),
-             'directory': log['directory']})
-    return revision_log_data
-
-
-def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
-                                     snapshot_context=None):
+def format_log_entries(revision_log, per_page, snapshot_context=None):
     """
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
@@ -853,48 +850,46 @@ def prepare_revision_log_for_display(revision_log, per_page, revs_breadcrumb,
         * format date in human readable format
         * truncate the message log
 
-    It also computes the data needed to generate the links for navigating back
-    and forth in the history log.
-
     Args:
         revision_log (list): raw revision log as returned by the SWH web api
         per_page (int): number of log entries per page
-        revs_breadcrumb (str): breadcrumbs of revisions navigated so far,
-            in the form 'rev1[/rev2/../revN]'. Each revision corresponds to
-            the first one displayed in the HTML view for history log.
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing link
 
 
     """
-    current_rev = revision_log[0]['id']
-    next_rev = None
-    prev_rev = None
-    next_revs_breadcrumb = None
-    prev_revs_breadcrumb = None
-    if len(revision_log) == per_page + 1:
-        prev_rev = revision_log[-1]['id']
+    revision_log_data = []
+    for i, rev in enumerate(revision_log):
+        if i == per_page:
+            break
+        author_name = 'None'
+        author_fullname = 'None'
+        committer_fullname = 'None'
+        if rev['author']:
+            author_name = rev['author']['name'] or rev['author']['fullname']
+            author_fullname = rev['author']['fullname']
+        if rev['committer']:
+            committer_fullname = rev['committer']['fullname']
+        author_date = format_utc_iso_date(rev['date'])
+        committer_date = format_utc_iso_date(rev['committer_date'])
 
-    prev_rev_bc = current_rev
-    if snapshot_context:
-        prev_rev_bc = prev_rev
+        tooltip = 'revision %s\n' % rev['id']
+        tooltip += 'author: %s\n' % author_fullname
+        tooltip += 'author date: %s\n' % author_date
+        tooltip += 'committer: %s\n' % committer_fullname
+        tooltip += 'committer date: %s\n\n' % committer_date
+        tooltip += textwrap.indent(rev['message'], ' '*4)
 
-    if revs_breadcrumb:
-        revs = revs_breadcrumb.split('/')
-        next_rev = revs[-1]
-        if len(revs) > 1:
-            next_revs_breadcrumb = '/'.join(revs[:-1])
-        if len(revision_log) == per_page + 1:
-            prev_revs_breadcrumb = revs_breadcrumb + '/' + prev_rev_bc
-    else:
-        prev_revs_breadcrumb = prev_rev_bc
-
-    return {'revision_log_data': _format_log_entries(revision_log, per_page,
-                                                     snapshot_context),
-            'prev_rev': prev_rev,
-            'prev_revs_breadcrumb': prev_revs_breadcrumb,
-            'next_rev': next_rev,
-            'next_revs_breadcrumb': next_revs_breadcrumb}
+        revision_log_data.append({
+            'author': author_name,
+            'id': rev['id'][:7],
+            'message': rev['message'],
+            'date': author_date,
+            'commit_date': committer_date,
+            'url': gen_revision_url(rev['id'], snapshot_context),
+            'tooltip': tooltip
+        })
+    return revision_log_data
 
 
 # list of origin types that can be found in the swh archive
@@ -1010,33 +1005,33 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         query_params = {'visit_id': visit_id}
 
         browse_url = reverse('browse-origin-visits',
-                             kwargs=url_args)
+                             url_args=url_args)
 
         if timestamp:
             url_args['timestamp'] = format_utc_iso_date(timestamp,
                                                         '%Y-%m-%dT%H:%M:%S')
         visit_url = reverse('browse-origin-directory',
-                            kwargs=url_args,
+                            url_args=url_args,
                             query_params=query_params)
         visit_info['url'] = visit_url
 
         branches_url = reverse('browse-origin-branches',
-                               kwargs=url_args,
+                               url_args=url_args,
                                query_params=query_params)
 
         releases_url = reverse('browse-origin-releases',
-                               kwargs=url_args,
+                               url_args=url_args,
                                query_params=query_params)
     elif snapshot_id:
         branches, releases = get_snapshot_content(snapshot_id)
         url_args = {'snapshot_id': snapshot_id}
         browse_url = reverse('browse-snapshot',
-                             kwargs=url_args)
+                             url_args=url_args)
         branches_url = reverse('browse-snapshot-branches',
-                               kwargs=url_args)
+                               url_args=url_args)
 
         releases_url = reverse('browse-snapshot-releases',
-                               kwargs=url_args)
+                               url_args=url_args)
 
     releases = list(reversed(releases))
 
@@ -1106,7 +1101,7 @@ def get_readme_to_display(readmes):
             readme_name = lc_readmes[common_readme_name]['orig_name']
             readme_sha1 = lc_readmes[common_readme_name]['sha1']
             readme_url = reverse('browse-content-raw',
-                                 kwargs={'query_string': readme_sha1})
+                                 url_args={'query_string': readme_sha1})
             break
 
     # otherwise pick the first readme like file if any
@@ -1114,7 +1109,7 @@ def get_readme_to_display(readmes):
         readme_name = next(iter(readmes))
         readme_sha1 = readmes[readme_name]
         readme_url = reverse('browse-content-raw',
-                             kwargs={'query_string': readme_sha1})
+                             url_args={'query_string': readme_sha1})
 
     # convert rst README to html server side as there is
     # no viable solution to perform that task client side
@@ -1165,22 +1160,14 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
         show_options = swh_object['type'] == 'content' or \
             (snapshot_context and snapshot_context['origin_info'] is not None)
 
-        object_icon = mark_safe('<i class="fa fa-file-text fa-fw"></i>')
-        if swh_object['type'] == 'directory':
-            object_icon = mark_safe('<i class="fa fa-folder fa-fw"></i>')
-        elif swh_object['type'] == 'release':
-            object_icon = mark_safe('<i class="fa fa-tag fa-fw"></i>')
-        elif swh_object['type'] == 'revision':
-            object_icon = mark_safe('<i class="octicon octicon-git-commit fa-fw"></i>') # noqa
-        elif swh_object['type'] == 'snapshot':
-            object_icon = mark_safe('<i class="fa fa-camera fa-fw"></i>')
+        object_icon = swh_object_icons[swh_object['type']]
 
         swh_ids.append({
             'object_type': swh_object['type'],
             'object_icon': object_icon,
             'swh_id': swh_id,
             'swh_id_url': reverse('browse-swh-id',
-                                  kwargs={'swh_id': swh_id}),
+                                  url_args={'swh_id': swh_id}),
             'show_options': show_options
         })
     return swh_ids

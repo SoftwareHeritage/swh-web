@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 from django.shortcuts import render
-from django.utils.safestring import mark_safe
 
 from swh.web.common import service
 from swh.web.common.utils import (
@@ -41,12 +40,13 @@ def release_browse(request, sha1_git):
         visit_id = request.GET.get('visit_id', None)
         if origin_url:
             try:
-                snapshot_context = get_snapshot_context(snapshot_id, origin_type, # noqa
-                                                        origin_url, timestamp,
-                                                        visit_id)
+                snapshot_context = \
+                    get_snapshot_context(snapshot_id, origin_type,
+                                         origin_url, timestamp,
+                                         visit_id)
             except Exception:
                 raw_rel_url = reverse('browse-release',
-                                      kwargs={'sha1_git': sha1_git})
+                                      url_args={'sha1_git': sha1_git})
                 error_message = \
                     ('The Software Heritage archive has a release '
                      'with the hash you provided but the origin '
@@ -86,17 +86,17 @@ def release_browse(request, sha1_git):
     elif release['target_type'] == 'content':
         content_url = \
             reverse('browse-content',
-                    kwargs={'query_string': 'sha1_git:' + release['target']})
+                    url_args={'query_string': 'sha1_git:' + release['target']})
         release_data['target'] = gen_link(content_url, release['target'])
     elif release['target_type'] == 'directory':
         directory_url = \
             reverse('browse-directory',
-                    kwargs={'sha1_git': release['target']})
+                    url_args={'sha1_git': release['target']})
         release_data['target'] = gen_link(directory_url, release['target'])
     elif release['target_type'] == 'release':
         release_url = \
             reverse('browse-release',
-                    kwargs={'sha1_git': release['target']})
+                    url_args={'sha1_git': release['target']})
         release_data['target'] = gen_link(release_url, release['target'])
 
     release_note_lines = []
@@ -105,9 +105,17 @@ def release_browse(request, sha1_git):
 
     vault_cooking = None
 
-    release_target_link = '<b>Target:</b> '
+    query_params = {}
+    if snapshot_id:
+        query_params = {'snapshot_id': snapshot_id}
+    elif origin_info:
+        query_params = {'origin': origin_info['url']}
+
+    target_url = ''
     if release['target_type'] == 'revision':
-        release_target_link += '<i class="octicon octicon-git-commit fa-fw"></i>' # noqa
+        target_url = reverse('browse-revision',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
         try:
             revision = service.lookup_revision(release['target'])
             vault_cooking = {
@@ -118,16 +126,37 @@ def release_browse(request, sha1_git):
             }
         except Exception:
             pass
-    else:
-        release_target_link += release['target_type']
-    release_target_link += ' ' + release_data['target']
+    elif release['target_type'] == 'directory':
+        target_url = reverse('browse-directory',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
+        try:
+            revision = service.lookup_directory(release['target'])
+            vault_cooking = {
+                'directory_context': True,
+                'directory_id': revision['directory'],
+                'revision_context': False,
+                'revision_id': None
+            }
+        except Exception:
+            pass
+    elif release['target_type'] == 'content':
+        target_url = reverse('browse-content',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
+    elif release['target_type'] == 'release':
+        target_url = reverse('browse-release',
+                             url_args={'sha1_git': release['target']},
+                             query_params=query_params)
+
+    release['target_url'] = target_url
 
     if snapshot_context:
         release_data['snapshot id'] = snapshot_context['snapshot_id']
 
     if origin_info:
         release_url = reverse('browse-release',
-                              kwargs={'sha1_git': release['id']})
+                              url_args={'sha1_git': release['id']})
         release_data['context-independent release'] = \
             gen_link(release_url, link_text='Browse',
                      link_attrs={'class': 'btn btn-default btn-sm',
@@ -155,9 +184,12 @@ def release_browse(request, sha1_git):
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
-    release_note_header = 'None'
+    note_header = 'None'
     if len(release_note_lines) > 0:
-        release_note_header = release_note_lines[0]
+        note_header = release_note_lines[0]
+
+    release['note_header'] = note_header
+    release['note_body'] = '\n'.join(release_note_lines[1:])
 
     heading = 'Release - %s' % release['name']
     if snapshot_context:
@@ -170,16 +202,11 @@ def release_browse(request, sha1_git):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Release',
-                   'swh_object_icon': 'fa fa-tag',
                    'swh_object_metadata': release_data,
-                   'release_name': release['name'],
-                   'release_note_header': release_note_header,
-                   'release_note_body': '\n'.join(release_note_lines[1:]),
-                   'release_target_link': mark_safe(release_target_link),
+                   'release': release,
                    'snapshot_context': snapshot_context,
                    'show_actions_menu': True,
                    'breadcrumbs': None,
                    'vault_cooking': vault_cooking,
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'swh_ids': swh_ids})

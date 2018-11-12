@@ -127,7 +127,7 @@ export function computeDiff(diffUrl, diffId) {
         setTimeout(() => {
 
           // process unified diff lines in order to generate side-by-side diffs text
-          // but also compute line numbers for unified and side-by-side difss
+          // but also compute line numbers for unified and side-by-side diffs
           let linesInfoRegExp = new RegExp(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@$/gm);
           let baseFromLine = '';
           let baseToLine = '';
@@ -252,7 +252,7 @@ export function computeDiff(diffUrl, diffId) {
                   maxNumberChars));
             });
 
-            // last processings:
+            // last processing:
             //  - remove the '+' and '-' at the beginning of the diff lines
             //    from code highlighting
             //  - add the "no new line at end of file marker" if needed
