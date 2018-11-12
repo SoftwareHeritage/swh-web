@@ -62,7 +62,7 @@ See top-level LICENSE file for more information
       </thead>
       <tbody>
         {% for rev in revision_log %}
-          <tr class="swh-revision-log-entry" data-href="{{ rev.url }}" title="{{ rev.tooltip }}">
+          <tr class="swh-revision-log-entry swh-tr-hover-highlight" data-href="{{ rev.url }}" title="{{ rev.tooltip }}">
             <td class="swh-revision-log-entry-id">
               <a href="{{ rev.url }}">
                 <i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>{{ rev.id }}

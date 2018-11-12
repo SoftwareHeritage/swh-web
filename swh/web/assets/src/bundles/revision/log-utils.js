@@ -10,17 +10,12 @@ export function revsOrderingTypeClicked(event) {
 }
 
 export function initRevisionsLog() {
+  swh.webapp.initTableRowLinks('tr.swh-revision-log-entry');
   $(document).ready(() => {
     let urlParams = new URLSearchParams(window.location.search);
     let revsOrderingType = urlParams.get('revs_ordering');
     if (revsOrderingType) {
       $(`:input[value="${revsOrderingType}"]`).prop('checked', true);
     }
-
-    $('tr.swh-revision-log-entry').on('click', function() {
-      window.location = $(this).data('href');
-      return false;
-    });
-    $('td > a').on('click', e => e.stopPropagation());
   });
 }

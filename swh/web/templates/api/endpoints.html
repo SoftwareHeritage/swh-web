@@ -54,15 +54,32 @@ See top-level LICENSE file for more information
     </thead>
     <tbody>
       {% for route, doc in doc_routes %}
-        <tr class="swh-api-doc-route {% for tag in doc.tags %} swh-api-doc-route-{{ tag }} {% endfor %}">
+        <tr class="swh-api-doc-route swh-tr-hover-highlight {% for tag in doc.tags %} swh-api-doc-route-{{ tag }} {% endfor %}"
+            data-href="{% url doc.route_view_name %}">
           {% if doc.tags|length > 0 %}
-            <td id="{{ route }}">{% url doc.route_view_name %}</td>
-            <td>{{ doc.tags|join:', ' }}</td>
+            <td id="{{ route }}">
+              {% url doc.route_view_name %}
+            </td>
+            <td>
+              {{ doc.tags|join:', ' }}
+            </td>
           {% else %}
-            <td id="{{ route }}"><a href="{% url doc.route_view_name %}">{% url doc.route_view_name %}</a></td>
-            <td>available</td>
+            <td id="{{ route }}">
+              <a href="{% url doc.route_view_name %}">
+                {% url doc.route_view_name %}
+              </a>
+            </td>
+            <td>
+              <a href="{% url doc.route_view_name %}">
+                available
+              </a>
+            </td>
           {% endif %}
-          <td>{{ doc.doc_intro | safe_docstring_display | safe }}</td>
+          <td>
+            <a href="{% url doc.route_view_name %}">
+              {{ doc.doc_intro | safe_docstring_display | safe }}
+            </a>
+          </td>
         </tr>
       {% endfor %}
     </tbody>
@@ -72,6 +89,7 @@ See top-level LICENSE file for more information
 <script type="text/javascript">
   swh.webapp.initPage('api');
   swh.webapp.highlightCode(false);
+  swh.webapp.initTableRowLinks('tr.swh-api-doc-route');
   $(document).ready(function() {
     $('table.swh-table').DataTable({
       "paging": false,

@@ -31,14 +31,6 @@ span.no-nl-marker svg path {
     fill: currentColor;
 }
 
-tr.swh-revision-log-entry {
-    cursor: pointer;
-}
-
-tr.swh-revision-log-entry:hover td {
-    background: #fecd1b;
-}
-
 tr.swh-revision-log-entry td a {
     text-decoration: none;
 }

@@ -117,3 +117,33 @@
 .swh-empty-snapshot {
     white-space: pre-line;
 }
+
+td.swh-branch-name {
+    max-width: 300px;
+}
+
+td.swh-branch-message {
+    min-width: 500px;
+    max-width: 500px;
+}
+
+td.swh-branch-date {
+    min-width: 250px;
+}
+
+td.swh-branch-name a,
+td.swh-branch-message a,
+td.swh-branch-date a {
+    text-decoration: none;
+}
+
+td.swh-release-name a,
+td.swh-release-message a,
+td.swh-release-date a {
+    text-decoration: none;
+}
+
+tr.swh-directory-entry a,
+tr.swh-search-result-entry a {
+    text-decoration: none;
+}

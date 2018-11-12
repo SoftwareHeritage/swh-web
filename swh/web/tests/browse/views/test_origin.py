@@ -802,7 +802,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
             (origin_releases_url, len(origin_releases)))
 
-        self.assertContains(resp, '<tr class="swh-origin-branch">',
+        self.assertContains(resp, '<tr class="swh-branch-entry',
                             count=len(origin_branches))
 
         for branch in origin_branches:
@@ -810,13 +810,13 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                                         url_args={'origin_type': origin_info['type'],
                                                 'origin_url': origin_info['url']},
                                         query_params={'branch': branch['name']})
-            self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_branch_url), branch['name']))
+            self.assertContains(resp, '<a href="%s">' % escape(browse_branch_url))
 
             browse_revision_url = reverse('browse-revision',
                                           url_args={'sha1_git': branch['revision']},
                                           query_params={'origin_type': origin_info['type'],
                                                         'origin': origin_info['url']})
-            self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_revision_url), branch['revision'][:7]))
+            self.assertContains(resp, '<a href="%s">' % escape(browse_revision_url))
 
 
     @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')
@@ -873,7 +873,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
             (origin_releases_url, len(origin_releases)))
 
-        self.assertContains(resp, '<tr class="swh-origin-release">',
+        self.assertContains(resp, '<tr class="swh-release-entry',
                             count=len(origin_releases))
 
         for release in origin_releases:
@@ -884,8 +884,8 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                                           url_args={'sha1_git': release['target']},
                                           query_params={'origin': origin_info['url']})
 
-            self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_release_url), release['name']))
-            self.assertContains(resp, '<a href="%s">%s</a>' % (escape(browse_revision_url), release['target'][:7]))
+            self.assertContains(resp, '<a href="%s">' % escape(browse_release_url))
+            self.assertContains(resp, '<a href="%s">' % escape(browse_revision_url))
 
 
     @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')

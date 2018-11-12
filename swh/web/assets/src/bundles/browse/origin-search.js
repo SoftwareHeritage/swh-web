@@ -34,11 +34,11 @@ function populateOriginSearchResultsTable(data, offset) {
     let table = $('#origin-search-results tbody');
     for (let i = localOffset; i < localOffset + perPage && i < data.length; ++i) {
       let elem = data[i];
-      let tableRow = '<tr>';
-      tableRow += '<td style="width: 120px;">' + elem.type + '</td>';
       let browseUrl = Urls.browse_origin(elem.url);
-      tableRow += '<td style="white-space: nowrap;"><a href="' + browseUrl + '">' + elem.url + '</a></td>';
-      tableRow += '<td id="visit-status-origin-' + elem.id + '"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>';
+      let tableRow = `<tr class="swh-search-result-entry swh-tr-hover-highlight" data-href="${browseUrl}">`;
+      tableRow += `<td style="width: 120px;"><a href="${browseUrl}">${elem.type}</a></td>`;
+      tableRow += `<td style="white-space: nowrap;"><a href="${browseUrl}">${elem.url}</a></td>`;
+      tableRow += `<td id="visit-status-origin-${elem.id}"><a href="${browseUrl}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></a></td>`;
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
@@ -47,15 +47,16 @@ function populateOriginSearchResultsTable(data, offset) {
         .then(response => response.json())
         .then(data => {
           let originId = elem.id;
-          $('#visit-status-origin-' + originId).children().remove();
+          $(`#visit-status-origin-${originId}`).children().remove();
           if (data) {
-            $('#visit-status-origin-' + originId).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');
+            $(`#visit-status-origin-${originId}`).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');
           } else {
-            $('#visit-status-origin-' + originId).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="fa fa-times"></i>');
+            $(`#visit-status-origin-${originId}`).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="fa fa-times"></i>');
           }
         });
     }
     fixTableRowsStyle();
+    swh.webapp.initTableRowLinks('tr.swh-search-result-entry');
   } else {
     $('#swh-origin-search-results').hide();
     $('#swh-no-result').text('No origins matching the search criteria were found.');

@@ -457,3 +457,15 @@ hr.swh-faded-line {
     height: 320px;
     border: none;
 }
+
+tr.swh-tr-hover-highlight {
+    cursor: pointer;
+}
+
+tr.swh-tr-hover-highlight:hover td {
+    background: #fecd1b;
+}
+
+tr.swh-api-doc-route a {
+    text-decoration: none;
+}

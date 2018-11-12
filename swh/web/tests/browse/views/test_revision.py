@@ -162,7 +162,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision-log.html')
-        self.assertContains(resp, '<tr class="swh-revision-log-entry"',
+        self.assertContains(resp, '<tr class="swh-revision-log-entry',
                             count=per_page)
         self.assertContains(resp, '<a class="page-link">Newer</a>')
         self.assertContains(resp, '<a class="page-link" href="%s">Older</a>' %
@@ -192,7 +192,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision-log.html')
-        self.assertContains(resp, '<tr class="swh-revision-log-entry"',
+        self.assertContains(resp, '<tr class="swh-revision-log-entry',
                             count=per_page)
         self.assertContains(resp, '<a class="page-link" href="%s">Newer</a>' %
                             escape(prev_page_url))
@@ -212,7 +212,7 @@ class SwhBrowseRevisionTest(SWHWebTestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision-log.html')
-        self.assertContains(resp, '<tr class="swh-revision-log-entry"',
+        self.assertContains(resp, '<tr class="swh-revision-log-entry',
                             count=per_page)
         self.assertContains(resp, '<a class="page-link" href="%s">Newer</a>' %
                             escape(prev_page_url))
