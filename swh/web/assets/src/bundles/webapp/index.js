@@ -8,7 +8,7 @@
 // webapp entrypoint bundle centralizing global custom stylesheets
 // and utility js modules used in all swh-web applications
 
-// explicitely import the vendors bundle
+// explicitly import the vendors bundle
 import '../vendors';
 
 // global swh-web custom stylesheets

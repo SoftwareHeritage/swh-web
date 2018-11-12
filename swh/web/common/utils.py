@@ -49,7 +49,7 @@ def reverse(viewname, url_args=None, query_params=None,
         url_args (dict): dictionary of url arguments indexed by their names
         query_params (dict): dictionary of query parameters to append to the
             reversed url
-        current_app (str): the name of the django app tighted to the view
+        current_app (str): the name of the django app tighten to the view
         urlconf (str): url configuration module
 
     Returns:
@@ -130,7 +130,7 @@ def shorten_path(path):
 
 
 def format_utc_iso_date(iso_date, fmt='%d %B %Y, %H:%M UTC'):
-    """Turns a string reprensation of an ISO 8601 date string
+    """Turns a string representation of an ISO 8601 date string
     to UTC and format it into a more human readable one.
 
     For instance, from the following input

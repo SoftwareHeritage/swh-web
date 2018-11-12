@@ -188,7 +188,7 @@ export function initOriginSearch() {
       if (withVisit) {
         queryParameters += '&with_visit';
       }
-      // Update the url, trigering page reload and effective search
+      // Update the url, triggering page reload and effective search
       window.location.search = queryParameters;
     });
 

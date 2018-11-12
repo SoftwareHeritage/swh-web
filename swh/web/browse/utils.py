@@ -53,7 +53,7 @@ def get_directory_entries(sha1_git):
     for e in entries:
         e['perms'] = stat.filemode(e['perms'])
         if e['type'] == 'rev':
-            # modify dir entry name to explicitely show it points
+            # modify dir entry name to explicitly show it points
             # to a revision
             e['name'] = '%s @ %s' % (e['name'], e['target'][:7])
 
@@ -495,7 +495,7 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
         origin_info (dict): a dict filled with origin information
             (id, url, type)
         visit_ts (int or str): an ISO date string or Unix timestamp to parse
-        visit_id (int): optional visit id for desambiguation in case
+        visit_id (int): optional visit id for disambiguation in case
             several visits have the same timestamp
 
     Returns:
@@ -643,7 +643,7 @@ def gen_origin_link(origin_info, link_attrs={}):
     to insert in Django templates.
 
     Args:
-        origin_info (dict): a dicted filled with origin information
+        origin_info (dict): a dict filled with origin information
             (id, type, url)
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link

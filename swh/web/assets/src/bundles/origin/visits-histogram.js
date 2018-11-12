@@ -16,7 +16,7 @@ import * as d3 from 'd3';
 
 export function createVisitsHistogram(container, visitsData, currentYear, yearClickCallback) {
 
-  // remove previously created hisogram and tooltip if any
+  // remove previously created histogram and tooltip if any
   d3.select(container).select('svg').remove();
   d3.select('div.d3-tooltip').remove();
 
@@ -51,7 +51,7 @@ export function createVisitsHistogram(container, visitsData, currentYear, yearCl
   // create y scale
   let y = d3.scaleLinear().range([height, 0]);
 
-  // create oridinal colorscale mapping visit status
+  // create ordinal colorscale mapping visit status
   let colors = d3.scaleOrdinal()
     .domain(['full', 'partial', 'failed', 'ongoing'])
     .range(['#008000', '#edc344', '#ff0000', '#0000ff']);
@@ -202,7 +202,7 @@ export function createVisitsHistogram(container, visitsData, currentYear, yearCl
     .attr('height', d => y(d[0]) - y(d[1]))
     .attr('width', d => x(d.data.x1) - x(d.data.x0) - 1)
     // mouse event callbacks used to show rectangle years
-    // but also to show tooltips when hovering the mouse
+    // but also to show tooltip when hovering the mouse
     // over the histogram bars
     .on('mouseover', d => {
       svg.selectAll('rect.year' + d.data.x1.getUTCFullYear())

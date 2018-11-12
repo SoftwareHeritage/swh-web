@@ -218,7 +218,7 @@ _filename_to_hljs_language = {
 }
 
 
-# function to fill the above dictionnaries
+# function to fill the above dictionaries
 def _init_pygments_to_hljs_map():
     if len(_pygments_lexer_to_hljs_language) == 0:
         for lexer in get_all_lexers():

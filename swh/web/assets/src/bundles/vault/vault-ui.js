@@ -67,7 +67,7 @@ export function fetchCookedObject(fetchUrl) {
 // for which the download link is not available anymore
 export function recookObject() {
   if (recookTask) {
-    // stop cookink tasks status polling
+    // stop cooking tasks status polling
     clearTimeout(checkVaultId);
     // build cook request url
     let cookingUrl;

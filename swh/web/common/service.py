@@ -256,7 +256,7 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False,
         limit: the maximum number of found origins to return
 
     Returns:
-        lisf of origin information as dict.
+        list of origin information as dict.
 
     """
     origins = storage.origin_search(url_pattern, offset, limit, regexp,

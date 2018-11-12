@@ -24,7 +24,7 @@ Layout.prototype.fixLayoutHeight = () => {
 $(document).on('DOMContentLoaded', () => {
   // restore previous sidebar state (collapsed/expanded)
   if (collapseSidebar) {
-    // hack to avoid animated transition for collasping sidebar
+    // hack to avoid animated transition for collapsing sidebar
     // when loading a page
     let sidebarTransition = $('.main-sidebar, .main-sidebar:before').css('transition');
     let sidebarEltsTransition = $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition');
