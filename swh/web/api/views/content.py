@@ -9,7 +9,7 @@ from django.http import HttpResponse
 
 from swh.web.common import service
 from swh.web.common.utils import reverse
-from swh.web.common.exc import NotFoundExc, ForbiddenExc
+from swh.web.common.exc import NotFoundExc
 from swh.web.api.apidoc import api_doc
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
@@ -226,15 +226,6 @@ def api_content_raw(request, q):
     content_raw = service.lookup_content_raw(q)
     if not content_raw:
         raise NotFoundExc('Content %s is not found.' % q)
-
-    content_filetype = service.lookup_content_filetype(q)
-    if not content_filetype:
-        raise NotFoundExc('Content %s is not available for download.' % q)
-
-    mimetype = content_filetype['mimetype']
-    if 'text/' not in mimetype:
-        raise ForbiddenExc('Only textual content is available for download. '
-                           'Actual content mimetype is %s.' % mimetype)
 
     filename = request.query_params.get('filename')
     if not filename:
