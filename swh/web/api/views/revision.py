@@ -148,7 +148,7 @@ def api_revision_log_by(request, origin_id,
             query_params['per_page'] = per_page
 
         result['headers'] = {
-            'link-next': reverse('api-revision-origin-log', kwargs=params,
+            'link-next': reverse('api-revision-origin-log', url_args=params,
                                  query_params=query_params)
         }
 
@@ -481,7 +481,7 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
 
         result['headers'] = {
             'link-next': reverse('api-revision-log',
-                                 kwargs={'sha1_git': new_last_sha1},
+                                 url_args={'sha1_git': new_last_sha1},
                                  query_params=query_params)
         }
 

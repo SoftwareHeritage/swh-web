@@ -82,7 +82,7 @@ export function initOriginSave() {
       saveRequestsTable.draw();
     });
 
-    let saveRequestAcceptedALert =
+    let saveRequestAcceptedAlert =
       `<div class="alert alert-success" role="alert">
         The "save code now" request has been accepted and will be processed as soon as possible.
       </div>`;
@@ -117,7 +117,7 @@ export function initOriginSave() {
           .then(response => response.json())
           .then(data => {
             if (data.save_request_status === 'accepted') {
-              $('#swh-origin-save-request-status').html(saveRequestAcceptedALert);
+              $('#swh-origin-save-request-status').html(saveRequestAcceptedAlert);
             } else {
               $('#swh-origin-save-request-status').html(saveRequestPendingAlert);
             }

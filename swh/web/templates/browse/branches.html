@@ -7,9 +7,8 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-{% comment %} {% block after-navbar-content %}
-<i class="fa fa-ellipsis-v fa-fw" aria-hidden="true"></i> Branches
-{% endblock %} {% endcomment %}
+
+{% load swh_templatetags %}
 
 {% block swh-browse-content %}
 {% if displayed_branches|length > 0 %}
@@ -17,7 +16,7 @@ See top-level LICENSE file for more information
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="fa fa-code-fork fa-fw"></i>Name</th>
+          <th><i class="{{ swh_object_icons.branch }} fa-fw"></i>Name</th>
           <th>Revision</th>
           <th>Message</th>
           <th>Date</th>
@@ -25,16 +24,37 @@ See top-level LICENSE file for more information
       </thead>
       <tbody>
         {% for branch in displayed_branches %}
-          <tr class="swh-origin-branch">
-            <td style="max-width: 300px"><i class="fa fa-code-fork fa-fw"></i><a href="{{ branch.directory_url }}">{{ branch.name }}</a></td>
-            <td><a href="{{ branch.revision_url }}">{{ branch.revision|slice:":7" }}</a></td>
-            <td class="swh-log-entry-message swh-table-cell-text-overflow" style="min-width: 500px" title="{{ branch.message }}">{{ branch.message }}</td>
-            <td style="min-width: 250px">{{ branch.date }}</td>
+          <tr class="swh-branch-entry swh-tr-hover-highlight" data-href="{{ branch.directory_url }}">
+            <td class="swh-branch-name">
+              <a href="{{ branch.directory_url }}">
+                <i class="{{ swh_object_icons.branch }} fa-fw"></i>{{ branch.name }}
+              </a>
+            </td>
+            <td>
+              <a href="{{ branch.revision_url }}">
+                {{ branch.revision|slice:":7" }}
+              </a>
+            </td>
+            <td class="swh-branch-message swh-table-cell-text-overflow" title="{{ branch.message }}">
+              <a href="{{ branch.directory_url }}">
+                {{ branch.message }}
+              </a>
+            </td>
+            <td class="swh-branch-date">
+              <a href="{{ branch.directory_url }}">
+                {{ branch.date }}
+              </a>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <script>
+    swh.webapp.initTableRowLinks('tr.swh-branch-entry');
+  </script>
+
 {% else %}
   <i>The list of branches is empty !</i>
 {% endif %}

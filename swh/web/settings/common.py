@@ -77,6 +77,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'swh.web.common.utils.context_processor'
             ],
             'libraries': {
                 'swh_templatetags': 'swh.web.common.swh_templatetags',
@@ -86,7 +87,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'swh.web.wsgi.application'
-
 
 DATABASES = {
     'default': {
@@ -231,3 +231,5 @@ WEBPACK_LOADER = { # noqa
 
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = 'admin'
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'

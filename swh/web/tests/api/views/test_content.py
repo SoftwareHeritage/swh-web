@@ -488,9 +488,6 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         # given
         stub_content = {'data': b'some content data'}
         mock_service.lookup_content_raw.return_value = stub_content
-        mock_service.lookup_content_filetype.return_value = {
-            'mimetype': 'text/html'
-        }
 
         # when
         rv = self.client.get(
@@ -509,17 +506,12 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
 
         mock_service.lookup_content_raw.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-        mock_service.lookup_content_filetype.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
     def test_api_content_raw_text_with_filename(self, mock_service):
         # given
         stub_content = {'data': b'some content data'}
         mock_service.lookup_content_raw.return_value = stub_content
-        mock_service.lookup_content_filetype.return_value = {
-            'mimetype': 'text/html'
-        }
 
         # when
         rv = self.client.get(
@@ -536,62 +528,6 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         self.assertEqual(rv.content, stub_content['data'])
 
         mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-        mock_service.lookup_content_filetype.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-
-    @patch('swh.web.api.views.content.service')
-    def test_api_content_raw_no_accepted_media_type_text_is_not_available_for_download( # noqa
-            self, mock_service):
-        # given
-        stub_content = {'data': b'some content data'}
-        mock_service.lookup_content_raw.return_value = stub_content
-        mock_service.lookup_content_filetype.return_value = {
-            'mimetype': 'application/octet-stream'
-        }
-
-        # when
-        rv = self.client.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-            '/raw/')
-
-        self.assertEqual(rv.status_code, 403)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'ForbiddenExc',
-            'reason': 'Only textual content is available for download. '
-                      'Actual content mimetype is application/octet-stream.'
-        })
-
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-        mock_service.lookup_content_filetype.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-
-    @patch('swh.web.api.views.content.service')
-    def test_api_content_raw_no_accepted_media_type_found_so_not_available_for_download( # noqa
-            self, mock_service):
-        # given
-        stub_content = {'data': b'some content data'}
-        mock_service.lookup_content_raw.return_value = stub_content
-        mock_service.lookup_content_filetype.return_value = None
-
-        # when
-        rv = self.client.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-            '/raw/')
-
-        self.assertEqual(rv.status_code, 404)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Content sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03 '
-                      'is not available for download.'
-        })
-
-        mock_service.lookup_content_raw.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-        mock_service.lookup_content_filetype.assert_called_once_with(
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')

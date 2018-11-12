@@ -25,31 +25,43 @@ from swh.web.common import service
 from swh.web.common.exc import BadInputExc
 from swh.web.config import get_config
 
+swh_object_icons = {
+    'branch': 'fa fa-code-fork',
+    'branches': 'fa fa-code-fork',
+    'content': 'fa fa-file-text',
+    'directory': 'fa fa-folder',
+    'person': 'fa fa-user',
+    'revisions history': 'fa fa-history',
+    'release': 'fa fa-tag',
+    'releases': 'fa fa-tag',
+    'revision': 'octicon octicon-git-commit',
+    'snapshot': 'fa fa-camera',
+    'visits': 'fa fa-calendar',
+}
 
-def reverse(viewname, args=None, kwargs=None, query_params=None,
+
+def reverse(viewname, url_args=None, query_params=None,
             current_app=None, urlconf=None):
     """An override of django reverse function supporting query parameters.
 
     Args:
-        viewname: the name of the django view from which to compute a url
-        args: list of url arguments ordered according to their position it
-        kwargs: dictionary of url arguments indexed by their names
-        query_params: dictionary of query parameters to append to the
+        viewname (str): the name of the django view from which to compute a url
+        url_args (dict): dictionary of url arguments indexed by their names
+        query_params (dict): dictionary of query parameters to append to the
             reversed url
-        current_app: the name of the django app tighted to the view
-        urlconf: url configuration module
+        current_app (str): the name of the django app tighten to the view
+        urlconf (str): url configuration module
 
     Returns:
         str: the url of the requested view with processed arguments and
         query parameters
     """
 
-    if kwargs:
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    if url_args:
+        url_args = {k: v for k, v in url_args.items() if v is not None}
 
-    url = django_reverse(
-            viewname, urlconf=urlconf, args=args,
-            kwargs=kwargs, current_app=current_app)
+    url = django_reverse(viewname, urlconf=urlconf, kwargs=url_args,
+                         current_app=current_app)
 
     if query_params:
         query_params = {k: v for k, v in query_params.items() if v}
@@ -118,7 +130,7 @@ def shorten_path(path):
 
 
 def format_utc_iso_date(iso_date, fmt='%d %B %Y, %H:%M UTC'):
-    """Turns a string reprensation of an ISO 8601 date string
+    """Turns a string representation of an ISO 8601 date string
     to UTC and format it into a more human readable one.
 
     For instance, from the following input
@@ -303,23 +315,23 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
                 if len(lines) > 1:
                     fragment += '-L' + lines[1]
             browse_url = reverse('browse-content',
-                                 kwargs={'query_string': query_string},
+                                 url_args={'query_string': query_string},
                                  query_params=query_dict) + fragment
         elif object_type == DIRECTORY:
             browse_url = reverse('browse-directory',
-                                 kwargs={'sha1_git': object_id},
+                                 url_args={'sha1_git': object_id},
                                  query_params=query_dict)
         elif object_type == RELEASE:
             browse_url = reverse('browse-release',
-                                 kwargs={'sha1_git': object_id},
+                                 url_args={'sha1_git': object_id},
                                  query_params=query_dict)
         elif object_type == REVISION:
             browse_url = reverse('browse-revision',
-                                 kwargs={'sha1_git': object_id},
+                                 url_args={'sha1_git': object_id},
                                  query_params=query_dict)
         elif object_type == SNAPSHOT:
             browse_url = reverse('browse-snapshot',
-                                 kwargs={'snapshot_id': object_id},
+                                 url_args={'snapshot_id': object_id},
                                  query_params=query_dict)
     except ValidationError as ve:
         raise BadInputExc('Error when parsing identifier. %s' %
@@ -390,3 +402,11 @@ def is_recaptcha_valid(request, recaptcha_response):
         },
         verify=True
     ).json().get("success", False)
+
+
+def context_processor(request):
+    """
+    Django context processor used to inject variables
+    in all swh-web templates.
+    """
+    return {'swh_object_icons': swh_object_icons}

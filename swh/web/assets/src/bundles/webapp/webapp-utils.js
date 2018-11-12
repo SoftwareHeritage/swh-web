@@ -24,7 +24,7 @@ Layout.prototype.fixLayoutHeight = () => {
 $(document).on('DOMContentLoaded', () => {
   // restore previous sidebar state (collapsed/expanded)
   if (collapseSidebar) {
-    // hack to avoid animated transition for collasping sidebar
+    // hack to avoid animated transition for collapsing sidebar
     // when loading a page
     let sidebarTransition = $('.main-sidebar, .main-sidebar:before').css('transition');
     let sidebarEltsTransition = $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition');
@@ -114,4 +114,22 @@ export function showModalConfirm(title, message, callback) {
     $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').unbind('click');
   });
   $('#swh-web-modal-confirm').modal('show');
+}
+
+let swhObjectIcons;
+
+export function setSwhObjectIcons(icons) {
+  swhObjectIcons = icons;
+}
+
+export function getSwhObjectIcon(swhObjectType) {
+  return swhObjectIcons[swhObjectType];
+}
+
+export function initTableRowLinks(trSelector) {
+  $(trSelector).on('click', function() {
+    window.location = $(this).data('href');
+    return false;
+  });
+  $('td > a').on('click', function(e) { e.stopPropagation(); });
 }

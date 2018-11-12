@@ -57,7 +57,7 @@ def compute_link_header(rv, options):
 
 def filter_by_fields(request, data):
     """Extract a request parameter 'fields' if it exists to permit the filtering on
-    he data dict's keys.
+    the data dict's keys.
 
     If such field is not provided, returns the data as is.
 

@@ -47,13 +47,16 @@ Revision
     a given one. In other words, it shows a commit log.
     The following data are displayed for each log entry:
 
-        * author of the revision
         * link to browse the revision
-        * message associated to the revision
+        * author of the revision
         * date of the revision
-        * link to browse the associated source tree
+        * message associated to the revision
+        * commit date of the revision
 
-    N log entries are displayed per page (default is 20). In order to navigate
+    By default, the revisions are ordered in reverse chronological order of
+    their commit date.
+
+    N log entries are displayed per page (default is 100). In order to navigate
     in a large history, two buttons are present at the bottom of the view:
 
         * *Newer*: fetch and display if available the N more recent log entries
@@ -63,13 +66,10 @@ Revision
 
     :param string sha1_git: hexadecimal representation for the *sha1_git*
         identifier of a SWH revision
-    :query string revs_breadcrumb: used internally to store
-        the navigation breadcrumbs (i.e. the list of descendant revisions
-        visited so far). It must be a string in the form
-        "<rev_1>[/<rev_2>/.../<rev_n>]" where rev_i corresponds to a
-        revision sha1_git.
     :query int per_page: the number of log entries to display per page
-        (default is 20, max is 50)
+    :query int offset: the number of revisions to skip before returning those to display
+    :query str revs_ordering: specify the revisions ordering, possible values are *committer_date*,
+        *dfs*, *dfs_post* and *bfs*
     :statuscode 200: no error
     :statuscode 404: requested revision can not be found in the SWH archive
 

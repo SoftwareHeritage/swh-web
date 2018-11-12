@@ -15,18 +15,17 @@ from django.utils.safestring import mark_safe
 from swh.model.identifiers import persistent_identifier
 from swh.web.common import service
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, gen_path_info
+    reverse, format_utc_iso_date, gen_path_info, swh_object_icons
 )
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
-    gen_link, gen_person_link, gen_revision_link,
-    prepare_revision_log_for_display,
+    gen_link, gen_person_link, gen_revision_link, gen_revision_url,
     get_snapshot_context, gen_snapshot_directory_link,
     get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
     content_display_max_size, gen_snapshot_link, get_readme_to_display,
-    get_swh_persistent_ids
+    get_swh_persistent_ids, format_log_entries
 )
 
 
@@ -37,12 +36,12 @@ def _gen_content_url(revision, query_string, path, snapshot_context):
         query_params = snapshot_context['query_params']
         query_params['revision'] = revision['id']
         content_url = reverse('browse-origin-content',
-                              kwargs=url_args,
+                              url_args=url_args,
                               query_params=query_params)
     else:
         content_path = '%s/%s' % (revision['directory'], path)
         content_url = reverse('browse-content',
-                              kwargs={'query_string': query_string},
+                              url_args={'query_string': query_string},
                               query_params={'path': content_path})
     return content_url
 
@@ -93,7 +92,7 @@ def _gen_revision_changes_list(revision, changes, snapshot_context):
                     'to_query_string': to_query_string}
         query_params = {'path': change['path']}
         change['diff_url'] = reverse('diff-contents',
-                                     kwargs=url_args,
+                                     url_args=url_args,
                                      query_params=query_params)
 
         hasher.update(diff_id.encode('utf-8'))
@@ -171,7 +170,7 @@ def _revision_diff(request, sha1_git):
     return HttpResponse(diff_data_json, content_type='application/json')
 
 
-NB_LOG_ENTRIES = 20
+NB_LOG_ENTRIES = 100
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/log/',
@@ -181,50 +180,57 @@ def revision_log_browse(request, sha1_git):
     Django view that produces an HTML display of the history
     log for a SWH revision identified by its id.
 
-    The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`.
+    The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`
     """ # noqa
     try:
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
-        revision_log = service.lookup_revision_log(sha1_git,
-                                                   limit=per_page+1)
-        revision_log = list(revision_log)
+        offset = int(request.GET.get('offset', 0))
+        revs_ordering = request.GET.get('revs_ordering', 'committer_date')
+        session_key = 'rev_%s_log_ordering_%s' % (sha1_git, revs_ordering)
+        rev_log_session = request.session.get(session_key, None)
+        rev_log = []
+        revs_walker_state = None
+        if rev_log_session:
+            rev_log = rev_log_session['rev_log']
+            revs_walker_state = rev_log_session['revs_walker_state']
+
+        if len(rev_log) < offset+per_page:
+            revs_walker = \
+                service.get_revisions_walker(revs_ordering, sha1_git,
+                                             max_revs=offset+per_page+1,
+                                             state=revs_walker_state)
+
+            rev_log += list(revs_walker)
+            revs_walker_state = revs_walker.export_state()
+
+        revision_log = rev_log[offset:offset+per_page]
+
+        request.session[session_key] = {
+            'rev_log': rev_log,
+            'revs_walker_state': revs_walker_state
+        }
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    revs_breadcrumb = request.GET.get('revs_breadcrumb', None)
+    revs_ordering = request.GET.get('revs_ordering', '')
 
-    revision_log_display_data = prepare_revision_log_for_display(
-        revision_log, per_page, revs_breadcrumb)
-
-    prev_rev = revision_log_display_data['prev_rev']
-    prev_revs_breadcrumb = revision_log_display_data['prev_revs_breadcrumb']
     prev_log_url = None
-    if prev_rev:
-        prev_log_url = \
-            reverse('browse-revision-log',
-                    kwargs={'sha1_git': prev_rev},
-                    query_params={'revs_breadcrumb': prev_revs_breadcrumb,
-                                  'per_page': per_page})
+    if len(rev_log) > offset + per_page:
+        prev_log_url = reverse('browse-revision-log',
+                               url_args={'sha1_git': sha1_git},
+                               query_params={'per_page': per_page,
+                                             'offset': offset + per_page,
+                                             'revs_ordering': revs_ordering})
 
-    next_rev = revision_log_display_data['next_rev']
-    next_revs_breadcrumb = revision_log_display_data['next_revs_breadcrumb']
     next_log_url = None
-    if next_rev:
-        next_log_url = \
-            reverse('browse-revision-log',
-                    kwargs={'sha1_git': next_rev},
-                    query_params={'revs_breadcrumb': next_revs_breadcrumb,
-                                  'per_page': per_page})
+    if offset != 0:
+        next_log_url = reverse('browse-revision-log',
+                               url_args={'sha1_git': sha1_git},
+                               query_params={'per_page': per_page,
+                                             'offset': offset - per_page,
+                                             'revs_ordering': revs_ordering})
 
-    revision_log_data = revision_log_display_data['revision_log_data']
-
-    for log in revision_log_data:
-        log['directory'] = gen_directory_link(
-            log['directory'],
-            link_text='<i class="fa fa-folder-open fa-fw" aria-hidden="true">'
-                      '</i>Browse files',
-            link_attrs={'class': 'btn btn-default btn-sm',
-                        'role': 'button'})
+    revision_log_data = format_log_entries(revision_log, per_page)
 
     swh_rev_id = persistent_identifier('revision', sha1_git)
 
@@ -232,14 +238,13 @@ def revision_log_browse(request, sha1_git):
                   {'heading': 'Revision history',
                    'swh_object_id': swh_rev_id,
                    'swh_object_name': 'Revisions history',
-                   'swh_object_icon': 'fa fa-history',
                    'swh_object_metadata': None,
                    'revision_log': revision_log_data,
+                   'revs_ordering': revs_ordering,
                    'next_log_url': next_log_url,
                    'prev_log_url': prev_log_url,
                    'breadcrumbs': None,
                    'top_right_link': None,
-                   'top_right_link_text': None,
                    'snapshot_context': None,
                    'vault_cooking': None,
                    'show_actions_menu': True,
@@ -268,7 +273,7 @@ def revision_browse(request, sha1_git, extra_path=None):
             if dir_info and dir_info['type'] == 'file':
                 file_raw_url = reverse(
                     'browse-content-raw',
-                    kwargs={'query_string': dir_info['checksums']['sha1']})
+                    url_args={'query_string': dir_info['checksums']['sha1']})
                 return redirect(file_raw_url)
         origin_info = None
         snapshot_context = None
@@ -290,7 +295,7 @@ def revision_browse(request, sha1_git, extra_path=None):
                                                         timestamp, visit_id)
             except Exception:
                 raw_rev_url = reverse('browse-revision',
-                                      kwargs={'sha1_git': sha1_git})
+                                      url_args={'sha1_git': sha1_git})
                 error_message = \
                     ('The Software Heritage archive has a revision '
                      'with the hash you provided but the origin '
@@ -337,8 +342,8 @@ def revision_browse(request, sha1_git, extra_path=None):
         revision_data['committer'] = \
             gen_person_link(revision['committer']['id'],
                             revision['committer']['name'], snapshot_context)
-    revision_data['committer date'] = format_utc_iso_date(
-        revision['committer_date'])
+    revision_data['committer date'] = \
+        format_utc_iso_date(revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])
     if snapshot_context:
         revision_data['snapshot id'] = snapshot_id
@@ -386,16 +391,10 @@ def revision_browse(request, sha1_git, extra_path=None):
     if revision['message']:
         message_lines = revision['message'].split('\n')
 
-    parents_links = '<b>%s parent%s</b> ' %  \
-        (len(revision['parents']),
-         '' if len(revision['parents']) == 1 else 's')
-    parents_links += '<i class="octicon octicon-git-commit fa-fw"></i> '
+    parents = []
     for p in revision['parents']:
-        parent_link = gen_revision_link(p, shorten_id=True,
-                                        snapshot_context=snapshot_context)
-        parents_links += parent_link
-        if p != revision['parents'][-1]:
-            parents_links += ' + '
+        parent_url = gen_revision_url(p, snapshot_context)
+        parents.append({'id': p, 'url': parent_url})
 
     path_info = gen_path_info(path)
 
@@ -408,13 +407,13 @@ def revision_browse(request, sha1_git, extra_path=None):
     breadcrumbs = []
     breadcrumbs.append({'name': revision['directory'][:7],
                         'url': reverse('browse-revision',
-                                       kwargs={'sha1_git': sha1_git},
+                                       url_args={'sha1_git': sha1_git},
                                        query_params=query_params)})
     for pi in path_info:
         query_params['path'] = pi['path']
         breadcrumbs.append({'name': pi['name'],
                             'url': reverse('browse-revision',
-                                           kwargs={'sha1_git': sha1_git},
+                                           url_args={'sha1_git': sha1_git},
                                            query_params=query_params)})
 
     vault_cooking = {
@@ -451,12 +450,14 @@ def revision_browse(request, sha1_git, extra_path=None):
         query_params = {}
         if path:
             query_params['filename'] = path_info[-1]['name']
-        top_right_link = reverse('browse-content-raw',
-                                 kwargs={'query_string': query_string},
-                                 query_params=query_params)
-        top_right_link_text = mark_safe(
-            '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
-            '</i>Raw File')
+
+        top_right_link = {
+            'url': reverse('browse-content-raw',
+                           url_args={'query_string': query_string},
+                           query_params=query_params),
+            'icon': swh_object_icons['content'],
+            'text': 'Raw File'
+        }
 
         swh_objects.append({'type': 'content',
                             'id': file_info['target']})
@@ -468,16 +469,16 @@ def revision_browse(request, sha1_git, extra_path=None):
         for d in dirs:
             if d['type'] == 'rev':
                 d['url'] = reverse('browse-revision',
-                                   kwargs={'sha1_git': d['target']})
+                                   url_args={'sha1_git': d['target']})
             else:
                 query_params['path'] = path + d['name']
                 d['url'] = reverse('browse-revision',
-                                   kwargs={'sha1_git': sha1_git},
+                                   url_args={'sha1_git': sha1_git},
                                    query_params=query_params)
         for f in files:
             query_params['path'] = path + f['name']
             f['url'] = reverse('browse-revision',
-                               kwargs={'sha1_git': sha1_git},
+                               url_args={'sha1_git': sha1_git},
                                query_params=query_params)
             if f['length'] is not None:
                 f['length'] = filesizeformat(f['length'])
@@ -486,10 +487,11 @@ def revision_browse(request, sha1_git, extra_path=None):
 
         readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
-        top_right_link = get_revision_log_url(sha1_git, snapshot_context)
-        top_right_link_text = mark_safe(
-            '<i class="fa fa-history fa-fw" aria-hidden="true"></i>'
-            'History')
+        top_right_link = {
+            'url': get_revision_log_url(sha1_git, snapshot_context),
+            'icon': swh_object_icons['revisions history'],
+            'text': 'History'
+        }
 
         vault_cooking['directory_context'] = True
         vault_cooking['directory_id'] = dir_id
@@ -497,7 +499,8 @@ def revision_browse(request, sha1_git, extra_path=None):
         swh_objects.append({'type': 'directory',
                             'id': dir_id})
 
-    diff_revision_url = reverse('diff-revision', kwargs={'sha1_git': sha1_git},
+    diff_revision_url = reverse('diff-revision',
+                                url_args={'sha1_git': sha1_git},
                                 query_params={'origin_type': origin_type,
                                               'origin': origin_url,
                                               'timestamp': timestamp,
@@ -521,11 +524,10 @@ def revision_browse(request, sha1_git, extra_path=None):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Revision',
-                   'swh_object_icon': 'octicon octicon-git-commit',
                    'swh_object_metadata': revision_data,
                    'message_header': message_lines[0],
                    'message_body': '\n'.join(message_lines[1:]),
-                   'parents_links': mark_safe(parents_links),
+                   'parents': parents,
                    'snapshot_context': snapshot_context,
                    'dirs': dirs,
                    'files': files,
@@ -539,7 +541,6 @@ def revision_browse(request, sha1_git, extra_path=None):
                    'readme_html': readme_html,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': top_right_link,
-                   'top_right_link_text': top_right_link_text,
                    'vault_cooking': vault_cooking,
                    'diff_revision_url': diff_revision_url,
                    'show_actions_menu': True,

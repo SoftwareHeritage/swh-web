@@ -79,7 +79,7 @@ def _admin_origin_save_add_authorized_url(request, origin_url):
         pending_save_requests = \
             SaveOriginRequest.objects.filter(origin_url__startswith=origin_url,
                                              status=SAVE_REQUEST_PENDING)
-        # create origin save tasks for previoulsy pending requests
+        # create origin save tasks for previously pending requests
         for psr in pending_save_requests:
             create_save_origin_request(psr.origin_type, psr.origin_url)
         status_code = 200

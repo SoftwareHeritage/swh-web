@@ -67,7 +67,7 @@ export function fetchCookedObject(fetchUrl) {
 // for which the download link is not available anymore
 export function recookObject() {
   if (recookTask) {
-    // stop cookink tasks status polling
+    // stop cooking tasks status polling
     clearTimeout(checkVaultId);
     // build cook request url
     let cookingUrl;
@@ -176,11 +176,7 @@ function checkVaultCookingTasks() {
                        `following commands:\n\n$ git init\n$ zcat ${cookingTask.object_id}.gitfast.gz | git fast-import">`;
           }
           tableRow += '<td><input type="checkbox" class="vault-task-toggle-selection"/></td>';
-          if (cookingTask.object_type === 'directory') {
-            tableRow += '<td style="width: 120px"><i class="fa fa-folder fa-fw" aria-hidden="true"></i>directory</td>';
-          } else {
-            tableRow += '<td style="width: 120px"><i class="octicon octicon-git-commit fa-fw"></i>revision</td>';
-          }
+          tableRow += `<td style="width: 120px"><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} fa-fw"></i>${cookingTask.object_type}</td>`;
           tableRow += `<td class="vault-object-id" data-object-id="${cookingTask.object_id}"><a href="${browseUrl}">${cookingTask.object_id}</a></td>`;
           tableRow += `<td style="width: 350px">${progressBar.outerHTML}</td>`;
           let downloadLink = downloadLinkWait;

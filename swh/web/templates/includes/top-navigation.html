@@ -13,10 +13,10 @@ See top-level LICENSE file for more information
       <div class="dropdown float-left" id="swh-branches-releases-dd">
         <button class="btn btn-block btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
           {% if snapshot_context.branch %}
-            <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
+            <i class="{{ swh_object_icons.branch }} fa-fw" aria-hidden="true"></i>
             Branch: <strong>{{ snapshot_context.branch }}</strong>
           {% else %}
-            <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
+            <i class="{{ swh_object_icons.release }} fa-fw" aria-hidden="true"></i>
             Release: <strong>{{ snapshot_context.release }}</strong>
           {% endif %}
           <span class="caret"></span>
@@ -31,7 +31,7 @@ See top-level LICENSE file for more information
               {% for b in snapshot_context.branches %}
                 <li class="swh-branch">
                   <a href="{{ b.url | safe }}">
-                    <i class="fa fa-code-fork fa-fw" aria-hidden="true"></i>
+                    <i class="{{ swh_object_icons.branch }} fa-fw" aria-hidden="true"></i>
                     {% if b.name == snapshot_context.branch %}
                       <i class="fa fa-check fa-fw" aria-hidden="true"></i>
                     {% else %}
@@ -56,7 +56,7 @@ See top-level LICENSE file for more information
                   {% if r.target_type == 'revision' %}
                     <li class="swh-release">
                       <a href="{{ r.url | safe }}">
-                        <i class="fa fa-tag fa-fw" aria-hidden="true"></i>
+                        <i class="{{ swh_object_icons.release }} fa-fw" aria-hidden="true"></i>
                         {% if r.name == snapshot_context.release %}
                           <i class="fa fa-check fa-fw" aria-hidden="true"></i>
                         {% else %}
@@ -87,7 +87,12 @@ See top-level LICENSE file for more information
 
   <div class="btn-group float-right swh-actions-dropdown">
     {% if top_right_link %}
-      <a href="{{ top_right_link | safe }}" class="btn btn-default btn-sm" role="button">{{ top_right_link_text }}</a>
+      <a href="{{ top_right_link.url | safe }}" class="btn btn-default btn-sm" role="button">
+        {% if top_right_link.icon %}
+          <i class="{{ top_right_link.icon }} fa-fw"></i>
+        {% endif %}
+        {{ top_right_link.text }}
+      </a>
     {% endif %}
     {% if show_actions_menu %}
       <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">

@@ -855,5 +855,51 @@ revision_history_log_test = \
   'metadata': {},
   'parents': ['8aa8a7b63fed3c7909a6d4f15159c036a0561d64'],
   'synthetic': False,
-  'type': 'git'}
+  'type': 'git'},
+ {'author': {
+    'email': 'tobias.koppers@googlemail.com',
+    'fullname': 'Tobias Koppers <tobias.koppers@googlemail.com>',
+    'id': 141959,
+    'name': 'Tobias Koppers'
+  },
+  'committer': {
+    'email': 'noreply@github.com',
+    'fullname': 'GitHub <noreply@github.com>',
+    'id': 10932771,
+    'name': 'GitHub'
+  },
+  'committer_date': '2017-04-21T19:00:50+02:00',
+  'committer_url': '/api/1/person/10932771/',
+  'date': '2017-04-21T19:00:50+02:00',
+  'directory': '52cf6f28b1dbfe98f485ea78ae03942f55cd8fa0',
+  'id': 'd7f30392ddda27613e0ea05cb60ec985b4f75e5c',
+  'merge': True,
+  'message': 'Merge pull request #4729 from simon04/provide-plugin-es2015\n\nProvidePlugin: add test case for ES2015 modules',
+  'metadata': {},
+  'parents': ['88f37348e7de240d794713c0c38170f17a0a8c0e',
+              'd0bbf967fb51c031e16c5dfe040afce9a4113b5b'],
+  'synthetic': False,
+  'type': 'git'},
+ {'author': {
+    'email': 'kevin@fossa.io',
+    'fullname': 'Kevin Wang <kevin@fossa.io>',
+    'id': 14855611,
+    'name': 'Kevin Wang'
+  },
+  'committer': {
+    'email': 'noreply@github.com',
+    'fullname': 'GitHub <noreply@github.com>',
+    'id': 10932771,
+    'name': 'GitHub'
+  },
+  'committer_date': '2017-04-21T18:28:41-07:00',
+  'date': '2017-04-21T18:28:41-07:00',
+  'directory': '412c6f5c00ce7d02efcdd6f23160a36eb4e5a1f4',
+  'id': 'ff211108d888908d41470cea6187133ccdb56e87',
+  'merge': False,
+  'message': 'Add license scan report and status',
+  'metadata': {},
+  'parents': ['d7f30392ddda27613e0ea05cb60ec985b4f75e5c'],
+  'synthetic': False,
+  'type': 'git'},
 ]

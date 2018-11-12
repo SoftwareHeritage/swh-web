@@ -18,9 +18,8 @@ python-dateutil
 pyyaml
 requests
 
-#Doc dependencies
+# Doc dependencies
 sphinx
 sphinxcontrib-httpdomain
 
-# Test dependencies
 

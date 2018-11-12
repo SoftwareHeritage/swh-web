@@ -28,11 +28,11 @@ class SwhBrowseIdTest(SWHWebTestCase):
         cnt_sha1_git = stub_content_text_data['checksums']['sha1_git']
         swh_id = swh_id_prefix + 'cnt:' + cnt_sha1_git
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id})
+                      url_args={'swh_id': swh_id})
 
         query_string = 'sha1_git:' + cnt_sha1_git
         content_browse_url = reverse('browse-content',
-                                     kwargs={'query_string': query_string})
+                                     url_args={'query_string': query_string})
 
         resp = self.client.get(url)
 
@@ -42,10 +42,10 @@ class SwhBrowseIdTest(SWHWebTestCase):
     def test_directory_id_browse(self):
         swh_id = swh_id_prefix + 'dir:' + stub_root_directory_sha1
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id})
+                      url_args={'swh_id': swh_id})
 
         directory_browse_url = reverse('browse-directory',
-                                       kwargs={'sha1_git': stub_root_directory_sha1})
+                                       url_args={'sha1_git': stub_root_directory_sha1})
 
         resp = self.client.get(url)
 
@@ -55,10 +55,10 @@ class SwhBrowseIdTest(SWHWebTestCase):
     def test_revision_id_browse(self):
         swh_id = swh_id_prefix + 'rev:' + revision_id_test
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id})
+                      url_args={'swh_id': swh_id})
 
         revision_browse_url = reverse('browse-revision',
-                                       kwargs={'sha1_git': revision_id_test})
+                                       url_args={'sha1_git': revision_id_test})
 
         resp = self.client.get(url)
 
@@ -69,11 +69,11 @@ class SwhBrowseIdTest(SWHWebTestCase):
                         'origin': 'https://github.com/webpack/webpack'}
 
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id},
+                      url_args={'swh_id': swh_id},
                       query_params=query_params)
 
         revision_browse_url = reverse('browse-revision',
-                                       kwargs={'sha1_git': revision_id_test},
+                                       url_args={'sha1_git': revision_id_test},
                                        query_params=query_params)
 
         resp = self.client.get(url)
@@ -83,10 +83,10 @@ class SwhBrowseIdTest(SWHWebTestCase):
     def test_release_id_browse(self):
         swh_id = swh_id_prefix + 'rel:' + stub_release['id']
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id})
+                      url_args={'swh_id': swh_id})
 
         release_browse_url = reverse('browse-release',
-                                     kwargs={'sha1_git': stub_release['id']})
+                                     url_args={'sha1_git': stub_release['id']})
 
         resp = self.client.get(url)
 
@@ -97,11 +97,11 @@ class SwhBrowseIdTest(SWHWebTestCase):
                         'origin': 'https://github.com/python/cpython'}
 
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id},
+                      url_args={'swh_id': swh_id},
                       query_params=query_params)
 
         release_browse_url = reverse('browse-release',
-                                     kwargs={'sha1_git': stub_release['id']},
+                                     url_args={'sha1_git': stub_release['id']},
                                      query_params=query_params)
 
         resp = self.client.get(url)
@@ -111,7 +111,7 @@ class SwhBrowseIdTest(SWHWebTestCase):
     def test_bad_id_browse(self):
         swh_id = swh_id_prefix + 'foo:' + stub_release['id']
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id})
+                      url_args={'swh_id': swh_id})
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 400)
@@ -121,11 +121,11 @@ class SwhBrowseIdTest(SWHWebTestCase):
         optional_parts = ';lines=4-20;origin=https://github.com/user/repo'
         swh_id = swh_id_prefix + 'cnt:' + cnt_sha1_git + optional_parts
         url = reverse('browse-swh-id',
-                      kwargs={'swh_id': swh_id})
+                      url_args={'swh_id': swh_id})
 
         query_string = 'sha1_git:' + cnt_sha1_git
         content_browse_url = reverse('browse-content',
-                                     kwargs={'query_string': query_string},
+                                     url_args={'query_string': query_string},
                                      query_params={'origin' : 'https://github.com/user/repo'})
         content_browse_url += '#L4-L20'
 

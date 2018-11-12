@@ -257,13 +257,16 @@ Origin history
 
     The following data are displayed for each log entry:
 
+        * link to browse the associated revision in the origin context
         * author of the revision
-        * link to the revision metadata
-        * message associated the revision
         * date of the revision
-        * link to browse the associated source tree in the origin context
+        * message associated the revision
+        * commit date of the revision
 
-    N log entries are displayed per page (default is 20). In order to navigate
+    By default, the revisions are ordered in reverse chronological order of
+    their commit date.
+
+    N log entries are displayed per page (default is 100). In order to navigate
     in a large history, two buttons are present at the bottom of the view:
 
         * *Newer*: fetch and display if available the N more recent log entries
@@ -279,13 +282,10 @@ Origin history
 
     :param string origin_type: the type of the SWH origin (*git*, *svn*, *deb* ...)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :query string revs_breadcrumb: used internally to store
-        the navigation breadcrumbs (i.e. the list of descendant revisions
-        visited so far). It must be a string in the form
-        "(rev_1)[/(rev_2)/.../(rev_n)]" where rev_i corresponds to a
-        revision *sha1_git*.
     :query int per_page: the number of log entries to display per page
-        (default is 20, max is 50)
+    :query int offset: the number of revisions to skip before returning those to display
+    :query str revs_ordering: specify the revisions ordering, possible values are *committer_date*,
+        *dfs*, *dfs_post* and *bfs*
     :query string branch: specify the origin branch name from which
         to retrieve the commit log
     :query string release: specify the origin release name from which
