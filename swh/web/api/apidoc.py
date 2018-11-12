@@ -62,7 +62,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         documentation transform rst to html when rendering).
         """
         par = par.replace('\n', ' ')
-        # keep empahasized and strong text
+        # keep emphasized and strong text
         par = par.replace('<emphasis>', '*')
         par = par.replace('</emphasis>', '*')
         par = par.replace('<strong>', '**')
@@ -169,10 +169,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 
     def visit_literal_block(self, node):
         """
-        Visit litteral blocks
+        Visit literal blocks
         """
         text = node.astext()
-        # litteral block in endpoint description
+        # literal block in endpoint description
         if not self.field_list_visited:
             self.data['description'] += ':\n\n\t%s' % text
         # extract example url
@@ -224,7 +224,7 @@ def _parse_httpdomain_doc(doc, data):
             # emphasize url arguments for html rendering
             url = re.sub(r'\((\w+)\)', r' **\(\1\)** ', url)
             urls.append(url)
-    # parse the rst doctring and do not print system messages about
+    # parse the rst docstring and do not print system messages about
     # unknown httpdomain roles
     document = parse_rst('\n'.join(doc_lines_filtered), report_level=5)
     # remove the system_message nodes from the parsed document

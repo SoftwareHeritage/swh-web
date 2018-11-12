@@ -38,10 +38,10 @@ class SwhBrowseContentTest(SWHWebTestCase):
         sha1_git = stub_content_text_data['checksums']['sha1_git']
 
         url = reverse('browse-content',
-                      kwargs={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
+                          url_args={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
 
@@ -54,7 +54,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         swh_cnt_id = get_swh_persistent_id('content', sha1_git)
         swh_cnt_id_url = reverse('browse-swh-id',
-                                 kwargs={'swh_id': swh_cnt_id})
+                                 url_args={'swh_id': swh_cnt_id})
         self.assertContains(resp, swh_cnt_id)
         self.assertContains(resp, swh_cnt_id_url)
 
@@ -65,10 +65,10 @@ class SwhBrowseContentTest(SWHWebTestCase):
         sha1_git = stub_content_text_no_highlight_data['checksums']['sha1_git']
 
         url = reverse('browse-content',
-                      kwargs={'query_string': stub_content_text_no_highlight_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': stub_content_text_no_highlight_data['checksums']['sha1']}) # noqa
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'query_string': stub_content_text_no_highlight_data['checksums']['sha1']}) # noqa
+                          url_args={'query_string': stub_content_text_no_highlight_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
 
@@ -81,7 +81,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         swh_cnt_id = get_swh_persistent_id('content', sha1_git)
         swh_cnt_id_url = reverse('browse-swh-id',
-                                 kwargs={'swh_id': swh_cnt_id})
+                                 url_args={'swh_id': swh_cnt_id})
 
         self.assertContains(resp, swh_cnt_id)
         self.assertContains(resp, swh_cnt_id_url)
@@ -101,7 +101,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         sha1_git = non_utf8_encoded_content_data['checksums']['sha1_git']
 
         url = reverse('browse-content',
-                      kwargs={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
 
         try:
             resp = self.client.get(url)
@@ -109,7 +109,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
             self.assertTemplateUsed('browse/content.html')
             swh_cnt_id = get_swh_persistent_id('content', sha1_git)
             swh_cnt_id_url = reverse('browse-swh-id',
-                                     kwargs={'swh_id': swh_cnt_id})
+                                     url_args={'swh_id': swh_cnt_id})
             self.assertContains(resp, swh_cnt_id_url)
             self.assertContains(resp, escape(non_utf8_encoded_content.decode(non_utf8_encoding).encode('utf-8'))) # noqa
         except DjangoUnicodeDecodeError:
@@ -122,10 +122,10 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_request_content.return_value = stub_content_bin_data
 
         url = reverse('browse-content',
-                      kwargs={'query_string': stub_content_bin_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': stub_content_bin_data['checksums']['sha1']}) # noqa
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'query_string': stub_content_bin_data['checksums']['sha1']}) # noqa
+                          url_args={'query_string': stub_content_bin_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
 
@@ -144,7 +144,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_request_content.return_value = stub_content_text_data
 
         url = reverse('browse-content',
-                      kwargs={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
+                      url_args={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
                       query_params={'path': stub_content_text_path_with_root_dir}) # noqa
 
         resp = self.client.get(url)
@@ -165,7 +165,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         path_info = gen_path_info(path)
 
         root_dir_url = reverse('browse-directory',
-                               kwargs={'sha1_git': root_dir_sha1})
+                               url_args={'sha1_git': root_dir_sha1})
 
         self.assertContains(resp, '<li class="swh-path">',
                             count=len(path_info)+1)
@@ -175,15 +175,15 @@ class SwhBrowseContentTest(SWHWebTestCase):
 
         for p in path_info:
             dir_url = reverse('browse-directory',
-                              kwargs={'sha1_git': root_dir_sha1,
-                                      'path': p['path']})
+                              url_args={'sha1_git': root_dir_sha1,
+                                        'path': p['path']})
             self.assertContains(resp, '<a href="' + dir_url + '">' +
                                 p['name'] + '</a>')
 
         self.assertContains(resp, '<li>' + filename + '</li>')
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
+                          url_args={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
                           query_params={'filename': filename})
         self.assertContains(resp, url_raw)
 
@@ -192,7 +192,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_request_content.return_value = stub_content_text_data
 
         url = reverse('browse-content-raw',
-                      kwargs={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
 
@@ -205,7 +205,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         filename = stub_content_text_path_with_root_dir.split('/')[-1]
 
         url = reverse('browse-content-raw',
-                      kwargs={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
+                      url_args={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
                       query_params={'filename': filename})
 
         resp = self.client.get(url)
@@ -229,7 +229,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_service.lookup_content_license.return_value = None
 
         url = reverse('browse-content-raw',
-                      kwargs={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': non_utf8_encoded_content_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -241,7 +241,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_request_content.return_value = stub_content_bin_data
 
         url = reverse('browse-content-raw',
-                      kwargs={'query_string': stub_content_bin_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': stub_content_bin_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
 
@@ -253,7 +253,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEqual(resp.content, stub_content_bin_data['raw_data'])
 
         url = reverse('browse-content-raw',
-                      kwargs={'query_string': stub_content_bin_data['checksums']['sha1']}, # noqa
+                      url_args={'query_string': stub_content_bin_data['checksums']['sha1']}, # noqa
                       query_params={'filename': stub_content_bin_filename})
 
         resp = self.client.get(url)
@@ -267,7 +267,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
     @patch('swh.web.browse.views.content.request_content')
     def test_content_request_errors(self, mock_request_content):
 
-        url = reverse('browse-content', kwargs={'query_string': '123456'})
+        url = reverse('browse-content', url_args={'query_string': '123456'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 400)
         self.assertTemplateUsed('error.html')
@@ -275,7 +275,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_request_content.side_effect = NotFoundExc('content not found')
 
         url = reverse('browse-content',
-                      kwargs={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': stub_content_text_data['checksums']['sha1']}) # noqa
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
@@ -290,7 +290,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_service.lookup_content_raw.side_effect = NotFoundExc('Content bytes not available!') # noqa
 
         url = reverse('browse-content',
-                      kwargs={'query_string': content_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': content_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
@@ -301,10 +301,10 @@ class SwhBrowseContentTest(SWHWebTestCase):
         mock_request_content.return_value = stub_content_too_large_data
 
         url = reverse('browse-content',
-                      kwargs={'query_string': stub_content_too_large_data['checksums']['sha1']}) # noqa
+                      url_args={'query_string': stub_content_too_large_data['checksums']['sha1']}) # noqa
 
         url_raw = reverse('browse-content-raw',
-                          kwargs={'query_string': stub_content_too_large_data['checksums']['sha1']}) # noqa
+                          url_args={'query_string': stub_content_too_large_data['checksums']['sha1']}) # noqa
 
         resp = self.client.get(url)
 

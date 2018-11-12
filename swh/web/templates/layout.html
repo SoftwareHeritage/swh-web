@@ -9,6 +9,7 @@ See top-level LICENSE file for more information
 
 {% load static %}
 {% load render_bundle from webpack_loader %}
+{% load swh_templatetags %}
 
 <html lang="en">
   <head>
@@ -177,4 +178,9 @@ See top-level LICENSE file for more information
       <a href="#top"><img alt="back to top" src="{% static 'img/arrow-up-small.png' %}" /></a>
     </div>
   </body>
+
+  <script>
+    swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});
+  </script>
+
 </html>

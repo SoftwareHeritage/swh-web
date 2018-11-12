@@ -12,13 +12,14 @@ See top-level LICENSE file for more information
 {% block swh-browse-content %}
 {% include "includes/top-navigation.html" %}
 <div style="height: 35px;margin: 4px;">
-  <i class="fa fa-tag fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
+  <i class="{{ swh_object_icons.release }} fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
   created by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
 </div>
 <pre style="white-space: pre-wrap">
-<h6>{{ release_note_header }}</h6>{{ release_note_body }}
+<h6>{{ release.note_header }}</h6>{{ release.note_body }}
 </pre>
 <div style="margin: 4px;">
-  {{ release_target_link }}
+  <b>Target:</b> <i class="{{ swh_object_icons|key_value:release.target_type }} fa-fw"></i>
+  <a href="{{ release.target_url}}">{{ release.target }}</a>
 </div>
 {% endblock %}

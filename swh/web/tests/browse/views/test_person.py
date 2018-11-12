@@ -24,7 +24,7 @@ class SwhBrowsePersonTest(SWHWebTestCase):
 
         mock_service.lookup_person.return_value = test_person_data
 
-        url = reverse('browse-person', kwargs={'person_id': 457587})
+        url = reverse('browse-person', url_args={'person_id': 457587})
 
         resp = self.client.get(url)
 
@@ -45,7 +45,7 @@ class SwhBrowsePersonTest(SWHWebTestCase):
         mock_service.lookup_person.side_effect = \
             NotFoundExc('Person not found')
 
-        url = reverse('browse-person', kwargs={'person_id': 457587})
+        url = reverse('browse-person', url_args={'person_id': 457587})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')

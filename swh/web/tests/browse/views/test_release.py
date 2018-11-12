@@ -30,20 +30,20 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
         mock_service.lookup_release.return_value = stub_release
 
         url = reverse('browse-release',
-                      kwargs={'sha1_git': stub_release['id']})
+                      url_args={'sha1_git': stub_release['id']})
 
         release_id = stub_release['id']
         release_name = stub_release['name']
         author_id = stub_release['author']['id']
         author_name = stub_release['author']['name']
         author_url = reverse('browse-person',
-                             kwargs={'person_id': author_id})
+                             url_args={'person_id': author_id})
 
         release_date = stub_release['date']
         message = stub_release['message']
         target_type = stub_release['target_type']
         target = stub_release['target']
-        target_url = reverse('browse-revision', kwargs={'sha1_git': target})
+        target_url = reverse('browse-revision', url_args={'sha1_git': target})
 
         message_lines = stub_release['message'].split('\n')
 
@@ -64,7 +64,7 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
 
         swh_rel_id = get_swh_persistent_id('release', release_id)
         swh_rel_id_url = reverse('browse-swh-id',
-                                 kwargs={'swh_id': swh_rel_id})
+                                 url_args={'swh_id': swh_rel_id})
         self.assertContains(resp, swh_rel_id)
         self.assertContains(resp, swh_rel_id_url)
 
@@ -79,7 +79,7 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
         mock_service_common.MAX_LIMIT = 20
 
         url = reverse('browse-release',
-                      kwargs={'sha1_git': stub_release['id']},
+                      url_args={'sha1_git': stub_release['id']},
                       query_params={'origin': origin_info['url']})
 
         resp = self.client.get(url)
@@ -96,7 +96,7 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
         self.assertContains(resp, release_name)
         self.assertContains(resp, target_type)
 
-        target_url = reverse('browse-revision', kwargs={'sha1_git': target},
+        target_url = reverse('browse-revision', url_args={'sha1_git': target},
                              query_params={'origin': origin_info['url']})
 
         self.assertContains(resp, '<a href="%s">%s</a>' % (target_url, target))
@@ -104,7 +104,7 @@ class SwhBrowseReleaseTest(SWHWebTestCase):
         mock_service.lookup_release.side_effect = \
             NotFoundExc('Release not found')
         url = reverse('browse-release',
-                      kwargs={'sha1_git': 'ffff'})
+                      url_args={'sha1_git': 'ffff'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')

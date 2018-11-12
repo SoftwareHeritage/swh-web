@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 from rest_framework.test import APITestCase
 from unittest.mock import patch
@@ -32,16 +33,16 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
 
     def test_invalid_origin_type(self):
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'foo',
-                              'origin_url': 'https://github.com/torvalds/linux'}) # noqa
+                      url_args={'origin_type': 'foo',
+                                'origin_url': 'https://github.com/torvalds/linux'}) # noqa
 
         response = self.client.post(url)
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_origin_url(self):
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'git',
-                              'origin_url': 'bar'})
+                      url_args={'origin_type': 'git',
+                                'origin_url': 'bar'})
 
         response = self.client.post(url)
         self.assertEqual(response.status_code, 400)
@@ -86,8 +87,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
              }]
 
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'git',
-                              'origin_url': origin_url})
+                      url_args={'origin_type': 'git',
+                                'origin_url': origin_url})
 
         with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
             mock_visit_date.return_value = visit_date
@@ -125,8 +126,8 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
              }]
 
         url = reverse('api-save-origin',
-                      kwargs={'origin_type': 'git',
-                              'origin_url': origin_url})
+                      url_args={'origin_type': 'git',
+                                'origin_url': origin_url})
 
         with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
             mock_visit_date.return_value = visit_date
@@ -182,7 +183,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                        SAVE_TASK_SCHEDULED,
                                        scheduler_task_status='completed',
                                        visit_date=None) # noqa
-        visit_date = datetime.now() + timedelta(hours=1)
+        visit_date = datetime.now(tz=timezone.utc) + timedelta(hours=1)
         self.check_save_request_status(mock_scheduler, origin_url,
                                        SAVE_REQUEST_ACCEPTED,
                                        SAVE_TASK_SUCCEED,
@@ -228,7 +229,7 @@ class SaveApiTestCase(SWHWebTestCase, APITestCase):
                                                      origin_url=origin_url))
         self.assertEqual(len(sors), 1)
 
-        visit_date = datetime.now() + timedelta(hours=1)
+        visit_date = datetime.now(tz=timezone.utc) + timedelta(hours=1)
         self.check_created_save_request_status(mock_scheduler, origin_url,
                                                'completed',
                                                SAVE_REQUEST_ACCEPTED,

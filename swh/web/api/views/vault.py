@@ -79,7 +79,7 @@ def api_vault_cook_directory(request, dir_id):
 
     res = _dispatch_cook_progress(request, 'directory', obj_id)
     res['fetch_url'] = reverse('api-vault-fetch-directory',
-                               kwargs={'dir_id': dir_id})
+                               url_args={'dir_id': dir_id})
     return res
 
 
@@ -166,7 +166,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
     res = _dispatch_cook_progress(request, 'revision_gitfast', obj_id)
     res['fetch_url'] = reverse('api-vault-fetch-revision_gitfast',
-                               kwargs={'rev_id': rev_id})
+                               url_args={'rev_id': rev_id})
     return res
 
 

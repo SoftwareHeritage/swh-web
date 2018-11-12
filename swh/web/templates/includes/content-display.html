@@ -46,7 +46,7 @@ See top-level LICENSE file for more information
 
   <script>
     {% if "application/pdf" == mimetype %}
-      swh.webapp.renderPdf({{ top_right_link|jsonify }});
+      swh.webapp.renderPdf({{ top_right_link.url|jsonify }});
     {% elif content %}
       swh.webapp.highlightCode();
     {% endif %}

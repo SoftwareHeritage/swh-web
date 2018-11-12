@@ -9,7 +9,6 @@ import json
 from distutils.util import strtobool
 
 from django.http import HttpResponse
-from django.utils.safestring import mark_safe
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 
@@ -17,7 +16,7 @@ from swh.model.hashutil import hash_to_hex
 
 from swh.web.common import query
 from swh.web.common.utils import (
-    reverse, gen_path_info
+    reverse, gen_path_info, swh_object_icons
 )
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
@@ -186,7 +185,7 @@ def content_display(request, query_string):
                                                         origin_url)
             except Exception:
                 raw_cnt_url = reverse('browse-content',
-                                      kwargs={'query_string': query_string})
+                                      url_args={'query_string': query_string})
                 error_message = \
                     ('The Software Heritage archive has a content '
                      'with the hash you provided but the origin '
@@ -218,6 +217,8 @@ def content_display(request, query_string):
     filename = None
     path_info = None
 
+    query_params = {'origin': origin_url}
+
     breadcrumbs = []
 
     if path:
@@ -229,21 +230,21 @@ def content_display(request, query_string):
         path_info = gen_path_info(path)
         breadcrumbs.append({'name': root_dir[:7],
                             'url': reverse('browse-directory',
-                                           kwargs={'sha1_git': root_dir})})
+                                           url_args={'sha1_git': root_dir},
+                                           query_params=query_params)})
         for pi in path_info:
             breadcrumbs.append({'name': pi['name'],
                                 'url': reverse('browse-directory',
-                                               kwargs={'sha1_git': root_dir,
-                                                       'path': pi['path']})})
+                                               url_args={'sha1_git': root_dir,
+                                                         'path': pi['path']},
+                                               query_params=query_params)})
         breadcrumbs.append({'name': filename,
                             'url': None})
 
-    query_params = None
-    if filename:
-        query_params = {'filename': filename}
+    query_params = {'filename': filename}
 
     content_raw_url = reverse('browse-content-raw',
-                              kwargs={'query_string': query_string},
+                              url_args={'query_string': query_string},
                               query_params=query_params)
 
     content_metadata = {
@@ -275,7 +276,6 @@ def content_display(request, query_string):
                   {'heading': heading,
                    'swh_object_id': swh_ids[0]['swh_id'],
                    'swh_object_name': 'Content',
-                   'swh_object_icon': 'fa fa-file-text',
                    'swh_object_metadata': content_metadata,
                    'content': content,
                    'content_size': content_data['length'],
@@ -283,10 +283,11 @@ def content_display(request, query_string):
                    'mimetype': mimetype,
                    'language': language,
                    'breadcrumbs': breadcrumbs,
-                   'top_right_link': content_raw_url,
-                   'top_right_link_text': mark_safe(
-                       '<i class="fa fa-file-text fa-fw" aria-hidden="true">'
-                       '</i>Raw File'),
+                   'top_right_link': {
+                        'url': content_raw_url,
+                        'icon': swh_object_icons['content'],
+                        'text': 'Raw File'
+                   },
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,

@@ -51,7 +51,7 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
                          SAVE_REQUEST_PENDING)
 
         url = reverse('admin-origin-save-add-authorized-url',
-                      kwargs={'origin_url': authorized_url})
+                      url_args={'origin_url': authorized_url})
 
         self.check_not_login(url)
 
@@ -69,7 +69,7 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
                          SAVE_REQUEST_ACCEPTED)
 
         url = reverse('admin-origin-save-remove-authorized-url',
-                      kwargs={'origin_url': _authorized_origin_url})
+                      url_args={'origin_url': _authorized_origin_url})
 
         self.check_not_login(url)
 
@@ -88,7 +88,7 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
                          SAVE_REQUEST_PENDING)
 
         url = reverse('admin-origin-save-add-unauthorized-url',
-                      kwargs={'origin_url': unauthorized_url})
+                      url_args={'origin_url': unauthorized_url})
 
         self.check_not_login(url)
 
@@ -106,7 +106,7 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
                          SAVE_REQUEST_REJECTED)
 
         url = reverse('admin-origin-save-remove-unauthorized-url',
-                      kwargs={'origin_url': _unauthorized_origin_url})
+                      url_args={'origin_url': _unauthorized_origin_url})
 
         self.check_not_login(url)
 
@@ -124,8 +124,8 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         origin_type = 'git'
         origin_url = 'https://v2.pikacode.com/bthate/botlib.git'
         save_request_url = reverse('api-save-origin',
-                                   kwargs={'origin_type': origin_type,
-                                           'origin_url': origin_url})
+                                   url_args={'origin_type': origin_type,
+                                             'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},
                                     content_type='application/x-www-form-urlencoded') # noqa
         self.assertEqual(response.status_code, 200)
@@ -133,8 +133,8 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
                          SAVE_REQUEST_PENDING)
 
         accept_request_url = reverse('admin-origin-save-request-accept',
-                                     kwargs={'origin_type': origin_type,
-                                             'origin_url': origin_url})
+                                     url_args={'origin_type': origin_type,
+                                               'origin_url': origin_url})
 
         self.check_not_login(accept_request_url)
 
@@ -173,8 +173,8 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
         origin_type = 'git'
         origin_url = 'https://wikipedia.com'
         save_request_url = reverse('api-save-origin',
-                                   kwargs={'origin_type': origin_type,
-                                           'origin_url': origin_url})
+                                   url_args={'origin_type': origin_type,
+                                             'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},
                                     content_type='application/x-www-form-urlencoded') # noqa
         self.assertEqual(response.status_code, 200)
@@ -182,8 +182,8 @@ class OriginSaveAdminTestCase(SWHWebTestCase):
                          SAVE_REQUEST_PENDING)
 
         reject_request_url = reverse('admin-origin-save-request-reject',
-                                     kwargs={'origin_type': origin_type,
-                                             'origin_url': origin_url})
+                                     url_args={'origin_type': origin_type,
+                                               'origin_url': origin_url})
 
         self.check_not_login(reject_request_url)
 

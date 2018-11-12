@@ -7,13 +7,15 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load swh_templatetags %}
+
 {% block swh-browse-content %}
 {% if displayed_releases|length > 0 %}
   <div class="table-responsive mt-3 mb-3">
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="fa fa-tag fa-fw"></i>Name</th>
+          <th><i class="{{ swh_object_icons.release }} fa-fw"></i>Name</th>
           <th>Target</th>
           <th>Message</th>
           <th>Date</th>
@@ -21,16 +23,35 @@ See top-level LICENSE file for more information
       </thead>
       <tbody>
         {% for release in displayed_releases %}
-          <tr class="swh-origin-release">
-            <td><i class="fa fa-tag fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
-            <td>{{ release.target_type }}</td>
-            <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
-            <td>{{ release.date }}</td>
+          <tr class="swh-release-entry swh-tr-hover-highlight" data-href="{{ release.release_url }}">
+            <td class="swh-release-name">
+              <a href="{{ release.release_url }}">
+                <i class="{{ swh_object_icons.release }} fa-fw"></i>{{ release.name }}
+              </a>
+            </td>
+            <td class="swh-release-target">
+              <a href="{{ release.target_url }}">
+                <i class="{{ swh_object_icons|key_value:release.target_type }} fa-fw"></i>{{ release.target|slice:":7" }}
+              </a>
+            </td>
+            <td class="swh-log-entry-message swh-release-message swh-table-cell-text-overflow" title="{{ release.message }}">
+              <a href="{{ release.release_url }}">
+                {{ release.message }}
+              </a>
+            </td>
+            <td class="swh-release-date">
+              <a href="{{ release.release_url }}">
+                {{ release.date }}
+              </a>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  <script>
+    swh.webapp.initTableRowLinks('tr.swh-release-entry')
+  </script>
 {% else %}
   <i>The list of releases is empty !</i>
 {% endif %}
