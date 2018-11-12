@@ -16,7 +16,7 @@ See top-level LICENSE file for more information
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="{{ swh_object_icons|key_value:'branch' }} fa-fw"></i>Name</th>
+          <th><i class="{{ swh_object_icons.branch }} fa-fw"></i>Name</th>
           <th>Revision</th>
           <th>Message</th>
           <th>Date</th>
@@ -25,7 +25,7 @@ See top-level LICENSE file for more information
       <tbody>
         {% for branch in displayed_branches %}
           <tr class="swh-origin-branch">
-            <td style="max-width: 300px"><i class="{{ swh_object_icons|key_value:'branch' }} fa-fw"></i><a href="{{ branch.directory_url }}">{{ branch.name }}</a></td>
+            <td style="max-width: 300px"><i class="{{ swh_object_icons.branch }} fa-fw"></i><a href="{{ branch.directory_url }}">{{ branch.name }}</a></td>
             <td><a href="{{ branch.revision_url }}">{{ branch.revision|slice:":7" }}</a></td>
             <td class="swh-log-entry-message swh-table-cell-text-overflow" style="min-width: 500px" title="{{ branch.message }}">{{ branch.message }}</td>
             <td style="min-width: 250px">{{ branch.date }}</td>

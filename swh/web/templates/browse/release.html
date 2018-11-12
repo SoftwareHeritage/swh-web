@@ -12,7 +12,7 @@ See top-level LICENSE file for more information
 {% block swh-browse-content %}
 {% include "includes/top-navigation.html" %}
 <div style="height: 35px;margin: 4px;">
-  <i class="{{ swh_object_icons|key_value:'release' }} fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
+  <i class="{{ swh_object_icons.release }} fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
   created by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
 </div>
 <pre style="white-space: pre-wrap">

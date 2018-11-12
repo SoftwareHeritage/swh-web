@@ -15,7 +15,7 @@ See top-level LICENSE file for more information
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="{{ swh_object_icons|key_value:'release' }} fa-fw"></i>Name</th>
+          <th><i class="{{ swh_object_icons.release }} fa-fw"></i>Name</th>
           <th>Target</th>
           <th>Message</th>
           <th>Date</th>
@@ -24,7 +24,7 @@ See top-level LICENSE file for more information
       <tbody>
         {% for release in displayed_releases %}
           <tr class="swh-origin-release">
-            <td><i class="{{ swh_object_icons|key_value:'release' }} fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
+            <td><i class="{{ swh_object_icons.release }} fa-fw"></i><a href="{{ release.release_url }}">{{ release.name }}</a></td>
             <td><i class="{{ swh_object_icons|key_value:release.target_type }} fa-fw"></i><a href="{{ release.target_url }}">{{ release.target|slice:":7" }}</a></td>
             <td class="swh-log-entry-message swh-table-cell-text-overflow" title="{{ release.message }}">{{ release.message }}</td>
             <td>{{ release.date }}</td>

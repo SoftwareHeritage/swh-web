@@ -17,12 +17,12 @@ See top-level LICENSE file for more information
     <div class="dropdown-menu">
       {% if vault_cooking.directory_context %}
         <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-directory-modal">
-          <i class="{{ swh_object_icons|key_value:'directory' }} fa-fw" aria-hidden="true"></i>Directory
+          <i class="{{ swh_object_icons.directory }} fa-fw" aria-hidden="true"></i>Directory
         </button>
       {% endif %}
       {% if vault_cooking.revision_context %}
         <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#vault-cook-revision-modal">
-          <i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>Revision
+          <i class="{{ swh_object_icons.revision }} fa-fw"></i>Revision
         </button>
       {% endif %}
     </div>
