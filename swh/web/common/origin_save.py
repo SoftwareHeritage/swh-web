@@ -110,7 +110,7 @@ def _check_origin_type_savable(origin_type):
     through a save request.
 
     Returns:
-        list: the list of savable origin types
+        list: the list of saveable origin types
     """
     allowed_origin_types = ', '.join(get_savable_origin_types())
     if origin_type not in _origin_type_task:

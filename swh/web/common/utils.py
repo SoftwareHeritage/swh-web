@@ -390,7 +390,7 @@ def is_recaptcha_valid(request, recaptcha_response):
         recaptcha_response (str): the reCAPTCHA response
 
     Returns:
-        bool: Wether the reCAPTCHA response is valid or not
+        bool: Whether the reCAPTCHA response is valid or not
     """
     config = get_config()
     return requests.post(
