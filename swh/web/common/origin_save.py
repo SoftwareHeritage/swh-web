@@ -63,8 +63,8 @@ def can_save_origin(origin_url):
         origin_url (str): the software origin url to check
 
     Returns:
-        str: the origin save request status, either *accepted*,
-        *rejected* or *pending*
+        str: the origin save request status, either **accepted**,
+        **rejected** or **pending**
     """
     # origin url may be blacklisted
     for url_prefix in get_origin_save_unauthorized_urls():
@@ -193,7 +193,8 @@ def create_save_origin_request(origin_type, origin_url):
     database to keep track of them.
 
     Args:
-        origin_type (str): the type of origin to save (*git*, *hg*, *svn*, ...)
+        origin_type (str): the type of origin to save (currently only
+            ``git`` but ``svn`` and ``hg`` will soon be available)
         origin_url (str): the url of the origin to save
 
     Raises:
@@ -206,11 +207,11 @@ def create_save_origin_request(origin_type, origin_url):
             * **origin_type**: the type of the origin to save
             * **origin_url**: the url of the origin
             * **save_request_date**: the date the request was submitted
-            * **save_request_status**: the request status, either *accepted*,
-              *rejected* or *pending*
+            * **save_request_status**: the request status, either **accepted**,
+              **rejected** or **pending**
             * **save_task_status**: the origin loading task status, either
-              *not created*, *not yet scheduled*, *scheduled*, *succeed* or
-              *failed*
+              **not created**, **not yet scheduled**, **scheduled**,
+              **succeed** or **failed**
 
 
     """

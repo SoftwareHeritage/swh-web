@@ -18,7 +18,7 @@ def api_snapshot(request, snapshot_id):
     """
     .. http:get:: /api/1/snapshot/(snapshot_id)/
 
-        Get information about a snapshot in the SWH archive.
+        Get information about a snapshot in the archive.
 
         A snapshot is a set of named branches, which are pointers to objects at any
         level of the Software Heritage DAG. It represents a full picture of an
@@ -32,24 +32,24 @@ def api_snapshot(request, snapshot_id):
         A snapshot identifier is a salted sha1. See :func:`swh.model.identifiers.snapshot_identifier`
         in our data model module for details about how they are computed.
 
-        :param sha1 snapshot_id: a SWH snapshot identifier
+        :param sha1 snapshot_id: a snapshot identifier
         :query str branches_from: optional parameter used to skip branches
             whose name is lesser than it before returning them
         :query int branches_count: optional parameter used to restrain
             the amount of returned branches (default to 1000)
         :query str target_types: optional comma separated list parameter
             used to filter the target types of branch to return (possible values
-            that can be contained in that list are `'content', 'directory',
-            'revision', 'release', 'snapshot', 'alias'`)
+            that can be contained in that list are ``content``, ``directory``,
+            ``revision``, ``release``, ``snapshot`` or ``alias``)
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
         :resheader Link: indicates that a subsequent result page is available and contains
             the url pointing to it
 
         :>json object branches: object containing all branches associated to the snapshot,
-            for each of them the associated SWH target type and id are given but also
+            for each of them the associated target type and id are given but also
             a link to get information about that target
         :>json string id: the unique identifier of the snapshot
 
@@ -57,7 +57,7 @@ def api_snapshot(request, snapshot_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid snapshot identifier has been provided
-        :statuscode 404: requested snapshot can not be found in the SWH archive
+        :statuscode 404: requested snapshot can not be found in the archive
 
         **Example:**
 

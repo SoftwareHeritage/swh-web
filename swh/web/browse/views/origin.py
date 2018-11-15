@@ -38,7 +38,7 @@ from .utils.snapshot_context import (
               view_name='browse-origin-directory')
 def origin_directory_browse(request, origin_url, origin_type=None,
                             timestamp=None, path=None):
-    """Django view for browsing the content of a SWH directory associated
+    """Django view for browsing the content of a directory associated
     to an origin for a given visit.
 
     The url scheme that points to it is the following:
@@ -58,7 +58,7 @@ def origin_directory_browse(request, origin_url, origin_type=None,
               view_name='browse-origin-content')
 def origin_content_browse(request, origin_url, origin_type=None, path=None,
                           timestamp=None):
-    """Django view that produces an HTML display of a SWH content
+    """Django view that produces an HTML display of a content
     associated to an origin for a given visit.
 
     The url scheme that points to it is the following:
@@ -82,7 +82,7 @@ PER_PAGE = 20
               view_name='browse-origin-log')
 def origin_log_browse(request, origin_url, origin_type=None, timestamp=None):
     """Django view that produces an HTML display of revisions history (aka
-    the commit log) associated to a SWH origin.
+    the commit log) associated to a software origin.
 
     The url scheme that points to it is the following:
 

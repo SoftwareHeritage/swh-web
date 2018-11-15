@@ -8,7 +8,7 @@ from swh.web.common.urlsindex import UrlsIndex
 
 class BrowseUrls(UrlsIndex):
     """
-    Class to manage SWH web browse application urls.
+    Class to manage swh-web browse application urls.
     """
 
     scope = 'browse'
@@ -16,7 +16,7 @@ class BrowseUrls(UrlsIndex):
 
 class browse_route(object):  # noqa: N801
     """
-    Decorator to ease the registration of a SWH web browse endpoint
+    Decorator to ease the registration of a swh-web browse endpoint
 
     Args:
         url_patterns: list of url patterns used by Django to identify the browse routes

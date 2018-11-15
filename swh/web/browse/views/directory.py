@@ -25,7 +25,7 @@ from swh.web.browse.browseurls import browse_route
               r'directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/',
               view_name='browse-directory')
 def directory_browse(request, sha1_git, path=None):
-    """Django view for browsing the content of a SWH directory identified
+    """Django view for browsing the content of a directory identified
     by its sha1_git value.
 
     The url that points to it is :http:get:`/browse/directory/(sha1_git)/[(path)/]`

@@ -3,7 +3,7 @@ Release
 
 .. http:get:: /browse/release/(sha1_git)/
 
-    HTML view that displays metadata associated to a SWH release:
+    HTML view that displays metadata associated to a release:
 
         * the author
         * the release date
@@ -12,10 +12,10 @@ Release
         * the type of target the release points to (revision, directory, content or release)
         * the link to browse the release target
 
-    :param string sha1_git: hexadecimal representation for the *sha1_git*
-         identifier of a SWH release
+    :param string sha1_git: hexadecimal representation for the **sha1_git**
+         identifier of a release
     :statuscode 200: no error
-    :statuscode 404: requested release can not be found in the SWH archive
+    :statuscode 404: requested release can not be found in the archive
 
     **Examples:**
 

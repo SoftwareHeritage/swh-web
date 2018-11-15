@@ -28,7 +28,7 @@ def api_resolve_swh_pid(request, swh_id):
         identifier is valid, the existence of the object in the archive
         will also be checked.
 
-        :param string swh_id: a SWH presistent identifier
+        :param string swh_id: a Software Heritage presistent identifier
 
         :>json string browse_url: the url for browsing the pointed object
         :>json object metadata: object holding optional parts of the persistent identifier
@@ -38,7 +38,7 @@ def api_resolve_swh_pid(request, swh_id):
         :>json number scheme_version: the scheme version of the persistent identifier
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`

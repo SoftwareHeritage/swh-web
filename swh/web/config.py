@@ -103,28 +103,28 @@ def get_config(config_file='web/web'):
 
 
 def storage():
-    """Return the current application's SWH storage.
+    """Return the current application's storage.
 
     """
     return get_config()['storage']
 
 
 def vault():
-    """Return the current application's SWH vault.
+    """Return the current application's vault.
 
     """
     return get_config()['vault']
 
 
 def indexer_storage():
-    """Return the current application's SWH indexer storage.
+    """Return the current application's indexer storage.
 
     """
     return get_config()['indexer_storage']
 
 
 def scheduler():
-    """Return the current application's SWH scheduler.
+    """Return the current application's scheduler.
 
     """
     return get_config()['scheduler']

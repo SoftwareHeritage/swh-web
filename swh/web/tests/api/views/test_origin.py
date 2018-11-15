@@ -49,7 +49,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
             self, mock_service):
         # given
         mock_service.lookup_origin_visits.side_effect = StorageDBError(
-            'SWH Storage exploded! Will be back online shortly!')
+            'Storage exploded! Will be back online shortly!')
         # when
         rv = self.client.get('/api/1/origin/2/visits/')
         # then
@@ -59,14 +59,14 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
             'exception': 'StorageDBError',
             'reason':
             'An unexpected error occurred in the backend: '
-            'SWH Storage exploded! Will be back online shortly!'})
+            'Storage exploded! Will be back online shortly!'})
 
     @patch('swh.web.common.utils.service')
     def test_api_1_lookup_origin_visits_raise_swh_storage_error_api(
             self, mock_service):
         # given
         mock_service.lookup_origin_visits.side_effect = StorageAPIError(
-            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+            'Storage API dropped dead! Will resurrect from its ashes asap!'
         )
         # when
         rv = self.client.get('/api/1/origin/2/visits/')
@@ -77,7 +77,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
             'exception': 'StorageAPIError',
             'reason':
             'An unexpected error occurred in the api backend: '
-            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+            'Storage API dropped dead! Will resurrect from its ashes asap!'
         })
 
     @patch('swh.web.api.views.origin.get_origin_visits')

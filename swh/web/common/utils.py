@@ -195,7 +195,8 @@ def get_origin_visits(origin_info):
 
             * **date**: UTC visit date in ISO format,
             * **origin**: the origin id
-            * **status**: the visit status, either *full* or *partial*
+            * **status**: the visit status, either **full**, **partial**
+              or **ongoing**
             * **visit**: the visit id
 
     Raises:
@@ -278,11 +279,11 @@ def get_swh_persistent_id(object_type, object_id, scheme_version=1):
 
 def resolve_swh_persistent_id(swh_id, query_params=None):
     """
-    Try to resolve a SWH persistent id into an url for
+    Try to resolve a Software Heritage persistent id into an url for
     browsing the pointed object.
 
     Args:
-        swh_id (str): a SWH persistent identifier
+        swh_id (str): a Software Heritage persistent identifier
         query_params (django.http.QueryDict): optional dict filled with
             query parameters to append to the browse url
 

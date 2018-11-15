@@ -656,7 +656,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
-        self.assertContains(resp, "No SWH visit", status_code=404)
+        self.assertContains(resp, "No visit", status_code=404)
 
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.side_effect = \
@@ -709,7 +709,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
-        self.assertContains(resp, "No SWH visit", status_code=404)
+        self.assertContains(resp, "No visit", status_code=404)
 
         mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.side_effect = \

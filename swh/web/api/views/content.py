@@ -56,28 +56,28 @@ def api_content_filetype(request, q):
         Get information about the detected MIME type of a content object.
 
         :param string hash_type: optional parameter specifying which hashing algorithm has been used
-            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
-            or *blake2s256*. If that parameter is not provided, it is assumed that the
-            hashing algorithm used is *sha1*.
+            to compute the content checksum. It can be either ``sha1``, ``sha1_git``, ``sha256``
+            or ``blake2s256``. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is `sha1`.
         :param string hash: hexadecimal representation of the checksum value computed with
             the specified hashing algorithm.
 
         :>json object content_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/` for
             getting information about the content
         :>json string encoding: the detected content encoding
-        :>json string id: the *sha1* identifier of the content
+        :>json string id: the **sha1** identifier of the content
         :>json string mimetype: the detected MIME type of the content
         :>json object tool: information about the tool used to detect the content filetype
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *hash_type* or *hash* has been provided
-        :statuscode 404: requested content can not be found in the SWH archive
+        :statuscode 400: an invalid **hash_type** or **hash** has been provided
+        :statuscode 404: requested content can not be found in the archive
 
         **Example:**
 
@@ -100,27 +100,27 @@ def api_content_language(request, q):
         Get information about the programming language used in a content object.
 
         :param string hash_type: optional parameter specifying which hashing algorithm has been used
-            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
-            or *blake2s256*. If that parameter is not provided, it is assumed that the
-            hashing algorithm used is *sha1*.
+            to compute the content checksum. It can be either ``sha1``, ``sha1_git``, ``sha256``
+            or ``blake2s256``. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is ``sha1``.
         :param string hash: hexadecimal representation of the checksum value computed with
             the specified hashing algorithm.
 
         :>json object content_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/` for
             getting information about the content
-        :>json string id: the *sha1* identifier of the content
+        :>json string id: the **sha1** identifier of the content
         :>json string lang: the detected programming language if any
         :>json object tool: information about the tool used to detect the programming language
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *hash_type* or *hash* has been provided
-        :statuscode 404: requested content can not be found in the SWH archive
+        :statuscode 400: an invalid **hash_type** or **hash** has been provided
+        :statuscode 404: requested content can not be found in the archive
 
         **Example:**
 
@@ -143,27 +143,27 @@ def api_content_license(request, q):
         Get information about the license of a content object.
 
         :param string hash_type: optional parameter specifying which hashing algorithm has been used
-            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
-            or *blake2s256*. If that parameter is not provided, it is assumed that the
-            hashing algorithm used is *sha1*.
+            to compute the content checksum. It can be either ``sha1``, ``sha1_git``, ``sha256``
+            or ``blake2s256``. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is ``sha1``.
         :param string hash: hexadecimal representation of the checksum value computed with
             the specified hashing algorithm.
 
         :>json object content_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/` for
             getting information about the content
-        :>json string id: the *sha1* identifier of the content
+        :>json string id: the **sha1** identifier of the content
         :>json array licenses: array of strings containing the detected license names if any
         :>json object tool: information about the tool used to detect the license
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *hash_type* or *hash* has been provided
-        :statuscode 404: requested content can not be found in the SWH archive
+        :statuscode 400: an invalid **hash_type** or **hash** has been provided
+        :statuscode 404: requested content can not be found in the archive
 
         **Example:**
 
@@ -199,9 +199,9 @@ def api_content_raw(request, q):
         Get the raw content of a content object (aka a "blob"), as a byte sequence.
 
         :param string hash_type: optional parameter specifying which hashing algorithm has been used
-            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
-            or *blake2s256*. If that parameter is not provided, it is assumed that the
-            hashing algorithm used is *sha1*.
+            to compute the content checksum. It can be either ``sha1``, ``sha1_git``, ``sha256``
+            or ``blake2s256``. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is ``sha1``.
         :param string hash: hexadecimal representation of the checksum value computed with
             the specified hashing algorithm.
         :query string filename: if provided, the downloaded content will get that filename
@@ -211,8 +211,8 @@ def api_content_raw(request, q):
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *hash_type* or *hash* has been provided
-        :statuscode 404: requested content can not be found in the SWH archive
+        :statuscode 400: an invalid **hash_type** or **hash** has been provided
+        :statuscode 404: requested content can not be found in the archive
 
         **Example:**
 
@@ -285,25 +285,25 @@ def api_check_content_known(request, q=None):
     """
     .. http:get:: /api/1/content/known/(sha1)[,(sha1), ...,(sha1)]/
 
-        Check whether some content(s) (aka "blob(s)") is present in the SWH archive
-        based on its *sha1* checksum.
+        Check whether some content(s) (aka "blob(s)") is present in the archive
+        based on its **sha1** checksum.
 
-        :param string sha1: hexadecimal representation of the *sha1* checksum value
+        :param string sha1: hexadecimal representation of the **sha1** checksum value
             for the content to check existence. Multiple values can be provided separated
             by ','.
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
-        :>json array search_res: array holding the search result for each provided *sha1*
-        :>json object search_stats: some statistics regarding the number of *sha1* provided
-            and the percentage of those found in the SWH archive
+        :>json array search_res: array holding the search result for each provided **sha1**
+        :>json object search_stats: some statistics regarding the number of **sha1** provided
+            and the percentage of those found in the archive
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *sha1* has been provided
+        :statuscode 400: an invalid **sha1** has been provided
 
         **Example:**
 
@@ -361,18 +361,18 @@ def api_content_metadata(request, q):
     .. http:get:: /api/1/content/[(hash_type):](hash)/
 
         Get information about a content (aka a "blob") object.
-        In the SWH archive, a content object is identified based on checksum
+        In the archive, a content object is identified based on checksum
         values computed using various hashing algorithms.
 
         :param string hash_type: optional parameter specifying which hashing algorithm has been used
-            to compute the content checksum. It can be either *sha1*, *sha1_git*, *sha256*
-            or *blake2s256*. If that parameter is not provided, it is assumed that the
-            hashing algorithm used is *sha1*.
+            to compute the content checksum. It can be either ``sha1``, ``sha1_git``, ``sha256``
+            or ``blake2s256``. If that parameter is not provided, it is assumed that the
+            hashing algorithm used is ``sha1``.
         :param string hash: hexadecimal representation of the checksum value computed with
             the specified hashing algorithm.
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json object checksums: object holding the computed checksum values for the requested content
@@ -389,8 +389,8 @@ def api_content_metadata(request, q):
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *hash_type* or *hash* has been provided
-        :statuscode 404: requested content can not be found in the SWH archive
+        :statuscode 400: an invalid **hash_type** or **hash** has been provided
+        :statuscode 404: requested content can not be found in the archive
 
         **Example:**
 
