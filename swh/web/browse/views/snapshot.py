@@ -19,7 +19,7 @@ from .utils.snapshot_context import (
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/',
               view_name='browse-snapshot')
 def snapshot_browse(request, snapshot_id):
-    """Django view for browsing the content of a SWH snapshot.
+    """Django view for browsing the content of a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/`
     """
@@ -33,8 +33,8 @@ def snapshot_browse(request, snapshot_id):
               r'snapshot/(?P<snapshot_id>[0-9a-f]+)/directory/(?P<path>.+)/',
               view_name='browse-snapshot-directory')
 def snapshot_directory_browse(request, snapshot_id, path=None):
-    """Django view for browsing the content of a SWH directory collected
-    in a SWH snapshot.
+    """Django view for browsing the content of a directory collected
+    in a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/directory/[(path)/]`
     """ # noqa
@@ -50,8 +50,8 @@ def snapshot_directory_browse(request, snapshot_id, path=None):
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/content/(?P<path>.+)/',
               view_name='browse-snapshot-content')
 def snapshot_content_browse(request, snapshot_id, path):
-    """Django view that produces an HTML display of a SWH content
-    collected in a SWH snapshot.
+    """Django view that produces an HTML display of a content
+    collected in a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
     """ # noqa
@@ -62,7 +62,7 @@ def snapshot_content_browse(request, snapshot_id, path):
               view_name='browse-snapshot-log')
 def snapshot_log_browse(request, snapshot_id):
     """Django view that produces an HTML display of revisions history (aka
-    the commit log) collected in a SWH snapshot.
+    the commit log) collected in a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/log/`
     """ # noqa
@@ -73,7 +73,7 @@ def snapshot_log_browse(request, snapshot_id):
               view_name='browse-snapshot-branches')
 def snapshot_branches_browse(request, snapshot_id):
     """Django view that produces an HTML display of the list of releases
-    collected in a SWH snapshot.
+    collected in a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/branches/`
     """ # noqa
@@ -84,7 +84,7 @@ def snapshot_branches_browse(request, snapshot_id):
               view_name='browse-snapshot-releases')
 def snapshot_releases_browse(request, snapshot_id):
     """Django view that produces an HTML display of the list of releases
-    collected in a SWH snapshot.
+    collected in a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/releases/`
     """ # noqa

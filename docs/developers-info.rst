@@ -4,7 +4,7 @@ Developers Information
 Sample configuration
 --------------------
 
-The configuration will be taken from the default configuration file: *~/.config/swh/web/web.yml*.
+The configuration will be taken from the default configuration file: ``~/.config/swh/web/web.yml``.
 The following introduces a default configuration file:
 
 .. sourcecode:: yaml
@@ -47,7 +47,7 @@ Common to all web applications
 Configuration and settings
 """"""""""""""""""""""""""
 
-    * :mod:`swh.web.config`: holds the SWH configuration for the web applications.
+    * :mod:`swh.web.config`: holds the configuration for the web applications.
     * :mod:`swh.web.doc_config`: utility module used to extend the sphinx configuration
       when building the documentation.
     * :mod:`swh.web.manage`: Django management module for developers.
@@ -63,7 +63,7 @@ Configuration and settings
 Common utilities
 """"""""""""""""
 
-    * :mod:`swh.web.common.converters`: conversion module used to transform SWH raw data
+    * :mod:`swh.web.common.converters`: conversion module used to transform raw data
       to serializable ones. It is used by :mod:`swh.web.common.service`: to convert data
       before transmitting then to Django views.
     * :mod:`swh.web.common.exc`: module defining exceptions used in the web applications.
@@ -82,54 +82,50 @@ Common utilities
     * :mod:`swh.web.common.utils`: Utility functions used in the web applications implementation
 
 
-SWH Web API application
+swh-web API application
 ^^^^^^^^^^^^^^^^^^^^^^^
 
     * :mod:`swh.web.api.apidoc`: Utilities to document the web api for its html
       browsable rendering.
     * :mod:`swh.web.api.apiresponse`: Utility module to ease the generation of
       web api responses.
-    * :mod:`swh.web.api.apiurls`: Utilities to facilitate the registration of SWH
-      web api endpoints.
+    * :mod:`swh.web.api.apiurls`: Utilities to facilitate the registration of web api endpoints.
     * :mod:`swh.web.api.urls`: Module that defines the whole URI scheme for the api endpoints
-    * :mod:`swh.web.api.utils`: Utility functions used in the SWH web api implementation.
+    * :mod:`swh.web.api.utils`: Utility functions used in the web api implementation.
     * :mod:`swh.web.api.views.content`: Implementation of API endpoints for getting information
-      about SWH contents.
+      about contents.
     * :mod:`swh.web.api.views.directory`: Implementation of API endpoints for getting information
-      about SWH directories.
+      about directories.
     * :mod:`swh.web.api.views.entity`: Implementation of API endpoints for getting information
-      about SWH entities.
+      about entities.
     * :mod:`swh.web.api.views.origin`: Implementation of API endpoints for getting information
-      about SWH origins.
+      about origins.
     * :mod:`swh.web.api.views.person`: Implementation of API endpoints for getting information
-      about SWH persons.
+      about persons.
     * :mod:`swh.web.api.views.release`: Implementation of API endpoints for getting information
-      about SWH releases.
+      about releases.
     * :mod:`swh.web.api.views.revision`: Implementation of API endpoints for getting information
-      about SWH revisions.
+      about revisions.
     * :mod:`swh.web.api.views.snapshot`: Implementation of API endpoints for getting information
-      about SWH snapshots.
+      about snapshots.
     * :mod:`swh.web.api.views.stat`: Implementation of API endpoints for getting information
-      about SWH archive statistics.
+      about archive statistics.
     * :mod:`swh.web.api.views.utils`: Utilities used in the web api endpoints implementation.
 
-SWH Web browse application
+swh-web browse application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    * :mod:`swh.web.browse.browseurls`: Utilities to facilitate the registration of SWH web
-      browse endpoints.
-    * :mod:`swh.web.browse.urls`: Module that defines the whole URI scheme for the SWH web
-      browse endpoints.
-    * :mod:`swh.web.browse.utils`: Utilities functions used troughout the SWH web browse
-      endpoints implementation.
-    * :mod:`swh.web.browse.views.content`: Implementation of endpoints for browsing SWH contents.
-    * :mod:`swh.web.browse.views.directory`: Implementation of endpoints for browsing SWH directories.
-    * :mod:`swh.web.browse.views.identifiers`: Implementation of endpoints for browsing SWH objects
+    * :mod:`swh.web.browse.browseurls`: Utilities to facilitate the registration of browse endpoints.
+    * :mod:`swh.web.browse.urls`: Module that defines the whole URI scheme for the browse endpoints.
+    * :mod:`swh.web.browse.utils`: Utilities functions used throughout the browse endpoints implementation.
+    * :mod:`swh.web.browse.views.content`: Implementation of endpoints for browsing contents.
+    * :mod:`swh.web.browse.views.directory`: Implementation of endpoints for browsing directories.
+    * :mod:`swh.web.browse.views.identifiers`: Implementation of endpoints for browsing objects
       through persistent identifiers.
-    * :mod:`swh.web.browse.views.origin`: Implementation of endpoints for browsing SWH origins.
-    * :mod:`swh.web.browse.views.person`: Implementation of endpoints for browsing SWH persons.
-    * :mod:`swh.web.browse.views.release`: Implementation of endpoints for browsing SWH releases.
-    * :mod:`swh.web.browse.views.revision`: Implementation of endpoints for browsing SWH revisions.
-    * :mod:`swh.web.browse.views.snapshot`: Implementation of endpoints for browsing SWH snapshots.
+    * :mod:`swh.web.browse.views.origin`: Implementation of endpoints for browsing origins.
+    * :mod:`swh.web.browse.views.person`: Implementation of endpoints for browsing persons.
+    * :mod:`swh.web.browse.views.release`: Implementation of endpoints for browsing releases.
+    * :mod:`swh.web.browse.views.revision`: Implementation of endpoints for browsing revisions.
+    * :mod:`swh.web.browse.views.snapshot`: Implementation of endpoints for browsing snapshots.
 
 .. _highlightjs: https://highlightjs.org/

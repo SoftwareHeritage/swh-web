@@ -34,22 +34,23 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         Get information about a software origin.
 
-        :param int origin_id: a SWH origin identifier
+        :param int origin_id: a software origin identifier
 
         :>json number id: the origin unique identifier
-        :>json string origin_visits_url: link to in order to get information about the SWH
+        :>json string origin_visits_url: link to in order to get information about the
             visits for that origin
-        :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :>json string type: the type of software origin (possible values are ``git``, ``svn``,
+            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
         :>json string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the SWH archive
+        :statuscode 404: requested origin can not be found in the archive
 
         **Example:**
 
@@ -61,23 +62,24 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         Get information about a software origin.
 
-        :param string origin_type: the origin type (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :param string origin_type: the origin type (possible values are ``git``, ``svn``,
+            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
         :param string origin_url: the origin url
 
         :>json number id: the origin unique identifier
-        :>json string origin_visits_url: link to in order to get information about the SWH
+        :>json string origin_visits_url: link to in order to get information about the
             visits for that origin
-        :>json string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :>json string type: the type of software origin
         :>json string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the SWH archive
+        :statuscode 404: requested origin can not be found in the archive
 
         **Example:**
 
@@ -123,13 +125,13 @@ def api_origin_search(request, url_pattern):
             by Software heritage
 
         :>jsonarr number id: the origin unique identifier
-        :>jsonarr string origin_visits_url: link to in order to get information about the SWH
+        :>jsonarr string origin_visits_url: link to in order to get information about the
             visits for that origin
-        :>jsonarr string type: the type of software origin (*git*, *svn*, *hg*, *deb*, *ftp*, ...)
+        :>jsonarr string type: the type of software origin
         :>jsonarr string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
@@ -182,12 +184,12 @@ def api_origin_visits(request, origin_id):
         Visits are returned sorted in descending order according
         to their date.
 
-        :param int origin_id: a SWH origin identifier
+        :param int origin_id: a software origin identifier
         :query int per_page: specify the number of visits to list, for pagination purposes
         :query int last_visit: visit to start listing from, for pagination purposes
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
         :resheader Link: indicates that a subsequent result page is available and contains
             the url pointing to it
@@ -199,13 +201,13 @@ def api_origin_visits(request, origin_id):
         :>jsonarr string snapshot: the snapshot identifier of the visit
         :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
             in order to get information about the snapshot of the visit
-        :>jsonarr string status: status of the visit (either *full*, *partial* or *ongoing*)
+        :>jsonarr string status: status of the visit (either **full**, **partial** or **ongoing**)
         :>jsonarr number visit: the unique identifier of the visit
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the SWH archive
+        :statuscode 404: requested origin can not be found in the archive
 
         **Example:**
 
@@ -283,11 +285,11 @@ def api_origin_visit(request, origin_id, visit_id):
 
         Get information about a specific visit of a software origin.
 
-        :param int origin_id: a SWH origin identifier
+        :param int origin_id: a software origin identifier
         :param int visit_id: a visit identifier
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json string date: ISO representation of the visit date (in UTC)
@@ -296,13 +298,13 @@ def api_origin_visit(request, origin_id, visit_id):
         :>jsonarr string snapshot: the snapshot identifier of the visit
         :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
             in order to get information about the snapshot of the visit
-        :>json string status: status of the visit (either *full*, *partial* or *ongoing*)
+        :>json string status: status of the visit (either **full**, **partial** or **ongoing**)
         :>json number visit: the unique identifier of the visit
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: requested origin or visit can not be found in the SWH archive
+        :statuscode 404: requested origin or visit can not be found in the archive
 
         **Example:**
 

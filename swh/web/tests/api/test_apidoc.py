@@ -15,15 +15,15 @@ from swh.web.tests.testcase import SWHWebTestCase
 httpdomain_doc = """
 .. http:get:: /api/1/revision/(sha1_git)/
 
-    Get information about a revision in the SWH archive.
-    Revisions are identified by *sha1* checksums, compatible with Git commit identifiers.
+    Get information about a revision in the archive.
+    Revisions are identified by **sha1** checksums, compatible with Git commit identifiers.
     See :func:`swh.model.identifiers.revision_identifier` in our data model module for details
     about how they are computed.
 
-    :param string sha1_git: hexadecimal representation of the revision *sha1_git* identifier
+    :param string sha1_git: hexadecimal representation of the revision **sha1_git** identifier
 
     :reqheader Accept: the requested response content type,
-        either *application/json* (default) or *application/yaml*
+        either ``application/json`` (default) or ``application/yaml``
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :>json object author: information about the author of the revision
@@ -49,8 +49,8 @@ httpdomain_doc = """
     **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
     :statuscode 200: no error
-    :statuscode 400: an invalid *sha1_git* value has been provided
-    :statuscode 404: requested revision can not be found in the SWH archive
+    :statuscode 400: an invalid **sha1_git** value has been provided
+    :statuscode 404: requested revision can not be found in the archive
 
     **Request:**
 
@@ -143,8 +143,8 @@ class APIDocTestCase(SWHWebTestCase, APITestCase):
         self.assertIn('urls', doc_data)
         self.assertEqual(doc_data['urls'], expected_urls)
 
-        expected_description = 'Get information about a revision in the SWH archive. \
-Revisions are identified by *sha1* checksums, compatible with Git commit \
+        expected_description = 'Get information about a revision in the archive. \
+Revisions are identified by **sha1** checksums, compatible with Git commit \
 identifiers. See **swh.model.identifiers.revision_identifier** in our data \
 model module for details about how they are computed.'
         self.assertIn('description', doc_data)
@@ -153,7 +153,7 @@ model module for details about how they are computed.'
         expected_args = [{
             'name': 'sha1_git',
             'type': 'string',
-            'doc': 'hexadecimal representation of the revision *sha1_git* identifier'
+            'doc': 'hexadecimal representation of the revision **sha1_git** identifier'
         }]
 
         self.assertIn('args', doc_data)
@@ -164,7 +164,7 @@ model module for details about how they are computed.'
         self.assertEqual(doc_data['params'], expected_params)
 
         expected_reqheaders = [{
-            'doc': 'the requested response content type, either *application/json*  or *application/yaml*',
+            'doc': 'the requested response content type, either ``application/json``  or ``application/yaml``',
             'name': 'Accept'
         }]
 
@@ -186,11 +186,11 @@ model module for details about how they are computed.'
             },
             {
                 'code': '400',
-                'doc': 'an invalid *sha1_git* value has been provided'
+                'doc': 'an invalid **sha1_git** value has been provided'
             },
             {
                 'code': '404',
-                'doc': 'requested revision can not be found in the SWH archive'
+                'doc': 'requested revision can not be found in the archive'
             }
         ]
 

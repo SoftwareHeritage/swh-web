@@ -30,7 +30,7 @@ from swh.web.browse.browseurls import browse_route
 @browse_route(r'content/(?P<query_string>.+)/raw/',
               view_name='browse-content-raw')
 def content_raw(request, query_string):
-    """Django view that produces a raw display of a SWH content identified
+    """Django view that produces a raw display of a content identified
     by its hash value.
 
     The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
@@ -77,9 +77,10 @@ def _contents_diff(request, from_query_string, to_query_string):
     Args:
         request: input django http request
         from_query_string: a string of the form "[ALGO_HASH:]HASH" where
-            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
-            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
-            representation of the hash value identifying the first content
+            optional ALGO_HASH can be either ``sha1``, ``sha1_git``,
+            ``sha256``, or ``blake2s256`` (default to ``sha1``) and HASH
+            the hexadecimal representation of the hash value identifying
+            the first content
         to_query_string: same as above for identifying the second content
 
     Returns:
@@ -164,7 +165,7 @@ def _contents_diff(request, from_query_string, to_query_string):
 @browse_route(r'content/(?P<query_string>.+)/',
               view_name='browse-content')
 def content_display(request, query_string):
-    """Django view that produces an HTML display of a SWH content identified
+    """Django view that produces an HTML display of a content identified
     by its hash value.
 
     The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/`
@@ -225,19 +226,22 @@ def content_display(request, query_string):
         split_path = path.split('/')
         root_dir = split_path[0]
         filename = split_path[-1]
-        path = path.replace(root_dir + '/', '')
-        path = path[:-len(filename)]
-        path_info = gen_path_info(path)
-        breadcrumbs.append({'name': root_dir[:7],
-                            'url': reverse('browse-directory',
-                                           url_args={'sha1_git': root_dir},
-                                           query_params=query_params)})
-        for pi in path_info:
-            breadcrumbs.append({'name': pi['name'],
-                                'url': reverse('browse-directory',
-                                               url_args={'sha1_git': root_dir,
-                                                         'path': pi['path']},
-                                               query_params=query_params)})
+        if root_dir != path:
+            path = path.replace(root_dir + '/', '')
+            path = path[:-len(filename)]
+            path_info = gen_path_info(path)
+            dir_url = reverse('browse-directory',
+                              url_args={'sha1_git': root_dir},
+                              query_params=query_params)
+            breadcrumbs.append({'name': root_dir[:7],
+                                'url': dir_url})
+            for pi in path_info:
+                dir_url = reverse('browse-directory',
+                                  url_args={'sha1_git': root_dir,
+                                            'path': pi['path']},
+                                  query_params=query_params)
+                breadcrumbs.append({'name': pi['name'],
+                                    'url': dir_url})
         breadcrumbs.append({'name': filename,
                             'url': None})
 

@@ -184,8 +184,8 @@ swh/web/static/css/browse.ab5be83726de277b08c7.css
 swh/web/static/css/browse.ab5be83726de277b08c7.css.map
 swh/web/static/css/highlightjs.7b32fa88e820b087cafd.css
 swh/web/static/css/highlightjs.7b32fa88e820b087cafd.css.map
-swh/web/static/css/origin.245751215322daa84934.css
-swh/web/static/css/origin.245751215322daa84934.css.map
+swh/web/static/css/origin.6b57666194b71082b679.css
+swh/web/static/css/origin.6b57666194b71082b679.css.map
 swh/web/static/css/revision.84ec9135fe56255b5f3c.css
 swh/web/static/css/revision.84ec9135fe56255b5f3c.css.map
 swh/web/static/css/showdown.647625950777ab491cca.css
@@ -286,8 +286,8 @@ swh/web/static/js/browse.ab5be83726de277b08c7.js
 swh/web/static/js/browse.ab5be83726de277b08c7.js.map
 swh/web/static/js/highlightjs.7b32fa88e820b087cafd.js
 swh/web/static/js/highlightjs.7b32fa88e820b087cafd.js.map
-swh/web/static/js/origin.245751215322daa84934.js
-swh/web/static/js/origin.245751215322daa84934.js.map
+swh/web/static/js/origin.6b57666194b71082b679.js
+swh/web/static/js/origin.6b57666194b71082b679.js.map
 swh/web/static/js/pdf.worker.min.js
 swh/web/static/js/pdfjs.a2182ae126e9711b9149.js
 swh/web/static/js/pdfjs.a2182ae126e9711b9149.js.map

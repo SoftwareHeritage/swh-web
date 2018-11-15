@@ -3,8 +3,8 @@ Directory
 
 .. http:get:: /browse/directory/(sha1_git)/[(path)/]
 
-    HTML view for browsing the content of a SWH directory reachable from
-    the provided root one (including itself) identified by its *sha1_git* value.
+    HTML view for browsing the content of a directory reachable from
+    the provided root one (including itself) identified by its **sha1_git** value.
 
     The content of the directory is first sorted in lexicographical order
     and the sub-directories are displayed before the regular files.
@@ -15,13 +15,13 @@ Directory
     A breadcrumb located in the top part of the view allows
     to keep track of the paths navigated so far.
 
-    :param string sha1_git: hexadecimal representation for the *sha1_git* identifier
+    :param string sha1_git: hexadecimal representation for the **sha1_git** identifier
         of the directory to browse
     :param string path: optional parameter used to specify the path of a directory
         reachable from the provided root one
     :statuscode 200: no error
-    :statuscode 400: an invalid *sha1_git* value has been provided
-    :statuscode 404: requested directory can not be found in the SWH archive
+    :statuscode 400: an invalid **sha1_git** value has been provided
+    :statuscode 404: requested directory can not be found in the archive
 
     **Examples:**
 

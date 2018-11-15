@@ -3,7 +3,7 @@ Snapshot
 
 .. http:get:: /browse/snapshot/(snapshot_id)/
 
-    HTML view that displays the content of a SWH snapshot from its identifier
+    HTML view that displays the content of a snapshot from its identifier
     (see :func:`swh.model.identifiers.snapshot_identifier`
     in our data model module for details about how they are computed).
 
@@ -18,11 +18,11 @@ Snapshot
     in order to display the root directory associated to the default
     snapshot branch (usually master).
 
-    :param string snapshot_id: hexadecimal representation of the snapshot *sha1* identifier
+    :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the SWH archive
+    :statuscode 404: requested snapshot can not be found in the archive
 
     **Examples:**
 
@@ -38,13 +38,13 @@ Snapshot directory
 .. http:get:: /browse/snapshot/(snapshot_id)/directory/[(path)/]
 
     HTML view that displays the content of a directory reachable from
-    a SWH snapshot.
+    a snapshot.
 
     The features offered by the view are similar to the one for browsing
     a directory in an origin context
     (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/directory/[(path)/]`).
 
-    :param string snapshot_id: hexadecimal representation of the snapshot *sha1* identifier
+    :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :param string path: optional parameter used to specify the path of a directory
         reachable from the snapshot root one
     :query string branch: specify the snapshot branch name from which
@@ -52,11 +52,11 @@ Snapshot directory
     :query string release: specify the snapshot release name from which
         to retrieve the root directory
     :query string revision: specify the snapshot revision, identified by the hexadecimal
-        representation of its *sha1_git* value, from which to retrieve the root directory
+        representation of its **sha1_git** value, from which to retrieve the root directory
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the SWH archive
+    :statuscode 404: requested snapshot can not be found in the archive
 
     **Examples:**
 
@@ -71,25 +71,25 @@ Snapshot content
 
 .. http:get:: /browse/snapshot/(snapshot_id)/content/(path)/
 
-    HTML view that produces a display of a SWH content reachable from
-    a SWH snapshot.
+    HTML view that produces a display of a content reachable from
+    a snapshot.
 
     The features offered by the view are similar to the one for browsing
     a content in an origin context
     (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/content/(path)/`).
 
-    :param string snapshot_id: hexadecimal representation of the snapshot *sha1* identifier
+    :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :param string path: path of a content reachable from the snapshot root directory
     :query string branch: specify the snapshot branch name from which
         to retrieve the content
     :query string release: specify the snapshot release name from which
         to retrieve the content
     :query string revision: specify the snapshot revision, identified by the hexadecimal
-        representation of its *sha1_git* value, from which to retrieve the content
+        representation of its **sha1_git** value, from which to retrieve the content
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the SWH archive,
+    :statuscode 404: requested snapshot can not be found in the archive,
         or the provided content path does not exist from the origin root directory
 
     **Examples:**
@@ -106,30 +106,30 @@ Snapshot history
 .. http:get:: /browse/snapshot/(snapshot_id)/log/
 
     HTML view that produces a display of revisions history (aka the commit log)
-    heading to the last revision collected in a SWH snasphot.
+    heading to the last revision collected in a snapshot.
 
     The features offered by the view are similar to the one for browsing
     the history in an origin context
     (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/log/`).
 
-    :param string snapshot_id: hexadecimal representation of the snapshot *sha1* identifier
+    :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :query string revs_breadcrumb: used internally to store
         the navigation breadcrumbs (i.e. the list of descendant revisions
         visited so far). It must be a string in the form
         "(rev_1)[/(rev_2)/.../(rev_n)]" where rev_i corresponds to a
-        revision *sha1_git*.
+        revision **sha1_git**.
     :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
     :query string branch: specify the snapshot branch name from which
         to retrieve the commit log
-    :query string release: specify the snasphot release name from which
+    :query string release: specify the snapshot release name from which
         to retrieve the commit log
     :query string revision: specify the snapshot revision, identified by the hexadecimal
-        representation of its *sha1_git* value, from which to retrieve the commit log
+        representation of its **sha1_git** value, from which to retrieve the commit log
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the SWH archive
+    :statuscode 404: requested snapshot can not be found in the archive
 
     **Examples:**
 
@@ -144,16 +144,16 @@ Snapshot branches
 .. http:get:: /browse/snapshot/(snapshot_id)/branches/
 
     HTML view that produces a display of the list of branches
-    collected in a SWH snapshot.
+    collected in a snapshot.
 
     The features offered by the view are similar to the one for browsing
     the list of branches in an origin context
     (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/branches/`).
 
-    :param string snapshot_id: hexadecimal representation of the snapshot *sha1* identifier
+    :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the SWH archive
+    :statuscode 404: requested snapshot can not be found in the archive
 
     **Examples:**
 
@@ -168,16 +168,16 @@ Snapshot releases
 .. http:get:: /browse/snapshot/(snapshot_id)/releases/
 
     HTML view that produces a display of the list of releases
-    collected in a SWH snapshot.
+    collected in a snapshot.
 
     The features offered by the view are similar to the one for browsing
     the list of releases in an origin context
     (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/releases/`).
 
-    :param string snapshot_id: hexadecimal representation of the snapshot *sha1* identifier
+    :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the SWH archive
+    :statuscode 404: requested snapshot can not be found in the archive
 
     **Examples:**
 

@@ -62,11 +62,13 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         documentation transform rst to html when rendering).
         """
         par = par.replace('\n', ' ')
-        # keep emphasized and strong text
+        # keep emphasized, strong and literal text
         par = par.replace('<emphasis>', '*')
         par = par.replace('</emphasis>', '*')
         par = par.replace('<strong>', '**')
         par = par.replace('</strong>', '**')
+        par = par.replace('<literal>', '``')
+        par = par.replace('</literal>', '``')
         # remove parsed document markups
         par = re.sub('<[^<]+?>', '', par)
         # api urls cleanup to generate valid links afterwards

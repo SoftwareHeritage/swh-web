@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-# Utility module implementing Django views for browsing the SWH archive
+# Utility module implementing Django views for browsing the archive
 # in a snapshot context.
 # Its purpose is to factorize code for the views reachable from the
 # /origin/.* and /snapshot/.* endpoints.
@@ -35,7 +35,7 @@ _empty_snapshot_id = snapshot_identifier({'branches': {}})
 def _get_branch(branches, branch_name, snapshot_id):
     """
     Utility function to get a specific branch from a branches list.
-    Its purpose is to get the default HEAD branch as some SWH origin
+    Its purpose is to get the default HEAD branch as some software origin
     (e.g those with svn type) does not have it. In that latter case, check
     if there is a master branch instead and returns it.
     """
