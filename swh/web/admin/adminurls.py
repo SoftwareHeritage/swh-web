@@ -8,7 +8,7 @@ from swh.web.common.urlsindex import UrlsIndex
 
 class AdminUrls(UrlsIndex):
     """
-    Class to manage SWH web admin urls.
+    Class to manage swh-web admin urls.
     """
 
     scope = 'admin'
@@ -16,7 +16,7 @@ class AdminUrls(UrlsIndex):
 
 class admin_route(object):  # noqa: N801
     """
-    Decorator to ease the registration of a SWH web admin endpoint
+    Decorator to ease the registration of a swh-web admin endpoint
 
     Args:
         url_patterns: list of url patterns used by Django to identify the admin routes

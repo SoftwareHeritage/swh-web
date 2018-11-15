@@ -3,7 +3,7 @@ Revision
 
 .. http:get:: /browse/revision/(sha1_git)/
 
-    HTML view to browse a SWH revision. It notably shows the revision date
+    HTML view to browse a revision. It notably shows the revision date
     and message but also offers links to get more details on:
 
         * its author
@@ -16,21 +16,22 @@ Revision
     Last but not least, the view displays the list of file changes introduced
     in the revision but also the diffs of each changed files.
 
-    :param string sha1_git: hexadecimal representation for the *sha1_git*
-         identifier of a SWH revision
-    :query string origin_type: used internally to associate a SWH origin type
-        (*git*, *svn*, *deb* ...) to the revision
+    :param string sha1_git: hexadecimal representation for the **sha1_git**
+         identifier of a revision
+    :query string origin_type: used internally to associate a software origin type
+        (possible values are ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp``
+        or ``deposit``) to the revision
     :query string origin_url: used internally to associate an origin url
         (e.g. https://github.com/user/repo) to the revision
     :query string timestamp: used internally to associate an origin visit to the
         revision, must be a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest SWH visit.
-    :query int visit_id: used internally to specify a SWH visit id instead of
+        or Unix timestamp to parse in order to find the closest visit.
+    :query int visit_id: used internally to specify a visit id instead of
         using the provided timestamp
     :query string path: used internally when navigating in the source tree
         associated to the revision
     :statuscode 200: no error
-    :statuscode 404: requested revision can not be found in the SWH archive
+    :statuscode 404: requested revision can not be found in the archive
 
     **Examples:**
 
@@ -59,19 +60,19 @@ Revision
     N log entries are displayed per page (default is 100). In order to navigate
     in a large history, two buttons are present at the bottom of the view:
 
-        * *Newer*: fetch and display if available the N more recent log entries
+        * **Newer**: fetch and display if available the N more recent log entries
           than the ones currently displayed
-        * *Older*: fetch and display if available the N older log entries
+        * **Older**: fetch and display if available the N older log entries
           than the ones currently displayed
 
-    :param string sha1_git: hexadecimal representation for the *sha1_git*
-        identifier of a SWH revision
+    :param string sha1_git: hexadecimal representation for the **sha1_git**
+        identifier of a revision
     :query int per_page: the number of log entries to display per page
     :query int offset: the number of revisions to skip before returning those to display
-    :query str revs_ordering: specify the revisions ordering, possible values are *committer_date*,
-        *dfs*, *dfs_post* and *bfs*
+    :query str revs_ordering: specify the revisions ordering, possible values are ``committer_date``,
+        ``dfs``, ``dfs_post`` and ``bfs``
     :statuscode 200: no error
-    :statuscode 404: requested revision can not be found in the SWH archive
+    :statuscode 404: requested revision can not be found in the archive
 
     **Examples:**
 

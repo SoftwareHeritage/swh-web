@@ -56,7 +56,7 @@ def fmap(f, data):
 def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
              removables_if_empty={}, empty_dict={}, empty_list={},
              convert={}, convert_fn=lambda x: x):
-    """Convert from an swh dictionary to something reasonably json
+    """Convert from a swh dictionary to something reasonably json
     serializable.
 
     Args:
@@ -180,7 +180,7 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
 
 
 def from_provenance(provenance):
-    """Convert from a provenance information to a provenance dictionary.
+    """Convert from a swh provenance information to a provenance dictionary.
 
     Args:
         provenance (dict): Dictionary with the following keys:
@@ -197,14 +197,14 @@ def from_provenance(provenance):
 
 
 def from_origin(origin):
-    """Convert from an SWH origin to an origin dictionary.
+    """Convert from a swh origin to an origin dictionary.
 
     """
     return from_swh(origin)
 
 
 def from_release(release):
-    """Convert from an SWH release to a json serializable release dictionary.
+    """Convert from a swh release to a json serializable release dictionary.
 
     Args:
         release (dict): dictionary with keys:
@@ -260,7 +260,7 @@ def convert_revision_metadata(metadata):
 
 
 def from_revision(revision):
-    """Convert from an SWH revision to a json serializable revision dictionary.
+    """Convert from a swh revision to a json serializable revision dictionary.
 
     Args:
         revision (dict): dict with keys:

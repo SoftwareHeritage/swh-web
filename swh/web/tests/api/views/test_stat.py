@@ -30,7 +30,7 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
     def test_api_1_stat_counters_raise_from_db(self, mock_service):
         # given
         mock_service.stat_counters.side_effect = StorageDBError(
-            'SWH Storage exploded! Will be back online shortly!')
+            'Storage exploded! Will be back online shortly!')
         # when
         rv = self.client.get('/api/1/stat/counters/')
         # then
@@ -40,13 +40,13 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             'exception': 'StorageDBError',
             'reason':
             'An unexpected error occurred in the backend: '
-            'SWH Storage exploded! Will be back online shortly!'})
+            'Storage exploded! Will be back online shortly!'})
 
     @patch('swh.web.api.views.stat.service')
     def test_api_1_stat_counters_raise_from_api(self, mock_service):
         # given
         mock_service.stat_counters.side_effect = StorageAPIError(
-            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+            'Storage API dropped dead! Will resurrect from its ashes asap!'
         )
         # when
         rv = self.client.get('/api/1/stat/counters/')
@@ -57,7 +57,7 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             'exception': 'StorageAPIError',
             'reason':
             'An unexpected error occurred in the api backend: '
-            'SWH Storage API dropped dead! Will resurrect from its ashes asap!'
+            'Storage API dropped dead! Will resurrect from its ashes asap!'
         })
 
     @patch('swh.web.api.views.stat.service')

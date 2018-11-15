@@ -3,7 +3,7 @@ Content
 
 .. http:get:: /browse/content/[(algo_hash):](hash)/
 
-    HTML view that displays a SWH content identified by its hash value.
+    HTML view that displays a content identified by its hash value.
 
     If the content to display is textual, it will be highlighted client-side
     if possible using highlightjs_. In order for that operation to be
@@ -16,7 +16,7 @@ Content
         2) If no language has been found from the filename,
            try to find one from the content mime type.
            The mime type is retrieved from the content metadata stored
-           in the SWH archive or is computed server-side using Python
+           in the archive or is computed server-side using Python
            magic module.
 
     It is also possible to highlight specific lines of a textual
@@ -34,16 +34,16 @@ Content
     of the file relative to the root directory.
 
     :param string algo_hash: optional parameter to indicate the algorithm used
-        to compute the content checksum (can be either *sha1*,
-        *sha1_git*, *sha256* or *blake2s256*, default to *sha1*)
+        to compute the content checksum (can be either ``sha1``,
+        ``sha1_git``, ``sha256`` or ``blake2s256``, default to ``sha1``)
     :param string hash: hexadecimal representation for the checksum from which
-        to retrieve the associated content in the SWH archive
+        to retrieve the associated content in the archive
     :query string path: describe the path of the content relative to a root
         directory (used to add context aware navigation links when navigating
         from a directory view)
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
-    :statuscode 404: requested content can not be found in the SWH archive
+    :statuscode 404: requested content can not be found in the archive
 
     **Examples:**
 
@@ -57,7 +57,7 @@ Content
 
 .. http:get:: /browse/content/[(algo_hash):](hash)/raw/
 
-    HTML view that produces a raw display of a SWH content identified by its hash value.
+    HTML view that produces a raw display of a content identified by its hash value.
 
     The behaviour of that view depends on the mime type of the requested content.
     If the mime type is from the text family, the view will return a response whose
@@ -70,15 +70,15 @@ Content
     one wants to save it locally.
 
     :param string algo_hash: optional parameter to indicate the algorithm used
-        to compute the content checksum (can be either *sha1*,
-        *sha1_git*, *sha256* or *blake2s256*, default to *sha1*)
+        to compute the content checksum (can be either ``sha1``,
+        ``sha1_git``, ``sha256`` or ``blake2s256``, default to ``sha1``)
     :param string hash: hexadecimal representation for the checksum from which
-        to retrieve the associated content in the SWH archive
+        to retrieve the associated content in the archive
     :query string filename: indicate the name of the file holding the requested
         content (used when one wants to save the content to a local file)
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
-    :statuscode 404: requested content can not be found in the SWH archive
+    :statuscode 404: requested content can not be found in the archive
 
     **Examples:**
 

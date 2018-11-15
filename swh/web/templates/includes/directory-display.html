@@ -21,8 +21,8 @@ See top-level LICENSE file for more information
         {% for d in dirs %}
           <tr class="swh-directory-entry swh-tr-hover-highlight" data-href="{{ d.url | safe }}">
             <td class="swh-directory">
+              <i class="{{ swh_object_icons.directory }} fa-fw" aria-hidden="true"></i>
               <a href="{{ d.url | safe }}">
-                <i class="{{ swh_object_icons.directory }} fa-fw" aria-hidden="true"></i>
                 {{ d.name }}
               </a>
             </td>
@@ -40,8 +40,8 @@ See top-level LICENSE file for more information
         {% for f in files %}
           <tr class="swh-directory-entry swh-tr-hover-highlight" data-href="{{ f.url | safe }}">
             <td class="swh-content">
+              <i class="{{ swh_object_icons.content }} fa-fw" aria-hidden="true"></i>
               <a href="{{ f.url | safe }}">
-                <i class="{{ swh_object_icons.content }} fa-fw" aria-hidden="true"></i>
                 {{ f.name }}
               </a>
             </td>

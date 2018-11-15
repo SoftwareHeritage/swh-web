@@ -22,7 +22,7 @@ from swh.web.browse.utils import (
               view_name='browse-release')
 def release_browse(request, sha1_git):
     """
-    Django view that produces an HTML display of a SWH release
+    Django view that produces an HTML display of a release
     identified by its id.
 
     The url that points to it is :http:get:`/browse/release/(sha1_git)/`.

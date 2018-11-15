@@ -222,8 +222,8 @@ class SwhBrowseUtilsTestCase(SWHWebTestCase):
         self.assertEqual(origin_visit_branches, expected_result)
 
     def test_gen_link(self):
-        self.assertEqual(utils.gen_link('https://www.softwareheritage.org/', 'SWH'),
-                         '<a href="https://www.softwareheritage.org/">SWH</a>')
+        self.assertEqual(utils.gen_link('https://www.softwareheritage.org/', 'swh'),
+                         '<a href="https://www.softwareheritage.org/">swh</a>')
 
     def test_gen_person_link(self):
         person_id = 8221896

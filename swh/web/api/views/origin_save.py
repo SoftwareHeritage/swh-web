@@ -51,20 +51,20 @@ def api_save_origin(request, origin_type, origin_url):
         for the same origin).
 
         :param string origin_type: the type of origin to save
-            (currently only *git* but *hg* and *svn* will soon be available)
+            (currently only ``git`` but ``hg`` and ``svn`` will soon be available)
         :param string origin_url: the url of the origin to save
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json string origin_url: the url of the origin to save
         :>json string origin_type: the type of the origin to save
         :>json string save_request_date: the date (in iso format) the save request was issued
-        :>json string save_request_status: the status of the save request, either *accepted*,
-            *rejected* or *pending*
-        :>json string save_task_status: the status of the origin saving task, either *not created*,
-            *not yet scheduled*, *scheduled*, *succeed* or *failed*
+        :>json string save_request_status: the status of the save request, either **accepted**,
+            **rejected** or **pending**
+        :>json string save_task_status: the status of the origin saving task, either **not created**,
+            **not yet scheduled**, **scheduled**, **succeed** or **failed**
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
 
