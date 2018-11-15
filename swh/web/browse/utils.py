@@ -28,8 +28,8 @@ from swh.web.config import get_config
 
 
 def get_directory_entries(sha1_git):
-    """Function that retrieves the content of a SWH directory
-    from the SWH archive.
+    """Function that retrieves the content of a directory
+    from the archive.
 
     The directories entries are first sorted in lexicographical order.
     Sub-directories and regular files are then extracted.
@@ -105,7 +105,7 @@ snapshot_content_max_size = get_config()['snapshot_content_max_size']
 
 def request_content(query_string, max_size=content_display_max_size,
                     raise_if_unavailable=True, reencode=True):
-    """Function that retrieves a SWH content from the SWH archive.
+    """Function that retrieves a content from the archive.
 
     Raw bytes content is first retrieved, then the content mime type.
     If the mime type is not stored in the archive, it will be computed
@@ -113,9 +113,9 @@ def request_content(query_string, max_size=content_display_max_size,
 
     Args:
         query_string: a string of the form "[ALGO_HASH:]HASH" where
-            optional ALGO_HASH can be either *sha1*, *sha1_git*, *sha256*,
-            or *blake2s256* (default to *sha1*) and HASH the hexadecimal
-            representation of the hash value
+            optional ALGO_HASH can be either ``sha1``, ``sha1_git``,
+            ``sha256``, or ``blake2s256`` (default to ``sha1``) and HASH
+            the hexadecimal representation of the hash value
         max_size: the maximum size for a content to retrieve (default to 1MB,
             no size limit if None)
 
@@ -269,7 +269,7 @@ def prepare_content_for_display(content_data, mime_type, path):
 
 def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
                      snapshot_id=None):
-    """Function that returns information about a SWH visit for
+    """Function that returns information about a visit for
     a given origin.
     The visit is retrieved from a provided timestamp.
     The closest visit from that timestamp is selected.
@@ -292,7 +292,7 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
     visits = get_origin_visits(origin_info)
 
     if not visits:
-        raise NotFoundExc('No SWH visit associated to origin with'
+        raise NotFoundExc('No visit associated to origin with'
                           ' type %s and url %s!' % (origin_info['type'],
                                                     origin_info['url']))
 
@@ -542,11 +542,11 @@ def gen_link(url, link_text=None, link_attrs={}):
 def gen_person_link(person_id, person_name, snapshot_context=None,
                     link_attrs={}):
     """
-    Utility function for generating a link to a SWH person HTML view
+    Utility function for generating a link to a person HTML view
     to insert in Django templates.
 
     Args:
-        person_id (int): a SWH person id
+        person_id (int): a person id
         person_name (str): the associated person name
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
@@ -575,10 +575,10 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
 
 def gen_revision_url(revision_id, snapshot_context=None):
     """
-    Utility function for generating an url to a SWH revision.
+    Utility function for generating an url to a revision.
 
     Args:
-        revision_id (str): a SWH revision id
+        revision_id (str): a revision id
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing url
 
@@ -609,11 +609,11 @@ def gen_revision_url(revision_id, snapshot_context=None):
 def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
                       link_text=None, link_attrs={}):
     """
-    Utility function for generating a link to a SWH revision HTML view
+    Utility function for generating a link to a revision HTML view
     to insert in Django templates.
 
     Args:
-        revision_id (str): a SWH revision id
+        revision_id (str): a revision id
         shorten_id (boolean): whether to shorten the revision id to 7
             characters for the link text
         snapshot_context (dict): if provided, generate snapshot-dependent
@@ -640,7 +640,7 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
 
 def gen_origin_link(origin_info, link_attrs={}):
     """
-    Utility function for generating a link to a SWH origin HTML view
+    Utility function for generating a link to a software origin HTML view
     to insert in Django templates.
 
     Args:
@@ -662,7 +662,7 @@ def gen_origin_link(origin_info, link_attrs={}):
 
 def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
     """
-    Utility function for generating a link to a SWH directory HTML view
+    Utility function for generating a link to a directory HTML view
     to insert in Django templates.
 
     Args:
@@ -689,7 +689,7 @@ def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
 
 def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
     """
-    Utility function for generating a link to a SWH snapshot HTML view
+    Utility function for generating a link to a snapshot HTML view
     to insert in Django templates.
 
     Args:
@@ -713,7 +713,7 @@ def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
 def gen_snapshot_directory_link(snapshot_context, revision_id=None,
                                 link_text=None, link_attrs={}):
     """
-    Utility function for generating a link to a SWH directory HTML view
+    Utility function for generating a link to a directory HTML view
     in the context of a snapshot to insert in Django templates.
 
     Args:
@@ -754,7 +754,7 @@ def gen_snapshot_directory_link(snapshot_context, revision_id=None,
 
 def gen_content_link(sha1_git, link_text=None, link_attrs={}):
     """
-    Utility function for generating a link to a SWH content HTML view
+    Utility function for generating a link to a content HTML view
     to insert in Django templates.
 
     Args:
@@ -779,7 +779,7 @@ def gen_content_link(sha1_git, link_text=None, link_attrs={}):
 
 def get_revision_log_url(revision_id, snapshot_context=None):
     """
-    Utility function for getting the URL for a SWH revision log HTML view
+    Utility function for getting the URL for a revision log HTML view
     (possibly in the context of an origin).
 
     Args:
@@ -787,7 +787,7 @@ def get_revision_log_url(revision_id, snapshot_context=None):
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing link
     Returns:
-        The SWH revision log view URL
+        The revision log view URL
     """
     query_params = {'revision': revision_id}
     if snapshot_context and snapshot_context['origin_info']:
@@ -816,7 +816,7 @@ def get_revision_log_url(revision_id, snapshot_context=None):
 def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
                           link_attrs={}):
     """
-    Utility function for generating a link to a SWH revision log HTML view
+    Utility function for generating a link to a revision log HTML view
     (possibly in the context of an origin) to insert in Django templates.
 
     Args:
@@ -846,12 +846,12 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
 
-        * add links to relevant SWH browse views
+        * add links to relevant browse views
         * format date in human readable format
         * truncate the message log
 
     Args:
-        revision_log (list): raw revision log as returned by the SWH web api
+        revision_log (list): raw revision log as returned by the swh-web api
         per_page (int): number of log entries per page
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing link
@@ -900,19 +900,19 @@ _swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit', 'pypi']
 
 def get_origin_info(origin_url, origin_type=None):
     """
-    Get info about a SWH origin.
+    Get info about a software origin.
     Its main purpose is to automatically find an origin type
     when it is not provided as parameter.
 
     Args:
-        origin_url (str): complete url of a SWH origin
+        origin_url (str): complete url of a software origin
         origin_type (str): optional origin type
 
     Returns:
         A dict with the following entries:
             * type: the origin type
             * url: the origin url
-            * id: the SWH internal id of the origin
+            * id: the internal id of the origin
     """
     if origin_type:
         return service.lookup_origin({'type': origin_type,
@@ -932,7 +932,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
                          timestamp=None, visit_id=None):
     """
     Utility function to compute relevant information when navigating
-    the SWH archive in a snapshot context. The snapshot is either
+    the archive in a snapshot context. The snapshot is either
     referenced by its id or it will be retrieved from an origin visit.
 
     Args:
@@ -941,14 +941,14 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         origin_type (str): the origin type (git, svn, deposit, ...)
         origin_url (str): the origin_url (e.g. https://github.com/(user)/(repo)/)
         timestamp (str): a datetime string for retrieving the closest
-            SWH visit of the origin
+            visit of the origin
         visit_id (int): optional visit id for disambiguation in case
             of several visits with the same timestamp
 
     Returns:
         A dict with the following entries:
             * origin_info: dict containing origin information
-            * visit_info: dict containing SWH visit information
+            * visit_info: dict containing visit information
             * branches: the list of branches for the origin found
               during the visit
             * releases: the list of releases for the origin found

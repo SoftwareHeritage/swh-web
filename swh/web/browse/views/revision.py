@@ -178,7 +178,7 @@ NB_LOG_ENTRIES = 100
 def revision_log_browse(request, sha1_git):
     """
     Django view that produces an HTML display of the history
-    log for a SWH revision identified by its id.
+    log for a revision identified by its id.
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`
     """ # noqa
@@ -256,7 +256,7 @@ def revision_log_browse(request, sha1_git):
               view_name='browse-revision')
 def revision_browse(request, sha1_git, extra_path=None):
     """
-    Django view that produces an HTML display of a SWH revision
+    Django view that produces an HTML display of a revision
     identified by its id.
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/`.

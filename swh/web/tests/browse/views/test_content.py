@@ -151,6 +151,7 @@ class SwhBrowseContentTest(SWHWebTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
 
+        self.assertContains(resp, '<nav class="bread-crumbs')
         self.assertContains(resp, '<code class="cpp">')
         self.assertContains(resp, escape(stub_content_text_data['raw_data']))
 
@@ -186,6 +187,16 @@ class SwhBrowseContentTest(SWHWebTestCase):
                           url_args={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
                           query_params={'filename': filename})
         self.assertContains(resp, url_raw)
+
+        url = reverse('browse-content',
+                      url_args={'query_string': stub_content_text_data['checksums']['sha1']}, # noqa
+                      query_params={'path': filename})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed('browse/content.html')
+
+        self.assertNotContains(resp, '<nav class="bread-crumbs')
 
     @patch('swh.web.browse.views.content.request_content')
     def test_content_raw_text(self, mock_request_content):

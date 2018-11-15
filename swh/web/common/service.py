@@ -1015,8 +1015,8 @@ def get_revisions_walker(rev_walker_type, rev_start, *args, **kwargs):
 
     Args:
         rev_walker_type (str): the type of revisions walker to return,
-            possible values are: *committer_date*, *dfs*, *dfs_post*,
-            *bfs* and *path*
+            possible values are: ``committer_date``, ``dfs``, ``dfs_post``,
+            ``bfs`` and ``path``
         rev_start (str): hexadecimal representation of a revision identifier
         args (list): position arguments to pass to the revisions walker
             constructor

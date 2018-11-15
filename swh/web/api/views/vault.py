@@ -57,7 +57,7 @@ def api_vault_cook_directory(request, dir_id):
         :query string email: e-mail to notify when the archive is ready
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json string fetch_url: the url from which to download the archive once it has been cooked
@@ -72,7 +72,7 @@ def api_vault_cook_directory(request, dir_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
-        :statuscode 404: requested directory can not be found in the SWH archive
+        :statuscode 404: requested directory can not be found in the archive
     """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
@@ -103,7 +103,7 @@ def api_vault_fetch_directory(request, dir_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
-        :statuscode 404: requested directory can not be found in the SWH archive
+        :statuscode 404: requested directory can not be found in the archive
     """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
@@ -144,7 +144,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         :query string email: e-mail to notify when the gitfast archive is ready
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json string fetch_url: the url from which to download the archive once it has been cooked
@@ -159,7 +159,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
-        :statuscode 404: requested revision can not be found in the SWH archive
+        :statuscode 404: requested revision can not be found in the archive
     """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
@@ -190,7 +190,7 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
-        :statuscode 404: requested revision can not be found in the SWH archive
+        :statuscode 404: requested revision can not be found in the archive
     """ # noqa
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')

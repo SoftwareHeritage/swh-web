@@ -1,6 +1,6 @@
 .. _swh-web-api-urls:
 
-SWH Web API URLs
+swh-web API URLs
 ================
 
 .. include:: uri-scheme-api-content.rst

@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-// Creation of a stacked histogram with D3.js for SWH origin visits history
+// Creation of a stacked histogram with D3.js for software origin visits history
 // Parameters description:
 //  - container: selector for the div that will contain the histogram
 //  - visitsData: raw swh origin visits data
@@ -56,7 +56,7 @@ export function createVisitsHistogram(container, visitsData, currentYear, yearCl
     .domain(['full', 'partial', 'failed', 'ongoing'])
     .range(['#008000', '#edc344', '#ff0000', '#0000ff']);
 
-  // first SWH crawls were made in 2015
+  // first swh crawls were made in 2015
   let startYear = 2015;
   // set latest display year as the current one
   let now = new Date();

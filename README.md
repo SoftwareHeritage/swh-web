@@ -2,9 +2,9 @@
 
 This repository holds the development of Software Heritage web applications:
 
-* SWH Web API (https://archive.softwareheritage.org/api): enables to query the content of the SWH archive through HTTP requests and get responses in JSON or YAML.
+* swh-web API (https://archive.softwareheritage.org/api): enables to query the content of the archive through HTTP requests and get responses in JSON or YAML.
 
-* SWH Web browse (https://archive.softwareheritage.org/browse): graphical interface that eases the navigation in the SWH archive.
+* swh-web browse (https://archive.softwareheritage.org/browse): graphical interface that eases the navigation in the archive.
 
 Documentation about how to use these components but also the details of their URI schemes
 can be found in the docs folder. The produced HTML documentation can be read and browsed

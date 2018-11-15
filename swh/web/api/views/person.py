@@ -15,12 +15,12 @@ def api_person(request, person_id):
     """
     .. http:get:: /api/1/person/(person_id)/
 
-        Get information about a person in the SWH archive.
+        Get information about a person in the archive.
 
-        :param int person_id: a SWH person identifier
+        :param int person_id: a person identifier
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json string email: the email of the person
@@ -31,7 +31,7 @@ def api_person(request, person_id):
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: requested person can not be found in the SWH archive
+        :statuscode 404: requested person can not be found in the archive
 
         **Example:**
 

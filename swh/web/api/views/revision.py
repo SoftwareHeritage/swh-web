@@ -71,7 +71,7 @@ def api_revision_log_by(request, origin_id,
         but operates on the revision that has been found at a given software origin,
         close to a given point in time, pointed by a given branch.
 
-        :param int origin_id: a SWH origin identifier
+        :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name
             associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
         :param string timestamp: optional parameter specifying a timestamp close to which the revision
@@ -79,7 +79,7 @@ def api_revision_log_by(request, origin_id,
             as an ISO date or as a Unix one (in UTC). Defaults to now.
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>jsonarr object author: information about the author of the revision
@@ -105,7 +105,7 @@ def api_revision_log_by(request, origin_id,
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: no revision matching the given criteria could be found in the SWH archive
+        :statuscode 404: no revision matching the given criteria could be found in the archive
 
         **Example:**
 
@@ -222,7 +222,7 @@ def api_revision_with_origin(request, origin_id,
         but operates on the revision that has been found at a given software origin,
         close to a given point in time, pointed by a given branch.
 
-        :param int origin_id: a SWH origin identifier
+        :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name
             associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
         :param string timestamp: optional parameter specifying a timestamp close to which the revision
@@ -230,7 +230,7 @@ def api_revision_with_origin(request, origin_id,
             as an ISO date or as a Unix one (in UTC). Defaults to now.
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json object author: information about the author of the revision
@@ -256,7 +256,7 @@ def api_revision_with_origin(request, origin_id,
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: no revision matching the given criteria could be found in the SWH archive
+        :statuscode 404: no revision matching the given criteria could be found in the archive
 
         **Example:**
 
@@ -295,15 +295,15 @@ def api_revision(request, sha1_git):
     """
     .. http:get:: /api/1/revision/(sha1_git)/
 
-        Get information about a revision in the SWH archive.
-        Revisions are identified by *sha1* checksums, compatible with Git commit identifiers.
+        Get information about a revision in the archive.
+        Revisions are identified by **sha1** checksums, compatible with Git commit identifiers.
         See :func:`swh.model.identifiers.revision_identifier` in our data model module for details
         about how they are computed.
 
-        :param string sha1_git: hexadecimal representation of the revision *sha1_git* identifier
+        :param string sha1_git: hexadecimal representation of the revision **sha1_git** identifier
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json object author: information about the author of the revision
@@ -329,8 +329,8 @@ def api_revision(request, sha1_git):
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *sha1_git* value has been provided
-        :statuscode 404: requested revision can not be found in the SWH archive
+        :statuscode 400: an invalid **sha1_git** value has been provided
+        :statuscode 404: requested revision can not be found in the archive
 
         **Example:**
 
@@ -374,12 +374,12 @@ def api_revision_directory(request, sha1_git,
         This endpoint behaves like :http:get:`/api/1/directory/(sha1_git)/[(path)/]`,
         but operates on the root directory associated to a given revision.
 
-        :param string sha1_git: hexadecimal representation of the revision *sha1_git* identifier
+        :param string sha1_git: hexadecimal representation of the revision **sha1_git** identifier
         :param string path: optional parameter to get information about the directory entry
             pointed by that relative path
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
         :>json array content: directory entries as returned by :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
@@ -390,8 +390,8 @@ def api_revision_directory(request, sha1_git,
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *sha1_git* value has been provided
-        :statuscode 404: requested revision can not be found in the SWH archive
+        :statuscode 400: an invalid **sha1_git** value has been provided
+        :statuscode 404: requested revision can not be found in the archive
 
         **Example:**
 
@@ -413,16 +413,16 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
     """
     .. http:get:: /api/1/revision/(sha1_git)[/prev/(prev_sha1s)]/log/
 
-        Get a list of all SWH revisions heading to a given one, in other words show the commit log.
+        Get a list of all revisions heading to a given one, in other words show the commit log.
 
-        :param string sha1_git: hexadecimal representation of the revision *sha1_git* identifier
+        :param string sha1_git: hexadecimal representation of the revision **sha1_git** identifier
         :param string prev_sha1s: optional parameter representing the navigation breadcrumbs
             (descendant revisions previously visited). If multiple values, use / as delimiter.
             If provided, revisions information will be added at the beginning of the returned list.
         :query int per_page: number of elements in the returned list, for pagination purpose
 
         :reqheader Accept: the requested response content type,
-            either *application/json* (default) or *application/yaml*
+            either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
         :resheader Link: indicates that a subsequent result page is available and contains
             the url pointing to it
@@ -450,8 +450,8 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid *sha1_git* value has been provided
-        :statuscode 404: requested revision can not be found in the SWH archive
+        :statuscode 400: an invalid **sha1_git** value has been provided
+        :statuscode 404: requested revision can not be found in the archive
 
         **Example:**
 

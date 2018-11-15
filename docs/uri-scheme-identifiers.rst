@@ -1,5 +1,5 @@
-URI scheme for SWH identifiers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+URI scheme for Software Heritage identifiers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A subset of Software Heritage objects (contents, directories, releases and revisions)
 can be browsed using :ref:`persistent-identifiers`. Those identifiers
@@ -7,14 +7,14 @@ are guaranteed to remain stable (persistent) over time.
 
 .. http:get:: /(swh_id)/
 
-    End point to browse SWH objects using their persistent identifiers.
+    End point to browse Software Heritage objects using their persistent identifiers.
     A redirection to the adequate HTML view will be performed when
     reaching it.
 
-    :param string swh_id: a persistent identifier for a SWH object
+    :param string swh_id: a persistent identifier for a Software Heritage object
         (see the :ref:`persistent-identifiers` section to learn more
         about its syntax)
-    :resheader Location: the redirection URL for browsing the SWH object
+    :resheader Location: the redirection URL for browsing the Software Heritage object
         associated to the provided identifier
     :statuscode 302: no error
     :statuscode 400: the provided identifier is malformed
