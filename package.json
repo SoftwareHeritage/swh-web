@@ -59,6 +59,7 @@
     "octicons": "^4.4.0",
     "open-iconic": "^1.1.1",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "org": "^0.2.0",
     "pdfjs-dist": "^2.0.943",
     "popper.js": "^1.14.5",
     "postcss-loader": "^3.0.0",

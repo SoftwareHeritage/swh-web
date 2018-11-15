@@ -25,6 +25,10 @@ See top-level LICENSE file for more information
     <script>
       swh.webapp.renderTxt('#readme', '{{ readme_url }}');
     </script>
+  {% elif readme_name.lower == 'readme.org' %}
+    <script>
+      swh.webapp.renderOrg('#readme', '{{ readme_url }}');
+    </script>
   {% else %}
     <script>
       swh.webapp.renderMarkdown('#readme', '{{ readme_url }}');
