@@ -226,19 +226,22 @@ def content_display(request, query_string):
         split_path = path.split('/')
         root_dir = split_path[0]
         filename = split_path[-1]
-        path = path.replace(root_dir + '/', '')
-        path = path[:-len(filename)]
-        path_info = gen_path_info(path)
-        breadcrumbs.append({'name': root_dir[:7],
-                            'url': reverse('browse-directory',
-                                           url_args={'sha1_git': root_dir},
-                                           query_params=query_params)})
-        for pi in path_info:
-            breadcrumbs.append({'name': pi['name'],
-                                'url': reverse('browse-directory',
-                                               url_args={'sha1_git': root_dir,
-                                                         'path': pi['path']},
-                                               query_params=query_params)})
+        if root_dir != path:
+            path = path.replace(root_dir + '/', '')
+            path = path[:-len(filename)]
+            path_info = gen_path_info(path)
+            dir_url = reverse('browse-directory',
+                              url_args={'sha1_git': root_dir},
+                              query_params=query_params)
+            breadcrumbs.append({'name': root_dir[:7],
+                                'url': dir_url})
+            for pi in path_info:
+                dir_url = reverse('browse-directory',
+                                  url_args={'sha1_git': root_dir,
+                                            'path': pi['path']},
+                                  query_params=query_params)
+                breadcrumbs.append({'name': pi['name'],
+                                    'url': dir_url})
         breadcrumbs.append({'name': filename,
                             'url': None})
 
