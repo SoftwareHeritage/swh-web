@@ -1,0 +1,51 @@
+/**
+ * Copyright (C) 2018  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+.swh-org dl dd {
+    margin-left: 9px;
+}
+
+.swh-org table,
+.swh-org img {
+    margin-bottom: 1rem;
+}
+
+.swh-org table,
+.swh-org table th,
+.swh-org table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.swh-org table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.swh-org span.task-status {
+    padding: 0 0.2em;
+    margin-right: 10px;
+    color: white;
+}
+
+.swh-org span.task-status.todo {
+    color: white;
+    background-color: rgb(39, 149, 182);
+}
+
+.swh-org span.task-status.done {
+    color: white;
+    background-color: rgb(81, 143, 31);
+}
+
+.swh-org .section-number {
+    padding-right: 5px;
+    font-weight: bold;
+}
+
+.swh-org .org-subscript-child {
+    font-size: 85%;
+}
