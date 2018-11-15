@@ -27,6 +27,38 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
 
 }
 
+export async function renderOrgData(domElt, orgDocData) {
+
+  let org = await import(/* webpackChunkName: "org" */ 'utils/org');
+
+  let parser = new org.Parser();
+  let orgDocument = parser.parse(orgDocData, {toc: false});
+  let orgHTMLDocument = orgDocument.convert(org.ConverterHTML, {});
+  $(domElt).addClass('swh-org');
+  $(domElt).html(orgHTMLDocument.toString());
+  // remove toc and section numbers to get consistent
+  // with other readme renderings
+  $('.swh-org ul').first().remove();
+  $('.section-number').remove();
+
+}
+
+export function renderOrg(domElt, orgDocUrl) {
+
+  $(document).ready(() => {
+    fetch(orgDocUrl)
+      .then(handleFetchError)
+      .then(response => response.text())
+      .then(data => {
+        renderOrgData(domElt, data);
+      })
+      .catch(() => {
+        $(domElt).text('Readme bytes are not available');
+      });
+  });
+
+}
+
 export function renderTxt(domElt, txtDocUrl) {
 
   $(document).ready(() => {
@@ -34,8 +66,13 @@ export function renderTxt(domElt, txtDocUrl) {
       .then(handleFetchError)
       .then(response => response.text())
       .then(data => {
-        $(domElt).addClass('swh-readme-txt');
-        $(domElt).html(`<pre>${data}</pre>`);
+        let orgMode = '-*- mode: org -*-';
+        if (data.indexOf(orgMode) !== -1) {
+          renderOrgData(domElt, data.replace(orgMode, ''));
+        } else {
+          $(domElt).addClass('swh-readme-txt');
+          $(domElt).html(`<pre>${data}</pre>`);
+        }
       })
       .catch(() => {
         $(domElt).text('Readme bytes are not available');

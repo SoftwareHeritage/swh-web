@@ -6299,6 +6299,11 @@ optionator@^0.8.2:
     type-check "~0.3.2"
     wordwrap "~1.0.0"
 
+org@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/org/-/org-0.2.0.tgz#d76378387dc506fb8e3ccff73a0ad04e3afc6391"
+  integrity sha1-12N4OH3FBvuOPM/3OgrQTjr8Y5E=
+
 original@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/original/-/original-1.0.2.tgz#e442a61cffe1c5fd20a65f3261c26663b303f25f"
