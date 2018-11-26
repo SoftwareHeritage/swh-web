@@ -10,6 +10,7 @@ import textwrap
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from swh.model.identifiers import persistent_identifier
@@ -359,9 +360,9 @@ def revision_browse(request, sha1_git, extra_path=None):
                                            'role': 'button'})
     revision_data['id'] = sha1_git
     revision_data['merge'] = revision['merge']
-    revision_data['metadata'] = json.dumps(revision['metadata'],
-                                           sort_keys=True,
-                                           indent=4, separators=(',', ': '))
+    revision_data['metadata'] = escape(json.dumps(revision['metadata'],
+                                       sort_keys=True,
+                                       indent=4, separators=(',', ': ')))
 
     if origin_info:
         revision_data['context-independent revision'] = \
