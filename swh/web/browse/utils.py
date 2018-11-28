@@ -143,6 +143,11 @@ def request_content(query_string, max_size=content_display_max_size,
     if filetype:
         mimetype = filetype['mimetype']
         encoding = filetype['encoding']
+        # workaround when encountering corrupted data due to implicit
+        # conversion from bytea to text in the indexer db (see T818)
+        # TODO: Remove that code when all data have been correctly converted
+        if mimetype.startswith('\\'):
+            filetype = None
 
     content_data['error_code'] = 200
     content_data['error_message'] = ''

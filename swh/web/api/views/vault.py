@@ -35,7 +35,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
            'api-vault-cook-directory', methods=['GET', 'POST'],
            throttle_scope='swh_vault_cooking')
 @never_cache
-@api_doc('/vault/directory/', tags=['hidden'])
+@api_doc('/vault/directory/')
 def api_vault_cook_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/
@@ -48,7 +48,10 @@ def api_vault_cook_directory(request, dir_id):
         through a POST request or check the status of a previously created one
         through a GET request.
 
-        To import the directory in the current directory, use::
+        Once the cooking task has been executed, the resulting archive can
+        be downloaded using the dedicated endpoint :http:get:`/api/1/vault/directory/(dir_id)/raw/`.
+
+        Then to extract the cooked directory in the current one, use::
 
             $ tar xvf path/to/directory.tar.gz
 
@@ -65,7 +68,8 @@ def api_vault_cook_directory(request, dir_id):
         :>json string obj_type: the type of object to cook (directory or revision)
         :>json string progress_message: message describing the cooking task progress
         :>json number id: the cooking task id
-        :>json string status: the cooking task status (new/pending/done/failed)
+        :>json string status: the cooking task status (either **new**, **pending**,
+            **done** or **failed**)
         :>json string obj_id: the identifier of the object to cook
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
@@ -85,7 +89,7 @@ def api_vault_cook_directory(request, dir_id):
 
 @api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/raw/',
            'api-vault-fetch-directory')
-@api_doc('/vault/directory/raw/', tags=['hidden'], handle_response=True)
+@api_doc('/vault/directory/raw/', handle_response=True)
 def api_vault_fetch_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
@@ -120,7 +124,7 @@ def api_vault_fetch_directory(request, dir_id):
            'api-vault-cook-revision_gitfast', methods=['GET', 'POST'],
            throttle_scope='swh_vault_cooking')
 @never_cache
-@api_doc('/vault/revision/gitfast/', tags=['hidden'])
+@api_doc('/vault/revision/gitfast/')
 def api_vault_cook_revision_gitfast(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/
@@ -133,7 +137,10 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         through a POST request or check the status of a previously created one
         through a GET request.
 
-        To import the revision in the current directory, use::
+        Once the cooking task has been executed, the resulting gitfast archive can
+        be downloaded using the dedicated endpoint :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
+
+        Then to import the revision in the current directory, use::
 
             $ git init
             $ zcat path/to/revision.gitfast.gz | git fast-import
@@ -172,7 +179,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
 @api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
            'api-vault-fetch-revision_gitfast')
-@api_doc('/vault/revision/gitfast/raw/', tags=['hidden'], handle_response=True)
+@api_doc('/vault/revision/gitfast/raw/', handle_response=True)
 def api_vault_fetch_revision_gitfast(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/raw/

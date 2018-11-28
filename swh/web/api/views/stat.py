@@ -18,23 +18,17 @@ def api_stats(request):
 
         :>json number content: current number of content objects (aka files) in the archive
         :>json number directory: current number of directory objects in the archive
-        :>json number directory_entry_dir: current number of directory entries
-            pointing to others directories in the archive
-        :>json number directory_entry_file: current number of directory entries
-            pointing to content objects in the archive
-        :>json number directory_entry_rev: current number of directory entries
-            pointing to revision objects (e.g. git submodules) in the archive
-        :>json number entity: current number of entities (an entity is either
-            a **group_of_entities**, a **group_of_persons**, a **project**, a **person**, an **organization**,
-            or a **hosting** service) in the archive
         :>json number origin: current number of software origins (an origin is a "place" where code
             source can be found, e.g. a git repository, a tarball, ...) in the archive
+        :>json number origin_visit: current number of visits on software origins to fill the archive
         :>json number person: current number of persons (code source authors or committers)
             in the archive
         :>json number release: current number of releases objects in the archive
         :>json number revision: current number of revision objects (aka commits) in the archive
         :>json number skipped_content: current number of content objects (aka files) which where
             not inserted in the archive
+        :>json number snapshot: current number of snapshot objects (aka set of named branches)
+            in the archive
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``

@@ -8,7 +8,7 @@
 // webpack configuration for compiling static assets in production mode
 
 // import required webpack plugins
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 // import webpack development configuration
@@ -19,8 +19,8 @@ webpackProdConfig.mode = 'production';
 
 // configure minimizer for js and css assets
 webpackProdConfig.optimization.minimizer = [
-  // use ugligyjs for minimizing js and generate source map files
-  new UglifyJsPlugin({
+  // use terser for minimizing js and generate source map files
+  new TerserPlugin({
     cache: true,
     parallel: true,
     sourceMap: true
