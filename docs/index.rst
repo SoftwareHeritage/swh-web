@@ -26,4 +26,6 @@ Reference Documentation
    :maxdepth: 2
 
    /apidoc/swh.storage
-   `URLs index <http-routingtable.html>`_
+
+
+* :ref:`routingtable`
