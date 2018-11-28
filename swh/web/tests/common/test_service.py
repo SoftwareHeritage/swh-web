@@ -289,8 +289,8 @@ class ServiceTestCase(SWHWebTestCase):
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
-                'mimetype': b'text/x-c++',
-                'encoding': b'us-ascii',
+                'mimetype': 'text/x-c++',
+                'encoding': 'us-ascii',
             }])
         expected_filetype = {
                 'id': '123caf10e9535160d90e874b45aa426de762f19f',
@@ -322,8 +322,8 @@ class ServiceTestCase(SWHWebTestCase):
             return_value=[{
                 'id': hash_to_bytes(
                     '123caf10e9535160d90e874b45aa426de762f19f'),
-                'mimetype': b'text/x-python',
-                'encoding': b'us-ascii',
+                'mimetype': 'text/x-python',
+                'encoding': 'us-ascii',
             }]
         )
         expected_filetype = {

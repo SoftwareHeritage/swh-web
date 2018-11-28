@@ -768,8 +768,8 @@ class ConvertersTestCase(SWHWebTestCase):
         content_filetype = {
             'id': hashutil.hash_to_bytes(
                 '5c6f0e2750f48fa0bd0c4cf5976ba0b9e02ebda5'),
-            'encoding': b'utf-8',
-            'mimetype': b'text/plain',
+            'encoding': 'utf-8',
+            'mimetype': 'text/plain',
         }
 
         expected_content_filetype = {

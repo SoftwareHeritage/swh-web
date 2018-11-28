@@ -378,5 +378,4 @@ def from_filetype(content_entry):
 
     """
     return from_swh(content_entry,
-                    hashess={'id'},
-                    bytess={'mimetype', 'encoding'})
+                    hashess={'id'})
