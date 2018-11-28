@@ -9,6 +9,7 @@ import docutils.utils
 import functools
 import os
 import re
+import textwrap
 
 from functools import wraps
 from rest_framework.decorators import api_view
@@ -176,7 +177,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         text = node.astext()
         # literal block in endpoint description
         if not self.field_list_visited:
-            self.data['description'] += ':\n\n\t%s' % text
+            self.data['description'] += \
+                ':\n\n%s\n' % textwrap.indent(text, '\t')
         # extract example url
         if ':swh_web_api:' in text:
             self.data['examples'].append(

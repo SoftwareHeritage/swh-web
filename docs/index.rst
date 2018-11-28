@@ -17,11 +17,13 @@ and mechanized (REST API) use
    uri-scheme-identifiers
 
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* `URLs index <http-routingtable.html>`_
-* :ref:`search`
 
+Reference Documentation
+-----------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   /apidoc/swh.storage
+   `URLs index <http-routingtable.html>`_
