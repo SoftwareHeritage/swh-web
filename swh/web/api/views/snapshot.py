@@ -73,6 +73,20 @@ def api_snapshot(request, snapshot_id):
                 k: utils.enrich_object(v) if v else None
                 for k, v in s['branches'].items()
             }
+            for k, v in s['branches'].items():
+                if v and v['target_type'] == 'alias':
+                    if v['target'] in s['branches']:
+                        branch_alias = s['branches'][v['target']]
+                        v['target_url'] = branch_alias['target_url']
+                    else:
+                        snp = \
+                            service.lookup_snapshot(s['id'],
+                                                    branches_from=v['target'],
+                                                    branches_count=1)
+                        if snp and v['target'] in snp['branches']:
+                            branch = snp['branches'][v['target']]
+                            branch = utils.enrich_object(branch)
+                            v['target_url'] = branch['target_url']
         return s
 
     snapshot_content_max_size = get_config()['snapshot_content_max_size']

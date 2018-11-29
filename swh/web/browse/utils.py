@@ -360,7 +360,7 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
             (visit_ts, origin_info['type'], origin_info['url']))
 
 
-def process_snapshot_branches(snapshot_branches):
+def process_snapshot_branches(snapshot):
     """
     Process a dictionary describing snapshot branches: extract those
     targeting revisions and releases, put them in two different lists,
@@ -375,7 +375,9 @@ def process_snapshot_branches(snapshot_branches):
             targeting revisions and second member the sorted list of branches
             targeting releases
     """ # noqa
+    snapshot_branches = snapshot['branches']
     branches = {}
+    branch_aliases = {}
     releases = {}
     revision_to_branch = defaultdict(set)
     revision_to_release = defaultdict(set)
@@ -394,8 +396,28 @@ def process_snapshot_branches(snapshot_branches):
             revision_to_branch[target_id].add(branch_name)
         elif target_type == 'release':
             release_to_branch[target_id].add(branch_name)
+        elif target_type == 'alias':
+            branch_aliases[branch_name] = target_id
         # FIXME: handle pointers to other object types
-        # FIXME: handle branch aliases
+
+    def _enrich_release_branch(branch, release):
+        releases[branch] = {
+            'name': release['name'],
+            'branch_name': branch,
+            'date': format_utc_iso_date(release['date']),
+            'id': release['id'],
+            'message': release['message'],
+            'target_type': release['target_type'],
+            'target': release['target'],
+        }
+
+    def _enrich_revision_branch(branch, revision):
+        branches[branch].update({
+            'revision': revision['id'],
+            'directory': revision['directory'],
+            'date': format_utc_iso_date(revision['date']),
+            'message': revision['message']
+        })
 
     releases_info = service.lookup_release_multiple(
         release_to_branch.keys()
@@ -403,15 +425,7 @@ def process_snapshot_branches(snapshot_branches):
     for release in releases_info:
         branches_to_update = release_to_branch[release['id']]
         for branch in branches_to_update:
-            releases[branch] = {
-                'name': release['name'],
-                'branch_name': branch,
-                'date': format_utc_iso_date(release['date']),
-                'id': release['id'],
-                'message': release['message'],
-                'target_type': release['target_type'],
-                'target': release['target'],
-            }
+            _enrich_release_branch(branch, release)
         if release['target_type'] == 'revision':
             revision_to_release[release['target']].update(
                 branches_to_update
@@ -424,15 +438,32 @@ def process_snapshot_branches(snapshot_branches):
     for revision in revisions:
         if not revision:
             continue
-        revision_data = {
-            'directory': revision['directory'],
-            'date': format_utc_iso_date(revision['date']),
-            'message': revision['message'],
-        }
         for branch in revision_to_branch[revision['id']]:
-            branches[branch].update(revision_data)
+            _enrich_revision_branch(branch, revision)
         for release in revision_to_release[revision['id']]:
             releases[release]['directory'] = revision['directory']
+
+    for branch_alias, branch_target in branch_aliases.items():
+        if branch_target in branches:
+            branches[branch_alias] = dict(branches[branch_target])
+        else:
+            snp = service.lookup_snapshot(snapshot['id'],
+                                          branches_from=branch_target,
+                                          branches_count=1)
+            if snp and branch_target in snp['branches']:
+
+                target_type = snp['branches'][branch_target]['target_type']
+                target = snp['branches'][branch_target]['target']
+                if target_type == 'revision':
+                    branches[branch_alias] = snp['branches'][branch_target]
+                    revision = service.lookup_revision(target)
+                    _enrich_revision_branch(branch_alias, revision)
+                elif target_type == 'release':
+                    release = service.lookup_release(target)
+                    _enrich_release_branch(branch_alias, release)
+
+        if branch_alias in branches:
+            branches[branch_alias]['name'] = branch_alias
 
     ret_branches = list(sorted(branches.values(), key=lambda b: b['name']))
     ret_releases = list(sorted(releases.values(), key=lambda b: b['name']))
@@ -473,7 +504,7 @@ def get_snapshot_content(snapshot_id):
     if snapshot_id:
         snapshot = service.lookup_snapshot(
             snapshot_id, branches_count=snapshot_content_max_size)
-        branches, releases = process_snapshot_branches(snapshot['branches'])
+        branches, releases = process_snapshot_branches(snapshot)
 
     cache.set(cache_entry_id, {
         'branches': branches,

@@ -355,6 +355,12 @@ def from_snapshot(snapshot):
             decode_with_escape(k): v
             for k, v in sv['branches'].items()
         }
+        for k, v in snapshot['branches'].items():
+            # alias target existing branch names, not a sha1
+            if v and v['target_type'] == 'alias':
+                branch = decode_with_escape(k)
+                target = v['target'].decode('utf-8')
+                sv['branches'][branch]['target'] = target
 
     return sv
 
