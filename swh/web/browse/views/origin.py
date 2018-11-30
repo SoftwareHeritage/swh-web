@@ -218,8 +218,10 @@ def _origin_latest_snapshot(request, origin_id):
     Internal browse endpoint used to check if an origin has already
     been visited by Software Heritage and has at least one full visit.
     """
-    result = service.lookup_latest_origin_snapshot(origin_id,
-                                                   allowed_statuses=['full'])
+    result = \
+        service.lookup_latest_origin_snapshot(origin_id,
+                                              allowed_statuses=['full',
+                                                                'partial'])
 
     result = json.dumps(result, sort_keys=True, indent=4,
                         separators=(',', ': '))
