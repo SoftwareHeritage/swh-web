@@ -178,7 +178,7 @@ def api_origin_search(request, url_pattern):
 
 @api_route(r'/origin/metadata-search/',
            'api-origin-metadata-search')
-@api_doc('/origin/metadata-search/')
+@api_doc('/origin/metadata-search/', noargs=True)
 def api_origin_metadata_search(request):
     """
     .. http:get:: /api/1/origin/metadata-search/
@@ -218,7 +218,7 @@ def api_origin_metadata_search(request):
         content = '"fulltext" must be provided and non-empty.'
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-    results = api_lookup(service.search_origin, fulltext, limit)
+    results = api_lookup(service.search_origin_metadata, fulltext, limit)
 
     return {
         'results': results,

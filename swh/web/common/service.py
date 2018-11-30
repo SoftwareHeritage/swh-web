@@ -278,8 +278,11 @@ def search_origin_metadata(fulltext, offset=0, limit=50):
         list of origin metadata as dict.
 
     """
-    return idx_storage.origin_intrinsic_metadata_search_fulltext(
+    results = idx_storage.origin_intrinsic_metadata_search_fulltext(
         conjunction=[fulltext], limit=limit)
+    for result in results:
+        result['from_revision'] = hashutil.hash_to_hex(result['from_revision'])
+    return results
 
 
 def lookup_person(person_id):
