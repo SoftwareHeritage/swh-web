@@ -292,8 +292,7 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.common.service.idx_storage')
     def test_api_origin_metadata_search_invalid(self, mock_idx_storage):
-        rv = self.client.get(
-            '/api/1/origin/metadata-search/?fulltext=Jane%20Doe')
+        rv = self.client.get('/api/1/origin/metadata-search/')
 
         # then
         self.assertEqual(rv.status_code, 400, rv.content)
