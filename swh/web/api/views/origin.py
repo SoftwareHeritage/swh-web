@@ -4,10 +4,9 @@
 # See top-level LICENSE file for more information
 
 from distutils.util import strtobool
-from rest_framework import status
-from rest_framework.response import Response
 
 from swh.web.common import service
+from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import (
     reverse, get_origin_visits
 )
@@ -216,7 +215,7 @@ def api_origin_metadata_search(request):
 
     if not fulltext:
         content = '"fulltext" must be provided and non-empty.'
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+        raise BadInputExc(content)
 
     results = api_lookup(service.search_origin_metadata, fulltext, limit)
 
