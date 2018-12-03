@@ -266,7 +266,7 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False,
     return map(converters.from_origin, origins)
 
 
-def search_origin_metadata(fulltext, offset=0, limit=50):
+def search_origin_metadata(fulltext, limit=50):
     """Search for origins whose metadata match a provided string pattern.
 
     Args:
