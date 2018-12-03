@@ -189,6 +189,7 @@ def api_origin_metadata_search(request):
         :query str fulltext: a string that will be matched against origin metadata;
             results are ranked and ordered starting with the best ones.
         :query int limit: the maximum number of found origins to return
+            (bounded to 100)
 
         :>jsonarr number origin_id: the origin unique identifier
         :>jsonarr dict metadata: metadata of the origin (as a JSON-LD/CodeMeta dictionary)
@@ -211,7 +212,7 @@ def api_origin_metadata_search(request):
             :swh_web_api:`origin/metadata-search/?limit=2&fulltext=Jane%20Doe`
     """ # noqa
     fulltext = request.query_params.get('fulltext', None)
-    limit = int(request.query_params.get('limit', '70'))
+    limit = min(int(request.query_params.get('limit', '70')), 100)
 
     if not fulltext:
         content = '"fulltext" must be provided and non-empty.'
