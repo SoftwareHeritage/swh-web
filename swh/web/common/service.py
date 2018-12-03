@@ -266,6 +266,25 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False,
     return map(converters.from_origin, origins)
 
 
+def search_origin_metadata(fulltext, limit=50):
+    """Search for origins whose metadata match a provided string pattern.
+
+    Args:
+        fulltext: the string pattern to search for in origin metadata
+        offset: number of found origins to skip before returning results
+        limit: the maximum number of found origins to return
+
+    Returns:
+        list of origin metadata as dict.
+
+    """
+    results = idx_storage.origin_intrinsic_metadata_search_fulltext(
+        conjunction=[fulltext], limit=limit)
+    for result in results:
+        result['from_revision'] = hashutil.hash_to_hex(result['from_revision'])
+    return results
+
+
 def lookup_person(person_id):
     """Return information about the person with id person_id.
 

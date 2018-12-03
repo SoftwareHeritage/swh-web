@@ -244,3 +244,109 @@ class OriginApiTestCase(SWHWebTestCase, APITestCase):
         })
 
         mock_service.lookup_origin.assert_called_with({'id': '4321'})
+
+    @patch('swh.web.common.service.idx_storage')
+    def test_api_origin_metadata_search(self, mock_idx_storage):
+        # given
+        mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+            .return_value = [{
+                'from_revision':
+                b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed \xf2U\xfa\x05B8',
+                'metadata': {'author': 'Jane Doe'},
+                'origin_id': 54974445,
+                'tool': {
+                    'configuration': {
+                        'context': ['NpmMapping', 'CodemetaMapping'],
+                        'type': 'local'
+                    },
+                    'id': 3,
+                    'name': 'swh-metadata-detector',
+                    'version': '0.0.1'
+                }
+            }]
+
+        # when
+        rv = self.client.get(
+            '/api/1/origin/metadata-search/?fulltext=Jane%20Doe')
+
+        # then
+        self.assertEqual(rv.status_code, 200, rv.content)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        expected_data = [{
+            'origin_id': 54974445,
+            'metadata': {'author': 'Jane Doe'},
+            'from_revision': '7026b7c1a2af56521e951c01ed20f255fa054238',
+            'tool': {
+                'configuration': {
+                    'context': ['NpmMapping', 'CodemetaMapping'],
+                    'type': 'local'
+                },
+                'id': 3,
+                'name': 'swh-metadata-detector',
+                'version': '0.0.1',
+            }
+        }]
+        self.assertEqual(rv.data, expected_data)
+        mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+            .assert_called_with(conjunction=['Jane Doe'], limit=70)
+
+    @patch('swh.web.common.service.idx_storage')
+    def test_api_origin_metadata_search_limit(self, mock_idx_storage):
+        # given
+        mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+            .return_value = [{
+                'from_revision':
+                b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed \xf2U\xfa\x05B8',
+                'metadata': {'author': 'Jane Doe'},
+                'origin_id': 54974445,
+                'tool': {
+                    'configuration': {
+                        'context': ['NpmMapping', 'CodemetaMapping'],
+                        'type': 'local'
+                    },
+                    'id': 3,
+                    'name': 'swh-metadata-detector',
+                    'version': '0.0.1'
+                }
+            }]
+
+        # when
+        rv = self.client.get(
+            '/api/1/origin/metadata-search/?fulltext=Jane%20Doe')
+
+        # then
+        self.assertEqual(rv.status_code, 200, rv.content)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(len(rv.data), 1)
+        mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+            .assert_called_with(conjunction=['Jane Doe'], limit=70)
+
+        # when
+        rv = self.client.get(
+            '/api/1/origin/metadata-search/?fulltext=Jane%20Doe&limit=10')
+
+        # then
+        self.assertEqual(rv.status_code, 200, rv.content)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(len(rv.data), 1)
+        mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+            .assert_called_with(conjunction=['Jane Doe'], limit=10)
+
+        # when
+        rv = self.client.get(
+            '/api/1/origin/metadata-search/?fulltext=Jane%20Doe&limit=987')
+
+        # then
+        self.assertEqual(rv.status_code, 200, rv.content)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(len(rv.data), 1)
+        mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+            .assert_called_with(conjunction=['Jane Doe'], limit=100)
+
+    @patch('swh.web.common.service.idx_storage')
+    def test_api_origin_metadata_search_invalid(self, mock_idx_storage):
+        rv = self.client.get('/api/1/origin/metadata-search/')
+
+        # then
+        self.assertEqual(rv.status_code, 400, rv.content)
+        mock_idx_storage.assert_not_called()

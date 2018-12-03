@@ -6,6 +6,7 @@
 from distutils.util import strtobool
 
 from swh.web.common import service
+from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import (
     reverse, get_origin_visits
 )
@@ -172,6 +173,56 @@ def api_origin_search(request, url_pattern):
     })
 
     return result
+
+
+@api_route(r'/origin/metadata-search/',
+           'api-origin-metadata-search')
+@api_doc('/origin/metadata-search/', noargs=True)
+def api_origin_metadata_search(request):
+    """
+    .. http:get:: /api/1/origin/metadata-search/
+
+        Search for software origins whose metadata (expressed as a
+        JSON-LD/CodeMeta dictionary) match the provided criteria.
+        For now, only full-text search on this dictionary is supported.
+
+        :query str fulltext: a string that will be matched against origin metadata;
+            results are ranked and ordered starting with the best ones.
+        :query int limit: the maximum number of found origins to return
+            (bounded to 100)
+
+        :>jsonarr number origin_id: the origin unique identifier
+        :>jsonarr dict metadata: metadata of the origin (as a JSON-LD/CodeMeta dictionary)
+        :>jsonarr string from_revision: the revision used to extract these
+            metadata (the current HEAD or one of the former HEADs)
+        :>jsonarr dict tool: the tool used to extract these metadata
+
+        :reqheader Accept: the requested response content type,
+            either ``application/json`` (default) or ``application/yaml``
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/metadata-search/?limit=2&fulltext=Jane%20Doe`
+    """ # noqa
+    fulltext = request.query_params.get('fulltext', None)
+    limit = min(int(request.query_params.get('limit', '70')), 100)
+
+    if not fulltext:
+        content = '"fulltext" must be provided and non-empty.'
+        raise BadInputExc(content)
+
+    results = api_lookup(service.search_origin_metadata, fulltext, limit)
+
+    return {
+        'results': results,
+    }
 
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'api-origin-visits')
