@@ -43,3 +43,7 @@ export function isGitRepoUrl(url, domain) {
   let re = new RegExp(pattern);
   return re.test(url);
 };
+
+export function removeUrlFragment() {
+  history.replaceState('', document.title, window.location.pathname + window.location.search);
+}

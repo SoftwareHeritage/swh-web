@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, isGitRepoUrl} from 'utils/functions';
+import {handleFetchError, csrfPost, isGitRepoUrl, removeUrlFragment} from 'utils/functions';
 import {validate} from 'validate.js';
 
 let saveRequestsTable;
@@ -80,6 +80,11 @@ export function initOriginSave() {
 
     $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
       saveRequestsTable.draw();
+      window.location.hash = '#requests';
+    });
+
+    $('#swh-origin-save-request-create-tab').on('shown.bs.tab', () => {
+      removeUrlFragment();
     });
 
     let saveRequestAcceptedAlert =
@@ -150,6 +155,10 @@ export function initOriginSave() {
         }
       });
     });
+
+    if (window.location.hash === '#requests') {
+      $('.nav-tabs a[href="#swh-origin-save-requests-list"]').tab('show');
+    }
 
   });
 
