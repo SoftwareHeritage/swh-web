@@ -914,7 +914,8 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
         tooltip += 'author date: %s\n' % author_date
         tooltip += 'committer: %s\n' % committer_fullname
         tooltip += 'committer date: %s\n\n' % committer_date
-        tooltip += textwrap.indent(rev['message'], ' '*4)
+        if rev['message']:
+            tooltip += textwrap.indent(rev['message'], ' '*4)
 
         revision_log_data.append({
             'author': author_name,
