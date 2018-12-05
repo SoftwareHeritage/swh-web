@@ -890,7 +890,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                                  query_params=query_params_tgt)
         elif release['target_type'] == 'content':
             target_url = reverse('browse-content',
-                                 url_args={'sha1_git': release['target']},
+                                 url_args={'query_string': release['target']},
                                  query_params=query_params_tgt)
         elif release['target_type'] == 'release':
             target_url = reverse('browse-release',
