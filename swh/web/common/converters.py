@@ -179,23 +179,6 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
     return new_dict
 
 
-def from_provenance(provenance):
-    """Convert from a swh provenance information to a provenance dictionary.
-
-    Args:
-        provenance (dict): Dictionary with the following keys:
-            - content (sha1_git): the content's identifier
-            - revision (sha1_git): the revision the content was seen
-            - origin (int): the origin the content was seen
-            - visit (int): the visit it occurred
-            - path (bytes): the path the content was seen at
-
-    """
-    return from_swh(provenance,
-                    hashess={'content', 'revision'},
-                    bytess={'path'})
-
-
 def from_origin(origin):
     """Convert from a swh origin to an origin dictionary.
 

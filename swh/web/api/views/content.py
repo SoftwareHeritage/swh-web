@@ -16,37 +16,6 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/content/(?P<q>.+)/provenance/', 'api-content-provenance')
-@api_doc('/content/provenance/', tags=['hidden'])
-def api_content_provenance(request, q):
-    """Return content's provenance information if any.
-
-    """
-    def _enrich_revision(provenance):
-        p = provenance.copy()
-        p['revision_url'] = \
-            reverse('api-revision',
-                    url_args={'sha1_git': provenance['revision']})
-        p['content_url'] = \
-            reverse('api-content',
-                    url_args={'q': 'sha1_git:%s' % provenance['content']})
-        p['origin_url'] = \
-            reverse('api-origin', url_args={'origin_id': provenance['origin']})
-        p['origin_visits_url'] = \
-            reverse('api-origin-visits',
-                    url_args={'origin_id': provenance['origin']})
-        p['origin_visit_url'] = \
-            reverse('api-origin-visit',
-                    url_args={'origin_id': provenance['origin'],
-                              'visit_id': provenance['visit']})
-        return p
-
-    return api_lookup(
-        service.lookup_content_provenance, q,
-        notfound_msg='Content with {} not found.'.format(q),
-        enrich_fn=_enrich_revision)
-
-
 @api_route(r'/content/(?P<q>.+)/filetype/', 'api-content-filetype')
 @api_doc('/content/filetype/')
 def api_content_filetype(request, q):

@@ -396,39 +396,6 @@ class UtilsTestCase(SWHWebTestCase):
 
             mock_django_reverse.reset()
 
-    def test_enrich_entity_identity(self):
-        # when/then
-        self.assertEqual(utils.enrich_content({'id': '123'}),
-                         {'id': '123'})
-
-    @patch('swh.web.api.utils.reverse')
-    def test_enrich_entity_with_sha1(self, mock_django_reverse):
-        # given
-        def reverse_test(view_name, url_args):
-            return '/api/entity/' + url_args['uuid'] + '/'
-
-        mock_django_reverse.side_effect = reverse_test
-
-        # when
-        actual_entity = utils.enrich_entity({
-            'uuid': 'uuid-1',
-            'parent': 'uuid-parent',
-            'name': 'something'
-        })
-
-        # then
-        self.assertEqual(actual_entity, {
-            'uuid': 'uuid-1',
-            'uuid_url': '/api/entity/uuid-1/',
-            'parent': 'uuid-parent',
-            'parent_url': '/api/entity/uuid-parent/',
-            'name': 'something',
-            })
-
-        mock_django_reverse.assert_has_calls(
-            [call('api-entity', url_args={'uuid': 'uuid-1'}),
-             call('api-entity', url_args={'uuid': 'uuid-parent'})])
-
     def _reverse_context_test(self, view_name, url_args):
         if view_name == 'api-revision':
             return '/api/revision/%s/' % url_args['sha1_git']

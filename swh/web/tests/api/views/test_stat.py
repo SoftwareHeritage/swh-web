@@ -69,8 +69,6 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             "directory_entry_dir": 209167,
             "directory_entry_file": 1807094,
             "directory_entry_rev": 0,
-            "entity": 0,
-            "entity_history": 0,
             "origin": 1096,
             "person": 0,
             "release": 8584,

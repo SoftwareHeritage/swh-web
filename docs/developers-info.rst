@@ -96,8 +96,6 @@ swh-web API application
       about contents.
     * :mod:`swh.web.api.views.directory`: Implementation of API endpoints for getting information
       about directories.
-    * :mod:`swh.web.api.views.entity`: Implementation of API endpoints for getting information
-      about entities.
     * :mod:`swh.web.api.views.origin`: Implementation of API endpoints for getting information
       about origins.
     * :mod:`swh.web.api.views.person`: Implementation of API endpoints for getting information

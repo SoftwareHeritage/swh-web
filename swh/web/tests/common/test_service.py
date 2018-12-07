@@ -523,54 +523,6 @@ class ServiceTestCase(SWHWebTestCase):
             [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
 
     @patch('swh.web.common.service.storage')
-    def test_lookup_content_provenance(self, mock_storage):
-        # given
-        mock_storage.content_find_provenance = MagicMock(
-            return_value=(p for p in [{
-                'content': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'revision': hash_to_bytes(
-                    '456caf10e9535160d90e874b45aa426de762f19f'),
-                'origin': 100,
-                'visit': 1,
-                'path': b'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
-            }]))
-        expected_provenances = [{
-            'content': '123caf10e9535160d90e874b45aa426de762f19f',
-            'revision': '456caf10e9535160d90e874b45aa426de762f19f',
-            'origin': 100,
-            'visit': 1,
-            'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
-        }]
-
-        # when
-        actual_provenances = service.lookup_content_provenance(
-            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
-        self.assertEqual(list(actual_provenances), expected_provenances)
-
-        mock_storage.content_find_provenance.assert_called_with(
-            {'sha1_git':
-             hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_provenance_not_found(self, mock_storage):
-        # given
-        mock_storage.content_find_provenance = MagicMock(return_value=None)
-
-        # when
-        actual_provenances = service.lookup_content_provenance(
-            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
-        self.assertIsNone(actual_provenances)
-
-        mock_storage.content_find_provenance.assert_called_with(
-            {'sha1_git':
-             hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')})
-
-    @patch('swh.web.common.service.storage')
     def test_stat_counters(self, mock_storage):
         # given
         input_stats = {
@@ -579,8 +531,6 @@ class ServiceTestCase(SWHWebTestCase):
             "directory_entry_dir": 209167,
             "directory_entry_file": 1807094,
             "directory_entry_rev": 0,
-            "entity": 0,
-            "entity_history": 0,
             "origin": 1096,
             "person": 0,
             "release": 8584,
@@ -1854,25 +1804,6 @@ class ServiceTestCase(SWHWebTestCase):
             origin_id, branch_name, limit=1, timestamp=ts)
         mock_lookup_revision_with_context.assert_called_once_with(
             stub_root_rev, sha1_git, 100)
-
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_entity_by_uuid(self, mock_query, mock_storage):
-        # given
-        uuid_test = 'correct-uuid'
-        mock_query.parse_uuid4.return_value = uuid_test
-        stub_entities = [{'uuid': uuid_test}]
-
-        mock_storage.entity_get.return_value = stub_entities
-
-        # when
-        actual_entities = list(service.lookup_entity_by_uuid(uuid_test))
-
-        # then
-        self.assertEqual(actual_entities, stub_entities)
-
-        mock_query.parse_uuid4.assert_called_once_with(uuid_test)
-        mock_storage.entity_get.assert_called_once_with(uuid_test)
 
     def test_lookup_revision_through_ko_not_implemented(self):
         # then

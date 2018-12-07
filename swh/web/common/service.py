@@ -107,23 +107,6 @@ def search_hash(q):
     return {'found': found is not None}
 
 
-def lookup_content_provenance(q):
-    """Return provenance information from a specified content.
-
-    Args:
-        q: query string of the form <hash_algo:hash>
-
-    Yields:
-        provenance information (dict) list if the content is found.
-
-    """
-    algo, hash = query.parse_hash(q)
-    provenances = storage.content_find_provenance({algo: hash})
-    if not provenances:
-        return None
-    return (converters.from_provenance(p) for p in provenances)
-
-
 def _lookup_content_sha1(q):
     """Given a possible input, query for the content's sha1.
 
@@ -880,24 +863,6 @@ def lookup_latest_origin_snapshot(origin_id, allowed_statuses=None):
     """
     snapshot = storage.snapshot_get_latest(origin_id, allowed_statuses)
     return converters.from_snapshot(snapshot)
-
-
-def lookup_entity_by_uuid(uuid):
-    """Return the entity's hierarchy from its uuid.
-
-    Args:
-        uuid: entity's identifier.
-
-    Returns:
-        List of hierarchy entities from the entity with uuid.
-
-    """
-    uuid = query.parse_uuid4(uuid)
-    for entity in storage.entity_get(uuid):
-        entity = converters.from_swh(entity,
-                                     convert={'last_seen', 'uuid'},
-                                     convert_fn=lambda x: str(x))
-        yield entity
 
 
 def lookup_revision_through(revision, limit=100):

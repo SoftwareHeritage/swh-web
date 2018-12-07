@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from rest_framework.test import APITestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from swh.web.tests.testcase import SWHWebTestCase
 
@@ -308,65 +308,6 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
             'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
 
     @patch('swh.web.api.views.content.service')
-    def test_api_content_provenance(self, mock_service):
-        stub_provenances = [{
-            'origin': 1,
-            'visit': 2,
-            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'content': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
-        }]
-        mock_service.lookup_content_provenance.return_value = stub_provenances
-
-        # when
-        rv = self.client.get(
-            '/api/1/content/'
-            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/provenance/')
-
-        # then
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, [{
-            'origin': 1,
-            'visit': 2,
-            'origin_url': '/api/1/origin/1/',
-            'origin_visits_url': '/api/1/origin/1/visits/',
-            'origin_visit_url': '/api/1/origin/1/visit/2/',
-            'revision': 'b04caf10e9535160d90e874b45aa426de762f19f',
-            'revision_url': '/api/1/revision/'
-                            'b04caf10e9535160d90e874b45aa426de762f19f/',
-            'content': '34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'content_url': '/api/1/content/'
-            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03/',
-            'path': 'octavio-3.4.0/octave.html/doc_002dS_005fISREG.html'
-        }])
-
-        mock_service.lookup_content_provenance.assert_called_once_with(
-            'sha1_git:34571b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-
-    @patch('swh.web.api.views.content.service')
-    def test_api_content_provenance_sha_not_found(self, mock_service):
-        # given
-        mock_service.lookup_content_provenance.return_value = None
-
-        # when
-        rv = self.client.get(
-            '/api/1/content/sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03/'
-            'provenance/')
-
-        # then
-        self.assertEqual(rv.status_code, 404)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Content with sha1:40e71b8614fcd89ccd17ca2b1d9e6'
-            '6c5b00a6d03 not found.'
-        })
-
-        mock_service.lookup_content_provenance.assert_called_once_with(
-            'sha1:40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03')
-
-    @patch('swh.web.api.views.content.service')
     def test_api_content_metadata(self, mock_service):
         # given
         mock_service.lookup_content.return_value = {
@@ -416,7 +357,6 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
     def test_api_content_not_found_as_json(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
-        mock_service.lookup_content_provenance = MagicMock()
 
         # when
         rv = self.client.get(
@@ -434,13 +374,11 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_content.assert_called_once_with(
             'sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
             'be4735637006560c')
-        mock_service.lookup_content_provenance.called = False
 
     @patch('swh.web.api.views.content.service')
     def test_api_content_not_found_as_yaml(self, mock_service):
         # given
         mock_service.lookup_content.return_value = None
-        mock_service.lookup_content_provenance = MagicMock()
 
         # when
         rv = self.client.get(
@@ -460,7 +398,6 @@ class ContentApiTestCase(SWHWebTestCase, APITestCase):
         mock_service.lookup_content.assert_called_once_with(
             'sha256:83c0e67cc80f60caf1fcbec2d84b0ccd7968b3'
             'be4735637006560c')
-        mock_service.lookup_content_provenance.called = False
 
     @patch('swh.web.api.views.content.service')
     def test_api_content_raw_ko_not_found(self, mock_service):
