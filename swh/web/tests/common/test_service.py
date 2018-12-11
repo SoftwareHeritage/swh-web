@@ -1504,7 +1504,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_storage.content_find.assert_called_once_with(
             {'sha256': self.SHA256_SAMPLE_BIN})
         mock_storage.content_get.assert_called_once_with(
-            [self.SHA1_SAMPLE])
+            [hash_to_bytes(self.SHA1_SAMPLE)])
 
     @patch('swh.web.common.service.storage')
     def test_lookup_content_not_found(self, mock_storage):

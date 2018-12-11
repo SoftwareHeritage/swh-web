@@ -729,7 +729,8 @@ def lookup_content_raw(q):
 
     """
     c = lookup_content(q)
-    content = _first_element(storage.content_get([c['checksums']['sha1']]))
+    content_sha1_bytes = hashutil.hash_to_bytes(c['checksums']['sha1'])
+    content = _first_element(storage.content_get([content_sha1_bytes]))
     if not content:
         algo, hash = query.parse_hash(q)
         raise NotFoundExc('Bytes of content with %s checksum equals to %s '
