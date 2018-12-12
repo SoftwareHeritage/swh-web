@@ -295,6 +295,11 @@ def _to_sha1_bin(sha1_hex):
     return sha1_git_bin
 
 
+def _check_directory_exists(sha1_git, sha1_git_bin):
+    if len(list(storage.directory_missing([sha1_git_bin]))):
+        raise NotFoundExc('Directory with sha1_git %s not found' % sha1_git)
+
+
 def lookup_directory(sha1_git):
     """Return information about the directory with id sha1_git.
 
@@ -312,14 +317,13 @@ def lookup_directory(sha1_git):
 
     sha1_git_bin = _to_sha1_bin(sha1_git)
 
+    _check_directory_exists(sha1_git, sha1_git_bin)
+
     directory_entries = storage.directory_ls(sha1_git_bin)
-    if directory_entries:
-        return map(converters.from_directory_entry, directory_entries)
-    else:
-        raise NotFoundExc('Directory with sha1_git %s not found' % sha1_git)
+    return map(converters.from_directory_entry, directory_entries)
 
 
-def lookup_directory_with_path(directory_sha1_git, path_string):
+def lookup_directory_with_path(sha1_git, path_string):
     """Return directory information for entry with path path_string w.r.t.
     root directory pointed by directory_sha1_git
 
@@ -332,7 +336,9 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
     Raises:
         NotFoundExc if the directory entry is not found
     """
-    sha1_git_bin = _to_sha1_bin(directory_sha1_git)
+    sha1_git_bin = _to_sha1_bin(sha1_git)
+
+    _check_directory_exists(sha1_git, sha1_git_bin)
 
     paths = path_string.strip(os.path.sep).split(os.path.sep)
     queried_dir = storage.directory_entry_get_by_path(
@@ -340,7 +346,7 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
 
     if not queried_dir:
         raise NotFoundExc(('Directory entry with path %s from %s not found') %
-                          (path_string, directory_sha1_git))
+                          (path_string, sha1_git))
 
     return converters.from_directory_entry(queried_dir)
 

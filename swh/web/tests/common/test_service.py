@@ -1599,7 +1599,7 @@ class ServiceTestCase(SWHWebTestCase):
         mock_query.parse_hash_with_algorithms_or_throws.return_value = (
             'sha1',
             'directory-id-bin')
-        mock_storage.directory_ls.return_value = []
+        mock_storage.directory_missing.return_value = ['directory-id-bin']
 
         # when
         with self.assertRaises(NotFoundExc) as cm:
@@ -1611,7 +1611,6 @@ class ServiceTestCase(SWHWebTestCase):
         # then
         mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
             'directory_id', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.directory_ls.assert_called_with('directory-id-bin')
 
     @patch('swh.web.common.service.storage')
     @patch('swh.web.common.service.query')
@@ -1647,6 +1646,7 @@ class ServiceTestCase(SWHWebTestCase):
         }]
 
         mock_storage.directory_ls.return_value = stub_dir_entries
+        mock_storage.directory_missing.return_value = []
 
         # when
         actual_directory_ls = list(service.lookup_directory(
