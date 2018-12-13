@@ -89,7 +89,7 @@ def lookup_hash(q):
     """
     algo, hash = query.parse_hash(q)
     found = storage.content_find({algo: hash})
-    return {'found': found,
+    return {'found': converters.from_content(found),
             'algo': algo}
 
 

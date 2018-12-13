@@ -182,9 +182,9 @@ class ServiceTestCase(SWHWebTestCase):
     def test_lookup_hash_exist(self, mock_storage):
         # given
         stub_content = {
-                'sha1': hash_to_bytes(
-                    '456caf10e9535160d90e874b45aa426de762f19f')
-            }
+            'sha1': hash_to_bytes(
+                '456caf10e9535160d90e874b45aa426de762f19f')
+        }
         mock_storage.content_find = MagicMock(return_value=stub_content)
 
         # when
@@ -192,8 +192,14 @@ class ServiceTestCase(SWHWebTestCase):
             'sha1:456caf10e9535160d90e874b45aa426de762f19f')
 
         # then
-        self.assertEqual({'found': stub_content,
-                          'algo': 'sha1'}, actual_lookup)
+        self.assertEqual({
+            'found': {
+                'checksums': {
+                    'sha1': '456caf10e9535160d90e874b45aa426de762f19f'
+                }
+            },
+            'algo': 'sha1'
+        }, actual_lookup)
 
         mock_storage.content_find.assert_called_with(
             {'sha1':
