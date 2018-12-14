@@ -136,10 +136,25 @@ class WebTestCase(TestCase):
         return converters.from_revision(rev_data)
 
     @classmethod
-    def revision_log(cls, rev_id):
+    def revision_log(cls, rev_id, limit=None):
         rev_id_bytes = hash_to_bytes(rev_id)
-        return map(converters.from_revision,
-                   cls.storage.revision_log([rev_id_bytes]))
+        return list(map(converters.from_revision,
+                    cls.storage.revision_log([rev_id_bytes], limit=limit)))
+
+    @classmethod
+    def snapshot_get_latest(cls, origin_id):
+        snp = cls.storage.snapshot_get_latest(origin_id)
+        return converters.from_snapshot(snp)
+
+    @classmethod
+    def origin_visit_get(cls, origin_id):
+        visits = cls.storage.origin_visit_get(origin_id)
+        return list(map(converters.from_origin_visit, visits))
+
+    @classmethod
+    def snapshot_get(cls, snapshot_id):
+        snp = cls.storage.snapshot_get(hash_to_bytes(snapshot_id))
+        return converters.from_snapshot(snp)
 
     def setUp(self):
         cache.clear()

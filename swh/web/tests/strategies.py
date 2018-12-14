@@ -14,9 +14,10 @@ from hypothesis.strategies import (
 )
 from string import ascii_letters, hexdigits
 
-from swh.model.hashutil import hash_to_hex
+from swh.model.hashutil import hash_to_hex, hash_to_bytes
+from swh.model.identifiers import directory_identifier
 from swh.storage.algos.revisions_walker import get_revisions_walker
-from swh.storage.tests.algos.test_snapshot import origins
+from swh.storage.tests.algos.test_snapshot import origins as new_origin # noqa
 from swh.web.tests.data import get_tests_data
 
 # Module dedicated to the generation of input data for tests through
@@ -38,9 +39,15 @@ def _known_swh_object(object_type):
 
 def _unknown_swh_object(draw, object_type):
     tests_data = get_tests_data()
+    storage = tests_data['storage']
     while True:
         sha1_git = draw(sha1())
-        if sha1_git not in tests_data[object_type]:
+        # some tests will use the generated id to create a revision on the fly
+        if object_type == 'revisions':
+            obj = next(storage.revision_get([hash_to_bytes(sha1_git)]))
+            if obj is None:
+                return sha1_git
+        elif sha1_git not in tests_data[object_type]:
             return sha1_git
 
 
@@ -118,6 +125,14 @@ def directory():
     return _known_swh_object('directories')
 
 
+def empty_directory():
+    """
+    Hypothesis strategy returning the empty directory ingested
+    into the test archive.
+    """
+    return just(directory_identifier({'entries': []}))
+
+
 @composite
 def unknown_directory(draw):
     """
@@ -132,7 +147,7 @@ def origin():
     Hypothesis strategy returning a random origin not ingested
     into the test archive.
     """
-    return origins()
+    return _known_swh_object('origins')
 
 
 def visit_dates():
@@ -178,6 +193,22 @@ def unknown_revision(draw):
     return _unknown_swh_object(draw, 'revisions')
 
 
+def revisions():
+    """
+    Hypothesis strategy returning random revisions ingested
+    into the test archive.
+    """
+    return lists(revision(), min_size=2, max_size=8)
+
+
+def unknown_revisions():
+    """
+    Hypothesis strategy returning random revisions not ingested
+    into the test archive.
+    """
+    return lists(unknown_revision(), min_size=2, max_size=8)
+
+
 def snapshot():
     """
     Hypothesis strategy returning a random snapshot ingested
@@ -197,7 +228,7 @@ def unknown_snapshot(draw):
 
 def _get_origin_dfs_revisions_walker():
     storage = get_tests_data()['storage']
-    origin = random.choice(get_tests_data()['origins'])
+    origin = random.choice(get_tests_data()['origins'][:-1])
     snapshot = storage.snapshot_get_latest(origin['id'])
     head = snapshot['branches'][b'HEAD']['target']
     return get_revisions_walker('dfs', storage, head)
@@ -295,4 +326,16 @@ def contents_with_ctags():
                   'e8c0654fe2d75ecd7e0b01bee8a8fc60a130097e',
                   'eb6595e559a1d34a2b41e8d4835e0e4f98a5d2b5'],
         'symbol_name': 'ABS'
+    })
+
+
+def revision_with_submodules():
+    """
+    Hypothesis strategy returning a revision that is known to
+    point to a directory with revision entries (aka git submodule)
+    """
+    return just({
+        'rev_sha1_git': 'ffcb69001f3f6745dfd5b48f72ab6addb560e234',
+        'rev_dir_sha1_git': 'd92a21446387fa28410e5a74379c934298f39ae2',
+        'rev_dir_rev_path': 'libtess2'
     })

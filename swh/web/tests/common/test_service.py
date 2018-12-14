@@ -3,53 +3,65 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import copy
 import datetime
+import itertools
+import pytest
+import random
 
-from unittest.mock import MagicMock, patch, call
+from collections import defaultdict
+from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.tests.testcase import WebTestCase
+from swh.web.tests.strategies import (
+    content, contents, unknown_content, unknown_contents,
+    contents_with_ctags, origin, new_origin, visit_dates, directory,
+    release, revision, unknown_revision, revisions, unknown_revisions,
+    ancestor_revisions, non_ancestor_revisions, invalid_sha1, sha256,
+    revision_with_submodules, unknown_directory, empty_directory
+)
+from swh.web.tests.testcase import (
+    WebTestCase, ctags_json_missing, fossology_missing
+)
 
 
 class ServiceTestCase(WebTestCase):
 
     def setUp(self):
-        self.BLAKE2S256_SAMPLE = ('685395c5dc57cada459364f0946d3dd45b'
-                                  'ad5fcbabc1048edb44380f1d31d0aa')
-        self.BLAKE2S256_SAMPLE_BIN = hash_to_bytes(self.BLAKE2S256_SAMPLE)
+
         self.SHA1_SAMPLE = '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
         self.SHA1_SAMPLE_BIN = hash_to_bytes(self.SHA1_SAMPLE)
-        self.SHA256_SAMPLE = ('8abb0aa566452620ecce816eecdef4792d77a'
-                              '293ad8ea82a4d5ecb4d36f7e560')
-        self.SHA256_SAMPLE_BIN = hash_to_bytes(self.SHA256_SAMPLE)
-        self.SHA1GIT_SAMPLE = '25d1a2e8f32937b0f498a5ca87f823d8df013c01'
-        self.SHA1GIT_SAMPLE_BIN = hash_to_bytes(self.SHA1GIT_SAMPLE)
+
         self.DIRECTORY_ID = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
         self.DIRECTORY_ID_BIN = hash_to_bytes(self.DIRECTORY_ID)
         self.AUTHOR_ID_BIN = {
             'name': b'author',
             'email': b'author@company.org',
+            'fullname': b'author <author@company.org>'
         }
         self.AUTHOR_ID = {
             'name': 'author',
             'email': 'author@company.org',
+            'fullname': 'author <author@company.org>'
         }
         self.COMMITTER_ID_BIN = {
             'name': b'committer',
             'email': b'committer@corp.org',
+            'fullname': b'committer <committer@corp.org>'
         }
         self.COMMITTER_ID = {
             'name': 'committer',
             'email': 'committer@corp.org',
+            'fullname': 'committer <committer@corp.org>'
         }
         self.SAMPLE_DATE_RAW = {
-            'timestamp': datetime.datetime(
+            'timestamp': int(datetime.datetime(
                 2000, 1, 17, 11, 23, 54,
                 tzinfo=datetime.timezone.utc,
-            ).timestamp(),
+            ).timestamp()),
             'offset': 0,
             'negative_utc': False,
         }
@@ -71,6 +83,7 @@ class ServiceTestCase(WebTestCase):
             'metadata': {},
             'merge': False
         }
+
         self.SAMPLE_REVISION_RAW = {
             'id': self.SHA1_SAMPLE_BIN,
             'directory': self.DIRECTORY_ID_BIN,
@@ -85,1841 +98,767 @@ class ServiceTestCase(WebTestCase):
             'metadata': [],
         }
 
-        self.SAMPLE_CONTENT = {
-            'checksums': {
-                'blake2s256': self.BLAKE2S256_SAMPLE,
-                'sha1': self.SHA1_SAMPLE,
-                'sha256': self.SHA256_SAMPLE,
-                'sha1_git': self.SHA1GIT_SAMPLE,
-            },
-            'length': 190,
-            'status': 'absent'
-        }
-        self.SAMPLE_CONTENT_RAW = {
-            'blake2s256': self.BLAKE2S256_SAMPLE_BIN,
-            'sha1': self.SHA1_SAMPLE_BIN,
-            'sha256': self.SHA256_SAMPLE_BIN,
-            'sha1_git': self.SHA1GIT_SAMPLE_BIN,
-            'length': 190,
-            'status': 'hidden'
-        }
+    @given(contents())
+    def test_lookup_multiple_hashes_all_present(self, contents):
+        input_data = []
+        expected_output = []
+        for cnt in contents:
+            input_data.append({'sha1': cnt['sha1']})
+            expected_output.append({'sha1': cnt['sha1'],
+                                    'found': True})
 
-        self.date_origin_visit1 = datetime.datetime(
-            2015, 1, 1, 22, 0, 0,
-            tzinfo=datetime.timezone.utc)
+        self.assertEqual(service.lookup_multiple_hashes(input_data),
+                         expected_output)
 
-        self.origin_visit1 = {
-            'date': self.date_origin_visit1,
-            'origin': 1,
-            'visit': 1
-        }
+    @given(contents(), unknown_contents())
+    def test_lookup_multiple_hashes_some_missing(self, contents,
+                                                 unknown_contents):
+        input_contents = list(itertools.chain(contents, unknown_contents))
+        random.shuffle(input_contents)
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_multiple_hashes_ball_missing(self, mock_storage):
-        # given
-        mock_storage.content_missing_per_sha1 = MagicMock(return_value=[])
+        input_data = []
+        expected_output = []
+        for cnt in input_contents:
+            input_data.append({'sha1': cnt['sha1']})
+            expected_output.append({'sha1': cnt['sha1'],
+                                    'found': cnt in contents})
 
-        # when
-        actual_lookup = service.lookup_multiple_hashes(
-            [{'filename': 'a',
-              'sha1': '456caf10e9535160d90e874b45aa426de762f19f'},
-             {'filename': 'b',
-              'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
+        self.assertEqual(service.lookup_multiple_hashes(input_data),
+                         expected_output)
 
-        # then
-        self.assertEqual(actual_lookup, [
-            {'filename': 'a',
-             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-             'found': True},
-            {'filename': 'b',
-             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
-             'found': True}
-        ])
+    @given(unknown_content())
+    def test_lookup_hash_does_not_exist(self, unknown_content):
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_multiple_hashes_some_missing(self, mock_storage):
-        # given
-        mock_storage.content_missing_per_sha1 = MagicMock(return_value=[
-            hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')
-        ])
+        actual_lookup = service.lookup_hash('sha1_git:%s' %
+                                            unknown_content['sha1_git'])
 
-        # when
-        actual_lookup = service.lookup_multiple_hashes(
-            [{'filename': 'a',
-              'sha1': '456caf10e9535160d90e874b45aa426de762f19f'},
-             {'filename': 'b',
-              'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865'}])
+        self.assertEqual(actual_lookup, {'found': None,
+                                         'algo': 'sha1_git'})
 
-        # then
-        self.assertEqual(actual_lookup, [
-            {'filename': 'a',
-             'sha1': '456caf10e9535160d90e874b45aa426de762f19f',
-             'found': False},
-            {'filename': 'b',
-             'sha1': '745bab676c8f3cec8016e0c39ea61cf57e518865',
-             'found': True}
-        ])
+    @given(content())
+    def test_lookup_hash_exist(self, content):
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_hash_does_not_exist(self, mock_storage):
-        # given
-        mock_storage.content_find = MagicMock(return_value=None)
+        actual_lookup = service.lookup_hash('sha1:%s' % content['sha1'])
 
-        # when
-        actual_lookup = service.lookup_hash(
-            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
+        content_metadata = self.content_get_metadata(content['sha1'])
 
-        # then
-        self.assertEqual({'found': None,
-                          'algo': 'sha1_git'}, actual_lookup)
+        self.assertEqual({'found': content_metadata,
+                          'algo': 'sha1'}, actual_lookup)
 
-        # check the function has been called with parameters
-        mock_storage.content_find.assert_called_with(
-            {'sha1_git':
-             hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
+    @given(unknown_content())
+    def test_search_hash_does_not_exist(self, content):
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_hash_exist(self, mock_storage):
-        # given
-        stub_content = {
-            'sha1': hash_to_bytes(
-                '456caf10e9535160d90e874b45aa426de762f19f')
-        }
-        mock_storage.content_find = MagicMock(return_value=stub_content)
+        actual_lookup = service.search_hash('sha1_git:%s' %
+                                            content['sha1_git'])
 
-        # when
-        actual_lookup = service.lookup_hash(
-            'sha1:456caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
-        self.assertEqual({
-            'found': {
-                'checksums': {
-                    'sha1': '456caf10e9535160d90e874b45aa426de762f19f'
-                }
-            },
-            'algo': 'sha1'
-        }, actual_lookup)
-
-        mock_storage.content_find.assert_called_with(
-            {'sha1':
-             hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')}
-        )
-
-    @patch('swh.web.common.service.storage')
-    def test_search_hash_does_not_exist(self, mock_storage):
-        # given
-        mock_storage.content_find = MagicMock(return_value=None)
-
-        # when
-        actual_lookup = service.search_hash(
-            'sha1_git:123caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
         self.assertEqual({'found': False}, actual_lookup)
 
-        # check the function has been called with parameters
-        mock_storage.content_find.assert_called_with(
-            {'sha1_git':
-             hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')})
+    @given(content())
+    def test_search_hash_exist(self, content):
 
-    @patch('swh.web.common.service.storage')
-    def test_search_hash_exist(self, mock_storage):
-        # given
-        stub_content = {
-                'sha1': hash_to_bytes(
-                    '456caf10e9535160d90e874b45aa426de762f19f')
-            }
-        mock_storage.content_find = MagicMock(return_value=stub_content)
+        actual_lookup = service.search_hash('sha1:%s' % content['sha1'])
 
-        # when
-        actual_lookup = service.search_hash(
-            'sha1:456caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
         self.assertEqual({'found': True}, actual_lookup)
 
-        mock_storage.content_find.assert_called_with(
-            {'sha1':
-             hash_to_bytes('456caf10e9535160d90e874b45aa426de762f19f')},
-        )
+    @pytest.mark.skipif(ctags_json_missing,
+                        reason="requires ctags with json output support")
+    @given(contents_with_ctags())
+    def test_lookup_content_ctags(self, contents_with_ctags):
 
-    @patch('swh.web.common.service.idx_storage')
-    def test_lookup_content_ctags(self, mock_idx_storage):
-        # given
-        mock_idx_storage.content_ctags_get = MagicMock(
-            return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'line': 100,
-                'name': 'hello',
-                'kind': 'function',
-                'tool_name': 'ctags',
-                'tool_version': 'some-version',
-            }])
-        expected_ctags = [{
-            'id': '123caf10e9535160d90e874b45aa426de762f19f',
-            'line': 100,
-            'name': 'hello',
-            'kind': 'function',
-            'tool_name': 'ctags',
-            'tool_version': 'some-version',
-        }]
+        content_sha1 = random.choice(contents_with_ctags['sha1s'])
+        self.content_add_ctags(content_sha1)
+        actual_ctags = \
+            list(service.lookup_content_ctags('sha1:%s' % content_sha1))
 
-        # when
-        actual_ctags = list(service.lookup_content_ctags(
-            'sha1:123caf10e9535160d90e874b45aa426de762f19f'))
+        expected_data = list(self.content_get_ctags(content_sha1))
+        for ctag in expected_data:
+            ctag['id'] = content_sha1
 
-        # then
-        self.assertEqual(actual_ctags, expected_ctags)
+        self.assertEqual(actual_ctags, expected_data)
 
-        mock_idx_storage.content_ctags_get.assert_called_with(
-            [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
+    @given(unknown_content())
+    def test_lookup_content_ctags_no_hash(self, unknown_content):
 
-    @patch('swh.web.common.service.idx_storage')
-    def test_lookup_content_ctags_no_hash(self, mock_idx_storage):
-        # given
-        mock_idx_storage.content_ctags_get = MagicMock(return_value=[])
+        actual_ctags = \
+            list(service.lookup_content_ctags('sha1:%s' %
+                                              unknown_content['sha1']))
 
-        # when
-        actual_ctags = list(service.lookup_content_ctags(
-            'sha1:123caf10e9535160d90e874b45aa426de762f19f'))
-
-        # then
         self.assertEqual(actual_ctags, [])
 
-    @patch('swh.web.common.service.idx_storage')
-    def test_lookup_content_filetype(self, mock_idx_storage):
-        # given
-        mock_idx_storage.content_mimetype_get = MagicMock(
-            return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'mimetype': 'text/x-c++',
-                'encoding': 'us-ascii',
-            }])
-        expected_filetype = {
-                'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'mimetype': 'text/x-c++',
-                'encoding': 'us-ascii',
-        }
+    @given(content())
+    def test_lookup_content_filetype(self, content):
 
-        # when
-        actual_filetype = service.lookup_content_filetype(
-            'sha1:123caf10e9535160d90e874b45aa426de762f19f')
+        self.content_add_mimetype(content['sha1'])
+        actual_filetype = service.lookup_content_filetype(content['sha1'])
 
-        # then
+        expected_filetype = self.content_get_mimetype(content['sha1'])
         self.assertEqual(actual_filetype, expected_filetype)
 
-        mock_idx_storage.content_mimetype_get.assert_called_with(
-            [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
+    @given(content())
+    def test_lookup_content_language(self, content):
 
-    @patch('swh.web.common.service.idx_storage')
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_filetype_2(self, mock_storage, mock_idx_storage):
-        # given
-        mock_storage.content_find = MagicMock(
-            return_value={
-                'sha1': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f')
-            }
-        )
-        mock_idx_storage.content_mimetype_get = MagicMock(
-            return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'mimetype': 'text/x-python',
-                'encoding': 'us-ascii',
-            }]
-        )
-        expected_filetype = {
-                'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'mimetype': 'text/x-python',
-                'encoding': 'us-ascii',
-        }
+        self.content_add_language(content['sha1'])
+        actual_language = service.lookup_content_language(content['sha1'])
 
-        # when
-        actual_filetype = service.lookup_content_filetype(
-            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
-        self.assertEqual(actual_filetype, expected_filetype)
-
-        mock_storage.content_find(
-            'sha1_git', hash_to_bytes(
-                '456caf10e9535160d90e874b45aa426de762f19f')
-        )
-        mock_idx_storage.content_mimetype_get.assert_called_with(
-            [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
-
-    @patch('swh.web.common.service.idx_storage')
-    def test_lookup_content_language(self, mock_idx_storage):
-        # given
-        mock_idx_storage.content_language_get = MagicMock(
-            return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'lang': 'python',
-            }])
-        expected_language = {
-                'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'lang': 'python',
-        }
-
-        # when
-        actual_language = service.lookup_content_language(
-            'sha1:123caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
+        expected_language = self.content_get_language(content['sha1'])
         self.assertEqual(actual_language, expected_language)
 
-        mock_idx_storage.content_language_get.assert_called_with(
-            [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
+    @given(contents_with_ctags())
+    def test_lookup_expression(self, contents_with_ctags):
 
-    @patch('swh.web.common.service.idx_storage')
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_language_2(self, mock_storage, mock_idx_storage):
-        # given
-        mock_storage.content_find = MagicMock(
-            return_value={
-                'sha1': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f')
-            }
-        )
-        mock_idx_storage.content_language_get = MagicMock(
-            return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'lang': 'haskell',
-            }]
-        )
-        expected_language = {
-                'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'lang': 'haskell',
-        }
-
-        # when
-        actual_language = service.lookup_content_language(
-            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
-        self.assertEqual(actual_language, expected_language)
-
-        mock_storage.content_find(
-            'sha1_git', hash_to_bytes(
-                '456caf10e9535160d90e874b45aa426de762f19f')
-        )
-        mock_idx_storage.content_language_get.assert_called_with(
-            [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
-
-    @patch('swh.web.common.service.idx_storage')
-    def test_lookup_expression(self, mock_idx_storage):
-        # given
-        mock_idx_storage.content_ctags_search = MagicMock(
-            return_value=[{
-                'id': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f'),
-                'name': 'foobar',
-                'kind': 'variable',
-                'lang': 'C',
-                'line': 10
-            }])
-        expected_ctags = [{
-            'sha1': '123caf10e9535160d90e874b45aa426de762f19f',
-            'name': 'foobar',
-            'kind': 'variable',
-            'lang': 'C',
-            'line': 10
-        }]
-
-        # when
-        actual_ctags = list(service.lookup_expression(
-            'foobar', last_sha1='hash', per_page=10))
-
-        # then
-        self.assertEqual(actual_ctags, expected_ctags)
-
-        mock_idx_storage.content_ctags_search.assert_called_with(
-            'foobar', last_sha1='hash', limit=10)
-
-    @patch('swh.web.common.service.idx_storage')
-    def test_lookup_expression_no_result(self, mock_idx_storage):
-        # given
-        mock_idx_storage.content_ctags_search = MagicMock(
-            return_value=[])
+        per_page = 10
         expected_ctags = []
 
-        # when
-        actual_ctags = list(service.lookup_expression(
-            'barfoo', last_sha1='hash', per_page=10))
+        for content_sha1 in contents_with_ctags['sha1s']:
+            if len(expected_ctags) == per_page:
+                break
+            self.content_add_ctags(content_sha1)
+            for ctag in self.content_get_ctags(content_sha1):
+                if len(expected_ctags) == per_page:
+                    break
+                if ctag['name'] == contents_with_ctags['symbol_name']:
+                    del ctag['id']
+                    ctag['sha1'] = content_sha1
+                    expected_ctags.append(ctag)
 
-        # then
+        actual_ctags = \
+            list(service.lookup_expression(contents_with_ctags['symbol_name'],
+                                           last_sha1=None, per_page=10))
+
         self.assertEqual(actual_ctags, expected_ctags)
 
-        mock_idx_storage.content_ctags_search.assert_called_with(
-            'barfoo', last_sha1='hash', limit=10)
+    def test_lookup_expression_no_result(self):
 
-    @patch('swh.web.common.service.idx_storage')
-    def test_lookup_content_license(self, mock_idx_storage):
-        # given
-        mock_idx_storage.content_fossology_license_get = MagicMock(
-            return_value=[{
-                hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'): [{
-                    'licenses': ['GPL-3.0+'],
-                    'tool': {}
-                }]
-            }])
-        expected_license = {
-                'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'facts': [{
-                    'licenses': ['GPL-3.0+'],
-                    'tool': {}
-                }]
-        }
+        expected_ctags = []
 
-        # when
-        actual_license = service.lookup_content_license(
-            'sha1:123caf10e9535160d90e874b45aa426de762f19f')
+        actual_ctags = \
+            list(service.lookup_expression('barfoo', last_sha1=None,
+                                           per_page=10))
+        self.assertEqual(actual_ctags, expected_ctags)
 
-        # then
+    @pytest.mark.skipif(fossology_missing,
+                        reason="requires fossology-nomossa installed")
+    @given(content())
+    def test_lookup_content_license(self, content):
+
+        self.content_add_license(content['sha1'])
+        actual_license = service.lookup_content_license(content['sha1'])
+
+        expected_license = self.content_get_license(content['sha1'])
         self.assertEqual(actual_license, expected_license)
 
-        mock_idx_storage.content_fossology_license_get.assert_called_with(
-            [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
-
-    @patch('swh.web.common.service.idx_storage')
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_license_2(self, mock_storage, mock_idx_storage):
-        # given
-        mock_storage.content_find = MagicMock(
-            return_value={
-                'sha1': hash_to_bytes(
-                    '123caf10e9535160d90e874b45aa426de762f19f')
-            }
-        )
-        mock_idx_storage.content_fossology_license_get = MagicMock(
-            return_value=[{
-                hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f'): [{
-                    'licenses': ['BSD-2-Clause'],
-                    'tool': {}
-                }]
-
-            }]
-        )
-        expected_license = {
-                'id': '123caf10e9535160d90e874b45aa426de762f19f',
-                'facts': [{
-                    'licenses': ['BSD-2-Clause'],
-                    'tool': {}
-                }]
-        }
-
-        # when
-        actual_license = service.lookup_content_license(
-            'sha1_git:456caf10e9535160d90e874b45aa426de762f19f')
-
-        # then
-        self.assertEqual(actual_license, expected_license)
-
-        mock_storage.content_find(
-            'sha1_git', hash_to_bytes(
-                '456caf10e9535160d90e874b45aa426de762f19f')
-        )
-        mock_idx_storage.content_fossology_license_get.assert_called_with(
-            [hash_to_bytes('123caf10e9535160d90e874b45aa426de762f19f')])
-
-    @patch('swh.web.common.service.storage')
-    def test_stat_counters(self, mock_storage):
-        # given
-        input_stats = {
-            "content": 1770830,
-            "directory": 211683,
-            "directory_entry_dir": 209167,
-            "directory_entry_file": 1807094,
-            "directory_entry_rev": 0,
-            "origin": 1096,
-            "person": 0,
-            "release": 8584,
-            "revision": 7792,
-            "revision_history": 0,
-            "skipped_content": 0
-        }
-        mock_storage.stat_counters = MagicMock(return_value=input_stats)
-
-        # when
+    def test_stat_counters(self):
         actual_stats = service.stat_counters()
+        self.assertEqual(actual_stats, self.storage.stat_counters())
 
-        # then
-        expected_stats = input_stats
-        self.assertEqual(actual_stats, expected_stats)
+    @given(new_origin(), visit_dates())
+    def test_lookup_origin_visits(self, new_origin, visit_dates):
 
-        mock_storage.stat_counters.assert_called_with()
+        origin_id = self.storage.origin_add_one(new_origin)
+        for ts in visit_dates:
+            self.storage.origin_visit_add(origin_id, ts)
 
-    @patch('swh.web.common.service._lookup_origin_visits')
-    def test_lookup_origin_visits(self, mock_lookup_visits):
-        # given
-        date_origin_visit2 = datetime.datetime(
-            2013, 7, 1, 20, 0, 0,
-            tzinfo=datetime.timezone.utc)
+        actual_origin_visits = list(service.lookup_origin_visits(origin_id))
 
-        date_origin_visit3 = datetime.datetime(
-            2015, 1, 1, 21, 0, 0,
-            tzinfo=datetime.timezone.utc)
-        stub_result = [self.origin_visit1, {
-            'date': date_origin_visit2,
-            'origin': 1,
-            'visit': 2,
-            'target': hash_to_bytes(
-                '65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
-            'branch': b'master',
-            'target_type': 'release',
-            'metadata': None,
-        }, {
-            'date': date_origin_visit3,
-            'origin': 1,
-            'visit': 3
-        }]
-        mock_lookup_visits.return_value = stub_result
+        expected_visits = list(self.storage.origin_visit_get(origin_id))
+        for visit in expected_visits:
+            visit['date'] = visit['date'].isoformat()
+            visit['metadata'] = {}
 
-        # when
-        expected_origin_visits = [{
-            'date': self.origin_visit1['date'].isoformat(),
-            'origin': self.origin_visit1['origin'],
-            'visit': self.origin_visit1['visit']
-        }, {
-            'date': date_origin_visit2.isoformat(),
-            'origin': 1,
-            'visit': 2,
-            'target': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
-            'branch': 'master',
-            'target_type': 'release',
-            'metadata': {},
-        }, {
-            'date': date_origin_visit3.isoformat(),
-            'origin': 1,
-            'visit': 3
-        }]
+        self.assertEqual(actual_origin_visits, expected_visits)
 
-        actual_origin_visits = service.lookup_origin_visits(6)
+    @given(new_origin(), visit_dates())
+    def test_lookup_origin_visit(self, new_origin, visit_dates):
+        origin_id = self.storage.origin_add_one(new_origin)
+        visits = []
+        for ts in visit_dates:
+            visits.append(self.storage.origin_visit_add(origin_id, ts))
 
-        # then
-        self.assertEqual(list(actual_origin_visits), expected_origin_visits)
+        visit = random.choice(visits)['visit']
+        actual_origin_visit = service.lookup_origin_visit(origin_id, visit)
 
-        mock_lookup_visits.assert_called_once_with(
-            6, last_visit=None, limit=10)
+        expected_visit = dict(self.storage.origin_visit_get_by(origin_id,
+                                                               visit))
+        expected_visit['date'] = expected_visit['date'].isoformat()
+        expected_visit['metadata'] = {}
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_origin_visit(self, mock_storage):
-        # given
-        stub_result = self.origin_visit1
-        mock_storage.origin_visit_get_by.return_value = stub_result
+        self.assertEqual(actual_origin_visit, expected_visit)
 
-        expected_origin_visit = {
-            'date': self.origin_visit1['date'].isoformat(),
-            'origin': self.origin_visit1['origin'],
-            'visit': self.origin_visit1['visit']
-        }
+    @given(new_origin())
+    def test_lookup_origin(self, new_origin):
+        origin_id = self.storage.origin_add_one(new_origin)
 
-        # when
-        actual_origin_visit = service.lookup_origin_visit(1, 1)
+        actual_origin = service.lookup_origin({'id': origin_id})
+        expected_origin = self.storage.origin_get({'id': origin_id})
+        self.assertEqual(actual_origin, expected_origin)
 
-        # then
-        self.assertEqual(actual_origin_visit, expected_origin_visit)
+        actual_origin = service.lookup_origin({'type': new_origin['type'],
+                                               'url': new_origin['url']})
+        expected_origin = self.storage.origin_get({'type': new_origin['type'],
+                                                   'url': new_origin['url']})
+        self.assertEqual(actual_origin, expected_origin)
 
-        mock_storage.origin_visit_get_by.assert_called_once_with(1, 1)
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_origin(self, mock_storage):
-        # given
-        mock_storage.origin_get = MagicMock(return_value={
-            'id': 'origin-id',
-            'url': 'ftp://some/url/to/origin',
-            'type': 'ftp'})
-
-        # when
-        actual_origin = service.lookup_origin({'id': 'origin-id'})
-
-        # then
-        self.assertEqual(actual_origin, {'id': 'origin-id',
-                                         'url': 'ftp://some/url/to/origin',
-                                         'type': 'ftp'})
-
-        mock_storage.origin_get.assert_called_with({'id': 'origin-id'})
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_release_ko_id_checksum_not_a_sha1(self, mock_storage):
-        # given
-        mock_storage.release_get = MagicMock()
-
+    @given(invalid_sha1())
+    def test_lookup_release_ko_id_checksum_not_a_sha1(self, invalid_sha1):
         with self.assertRaises(BadInputExc) as cm:
-            # when
-            service.lookup_release('not-a-sha1')
+            service.lookup_release(invalid_sha1)
         self.assertIn('invalid checksum', cm.exception.args[0].lower())
 
-        mock_storage.release_get.called = False
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_release_ko_id_checksum_too_long(self, mock_storage):
-        # given
-        mock_storage.release_get = MagicMock()
-
-        # when
+    @given(sha256())
+    def test_lookup_release_ko_id_checksum_too_long(self, sha256):
         with self.assertRaises(BadInputExc) as cm:
-            service.lookup_release(
-                '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4daf5'
-                '1aea892abe')
+            service.lookup_release(sha256)
         self.assertEqual('Only sha1_git is supported.', cm.exception.args[0])
 
-        mock_storage.release_get.called = False
+    @given(directory())
+    def test_lookup_directory_with_path_not_found(self, directory):
+        path = 'some/invalid/path/here'
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_directory_with_path(directory, path)
+        self.assertEqual('Directory entry with path %s from %s '
+                         'not found' % (path, directory),
+                         cm.exception.args[0])
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_directory_with_path_not_found(self, mock_storage):
-        # given
-        mock_storage.lookup_directory_with_path = MagicMock(return_value=None)
+    @given(directory())
+    def test_lookup_directory_with_path_found(self, directory):
+        directory_content = self.directory_ls(directory)
+        directory_entry = random.choice(directory_content)
+        path = directory_entry['name']
+        actual_result = service.lookup_directory_with_path(directory, path)
+        self.assertEqual(actual_result, directory_entry)
 
-        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
+    @given(release())
+    def test_lookup_release(self, release):
+        actual_release = service.lookup_release(release)
 
-        # when
-        actual_directory = mock_storage.lookup_directory_with_path(
-            sha1_git, 'some/path/here')
+        self.assertEqual(actual_release,
+                         self.release_get(release))
 
-        self.assertIsNone(actual_directory)
+    @given(revision(), invalid_sha1(), sha256())
+    def test_lookup_revision_with_context_ko_not_a_sha1(self, revision,
+                                                        invalid_sha1,
+                                                        sha256):
+        sha1_git_root = revision
+        sha1_git = invalid_sha1
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_directory_with_path_found(self, mock_storage):
-        # given
-        sha1_git = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
-        entry = {'id': 'dir-id',
-                 'type': 'dir',
-                 'name': 'some/path/foo'}
+        with self.assertRaises(BadInputExc) as cm:
+            service.lookup_revision_with_context(sha1_git_root, sha1_git)
+        self.assertIn('Invalid checksum query string', cm.exception.args[0])
 
-        mock_storage.lookup_directory_with_path = MagicMock(return_value=entry)
+        sha1_git = sha256
 
-        # when
-        actual_directory = mock_storage.lookup_directory_with_path(
-            sha1_git, 'some/path/here')
-
-        self.assertEqual(entry, actual_directory)
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_release(self, mock_storage):
-        # given
-        mock_storage.release_get = MagicMock(return_value=[{
-            'id': hash_to_bytes('65a55bbdf3629f916219feb3dcc7393ded1bc8db'),
-            'target': None,
-            'date': {
-                'timestamp': datetime.datetime(
-                    2015, 1, 1, 22, 0, 0,
-                    tzinfo=datetime.timezone.utc).timestamp(),
-                'offset': 0,
-                'negative_utc': True,
-            },
-            'name': b'v0.0.1',
-            'message': b'synthetic release',
-            'synthetic': True,
-        }])
-
-        # when
-        actual_release = service.lookup_release(
-            '65a55bbdf3629f916219feb3dcc7393ded1bc8db')
-
-        # then
-        self.assertEqual(actual_release, {
-            'id': '65a55bbdf3629f916219feb3dcc7393ded1bc8db',
-            'target': None,
-            'date': '2015-01-01T22:00:00-00:00',
-            'name': 'v0.0.1',
-            'message': 'synthetic release',
-            'synthetic': True,
-        })
-
-        mock_storage.release_get.assert_called_with(
-            [hash_to_bytes('65a55bbdf3629f916219feb3dcc7393ded1bc8db')])
-
-    def test_lookup_revision_with_context_ko_not_a_sha1_1(self):
-        # given
-        sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f62d4' \
-                   'daf51aea892abe'
-        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
-
-        # when
         with self.assertRaises(BadInputExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
         self.assertIn('Only sha1_git is supported', cm.exception.args[0])
 
-    def test_lookup_revision_with_context_ko_not_a_sha1_2(self):
-        # given
-        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
-        sha1_git = '13c1d34d138ec13b5ebad226dc2528dc7506c956e4646f6' \
-                   '2d4daf51aea892abe'
-
-        # when
-        with self.assertRaises(BadInputExc) as cm:
-            service.lookup_revision_with_context(sha1_git_root, sha1_git)
-        self.assertIn('Only sha1_git is supported', cm.exception.args[0])
-
-    @patch('swh.web.common.service.storage')
+    @given(revision(), unknown_revision())
     def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
-            self,
-            mock_storage):
-        # given
-        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
-        sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
+            self, revision, unknown_revision):
+        sha1_git_root = revision
+        sha1_git = unknown_revision
 
-        sha1_git_bin = hash_to_bytes(sha1_git)
-
-        mock_storage.revision_get.return_value = None
-
-        # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
-        self.assertIn('Revision 777777bdf3629f916219feb3dcc7393ded1bc8db'
-                      ' not found', cm.exception.args[0])
+        self.assertIn('Revision %s not found' % sha1_git, cm.exception.args[0])
 
-        mock_storage.revision_get.assert_called_once_with(
-            [sha1_git_bin])
-
-    @patch('swh.web.common.service.storage')
+    @given(revision(), unknown_revision())
     def test_lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
-            self,
-            mock_storage):
-        # given
-        sha1_git_root = '65a55bbdf3629f916219feb3dcc7393ded1bc8db'
-        sha1_git = '777777bdf3629f916219feb3dcc7393ded1bc8db'
+            self, revision, unknown_revision):
+        sha1_git_root = unknown_revision
+        sha1_git = revision
 
-        sha1_git_root_bin = hash_to_bytes(sha1_git_root)
-        sha1_git_bin = hash_to_bytes(sha1_git)
-
-        mock_storage.revision_get.side_effect = ['foo', None]
-
-        # when
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
-        self.assertIn('Revision root 65a55bbdf3629f916219feb3dcc7393ded1bc8db'
-                      ' not found', cm.exception.args[0])
+        self.assertIn('Revision root %s not found' % sha1_git_root,
+                      cm.exception.args[0])
 
-        mock_storage.revision_get.assert_has_calls([call([sha1_git_bin]),
-                                                    call([sha1_git_root_bin])])
+    @given(ancestor_revisions())
+    def test_lookup_revision_with_context(self, ancestor_revisions):
+        sha1_git = ancestor_revisions['sha1_git']
+        root_sha1_git = ancestor_revisions['sha1_git_root']
+        for sha1_git_root in (root_sha1_git,
+                              {'id': hash_to_bytes(root_sha1_git)}):
+            actual_revision = \
+                service.lookup_revision_with_context(sha1_git_root,
+                                                     sha1_git)
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_revision_with_context(self, mock_query, mock_storage):
-        # given
-        sha1_git_root = '666'
-        sha1_git = '883'
+            children = []
+            for rev in self.revision_log(root_sha1_git):
+                for p_rev in rev['parents']:
+                    p_rev_hex = hash_to_hex(p_rev)
+                    if p_rev_hex == sha1_git:
+                        children.append(rev['id'])
 
-        sha1_git_root_bin = b'666'
-        sha1_git_bin = b'883'
+            expected_revision = self.revision_get(sha1_git)
+            expected_revision['children'] = children
+            self.assertEqual(actual_revision, expected_revision)
 
-        sha1_git_root_dict = {
-            'id': sha1_git_root_bin,
-            'parents': [b'999'],
-        }
-        sha1_git_dict = {
-            'id': sha1_git_bin,
-            'parents': [],
-            'directory': b'278',
-        }
+    @given(non_ancestor_revisions())
+    def test_lookup_revision_with_context_ko(self, non_ancestor_revisions):
+        sha1_git = non_ancestor_revisions['sha1_git']
+        root_sha1_git = non_ancestor_revisions['sha1_git_root']
 
-        stub_revisions = [
-            sha1_git_root_dict,
-            {
-                'id': b'999',
-                'parents': [b'777', b'883', b'888'],
-            },
-            {
-                'id': b'777',
-                'parents': [b'883'],
-            },
-            sha1_git_dict,
-            {
-                'id': b'888',
-                'parents': [b'889'],
-            },
-            {
-                'id': b'889',
-                'parents': [],
-            },
-        ]
-
-        # inputs ok
-        mock_query.parse_hash_with_algorithms_or_throws.side_effect = [
-            ('sha1', sha1_git_bin),
-            ('sha1', sha1_git_root_bin)
-        ]
-
-        # lookup revision first 883, then 666 (both exists)
-        mock_storage.revision_get.return_value = [
-            sha1_git_dict,
-            sha1_git_root_dict
-        ]
-
-        mock_storage.revision_log = MagicMock(
-            return_value=stub_revisions)
-
-        # when
-
-        actual_revision = service.lookup_revision_with_context(
-            sha1_git_root,
-            sha1_git)
-
-        # then
-        self.assertEqual(actual_revision, {
-            'id': hash_to_hex(sha1_git_bin),
-            'parents': [],
-            'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
-            'directory': hash_to_hex(b'278'),
-            'merge': False
-        })
-
-        mock_query.parse_hash_with_algorithms_or_throws.assert_has_calls(
-            [call(sha1_git, ['sha1'], 'Only sha1_git is supported.'),
-             call(sha1_git_root, ['sha1'], 'Only sha1_git is supported.')])
-
-        mock_storage.revision_log.assert_called_with(
-            [sha1_git_root_bin], 100)
-
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_revision_with_context_retrieved_as_dict(
-            self, mock_query, mock_storage):
-        # given
-        sha1_git = '883'
-
-        sha1_git_root_bin = b'666'
-        sha1_git_bin = b'883'
-
-        sha1_git_root_dict = {
-            'id': sha1_git_root_bin,
-            'parents': [b'999'],
-        }
-
-        sha1_git_dict = {
-            'id': sha1_git_bin,
-            'parents': [],
-            'directory': b'278',
-        }
-
-        stub_revisions = [
-            sha1_git_root_dict,
-            {
-                'id': b'999',
-                'parents': [b'777', b'883', b'888'],
-            },
-            {
-                'id': b'777',
-                'parents': [b'883'],
-            },
-            sha1_git_dict,
-            {
-                'id': b'888',
-                'parents': [b'889'],
-            },
-            {
-                'id': b'889',
-                'parents': [],
-            },
-        ]
-
-        # inputs ok
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = (
-            'sha1', sha1_git_bin)
-
-        # lookup only on sha1
-        mock_storage.revision_get.return_value = [sha1_git_dict]
-
-        mock_storage.revision_log.return_value = stub_revisions
-
-        # when
-        actual_revision = service.lookup_revision_with_context(
-            {'id': sha1_git_root_bin},
-            sha1_git)
-
-        # then
-        self.assertEqual(actual_revision, {
-            'id': hash_to_hex(sha1_git_bin),
-            'parents': [],
-            'children': [hash_to_hex(b'999'), hash_to_hex(b'777')],
-            'directory': hash_to_hex(b'278'),
-            'merge': False
-        })
-
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with(  # noqa
-            sha1_git, ['sha1'], 'Only sha1_git is supported.')
-
-        mock_storage.revision_get.assert_called_once_with([sha1_git_bin])
-
-        mock_storage.revision_log.assert_called_with(
-            [sha1_git_root_bin], 100)
-
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory_with_revision_not_found(self,
-                                                      mock_query,
-                                                      mock_storage):
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
-                                                                        b'123')
-        mock_storage.revision_get.return_value = None
-
-        # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_directory_with_revision('123')
-        self.assertIn('Revision 123 not found', cm.exception.args[0])
+            service.lookup_revision_with_context(root_sha1_git, sha1_git)
+        self.assertIn('Revision %s is not an ancestor of %s' %
+                      (sha1_git, root_sha1_git), cm.exception.args[0])
 
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
-        ('123', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.revision_get.assert_called_once_with([b'123'])
+    @given(unknown_revision())
+    def test_lookup_directory_with_revision_not_found(self, unknown_revision):
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory_with_revision_ko_revision_with_path_to_nowhere(
-            self,
-            mock_query,
-            mock_storage):
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
-                                                                        b'123')
-
-        dir_id = b'dir-id-as-sha1'
-        mock_storage.revision_get.return_value = [{
-            'directory': dir_id,
-        }]
-
-        mock_storage.directory_entry_get_by_path.return_value = None
-
-        # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_directory_with_revision(
-                '123',
-                'path/to/something/unknown')
+            service.lookup_directory_with_revision(unknown_revision)
+        self.assertIn('Revision %s not found' % unknown_revision,
+                      cm.exception.args[0])
+
+    @given(revision())
+    def test_lookup_directory_with_revision_ko_path_to_nowhere(self, revision):
+
+        invalid_path = 'path/to/something/unknown'
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_directory_with_revision(revision, invalid_path)
         exception_text = cm.exception.args[0].lower()
         self.assertIn('directory or file', exception_text)
-        self.assertIn('path/to/something/unknown', exception_text)
-        self.assertIn('revision 123', exception_text)
+        self.assertIn(invalid_path, exception_text)
+        self.assertIn('revision %s' % revision, exception_text)
         self.assertIn('not found', exception_text)
 
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
-        ('123', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.revision_get.assert_called_once_with([b'123'])
-        mock_storage.directory_entry_get_by_path.assert_called_once_with(
-            b'dir-id-as-sha1', [b'path', b'to', b'something', b'unknown'])
-
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
+    @given(revision_with_submodules())
     def test_lookup_directory_with_revision_ko_type_not_implemented(
-            self,
-            mock_query,
-            mock_storage):
+            self, revision_with_submodules):
 
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
-                                                                        b'123')
-
-        dir_id = b'dir-id-as-sha1'
-        mock_storage.revision_get.return_value = [{
-            'directory': dir_id,
-        }]
-
-        mock_storage.directory_entry_get_by_path.return_value = {
-            'type': 'rev',
-            'name': b'some/path/to/rev',
-            'target': b'456'
-        }
-
-        stub_content = {
-            'id': b'12',
-            'type': 'file'
-        }
-
-        mock_storage.content_get.return_value = stub_content
-
-        # when
         with self.assertRaises(NotImplementedError) as cm:
             service.lookup_directory_with_revision(
-                '123',
-                'some/path/to/rev')
+                revision_with_submodules['rev_sha1_git'],
+                revision_with_submodules['rev_dir_rev_path'])
         self.assertIn("Entity of type rev not implemented.",
                       cm.exception.args[0])
 
-        # then
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
-        ('123', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.revision_get.assert_called_once_with([b'123'])
-        mock_storage.directory_entry_get_by_path.assert_called_once_with(
-            b'dir-id-as-sha1', [b'some', b'path', b'to', b'rev'])
+    @given(revision())
+    def test_lookup_directory_with_revision_without_path(self, revision):
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory_with_revision_revision_without_path(
-        self, mock_query, mock_storage,
-    ):
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
-                                                                        b'123')
+        actual_directory_entries = \
+            service.lookup_directory_with_revision(revision)
 
-        dir_id = b'dir-id-as-sha1'
-        mock_storage.revision_get.return_value = [{
-            'directory': dir_id,
-        }]
-
-        stub_dir_entries = [{
-            'id': b'123',
-            'type': 'dir'
-        }, {
-            'id': b'456',
-            'type': 'file'
-        }]
-
-        mock_storage.directory_ls.return_value = stub_dir_entries
-
-        # when
-        actual_directory_entries = service.lookup_directory_with_revision(
-            '123')
+        revision_data = self.revision_get(revision)
+        expected_directory_entries = \
+            self.directory_ls(revision_data['directory'])
 
         self.assertEqual(actual_directory_entries['type'], 'dir')
-        self.assertEqual(list(actual_directory_entries['content']),
-                         stub_dir_entries)
+        self.assertEqual(actual_directory_entries['content'],
+                         expected_directory_entries)
 
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
-        ('123', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.revision_get.assert_called_once_with([b'123'])
-        mock_storage.directory_ls.assert_called_once_with(dir_id)
+    @given(revision())
+    def test_lookup_directory_with_revision_with_path(self, revision):
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory_with_revision_with_path_to_dir(self,
-                                                             mock_query,
-                                                             mock_storage):
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
-                                                                        b'123')
+        revision_data = self.revision_get(revision)
+        dir_entries = [e for e in self.directory_ls(revision_data['directory'])
+                       if e['type'] in ('file', 'dir')]
+        expected_dir_entry = random.choice(dir_entries)
 
-        dir_id = b'dir-id-as-sha1'
-        mock_storage.revision_get.return_value = [{
-            'directory': dir_id,
-        }]
+        actual_dir_entry = \
+            service.lookup_directory_with_revision(revision,
+                                                   expected_dir_entry['name'])
 
-        stub_dir_entries = [{
-            'id': b'12',
-            'type': 'dir'
-        }, {
-            'id': b'34',
-            'type': 'file'
-        }]
+        self.assertEqual(actual_dir_entry['type'], expected_dir_entry['type'])
+        self.assertEqual(actual_dir_entry['revision'], revision)
+        self.assertEqual(actual_dir_entry['path'], expected_dir_entry['name'])
+        if actual_dir_entry['type'] == 'file':
+            del actual_dir_entry['content']['checksums']['blake2s256']
+            for key in ('checksums', 'status', 'length'):
+                self.assertEqual(actual_dir_entry['content'][key],
+                                 expected_dir_entry[key])
+        else:
+            sub_dir_entries = self.directory_ls(expected_dir_entry['target'])
+            self.assertEqual(actual_dir_entry['content'], sub_dir_entries)
 
-        mock_storage.directory_entry_get_by_path.return_value = {
-            'type': 'dir',
-            'name': b'some/path',
-            'target': b'456'
-        }
-        mock_storage.directory_ls.return_value = stub_dir_entries
+    @given(revision())
+    def test_lookup_directory_with_revision_with_path_to_file_and_data(
+            self, revision):
 
-        # when
-        actual_directory_entries = service.lookup_directory_with_revision(
-            '123',
-            'some/path')
+        revision_data = self.revision_get(revision)
+        dir_entries = [e for e in self.directory_ls(revision_data['directory'])
+                       if e['type'] == 'file']
+        expected_dir_entry = random.choice(dir_entries)
+        expected_data = \
+            self.content_get(expected_dir_entry['checksums']['sha1'])
 
-        self.assertEqual(actual_directory_entries['type'], 'dir')
-        self.assertEqual(actual_directory_entries['revision'], '123')
-        self.assertEqual(actual_directory_entries['path'], 'some/path')
-        self.assertEqual(list(actual_directory_entries['content']),
-                         stub_dir_entries)
+        actual_dir_entry = \
+            service.lookup_directory_with_revision(revision,
+                                                   expected_dir_entry['name'],
+                                                   with_data=True)
 
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
-        ('123', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.revision_get.assert_called_once_with([b'123'])
-        mock_storage.directory_entry_get_by_path.assert_called_once_with(
-            dir_id,
-            [b'some', b'path'])
-        mock_storage.directory_ls.assert_called_once_with(b'456')
+        self.assertEqual(actual_dir_entry['type'], expected_dir_entry['type'])
+        self.assertEqual(actual_dir_entry['revision'], revision)
+        self.assertEqual(actual_dir_entry['path'], expected_dir_entry['name'])
+        del actual_dir_entry['content']['checksums']['blake2s256']
+        for key in ('checksums', 'status', 'length'):
+            self.assertEqual(actual_dir_entry['content'][key],
+                             expected_dir_entry[key])
+        self.assertEqual(actual_dir_entry['content']['data'],
+                         expected_data['data'])
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory_with_revision_with_path_to_file_wo_data(
-            self,
-            mock_query,
-            mock_storage):
+    @given(revision())
+    def test_lookup_revision(self, revision):
+        actual_revision = service.lookup_revision(revision)
+        self.assertEqual(actual_revision, self.revision_get(revision))
 
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
-                                                                        b'123')
+    @given(unknown_revision())
+    def test_lookup_revision_invalid_msg(self, new_revision_id):
 
-        dir_id = b'dir-id-as-sha1'
-        mock_storage.revision_get.return_value = [{
-            'directory': dir_id,
-        }]
+        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
+        new_revision['id'] = hash_to_bytes(new_revision_id)
+        new_revision['message'] = b'elegant fix for bug \xff'
+        self.storage.revision_add([new_revision])
 
-        mock_storage.directory_entry_get_by_path.return_value = {
-                'type': 'file',
-                'name': b'some/path/to/file',
-                'target': b'789'
-            }
+        revision = service.lookup_revision(new_revision_id)
+        self.assertEqual(revision['message'], None)
+        self.assertEqual(revision['message_decoding_failed'], True)
 
-        stub_content = {
-            'status': 'visible',
-        }
+    @given(unknown_revision())
+    def test_lookup_revision_msg_ok(self, new_revision_id):
 
-        mock_storage.content_find.return_value = stub_content
+        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
+        new_revision['id'] = hash_to_bytes(new_revision_id)
+        self.storage.revision_add([new_revision])
 
-        # when
-        actual_content = service.lookup_directory_with_revision(
-            '123',
-            'some/path/to/file')
+        revision_message = service.lookup_revision_message(new_revision_id)
 
-        # then
-        self.assertEqual(actual_content, {'type': 'file',
-                                          'revision': '123',
-                                          'path': 'some/path/to/file',
-                                          'content': stub_content})
+        self.assertEqual(revision_message,
+                         {'message': self.SAMPLE_MESSAGE_BIN})
 
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
-        ('123', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.revision_get.assert_called_once_with([b'123'])
-        mock_storage.directory_entry_get_by_path.assert_called_once_with(
-            b'dir-id-as-sha1', [b'some', b'path', b'to', b'file'])
-        mock_storage.content_find.assert_called_once_with({'sha1_git': b'789'})
+    @given(unknown_revision())
+    def test_lookup_revision_msg_absent(self, new_revision_id):
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory_with_revision_with_path_to_file_w_data(
-            self,
-            mock_query,
-            mock_storage):
+        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
+        new_revision['id'] = hash_to_bytes(new_revision_id)
+        del new_revision['message']
+        self.storage.revision_add([new_revision])
 
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = ('sha1',
-                                                                        b'123')
-
-        dir_id = b'dir-id-as-sha1'
-        mock_storage.revision_get.return_value = [{
-            'directory': dir_id,
-        }]
-
-        mock_storage.directory_entry_get_by_path.return_value = {
-                'type': 'file',
-                'name': b'some/path/to/file',
-                'target': b'789'
-            }
-
-        stub_content = {
-            'status': 'visible',
-            'sha1': b'content-sha1'
-        }
-
-        mock_storage.content_find.return_value = stub_content
-        mock_storage.content_get.return_value = [{
-            'sha1': b'content-sha1',
-            'data': b'some raw data'
-        }]
-
-        expected_content = {
-            'status': 'visible',
-            'checksums': {
-                'sha1': hash_to_hex(b'content-sha1'),
-            },
-            'data': b'some raw data'
-        }
-
-        # when
-        actual_content = service.lookup_directory_with_revision(
-            '123',
-            'some/path/to/file',
-            with_data=True)
-
-        # then
-        self.assertEqual(actual_content, {'type': 'file',
-                                          'revision': '123',
-                                          'path': 'some/path/to/file',
-                                          'content': expected_content})
-
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_once_with
-        ('123', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.revision_get.assert_called_once_with([b'123'])
-        mock_storage.directory_entry_get_by_path.assert_called_once_with(
-            b'dir-id-as-sha1', [b'some', b'path', b'to', b'file'])
-        mock_storage.content_find.assert_called_once_with({'sha1_git': b'789'})
-        mock_storage.content_get.assert_called_once_with([b'content-sha1'])
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision(self, mock_storage):
-        # given
-        mock_storage.revision_get = MagicMock(
-            return_value=[self.SAMPLE_REVISION_RAW])
-
-        # when
-        actual_revision = service.lookup_revision(
-            self.SHA1_SAMPLE)
-
-        # then
-        self.assertEqual(actual_revision, self.SAMPLE_REVISION)
-
-        mock_storage.revision_get.assert_called_with(
-            [self.SHA1_SAMPLE_BIN])
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_invalid_msg(self, mock_storage):
-        # given
-        stub_rev = self.SAMPLE_REVISION_RAW
-        stub_rev['message'] = b'elegant fix for bug \xff'
-
-        expected_revision = self.SAMPLE_REVISION
-        expected_revision['message'] = None
-        expected_revision['message_decoding_failed'] = True
-        mock_storage.revision_get = MagicMock(return_value=[stub_rev])
-
-        # when
-        actual_revision = service.lookup_revision(
-            self.SHA1_SAMPLE)
-
-        # then
-        self.assertEqual(actual_revision, expected_revision)
-
-        mock_storage.revision_get.assert_called_with(
-            [self.SHA1_SAMPLE_BIN])
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_msg_ok(self, mock_storage):
-        # given
-        mock_storage.revision_get.return_value = [self.SAMPLE_REVISION_RAW]
-
-        # when
-        rv = service.lookup_revision_message(
-            self.SHA1_SAMPLE)
-
-        # then
-        self.assertEqual(rv, {'message': self.SAMPLE_MESSAGE_BIN})
-        mock_storage.revision_get.assert_called_with(
-            [self.SHA1_SAMPLE_BIN])
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_msg_absent(self, mock_storage):
-        # given
-        stub_revision = self.SAMPLE_REVISION_RAW
-        del stub_revision['message']
-        mock_storage.revision_get.return_value = stub_revision
-
-        # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_message(
-                self.SHA1_SAMPLE)
+            service.lookup_revision_message(new_revision_id)
 
-        # then
-        mock_storage.revision_get.assert_called_with(
-            [self.SHA1_SAMPLE_BIN])
         self.assertEqual(
             cm.exception.args[0],
-            'No message for revision with sha1_git %s.' % self.SHA1_SAMPLE,
+            'No message for revision with sha1_git %s.' % new_revision_id
         )
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_msg_norev(self, mock_storage):
-        # given
-        mock_storage.revision_get.return_value = None
+    @given(unknown_revision())
+    def test_lookup_revision_msg_no_rev(self, unknown_revision):
 
-        # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_message(
-                self.SHA1_SAMPLE)
+            service.lookup_revision_message(unknown_revision)
 
-        # then
-        mock_storage.revision_get.assert_called_with(
-            [self.SHA1_SAMPLE_BIN])
         self.assertEqual(
             cm.exception.args[0],
-            'Revision with sha1_git %s not found.' % self.SHA1_SAMPLE,
+            'Revision with sha1_git %s not found.' % unknown_revision
         )
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_multiple(self, mock_storage):
-        # given
-        sha1 = self.SHA1_SAMPLE
-        sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
+    @given(revisions())
+    def test_lookup_revision_multiple(self, revisions):
 
-        stub_revisions = [
-            self.SAMPLE_REVISION_RAW,
-            {
-                'id': hash_to_bytes(sha1_other),
-                'directory': 'abcdbe353ed3480476f032475e7c233eff7371d5',
-                'author': {
-                    'name': b'name',
-                    'email': b'name@surname.org',
-                },
-                'committer': {
-                    'name': b'name',
-                    'email': b'name@surname.org',
-                },
-                'message': b'ugly fix for bug 42',
-                'date': {
-                    'timestamp': datetime.datetime(
-                        2000, 1, 12, 5, 23, 54,
-                        tzinfo=datetime.timezone.utc).timestamp(),
-                    'offset': 0,
-                    'negative_utc': False
-                    },
-                'date_offset': 0,
-                'committer_date': {
-                    'timestamp': datetime.datetime(
-                        2000, 1, 12, 5, 23, 54,
-                        tzinfo=datetime.timezone.utc).timestamp(),
-                    'offset': 0,
-                    'negative_utc': False
-                    },
-                'committer_date_offset': 0,
-                'synthetic': False,
-                'type': 'git',
-                'parents': [],
-                'metadata': [],
-            }
-        ]
+        actual_revisions = list(service.lookup_revision_multiple(revisions))
 
-        mock_storage.revision_get.return_value = stub_revisions
+        expected_revisions = []
+        for rev in revisions:
+            expected_revisions.append(self.revision_get(rev))
 
-        # when
-        actual_revisions = service.lookup_revision_multiple(
-            [sha1, sha1_other])
+        self.assertEqual(actual_revisions, expected_revisions)
 
-        # then
-        self.assertEqual(list(actual_revisions), [
-            self.SAMPLE_REVISION,
-            {
-                'id': sha1_other,
-                'directory': 'abcdbe353ed3480476f032475e7c233eff7371d5',
-                'author': {
-                    'name': 'name',
-                    'email': 'name@surname.org',
-                },
-                'committer': {
-                    'name': 'name',
-                    'email': 'name@surname.org',
-                },
-                'message': 'ugly fix for bug 42',
-                'date': '2000-01-12T05:23:54+00:00',
-                'date_offset': 0,
-                'committer_date': '2000-01-12T05:23:54+00:00',
-                'committer_date_offset': 0,
-                'synthetic': False,
-                'type': 'git',
-                'parents': [],
-                'metadata': {},
-                'merge': False
-            }
-        ])
+    @given(unknown_revisions())
+    def test_lookup_revision_multiple_none_found(self, unknown_revisions):
 
-        self.assertEqual(
-            list(mock_storage.revision_get.call_args[0][0]),
-            [hash_to_bytes(sha1),
-             hash_to_bytes(sha1_other)])
+        actual_revisions = \
+            list(service.lookup_revision_multiple(unknown_revisions))
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_multiple_none_found(self, mock_storage):
-        # given
-        sha1_bin = self.SHA1_SAMPLE
-        sha1_other = 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'
+        self.assertEqual(actual_revisions, [None] * len(unknown_revisions))
 
-        mock_storage.revision_get.return_value = []
+    @given(revision())
+    def test_lookup_revision_log(self, revision):
 
-        # then
-        actual_revisions = service.lookup_revision_multiple(
-            [sha1_bin, sha1_other])
+        actual_revision_log = \
+            list(service.lookup_revision_log(revision, limit=25))
+        expected_revision_log = self.revision_log(revision, limit=25)
 
-        self.assertEqual(list(actual_revisions), [])
+        self.assertEqual(actual_revision_log, expected_revision_log)
 
-        self.assertEqual(
-            list(mock_storage.revision_get.call_args[0][0]),
-            [hash_to_bytes(self.SHA1_SAMPLE),
-             hash_to_bytes(sha1_other)])
+    def _get_origin_branches(self, origin):
+        origin_visit = self.origin_visit_get(origin['id'])[0]
+        snapshot = self.snapshot_get(origin_visit['snapshot'])
+        branches = {k: v for (k, v) in snapshot['branches'].items()
+                    if v['target_type'] == 'revision'}
+        return branches
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_log(self, mock_storage):
-        # given
-        stub_revision_log = [self.SAMPLE_REVISION_RAW]
-        mock_storage.revision_log = MagicMock(return_value=stub_revision_log)
+    @given(origin())
+    def test_lookup_revision_log_by(self, origin):
 
-        # when
-        actual_revision = service.lookup_revision_log(
-            'abcdbe353ed3480476f032475e7c233eff7371d5',
-            limit=25)
+        branches = self._get_origin_branches(origin)
+        branch_name = random.choice(list(branches.keys()))
 
-        # then
-        self.assertEqual(list(actual_revision), [self.SAMPLE_REVISION])
+        actual_log =  \
+            list(service.lookup_revision_log_by(origin['id'], branch_name,
+                                                None, limit=25))
 
-        mock_storage.revision_log.assert_called_with(
-            [hash_to_bytes('abcdbe353ed3480476f032475e7c233eff7371d5')], 25)
+        expected_log = \
+            self.revision_log(branches[branch_name]['target'], limit=25)
 
-    @patch('swh.web.common.service.lookup_revision_log')
-    @patch('swh.web.common.service.lookup_snapshot')
-    @patch('swh.web.common.service.get_origin_visit')
-    def test_lookup_revision_log_by(self, mock_get_origin_visit,
-                                    mock_lookup_snapshot,
-                                    mock_lookup_revision_log):
-        # given
-        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
-        mock_lookup_snapshot.return_value = \
-            {
-                'branches': {
-                    'refs/heads/master': {
-                        'target_type': 'revision',
-                        'target': self.SAMPLE_REVISION['id']
-                    }
-                }
-            }
+        self.assertEqual(actual_log, expected_log)
 
-        mock_lookup_revision_log.return_value = [self.SAMPLE_REVISION]
+    @given(origin())
+    def test_lookup_revision_log_by_notfound(self, origin):
 
-        # when
-        actual_log = service.lookup_revision_log_by(
-            1, 'refs/heads/master', None, limit=100)
-        # then
-        self.assertEqual(list(actual_log), [self.SAMPLE_REVISION])
-
-    @patch('swh.web.common.service.lookup_snapshot')
-    @patch('swh.web.common.service.get_origin_visit')
-    def test_lookup_revision_log_by_notfound(self, mock_get_origin_visit,
-                                             mock_lookup_snapshot):
-        # given
-        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
-        mock_lookup_snapshot.return_value = {'branches': {}}
-
-        # when
         with self.assertRaises(NotFoundExc):
             service.lookup_revision_log_by(
-                1, 'refs/heads/master', None, limit=100)
+                origin['id'], 'unknown_branch_name', None, limit=100)
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_raw_not_found(self, mock_storage):
-        # given
-        mock_storage.content_find = MagicMock(return_value=None)
+    @given(unknown_content())
+    def test_lookup_content_raw_not_found(self, unknown_content):
 
-        # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_content_raw('sha1:' + self.SHA1_SAMPLE)
+            service.lookup_content_raw('sha1:' + unknown_content['sha1'])
+
         self.assertIn(cm.exception.args[0],
                       'Content with %s checksum equals to %s not found!' %
-                      ('sha1', self.SHA1_SAMPLE))
+                      ('sha1', unknown_content['sha1']))
 
-        mock_storage.content_find.assert_called_with(
-            {'sha1': hash_to_bytes(self.SHA1_SAMPLE)})
+    @given(content())
+    def test_lookup_content_raw(self, content):
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_raw(self, mock_storage):
-        # given
-        mock_storage.content_find = MagicMock(return_value={
-            'sha1': self.SHA1_SAMPLE,
-        })
-        mock_storage.content_get = MagicMock(return_value=[{
-            'data': b'binary data'}])
-
-        # when
         actual_content = service.lookup_content_raw(
-            'sha256:%s' % self.SHA256_SAMPLE)
+            'sha256:%s' % content['sha256'])
 
-        # then
-        self.assertEqual(actual_content, {'data': b'binary data'})
+        expected_content = self.content_get(content['sha1'])
 
-        mock_storage.content_find.assert_called_once_with(
-            {'sha256': self.SHA256_SAMPLE_BIN})
-        mock_storage.content_get.assert_called_once_with(
-            [hash_to_bytes(self.SHA1_SAMPLE)])
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_not_found(self, mock_storage):
-        # given
-        mock_storage.content_find = MagicMock(return_value=None)
-
-        # when
-        with self.assertRaises(NotFoundExc) as cm:
-            # then
-            service.lookup_content('sha1:%s' % self.SHA1_SAMPLE)
-        self.assertIn(cm.exception.args[0],
-                      'Content with %s checksum equals to %s not found!' %
-                      ('sha1', self.SHA1_SAMPLE))
-
-        mock_storage.content_find.assert_called_with(
-            {'sha1': self.SHA1_SAMPLE_BIN})
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_with_sha1(self, mock_storage):
-        # given
-        mock_storage.content_find = MagicMock(
-            return_value=self.SAMPLE_CONTENT_RAW)
-
-        # when
-        actual_content = service.lookup_content(
-            'sha1:%s' % self.SHA1_SAMPLE)
-
-        # then
-        self.assertEqual(actual_content, self.SAMPLE_CONTENT)
-
-        mock_storage.content_find.assert_called_with(
-            {'sha1': hash_to_bytes(self.SHA1_SAMPLE)})
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_content_with_sha256(self, mock_storage):
-        # given
-        stub_content = self.SAMPLE_CONTENT_RAW
-        stub_content['status'] = 'visible'
-
-        expected_content = self.SAMPLE_CONTENT
-        expected_content['status'] = 'visible'
-        mock_storage.content_find = MagicMock(
-            return_value=stub_content)
-
-        # when
-        actual_content = service.lookup_content(
-            'sha256:%s' % self.SHA256_SAMPLE)
-
-        # then
         self.assertEqual(actual_content, expected_content)
 
-        mock_storage.content_find.assert_called_with(
-            {'sha256': self.SHA256_SAMPLE_BIN})
+    @given(unknown_content())
+    def test_lookup_content_not_found(self, unknown_content):
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_person(self, mock_storage):
-        # given
-        mock_storage.person_get = MagicMock(return_value=[{
-            'id': 'person_id',
-            'name': b'some_name',
-            'email': b'some-email',
-        }])
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_content('sha1:%s' % unknown_content['sha1'])
 
-        # when
-        actual_person = service.lookup_person('person_id')
+        self.assertIn(cm.exception.args[0],
+                      'Content with %s checksum equals to %s not found!' %
+                      ('sha1', unknown_content['sha1']))
 
-        # then
-        self.assertEqual(actual_person, {
-            'id': 'person_id',
-            'name': 'some_name',
-            'email': 'some-email',
-        })
+    @given(content())
+    def test_lookup_content_with_sha1(self, content):
 
-        mock_storage.person_get.assert_called_with(['person_id'])
+        actual_content = service.lookup_content(
+            'sha1:%s' % content['sha1'])
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_directory_bad_checksum(self, mock_storage):
-        # given
-        mock_storage.directory_ls = MagicMock()
+        expected_content = self.content_get_metadata(content['sha1'])
 
-        # when
+        self.assertEqual(actual_content, expected_content)
+
+    @given(content())
+    def test_lookup_content_with_sha256(self, content):
+
+        actual_content = service.lookup_content(
+            'sha256:%s' % content['sha256'])
+
+        expected_content = self.content_get_metadata(content['sha1'])
+
+        self.assertEqual(actual_content, expected_content)
+
+    @given(revision())
+    def test_lookup_person(self, revision):
+
+        rev_data = self.revision_get(revision)
+
+        actual_person = service.lookup_person(rev_data['author']['id'])
+
+        self.assertEqual(actual_person, rev_data['author'])
+
+    def test_lookup_directory_bad_checksum(self):
+
         with self.assertRaises(BadInputExc):
             service.lookup_directory('directory_id')
 
-        # then
-        mock_storage.directory_ls.called = False
+    @given(unknown_directory())
+    def test_lookup_directory_not_found(self, unknown_directory):
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory_not_found(self, mock_query, mock_storage):
-        # given
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = (
-            'sha1',
-            'directory-id-bin')
-        mock_storage.directory_missing.return_value = ['directory-id-bin']
-
-        # when
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_directory('directory_id')
+            service.lookup_directory(unknown_directory)
 
-        self.assertIn('Directory with sha1_git directory_id not found',
-                      cm.exception.args[0])
+        self.assertIn('Directory with sha1_git %s not found'
+                      % unknown_directory, cm.exception.args[0])
 
-        # then
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
-            'directory_id', ['sha1'], 'Only sha1_git is supported.')
+    @given(directory())
+    def test_lookup_directory(self, directory):
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.query')
-    def test_lookup_directory(self, mock_query, mock_storage):
-        mock_query.parse_hash_with_algorithms_or_throws.return_value = (
-            'sha1',
-            'directory-sha1-bin')
-
-        # given
-        stub_dir_entries = [{
-            'sha1': self.SHA1_SAMPLE_BIN,
-            'sha256': self.SHA256_SAMPLE_BIN,
-            'sha1_git': self.SHA1GIT_SAMPLE_BIN,
-            'blake2s256': self.BLAKE2S256_SAMPLE_BIN,
-            'target': hash_to_bytes(
-                '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'),
-            'dir_id': self.DIRECTORY_ID_BIN,
-            'name': b'bob',
-            'type': 10,
-        }]
-
-        expected_dir_entries = [{
-            'checksums': {
-                'sha1': self.SHA1_SAMPLE,
-                'sha256': self.SHA256_SAMPLE,
-                'sha1_git': self.SHA1GIT_SAMPLE,
-                'blake2s256': self.BLAKE2S256_SAMPLE
-            },
-            'target': '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03',
-            'dir_id': self.DIRECTORY_ID,
-            'name': 'bob',
-            'type': 10,
-        }]
-
-        mock_storage.directory_ls.return_value = stub_dir_entries
-        mock_storage.directory_missing.return_value = []
-
-        # when
         actual_directory_ls = list(service.lookup_directory(
-            'directory-sha1'))
+            directory))
 
-        # then
-        self.assertEqual(actual_directory_ls, expected_dir_entries)
+        expected_directory_ls = self.directory_ls(directory)
 
-        mock_query.parse_hash_with_algorithms_or_throws.assert_called_with(
-            'directory-sha1', ['sha1'], 'Only sha1_git is supported.')
-        mock_storage.directory_ls.assert_called_with(
-            'directory-sha1-bin')
+        self.assertEqual(actual_directory_ls, expected_directory_ls)
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_directory_empty(self, mock_storage):
-        empty_dir_sha1 = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
-        mock_storage.directory_ls.return_value = []
+    @given(empty_directory())
+    def test_lookup_directory_empty(self, empty_directory):
 
-        # when
-        actual_directory_ls = list(service.lookup_directory(empty_dir_sha1))
+        actual_directory_ls = list(service.lookup_directory(empty_directory))
 
-        # then
         self.assertEqual(actual_directory_ls, [])
 
-        self.assertFalse(mock_storage.directory_ls.called)
+    @given(origin())
+    def test_lookup_revision_by_nothing_found(self, origin):
 
-    @patch('swh.web.common.service.lookup_snapshot')
-    @patch('swh.web.common.service.get_origin_visit')
-    def test_lookup_revision_by_nothing_found(self, mock_get_origin_visit,
-                                              mock_lookup_snapshot):
-        # given
-        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
-        mock_lookup_snapshot.return_value = {'branches': {}}
-
-        # when
         with self.assertRaises(NotFoundExc):
-            service.lookup_revision_by(1)
+            service.lookup_revision_by(origin['id'], 'invalid-branch-name')
 
-    @patch('swh.web.common.service.lookup_revision')
-    @patch('swh.web.common.service.lookup_snapshot')
-    @patch('swh.web.common.service.get_origin_visit')
-    def test_lookup_revision_by(self, mock_get_origin_visit,
-                                mock_lookup_snapshot, mock_lookup_revision):
-        # given
-        expected_rev = self.SAMPLE_REVISION
+    @given(origin())
+    def test_lookup_revision_by(self, origin):
 
-        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
-        mock_lookup_snapshot.return_value = \
-            {
-                'branches': {
-                    'master2': {
-                        'target_type': 'revision',
-                        'target': expected_rev['id']
-                    }
-                }
-            }
+        branches = self._get_origin_branches(origin)
+        branch_name = random.choice(list(branches.keys()))
 
-        mock_lookup_revision.return_value = expected_rev
+        actual_revision =  \
+            service.lookup_revision_by(origin['id'], branch_name, None)
 
-        # when
-        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
+        expected_revision = \
+            self.revision_get(branches[branch_name]['target'])
 
-        # then
-        self.assertEqual(actual_revision, expected_rev)
+        self.assertEqual(actual_revision, expected_revision)
 
-    @patch('swh.web.common.service.lookup_snapshot')
-    @patch('swh.web.common.service.get_origin_visit')
-    def test_lookup_revision_with_context_by_ko(self, mock_get_origin_visit,
-                                                mock_lookup_snapshot):
-        # given
-        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
-        mock_lookup_snapshot.return_value = {'branches': {}}
+    @given(origin(), revision())
+    def test_lookup_revision_with_context_by_ko(self, origin, revision):
 
-        # when
-        origin_id = 1
-        branch_name = 'master3'
-        ts = None
         with self.assertRaises(NotFoundExc):
-            service.lookup_revision_with_context_by(origin_id, branch_name, ts,
-                                                    'sha1')
+            service.lookup_revision_with_context_by(origin['id'],
+                                                    'invalid-branch-name',
+                                                    None,
+                                                    revision)
 
-    @patch('swh.web.common.service.storage')
-    @patch('swh.web.common.service.lookup_revision')
-    @patch('swh.web.common.service.lookup_snapshot')
-    @patch('swh.web.common.service.get_origin_visit')
-    @patch('swh.web.common.service.lookup_revision_with_context')
-    def test_lookup_revision_with_context_by(
-            self, mock_lookup_revision_with_context, mock_get_origin_visit,
-            mock_lookup_snapshot, mock_lookup_revision, mock_storage
-    ):
-        # given
-        stub_root_rev = self.SAMPLE_REVISION
+    @given(origin())
+    def test_lookup_revision_with_context_by(self, origin):
 
-        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
-        mock_lookup_snapshot.return_value = \
-            {
-                'branches': {
-                    'master2': {
-                        'target_type': 'revision',
-                        'target': stub_root_rev['id']
-                    }
-                }
-            }
+        branches = self._get_origin_branches(origin)
+        branch_name = random.choice(list(branches.keys()))
 
-        mock_lookup_revision.return_value = stub_root_rev
-        stub_rev = {'id': 'rev-found'}
-        mock_lookup_revision_with_context.return_value = stub_rev
+        root_rev = branches[branch_name]['target']
+        root_rev_log = self.revision_log(root_rev)
 
-        mock_storage.revision_get.return_value = [self.SAMPLE_REVISION_RAW]
+        children = defaultdict(list)
 
-        # when
-        origin_id = 1
-        branch_name = 'master2'
-        ts = None
-        sha1_git = 'sha1'
+        for rev in root_rev_log:
+            for rev_p in rev['parents']:
+                children[rev_p].append(rev['id'])
+
+        rev = root_rev_log[-1]['id']
+
         actual_root_rev, actual_rev = service.lookup_revision_with_context_by(
-            origin_id, branch_name, ts, sha1_git)
+            origin['id'], branch_name, None, rev)
 
-        # then
-        self.assertEqual(actual_root_rev, stub_root_rev)
-        self.assertEqual(actual_rev, stub_rev)
+        expected_root_rev = self.revision_get(root_rev)
+        expected_rev = self.revision_get(rev)
+        expected_rev['children'] = children[rev]
 
-        mock_lookup_revision_with_context.assert_called_once_with(
-            self.SAMPLE_REVISION_RAW, sha1_git, 100)
+        self.assertEqual(actual_root_rev, expected_root_rev)
+        self.assertEqual(actual_rev, expected_rev)
 
     def test_lookup_revision_through_ko_not_implemented(self):
-        # then
+
         with self.assertRaises(NotImplementedError):
             service.lookup_revision_through({
                 'something-unknown': 10,
             })
 
-    @patch('swh.web.common.service.lookup_revision_with_context_by')
-    def test_lookup_revision_through_with_context_by(self, mock_lookup):
-        # given
-        stub_rev = {'id': 'rev'}
-        mock_lookup.return_value = stub_rev
+    @given(origin())
+    def test_lookup_revision_through_with_context_by(self, origin):
 
-        # when
-        actual_revision = service.lookup_revision_through({
-            'origin_id': 1,
-            'branch_name': 'master',
-            'ts': None,
-            'sha1_git': 'sha1-git'
-        }, limit=1000)
+        branches = self._get_origin_branches(origin)
+        branch_name = random.choice(list(branches.keys()))
 
-        # then
-        self.assertEqual(actual_revision, stub_rev)
+        root_rev = branches[branch_name]['target']
+        root_rev_log = self.revision_log(root_rev)
+        rev = root_rev_log[-1]['id']
 
-        mock_lookup.assert_called_once_with(
-            1, 'master', None, 'sha1-git', 1000)
+        self.assertEqual(service.lookup_revision_through({
+                            'origin_id': origin['id'],
+                            'branch_name': branch_name,
+                            'ts': None,
+                            'sha1_git': rev
+                         }),
+                         service.lookup_revision_with_context_by(
+                            origin['id'], branch_name, None, rev)
+                         )
 
-    @patch('swh.web.common.service.lookup_revision_by')
-    def test_lookup_revision_through_with_revision_by(self, mock_lookup):
-        # given
-        stub_rev = {'id': 'rev'}
-        mock_lookup.return_value = stub_rev
+    @given(origin())
+    def test_lookup_revision_through_with_revision_by(self, origin):
 
-        # when
-        actual_revision = service.lookup_revision_through({
-            'origin_id': 2,
-            'branch_name': 'master2',
-            'ts': 'some-ts',
-        }, limit=10)
+        branches = self._get_origin_branches(origin)
+        branch_name = random.choice(list(branches.keys()))
 
-        # then
-        self.assertEqual(actual_revision, stub_rev)
+        self.assertEqual(service.lookup_revision_through({
+                            'origin_id': origin['id'],
+                            'branch_name': branch_name,
+                            'ts': None,
+                         }),
+                         service.lookup_revision_by(
+                            origin['id'], branch_name, None)
+                         )
 
-        mock_lookup.assert_called_once_with(
-            2, 'master2', 'some-ts')
+    @given(ancestor_revisions())
+    def test_lookup_revision_through_with_context(self, ancestor_revisions):
 
-    @patch('swh.web.common.service.lookup_revision_with_context')
-    def test_lookup_revision_through_with_context(self, mock_lookup):
-        # given
-        stub_rev = {'id': 'rev'}
-        mock_lookup.return_value = stub_rev
+        sha1_git = ancestor_revisions['sha1_git']
+        sha1_git_root = ancestor_revisions['sha1_git_root']
 
-        # when
-        actual_revision = service.lookup_revision_through({
-            'sha1_git_root': 'some-sha1-root',
-            'sha1_git': 'some-sha1',
-        })
+        self.assertEqual(service.lookup_revision_through({
+                            'sha1_git_root': sha1_git_root,
+                            'sha1_git': sha1_git,
+                         }),
+                         service.lookup_revision_with_context(
+                             sha1_git_root, sha1_git)
 
-        # then
-        self.assertEqual(actual_revision, stub_rev)
+                         )
 
-        mock_lookup.assert_called_once_with(
-            'some-sha1-root', 'some-sha1', 100)
+    @given(revision())
+    def test_lookup_revision_through_with_revision(self, revision):
 
-    @patch('swh.web.common.service.lookup_revision')
-    def test_lookup_revision_through_with_revision(self, mock_lookup):
-        # given
-        stub_rev = {'id': 'rev'}
-        mock_lookup.return_value = stub_rev
+        self.assertEqual(service.lookup_revision_through({
+                            'sha1_git': revision
+                         }),
+                         service.lookup_revision(revision)
+                         )
 
-        # when
-        actual_revision = service.lookup_revision_through({
-            'sha1_git': 'some-sha1',
-        })
+    @given(revision())
+    def test_lookup_directory_through_revision_ko_not_found(self, revision):
 
-        # then
-        self.assertEqual(actual_revision, stub_rev)
-
-        mock_lookup.assert_called_once_with(
-            'some-sha1')
-
-    @patch('swh.web.common.service.lookup_revision_through')
-    def test_lookup_directory_through_revision_ko_not_found(
-            self, mock_lookup_rev):
-        # given
-        mock_lookup_rev.return_value = None
-
-        # when
         with self.assertRaises(NotFoundExc):
             service.lookup_directory_through_revision(
-                {'id': 'rev'}, 'some/path', 100)
+                {'sha1_git': revision}, 'some/invalid/path')
 
-        mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
+    @given(revision())
+    def test_lookup_directory_through_revision_ok(self, revision):
 
-    @patch('swh.web.common.service.lookup_revision_through')
-    @patch('swh.web.common.service.lookup_directory_with_revision')
-    def test_lookup_directory_through_revision_ok_with_data(
-            self, mock_lookup_dir, mock_lookup_rev):
-        # given
-        mock_lookup_rev.return_value = {'id': 'rev-id'}
-        mock_lookup_dir.return_value = {'type': 'dir',
-                                        'content': []}
+        revision_data = self.revision_get(revision)
+        dir_entries = [e for e in self.directory_ls(revision_data['directory'])
+                       if e['type'] == 'file']
+        dir_entry = random.choice(dir_entries)
 
-        # when
-        rev_id, dir_result = service.lookup_directory_through_revision(
-            {'id': 'rev'}, 'some/path', 100)
-        # then
-        self.assertEqual(rev_id, 'rev-id')
-        self.assertEqual(dir_result, {'type': 'dir',
-                                      'content': []})
+        self.assertEqual(
+            service.lookup_directory_through_revision({'sha1_git': revision},
+                                                      dir_entry['name']),
+            (revision,
+             service.lookup_directory_with_revision(
+                revision, dir_entry['name']))
+        )
 
-        mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 100)
-        mock_lookup_dir.assert_called_once_with('rev-id', 'some/path', False)
+    @given(revision())
+    def test_lookup_directory_through_revision_ok_with_data(self, revision):
 
-    @patch('swh.web.common.service.lookup_revision_through')
-    @patch('swh.web.common.service.lookup_directory_with_revision')
-    def test_lookup_directory_through_revision_ok_with_content(
-            self, mock_lookup_dir, mock_lookup_rev):
-        # given
-        mock_lookup_rev.return_value = {'id': 'rev-id'}
-        stub_result = {'type': 'file',
-                       'revision': 'rev-id',
-                       'content': {'data': b'blah',
-                                   'sha1': 'sha1'}}
-        mock_lookup_dir.return_value = stub_result
+        revision_data = self.revision_get(revision)
+        dir_entries = [e for e in self.directory_ls(revision_data['directory'])
+                       if e['type'] == 'file']
+        dir_entry = random.choice(dir_entries)
 
-        # when
-        rev_id, dir_result = service.lookup_directory_through_revision(
-            {'id': 'rev'}, 'some/path', 10, with_data=True)
-        # then
-        self.assertEqual(rev_id, 'rev-id')
-        self.assertEqual(dir_result, stub_result)
-
-        mock_lookup_rev.assert_called_once_with({'id': 'rev'}, 10)
-        mock_lookup_dir.assert_called_once_with('rev-id', 'some/path', True)
+        self.assertEqual(
+            service.lookup_directory_through_revision({'sha1_git': revision},
+                                                      dir_entry['name'],
+                                                      with_data=True),
+            (revision,
+             service.lookup_directory_with_revision(
+                revision, dir_entry['name'], with_data=True))
+        )

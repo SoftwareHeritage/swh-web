@@ -10,7 +10,8 @@ from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.hashutil import hash_to_hex, DEFAULT_ALGORITHMS
+from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
+from swh.model.identifiers import directory_identifier
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.storage.algos.dir_iterators import dir_iterator
 
@@ -136,6 +137,12 @@ _TEST_ORIGINS = [
         'type': 'git',
         'url': 'https://github.com/memononen/libtess2',
         'archive': 'libtess2.zip'
+    },
+    {
+        'id': 3,
+        'type': 'git',
+        'url': 'repo_with_submodules',
+        'archive': 'repo_with_submodules.tgz'
     }
 ]
 
@@ -181,7 +188,7 @@ def _init_tests_data():
             for entry in dir_iterator(storage, dir_id):
                 if entry['type'] == 'file':
                     contents.add(entry['sha1'])
-                else:
+                elif entry['type'] == 'dir':
                     directories.add(hash_to_hex(entry['target']))
 
     # Get all checksums for each content
@@ -209,6 +216,11 @@ def _init_tests_data():
         idx.idx_storage = idx_storage
         idx.register_tools(idx.config['tools'])
         indexers[idx_name] = idx
+
+    # Add the empty directory to the test archive
+    empty_dir_id = directory_identifier({'entries': []})
+    empty_dir_id_bin = hash_to_bytes(empty_dir_id)
+    storage.directory_add([{'id': empty_dir_id_bin, 'entries': []}])
 
     # Return tests data
     return {
