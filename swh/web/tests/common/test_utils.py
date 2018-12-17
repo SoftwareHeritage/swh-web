@@ -9,10 +9,10 @@ from unittest.mock import patch
 
 from swh.web.common import utils
 from swh.web.common.exc import BadInputExc
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class UtilsTestCase(SWHWebTestCase):
+class UtilsTestCase(WebTestCase):
     def test_shorten_path_noop(self):
         noops = [
             '/api/',

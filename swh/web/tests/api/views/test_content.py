@@ -6,10 +6,10 @@
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class ContentApiTestCase(SWHWebTestCase, APITestCase):
+class ContentApiTestCase(WebTestCase, APITestCase):
     @patch('swh.web.api.views.content.service')
     def test_api_content_filetype(self, mock_service):
         stub_filetype = {

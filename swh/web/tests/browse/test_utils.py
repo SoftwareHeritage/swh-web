@@ -10,12 +10,12 @@ from unittest.mock import patch
 from swh.web.browse import utils
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .views.data.revision_test_data import revision_history_log_test
 
 
-class SwhBrowseUtilsTestCase(SWHWebTestCase):
+class SwhBrowseUtilsTestCase(WebTestCase):
 
     def test_get_mimetype_and_encoding_for_content(self):
         text = b'Hello world!'

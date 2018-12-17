@@ -11,10 +11,10 @@ from swh.web.api.views.revision import (
     _revision_directory_by
 )
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
+class ReleaseApiTestCase(WebTestCase, APITestCase):
 
     @patch('swh.web.api.views.revision.service')
     def test_api_revision(self, mock_service):

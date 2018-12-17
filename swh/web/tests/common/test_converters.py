@@ -9,10 +9,10 @@ import datetime
 from swh.model import hashutil
 
 from swh.web.common import converters
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class ConvertersTestCase(SWHWebTestCase):
+class ConvertersTestCase(WebTestCase):
 
     def test_fmap(self):
         self.assertEqual([2, 3, None, 4],

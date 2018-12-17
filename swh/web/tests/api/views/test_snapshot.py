@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 _snapshot_id = '36ce36946fcd0f39bdfc40727af4acfce81f67af'
 
@@ -128,7 +128,7 @@ def _enrich_snapshot_data(snapshot_data):
 
 
 @patch('swh.web.api.views.snapshot.service')
-class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
+class SnapshotApiTestCase(WebTestCase, APITestCase):
 
     def test_api_snapshot(self, mock_service):
         mock_service.lookup_snapshot.side_effect = _lookup_snapshot

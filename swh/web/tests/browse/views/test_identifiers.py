@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .data.content_test_data import stub_content_text_data
 
@@ -22,7 +22,7 @@ from .data.release_test_data import stub_release
 swh_id_prefix = 'swh:1:'
 
 
-class SwhBrowseIdTest(SWHWebTestCase):
+class SwhBrowseIdTest(WebTestCase):
 
     def test_content_id_browse(self):
         cnt_sha1_git = stub_content_text_data['checksums']['sha1_git']

@@ -52,13 +52,13 @@ def create_config(base_url='https://somewhere.org:4321'):
     return swh_config
 
 
-class SWHWebTestCase(TestCase):
+class WebTestCase(TestCase):
     """Testing API class.
 
     """
     @classmethod
     def setUpClass(cls):
-        super(SWHWebTestCase, cls).setUpClass()
+        super(WebTestCase, cls).setUpClass()
         cls.test_config = create_config()
         cls.maxDiff = None
 

@@ -14,7 +14,7 @@ from swh.web.common.utils import (
     reverse, gen_path_info, format_utc_iso_date,
     parse_timestamp, get_swh_persistent_id
 )
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .data.origin_test_data import (
     origin_info_test_data,
@@ -55,7 +55,7 @@ def _to_snapshot_dict(branches=None, releases=None):
             }
     return snp
 
-class SwhBrowseOriginTest(SWHWebTestCase):
+class SwhBrowseOriginTest(WebTestCase):
 
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')

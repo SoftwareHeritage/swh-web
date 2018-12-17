@@ -6,10 +6,10 @@
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
+class DirectoryApiTestCase(WebTestCase, APITestCase):
 
     @patch('swh.web.api.views.directory.service')
     def test_api_directory(self, mock_service):

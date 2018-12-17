@@ -11,7 +11,7 @@ from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, get_swh_persistent_id
 )
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .data.release_test_data import (
     stub_release
@@ -20,7 +20,7 @@ from .data.release_test_data import (
 from .data.origin_test_data import stub_origin_visits
 
 
-class SwhBrowseReleaseTest(SWHWebTestCase):
+class SwhBrowseReleaseTest(WebTestCase):
 
     @patch('swh.web.browse.views.release.service')
     @patch('swh.web.browse.utils.service')

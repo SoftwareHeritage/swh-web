@@ -6,10 +6,10 @@
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class PersonApiTestCase(SWHWebTestCase, APITestCase):
+class PersonApiTestCase(WebTestCase, APITestCase):
 
     @patch('swh.web.api.views.person.service')
     def test_api_person(self, mock_service):

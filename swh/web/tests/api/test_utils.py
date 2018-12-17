@@ -6,10 +6,10 @@
 from unittest.mock import patch, call
 
 from swh.web.api import utils
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class UtilsTestCase(SWHWebTestCase):
+class UtilsTestCase(WebTestCase):
     def setUp(self):
         self.maxDiff = None
         self.url_map = [dict(rule='/other/<slug>',

@@ -11,10 +11,10 @@ from swh.model.hashutil import hash_to_bytes, hash_to_hex
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class ServiceTestCase(SWHWebTestCase):
+class ServiceTestCase(WebTestCase):
 
     def setUp(self):
         self.BLAKE2S256_SAMPLE = ('685395c5dc57cada459364f0946d3dd45b'
