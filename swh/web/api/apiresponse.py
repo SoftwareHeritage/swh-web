@@ -4,14 +4,16 @@
 # See top-level LICENSE file for more information
 
 import json
+import traceback
 
 from rest_framework.response import Response
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
+from swh.web.api import utils
 from swh.web.common.exc import NotFoundExc, ForbiddenExc
 from swh.web.common.utils import shorten_path, gen_path_info
-from swh.web.api import utils
+from swh.web.config import get_config
 
 
 def compute_link_header(rv, options):
@@ -175,6 +177,8 @@ def error_response(request, error, doc_data):
         'exception': error.__class__.__name__,
         'reason': str(error),
     }
+    if get_config()['debug']:
+        error_data['traceback'] = traceback.format_exc()
 
     return make_api_response(request, error_data, doc_data,
                              options=error_opts)
