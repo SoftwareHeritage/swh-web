@@ -701,8 +701,8 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         return {'type': 'dir',
                 'path': '.' if not dir_path else dir_path,
                 'revision': sha1_git,
-                'content': map(converters.from_directory_entry,
-                               directory_entries)}
+                'content': list(map(converters.from_directory_entry,
+                                    directory_entries))}
     elif entity['type'] == 'file':  # content
         content = storage.content_find({'sha1_git': entity['target']})
         if with_data:
