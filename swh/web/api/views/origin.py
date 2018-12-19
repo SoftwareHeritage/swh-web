@@ -7,9 +7,8 @@ from distutils.util import strtobool
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import (
-    reverse, get_origin_visits
-)
+from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.utils import reverse
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup

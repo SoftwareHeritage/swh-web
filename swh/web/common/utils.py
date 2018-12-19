@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 from dateutil import parser as date_parser
 from dateutil import tz
 
-from django.core.cache import cache
 from django.urls import reverse as django_reverse
 from django.http import QueryDict
 
@@ -21,7 +20,7 @@ from swh.model.identifiers import (
     persistent_identifier, parse_persistent_identifier,
     CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 )
-from swh.web.common import service
+
 from swh.web.common.exc import BadInputExc
 from swh.web.config import get_config
 
@@ -179,70 +178,6 @@ def gen_path_info(path):
             path_info.append({'name': p,
                               'path': path_from_root.strip('/')})
     return path_info
-
-
-def get_origin_visits(origin_info):
-    """Function that returns the list of visits for a swh origin.
-    That list is put in cache in order to speedup the navigation
-    in the swh web browse ui.
-
-    Args:
-        origin_id (int): the id of the swh origin to fetch visits from
-
-    Returns:
-        list: A list of dict describing the origin visits with the
-        following keys:
-
-            * **date**: UTC visit date in ISO format,
-            * **origin**: the origin id
-            * **status**: the visit status, either **full**, **partial**
-              or **ongoing**
-            * **visit**: the visit id
-
-    Raises:
-        NotFoundExc: if the origin is not found
-    """
-    cache_entry_id = 'origin_%s_visits' % origin_info['id']
-    cache_entry = cache.get(cache_entry_id)
-
-    last_snapshot = service.lookup_latest_origin_snapshot(origin_info['id'])
-
-    if cache_entry and \
-        (not last_snapshot or
-            last_snapshot['id'] == cache_entry[-1]['snapshot']):
-        return cache_entry
-
-    origin_visits = []
-
-    per_page = service.MAX_LIMIT
-    last_visit = None
-    while 1:
-        visits = list(service.lookup_origin_visits(origin_info['id'],
-                                                   last_visit=last_visit,
-                                                   per_page=per_page))
-        origin_visits += visits
-        if len(visits) < per_page:
-            break
-        else:
-            if not last_visit:
-                last_visit = per_page
-            else:
-                last_visit += per_page
-
-    def _visit_sort_key(visit):
-        ts = parse_timestamp(visit['date']).timestamp()
-        return ts + (float(visit['visit']) / 10e3)
-
-    for v in origin_visits:
-        if 'metadata' in v:
-            del v['metadata']
-    origin_visits = [dict(t) for t in set([tuple(d.items())
-                                           for d in origin_visits])]
-    origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
-
-    cache.set(cache_entry_id, origin_visits)
-
-    return origin_visits
 
 
 def get_swh_persistent_id(object_type, object_id, scheme_version=1):

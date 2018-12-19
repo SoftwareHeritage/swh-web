@@ -18,7 +18,8 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_YET_SCHEDULED, SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEED, SAVE_TASK_FAILED
 )
-from swh.web.common.utils import get_origin_visits, parse_timestamp
+from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.utils import parse_timestamp
 
 from swh.scheduler.utils import create_oneshot_task_dict
 

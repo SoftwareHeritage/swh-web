@@ -1447,12 +1447,25 @@ class ServiceTestCase(WebTestCase):
         mock_storage.revision_log.assert_called_with(
             [hash_to_bytes('abcdbe353ed3480476f032475e7c233eff7371d5')], 25)
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_log_by(self, mock_storage):
+    @patch('swh.web.common.service.lookup_revision_log')
+    @patch('swh.web.common.service.lookup_snapshot')
+    @patch('swh.web.common.service.get_origin_visit')
+    def test_lookup_revision_log_by(self, mock_get_origin_visit,
+                                    mock_lookup_snapshot,
+                                    mock_lookup_revision_log):
         # given
-        stub_revision_log = [self.SAMPLE_REVISION_RAW]
-        mock_storage.revision_log_by = MagicMock(
-            return_value=stub_revision_log)
+        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
+        mock_lookup_snapshot.return_value = \
+            {
+                'branches': {
+                    'refs/heads/master': {
+                        'target_type': 'revision',
+                        'target': self.SAMPLE_REVISION['id']
+                    }
+                }
+            }
+
+        mock_lookup_revision_log.return_value = [self.SAMPLE_REVISION]
 
         # when
         actual_log = service.lookup_revision_log_by(
@@ -1460,21 +1473,18 @@ class ServiceTestCase(WebTestCase):
         # then
         self.assertEqual(list(actual_log), [self.SAMPLE_REVISION])
 
-        mock_storage.revision_log_by.assert_called_with(
-            1, 'refs/heads/master', None, limit=100)
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_log_by_nolog(self, mock_storage):
+    @patch('swh.web.common.service.lookup_snapshot')
+    @patch('swh.web.common.service.get_origin_visit')
+    def test_lookup_revision_log_by_notfound(self, mock_get_origin_visit,
+                                             mock_lookup_snapshot):
         # given
-        mock_storage.revision_log_by = MagicMock(return_value=None)
+        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
+        mock_lookup_snapshot.return_value = {'branches': {}}
 
         # when
-        res = service.lookup_revision_log_by(
-            1, 'refs/heads/master', None, limit=100)
-        # then
-        self.assertEqual(res, None)
-        mock_storage.revision_log_by.assert_called_with(
-            1, 'refs/heads/master', None, limit=100)
+        with self.assertRaises(NotFoundExc):
+            service.lookup_revision_log_by(
+                1, 'refs/heads/master', None, limit=100)
 
     @patch('swh.web.common.service.storage')
     def test_lookup_content_raw_not_found(self, mock_storage):
@@ -1679,87 +1689,44 @@ class ServiceTestCase(WebTestCase):
 
         self.assertFalse(mock_storage.directory_ls.called)
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_by_nothing_found(self, mock_storage):
+    @patch('swh.web.common.service.lookup_snapshot')
+    @patch('swh.web.common.service.get_origin_visit')
+    def test_lookup_revision_by_nothing_found(self, mock_get_origin_visit,
+                                              mock_lookup_snapshot):
         # given
-        mock_storage.revision_get_by.return_value = None
+        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
+        mock_lookup_snapshot.return_value = {'branches': {}}
 
         # when
         with self.assertRaises(NotFoundExc):
             service.lookup_revision_by(1)
 
-            # then
-            mock_storage.revision_get_by.assert_called_with(1, 'refs/heads/master', # noqa
-                                                            limit=1,
-                                                            timestamp=None)
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_by(self, mock_storage):
+    @patch('swh.web.common.service.lookup_revision')
+    @patch('swh.web.common.service.lookup_snapshot')
+    @patch('swh.web.common.service.get_origin_visit')
+    def test_lookup_revision_by(self, mock_get_origin_visit,
+                                mock_lookup_snapshot, mock_lookup_revision):
         # given
-        stub_rev = self.SAMPLE_REVISION_RAW
-
         expected_rev = self.SAMPLE_REVISION
 
-        mock_storage.revision_get_by.return_value = [stub_rev]
+        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
+        mock_lookup_snapshot.return_value = \
+            {
+                'branches': {
+                    'master2': {
+                        'target_type': 'revision',
+                        'target': expected_rev['id']
+                    }
+                }
+            }
+
+        mock_lookup_revision.return_value = expected_rev
 
         # when
         actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
 
         # then
         self.assertEqual(actual_revision, expected_rev)
-
-        mock_storage.revision_get_by.assert_called_with(10, 'master2',
-                                                        limit=1,
-                                                        timestamp='some-ts')
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_by_nomerge(self, mock_storage):
-        # given
-        stub_rev = self.SAMPLE_REVISION_RAW
-        stub_rev['parents'] = [
-                hash_to_bytes('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc')]
-
-        expected_rev = self.SAMPLE_REVISION
-        expected_rev['parents'] = ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc']
-        mock_storage.revision_get_by.return_value = [stub_rev]
-
-        # when
-        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
-
-        # then
-        self.assertEqual(actual_revision, expected_rev)
-
-        mock_storage.revision_get_by.assert_called_with(10, 'master2',
-                                                        limit=1,
-                                                        timestamp='some-ts')
-
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_by_merge(self, mock_storage):
-        # given
-        stub_rev = self.SAMPLE_REVISION_RAW
-        stub_rev['parents'] = [
-            hash_to_bytes('adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'),
-            hash_to_bytes('ffff3b19e793491b1c6db0fd8b46cd9f32e592fc')
-        ]
-
-        expected_rev = self.SAMPLE_REVISION
-        expected_rev['parents'] = [
-            'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
-            'ffff3b19e793491b1c6db0fd8b46cd9f32e592fc'
-        ]
-        expected_rev['merge'] = True
-
-        mock_storage.revision_get_by.return_value = [stub_rev]
-
-        # when
-        actual_revision = service.lookup_revision_by(10, 'master2', 'some-ts')
-
-        # then
-        self.assertEqual(actual_revision, expected_rev)
-
-        mock_storage.revision_get_by.assert_called_with(10, 'master2',
-                                                        limit=1,
-                                                        timestamp='some-ts')
 
     @patch('swh.web.common.service.storage')
     def test_lookup_revision_with_context_by_ko(self, mock_storage):

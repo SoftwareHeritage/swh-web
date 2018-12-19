@@ -44,11 +44,11 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             'exception': 'ValueError',
             'reason': 'voluntary error to check the bad request middleware.'})
 
-    @patch('swh.web.common.utils.service')
+    @patch('swh.web.api.views.origin.get_origin_visits')
     def test_api_1_lookup_origin_visits_raise_swh_storage_error_db(
-            self, mock_service):
+            self, mock_get_origin_visits):
         # given
-        mock_service.lookup_origin_visits.side_effect = StorageDBError(
+        mock_get_origin_visits.side_effect = StorageDBError(
             'Storage exploded! Will be back online shortly!')
         # when
         rv = self.client.get('/api/1/origin/2/visits/')
@@ -61,11 +61,11 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             'An unexpected error occurred in the backend: '
             'Storage exploded! Will be back online shortly!'})
 
-    @patch('swh.web.common.utils.service')
+    @patch('swh.web.api.views.origin.get_origin_visits')
     def test_api_1_lookup_origin_visits_raise_swh_storage_error_api(
-            self, mock_service):
+            self, mock_get_origin_visits):
         # given
-        mock_service.lookup_origin_visits.side_effect = StorageAPIError(
+        mock_get_origin_visits.side_effect = StorageAPIError(
             'Storage API dropped dead! Will resurrect from its ashes asap!'
         )
         # when

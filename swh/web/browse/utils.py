@@ -6,7 +6,6 @@
 import base64
 from collections import defaultdict
 import magic
-import math
 import pypandoc
 import stat
 import textwrap
@@ -19,9 +18,9 @@ from importlib import reload
 from swh.model.identifiers import persistent_identifier
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc, http_status_code_message
+from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, parse_timestamp,
-    get_origin_visits, get_swh_persistent_id,
+    reverse, format_utc_iso_date, get_swh_persistent_id,
     swh_object_icons
 )
 from swh.web.config import get_config
@@ -270,94 +269,6 @@ def prepare_content_for_display(content_data, mime_type, path):
     return {'content_data': content_data,
             'language': language,
             'mimetype': mime_type}
-
-
-def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
-                     snapshot_id=None):
-    """Function that returns information about a visit for
-    a given origin.
-    The visit is retrieved from a provided timestamp.
-    The closest visit from that timestamp is selected.
-
-    Args:
-        origin_info (dict): a dict filled with origin information
-            (id, url, type)
-        visit_ts (int or str): an ISO date string or Unix timestamp to parse
-
-    Returns:
-        A dict containing the visit info as described below::
-
-            {'origin': 2,
-             'date': '2017-10-08T11:54:25.582463+00:00',
-             'metadata': {},
-             'visit': 25,
-             'status': 'full'}
-
-    """
-    visits = get_origin_visits(origin_info)
-
-    if not visits:
-        raise NotFoundExc('No visit associated to origin with'
-                          ' type %s and url %s!' % (origin_info['type'],
-                                                    origin_info['url']))
-
-    if snapshot_id:
-        visit = [v for v in visits if v['snapshot'] == snapshot_id]
-        if len(visit) == 0:
-            raise NotFoundExc(
-                'Visit for snapshot with id %s for origin with type %s'
-                ' and url %s not found!' % (snapshot_id, origin_info['type'],
-                                            origin_info['url']))
-        return visit[0]
-
-    if visit_id:
-        visit = [v for v in visits if v['visit'] == int(visit_id)]
-        if len(visit) == 0:
-            raise NotFoundExc(
-                'Visit with id %s for origin with type %s'
-                ' and url %s not found!' % (visit_id, origin_info['type'],
-                                            origin_info['url']))
-        return visit[0]
-
-    if not visit_ts:
-        # returns the latest full visit when no timestamp is provided
-        for v in reversed(visits):
-            if v['status'] == 'full':
-                return v
-        return visits[-1]
-
-    parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
-
-    visit_idx = None
-    for i, visit in enumerate(visits):
-        ts = math.floor(parse_timestamp(visit['date']).timestamp())
-        if i == 0 and parsed_visit_ts <= ts:
-            return visit
-        elif i == len(visits) - 1:
-            if parsed_visit_ts >= ts:
-                return visit
-        else:
-            next_ts = math.floor(
-                parse_timestamp(visits[i+1]['date']).timestamp())
-            if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
-                if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
-                    visit_idx = i
-                    break
-                else:
-                    visit_idx = i+1
-                    break
-
-    if visit_idx is not None:
-        visit = visits[visit_idx]
-        while visit_idx < len(visits) - 1 and \
-                visit['date'] == visits[visit_idx+1]['date']:
-            visit_idx = visit_idx + 1
-            visit = visits[visit_idx]
-        return visit
-    else:
-        raise NotFoundExc(
-            'Visit with timestamp %s for origin with type %s and url %s not found!' % # noqa
-            (visit_ts, origin_info['type'], origin_info['url']))
 
 
 def process_snapshot_branches(snapshot):

@@ -59,7 +59,7 @@ def _revision_directory_by(revision, path, request_path,
            'api-revision-origin-log')
 @api_doc('/revision/origin/log/')
 def api_revision_log_by(request, origin_id,
-                        branch_name='refs/heads/master',
+                        branch_name='HEAD',
                         ts=None):
     """
     .. http:get:: /api/1/revision/origin/(origin_id)[/branch/(branch_name)][/ts/(timestamp)]/log
@@ -73,7 +73,7 @@ def api_revision_log_by(request, origin_id,
 
         :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name
-            associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
+            associated to the software origin, e.g., "refs/heads/master". Defaults to the HEAD branch.
         :param string timestamp: optional parameter specifying a timestamp close to which the revision
             pointed by the given branch should be looked up. The timestamp can be expressed either
             as an ISO date or as a Unix one (in UTC). Defaults to now.
@@ -115,9 +115,6 @@ def api_revision_log_by(request, origin_id,
     """ # noqa
     result = {}
     per_page = int(request.query_params.get('per_page', '10'))
-
-    if ts:
-        ts = parse_timestamp(ts)
 
     def lookup_revision_log_by_with_limit(o_id, br, ts, limit=per_page+1):
         return service.lookup_revision_log_by(o_id, br, ts, limit)
@@ -210,7 +207,7 @@ def api_directory_through_revision_origin(request, origin_id,
            'api-revision-origin')
 @api_doc('/revision/origin/')
 def api_revision_with_origin(request, origin_id,
-                             branch_name="refs/heads/master",
+                             branch_name='HEAD',
                              ts=None):
     """
     .. http:get:: /api/1/revision/origin/(origin_id)/[branch/(branch_name)/][ts/(timestamp)/]
@@ -224,7 +221,7 @@ def api_revision_with_origin(request, origin_id,
 
         :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name
-            associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
+            associated to the software origin, e.g., "refs/heads/master". Defaults to the HEAD branch.
         :param string timestamp: optional parameter specifying a timestamp close to which the revision
             pointed by the given branch should be looked up. The timestamp can be expressed either
             as an ISO date or as a Unix one (in UTC). Defaults to now.
@@ -264,7 +261,6 @@ def api_revision_with_origin(request, origin_id,
 
             :swh_web_api:`revision/origin/13706355/branch/refs/heads/2.7/`
     """ # noqa
-    ts = parse_timestamp(ts)
     return api_lookup(
         service.lookup_revision_by, origin_id, branch_name, ts,
         notfound_msg=('Revision with (origin_id: {}, branch_name: {}'

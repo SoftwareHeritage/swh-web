@@ -11,9 +11,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from swh.web.common import service
+from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, parse_timestamp,
-    get_origin_visits
+    reverse, format_utc_iso_date, parse_timestamp
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (

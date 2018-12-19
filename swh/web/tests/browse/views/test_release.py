@@ -24,8 +24,8 @@ class SwhBrowseReleaseTest(WebTestCase):
 
     @patch('swh.web.browse.views.release.service')
     @patch('swh.web.browse.utils.service')
-    @patch('swh.web.common.utils.service')
-    def test_release_browse(self, mock_service_common, mock_service_utils,
+    @patch('swh.web.common.origin_visits.get_origin_visits')
+    def test_release_browse(self, mock_get_origin_visits, mock_service_utils,
                        mock_service):
         mock_service.lookup_release.return_value = stub_release
 
@@ -75,8 +75,7 @@ class SwhBrowseReleaseTest(WebTestCase):
         }
 
         mock_service_utils.lookup_origin.return_value = origin_info
-        mock_service_common.lookup_origin_visits.return_value = stub_origin_visits
-        mock_service_common.MAX_LIMIT = 20
+        mock_get_origin_visits.return_value = stub_origin_visits
 
         url = reverse('browse-release',
                       url_args={'sha1_git': stub_release['id']},

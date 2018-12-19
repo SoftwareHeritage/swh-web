@@ -28,8 +28,8 @@ class SwhBrowseRevisionTest(WebTestCase):
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.views.revision.service')
     @patch('swh.web.browse.utils.service')
-    @patch('swh.web.common.utils.service')
-    def test_revision_browse(self, mock_service_common, mock_service_utils,
+    @patch('swh.web.common.origin_visits.get_origin_visits')
+    def test_revision_browse(self, mock_get_origin_visits, mock_service_utils,
                              mock_service, mock_get_origin_visit_snapshot):
         mock_service.lookup_revision.return_value = revision_metadata_test
 
@@ -87,13 +87,12 @@ class SwhBrowseRevisionTest(WebTestCase):
         }
 
         mock_service_utils.lookup_origin.return_value = origin_info
-        mock_service_common.lookup_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visits.return_value = stub_origin_visits
         mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
         mock_service_utils.lookup_snapshot_size.return_value = {
             'revision': len(stub_origin_snapshot[0]),
             'release': len(stub_origin_snapshot[1])
         }
-        mock_service_common.MAX_LIMIT = 20
 
         origin_directory_url = reverse('browse-origin-directory',
                                        url_args={'origin_url': origin_info['url']},
@@ -252,4 +251,5 @@ class SwhBrowseRevisionTest(WebTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
-        self.assertContains(resp, 'Origin not found', status_code=404)
+        self.assertContains(resp, 'the origin mentioned in your request appears broken',
+                            status_code=404)

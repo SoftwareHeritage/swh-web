@@ -14,7 +14,7 @@ from swh.web.api.views.revision import (
 from swh.web.tests.testcase import WebTestCase
 
 
-class ReleaseApiTestCase(WebTestCase, APITestCase):
+class RevisionApiTestCase(WebTestCase, APITestCase):
 
     @patch('swh.web.api.views.revision.service')
     def test_api_revision(self, mock_service):
@@ -179,7 +179,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
 
         mock_service.lookup_revision_by.assert_called_once_with(
             '123',
-            'refs/heads/master',
+            'HEAD',
             None)
 
     @patch('swh.web.api.views.revision.service')
@@ -210,7 +210,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
 
         mock_service.lookup_revision_by.assert_called_once_with(
             '1',
-            'refs/heads/master',
+            'HEAD',
             None)
 
     @patch('swh.web.api.views.revision.service')
@@ -246,13 +246,11 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
             'refs/origin/dev',
             None)
 
-    @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision.service')
     @patch('swh.web.api.views.revision.utils')
     def test_api_revision_with_origin_and_branch_name_and_timestamp(self,
                                                                mock_utils,
-                                                               mock_service,
-                                                               mock_parse_timestamp): # noqa
+                                                               mock_service): # noqa
         mock_revision = {
             'id': '123',
             'directory': '456',
@@ -271,7 +269,6 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
             'type': 'tar',
         }
 
-        mock_parse_timestamp.return_value = 'parsed-date'
         mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.client.get('/api/1/revision'
@@ -287,19 +284,16 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
         mock_service.lookup_revision_by.assert_called_once_with(
             '1',
             'refs/origin/dev',
-            'parsed-date')
-        mock_parse_timestamp.assert_called_once_with('1452591542')
+            '1452591542')
         mock_utils.enrich_revision.assert_called_once_with(
             mock_revision)
 
-    @patch('swh.web.api.views.revision.parse_timestamp')
     @patch('swh.web.api.views.revision.service')
     @patch('swh.web.api.views.revision.utils')
     def test_api_revision_with_origin_and_branch_name_and_timestamp_escapes(
             self,
             mock_utils,
-            mock_service,
-            mock_parse_timestamp):
+            mock_service):
         mock_revision = {
             'id': '999',
         }
@@ -311,7 +305,6 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
             'history_url': '/api/1/revision/999/log/',
         }
 
-        mock_parse_timestamp.return_value = 'parsed-date'
         mock_utils.enrich_revision.return_value = expected_revision
 
         rv = self.client.get('/api/1/revision'
@@ -328,8 +321,6 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
         mock_service.lookup_revision_by.assert_called_once_with(
             '1',
             'refs/origin/dev',
-            'parsed-date')
-        mock_parse_timestamp.assert_called_once_with(
             'Today is January 1, 2047 at 8:21:00AM')
         mock_utils.enrich_revision.assert_called_once_with(
             mock_revision)
@@ -719,7 +710,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
         self.assertFalse(rv.has_header('Link'))
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
-            '1', 'refs/heads/master', None, 11)
+            '1', 'HEAD', None, 11)
 
     @patch('swh.web.api.views.revision.service')
     def test_api_revision_log_by_with_next(self, mock_service):
@@ -746,7 +737,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, expected_revisions)
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
-            '1', 'refs/heads/master', None, 26)
+            '1', 'HEAD', None, 26)
 
     @patch('swh.web.api.views.revision.service')
     def test_api_revision_log_by_norev(self, mock_service):
@@ -765,7 +756,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
                                    'reason': 'No revision'})
 
         mock_service.lookup_revision_log_by.assert_called_once_with(
-            '1', 'refs/heads/master', None, 11)
+            '1', 'HEAD', None, 11)
 
     @patch('swh.web.api.views.revision.service')
     def test_api_revision_history(self, mock_service):
