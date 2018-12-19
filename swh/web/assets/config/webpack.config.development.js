@@ -115,11 +115,6 @@ module.exports = {
   },
   // module resolving configuration
   resolve: {
-    // alias highlightjs-line-numbers to its minified version
-    // as there is some issues when using the unminified one (even without webpack processing)
-    alias: {
-      'highlightjs-line-numbers.js': 'highlightjs-line-numbers.js/dist/highlightjs-line-numbers.min.js'
-    },
     // configure base paths for resolving modules with webpack
     modules: [
       'node_modules',
