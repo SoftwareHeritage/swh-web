@@ -1728,42 +1728,54 @@ class ServiceTestCase(WebTestCase):
         # then
         self.assertEqual(actual_revision, expected_rev)
 
-    @patch('swh.web.common.service.storage')
-    def test_lookup_revision_with_context_by_ko(self, mock_storage):
+    @patch('swh.web.common.service.lookup_snapshot')
+    @patch('swh.web.common.service.get_origin_visit')
+    def test_lookup_revision_with_context_by_ko(self, mock_get_origin_visit,
+                                                mock_lookup_snapshot):
         # given
-        mock_storage.revision_get_by.return_value = None
+        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
+        mock_lookup_snapshot.return_value = {'branches': {}}
 
         # when
         origin_id = 1
         branch_name = 'master3'
         ts = None
-        with self.assertRaises(NotFoundExc) as cm:
+        with self.assertRaises(NotFoundExc):
             service.lookup_revision_with_context_by(origin_id, branch_name, ts,
                                                     'sha1')
-        # then
-        self.assertIn(
-            'Revision with (origin_id: %s, branch_name: %s'
-            ', ts: %s) not found.' % (origin_id,
-                                      branch_name,
-                                      ts), cm.exception.args[0])
 
-        mock_storage.revision_get_by.assert_called_once_with(
-            origin_id, branch_name, limit=1, timestamp=ts)
-
-    @patch('swh.web.common.service.lookup_revision_with_context')
     @patch('swh.web.common.service.storage')
+    @patch('swh.web.common.service.lookup_revision')
+    @patch('swh.web.common.service.lookup_snapshot')
+    @patch('swh.web.common.service.get_origin_visit')
+    @patch('swh.web.common.service.lookup_revision_with_context')
     def test_lookup_revision_with_context_by(
-            self, mock_storage, mock_lookup_revision_with_context,
+            self, mock_lookup_revision_with_context, mock_get_origin_visit,
+            mock_lookup_snapshot, mock_lookup_revision, mock_storage
     ):
         # given
-        stub_root_rev = {'id': 'root-rev-id'}
-        mock_storage.revision_get_by.return_value = [{'id': 'root-rev-id'}]
+        stub_root_rev = self.SAMPLE_REVISION
+
+        mock_get_origin_visit.return_value = {'snapshot': self.SHA1_SAMPLE}
+        mock_lookup_snapshot.return_value = \
+            {
+                'branches': {
+                    'master2': {
+                        'target_type': 'revision',
+                        'target': stub_root_rev['id']
+                    }
+                }
+            }
+
+        mock_lookup_revision.return_value = stub_root_rev
         stub_rev = {'id': 'rev-found'}
         mock_lookup_revision_with_context.return_value = stub_rev
 
+        mock_storage.revision_get.return_value = [self.SAMPLE_REVISION_RAW]
+
         # when
         origin_id = 1
-        branch_name = 'master3'
+        branch_name = 'master2'
         ts = None
         sha1_git = 'sha1'
         actual_root_rev, actual_rev = service.lookup_revision_with_context_by(
@@ -1773,10 +1785,8 @@ class ServiceTestCase(WebTestCase):
         self.assertEqual(actual_root_rev, stub_root_rev)
         self.assertEqual(actual_rev, stub_rev)
 
-        mock_storage.revision_get_by.assert_called_once_with(
-            origin_id, branch_name, limit=1, timestamp=ts)
         mock_lookup_revision_with_context.assert_called_once_with(
-            stub_root_rev, sha1_git, 100)
+            self.SAMPLE_REVISION_RAW, sha1_git, 100)
 
     def test_lookup_revision_through_ko_not_implemented(self):
         # then

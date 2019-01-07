@@ -555,8 +555,8 @@ def lookup_revision_log_by(origin_id, branch_name, timestamp, limit):
     return lookup_revision_log(rev_id, limit)
 
 
-def lookup_revision_with_context_by(origin_id, branch_name, ts, sha1_git,
-                                    limit=100):
+def lookup_revision_with_context_by(origin_id, branch_name, timestamp,
+                                    sha1_git, limit=100):
     """Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
     sha1_git_root being resolved through the lookup of a revision by origin_id,
@@ -582,15 +582,11 @@ def lookup_revision_with_context_by(origin_id, branch_name, ts, sha1_git,
         ancestor of sha1_git_root.
 
     """
-    rev_root = _first_element(storage.revision_get_by(origin_id,
-                                                      branch_name,
-                                                      timestamp=ts,
-                                                      limit=1))
-    if not rev_root:
-        raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
-                          ', ts: %s) not found.' % (origin_id,
-                                                    branch_name,
-                                                    ts))
+    rev_root_id = _lookup_revision_id_by(origin_id, branch_name, timestamp)
+
+    rev_root_id_bin = hashutil.hash_to_bytes(rev_root_id)
+
+    rev_root = _first_element(storage.revision_get([rev_root_id_bin]))
 
     return (converters.from_revision(rev_root),
             lookup_revision_with_context(rev_root, sha1_git, limit))
