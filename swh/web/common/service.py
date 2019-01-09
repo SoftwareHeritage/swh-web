@@ -62,8 +62,8 @@ def lookup_expression(expression, last_sha1, per_page):
         last_sha1 (str): Last sha1 seen
         per_page (int): Number of results per page
 
-    Returns:
-        List of ctags whose content match the expression
+    Yields:
+        ctags whose content match the expression
 
     """
 
@@ -71,7 +71,6 @@ def lookup_expression(expression, last_sha1, per_page):
     ctags = idx_storage.content_ctags_search(expression,
                                              last_sha1=last_sha1,
                                              limit=limit)
-
     for ctag in ctags:
         ctag = converters.from_swh(ctag, hashess={'id'})
         ctag['sha1'] = ctag['id']

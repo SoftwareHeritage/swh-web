@@ -127,12 +127,9 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                                          'per_page': 2})
         self.assertEqual(rv['Link'], '<%s>; rel="next"' % next_url)
 
-    @pytest.mark.xfail(reason='FIXME: exception should be raised in service')
-    @given(unknown_content())
-    def test_api_content_symbol_not_found(self, unknown_content):
+    def test_api_content_symbol_not_found(self):
 
-        url = reverse('api-content-symbol', url_args={'q': 'bar'},
-                      query_params={'last_sha1': 'hash'})
+        url = reverse('api-content-symbol', url_args={'q': 'bar'})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)

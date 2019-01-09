@@ -218,7 +218,8 @@ def api_content_symbol(request, q=None):
     per_page = int(request.query_params.get('per_page', '10'))
 
     def lookup_exp(exp, last_sha1=last_sha1, per_page=per_page):
-        return service.lookup_expression(exp, last_sha1, per_page)
+        exp = list(service.lookup_expression(exp, last_sha1, per_page))
+        return exp if exp else None
 
     symbols = api_lookup(
         lookup_exp, q,
