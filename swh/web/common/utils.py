@@ -345,4 +345,6 @@ def context_processor(request):
     Django context processor used to inject variables
     in all swh-web templates.
     """
-    return {'swh_object_icons': swh_object_icons}
+    config = get_config()
+    return {'swh_object_icons': swh_object_icons,
+            'grecaptcha_site_key': config['grecaptcha']['site_key']}

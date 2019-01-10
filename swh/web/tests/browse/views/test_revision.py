@@ -134,6 +134,8 @@ class SwhBrowseRevisionTest(WebTestCase):
         self.assertContains(resp, swh_dir_id)
         self.assertContains(resp, swh_dir_id_url)
 
+        self.assertContains(resp, 'swh-take-new-snapshot')
+
     @patch('swh.web.browse.views.revision.service')
     def test_revision_log_browse(self, mock_service):
         per_page = 10

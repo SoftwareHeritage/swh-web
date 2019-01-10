@@ -14,6 +14,8 @@ from docutils.core import publish_parts
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 from inspect import cleandoc
 
+from swh.web.common.origin_save import get_savable_origin_types
+
 register = template.Library()
 
 
@@ -150,3 +152,17 @@ def key_value(dict, key):
             The requested value in the dictionary
     """
     return dict[key]
+
+
+@register.filter
+def origin_type_savable(origin_type):
+    """Django template filter to check if a save request can be
+    created for a given origin type.
+
+        Args:
+            origin_type (str): the type of software origin
+
+        Returns:
+            If the origin type is savable or not
+    """
+    return origin_type in get_savable_origin_types()

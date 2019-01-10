@@ -232,6 +232,8 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertContains(resp, swh_cnt_id)
         self.assertContains(resp, swh_cnt_id_url)
 
+        self.assertContains(resp, 'swh-take-new-snapshot')
+
     @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
@@ -439,6 +441,7 @@ class SwhBrowseOriginTest(WebTestCase):
                         query_params=query_params)
 
             self.assertContains(resp, '<a href="%s">' % root_dir_release_url)
+
         self.assertContains(resp, 'vault-cook-directory')
         self.assertContains(resp, 'vault-cook-revision')
 
@@ -447,6 +450,8 @@ class SwhBrowseOriginTest(WebTestCase):
                                  url_args={'swh_id': swh_dir_id})
         self.assertContains(resp, swh_dir_id)
         self.assertContains(resp, swh_dir_id_url)
+
+        self.assertContains(resp, 'swh-take-new-snapshot')
 
 
     @patch('swh.web.common.origin_visits.get_origin_visits')
