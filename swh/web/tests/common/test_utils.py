@@ -5,14 +5,12 @@
 
 import datetime
 
-from unittest.mock import patch
-
 from swh.web.common import utils
 from swh.web.common.exc import BadInputExc
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class UtilsTestCase(SWHWebTestCase):
+class UtilsTestCase(WebTestCase):
     def test_shorten_path_noop(self):
         noops = [
             '/api/',
@@ -101,38 +99,7 @@ class UtilsTestCase(SWHWebTestCase):
         path_info = utils.gen_path_info(input_path)
         self.assertEqual(path_info, expected_result)
 
-    @patch('swh.web.common.utils.service')
-    def test_get_origin_visits(self, mock_service):
-        mock_service.MAX_LIMIT = 2
-
-        def _lookup_origin_visits(*args, **kwargs):
-            if kwargs['last_visit'] is None:
-                return [{'visit': 1,
-                         'date': '2017-05-06T00:59:10+00:00',
-                         'metadata': {}},
-                        {'visit': 2,
-                         'date': '2017-08-06T00:59:10+00:00',
-                         'metadata': {}}
-                        ]
-            else:
-                return [{'visit': 3,
-                         'date': '2017-09-06T00:59:10+00:00',
-                         'metadata': {}}
-                        ]
-
-        mock_service.lookup_origin_visits.side_effect = _lookup_origin_visits
-
-        origin_info = {
-            'id': 1,
-            'type': 'git',
-            'url': 'https://github.com/foo/bar',
-        }
-
-        origin_visits = utils.get_origin_visits(origin_info)
-
-        self.assertEqual(len(origin_visits), 3)
-
-    def test_get_swh_persisent_id(self):
+    def test_get_swh_persistent_id(self):
         swh_object_type = 'content'
         sha1_git = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
 

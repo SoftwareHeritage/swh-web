@@ -142,7 +142,7 @@ def release_browse(request, sha1_git):
             pass
     elif release['target_type'] == 'content':
         target_url = reverse('browse-content',
-                             url_args={'sha1_git': release['target']},
+                             url_args={'query_string': release['target']},
                              query_params=query_params)
     elif release['target_type'] == 'release':
         target_url = reverse('browse-release',

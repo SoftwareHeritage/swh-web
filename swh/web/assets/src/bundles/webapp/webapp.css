@@ -463,7 +463,7 @@ tr.swh-tr-hover-highlight {
 }
 
 tr.swh-tr-hover-highlight:hover td {
-    background: #fecd1b;
+    background: #ededed;
 }
 
 tr.swh-api-doc-route a {

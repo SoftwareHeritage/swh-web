@@ -13,12 +13,12 @@ from swh.web.api.apiresponse import (
     compute_link_header, transform, make_api_response,
     filter_by_fields
 )
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 api_request_factory = APIRequestFactory()
 
 
-class SWHComputeLinkHeaderTest(SWHWebTestCase):
+class SWHComputeLinkHeaderTest(WebTestCase):
     def test_compute_link_header(self):
         rv = {
             'headers': {'link-next': 'foo', 'link-prev': 'bar'},
@@ -55,7 +55,7 @@ class SWHComputeLinkHeaderTest(SWHWebTestCase):
         self.assertEqual(headers, {})
 
 
-class SWHTransformProcessorTest(SWHWebTestCase):
+class SWHTransformProcessorTest(WebTestCase):
     def test_transform_only_return_results_1(self):
         rv = {'results': {'some-key': 'some-value'}}
 
@@ -79,7 +79,7 @@ class SWHTransformProcessorTest(SWHWebTestCase):
         self.assertEqual(transform(rv), {'some-key': 'some-value'})
 
 
-class RendererTestCase(SWHWebTestCase):
+class RendererTestCase(WebTestCase):
 
     @patch('swh.web.api.apiresponse.json')
     @patch('swh.web.api.apiresponse.filter_by_fields')

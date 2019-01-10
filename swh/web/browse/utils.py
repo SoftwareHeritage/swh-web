@@ -6,7 +6,6 @@
 import base64
 from collections import defaultdict
 import magic
-import math
 import pypandoc
 import stat
 import textwrap
@@ -19,9 +18,9 @@ from importlib import reload
 from swh.model.identifiers import persistent_identifier
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc, http_status_code_message
+from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, parse_timestamp,
-    get_origin_visits, get_swh_persistent_id,
+    reverse, format_utc_iso_date, get_swh_persistent_id,
     swh_object_icons
 )
 from swh.web.config import get_config
@@ -272,95 +271,7 @@ def prepare_content_for_display(content_data, mime_type, path):
             'mimetype': mime_type}
 
 
-def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
-                     snapshot_id=None):
-    """Function that returns information about a visit for
-    a given origin.
-    The visit is retrieved from a provided timestamp.
-    The closest visit from that timestamp is selected.
-
-    Args:
-        origin_info (dict): a dict filled with origin information
-            (id, url, type)
-        visit_ts (int or str): an ISO date string or Unix timestamp to parse
-
-    Returns:
-        A dict containing the visit info as described below::
-
-            {'origin': 2,
-             'date': '2017-10-08T11:54:25.582463+00:00',
-             'metadata': {},
-             'visit': 25,
-             'status': 'full'}
-
-    """
-    visits = get_origin_visits(origin_info)
-
-    if not visits:
-        raise NotFoundExc('No visit associated to origin with'
-                          ' type %s and url %s!' % (origin_info['type'],
-                                                    origin_info['url']))
-
-    if snapshot_id:
-        visit = [v for v in visits if v['snapshot'] == snapshot_id]
-        if len(visit) == 0:
-            raise NotFoundExc(
-                'Visit for snapshot with id %s for origin with type %s'
-                ' and url %s not found!' % (snapshot_id, origin_info['type'],
-                                            origin_info['url']))
-        return visit[0]
-
-    if visit_id:
-        visit = [v for v in visits if v['visit'] == int(visit_id)]
-        if len(visit) == 0:
-            raise NotFoundExc(
-                'Visit with id %s for origin with type %s'
-                ' and url %s not found!' % (visit_id, origin_info['type'],
-                                            origin_info['url']))
-        return visit[0]
-
-    if not visit_ts:
-        # returns the latest full visit when no timestamp is provided
-        for v in reversed(visits):
-            if v['status'] == 'full':
-                return v
-        return visits[-1]
-
-    parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
-
-    visit_idx = None
-    for i, visit in enumerate(visits):
-        ts = math.floor(parse_timestamp(visit['date']).timestamp())
-        if i == 0 and parsed_visit_ts <= ts:
-            return visit
-        elif i == len(visits) - 1:
-            if parsed_visit_ts >= ts:
-                return visit
-        else:
-            next_ts = math.floor(
-                parse_timestamp(visits[i+1]['date']).timestamp())
-            if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
-                if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
-                    visit_idx = i
-                    break
-                else:
-                    visit_idx = i+1
-                    break
-
-    if visit_idx is not None:
-        visit = visits[visit_idx]
-        while visit_idx < len(visits) - 1 and \
-                visit['date'] == visits[visit_idx+1]['date']:
-            visit_idx = visit_idx + 1
-            visit = visits[visit_idx]
-        return visit
-    else:
-        raise NotFoundExc(
-            'Visit with timestamp %s for origin with type %s and url %s not found!' % # noqa
-            (visit_ts, origin_info['type'], origin_info['url']))
-
-
-def process_snapshot_branches(snapshot_branches):
+def process_snapshot_branches(snapshot):
     """
     Process a dictionary describing snapshot branches: extract those
     targeting revisions and releases, put them in two different lists,
@@ -375,7 +286,9 @@ def process_snapshot_branches(snapshot_branches):
             targeting revisions and second member the sorted list of branches
             targeting releases
     """ # noqa
+    snapshot_branches = snapshot['branches']
     branches = {}
+    branch_aliases = {}
     releases = {}
     revision_to_branch = defaultdict(set)
     revision_to_release = defaultdict(set)
@@ -394,8 +307,28 @@ def process_snapshot_branches(snapshot_branches):
             revision_to_branch[target_id].add(branch_name)
         elif target_type == 'release':
             release_to_branch[target_id].add(branch_name)
+        elif target_type == 'alias':
+            branch_aliases[branch_name] = target_id
         # FIXME: handle pointers to other object types
-        # FIXME: handle branch aliases
+
+    def _enrich_release_branch(branch, release):
+        releases[branch] = {
+            'name': release['name'],
+            'branch_name': branch,
+            'date': format_utc_iso_date(release['date']),
+            'id': release['id'],
+            'message': release['message'],
+            'target_type': release['target_type'],
+            'target': release['target'],
+        }
+
+    def _enrich_revision_branch(branch, revision):
+        branches[branch].update({
+            'revision': revision['id'],
+            'directory': revision['directory'],
+            'date': format_utc_iso_date(revision['date']),
+            'message': revision['message']
+        })
 
     releases_info = service.lookup_release_multiple(
         release_to_branch.keys()
@@ -403,15 +336,7 @@ def process_snapshot_branches(snapshot_branches):
     for release in releases_info:
         branches_to_update = release_to_branch[release['id']]
         for branch in branches_to_update:
-            releases[branch] = {
-                'name': release['name'],
-                'branch_name': branch,
-                'date': format_utc_iso_date(release['date']),
-                'id': release['id'],
-                'message': release['message'],
-                'target_type': release['target_type'],
-                'target': release['target'],
-            }
+            _enrich_release_branch(branch, release)
         if release['target_type'] == 'revision':
             revision_to_release[release['target']].update(
                 branches_to_update
@@ -424,15 +349,32 @@ def process_snapshot_branches(snapshot_branches):
     for revision in revisions:
         if not revision:
             continue
-        revision_data = {
-            'directory': revision['directory'],
-            'date': format_utc_iso_date(revision['date']),
-            'message': revision['message'],
-        }
         for branch in revision_to_branch[revision['id']]:
-            branches[branch].update(revision_data)
+            _enrich_revision_branch(branch, revision)
         for release in revision_to_release[revision['id']]:
             releases[release]['directory'] = revision['directory']
+
+    for branch_alias, branch_target in branch_aliases.items():
+        if branch_target in branches:
+            branches[branch_alias] = dict(branches[branch_target])
+        else:
+            snp = service.lookup_snapshot(snapshot['id'],
+                                          branches_from=branch_target,
+                                          branches_count=1)
+            if snp and branch_target in snp['branches']:
+
+                target_type = snp['branches'][branch_target]['target_type']
+                target = snp['branches'][branch_target]['target']
+                if target_type == 'revision':
+                    branches[branch_alias] = snp['branches'][branch_target]
+                    revision = service.lookup_revision(target)
+                    _enrich_revision_branch(branch_alias, revision)
+                elif target_type == 'release':
+                    release = service.lookup_release(target)
+                    _enrich_release_branch(branch_alias, release)
+
+        if branch_alias in branches:
+            branches[branch_alias]['name'] = branch_alias
 
     ret_branches = list(sorted(branches.values(), key=lambda b: b['name']))
     ret_releases = list(sorted(releases.values(), key=lambda b: b['name']))
@@ -473,7 +415,7 @@ def get_snapshot_content(snapshot_id):
     if snapshot_id:
         snapshot = service.lookup_snapshot(
             snapshot_id, branches_count=snapshot_content_max_size)
-        branches, releases = process_snapshot_branches(snapshot['branches'])
+        branches, releases = process_snapshot_branches(snapshot)
 
     cache.set(cache_entry_id, {
         'branches': branches,
@@ -883,7 +825,8 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
         tooltip += 'author date: %s\n' % author_date
         tooltip += 'committer: %s\n' % committer_fullname
         tooltip += 'committer date: %s\n\n' % committer_date
-        tooltip += textwrap.indent(rev['message'], ' '*4)
+        if rev['message']:
+            tooltip += textwrap.indent(rev['message'], ' '*4)
 
         revision_log_data.append({
             'author': author_name,

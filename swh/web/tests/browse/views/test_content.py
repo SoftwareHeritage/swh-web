@@ -14,7 +14,7 @@ from swh.web.browse.utils import get_mimetype_and_encoding_for_content
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .data.content_test_data import (
     stub_content_text_data,
@@ -29,7 +29,7 @@ from .data.content_test_data import (
 )
 
 
-class SwhBrowseContentTest(SWHWebTestCase):
+class SwhBrowseContentTest(WebTestCase):
 
     @patch('swh.web.browse.views.content.request_content')
     def test_content_view_text(self, mock_request_content):

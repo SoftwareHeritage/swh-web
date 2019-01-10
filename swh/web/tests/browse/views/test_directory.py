@@ -8,7 +8,7 @@ from unittest.mock import patch
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .data.directory_test_data import (
     stub_root_directory_sha1, stub_root_directory_data,
@@ -16,7 +16,7 @@ from .data.directory_test_data import (
 )
 
 
-class SwhBrowseDirectoryTest(SWHWebTestCase):
+class SwhBrowseDirectoryTest(WebTestCase):
 
     def directory_view(self, root_directory_sha1, directory_entries,
                        path=None):

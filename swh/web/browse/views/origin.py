@@ -11,9 +11,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from swh.web.common import service
+from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, parse_timestamp,
-    get_origin_visits
+    reverse, format_utc_iso_date, parse_timestamp
 )
 from swh.web.common.exc import handle_view_exception
 from swh.web.browse.utils import (
@@ -218,8 +218,10 @@ def _origin_latest_snapshot(request, origin_id):
     Internal browse endpoint used to check if an origin has already
     been visited by Software Heritage and has at least one full visit.
     """
-    result = service.lookup_latest_origin_snapshot(origin_id,
-                                                   allowed_statuses=['full'])
+    result = \
+        service.lookup_latest_origin_snapshot(origin_id,
+                                              allowed_statuses=['full',
+                                                                'partial'])
 
     result = json.dumps(result, sort_keys=True, indent=4,
                         separators=(',', ': '))

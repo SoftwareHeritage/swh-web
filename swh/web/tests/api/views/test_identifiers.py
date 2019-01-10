@@ -10,10 +10,10 @@ from swh.model.identifiers import REVISION
 
 from swh.web.common.utils import reverse
 from swh.web.common.exc import NotFoundExc
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class SwhIdsApiTestCase(SWHWebTestCase, APITestCase):
+class SwhIdsApiTestCase(WebTestCase, APITestCase):
 
     @patch('swh.web.api.views.identifiers.service')
     def test_swh_id_resolve_success(self, mock_service):

@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import {removeUrlFragment} from 'utils/functions';
+
 export async function highlightCode(showLineNumbers = true) {
 
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
@@ -19,10 +21,6 @@ export async function highlightCode(showLineNumbers = true) {
     let lineTd = $(`.swh-content div[data-line-number="${i}"]`).parent().parent();
     lineTd.css('background-color', lineHighlightColor);
     return lineTd;
-  }
-
-  function removeHash() {
-    history.replaceState('', document.title, window.location.pathname + window.location.search);
   }
 
   // function to reset highlighting
@@ -97,7 +95,7 @@ export async function highlightCode(showLineNumbers = true) {
         }
       } else if ($(evt.target).closest('.hljs').length) {
         resetHighlightedLines();
-        removeHash();
+        removeUrlFragment();
       }
     });
 

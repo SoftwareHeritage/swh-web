@@ -7,10 +7,10 @@ from unittest.mock import patch
 
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class SwhBrowsePersonTest(SWHWebTestCase):
+class SwhBrowsePersonTest(WebTestCase):
 
     @patch('swh.web.browse.views.person.service')
     def test_person_browse(self, mock_service):

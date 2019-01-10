@@ -8,10 +8,10 @@ from unittest.mock import patch
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class StatApiTestCase(SWHWebTestCase, APITestCase):
+class StatApiTestCase(WebTestCase, APITestCase):
     @patch('swh.web.api.views.stat.service')
     def test_api_1_stat_counters_raise_error(self, mock_service):
         # given
@@ -69,8 +69,6 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             "directory_entry_dir": 209167,
             "directory_entry_file": 1807094,
             "directory_entry_rev": 0,
-            "entity": 0,
-            "entity_history": 0,
             "origin": 1096,
             "person": 0,
             "release": 8584,

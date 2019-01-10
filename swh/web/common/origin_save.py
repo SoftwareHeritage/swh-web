@@ -18,7 +18,8 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_YET_SCHEDULED, SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEED, SAVE_TASK_FAILED
 )
-from swh.web.common.utils import get_origin_visits, parse_timestamp
+from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.utils import parse_timestamp
 
 from swh.scheduler.utils import create_oneshot_task_dict
 
@@ -324,12 +325,13 @@ def get_save_origin_requests_from_queryset(requests_queryset):
     task_ids = []
     for sor in requests_queryset:
         task_ids.append(sor.loading_task_id)
-    tasks = scheduler.get_tasks(task_ids)
-    tasks = {task['id']: task for task in tasks}
     requests = []
-    for sor in requests_queryset:
-        sr_dict = _save_request_dict(sor, tasks.get(sor.loading_task_id, None))
-        requests.append(sr_dict)
+    if task_ids:
+        tasks = scheduler.get_tasks(task_ids)
+        tasks = {task['id']: task for task in tasks}
+        for sor in requests_queryset:
+            sr_dict = _save_request_dict(sor, tasks.get(sor.loading_task_id))
+            requests.append(sr_dict)
     return requests
 
 

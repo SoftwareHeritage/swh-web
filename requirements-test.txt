@@ -1,3 +1,4 @@
 pytest
 pytest-django
-
+hypothesis
+swh.loader.git >= 0.0.47

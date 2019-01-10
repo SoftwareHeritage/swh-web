@@ -35,7 +35,7 @@ function populateOriginSearchResultsTable(data, offset) {
     for (let i = localOffset; i < localOffset + perPage && i < data.length; ++i) {
       let elem = data[i];
       let browseUrl = Urls.browse_origin(elem.url);
-      let tableRow = `<tr class="swh-search-result-entry swh-tr-hover-highlight" data-href="${browseUrl}">`;
+      let tableRow = `<tr id="origin-${elem.id}" class="swh-search-result-entry swh-tr-hover-highlight" data-href="${browseUrl}">`;
       tableRow += `<td style="width: 120px;"><a href="${browseUrl}">${elem.type}</a></td>`;
       tableRow += `<td style="white-space: nowrap;"><a href="${browseUrl}">${elem.url}</a></td>`;
       tableRow += `<td id="visit-status-origin-${elem.id}"><a href="${browseUrl}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></a></td>`;
@@ -52,6 +52,9 @@ function populateOriginSearchResultsTable(data, offset) {
             $(`#visit-status-origin-${originId}`).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');
           } else {
             $(`#visit-status-origin-${originId}`).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="fa fa-times"></i>');
+            if ($('#swh-filter-empty-visits').prop('checked')) {
+              $(`#origin-${originId}`).remove();
+            }
           }
         });
     }
@@ -174,6 +177,10 @@ export function initOriginSearch() {
       if (withVisit !== null) {
         $('#swh-search-origins-with-visit').prop('checked', JSON.parse(withVisit));
       }
+      let filterEmptyVisits = sessionStorage.getItem('last-filter-empty-visits');
+      if (filterEmptyVisits !== null) {
+        $('#swh-filter-empty-visits').prop('checked', JSON.parse(filterEmptyVisits));
+      }
     }
 
     $('#swh-search-origins').submit(event => {
@@ -229,8 +236,12 @@ export function initOriginSearch() {
 
     $(window).on('unload', () => {
       if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem('last-swh-origin-with-visit',
+        sessionStorage.setItem(
+          'last-swh-origin-with-visit',
           JSON.stringify($('#swh-search-origins-with-visit').prop('checked')));
+        sessionStorage.setItem(
+          'last-filter-empty-visits',
+          JSON.stringify($('#swh-filter-empty-visits').prop('checked')));
       }
     });
 
