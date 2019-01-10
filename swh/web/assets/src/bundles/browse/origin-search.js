@@ -236,9 +236,11 @@ export function initOriginSearch() {
 
     $(window).on('unload', () => {
       if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem('last-swh-origin-with-visit',
+        sessionStorage.setItem(
+          'last-swh-origin-with-visit',
           JSON.stringify($('#swh-search-origins-with-visit').prop('checked')));
-        sessionStorage.setItem('last-filter-empty-visits',
+        sessionStorage.setItem(
+          'last-filter-empty-visits',
           JSON.stringify($('#swh-filter-empty-visits').prop('checked')));
       }
     });
