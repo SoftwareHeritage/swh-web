@@ -13,6 +13,7 @@ Build-Depends: curl,
                python3-django-js-reverse,
                python3-docutils,
                python3-htmlmin,
+               python3-hypothesis (>= 3.11.0~),
                python3-magic (>= 0.3.0~),
                python3-lxml,
                python3-pytest,
@@ -26,10 +27,11 @@ Build-Depends: curl,
                python3-yaml,
                python3-swh.core (>= 0.0.40~),
                python3-swh.model (>= 0.0.25~),
-               python3-swh.storage (>= 0.0.109~),
-               python3-swh.indexer.storage (>= 0.0.52~),
+               python3-swh.storage (>= 0.0.118~),
+               python3-swh.indexer (>= 0.0.120~),
                python3-swh.vault (>= 0.0.20~),
-               python3-swh.scheduler (>= 0.0.31~)
+               python3-swh.scheduler (>= 0.0.31~),
+               python3-swh.loader.git (>= 0.0.47~)
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
@@ -37,8 +39,8 @@ Package: python3-swh.web
 Architecture: all
 Depends: python3-swh.core (>= 0.0.40~),
          python3-swh.model (>= 0.0.25~),
-         python3-swh.storage (>= 0.0.109~),
-         python3-swh.indexer.storage (>= 0.0.52~),
+         python3-swh.storage (>= 0.0.118~),
+         python3-swh.indexer.storage (>= 0.0.120~),
          python3-swh.vault (>= 0.0.20~),
          python3-swh.scheduler (>= 0.0.31~),
          ${misc:Depends},
