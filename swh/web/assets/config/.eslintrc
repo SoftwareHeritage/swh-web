@@ -87,15 +87,15 @@
             "outerIIFEBody": 1,
             "MemberExpression": 1,
             "FunctionDeclaration": {
-                "parameters": 1,
+                "parameters": "first",
                 "body": 1
             },
             "FunctionExpression": {
-                "parameters": 1,
+                "parameters": "first",
                 "body": 1
             },
             "CallExpression": {
-                "arguments": 1
+                "arguments": "first"
             },
             "ArrayExpression": 1,
             "ObjectExpression": 1,

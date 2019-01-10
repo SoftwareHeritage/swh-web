@@ -170,7 +170,8 @@ export function addAuthorizedOriginUrl() {
       authorizedOriginTable.row.add({'url': originUrl}).draw();
     })
     .catch(response => {
-      swh.webapp.showModalMessage('Duplicated origin url prefix',
+      swh.webapp.showModalMessage(
+        'Duplicated origin url prefix',
         'The provided origin url prefix is already registered in the authorized list.');
     });
 }
@@ -197,7 +198,8 @@ export function addUnauthorizedOriginUrl() {
       unauthorizedOriginTable.row.add({'url': originUrl}).draw();
     })
     .catch(() => {
-      swh.webapp.showModalMessage('Duplicated origin url prefix',
+      swh.webapp.showModalMessage(
+        'Duplicated origin url prefix',
         'The provided origin url prefix is already registered in the unauthorized list.');
     });
 }
@@ -227,7 +229,8 @@ export function acceptOriginSaveRequest() {
         });
     };
 
-    swh.webapp.showModalConfirm('Accept origin save request ?',
+    swh.webapp.showModalConfirm(
+      'Accept origin save request ?',
       'Are you sure to accept this origin save request ?',
       acceptOriginSaveRequestCallback);
   }
@@ -245,7 +248,8 @@ export function rejectOriginSaveRequest() {
         });
     };
 
-    swh.webapp.showModalConfirm('Reject origin save request ?',
+    swh.webapp.showModalConfirm(
+      'Reject origin save request ?',
       'Are you sure to reject this origin save request ?',
       rejectOriginSaveRequestCallback);
   }

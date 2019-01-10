@@ -33,7 +33,7 @@ archive is an append-only data structure.
 The following types of objects (i.e., graph nodes) can be found in the Software
 Heritage archive <small>(for more information see
 the
-[Software Heritage glossary](https://wiki.softwareheritage.org/index.php?title=Glossary))</small>:
+[Software Heritage glossary](https://docs.softwareheritage.org/devel/glossary.html))</small>:
 
 - **Content**: a specific version of a file stored in the archive, identified
   by its cryptographic hashes (currently: SHA1, Git-like "salted" SHA1,

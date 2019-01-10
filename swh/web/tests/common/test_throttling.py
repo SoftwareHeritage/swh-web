@@ -22,7 +22,7 @@ from rest_framework.decorators import api_view
 from swh.web.common.throttling import (
     SwhWebRateThrottle, throttle_scope
 )
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
 class MockViewScope1(APIView):
@@ -74,7 +74,7 @@ urlpatterns = [
 
 
 @override_settings(ROOT_URLCONF=__name__)
-class ThrottlingTests(SWHWebTestCase):
+class ThrottlingTests(WebTestCase):
     def setUp(self):
         """
         Reset the cache so that no throttles will be active

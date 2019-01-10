@@ -28,7 +28,7 @@ export function createVisitsHistogram(container, visitsData, currentYear, yearCl
   // create responsive svg
   let svg = d3.select(container)
     .attr('style',
-      'padding-bottom: ' + Math.ceil(height * 100 / width) + '%')
+          'padding-bottom: ' + Math.ceil(height * 100 / width) + '%')
     .append('svg')
     .attr('viewBox', '0 0 ' + width + ' ' + height);
 

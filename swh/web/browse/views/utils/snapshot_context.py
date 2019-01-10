@@ -52,11 +52,11 @@ def _get_branch(branches, branch_name, snapshot_id):
             return branches[0]
     else:
         # case where a large branches list has been truncated
-        snp_branch = service.lookup_snapshot(snapshot_id,
-                                             branches_from=branch_name,
-                                             branches_count=1,
-                                             target_types=['revision'])
-        snp_branch, _ = process_snapshot_branches(snp_branch['branches'])
+        snp = service.lookup_snapshot(snapshot_id,
+                                      branches_from=branch_name,
+                                      branches_count=1,
+                                      target_types=['revision', 'alias'])
+        snp_branch, _ = process_snapshot_branches(snp)
         if snp_branch:
             branches.append(snp_branch[0])
             return snp_branch[0]
@@ -768,14 +768,15 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
 
         browse_view_name = 'browse-' + swh_type + '-directory'
 
-        displayed_branches = \
+        snapshot = \
             service.lookup_snapshot(snapshot_context['snapshot_id'],
                                     branches_from, PER_PAGE+1,
-                                    target_types=['revision'])['branches']
+                                    target_types=['revision', 'alias'])
+
+        displayed_branches, _ = process_snapshot_branches(snapshot)
+
     except Exception as exc:
         return handle_view_exception(request, exc)
-
-    displayed_branches, _ = process_snapshot_branches(displayed_branches)
 
     for branch in displayed_branches:
         if snapshot_id:
@@ -859,14 +860,15 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
         url_args = snapshot_context['url_args']
         query_params = snapshot_context['query_params']
 
-        displayed_releases = \
+        snapshot = \
             service.lookup_snapshot(snapshot_context['snapshot_id'],
                                     rel_from, PER_PAGE+1,
-                                    target_types=['release'])['branches']
+                                    target_types=['release', 'alias'])
+
+        _, displayed_releases = process_snapshot_branches(snapshot)
+
     except Exception as exc:
         return handle_view_exception(request, exc)
-
-    _, displayed_releases = process_snapshot_branches(displayed_releases)
 
     for release in displayed_releases:
         if snapshot_id:
@@ -888,7 +890,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                                  query_params=query_params_tgt)
         elif release['target_type'] == 'content':
             target_url = reverse('browse-content',
-                                 url_args={'sha1_git': release['target']},
+                                 url_args={'query_string': release['target']},
                                  query_params=query_params_tgt)
         elif release['target_type'] == 'release':
             target_url = reverse('browse-release',

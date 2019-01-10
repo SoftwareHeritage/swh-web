@@ -14,6 +14,7 @@ from swh.storage.algos import revisions_walker
 from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import NotFoundExc
+from swh.web.common.origin_visits import get_origin_visit
 from swh.web import config
 
 storage = config.storage()
@@ -61,8 +62,8 @@ def lookup_expression(expression, last_sha1, per_page):
         last_sha1 (str): Last sha1 seen
         per_page (int): Number of results per page
 
-    Returns:
-        List of ctags whose content match the expression
+    Yields:
+        ctags whose content match the expression
 
     """
 
@@ -70,7 +71,6 @@ def lookup_expression(expression, last_sha1, per_page):
     ctags = idx_storage.content_ctags_search(expression,
                                              last_sha1=last_sha1,
                                              limit=limit)
-
     for ctag in ctags:
         ctag = converters.from_swh(ctag, hashess={'id'})
         ctag['sha1'] = ctag['id']
@@ -89,7 +89,7 @@ def lookup_hash(q):
     """
     algo, hash = query.parse_hash(q)
     found = storage.content_find({algo: hash})
-    return {'found': found,
+    return {'found': converters.from_content(found),
             'algo': algo}
 
 
@@ -105,23 +105,6 @@ def search_hash(q):
     algo, hash = query.parse_hash(q)
     found = storage.content_find({algo: hash})
     return {'found': found is not None}
-
-
-def lookup_content_provenance(q):
-    """Return provenance information from a specified content.
-
-    Args:
-        q: query string of the form <hash_algo:hash>
-
-    Yields:
-        provenance information (dict) list if the content is found.
-
-    """
-    algo, hash = query.parse_hash(q)
-    provenances = storage.content_find_provenance({algo: hash})
-    if not provenances:
-        return None
-    return (converters.from_provenance(p) for p in provenances)
 
 
 def _lookup_content_sha1(q):
@@ -266,6 +249,25 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False,
     return map(converters.from_origin, origins)
 
 
+def search_origin_metadata(fulltext, limit=50):
+    """Search for origins whose metadata match a provided string pattern.
+
+    Args:
+        fulltext: the string pattern to search for in origin metadata
+        offset: number of found origins to skip before returning results
+        limit: the maximum number of found origins to return
+
+    Returns:
+        list of origin metadata as dict.
+
+    """
+    results = idx_storage.origin_intrinsic_metadata_search_fulltext(
+        conjunction=[fulltext], limit=limit)
+    for result in results:
+        result['from_revision'] = hashutil.hash_to_hex(result['from_revision'])
+    return results
+
+
 def lookup_person(person_id):
     """Return information about the person with id person_id.
 
@@ -293,6 +295,11 @@ def _to_sha1_bin(sha1_hex):
     return sha1_git_bin
 
 
+def _check_directory_exists(sha1_git, sha1_git_bin):
+    if len(list(storage.directory_missing([sha1_git_bin]))):
+        raise NotFoundExc('Directory with sha1_git %s not found' % sha1_git)
+
+
 def lookup_directory(sha1_git):
     """Return information about the directory with id sha1_git.
 
@@ -310,14 +317,13 @@ def lookup_directory(sha1_git):
 
     sha1_git_bin = _to_sha1_bin(sha1_git)
 
+    _check_directory_exists(sha1_git, sha1_git_bin)
+
     directory_entries = storage.directory_ls(sha1_git_bin)
-    if directory_entries:
-        return map(converters.from_directory_entry, directory_entries)
-    else:
-        raise NotFoundExc('Directory with sha1_git %s not found' % sha1_git)
+    return map(converters.from_directory_entry, directory_entries)
 
 
-def lookup_directory_with_path(directory_sha1_git, path_string):
+def lookup_directory_with_path(sha1_git, path_string):
     """Return directory information for entry with path path_string w.r.t.
     root directory pointed by directory_sha1_git
 
@@ -330,7 +336,9 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
     Raises:
         NotFoundExc if the directory entry is not found
     """
-    sha1_git_bin = _to_sha1_bin(directory_sha1_git)
+    sha1_git_bin = _to_sha1_bin(sha1_git)
+
+    _check_directory_exists(sha1_git, sha1_git_bin)
 
     paths = path_string.strip(os.path.sep).split(os.path.sep)
     queried_dir = storage.directory_entry_get_by_path(
@@ -338,7 +346,7 @@ def lookup_directory_with_path(directory_sha1_git, path_string):
 
     if not queried_dir:
         raise NotFoundExc(('Directory entry with path %s from %s not found') %
-                          (path_string, directory_sha1_git))
+                          (path_string, sha1_git))
 
     return converters.from_directory_entry(queried_dir)
 
@@ -451,50 +459,70 @@ def lookup_revision_message(rev_sha1_git):
     return res
 
 
-def lookup_revision_by(origin_id,
-                       branch_name="refs/heads/master",
-                       timestamp=None):
-    """Lookup revisions by origin_id, branch_name and timestamp.
+def _lookup_revision_id_by(origin_id, branch_name, timestamp):
+    def _get_snapshot_branch(snapshot, branch_name):
+        snapshot = lookup_snapshot(visit['snapshot'],
+                                   branches_from=branch_name,
+                                   branches_count=10)
+        branch = None
+        if branch_name in snapshot['branches']:
+            branch = snapshot['branches'][branch_name]
+        return branch
 
-    If:
-    - branch_name is not provided, lookup using 'refs/heads/master' as default.
-    - ts is not provided, use the most recent
+    visit = get_origin_visit({'id': origin_id}, visit_ts=timestamp)
+    branch = _get_snapshot_branch(visit['snapshot'], branch_name)
+    rev_id = None
+    if branch and branch['target_type'] == 'revision':
+        rev_id = branch['target']
+    elif branch and branch['target_type'] == 'alias':
+        branch = _get_snapshot_branch(visit['snapshot'], branch['target'])
+        if branch and branch['target_type'] == 'revision':
+            rev_id = branch['target']
+
+    if not rev_id:
+        raise NotFoundExc('Revision for origin %s and branch %s not found.'
+                          % (origin_id, branch_name))
+
+    return rev_id
+
+
+def lookup_revision_by(origin_id,
+                       branch_name='HEAD',
+                       timestamp=None):
+    """Lookup revision by origin id, snapshot branch name and visit timestamp.
+
+    If branch_name is not provided, lookup using 'HEAD' as default.
+    If timestamp is not provided, use the most recent.
 
     Args:
-        - origin_id: origin of the revision.
-        - branch_name: revision's branch.
-        - timestamp: revision's time frame.
+        origin_id (int): origin of the revision
+        branch_name (str): snapshot branch name
+        timestamp (str/int): origin visit time frame
 
-    Yields:
-        The revisions matching the criterions.
+    Returns:
+        dict: The revision matching the criterions
 
     Raises:
         NotFoundExc if no revision corresponds to the criterion
 
     """
-    res = _first_element(storage.revision_get_by(origin_id,
-                                                 branch_name,
-                                                 timestamp=timestamp,
-                                                 limit=1))
-    if not res:
-        raise NotFoundExc('Revision for origin %s and branch %s not found.'
-                          % (origin_id, branch_name))
-    return converters.from_revision(res)
+    rev_id = _lookup_revision_id_by(origin_id, branch_name, timestamp)
+    return lookup_revision(rev_id)
 
 
 def lookup_revision_log(rev_sha1_git, limit):
-    """Return information about the revision with sha1 revision_sha1_git.
+    """Lookup revision log by revision id.
 
     Args:
-        revision_sha1_git: The revision's sha1 as hexadecimal
-        limit: the maximum number of revisions returned
+        rev_sha1_git (str): The revision's sha1 as hexadecimal
+        limit (int): the maximum number of revisions returned
 
     Returns:
-        Revision information as dict.
+        list: Revision log as list of revision dicts
 
     Raises:
-        ValueError if the identifier provided is not of sha1 nature.
-        NotFoundExc if there is no revision with the provided sha1_git.
+        ValueError: if the identifier provided is not of sha1 nature.
+        NotFoundExc: if there is no revision with the provided sha1_git.
 
     """
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
@@ -507,32 +535,27 @@ def lookup_revision_log(rev_sha1_git, limit):
 
 
 def lookup_revision_log_by(origin_id, branch_name, timestamp, limit):
-    """Return information about the revision with sha1 revision_sha1_git.
+    """Lookup revision by origin id, snapshot branch name and visit timestamp.
 
     Args:
-        origin_id: origin of the revision
-        branch_name: revision's branch
-        timestamp: revision's time frame
-        limit: the maximum number of revisions returned
+        origin_id (int): origin of the revision
+        branch_name (str): snapshot branch
+        timestamp (str/int): origin visit time frame
+        limit (int): the maximum number of revisions returned
 
     Returns:
-        Revision information as dict.
+        list: Revision log as list of revision dicts
 
     Raises:
-        NotFoundExc if no revision corresponds to the criterion
+        NotFoundExc: if no revision corresponds to the criterion
 
     """
-    revision_entries = storage.revision_log_by(origin_id,
-                                               branch_name,
-                                               timestamp,
-                                               limit=limit)
-    if not revision_entries:
-        return None
-    return map(converters.from_revision, revision_entries)
+    rev_id = _lookup_revision_id_by(origin_id, branch_name, timestamp)
+    return lookup_revision_log(rev_id, limit)
 
 
-def lookup_revision_with_context_by(origin_id, branch_name, ts, sha1_git,
-                                    limit=100):
+def lookup_revision_with_context_by(origin_id, branch_name, timestamp,
+                                    sha1_git, limit=100):
     """Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
     sha1_git_root being resolved through the lookup of a revision by origin_id,
@@ -558,15 +581,11 @@ def lookup_revision_with_context_by(origin_id, branch_name, ts, sha1_git,
         ancestor of sha1_git_root.
 
     """
-    rev_root = _first_element(storage.revision_get_by(origin_id,
-                                                      branch_name,
-                                                      timestamp=ts,
-                                                      limit=1))
-    if not rev_root:
-        raise NotFoundExc('Revision with (origin_id: %s, branch_name: %s'
-                          ', ts: %s) not found.' % (origin_id,
-                                                    branch_name,
-                                                    ts))
+    rev_root_id = _lookup_revision_id_by(origin_id, branch_name, timestamp)
+
+    rev_root_id_bin = hashutil.hash_to_bytes(rev_root_id)
+
+    rev_root = _first_element(storage.revision_get([rev_root_id_bin]))
 
     return (converters.from_revision(rev_root),
             lookup_revision_with_context(rev_root, sha1_git, limit))
@@ -677,8 +696,8 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         return {'type': 'dir',
                 'path': '.' if not dir_path else dir_path,
                 'revision': sha1_git,
-                'content': map(converters.from_directory_entry,
-                               directory_entries)}
+                'content': list(map(converters.from_directory_entry,
+                                    directory_entries))}
     elif entity['type'] == 'file':  # content
         content = storage.content_find({'sha1_git': entity['target']})
         if with_data:
@@ -727,7 +746,8 @@ def lookup_content_raw(q):
 
     """
     c = lookup_content(q)
-    content = _first_element(storage.content_get([c['checksums']['sha1']]))
+    content_sha1_bytes = hashutil.hash_to_bytes(c['checksums']['sha1'])
+    content = _first_element(storage.content_get([content_sha1_bytes]))
     if not content:
         algo, hash = query.parse_hash(q)
         raise NotFoundExc('Bytes of content with %s checksum equals to %s '
@@ -815,7 +835,7 @@ def lookup_snapshot_size(snapshot_id):
     return snapshot_size
 
 
-def lookup_snapshot(snapshot_id, branches_from='', branches_count=None,
+def lookup_snapshot(snapshot_id, branches_from='', branches_count=1000,
                     target_types=None):
     """Return information about a snapshot, aka the list of named
     branches found during a specific visit of an origin.
@@ -861,24 +881,6 @@ def lookup_latest_origin_snapshot(origin_id, allowed_statuses=None):
     """
     snapshot = storage.snapshot_get_latest(origin_id, allowed_statuses)
     return converters.from_snapshot(snapshot)
-
-
-def lookup_entity_by_uuid(uuid):
-    """Return the entity's hierarchy from its uuid.
-
-    Args:
-        uuid: entity's identifier.
-
-    Returns:
-        List of hierarchy entities from the entity with uuid.
-
-    """
-    uuid = query.parse_uuid4(uuid)
-    for entity in storage.entity_get(uuid):
-        entity = converters.from_swh(entity,
-                                     convert={'last_seen', 'uuid'},
-                                     convert_fn=lambda x: str(x))
-        yield entity
 
 
 def lookup_revision_through(revision, limit=100):

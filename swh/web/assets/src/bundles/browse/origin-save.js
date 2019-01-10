@@ -5,10 +5,38 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, isGitRepoUrl} from 'utils/functions';
+import {handleFetchError, csrfPost, isGitRepoUrl, removeUrlFragment} from 'utils/functions';
 import {validate} from 'validate.js';
 
 let saveRequestsTable;
+
+function originSaveRequest(originType, originUrl,
+                           acceptedCallback, pendingCallback, errorCallback) {
+  let addSaveOriginRequestUrl = Urls.browse_origin_save_request(originType, originUrl);
+  let grecaptchaData = {'g-recaptcha-response': grecaptcha.getResponse()};
+  let headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  };
+  let body = JSON.stringify(grecaptchaData);
+  csrfPost(addSaveOriginRequestUrl, headers, body)
+    .then(handleFetchError)
+    .then(response => response.json())
+    .then(data => {
+      if (data.save_request_status === 'accepted') {
+        acceptedCallback();
+      } else {
+        pendingCallback();
+      }
+      grecaptcha.reset();
+    })
+    .catch(response => {
+      if (response.status === 403) {
+        errorCallback();
+      }
+      grecaptcha.reset();
+    });
+}
 
 export function initOriginSave() {
 
@@ -80,6 +108,11 @@ export function initOriginSave() {
 
     $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
       saveRequestsTable.draw();
+      window.location.hash = '#requests';
+    });
+
+    $('#swh-origin-save-request-create-tab').on('shown.bs.tab', () => {
+      removeUrlFragment();
     });
 
     let saveRequestAcceptedAlert =
@@ -105,31 +138,14 @@ export function initOriginSave() {
         $(event.target).removeClass('was-validated');
         let originType = $('#swh-input-origin-type').val();
         let originUrl = $('#swh-input-origin-url').val();
-        let addSaveOriginRequestUrl = Urls.browse_origin_save_request(originType, originUrl);
-        let grecaptchaData = {'g-recaptcha-response': grecaptcha.getResponse()};
-        let headers = {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        };
-        let body = JSON.stringify(grecaptchaData);
-        csrfPost(addSaveOriginRequestUrl, headers, body)
-          .then(handleFetchError)
-          .then(response => response.json())
-          .then(data => {
-            if (data.save_request_status === 'accepted') {
-              $('#swh-origin-save-request-status').html(saveRequestAcceptedAlert);
-            } else {
-              $('#swh-origin-save-request-status').html(saveRequestPendingAlert);
-            }
-            grecaptcha.reset();
-          })
-          .catch(response => {
-            if (response.status === 403) {
-              $('#swh-origin-save-request-status').css('color', 'red');
-              $('#swh-origin-save-request-status').html(saveRequestRejectedAlert);
-            }
-            grecaptcha.reset();
-          });
+
+        originSaveRequest(originType, originUrl,
+                          () => $('#swh-origin-save-request-status').html(saveRequestAcceptedAlert),
+                          () => $('#swh-origin-save-request-status').html(saveRequestPendingAlert),
+                          () => {
+                            $('#swh-origin-save-request-status').css('color', 'red');
+                            $('#swh-origin-save-request-status').html(saveRequestRejectedAlert);
+                          });
       } else {
         $(event.target).addClass('was-validated');
       }
@@ -150,6 +166,10 @@ export function initOriginSave() {
         }
       });
     });
+
+    if (window.location.hash === '#requests') {
+      $('.nav-tabs a[href="#swh-origin-save-requests-list"]').tab('show');
+    }
 
   });
 
@@ -193,4 +213,40 @@ export function validateSaveOriginUrl(input) {
   } else {
     input.setCustomValidity('The origin url is not valid or does not reference a code repository');
   }
+}
+
+export function initTakeNewSnapshot() {
+
+  let newSnapshotRequestAcceptedAlert =
+    `<div class="alert alert-success" role="alert">
+      The "take new snapshot" request has been accepted and will be processed as soon as possible.
+    </div>`;
+
+  let newSnapshotRequestPendingAlert =
+    `<div class="alert alert-warning" role="alert">
+      The "take new snapshot" request has been put in pending state and may be accepted for processing after manual review.
+    </div>`;
+
+  let newSnapshotRequestRejectedAlert =
+    `<div class="alert alert-danger" role="alert">
+      The "take new snapshot" request has been rejected because the reCAPTCHA could not be validated.
+    </div>`;
+
+  $(document).ready(() => {
+    $('#swh-take-new-snapshot-form').submit(event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      let originType = $('#swh-input-origin-type').val();
+      let originUrl = $('#swh-input-origin-url').val();
+
+      originSaveRequest(originType, originUrl,
+                        () => $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestAcceptedAlert),
+                        () => $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestPendingAlert),
+                        () => {
+                          $('#swh-take-new-snapshot-request-status').css('color', 'red');
+                          $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestRejectedAlert);
+                        });
+    });
+  });
 }

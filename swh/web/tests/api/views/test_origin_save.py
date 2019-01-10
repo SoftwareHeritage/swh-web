@@ -19,10 +19,10 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_CREATED, SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_SCHEDULED, SAVE_TASK_FAILED, SAVE_TASK_SUCCEED
 )
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class SaveApiTestCase(SWHWebTestCase, APITestCase):
+class SaveApiTestCase(WebTestCase, APITestCase):
 
     @classmethod
     def setUpTestData(cls):  # noqa: N802

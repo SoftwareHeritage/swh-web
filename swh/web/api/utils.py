@@ -160,20 +160,6 @@ def enrich_content(content, top_url=False, query_string=None):
     return content
 
 
-def enrich_entity(entity):
-    """Enrich entity with
-
-    """
-    if 'uuid' in entity:
-        entity['uuid_url'] = reverse('api-entity',
-                                     url_args={'uuid': entity['uuid']})
-
-    if 'parent' in entity and entity['parent']:
-        entity['parent_url'] = reverse('api-entity',
-                                       url_args={'uuid': entity['parent']})
-    return entity
-
-
 def _get_path_list(path_string):
     """Helper for enrich_revision: get a list of the sha1 id of the navigation
     breadcrumbs, ordered from the oldest to the most recent.

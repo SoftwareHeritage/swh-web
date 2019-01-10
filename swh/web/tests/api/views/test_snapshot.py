@@ -8,11 +8,21 @@ from unittest.mock import patch
 
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 _snapshot_id = '36ce36946fcd0f39bdfc40727af4acfce81f67af'
 
 _snapshot_branches = [
+    {
+        'name': 'gh-pages',
+        'target': 'refs/heads/gh-pages',
+        'target_type': 'alias',
+    },
+    {
+        'name': 'latest',
+        'target': 'refs/tags/v1.3.0',
+        'target_type': 'alias',
+    },
     {
         'name': 'refs/heads/andresgalante-dismissable-badges',
         'target': '3af57e6db525015a25b4f3abb29263432e4af7b1',
@@ -83,20 +93,42 @@ def _lookup_snapshot(snapshot_id, branches_from='',
     return ret
 
 
+def _get_branch_url(target_type, target):
+    url = None
+    if target_type == 'revision':
+        url = reverse('api-revision', url_args={'sha1_git': target})
+    if target_type == 'release':
+        url = reverse('api-release', url_args={'sha1_git': target})
+    return url
+
+
 def _enrich_snapshot_data(snapshot_data):
     for branch in snapshot_data['branches'].keys():
         target = snapshot_data['branches'][branch]['target']
-        if snapshot_data['branches'][branch]['target_type'] == 'revision': # noqa
-            snapshot_data['branches'][branch]['target_url'] = \
-                reverse('api-revision', url_args={'sha1_git': target})
-        if snapshot_data['branches'][branch]['target_type'] == 'release': # noqa
-            snapshot_data['branches'][branch]['target_url'] = \
-                reverse('api-release', url_args={'sha1_git': target})
+        target_type = snapshot_data['branches'][branch]['target_type']
+        snapshot_data['branches'][branch]['target_url'] = \
+            _get_branch_url(target_type, target)
+    for branch in snapshot_data['branches'].keys():
+        target = snapshot_data['branches'][branch]['target']
+        target_type = snapshot_data['branches'][branch]['target_type']
+        if target_type == 'alias':
+            if target in snapshot_data['branches']:
+                snapshot_data['branches'][branch]['target_url'] = \
+                    snapshot_data['branches'][target]['target_url']
+            else:
+                snp = _lookup_snapshot(snapshot_data['id'],
+                                       branches_from=target,
+                                       branches_count=1)
+                alias_target = snp['branches'][target]['target']
+                alias_target_type = snp['branches'][target]['target_type']
+                snapshot_data['branches'][branch]['target_url'] = \
+                    _get_branch_url(alias_target_type, alias_target)
+
     return snapshot_data
 
 
 @patch('swh.web.api.views.snapshot.service')
-class SnapshotApiTestCase(SWHWebTestCase, APITestCase):
+class SnapshotApiTestCase(WebTestCase, APITestCase):
 
     def test_api_snapshot(self, mock_service):
         mock_service.lookup_snapshot.side_effect = _lookup_snapshot

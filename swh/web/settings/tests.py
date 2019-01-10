@@ -23,7 +23,7 @@ scope3_limiter_rate_post = 1
 swh_web_config = get_config()
 
 swh_web_config.update({
-    'debug': True,
+    'debug': False,
     'secret_key': 'test',
     'throttling': {
         'cache_uri': None,

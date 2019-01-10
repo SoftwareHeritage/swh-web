@@ -18,7 +18,7 @@ from swh.web.common.models import (
     SAVE_REQUEST_REJECTED, SAVE_TASK_NOT_YET_SCHEDULED
 )
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 _user_name = 'swh-web-admin'
 _user_mail = 'admin@swh-web.org'
@@ -28,7 +28,7 @@ _authorized_origin_url = 'https://scm.ourproject.org/anonscm/'
 _unauthorized_origin_url = 'https://www.softwareheritage.org/'
 
 
-class OriginSaveAdminTestCase(SWHWebTestCase):
+class OriginSaveAdminTestCase(WebTestCase):
 
     @classmethod
     def setUpTestData(cls):  # noqa: N802
