@@ -88,16 +88,25 @@ function escapeStringRegexp(str) {
 }
 
 function searchOrigins(patterns, limit, searchOffset, offset) {
-  originPatterns = patterns;
-  let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
-  for (let i = 0; i < patternsArray.length; ++i) {
-    patternsArray[i] = escapeStringRegexp(patternsArray[i]);
+  let baseSearchUrl;
+  let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
+  if (searchMetadata) {
+    baseSearchUrl = Urls.api_origin_metadata_search() + `?fulltext=${patterns}`;
   }
-  let patternsPermut = [];
-  heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
-  let regex = patternsPermut.join('|');
+  else {
+    originPatterns = patterns;
+    let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
+    for (let i = 0; i < patternsArray.length; ++i) {
+      patternsArray[i] = escapeStringRegexp(patternsArray[i]);
+    }
+    let patternsPermut = [];
+    heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
+    let regex = patternsPermut.join('|');
+    baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
+  }
+
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-  let searchUrl = Urls.browse_origin_search(regex) + `?limit=${limit}&offset=${searchOffset}&regexp=true&with_visit=${withVisit}`;
+  let searchUrl = baseSearchUrl + `&limit=${limit}&offset=${searchOffset}&with_visit=${withVisit}`;
 
   clearOriginSearchResultsTable();
   $('.swh-loading').addClass('show');
@@ -160,12 +169,16 @@ export function initOriginSearch() {
       let patterns = $('#origins-url-patterns').val().trim();
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
       let withContent = $('#swh-filter-empty-visits').prop('checked');
+      let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
       let queryParameters = '?q=' + encodeURIComponent(patterns);
       if (withVisit) {
         queryParameters += '&with_visit';
       }
       if (withContent) {
         queryParameters += '&with_content';
+      }
+      if (searchMetadata) {
+        queryParameters += '&search_metadata';
       }
       // Update the url, triggering page reload and effective search
       window.location.search = queryParameters;
@@ -209,10 +222,12 @@ export function initOriginSearch() {
     let query = urlParams.get('q');
     let withVisit = urlParams.has('with_visit');
     let withContent = urlParams.has('with_content');
+    let searchMetadata = urlParams.has('search_metadata');
     if (query) {
       $('#origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);
       $('#swh-search-origins-with-content').prop('checked', withContent);
+      $('#swh-search-origin-metadata').prop('checked', searchMetadata);
       doSearch();
     }
   });
