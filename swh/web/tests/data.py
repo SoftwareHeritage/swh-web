@@ -165,6 +165,7 @@ def _init_tests_data():
     revisions = set()
     releases = set()
     snapshots = set()
+    persons = set()
 
     # Get all objects loaded into the test archive
     for origin in _TEST_ORIGINS:
@@ -177,6 +178,7 @@ def _init_tests_data():
                 release = next(storage.release_get([branch_data['target']]))
                 revisions.add(release['target'])
                 releases.add(hash_to_hex(branch_data['target']))
+                persons.add(release['author']['id'])
 
         for rev_log in storage.revision_shortlog(set(revisions)):
             rev_id = rev_log[0]
@@ -184,6 +186,8 @@ def _init_tests_data():
 
         for rev in storage.revision_get(revisions):
             dir_id = rev['directory']
+            persons.add(rev['author']['id'])
+            persons.add(rev['committer']['id'])
             directories.add(hash_to_hex(dir_id))
             for entry in dir_iterator(storage, dir_id):
                 if entry['type'] == 'file':
@@ -230,6 +234,7 @@ def _init_tests_data():
         'origins': _TEST_ORIGINS,
         'contents': contents,
         'directories': list(directories),
+        'persons': list(persons),
         'releases': list(releases),
         'revisions': list(map(hash_to_hex, revisions)),
         'snapshots': list(snapshots)

@@ -156,5 +156,10 @@ class WebTestCase(TestCase):
         snp = cls.storage.snapshot_get(hash_to_bytes(snapshot_id))
         return converters.from_snapshot(snp)
 
+    @classmethod
+    def person_get(cls, person_id):
+        person = next(cls.storage.person_get([person_id]))
+        return converters.from_person(person)
+
     def setUp(self):
         cache.clear()

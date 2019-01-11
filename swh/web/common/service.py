@@ -286,7 +286,7 @@ def lookup_person(person_id):
         NotFoundExc if there is no person with the provided id.
 
     """
-    person = _first_element(storage.person_get([person_id]))
+    person = _first_element(storage.person_get([int(person_id)]))
     if not person:
         raise NotFoundExc('Person with id %s not found' % person_id)
     return converters.from_person(person)

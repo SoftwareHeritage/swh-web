@@ -10,7 +10,8 @@ from datetime import datetime
 
 from hypothesis import settings
 from hypothesis.strategies import (
-    just, sampled_from, lists, composite, datetimes
+    just, sampled_from, lists, composite, datetimes,
+    integers
 )
 from string import ascii_letters, hexdigits
 
@@ -224,6 +225,23 @@ def unknown_snapshot(draw):
     into the test archive.
     """
     return _unknown_swh_object(draw, 'snapshots')
+
+
+def person():
+    """
+    Hypothesis strategy returning a random person ingested
+    into the test archive.
+    """
+    return _known_swh_object('persons')
+
+
+def unknown_person():
+    """
+    Hypothesis strategy returning a random person not ingested
+    into the test archive.
+    """
+    persons = get_tests_data()['persons']
+    return integers(min_value=max(persons)+1)
 
 
 def _get_origin_dfs_revisions_walker():
