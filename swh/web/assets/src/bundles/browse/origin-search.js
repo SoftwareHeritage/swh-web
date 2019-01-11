@@ -9,7 +9,7 @@ import {heapsPermute} from 'utils/heaps-permute';
 import {handleFetchError} from 'utils/functions';
 
 let originPatterns;
-let perPage = 100;
+let perPage = 2;
 let limit = perPage * 2;
 let offset = 0;
 let currentData = null;
@@ -77,9 +77,6 @@ function populateOriginSearchResultsTable(data, offset) {
     $('#origins-prev-results-button').addClass('disabled');
   }
   inSearch = false;
-  if (typeof Storage !== 'undefined') {
-    sessionStorage.setItem('last-swh-origin-search-offset', offset);
-  }
   setTimeout(() => {
     window.scrollTo(0, 0);
   });
@@ -109,11 +106,6 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
     .then(response => response.json())
     .then(data => {
       currentData = data;
-      if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem('last-swh-origin-url-patterns', patterns);
-        sessionStorage.setItem('last-swh-origin-search-results', JSON.stringify(data));
-        sessionStorage.setItem('last-swh-origin-search-offset', offset);
-      }
       $('.swh-loading').removeClass('show');
       populateOriginSearchResultsTable(data, offset);
     })
@@ -163,38 +155,17 @@ function doSearch() {
 
 export function initOriginSearch() {
   $(document).ready(() => {
-    if (typeof Storage !== 'undefined') {
-      originPatterns = sessionStorage.getItem('last-swh-origin-url-patterns');
-      let data = sessionStorage.getItem('last-swh-origin-search-results');
-      offset = sessionStorage.getItem('last-swh-origin-search-offset');
-      if (data) {
-        $('#origins-url-patterns').val(originPatterns);
-        offset = parseInt(offset);
-        currentData = JSON.parse(data);
-        populateOriginSearchResultsTable(currentData, offset);
-      }
-      let withVisit = sessionStorage.getItem('last-swh-origin-with-visit');
-      if (withVisit !== null) {
-        $('#swh-search-origins-with-visit').prop('checked', JSON.parse(withVisit));
-      }
-      let filterEmptyVisits = sessionStorage.getItem('last-filter-empty-visits');
-      if (filterEmptyVisits !== null) {
-        $('#swh-filter-empty-visits').prop('checked', JSON.parse(filterEmptyVisits));
-      }
-    }
-
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
       let patterns = $('#origins-url-patterns').val().trim();
-      if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem('last-swh-origin-url-patterns', patterns);
-        sessionStorage.setItem('last-swh-origin-search-results', '');
-        sessionStorage.setItem('last-swh-origin-search-offset', '');
-      }
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
+      let withContent = $('#swh-filter-empty-visits').prop('checked');
       let queryParameters = '?q=' + encodeURIComponent(patterns);
       if (withVisit) {
         queryParameters += '&with_visit';
+      }
+      if (withContent) {
+        queryParameters += '&with_content';
       }
       // Update the url, triggering page reload and effective search
       window.location.search = queryParameters;
@@ -234,26 +205,14 @@ export function initOriginSearch() {
       }
     });
 
-    $(window).on('unload', () => {
-      if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem(
-          'last-swh-origin-with-visit',
-          JSON.stringify($('#swh-search-origins-with-visit').prop('checked')));
-        sessionStorage.setItem(
-          'last-filter-empty-visits',
-          JSON.stringify($('#swh-filter-empty-visits').prop('checked')));
-      }
-    });
-
     let urlParams = new URLSearchParams(window.location.search);
     let query = urlParams.get('q');
     let withVisit = urlParams.has('with_visit');
-    let data = sessionStorage.getItem('last-swh-origin-search-results');
-    if (query && !data) {
+    let withContent = urlParams.has('with_content');
+    if (query) {
       $('#origins-url-patterns').val(query);
-      if (withVisit) {
-        $('#swh-search-origins-with-visit').prop('checked', true);
-      }
+      $('#swh-search-origins-with-visit').prop('checked', withVisit);
+      $('#swh-search-origins-with-content').prop('checked', withContent);
       doSearch();
     }
   });
