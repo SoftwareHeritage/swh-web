@@ -261,10 +261,15 @@ def search_origin_metadata(fulltext, limit=50):
         list of origin metadata as dict.
 
     """
-    results = idx_storage.origin_intrinsic_metadata_search_fulltext(
+    matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
         conjunction=[fulltext], limit=limit)
-    for result in results:
-        result['from_revision'] = hashutil.hash_to_hex(result['from_revision'])
+    results = []
+    for match in matches:
+        match['from_revision'] = hashutil.hash_to_hex(match['from_revision'])
+        result = converters.from_origin(
+            storage.origin_get({'id': match.pop('origin_id')}))
+        result['metadata'] = match
+        results.append(result)
     return results
 
 

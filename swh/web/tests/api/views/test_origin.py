@@ -246,10 +246,13 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         mock_service.lookup_origin.assert_called_with({'id': '4321'})
 
     @patch('swh.web.common.service.idx_storage')
-    def test_api_origin_metadata_search(self, mock_idx_storage):
+    @patch('swh.web.common.service.storage')
+    def test_api_origin_metadata_search(self, mock_storage, mock_idx_storage):
         # given
+        mock_storage.origin_get.return_value = {
+            'id': 54974445, 'type': 'git', 'url': '/dev/null'}
         mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
-            .return_value = [{
+            .side_effect = lambda conjunction, limit: [{
                 'from_revision':
                 b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed \xf2U\xfa\x05B8',
                 'metadata': {'author': 'Jane Doe'},
@@ -273,17 +276,21 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 200, rv.content)
         self.assertEqual(rv['Content-Type'], 'application/json')
         expected_data = [{
-            'origin_id': 54974445,
-            'metadata': {'author': 'Jane Doe'},
-            'from_revision': '7026b7c1a2af56521e951c01ed20f255fa054238',
-            'tool': {
-                'configuration': {
-                    'context': ['NpmMapping', 'CodemetaMapping'],
-                    'type': 'local'
-                },
-                'id': 3,
-                'name': 'swh-metadata-detector',
-                'version': '0.0.1',
+            'id': 54974445,
+            'type': 'git',
+            'url': '/dev/null',
+            'metadata': {
+                'metadata': {'author': 'Jane Doe'},
+                'from_revision': '7026b7c1a2af56521e951c01ed20f255fa054238',
+                'tool': {
+                    'configuration': {
+                        'context': ['NpmMapping', 'CodemetaMapping'],
+                        'type': 'local'
+                    },
+                    'id': 3,
+                    'name': 'swh-metadata-detector',
+                    'version': '0.0.1',
+                }
             }
         }]
         self.assertEqual(rv.data, expected_data)
@@ -291,10 +298,14 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             .assert_called_with(conjunction=['Jane Doe'], limit=70)
 
     @patch('swh.web.common.service.idx_storage')
-    def test_api_origin_metadata_search_limit(self, mock_idx_storage):
+    @patch('swh.web.common.service.storage')
+    def test_api_origin_metadata_search_limit(self, mock_storage,
+                                              mock_idx_storage):
         # given
+        mock_storage.origin_get.return_value = {
+            'id': 54974445, 'type': 'git', 'url': '/dev/null'}
         mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
-            .return_value = [{
+            .side_effect = lambda conjunction, limit: [{
                 'from_revision':
                 b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed \xf2U\xfa\x05B8',
                 'metadata': {'author': 'Jane Doe'},
