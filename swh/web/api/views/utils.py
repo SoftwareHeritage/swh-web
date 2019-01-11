@@ -43,7 +43,7 @@ def api_lookup(lookup_fn, *args,
     if enrich_fn is None:
         enrich_fn = (lambda x: x)
     res = lookup_fn(*args)
-    if not res:
+    if res is None:
         raise NotFoundExc(notfound_msg)
     if isinstance(res, (map, list, GeneratorType)):
         return [enrich_fn(x) for x in res]
