@@ -9,7 +9,7 @@ import {heapsPermute} from 'utils/heaps-permute';
 import {handleFetchError} from 'utils/functions';
 
 let originPatterns;
-let perPage = 2;
+let perPage = 100;
 let limit = perPage * 2;
 let offset = 0;
 let currentData = null;
