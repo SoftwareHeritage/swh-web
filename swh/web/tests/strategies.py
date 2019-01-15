@@ -164,6 +164,18 @@ def new_origin():
         lambda origin: storage.origin_get(origin) is None)
 
 
+def new_origins(nb_origins=None):
+    """
+    Hypothesis strategy returning random origins not ingested
+    into the test archive.
+    """
+    min_size = nb_origins if nb_origins is not None else 2
+    max_size = nb_origins if nb_origins is not None else 8
+    size = random.randint(min_size, max_size)
+    return lists(new_origin(), min_size=size, max_size=size,
+                 unique_by=lambda o: tuple(sorted(o.items())))
+
+
 def visit_dates(nb_dates=None):
     """
     Hypothesis strategy returning a list of visit dates.

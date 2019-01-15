@@ -20,7 +20,7 @@ from swh.web.tests.strategies import (
     release, revision, unknown_revision, revisions, unknown_revisions,
     ancestor_revisions, non_ancestor_revisions, invalid_sha1, sha256,
     revision_with_submodules, unknown_directory, empty_directory,
-    new_revision
+    new_revision, new_origins
 )
 from swh.web.tests.testcase import (
     WebTestCase, ctags_json_missing, fossology_missing
@@ -788,3 +788,21 @@ class ServiceTestCase(WebTestCase):
              service.lookup_directory_with_revision(
                 revision, dir_entry['name'], with_data=True))
         )
+
+    @given(new_origins(20))
+    def test_lookup_origins(self, new_origins):
+
+        nb_origins = len(new_origins)
+        expected_origins = self.storage.origin_add(new_origins)
+
+        origin_from_idx = random.randint(1, nb_origins-1) - 1
+        origin_from = expected_origins[origin_from_idx]['id']
+        max_origin_idx = expected_origins[-1]['id']
+        origin_count = random.randint(1, max_origin_idx - origin_from)
+
+        actual_origins = list(service.lookup_origins(origin_from,
+                                                     origin_count))
+        expected_origins = list(self.storage.origin_get_range(origin_from,
+                                                              origin_count))
+
+        self.assertEqual(actual_origins, expected_origins)

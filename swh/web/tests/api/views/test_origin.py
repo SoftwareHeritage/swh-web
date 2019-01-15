@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
+
 from hypothesis import given
 from rest_framework.test import APITestCase
 from unittest.mock import patch
@@ -12,7 +14,7 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 from swh.web.common.utils import reverse
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.tests.strategies import (
-    origin, new_origin, visit_dates, new_snapshots
+    origin, new_origin, new_origins, visit_dates, new_snapshots
 )
 from swh.web.tests.testcase import WebTestCase
 
@@ -330,3 +332,42 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         self.assertEqual(rv.status_code, 400, rv.content)
         mock_idx_storage.assert_not_called()
+
+    @given(new_origins(20))
+    def test_api_lookup_origins(self, new_origins):
+
+        nb_origins = len(new_origins)
+
+        expected_origins = self.storage.origin_add(new_origins)
+
+        origin_from_idx = random.randint(1, nb_origins-1) - 1
+        origin_from = expected_origins[origin_from_idx]['id']
+        max_origin_id = expected_origins[-1]['id']
+        origin_count = random.randint(1, max_origin_id - origin_from)
+
+        url = reverse('api-origins',
+                      query_params={'origin_from': origin_from,
+                                    'origin_count': origin_count})
+
+        rv = self.client.get(url)
+
+        self.assertEqual(rv.status_code, 200)
+
+        start = origin_from_idx
+        end = origin_from_idx + origin_count
+        expected_origins = expected_origins[start:end]
+
+        for expected_origin in expected_origins:
+            expected_origin['origin_visits_url'] = reverse(
+                'api-origin-visits',
+                url_args={'origin_id': expected_origin['id']})
+
+        self.assertEqual(rv.data, expected_origins)
+
+        next_origin_id = expected_origins[-1]['id']+1
+        if self.storage.origin_get({'id': next_origin_id}):
+            self.assertIn('Link', rv)
+            next_url = reverse('api-origins',
+                               query_params={'origin_from': next_origin_id,
+                                             'origin_count': origin_count})
+            self.assertIn(next_url, rv['Link'])

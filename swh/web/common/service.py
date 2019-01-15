@@ -230,6 +230,22 @@ def lookup_origin(origin):
     return converters.from_origin(origin_info)
 
 
+def lookup_origins(origin_from=1, origin_count=100):
+    """Get list of archived software origins in a paginated way.
+
+    Origins are sorted by id before returning them
+
+    Args:
+        origin_from (int): The minimum id of the origins to return
+        origin_count (int): The maximum number of origins to return
+
+    Yields:
+        origins information as dicts
+    """
+    origins = storage.origin_get_range(origin_from, origin_count)
+    return map(converters.from_origin, origins)
+
+
 def search_origin(url_pattern, offset=0, limit=50, regexp=False,
                   with_visit=False):
     """Search for origins whose urls contain a provided string pattern

@@ -24,6 +24,59 @@ def _enrich_origin(origin):
     return origin
 
 
+@api_route(r'/origins/', 'api-origins')
+@api_doc('/origins/', noargs=True)
+def api_origins(request):
+    """
+    .. http:get:: /api/1/origins/
+
+        Get list of archived software origins.
+
+        Origins are sorted by ids before returning them.
+
+        :query int origin_from: The minimum id of the origins to return
+            (default to 1)
+        :query int origin_count: The maximum number of origins to return
+            (default to 100, can not exceed 10000)
+
+        :>jsonarr number id: the origin unique identifier
+        :>jsonarr string origin_visits_url: link to in order to get information about the
+            visits for that origin
+        :>jsonarr string type: the type of software origin (possible values are ``git``, ``svn``,
+            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        :>jsonarr string url: the origin canonical url
+
+        :reqheader Accept: the requested response content type,
+            either ``application/json`` (default) or ``application/yaml``
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Link: indicates that a subsequent or previous result page are available
+            and contains the urls pointing to them
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origins?origin_from=50000&origin_count=500`
+    """ # noqa
+    origin_from = int(request.query_params.get('origin_from', '1'))
+    origin_count = int(request.query_params.get('origin_count', '100'))
+    origin_count = min(origin_count, 10000)
+    results = api_lookup(
+        service.lookup_origins, origin_from, origin_count+1,
+        enrich_fn=_enrich_origin)
+    response = {'results': results, 'headers': {}}
+    if len(results) > origin_count:
+        origin_from = results.pop()['id']
+        response['headers']['link-next'] = reverse(
+            'api-origins', query_params={'origin_from': origin_from,
+                                         'origin_count': origin_count})
+    return response
+
+
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-origin')
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
            'api-origin')
