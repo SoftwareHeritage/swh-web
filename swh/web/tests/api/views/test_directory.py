@@ -80,9 +80,13 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
             dir_data['target_url'] = \
                 reverse('api-content',
                         url_args={'q': 'sha1_git:%s' % dir_data['target']})
-        else:
+        elif dir_data['type'] == 'dir':
             dir_data['target_url'] = \
                 reverse('api-directory',
+                        url_args={'sha1_git': dir_data['target']})
+        elif dir_data['type'] == 'rev':
+            dir_data['target_url'] = \
+                reverse('api-revision',
                         url_args={'sha1_git': dir_data['target']})
 
         return dir_data

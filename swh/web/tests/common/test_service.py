@@ -258,7 +258,8 @@ class ServiceTestCase(WebTestCase):
         for ts in visit_dates:
             self.storage.origin_visit_add(origin_id, ts)
 
-        actual_origin_visits = list(service.lookup_origin_visits(origin_id))
+        actual_origin_visits = list(
+            service.lookup_origin_visits(origin_id, per_page=100))
 
         expected_visits = list(self.storage.origin_visit_get(origin_id))
         for visit in expected_visits:

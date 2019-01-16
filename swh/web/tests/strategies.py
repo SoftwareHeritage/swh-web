@@ -27,7 +27,7 @@ from swh.web.tests.data import get_tests_data
 # in the swh.web.tests.data module.
 
 # Set some hypothesis settings
-settings.register_profile("swh-web", settings(deadline=None, max_examples=1))
+settings.register_profile("swh-web", settings(deadline=None))
 settings.load_profile("swh-web")
 
 # The following strategies exploit the hypothesis capabilities
