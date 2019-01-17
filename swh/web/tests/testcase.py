@@ -147,9 +147,19 @@ class WebTestCase(TestCase):
         return converters.from_snapshot(snp)
 
     @classmethod
+    def origin_get(cls, origin_info):
+        origin = cls.storage.origin_get(origin_info)
+        return converters.from_origin(origin)
+
+    @classmethod
     def origin_visit_get(cls, origin_id):
         visits = cls.storage.origin_visit_get(origin_id)
         return list(map(converters.from_origin_visit, visits))
+
+    @classmethod
+    def origin_visit_get_by(cls, origin_id, visit_id):
+        visit = cls.storage.origin_visit_get_by(origin_id, visit_id)
+        return converters.from_origin_visit(visit)
 
     @classmethod
     def snapshot_get(cls, snapshot_id):

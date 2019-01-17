@@ -88,7 +88,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
             :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
     """ # noqa
     ori_dict = {
-        'id': origin_id,
+        'id': int(origin_id) if origin_id else None,
         'type': origin_type,
         'url': origin_url
     }
@@ -266,6 +266,7 @@ def api_origin_visits(request, origin_id):
             :swh_web_api:`origin/1/visits/`
     """ # noqa
     result = {}
+    origin_id = int(origin_id)
     per_page = int(request.query_params.get('per_page', '10'))
     last_visit = request.query_params.get('last_visit')
     if last_visit:
@@ -376,7 +377,7 @@ def api_origin_visit(request, origin_id, visit_id):
         return ov
 
     return api_lookup(
-        service.lookup_origin_visit, origin_id, visit_id,
+        service.lookup_origin_visit, int(origin_id), int(visit_id),
         notfound_msg=('No visit {} for origin {} found'
                       .format(visit_id, origin_id)),
         enrich_fn=_enrich_origin_visit)

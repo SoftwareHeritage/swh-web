@@ -18,7 +18,9 @@ from string import ascii_letters, hexdigits
 from swh.model.hashutil import hash_to_hex, hash_to_bytes
 from swh.model.identifiers import directory_identifier
 from swh.storage.algos.revisions_walker import get_revisions_walker
-from swh.storage.tests.algos.test_snapshot import origins as new_origin # noqa
+from swh.storage.tests.algos.test_snapshot import ( # noqa
+    origins as new_origin_strategy, snapshots as new_snapshot
+)
 from swh.web.tests.data import get_tests_data
 
 # Module dedicated to the generation of input data for tests through
@@ -145,19 +147,32 @@ def unknown_directory(draw):
 
 def origin():
     """
-    Hypothesis strategy returning a random origin not ingested
+    Hypothesis strategy returning a random origin ingested
     into the test archive.
     """
     return _known_swh_object('origins')
 
 
-def visit_dates():
+def new_origin():
+    """
+    Hypothesis strategy returning a random origin not ingested
+    into the test archive.
+    """
+    tests_data = get_tests_data()
+    storage = tests_data['storage']
+    return new_origin_strategy().filter(
+        lambda origin: storage.origin_get(origin) is None)
+
+
+def visit_dates(nb_dates=None):
     """
     Hypothesis strategy returning a list of visit dates.
     """
+    min_size = nb_dates if nb_dates else 2
+    max_size = nb_dates if nb_dates else 8
     return lists(datetimes(min_value=datetime(2015, 1, 1, 0, 0),
                            max_value=datetime(2018, 12, 31, 0, 0)),
-                 min_size=2, max_size=8, unique=True)
+                 min_size=min_size, max_size=max_size, unique=True).map(sorted)
 
 
 def release():
@@ -216,6 +231,13 @@ def snapshot():
     into the test archive.
     """
     return _known_swh_object('snapshots')
+
+
+def new_snapshots(nb_snapshots=None):
+    min_size = nb_snapshots if nb_snapshots else 2
+    max_size = nb_snapshots if nb_snapshots else 8
+    return lists(new_snapshot(min_size=2, max_size=10, only_objects=True),
+                 min_size=min_size, max_size=max_size)
 
 
 @composite
