@@ -11,7 +11,7 @@ from datetime import datetime
 from hypothesis import settings, assume
 from hypothesis.strategies import (
     just, sampled_from, lists, composite, datetimes,
-    integers, binary
+    integers, binary, text, characters
 )
 
 from swh.model.hashutil import hash_to_hex, hash_to_bytes
@@ -205,6 +205,59 @@ def unknown_revision():
     """
     return sha1().filter(
         lambda s: next(storage.revision_get([hash_to_bytes(s)])) is None)
+
+
+@composite
+def new_person(draw):
+    """
+    Hypothesis strategy returning random raw swh person data.
+    """
+    name = draw(text(min_size=5, max_size=30,
+                     alphabet=characters(min_codepoint=0, max_codepoint=255)))
+    email = '%s@company.org' % name
+    return {
+        'name': name.encode(),
+        'email': email.encode(),
+        'fullname': ('%s <%s>' % (name, email)).encode()
+    }
+
+
+@composite
+def new_swh_date(draw):
+    """
+    Hypothesis strategy returning random raw swh date data.
+    """
+    timestamp = draw(
+        datetimes(min_value=datetime(2015, 1, 1, 0, 0),
+                  max_value=datetime(2018, 12, 31, 0, 0)).map(
+                      lambda d: int(d.timestamp())))
+    return {
+        'timestamp': timestamp,
+        'offset': 0,
+        'negative_utc': False,
+    }
+
+
+@composite
+def new_revision(draw):
+    """
+    Hypothesis strategy returning random raw swh revision data
+    not ingested into the test archive.
+    """
+    return {
+        'id': draw(unknown_revision().map(hash_to_bytes)),
+        'directory': draw(sha1().map(hash_to_bytes)),
+        'author': draw(new_person()),
+        'committer': draw(new_person()),
+        'message': draw(
+            text(min_size=20, max_size=100).map(lambda t: t.encode())),
+        'date': draw(new_swh_date()),
+        'committer_date': draw(new_swh_date()),
+        'synthetic': False,
+        'type': 'git',
+        'parents': [],
+        'metadata': [],
+    }
 
 
 def revisions():

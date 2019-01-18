@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import copy
-import datetime
 import itertools
 import pytest
 import random
@@ -21,7 +19,8 @@ from swh.web.tests.strategies import (
     contents_with_ctags, origin, new_origin, visit_dates, directory,
     release, revision, unknown_revision, revisions, unknown_revisions,
     ancestor_revisions, non_ancestor_revisions, invalid_sha1, sha256,
-    revision_with_submodules, unknown_directory, empty_directory
+    revision_with_submodules, unknown_directory, empty_directory,
+    new_revision
 )
 from swh.web.tests.testcase import (
     WebTestCase, ctags_json_missing, fossology_missing
@@ -29,74 +28,6 @@ from swh.web.tests.testcase import (
 
 
 class ServiceTestCase(WebTestCase):
-
-    def setUp(self):
-
-        self.SHA1_SAMPLE = '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-        self.SHA1_SAMPLE_BIN = hash_to_bytes(self.SHA1_SAMPLE)
-
-        self.DIRECTORY_ID = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
-        self.DIRECTORY_ID_BIN = hash_to_bytes(self.DIRECTORY_ID)
-        self.AUTHOR_ID_BIN = {
-            'name': b'author',
-            'email': b'author@company.org',
-            'fullname': b'author <author@company.org>'
-        }
-        self.AUTHOR_ID = {
-            'name': 'author',
-            'email': 'author@company.org',
-            'fullname': 'author <author@company.org>'
-        }
-        self.COMMITTER_ID_BIN = {
-            'name': b'committer',
-            'email': b'committer@corp.org',
-            'fullname': b'committer <committer@corp.org>'
-        }
-        self.COMMITTER_ID = {
-            'name': 'committer',
-            'email': 'committer@corp.org',
-            'fullname': 'committer <committer@corp.org>'
-        }
-        self.SAMPLE_DATE_RAW = {
-            'timestamp': int(datetime.datetime(
-                2000, 1, 17, 11, 23, 54,
-                tzinfo=datetime.timezone.utc,
-            ).timestamp()),
-            'offset': 0,
-            'negative_utc': False,
-        }
-        self.SAMPLE_DATE = '2000-01-17T11:23:54+00:00'
-        self.SAMPLE_MESSAGE_BIN = b'elegant fix for bug 31415957'
-        self.SAMPLE_MESSAGE = 'elegant fix for bug 31415957'
-
-        self.SAMPLE_REVISION = {
-            'id': self.SHA1_SAMPLE,
-            'directory': self.DIRECTORY_ID,
-            'author': self.AUTHOR_ID,
-            'committer': self.COMMITTER_ID,
-            'message': self.SAMPLE_MESSAGE,
-            'date': self.SAMPLE_DATE,
-            'committer_date': self.SAMPLE_DATE,
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': {},
-            'merge': False
-        }
-
-        self.SAMPLE_REVISION_RAW = {
-            'id': self.SHA1_SAMPLE_BIN,
-            'directory': self.DIRECTORY_ID_BIN,
-            'author': self.AUTHOR_ID_BIN,
-            'committer': self.COMMITTER_ID_BIN,
-            'message': self.SAMPLE_MESSAGE_BIN,
-            'date': self.SAMPLE_DATE_RAW,
-            'committer_date': self.SAMPLE_DATE_RAW,
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }
 
     @given(contents())
     def test_lookup_multiple_hashes_all_present(self, contents):
@@ -501,37 +432,34 @@ class ServiceTestCase(WebTestCase):
         actual_revision = service.lookup_revision(revision)
         self.assertEqual(actual_revision, self.revision_get(revision))
 
-    @given(unknown_revision())
-    def test_lookup_revision_invalid_msg(self, new_revision_id):
+    @given(new_revision())
+    def test_lookup_revision_invalid_msg(self, new_revision):
 
-        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
-        new_revision['id'] = hash_to_bytes(new_revision_id)
         new_revision['message'] = b'elegant fix for bug \xff'
         self.storage.revision_add([new_revision])
 
-        revision = service.lookup_revision(new_revision_id)
+        revision = service.lookup_revision(hash_to_hex(new_revision['id']))
         self.assertEqual(revision['message'], None)
         self.assertEqual(revision['message_decoding_failed'], True)
 
-    @given(unknown_revision())
-    def test_lookup_revision_msg_ok(self, new_revision_id):
+    @given(new_revision())
+    def test_lookup_revision_msg_ok(self, new_revision):
 
-        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
-        new_revision['id'] = hash_to_bytes(new_revision_id)
         self.storage.revision_add([new_revision])
 
-        revision_message = service.lookup_revision_message(new_revision_id)
+        revision_message = service.lookup_revision_message(
+            hash_to_hex(new_revision['id']))
 
         self.assertEqual(revision_message,
-                         {'message': self.SAMPLE_MESSAGE_BIN})
+                         {'message': new_revision['message']})
 
-    @given(unknown_revision())
-    def test_lookup_revision_msg_absent(self, new_revision_id):
+    @given(new_revision())
+    def test_lookup_revision_msg_absent(self, new_revision):
 
-        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
-        new_revision['id'] = hash_to_bytes(new_revision_id)
         del new_revision['message']
         self.storage.revision_add([new_revision])
+
+        new_revision_id = hash_to_hex(new_revision['id'])
 
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_message(new_revision_id)
