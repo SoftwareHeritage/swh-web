@@ -8,7 +8,7 @@ import random
 from collections import defaultdict
 from datetime import datetime
 
-from hypothesis import settings, assume
+from hypothesis import settings, assume, HealthCheck
 from hypothesis.strategies import (
     just, sampled_from, lists, composite, datetimes,
     integers, binary, text, characters
@@ -31,8 +31,10 @@ tests_data = get_tests_data()
 storage = tests_data['storage']
 
 # Set some hypothesis settings
-settings.register_profile("swh-web", settings(deadline=None))
-settings.load_profile("swh-web")
+settings.register_profile(
+    'swh-web', settings(deadline=None,
+                        suppress_health_check=[HealthCheck.too_slow]))
+settings.load_profile('swh-web')
 
 # The following strategies exploit the hypothesis capabilities
 
