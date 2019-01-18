@@ -8,12 +8,11 @@ import random
 from collections import defaultdict
 from datetime import datetime
 
-from hypothesis import settings
+from hypothesis import settings, assume
 from hypothesis.strategies import (
     just, sampled_from, lists, composite, datetimes,
-    integers
+    integers, binary
 )
-from string import ascii_letters, hexdigits
 
 from swh.model.hashutil import hash_to_hex, hash_to_bytes
 from swh.model.identifiers import directory_identifier
@@ -28,6 +27,9 @@ from swh.web.tests.data import get_tests_data
 # Some of these data are sampled from a test archive created and populated
 # in the swh.web.tests.data module.
 
+tests_data = get_tests_data()
+storage = tests_data['storage']
+
 # Set some hypothesis settings
 settings.register_profile("swh-web", settings(deadline=None))
 settings.load_profile("swh-web")
@@ -36,46 +38,34 @@ settings.load_profile("swh-web")
 
 
 def _known_swh_object(object_type):
-    tests_data = get_tests_data()
     return sampled_from(tests_data[object_type])
-
-
-def _unknown_swh_object(draw, object_type):
-    tests_data = get_tests_data()
-    storage = tests_data['storage']
-    while True:
-        sha1_git = draw(sha1())
-        # some tests will use the generated id to create a revision on the fly
-        if object_type == 'revisions':
-            obj = next(storage.revision_get([hash_to_bytes(sha1_git)]))
-            if obj is None:
-                return sha1_git
-        elif sha1_git not in tests_data[object_type]:
-            return sha1_git
 
 
 def sha1():
     """
     Hypothesis strategy returning a valid hexadecimal sha1 value.
     """
-    sha1 = ''.join(random.choice(hexdigits) for x in range(40))
-    return just(sha1.lower())
+    return binary(
+        min_size=20, max_size=20).filter(
+            lambda s: int.from_bytes(s, byteorder='little')).map(hash_to_hex)
 
 
 def invalid_sha1():
     """
     Hypothesis strategy returning an invalid sha1 representation.
     """
-    invalid_sha1 = ''.join(random.choice(ascii_letters) for x in range(50))
-    return just(invalid_sha1.lower())
+    return binary(
+        min_size=50, max_size=50).filter(
+            lambda s: int.from_bytes(s, byteorder='little')).map(hash_to_hex)
 
 
 def sha256():
     """
     Hypothesis strategy returning a valid hexadecimal sha256 value.
     """
-    sha256 = ''.join(random.choice(hexdigits) for x in range(64))
-    return just(sha256.lower())
+    return binary(
+        min_size=32, max_size=32).filter(
+            lambda s: int.from_bytes(s, byteorder='little')).map(hash_to_hex)
 
 
 def content():
@@ -95,21 +85,31 @@ def contents():
 
 
 @composite
-def unknown_content(draw):
+def new_content(draw):
+    blake2s256_hex = draw(sha256())
+    sha1_hex = draw(sha1())
+    sha1_git_hex = draw(sha1())
+    sha256_hex = draw(sha256())
+
+    assume(sha1_hex != sha1_git_hex)
+    assume(blake2s256_hex != sha256_hex)
+
+    return {
+        'blake2S256': blake2s256_hex,
+        'sha1': sha1_hex,
+        'sha1_git': sha1_git_hex,
+        'sha256': sha256_hex
+    }
+
+
+def unknown_content():
     """
     Hypothesis strategy returning a random content not ingested
     into the test archive.
     """
-    tests_data = get_tests_data()
-    while True:
-        unknown_content = {
-            'blake2s256': draw(sha256()),
-            'sha1': draw(sha1()),
-            'sha1_git': draw(sha1()),
-            'sha256': draw(sha256())
-        }
-        if unknown_content not in tests_data['contents']:
-            return unknown_content
+    return new_content().filter(
+        lambda c: next(storage.content_get(
+            [hash_to_bytes(c['sha1'])])) is None)
 
 
 def unknown_contents():
@@ -136,13 +136,13 @@ def empty_directory():
     return just(directory_identifier({'entries': []}))
 
 
-@composite
-def unknown_directory(draw):
+def unknown_directory():
     """
     Hypothesis strategy returning a random directory not ingested
     into the test archive.
     """
-    return _unknown_swh_object(draw, 'directories')
+    return sha1().filter(
+        lambda s: len(list(storage.directory_missing([hash_to_bytes(s)]))) > 0)
 
 
 def origin():
@@ -158,8 +158,6 @@ def new_origin():
     Hypothesis strategy returning a random origin not ingested
     into the test archive.
     """
-    tests_data = get_tests_data()
-    storage = tests_data['storage']
     return new_origin_strategy().filter(
         lambda origin: storage.origin_get(origin) is None)
 
@@ -183,13 +181,13 @@ def release():
     return _known_swh_object('releases')
 
 
-@composite
-def unknown_release(draw):
+def unknown_release():
     """
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
-    return _unknown_swh_object(draw, 'releases')
+    return sha1().filter(
+        lambda s: next(storage.release_get([s])) is None)
 
 
 def revision():
@@ -200,13 +198,13 @@ def revision():
     return _known_swh_object('revisions')
 
 
-@composite
-def unknown_revision(draw):
+def unknown_revision():
     """
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
-    return _unknown_swh_object(draw, 'revisions')
+    return sha1().filter(
+        lambda s: next(storage.revision_get([hash_to_bytes(s)])) is None)
 
 
 def revisions():
@@ -240,13 +238,13 @@ def new_snapshots(nb_snapshots=None):
                  min_size=min_size, max_size=max_size)
 
 
-@composite
-def unknown_snapshot(draw):
+def unknown_snapshot():
     """
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
-    return _unknown_swh_object(draw, 'snapshots')
+    return sha1().filter(
+        lambda s: storage.snapshot_get(hash_to_bytes(s)) is None)
 
 
 def person():
@@ -262,13 +260,12 @@ def unknown_person():
     Hypothesis strategy returning a random person not ingested
     into the test archive.
     """
-    persons = get_tests_data()['persons']
+    persons = tests_data['persons']
     return integers(min_value=max(persons)+1)
 
 
 def _get_origin_dfs_revisions_walker():
-    storage = get_tests_data()['storage']
-    origin = random.choice(get_tests_data()['origins'][:-1])
+    origin = random.choice(tests_data['origins'][:-1])
     snapshot = storage.snapshot_get_latest(origin['id'])
     head = snapshot['branches'][b'HEAD']['target']
     return get_revisions_walker('dfs', storage, head)
