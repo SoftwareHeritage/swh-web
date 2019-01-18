@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -546,12 +546,9 @@ def lookup_revision_log(rev_sha1_git, limit):
         NotFoundExc: if there is no revision with the provided sha1_git.
 
     """
+    lookup_revision(rev_sha1_git)
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
-
     revision_entries = storage.revision_log([sha1_git_bin], limit)
-    if not revision_entries:
-        raise NotFoundExc('Revision with sha1_git %s not found.'
-                          % rev_sha1_git)
     return map(converters.from_revision, revision_entries)
 
 
@@ -728,6 +725,12 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
                 'path': '.' if not dir_path else dir_path,
                 'revision': sha1_git,
                 'content': converters.from_content(content)}
+    elif entity['type'] == 'rev':  # revision
+        revision = next(storage.revision_get([entity['target']]))
+        return {'type': 'rev',
+                'path': '.' if not dir_path else dir_path,
+                'revision': sha1_git,
+                'content': converters.from_revision(revision)}
     else:
         raise NotImplementedError('Entity of type %s not implemented.'
                                   % entity['type'])
@@ -813,6 +816,7 @@ def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
        Dictionaries of origin_visit for that origin
 
     """
+    lookup_origin({'id': origin_id})
     visits = _lookup_origin_visits(origin_id, last_visit=last_visit,
                                    limit=per_page)
     for visit in visits:

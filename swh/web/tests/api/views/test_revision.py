@@ -1,762 +1,409 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import pytest
+import random
+
+from hypothesis import given
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from swh.web.common.exc import NotFoundExc
-from swh.web.api.views.revision import (
-    _revision_directory_by
-)
+from swh.model.hashutil import hash_to_hex
 
+from swh.web.common.exc import NotFoundExc
+
+from swh.web.common.utils import reverse, parse_timestamp
+from swh.web.tests.strategies import (
+    revision, unknown_revision, new_revision,
+    unknown_origin_id, origin, origin_with_multiple_visits
+)
 from swh.web.tests.testcase import WebTestCase
 
 
 class RevisionApiTestCase(WebTestCase, APITestCase):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision(self, mock_service):
-        # given
-        stub_revision = {
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': ['8734ef7e7c357ce2af928115c6c6a42b7e2a44e7'],
-            'type': 'tar',
-            'synthetic': True,
-            'metadata': {
-                'original_artifact': [{
-                    'archive_type': 'tar',
-                    'name': 'webbase-5.7.0.tar.gz',
-                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
-                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
-                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
-                    '309d36484e7edf7bb912'
-                }]
-            },
-        }
-        mock_service.lookup_revision.return_value = stub_revision
+    @given(revision())
+    def test_api_revision(self, revision):
 
-        expected_revision = {
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
-            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233e'
-                           'ff7371d5/log/',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6'
-                             'a42b7e2a44e6/',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': [{
-                'id': '8734ef7e7c357ce2af928115c6c6a42b7e2a44e7',
-                 'url': '/api/1/revision/8734ef7e7c357ce2af928115c6c6a42b7e2a44e7/'  # noqa
-            }],
-            'type': 'tar',
-            'synthetic': True,
-            'metadata': {
-                'original_artifact': [{
-                    'archive_type': 'tar',
-                    'name': 'webbase-5.7.0.tar.gz',
-                    'sha1': '147f73f369733d088b7a6fa9c4e0273dcd3c7ccd',
-                    'sha1_git': '6a15ea8b881069adedf11feceec35588f2cfe8f1',
-                    'sha256': '401d0df797110bea805d358b85bcc1ced29549d3d73f'
-                    '309d36484e7edf7bb912'
-                }]
-            },
-        }
+        url = reverse('api-revision', url_args={'sha1_git': revision})
+        rv = self.client.get(url)
 
-        # when
-        rv = self.client.get('/api/1/revision/'
-                             '18d8be353ed3480476f032475e7c233eff7371d5/')
+        expected_revision = self.revision_get(revision)
 
-        # then
+        self._enrich_revision(expected_revision)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(expected_revision, rv.data)
+        self.assertEqual(rv.data, expected_revision)
 
-        mock_service.lookup_revision.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+    @given(unknown_revision())
+    def test_api_revision_not_found(self, unknown_revision):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_not_found(self, mock_service):
-        # given
-        mock_service.lookup_revision.return_value = None
+        url = reverse('api-revision', url_args={'sha1_git': unknown_revision})
+        rv = self.client.get(url)
 
-        # when
-        rv = self.client.get('/api/1/revision/12345/')
-
-        # then
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Revision with sha1_git 12345 not found.'})
+            'reason': 'Revision with sha1_git %s not found.' %
+            unknown_revision})
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_raw_ok(self, mock_service):
-        # given
-        stub_revision = {'message': 'synthetic revision message'}
+    @given(revision())
+    def test_api_revision_raw_ok(self, revision):
 
-        mock_service.lookup_revision_message.return_value = stub_revision
+        url = reverse('api-revision-raw-message',
+                      url_args={'sha1_git': revision})
+        rv = self.client.get(url)
 
-        # when
-        rv = self.client.get('/api/1/revision/18d8be353ed3480476f032475e7c2'
-                             '33eff7371d5/raw/')
-        # then
+        expected_message = self.revision_get(revision)['message']
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/octet-stream')
-        self.assertEqual(rv.content, b'synthetic revision message')
+        self.assertEqual(rv.content, expected_message.encode())
 
-        mock_service.lookup_revision_message.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+    @given(new_revision())
+    def test_api_revision_raw_ok_no_msg(self, new_revision):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_raw_ok_no_msg(self, mock_service):
-        # given
-        mock_service.lookup_revision_message.side_effect = NotFoundExc(
-            'No message for revision')
+        del new_revision['message']
+        self.storage.revision_add([new_revision])
 
-        # when
-        rv = self.client.get('/api/1/revision/'
-                             '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
+        new_revision_id = hash_to_hex(new_revision['id'])
 
-        # then
+        url = reverse('api-revision-raw-message',
+                      url_args={'sha1_git': new_revision_id})
+
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'No message for revision'})
+            'reason': 'No message for revision with sha1_git %s.' %
+            new_revision_id})
 
-        self.assertEqual
-        mock_service.lookup_revision_message.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+    @given(unknown_revision())
+    def test_api_revision_raw_ko_no_rev(self, unknown_revision):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_raw_ko_no_rev(self, mock_service):
-        # given
-        mock_service.lookup_revision_message.side_effect = NotFoundExc(
-            'No revision found')
+        url = reverse('api-revision-raw-message',
+                      url_args={'sha1_git': unknown_revision})
+        rv = self.client.get(url)
 
-        # when
-        rv = self.client.get('/api/1/revision/'
-                             '18d8be353ed3480476f032475e7c233eff7371d5/raw/')
-
-        # then
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'No revision found'})
+            'reason': 'Revision with sha1_git %s not found.' %
+            unknown_revision})
 
-        mock_service.lookup_revision_message.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+    @pytest.mark.xfail(reason="bugs in origin_*get methods from in-memory storage") # noqa
+    @given(unknown_origin_id())
+    def test_api_revision_with_origin_not_found(self, unknown_origin_id):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_with_origin_not_found(self, mock_service):
-        mock_service.lookup_revision_by.return_value = None
+        url = reverse('api-revision-origin',
+                      url_args={'origin_id': unknown_origin_id})
+        rv = self.client.get(url)
 
-        rv = self.client.get('/api/1/revision/origin/123/')
-
-        # then
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertIn('Revision with (origin_id: 123', rv.data['reason'])
-        self.assertIn('not found', rv.data['reason'])
-        self.assertEqual('NotFoundExc', rv.data['exception'])
+        self.assertEqual(rv.data, {
+            'exception': 'NotFoundExc',
+            'reason': 'Origin with id %s not found!' %
+            unknown_origin_id})
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            '123',
-            'HEAD',
-            None)
+    @given(origin())
+    def test_api_revision_with_origin(self, origin):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_with_origin(self, mock_service):
-        mock_revision = {
-            'id': '32',
-            'directory': '21',
-            'message': 'message 1',
-            'type': 'deb',
-        }
-        expected_revision = {
-            'id': '32',
-            'url': '/api/1/revision/32/',
-            'history_url': '/api/1/revision/32/log/',
-            'directory': '21',
-            'directory_url': '/api/1/directory/21/',
-            'message': 'message 1',
-            'type': 'deb',
-        }
-        mock_service.lookup_revision_by.return_value = mock_revision
+        url = reverse('api-revision-origin',
+                      url_args={'origin_id': origin['id']})
+        rv = self.client.get(url)
 
-        rv = self.client.get('/api/1/revision/origin/1/')
+        snapshot = self.snapshot_get_latest(origin['id'])
+        expected_revision = self.revision_get(
+            snapshot['branches']['HEAD']['target'])
 
-        # then
+        self._enrich_revision(expected_revision)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            '1',
-            'HEAD',
-            None)
+    @given(origin())
+    def test_api_revision_with_origin_and_branch_name(self, origin):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_with_origin_and_branch_name(self, mock_service):
-        mock_revision = {
-            'id': '12',
-            'directory': '23',
-            'message': 'message 2',
-            'type': 'tar',
-        }
-        mock_service.lookup_revision_by.return_value = mock_revision
+        snapshot = self.snapshot_get_latest(origin['id'])
 
-        expected_revision = {
-            'id': '12',
-            'url': '/api/1/revision/12/',
-            'history_url': '/api/1/revision/12/log/',
-            'directory': '23',
-            'directory_url': '/api/1/directory/23/',
-            'message': 'message 2',
-            'type': 'tar',
-        }
+        branch_name = random.choice(
+            list(b for b in snapshot['branches'].keys()
+                 if snapshot['branches'][b]['target_type'] == 'revision'))
 
-        rv = self.client.get('/api/1/revision/origin/1'
-                             '/branch/refs/origin/dev/')
+        url = reverse('api-revision-origin',
+                      url_args={'origin_id': origin['id'],
+                                'branch_name': branch_name})
 
-        # then
+        rv = self.client.get(url)
+
+        expected_revision = self.revision_get(
+            snapshot['branches'][branch_name]['target'])
+
+        self._enrich_revision(expected_revision)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            '1',
-            'refs/origin/dev',
-            None)
+    @given(origin_with_multiple_visits())
+    def test_api_revision_with_origin_and_branch_name_and_ts(self, origin):
 
-    @patch('swh.web.api.views.revision.service')
-    @patch('swh.web.api.views.revision.utils')
-    def test_api_revision_with_origin_and_branch_name_and_timestamp(self,
-                                                               mock_utils,
-                                                               mock_service): # noqa
-        mock_revision = {
-            'id': '123',
-            'directory': '456',
-            'message': 'message 3',
-            'type': 'tar',
-        }
-        mock_service.lookup_revision_by.return_value = mock_revision
+        visit = random.choice(self.origin_visit_get(origin['id']))
 
-        expected_revision = {
-            'id': '123',
-            'url': '/api/1/revision/123/',
-            'history_url': '/api/1/revision/123/log/',
-            'directory': '456',
-            'directory_url': '/api/1/directory/456/',
-            'message': 'message 3',
-            'type': 'tar',
-        }
+        snapshot = self.snapshot_get(visit['snapshot'])
 
-        mock_utils.enrich_revision.return_value = expected_revision
+        branch_name = random.choice(
+            list(b for b in snapshot['branches'].keys()
+                 if snapshot['branches'][b]['target_type'] == 'revision'))
 
-        rv = self.client.get('/api/1/revision'
-                             '/origin/1'
-                             '/branch/refs/origin/dev'
-                             '/ts/1452591542/')
+        url = reverse('api-revision-origin',
+                      url_args={'origin_id': origin['id'],
+                                'branch_name': branch_name,
+                                'ts': visit['date']})
 
-        # then
+        rv = self.client.get(url)
+
+        expected_revision = self.revision_get(
+            snapshot['branches'][branch_name]['target'])
+
+        self._enrich_revision(expected_revision)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            '1',
-            'refs/origin/dev',
-            '1452591542')
-        mock_utils.enrich_revision.assert_called_once_with(
-            mock_revision)
+    @given(origin_with_multiple_visits())
+    def test_api_revision_with_origin_and_branch_name_and_ts_escapes(self,
+                                                                     origin):
+        visit = random.choice(self.origin_visit_get(origin['id']))
 
-    @patch('swh.web.api.views.revision.service')
-    @patch('swh.web.api.views.revision.utils')
-    def test_api_revision_with_origin_and_branch_name_and_timestamp_escapes(
-            self,
-            mock_utils,
-            mock_service):
-        mock_revision = {
-            'id': '999',
-        }
-        mock_service.lookup_revision_by.return_value = mock_revision
+        snapshot = self.snapshot_get(visit['snapshot'])
 
-        expected_revision = {
-            'id': '999',
-            'url': '/api/1/revision/999/',
-            'history_url': '/api/1/revision/999/log/',
-        }
+        branch_name = random.choice(
+            list(b for b in snapshot['branches'].keys()
+                 if snapshot['branches'][b]['target_type'] == 'revision'))
 
-        mock_utils.enrich_revision.return_value = expected_revision
+        date = parse_timestamp(visit['date'])
 
-        rv = self.client.get('/api/1/revision'
-                             '/origin/1'
-                             '/branch/refs%2Forigin%2Fdev'
-                             '/ts/Today%20is%20'
-                             'January%201,%202047%20at%208:21:00AM/')
+        formatted_date = date.strftime('Today is %B %d, %Y at %X')
 
-        # then
+        url = reverse('api-revision-origin',
+                      url_args={'origin_id': origin['id'],
+                                'branch_name': branch_name,
+                                'ts': formatted_date})
+
+        rv = self.client.get(url)
+
+        expected_revision = self.revision_get(
+            snapshot['branches'][branch_name]['target'])
+
+        self._enrich_revision(expected_revision)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-        mock_service.lookup_revision_by.assert_called_once_with(
-            '1',
-            'refs/origin/dev',
-            'Today is January 1, 2047 at 8:21:00AM')
-        mock_utils.enrich_revision.assert_called_once_with(
-            mock_revision)
+    @pytest.mark.xfail(reason="bugs in origin_*get methods from in-memory storage") # noqa
+    @given(unknown_origin_id())
+    def test_api_directory_through_revision_origin_ko(self,
+                                                      unknown_origin_id):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_revision_directory_by_ko_raise(self, mock_service):
-        # given
-        mock_service.lookup_directory_through_revision.side_effect = NotFoundExc('not')  # noqa
+        url = reverse('api-revision-origin-directory',
+                      url_args={'origin_id': unknown_origin_id})
+        rv = self.client.get(url)
 
-        # when
-        with self.assertRaises(NotFoundExc):
-            _revision_directory_by(
-                {'sha1_git': 'id'},
-                None,
-                '/api/1/revision/sha1/directory/')
-
-        # then
-        mock_service.lookup_directory_through_revision.assert_called_once_with(
-            {'sha1_git': 'id'},
-            None, limit=100, with_data=False)
-
-    @patch('swh.web.api.views.revision.service')
-    def test_revision_directory_by_type_dir(self, mock_service):
-        # given
-        mock_service.lookup_directory_through_revision.return_value = (
-            'rev-id',
-            {
-                'type': 'dir',
-                'revision': 'rev-id',
-                'path': 'some/path',
-                'content': []
-            })
-        # when
-        actual_dir_content = _revision_directory_by(
-            {'sha1_git': 'blah-id'},
-            'some/path', '/api/1/revision/sha1/directory/')
-
-        # then
-        self.assertEqual(actual_dir_content, {
-            'type': 'dir',
-            'revision': 'rev-id',
-            'path': 'some/path',
-            'content': []
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
+            'exception': 'NotFoundExc',
+            'reason': 'Origin with id %s not found!' %
+            unknown_origin_id
         })
 
-        mock_service.lookup_directory_through_revision.assert_called_once_with(
-            {'sha1_git': 'blah-id'},
-            'some/path', limit=100, with_data=False)
+    @given(origin())
+    def test_api_directory_through_revision_origin(self, origin):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_revision_directory_by_type_file(self, mock_service):
-        # given
-        mock_service.lookup_directory_through_revision.return_value = (
-            'rev-id',
-            {
-                'type': 'file',
-                'revision': 'rev-id',
-                'path': 'some/path',
-                'content': {'blah': 'blah'}
-            })
-        # when
-        actual_dir_content = _revision_directory_by(
-            {'sha1_git': 'sha1'},
-            'some/path',
-            '/api/1/revision/origin/2/directory/',
-            limit=1000, with_data=True)
+        url = reverse('api-revision-origin-directory',
+                      url_args={'origin_id': origin['id']})
+        rv = self.client.get(url)
 
-        # then
-        self.assertEqual(actual_dir_content, {
-                'type': 'file',
-                'revision': 'rev-id',
-                'path': 'some/path',
-                'content': {'blah': 'blah'}
-            })
+        snapshot = self.snapshot_get_latest(origin['id'])
+        revision_id = snapshot['branches']['HEAD']['target']
+        revision = self.revision_get(revision_id)
+        directory = self.directory_ls(revision['directory'])
 
-        mock_service.lookup_directory_through_revision.assert_called_once_with(
-            {'sha1_git': 'sha1'},
-            'some/path', limit=1000, with_data=True)
+        for entry in directory:
+            if entry['type'] == 'dir':
+                entry['target_url'] = reverse(
+                    'api-directory',
+                    url_args={'sha1_git': entry['target']}
+                )
+                entry['dir_url'] = reverse(
+                    'api-revision-origin-directory',
+                    url_args={'origin_id': origin['id'],
+                              'path': entry['name']})
+            elif entry['type'] == 'file':
+                entry['target_url'] = reverse(
+                    'api-content',
+                    url_args={'q': 'sha1_git:%s' % entry['target']}
+                )
+                entry['file_url'] = reverse(
+                    'api-revision-origin-directory',
+                    url_args={'origin_id': origin['id'],
+                              'path': entry['name']})
+            elif entry['type'] == 'rev':
+                entry['target_url'] = reverse(
+                    'api-revision',
+                    url_args={'sha1_git': entry['target']}
+                )
+                entry['rev_url'] = reverse(
+                    'api-revision-origin-directory',
+                    url_args={'origin_id': origin['id'],
+                              'path': entry['name']})
 
-    @patch('swh.web.api.views.revision.parse_timestamp')
-    @patch('swh.web.api.views.revision._revision_directory_by')
-    @patch('swh.web.api.views.revision.utils')
-    def test_api_directory_through_revision_origin_ko_not_found(self,
-                                                           mock_utils,
-                                                           mock_rev_dir,
-                                                           mock_parse_timestamp): # noqa
-        mock_rev_dir.side_effect = NotFoundExc('not found')
-        mock_parse_timestamp.return_value = '2012-10-20 00:00:00'
+        expected_result = {
+            'content': directory,
+            'path': '.',
+            'revision': revision_id,
+            'type': 'dir'
+        }
 
-        rv = self.client.get('/api/1/revision'
-                             '/origin/10'
-                             '/branch/refs/remote/origin/dev'
-                             '/ts/2012-10-20'
-                             '/directory/')
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_result)
 
-        # then
+    @given(revision())
+    def test_api_revision_log(self, revision):
+
+        per_page = 10
+
+        url = reverse('api-revision-log', url_args={'sha1_git': revision},
+                      query_params={'per_page': per_page})
+
+        rv = self.client.get(url)
+
+        expected_log = self.revision_log(revision, limit=per_page+1)
+        expected_log = list(map(self._enrich_revision, expected_log))
+
+        has_next = len(expected_log) > per_page
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data,
+                         expected_log[:-1] if has_next else expected_log)
+
+        if has_next:
+            self.assertIn('Link', rv)
+            next_log_url = reverse(
+                'api-revision-log',
+                url_args={'sha1_git': expected_log[-1]['id']},
+                query_params={'per_page': per_page})
+            self.assertIn(next_log_url, rv['Link'])
+
+    @given(unknown_revision())
+    def test_api_revision_log_not_found(self, unknown_revision):
+
+        url = reverse('api-revision-log',
+                      url_args={'sha1_git': unknown_revision})
+
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'not found'})
-
-        mock_rev_dir.assert_called_once_with(
-            {'origin_id': '10',
-             'branch_name': 'refs/remote/origin/dev',
-             'ts': '2012-10-20 00:00:00'}, None,
-            '/api/1/revision'
-            '/origin/10'
-            '/branch/refs/remote/origin/dev'
-            '/ts/2012-10-20'
-            '/directory/',
-            with_data=False)
-
-    @patch('swh.web.api.views.revision._revision_directory_by')
-    def test_api_directory_through_revision_origin(self,
-                                                   mock_revision_dir):
-        expected_res = [{
-            'id': '123'
-        }]
-        mock_revision_dir.return_value = expected_res
-
-        rv = self.client.get('/api/1/revision/origin/3/directory/')
-
-        # then
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_res)
-
-        mock_revision_dir.assert_called_once_with({
-            'origin_id': '3',
-            'branch_name': 'refs/heads/master',
-            'ts': None}, None, '/api/1/revision/origin/3/directory/',
-                                                  with_data=False)
-
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_log(self, mock_service):
-        # given
-        stub_revisions = [{
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
-            'type': 'tar',
-            'synthetic': True,
-        }]
-        mock_service.lookup_revision_log.return_value = stub_revisions
-
-        expected_revisions = [{
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
-            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
-            'f7371d5/log/',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a'
-            '42b7e2a44e6/',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': [{
-                'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a4345',
-                'url': '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/',  # noqa
-            }],
-            'type': 'tar',
-            'synthetic': True,
-        }]
-
-        # when
-        rv = self.client.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42'
-                             'b7e2a44e6/log/')
-
-        # then
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-
-        self.assertEqual(rv.data, expected_revisions)
+            'reason': 'Revision with sha1_git %s not found.' %
+            unknown_revision})
         self.assertFalse(rv.has_header('Link'))
 
-        mock_service.lookup_revision_log.assert_called_once_with(
-            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 11)
+    @given(revision())
+    def test_api_revision_log_context(self, revision):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_log_with_next(self, mock_service):
-        # given
-        stub_revisions = []
-        for i in range(27):
-            stub_revisions.append({'id': str(i)})
+        revisions = self.revision_log(revision, limit=4)
 
-        mock_service.lookup_revision_log.return_value = stub_revisions[:26]
+        prev_rev = revisions[0]['id']
+        rev = revisions[-1]['id']
 
-        expected_revisions = [x for x in stub_revisions if int(x['id']) < 25]
-        for e in expected_revisions:
-            e['url'] = '/api/1/revision/%s/' % e['id']
-            e['history_url'] = '/api/1/revision/%s/log/' % e['id']
+        per_page = 10
 
-        # when
-        rv = self.client.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6a42'
-                             'b7e2a44e6/log/?per_page=25')
+        url = reverse('api-revision-log',
+                      url_args={'sha1_git': rev,
+                                'prev_sha1s': prev_rev},
+                      query_params={'per_page': per_page})
 
-        # then
+        rv = self.client.get(url)
+
+        expected_log = self.revision_log(rev, limit=per_page)
+        prev_revision = self.revision_get(prev_rev)
+        expected_log.insert(0, prev_revision)
+        expected_log = list(map(self._enrich_revision, expected_log))
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_revisions)
-        self.assertEqual(rv['Link'],
-                         '</api/1/revision/25/log/?per_page=25>; rel="next"')
+        self.assertEqual(rv.data, expected_log)
 
-        mock_service.lookup_revision_log.assert_called_once_with(
-            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 26)
+    @given(origin())
+    def test_api_revision_log_by(self, origin):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_log_not_found(self, mock_service):
-        # given
-        mock_service.lookup_revision_log.return_value = None
+        per_page = 10
 
-        # when
-        rv = self.client.get('/api/1/revision/8834ef7e7c357ce2af928115c6c6'
-                             'a42b7e2a44e6/log/')
+        url = reverse('api-revision-origin-log',
+                      url_args={'origin_id': origin['id']},
+                      query_params={'per_page': per_page})
 
-        # then
-        self.assertEqual(rv.status_code, 404)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Revision with sha1_git'
-            ' 8834ef7e7c357ce2af928115c6c6a42b7e2a44e6 not found.'})
-        self.assertFalse(rv.has_header('Link'))
+        rv = self.client.get(url)
 
-        mock_service.lookup_revision_log.assert_called_once_with(
-            '8834ef7e7c357ce2af928115c6c6a42b7e2a44e6', 11)
+        snapshot = self.snapshot_get_latest(origin['id'])
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_log_context(self, mock_service):
-        # given
-        stub_revisions = [{
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
-            'type': 'tar',
-            'synthetic': True,
-        }]
+        expected_log = self.revision_log(
+            snapshot['branches']['HEAD']['target'], limit=per_page+1)
 
-        mock_service.lookup_revision_log.return_value = stub_revisions
-        mock_service.lookup_revision_multiple.return_value = [{
-            'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'directory': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'author_name': 'Name Surname',
-            'author_email': 'name@surname.com',
-            'committer_name': 'Name Surname',
-            'committer_email': 'name@surname.com',
-            'message': 'amazing revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': ['adc83b19e793491b1c6ea0fd8b46cd9f32e592fc'],
-            'type': 'tar',
-            'synthetic': True,
-        }]
+        expected_log = list(map(self._enrich_revision, expected_log))
 
-        expected_revisions = [
-            {
-                'url': '/api/1/revision/'
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
-                'history_url': '/api/1/revision/'
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/log/',
-                'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-                'directory': '18d8be353ed3480476f032475e7c233eff7371d5',
-                'directory_url': '/api/1/directory/'
-                '18d8be353ed3480476f032475e7c233eff7371d5/',
-                'author_name': 'Name Surname',
-                'author_email': 'name@surname.com',
-                'committer_name': 'Name Surname',
-                'committer_email': 'name@surname.com',
-                'message': 'amazing revision message',
-                'date_offset': 0,
-                'committer_date_offset': 0,
-                'parents': [{
-                    'id': 'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
-                    'url': '/api/1/revision/adc83b19e793491b1c6ea0fd8b46cd9f32e592fc/',  # noqa
-                }],
-                'type': 'tar',
-                'synthetic': True,
-            },
-            {
-                'url': '/api/1/revision/'
-                '18d8be353ed3480476f032475e7c233eff7371d5/',
-                'history_url': '/api/1/revision/'
-                '18d8be353ed3480476f032475e7c233eff7371d5/log/',
-                'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-                'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-                'directory_url': '/api/1/directory/'
-                '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6/',
-                'author_name': 'Software Heritage',
-                'author_email': 'robot@softwareheritage.org',
-                'committer_name': 'Software Heritage',
-                'committer_email': 'robot@softwareheritage.org',
-                'message': 'synthetic revision message',
-                'date_offset': 0,
-                'committer_date_offset': 0,
-                'parents': [{
-                    'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a4345',
-                    'url': '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/',  # noqa
-                }],
-                'type': 'tar',
-                'synthetic': True,
-            }]
+        has_next = len(expected_log) > per_page
 
-        # when
-        rv = self.client.get('/api/1/revision/18d8be353ed3480476f0'
-                             '32475e7c233eff7371d5/prev/21145781e2'
-                             '6ad1f978e/log/')
-
-        # then
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(expected_revisions, rv.data)
-        self.assertFalse(rv.has_header('Link'))
+        self.assertEqual(rv.data,
+                         expected_log[:-1] if has_next else expected_log)
+        if has_next:
+            self.assertIn('Link', rv)
+            next_log_url = reverse(
+                'api-revision-origin-log',
+                url_args={'origin_id': origin['id'],
+                          'branch_name': 'HEAD'},
+                query_params={'per_page': per_page,
+                              'sha1_git': expected_log[-1]['id']})
+            self.assertIn(next_log_url, rv['Link'])
 
-        mock_service.lookup_revision_log.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5', 11)
-        mock_service.lookup_revision_multiple.assert_called_once_with(
-            ['21145781e26ad1f978e'])
+    @given(origin())
+    def test_api_revision_log_by_ko(self, origin):
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_log_by(self, mock_service):
-        # given
-        stub_revisions = [{
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': ['7834ef7e7c357ce2af928115c6c6a42b7e2a4345'],
-            'type': 'tar',
-            'synthetic': True,
-        }]
-        mock_service.lookup_revision_log_by.return_value = stub_revisions
+        invalid_branch_name = 'foobar'
 
-        expected_revisions = [{
-            'id': '18d8be353ed3480476f032475e7c233eff7371d5',
-            'url': '/api/1/revision/18d8be353ed3480476f032475e7c233eff7371d5/',
-            'history_url': '/api/1/revision/18d8be353ed3480476f032475e7c233ef'
-                           'f7371d5/log/',
-            'directory': '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6',
-            'directory_url': '/api/1/directory/7834ef7e7c357ce2af928115c6c6a'
-                             '42b7e2a44e6/',
-            'author_name': 'Software Heritage',
-            'author_email': 'robot@softwareheritage.org',
-            'committer_name': 'Software Heritage',
-            'committer_email': 'robot@softwareheritage.org',
-            'message': 'synthetic revision message',
-            'date_offset': 0,
-            'committer_date_offset': 0,
-            'parents': [{
-                'id': '7834ef7e7c357ce2af928115c6c6a42b7e2a4345',
-                 'url': '/api/1/revision/7834ef7e7c357ce2af928115c6c6a42b7e2a4345/'  # noqa
-            }],
-            'type': 'tar',
-            'synthetic': True,
-        }]
+        url = reverse('api-revision-origin-log',
+                      url_args={'origin_id': origin['id'],
+                                'branch_name': invalid_branch_name})
 
-        # when
-        rv = self.client.get('/api/1/revision/origin/1/log/')
+        rv = self.client.get(url)
 
-        # then
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_revisions)
-        self.assertFalse(rv.has_header('Link'))
-
-        mock_service.lookup_revision_log_by.assert_called_once_with(
-            '1', 'HEAD', None, 11)
-
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_log_by_with_next(self, mock_service):
-        # given
-        stub_revisions = []
-        for i in range(27):
-            stub_revisions.append({'id': str(i)})
-
-        mock_service.lookup_revision_log_by.return_value = stub_revisions[:26]
-
-        expected_revisions = [x for x in stub_revisions if int(x['id']) < 25]
-        for e in expected_revisions:
-            e['url'] = '/api/1/revision/%s/' % e['id']
-            e['history_url'] = '/api/1/revision/%s/log/' % e['id']
-
-        # when
-        rv = self.client.get('/api/1/revision/origin/1/log/?per_page=25')
-
-        # then
-        self.assertEqual(rv.status_code, 200)
-
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertIsNotNone(rv['Link'])
-        self.assertEqual(rv.data, expected_revisions)
-
-        mock_service.lookup_revision_log_by.assert_called_once_with(
-            '1', 'HEAD', None, 26)
-
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_log_by_norev(self, mock_service):
-        # given
-        mock_service.lookup_revision_log_by.side_effect = NotFoundExc(
-            'No revision')
-
-        # when
-        rv = self.client.get('/api/1/revision/origin/1/log/')
-
-        # then
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertFalse(rv.has_header('Link'))
-        self.assertEqual(rv.data, {'exception': 'NotFoundExc',
-                                   'reason': 'No revision'})
-
-        mock_service.lookup_revision_log_by.assert_called_once_with(
-            '1', 'HEAD', None, 11)
+        self.assertEqual(
+            rv.data,
+            {'exception': 'NotFoundExc',
+             'reason': 'Revision for origin %s and branch %s not found.' %
+             (origin['id'], invalid_branch_name)})
 
     @patch('swh.web.api.views.revision._revision_directory_by')
     def test_api_revision_directory_ko_not_found(self, mock_rev_dir):
@@ -845,3 +492,38 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         mock_rev_dir.assert_called_once_with(
             {'sha1_git': '666'}, 'some/other/path', url, with_data=False)
+
+    def _enrich_revision(self, revision):
+        author_url = reverse(
+            'api-person',
+            url_args={'person_id': revision['author']['id']})
+
+        committer_url = reverse(
+            'api-person',
+            url_args={'person_id': revision['committer']['id']})
+
+        directory_url = reverse(
+            'api-directory',
+            url_args={'sha1_git': revision['directory']})
+
+        history_url = reverse('api-revision-log',
+                              url_args={'sha1_git': revision['id']})
+
+        parents_id_url = []
+        for p in revision['parents']:
+            parents_id_url.append({
+                'id': p,
+                'url': reverse('api-revision', url_args={'sha1_git': p})
+            })
+
+        revision_url = reverse('api-revision',
+                               url_args={'sha1_git': revision['id']})
+
+        revision['author_url'] = author_url
+        revision['committer_url'] = committer_url
+        revision['directory_url'] = directory_url
+        revision['history_url'] = history_url
+        revision['url'] = revision_url
+        revision['parents'] = parents_id_url
+
+        return revision

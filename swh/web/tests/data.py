@@ -1,9 +1,10 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import os
+import time
 
 from swh.indexer.language import LanguageIndexer
 from swh.indexer.fossology_license import FossologyLicenseIndexer
@@ -130,19 +131,20 @@ _TEST_ORIGINS = [
         'id': 1,
         'type': 'git',
         'url': 'https://github.com/wcoder/highlightjs-line-numbers.js',
-        'archive': 'highlightjs-line-numbers.js.zip'
+        'archives': ['highlightjs-line-numbers.js.zip',
+                     'highlightjs-line-numbers.js_visit2.zip']
     },
     {
         'id': 2,
         'type': 'git',
         'url': 'https://github.com/memononen/libtess2',
-        'archive': 'libtess2.zip'
+        'archives': ['libtess2.zip']
     },
     {
         'id': 3,
         'type': 'git',
         'url': 'repo_with_submodules',
-        'archive': 'repo_with_submodules.tgz'
+        'archives': ['repo_with_submodules.tgz']
     }
 ]
 
@@ -152,10 +154,14 @@ def _init_tests_data():
     # Load git repositories from archives
     loader = GitLoaderFromArchive(config=_TEST_LOADER_CONFIG)
     for origin in _TEST_ORIGINS:
-        origin_repo_archive = \
-            os.path.join(os.path.dirname(__file__),
-                         'resources/repos/%s' % origin['archive'])
-        loader.load(origin['url'], origin_repo_archive, None)
+        nb_visits = len(origin['archives'])
+        for i, archive in enumerate(origin['archives']):
+            origin_repo_archive = \
+                os.path.join(os.path.dirname(__file__),
+                             'resources/repos/%s' % archive)
+            loader.load(origin['url'], origin_repo_archive, None)
+            if nb_visits > 1 and i != nb_visits - 1:
+                time.sleep(1)
 
     # Get reference to the memory storage
     storage = loader.storage

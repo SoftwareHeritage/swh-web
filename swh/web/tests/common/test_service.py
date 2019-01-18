@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -353,15 +353,27 @@ class ServiceTestCase(WebTestCase):
         self.assertIn('not found', exception_text)
 
     @given(revision_with_submodules())
-    def test_lookup_directory_with_revision_ko_type_not_implemented(
+    def test_lookup_directory_with_revision_submodules(
             self, revision_with_submodules):
 
-        with self.assertRaises(NotImplementedError) as cm:
-            service.lookup_directory_with_revision(
-                revision_with_submodules['rev_sha1_git'],
-                revision_with_submodules['rev_dir_rev_path'])
-        self.assertIn("Entity of type rev not implemented.",
-                      cm.exception.args[0])
+        rev_sha1_git = revision_with_submodules['rev_sha1_git']
+        rev_dir_path = revision_with_submodules['rev_dir_rev_path']
+
+        actual_data = service.lookup_directory_with_revision(
+                rev_sha1_git, rev_dir_path)
+
+        revision = self.revision_get(revision_with_submodules['rev_sha1_git'])
+        directory = self.directory_ls(revision['directory'])
+        rev_entry = next(e for e in directory if e['name'] == rev_dir_path)
+
+        expected_data = {
+            'content': self.revision_get(rev_entry['target']),
+            'path': rev_dir_path,
+            'revision': rev_sha1_git,
+            'type': 'rev'
+        }
+
+        self.assertEqual(actual_data, expected_data)
 
     @given(revision())
     def test_lookup_directory_with_revision_without_path(self, revision):
@@ -509,7 +521,7 @@ class ServiceTestCase(WebTestCase):
         self.assertEqual(actual_revision_log, expected_revision_log)
 
     def _get_origin_branches(self, origin):
-        origin_visit = self.origin_visit_get(origin['id'])[0]
+        origin_visit = self.origin_visit_get(origin['id'])[-1]
         snapshot = self.snapshot_get(origin_visit['snapshot'])
         branches = {k: v for (k, v) in snapshot['branches'].items()
                     if v['target_type'] == 'revision'}

@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -154,6 +154,27 @@ def origin():
     into the test archive.
     """
     return _known_swh_object('origins')
+
+
+def origin_with_multiple_visits():
+    """
+    Hypothesis strategy returning a random origin ingested
+    into the test archive.
+    """
+    ret = []
+    for origin in tests_data['origins']:
+        visits = list(storage.origin_visit_get(origin['id']))
+        if len(visits) > 1:
+            ret.append(origin)
+    return sampled_from(ret)
+
+
+def unknown_origin_id():
+    """
+    Hypothesis strategy returning a random origin id not ingested
+    into the test archive.
+    """
+    return integers(min_value=1000000)
 
 
 def new_origin():
