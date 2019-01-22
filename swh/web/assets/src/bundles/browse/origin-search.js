@@ -92,8 +92,7 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
   let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
   if (searchMetadata) {
     baseSearchUrl = Urls.api_origin_metadata_search() + `?fulltext=${patterns}`;
-  }
-  else {
+  } else {
     originPatterns = patterns;
     let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
     for (let i = 0; i < patternsArray.length; ++i) {
