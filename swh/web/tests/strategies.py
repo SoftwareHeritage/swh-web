@@ -8,7 +8,7 @@ import random
 from collections import defaultdict
 from datetime import datetime
 
-from hypothesis import settings, assume, HealthCheck
+from hypothesis import settings, assume
 from hypothesis.strategies import (
     just, sampled_from, lists, composite, datetimes,
     integers, binary, text, characters
@@ -27,14 +27,15 @@ from swh.web.tests.data import get_tests_data
 # Some of these data are sampled from a test archive created and populated
 # in the swh.web.tests.data module.
 
+# Set the swh-web hypothesis profile if none has been explicitly set
+hypothesis_default_settings = settings.get_profile('default')
+if repr(settings()) == repr(hypothesis_default_settings):
+    settings.load_profile('swh-web')
+
+# Import tests data
 tests_data = get_tests_data()
 storage = tests_data['storage']
 
-# Set some hypothesis settings
-settings.register_profile(
-    'swh-web', settings(deadline=None,
-                        suppress_health_check=[HealthCheck.too_slow]))
-settings.load_profile('swh-web')
 
 # The following strategies exploit the hypothesis capabilities
 

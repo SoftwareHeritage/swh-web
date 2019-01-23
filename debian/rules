@@ -2,7 +2,7 @@
 
 export PYBUILD_NAME=swh.web
 export PYBUILD_OPTION=--test-pytest
-export PYBUILD_TEST_ARGS=./swh/web/tests
+export PYBUILD_TEST_ARGS=--hypothesis-profile=swh-web-fast ./swh/web/tests
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
