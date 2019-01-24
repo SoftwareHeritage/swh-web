@@ -466,28 +466,23 @@ class UtilsTestCase(WebTestCase):
             'id': 'rev-id',
             'parents': ['123'],
             'children': ['456'],
-        }, context='prev-rev')
+        })
 
         expected_revision = {
             'id': 'rev-id',
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
-            'history_context_url': '/api/revision/rev-id/prev/prev-rev/log/',
             'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
-            'children_urls': ['/api/revision/456/',
-                              '/api/revision/prev-rev/'],
+            'children_urls': ['/api/revision/456/'],
         }
 
         # then
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
-             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+            [call('api-revision', url_args={'sha1_git': 'rev-id'}),
              call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
-             call('api-revision-log', url_args={'sha1_git': 'rev-id',
-                                                'prev_sha1s': 'prev-rev'}),
              call('api-revision', url_args={'sha1_git': '123'}),
              call('api-revision', url_args={'sha1_git': '456'})])
 
@@ -521,78 +516,6 @@ class UtilsTestCase(WebTestCase):
              call('api-revision', url_args={'sha1_git': '123'}),
              call('api-revision', url_args={'sha1_git': '456'})])
 
-    @patch('swh.web.api.utils.reverse')
-    def test_enrich_revision_context_empty_prev_list(
-        self, mock_django_reverse,
-    ):
-        # given
-        mock_django_reverse.side_effect = self._reverse_context_test
-
-        # when
-        expected_revision = {
-            'id': 'rev-id',
-            'url': '/api/revision/rev-id/',
-            'history_url': '/api/revision/rev-id/log/',
-            'history_context_url': ('/api/revision/rev-id/'
-                                    'prev/prev-rev/log/'),
-            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
-            'children': ['456'],
-            'children_urls': ['/api/revision/456/',
-                              '/api/revision/prev-rev/'],
-        }
-
-        actual_revision = utils.enrich_revision({
-            'id': 'rev-id',
-            'url': '/api/revision/rev-id/',
-            'parents': ['123'],
-            'children': ['456']}, context='prev-rev')
-
-        # then
-        self.assertEqual(actual_revision, expected_revision)
-        mock_django_reverse.assert_has_calls(
-            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
-             call('api-revision', url_args={'sha1_git': 'rev-id'}),
-             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
-             call('api-revision-log', url_args={'sha1_git': 'rev-id',
-                                                'prev_sha1s': 'prev-rev'}),
-             call('api-revision', url_args={'sha1_git': '123'}),
-             call('api-revision', url_args={'sha1_git': '456'})])
-
-    @patch('swh.web.api.utils.reverse')
-    def test_enrich_revision_context_some_prev_list(self, mock_django_reverse):
-        # given
-        mock_django_reverse.side_effect = self._reverse_context_test
-
-        # when
-        expected_revision = {
-            'id': 'rev-id',
-            'url': '/api/revision/rev-id/',
-            'history_url': '/api/revision/rev-id/log/',
-            'history_context_url': ('/api/revision/rev-id/'
-                                    'prev/prev1-rev/prev0-rev/log/'),
-            'parents': [{'id': '123', 'url': '/api/revision/123/'}],
-            'children': ['456'],
-            'children_urls': ['/api/revision/456/',
-                              '/api/revision/prev0-rev/prev/prev1-rev/'],
-        }
-
-        actual_revision = utils.enrich_revision({
-            'id': 'rev-id',
-            'parents': ['123'],
-            'children': ['456']}, context='prev1-rev/prev0-rev')
-
-        # then
-        self.assertEqual(actual_revision, expected_revision)
-        mock_django_reverse.assert_has_calls(
-            [call('api-revision-context', url_args={'context': 'prev1-rev',
-                                                  'sha1_git': 'prev0-rev'}),
-             call('api-revision', url_args={'sha1_git': 'rev-id'}),
-             call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
-             call('api-revision-log', url_args={'prev_sha1s': 'prev1-rev/prev0-rev', # noqa
-                                              'sha1_git': 'rev-id'}),
-             call('api-revision', url_args={'sha1_git': '123'}),
-             call('api-revision', url_args={'sha1_git': '456'})])
-
     def _reverse_rev_message_test(self, view_name, url_args):
         if view_name == 'api-revision':
             return '/api/revision/%s/' % url_args['sha1_git']
@@ -616,13 +539,10 @@ class UtilsTestCase(WebTestCase):
             'id': 'rev-id',
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
-            'history_context_url': ('/api/revision/rev-id/'
-                                    'prev/prev-rev/log/'),
             'message': None,
             'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
-            'children_urls': ['/api/revision/456/',
-                              '/api/revision/prev-rev/'],
+            'children_urls': ['/api/revision/456/'],
         }
 
         actual_revision = utils.enrich_revision({
@@ -630,17 +550,14 @@ class UtilsTestCase(WebTestCase):
             'message': None,
             'parents': ['123'],
             'children': ['456'],
-        }, context='prev-rev')
+        })
 
         # then
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
-             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+            [call('api-revision', url_args={'sha1_git': 'rev-id'}),
              call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
-             call('api-revision-log', url_args={'sha1_git': 'rev-id',
-                                                'prev_sha1s': 'prev-rev'}),
              call('api-revision', url_args={'sha1_git': '123'}),
              call('api-revision', url_args={'sha1_git': '456'})]
         )
@@ -657,32 +574,26 @@ class UtilsTestCase(WebTestCase):
             'message_decoding_failed': True,
             'parents': ['123'],
             'children': ['456'],
-        }, context='prev-rev')
+        })
 
         expected_revision = {
             'id': 'rev-id',
             'url': '/api/revision/rev-id/',
             'history_url': '/api/revision/rev-id/log/',
-            'history_context_url': ('/api/revision/rev-id/'
-                                    'prev/prev-rev/log/'),
             'message': None,
             'message_decoding_failed': True,
             'message_url': '/api/revision/rev-id/raw/',
             'parents': [{'id': '123', 'url': '/api/revision/123/'}],
             'children': ['456'],
-            'children_urls': ['/api/revision/456/',
-                              '/api/revision/prev-rev/'],
+            'children_urls': ['/api/revision/456/'],
         }
 
         # then
         self.assertEqual(actual_revision, expected_revision)
 
         mock_django_reverse.assert_has_calls(
-            [call('api-revision', url_args={'sha1_git': 'prev-rev'}),
-             call('api-revision', url_args={'sha1_git': 'rev-id'}),
+            [call('api-revision', url_args={'sha1_git': 'rev-id'}),
              call('api-revision-log', url_args={'sha1_git': 'rev-id'}),
-             call('api-revision-log', url_args={'sha1_git': 'rev-id',
-                                                'prev_sha1s': 'prev-rev'}),
              call('api-revision', url_args={'sha1_git': '123'}),
              call('api-revision', url_args={'sha1_git': '456'}),
              call('api-revision-raw-message', url_args={'sha1_git': 'rev-id'})]) # noqa

@@ -147,14 +147,37 @@ class WebTestCase(TestCase):
         return converters.from_snapshot(snp)
 
     @classmethod
+    def origin_get(cls, origin_info):
+        origin = cls.storage.origin_get(origin_info)
+        return converters.from_origin(origin)
+
+    @classmethod
     def origin_visit_get(cls, origin_id):
         visits = cls.storage.origin_visit_get(origin_id)
         return list(map(converters.from_origin_visit, visits))
 
     @classmethod
+    def origin_visit_get_by(cls, origin_id, visit_id):
+        visit = cls.storage.origin_visit_get_by(origin_id, visit_id)
+        return converters.from_origin_visit(visit)
+
+    @classmethod
     def snapshot_get(cls, snapshot_id):
         snp = cls.storage.snapshot_get(hash_to_bytes(snapshot_id))
         return converters.from_snapshot(snp)
+
+    @classmethod
+    def snapshot_get_branches(cls, snapshot_id, branches_from='',
+                              branches_count=1000, target_types=None):
+        snp = cls.storage.snapshot_get_branches(hash_to_bytes(snapshot_id),
+                                                branches_from.encode(),
+                                                branches_count, target_types)
+        return converters.from_snapshot(snp)
+
+    @classmethod
+    def person_get(cls, person_id):
+        person = next(cls.storage.person_get([person_id]))
+        return converters.from_person(person)
 
     def setUp(self):
         cache.clear()

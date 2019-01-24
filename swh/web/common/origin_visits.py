@@ -17,7 +17,7 @@ def get_origin_visits(origin_info):
     in the swh web browse ui.
 
     Args:
-        origin_id (int): the id of the swh origin to fetch visits from
+        origin_info (dict): dict describing the origin to fetch visits from
 
     Returns:
         list: A list of dict describing the origin visits with the

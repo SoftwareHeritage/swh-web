@@ -1,10 +1,8 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import copy
-import datetime
 import itertools
 import pytest
 import random
@@ -21,7 +19,8 @@ from swh.web.tests.strategies import (
     contents_with_ctags, origin, new_origin, visit_dates, directory,
     release, revision, unknown_revision, revisions, unknown_revisions,
     ancestor_revisions, non_ancestor_revisions, invalid_sha1, sha256,
-    revision_with_submodules, unknown_directory, empty_directory
+    revision_with_submodules, unknown_directory, empty_directory,
+    new_revision, new_origins
 )
 from swh.web.tests.testcase import (
     WebTestCase, ctags_json_missing, fossology_missing
@@ -29,74 +28,6 @@ from swh.web.tests.testcase import (
 
 
 class ServiceTestCase(WebTestCase):
-
-    def setUp(self):
-
-        self.SHA1_SAMPLE = '40e71b8614fcd89ccd17ca2b1d9e66c5b00a6d03'
-        self.SHA1_SAMPLE_BIN = hash_to_bytes(self.SHA1_SAMPLE)
-
-        self.DIRECTORY_ID = '7834ef7e7c357ce2af928115c6c6a42b7e2a44e6'
-        self.DIRECTORY_ID_BIN = hash_to_bytes(self.DIRECTORY_ID)
-        self.AUTHOR_ID_BIN = {
-            'name': b'author',
-            'email': b'author@company.org',
-            'fullname': b'author <author@company.org>'
-        }
-        self.AUTHOR_ID = {
-            'name': 'author',
-            'email': 'author@company.org',
-            'fullname': 'author <author@company.org>'
-        }
-        self.COMMITTER_ID_BIN = {
-            'name': b'committer',
-            'email': b'committer@corp.org',
-            'fullname': b'committer <committer@corp.org>'
-        }
-        self.COMMITTER_ID = {
-            'name': 'committer',
-            'email': 'committer@corp.org',
-            'fullname': 'committer <committer@corp.org>'
-        }
-        self.SAMPLE_DATE_RAW = {
-            'timestamp': int(datetime.datetime(
-                2000, 1, 17, 11, 23, 54,
-                tzinfo=datetime.timezone.utc,
-            ).timestamp()),
-            'offset': 0,
-            'negative_utc': False,
-        }
-        self.SAMPLE_DATE = '2000-01-17T11:23:54+00:00'
-        self.SAMPLE_MESSAGE_BIN = b'elegant fix for bug 31415957'
-        self.SAMPLE_MESSAGE = 'elegant fix for bug 31415957'
-
-        self.SAMPLE_REVISION = {
-            'id': self.SHA1_SAMPLE,
-            'directory': self.DIRECTORY_ID,
-            'author': self.AUTHOR_ID,
-            'committer': self.COMMITTER_ID,
-            'message': self.SAMPLE_MESSAGE,
-            'date': self.SAMPLE_DATE,
-            'committer_date': self.SAMPLE_DATE,
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': {},
-            'merge': False
-        }
-
-        self.SAMPLE_REVISION_RAW = {
-            'id': self.SHA1_SAMPLE_BIN,
-            'directory': self.DIRECTORY_ID_BIN,
-            'author': self.AUTHOR_ID_BIN,
-            'committer': self.COMMITTER_ID_BIN,
-            'message': self.SAMPLE_MESSAGE_BIN,
-            'date': self.SAMPLE_DATE_RAW,
-            'committer_date': self.SAMPLE_DATE_RAW,
-            'synthetic': False,
-            'type': 'git',
-            'parents': [],
-            'metadata': [],
-        }
 
     @given(contents())
     def test_lookup_multiple_hashes_all_present(self, contents):
@@ -258,12 +189,10 @@ class ServiceTestCase(WebTestCase):
         for ts in visit_dates:
             self.storage.origin_visit_add(origin_id, ts)
 
-        actual_origin_visits = list(service.lookup_origin_visits(origin_id))
+        actual_origin_visits = list(
+            service.lookup_origin_visits(origin_id, per_page=100))
 
-        expected_visits = list(self.storage.origin_visit_get(origin_id))
-        for visit in expected_visits:
-            visit['date'] = visit['date'].isoformat()
-            visit['metadata'] = {}
+        expected_visits = self.origin_visit_get(origin_id)
 
         self.assertEqual(actual_origin_visits, expected_visits)
 
@@ -424,15 +353,27 @@ class ServiceTestCase(WebTestCase):
         self.assertIn('not found', exception_text)
 
     @given(revision_with_submodules())
-    def test_lookup_directory_with_revision_ko_type_not_implemented(
+    def test_lookup_directory_with_revision_submodules(
             self, revision_with_submodules):
 
-        with self.assertRaises(NotImplementedError) as cm:
-            service.lookup_directory_with_revision(
-                revision_with_submodules['rev_sha1_git'],
-                revision_with_submodules['rev_dir_rev_path'])
-        self.assertIn("Entity of type rev not implemented.",
-                      cm.exception.args[0])
+        rev_sha1_git = revision_with_submodules['rev_sha1_git']
+        rev_dir_path = revision_with_submodules['rev_dir_rev_path']
+
+        actual_data = service.lookup_directory_with_revision(
+                rev_sha1_git, rev_dir_path)
+
+        revision = self.revision_get(revision_with_submodules['rev_sha1_git'])
+        directory = self.directory_ls(revision['directory'])
+        rev_entry = next(e for e in directory if e['name'] == rev_dir_path)
+
+        expected_data = {
+            'content': self.revision_get(rev_entry['target']),
+            'path': rev_dir_path,
+            'revision': rev_sha1_git,
+            'type': 'rev'
+        }
+
+        self.assertEqual(actual_data, expected_data)
 
     @given(revision())
     def test_lookup_directory_with_revision_without_path(self, revision):
@@ -503,37 +444,34 @@ class ServiceTestCase(WebTestCase):
         actual_revision = service.lookup_revision(revision)
         self.assertEqual(actual_revision, self.revision_get(revision))
 
-    @given(unknown_revision())
-    def test_lookup_revision_invalid_msg(self, new_revision_id):
+    @given(new_revision())
+    def test_lookup_revision_invalid_msg(self, new_revision):
 
-        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
-        new_revision['id'] = hash_to_bytes(new_revision_id)
         new_revision['message'] = b'elegant fix for bug \xff'
         self.storage.revision_add([new_revision])
 
-        revision = service.lookup_revision(new_revision_id)
+        revision = service.lookup_revision(hash_to_hex(new_revision['id']))
         self.assertEqual(revision['message'], None)
         self.assertEqual(revision['message_decoding_failed'], True)
 
-    @given(unknown_revision())
-    def test_lookup_revision_msg_ok(self, new_revision_id):
+    @given(new_revision())
+    def test_lookup_revision_msg_ok(self, new_revision):
 
-        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
-        new_revision['id'] = hash_to_bytes(new_revision_id)
         self.storage.revision_add([new_revision])
 
-        revision_message = service.lookup_revision_message(new_revision_id)
+        revision_message = service.lookup_revision_message(
+            hash_to_hex(new_revision['id']))
 
         self.assertEqual(revision_message,
-                         {'message': self.SAMPLE_MESSAGE_BIN})
+                         {'message': new_revision['message']})
 
-    @given(unknown_revision())
-    def test_lookup_revision_msg_absent(self, new_revision_id):
+    @given(new_revision())
+    def test_lookup_revision_msg_absent(self, new_revision):
 
-        new_revision = copy.deepcopy(self.SAMPLE_REVISION_RAW)
-        new_revision['id'] = hash_to_bytes(new_revision_id)
         del new_revision['message']
         self.storage.revision_add([new_revision])
+
+        new_revision_id = hash_to_hex(new_revision['id'])
 
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_message(new_revision_id)
@@ -583,7 +521,7 @@ class ServiceTestCase(WebTestCase):
         self.assertEqual(actual_revision_log, expected_revision_log)
 
     def _get_origin_branches(self, origin):
-        origin_visit = self.origin_visit_get(origin['id'])[0]
+        origin_visit = self.origin_visit_get(origin['id'])[-1]
         snapshot = self.snapshot_get(origin_visit['snapshot'])
         branches = {k: v for (k, v) in snapshot['branches'].items()
                     if v['target_type'] == 'revision'}
@@ -862,3 +800,21 @@ class ServiceTestCase(WebTestCase):
              service.lookup_directory_with_revision(
                 revision, dir_entry['name'], with_data=True))
         )
+
+    @given(new_origins(20))
+    def test_lookup_origins(self, new_origins):
+
+        nb_origins = len(new_origins)
+        expected_origins = self.storage.origin_add(new_origins)
+
+        origin_from_idx = random.randint(1, nb_origins-1) - 1
+        origin_from = expected_origins[origin_from_idx]['id']
+        max_origin_idx = expected_origins[-1]['id']
+        origin_count = random.randint(1, max_origin_idx - origin_from)
+
+        actual_origins = list(service.lookup_origins(origin_from,
+                                                     origin_count))
+        expected_origins = list(self.storage.origin_get_range(origin_from,
+                                                              origin_count))
+
+        self.assertEqual(actual_origins, expected_origins)

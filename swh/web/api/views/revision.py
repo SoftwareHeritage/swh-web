@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -39,8 +39,10 @@ def _revision_directory_by(revision, path, request_path,
     content = result['content']
     if result['type'] == 'dir':  # dir_entries
         result['content'] = list(map(enrich_directory_local, content))
-    else:  # content
+    elif result['type'] == 'file':  # content
         result['content'] = utils.enrich_content(content)
+    elif result['type'] == 'rev':  # revision
+        result['content'] = utils.enrich_revision(content)
 
     return result
 
@@ -124,7 +126,7 @@ def api_revision_log_by(request, origin_id,
     error_msg += (' and time stamp %s.' % ts) if ts else '.'
 
     rev_get = api_lookup(
-        lookup_revision_log_by_with_limit, origin_id, branch_name, ts,
+        lookup_revision_log_by_with_limit, int(origin_id), branch_name, ts,
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_revision)
 
@@ -176,7 +178,7 @@ def api_revision_log_by(request, origin_id,
            'api-revision-origin-directory')
 @api_doc('/revision/origin/directory/', tags=['hidden'])
 def api_directory_through_revision_origin(request, origin_id,
-                                          branch_name="refs/heads/master",
+                                          branch_name='HEAD',
                                           ts=None,
                                           path=None,
                                           with_data=False):
@@ -187,7 +189,7 @@ def api_directory_through_revision_origin(request, origin_id,
     if ts:
         ts = parse_timestamp(ts)
 
-    return _revision_directory_by({'origin_id': origin_id,
+    return _revision_directory_by({'origin_id': int(origin_id),
                                    'branch_name': branch_name,
                                    'ts': ts
                                    },
@@ -262,27 +264,11 @@ def api_revision_with_origin(request, origin_id,
             :swh_web_api:`revision/origin/13706355/branch/refs/heads/2.7/`
     """ # noqa
     return api_lookup(
-        service.lookup_revision_by, origin_id, branch_name, ts,
+        service.lookup_revision_by, int(origin_id), branch_name, ts,
         notfound_msg=('Revision with (origin_id: {}, branch_name: {}'
                       ', ts: {}) not found.'.format(origin_id,
                                                     branch_name, ts)),
         enrich_fn=utils.enrich_revision)
-
-
-@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/prev/(?P<context>[0-9a-f/]+)/',
-           'api-revision-context')
-@api_doc('/revision/prev/', tags=['hidden'])
-def api_revision_with_context(request, sha1_git, context):
-    """
-    Return information about revision with id sha1_git.
-    """
-    def _enrich_revision(revision, context=context):
-        return utils.enrich_revision(revision, context)
-
-    return api_lookup(
-        service.lookup_revision, sha1_git,
-        notfound_msg='Revision with sha1_git %s not found.' % sha1_git,
-        enrich_fn=_enrich_revision)
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-revision')
