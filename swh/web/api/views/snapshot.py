@@ -99,22 +99,17 @@ def api_snapshot(request, snapshot_id):
 
     results = api_lookup(
         service.lookup_snapshot, snapshot_id, branches_from,
-        branches_count+1, target_types,
+        branches_count, target_types,
         notfound_msg='Snapshot with id {} not found.'.format(snapshot_id),
         enrich_fn=_enrich_snapshot)
 
-    next_branch = None
-    if len(results['branches']) > branches_count:
-        next_branch = sorted(results['branches'].keys())[-1]
-        del results['branches'][next_branch]
-
     response = {'results': results, 'headers': {}}
 
-    if next_branch:
+    if results['next_branch'] is not None:
         response['headers']['link-next'] = \
             reverse('api-snapshot',
                     url_args={'snapshot_id': snapshot_id},
-                    query_params={'branches_from': next_branch,
+                    query_params={'branches_from': results['next_branch'],
                                   'branches_count': branches_count,
                                   'target_types': target_types})
 
