@@ -77,9 +77,6 @@ function populateOriginSearchResultsTable(data, offset) {
     $('#origins-prev-results-button').addClass('disabled');
   }
   inSearch = false;
-  if (typeof Storage !== 'undefined') {
-    sessionStorage.setItem('last-swh-origin-search-offset', offset);
-  }
   setTimeout(() => {
     window.scrollTo(0, 0);
   });
@@ -91,16 +88,24 @@ function escapeStringRegexp(str) {
 }
 
 function searchOrigins(patterns, limit, searchOffset, offset) {
-  originPatterns = patterns;
-  let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
-  for (let i = 0; i < patternsArray.length; ++i) {
-    patternsArray[i] = escapeStringRegexp(patternsArray[i]);
+  let baseSearchUrl;
+  let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
+  if (searchMetadata) {
+    baseSearchUrl = Urls.api_origin_metadata_search() + `?fulltext=${patterns}`;
+  } else {
+    originPatterns = patterns;
+    let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
+    for (let i = 0; i < patternsArray.length; ++i) {
+      patternsArray[i] = escapeStringRegexp(patternsArray[i]);
+    }
+    let patternsPermut = [];
+    heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
+    let regex = patternsPermut.join('|');
+    baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
   }
-  let patternsPermut = [];
-  heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
-  let regex = patternsPermut.join('|');
+
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-  let searchUrl = Urls.browse_origin_search(regex) + `?limit=${limit}&offset=${searchOffset}&regexp=true&with_visit=${withVisit}`;
+  let searchUrl = baseSearchUrl + `&limit=${limit}&offset=${searchOffset}&with_visit=${withVisit}`;
 
   clearOriginSearchResultsTable();
   $('.swh-loading').addClass('show');
@@ -109,11 +114,6 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
     .then(response => response.json())
     .then(data => {
       currentData = data;
-      if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem('last-swh-origin-url-patterns', patterns);
-        sessionStorage.setItem('last-swh-origin-search-results', JSON.stringify(data));
-        sessionStorage.setItem('last-swh-origin-search-offset', offset);
-      }
       $('.swh-loading').removeClass('show');
       populateOriginSearchResultsTable(data, offset);
     })
@@ -163,38 +163,21 @@ function doSearch() {
 
 export function initOriginSearch() {
   $(document).ready(() => {
-    if (typeof Storage !== 'undefined') {
-      originPatterns = sessionStorage.getItem('last-swh-origin-url-patterns');
-      let data = sessionStorage.getItem('last-swh-origin-search-results');
-      offset = sessionStorage.getItem('last-swh-origin-search-offset');
-      if (data) {
-        $('#origins-url-patterns').val(originPatterns);
-        offset = parseInt(offset);
-        currentData = JSON.parse(data);
-        populateOriginSearchResultsTable(currentData, offset);
-      }
-      let withVisit = sessionStorage.getItem('last-swh-origin-with-visit');
-      if (withVisit !== null) {
-        $('#swh-search-origins-with-visit').prop('checked', JSON.parse(withVisit));
-      }
-      let filterEmptyVisits = sessionStorage.getItem('last-filter-empty-visits');
-      if (filterEmptyVisits !== null) {
-        $('#swh-filter-empty-visits').prop('checked', JSON.parse(filterEmptyVisits));
-      }
-    }
-
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
       let patterns = $('#origins-url-patterns').val().trim();
-      if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem('last-swh-origin-url-patterns', patterns);
-        sessionStorage.setItem('last-swh-origin-search-results', '');
-        sessionStorage.setItem('last-swh-origin-search-offset', '');
-      }
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
+      let withContent = $('#swh-filter-empty-visits').prop('checked');
+      let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
       let queryParameters = '?q=' + encodeURIComponent(patterns);
       if (withVisit) {
         queryParameters += '&with_visit';
+      }
+      if (withContent) {
+        queryParameters += '&with_content';
+      }
+      if (searchMetadata) {
+        queryParameters += '&search_metadata';
       }
       // Update the url, triggering page reload and effective search
       window.location.search = queryParameters;
@@ -234,26 +217,16 @@ export function initOriginSearch() {
       }
     });
 
-    $(window).on('unload', () => {
-      if (typeof Storage !== 'undefined') {
-        sessionStorage.setItem(
-          'last-swh-origin-with-visit',
-          JSON.stringify($('#swh-search-origins-with-visit').prop('checked')));
-        sessionStorage.setItem(
-          'last-filter-empty-visits',
-          JSON.stringify($('#swh-filter-empty-visits').prop('checked')));
-      }
-    });
-
     let urlParams = new URLSearchParams(window.location.search);
     let query = urlParams.get('q');
     let withVisit = urlParams.has('with_visit');
-    let data = sessionStorage.getItem('last-swh-origin-search-results');
-    if (query && !data) {
+    let withContent = urlParams.has('with_content');
+    let searchMetadata = urlParams.has('search_metadata');
+    if (query) {
       $('#origins-url-patterns').val(query);
-      if (withVisit) {
-        $('#swh-search-origins-with-visit').prop('checked', true);
-      }
+      $('#swh-search-origins-with-visit').prop('checked', withVisit);
+      $('#swh-search-origins-with-content').prop('checked', withContent);
+      $('#swh-search-origin-metadata').prop('checked', searchMetadata);
       doSearch();
     }
   });

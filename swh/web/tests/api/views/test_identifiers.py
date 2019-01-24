@@ -3,44 +3,63 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from hypothesis import given
 from rest_framework.test import APITestCase
-from unittest.mock import patch
 
-from swh.model.identifiers import REVISION
+from swh.model.identifiers import (
+    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+)
 
 from swh.web.common.utils import reverse
-from swh.web.common.exc import NotFoundExc
+from swh.web.tests.strategies import (
+    content, directory, origin, release, revision, snapshot,
+    unknown_content, unknown_directory, unknown_release,
+    unknown_revision, unknown_snapshot
+)
 from swh.web.tests.testcase import WebTestCase
 
 
 class SwhIdsApiTestCase(WebTestCase, APITestCase):
 
-    @patch('swh.web.api.views.identifiers.service')
-    def test_swh_id_resolve_success(self, mock_service):
-        rev_id = '96db9023b881d7cd9f379b0c154650d6c108e9a3'
-        origin = 'https://github.com/openssl/openssl'
-        swh_id = 'swh:1:rev:%s;origin=%s' % (rev_id, origin)
-        url = reverse('api-resolve-swh-pid', url_args={'swh_id': swh_id})
+    @given(origin(), content(), directory(), release(), revision(), snapshot())
+    def test_swh_id_resolve_success(self, origin, content, directory,
+                                    release, revision, snapshot):
 
-        mock_service.lookup_revision.return_value = {}
+        for obj_type_short, obj_type, obj_id in (
+                ('cnt', CONTENT, content['sha1_git']),
+                ('dir', DIRECTORY, directory),
+                ('rel', RELEASE, release),
+                ('rev', REVISION, revision),
+                ('snp', SNAPSHOT, snapshot)):
 
-        resp = self.client.get(url)
+            swh_id = 'swh:1:%s:%s;origin=%s' % (obj_type_short, obj_id,
+                                                origin['url'])
+            url = reverse('api-resolve-swh-pid', url_args={'swh_id': swh_id})
 
-        browse_rev_url = reverse('browse-revision',
-                                 url_args={'sha1_git': rev_id},
-                                 query_params={'origin': origin})
+            resp = self.client.get(url)
 
-        expected_result = {
-            'browse_url': browse_rev_url,
-            'metadata': {'origin': origin},
-            'namespace': 'swh',
-            'object_id': rev_id,
-            'object_type': REVISION,
-            'scheme_version': 1
-        }
+            if obj_type == CONTENT:
+                url_args = {'query_string': 'sha1_git:%s' % obj_id}
+            elif obj_type == SNAPSHOT:
+                url_args = {'snapshot_id': obj_id}
+            else:
+                url_args = {'sha1_git': obj_id}
 
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data, expected_result)
+            browse_rev_url = reverse('browse-%s' % obj_type,
+                                     url_args=url_args,
+                                     query_params={'origin': origin['url']})
+
+            expected_result = {
+                'browse_url': browse_rev_url,
+                'metadata': {'origin': origin['url']},
+                'namespace': 'swh',
+                'object_id': obj_id,
+                'object_type': obj_type,
+                'scheme_version': 1
+            }
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.data, expected_result)
 
     def test_swh_id_resolve_invalid(self):
         rev_id_invalid = '96db9023b8_foo_50d6c108e9a3'
@@ -51,15 +70,22 @@ class SwhIdsApiTestCase(WebTestCase, APITestCase):
 
         self.assertEqual(resp.status_code, 400)
 
-    @patch('swh.web.api.views.identifiers.service')
-    def test_swh_id_resolve_not_found(self, mock_service):
-        rev_id_not_found = '56db90232881d7cd9e379b0c154650d6c108e9a1'
+    @given(unknown_content(), unknown_directory(), unknown_release(),
+           unknown_revision(), unknown_snapshot())
+    def test_swh_id_resolve_not_found(self, unknown_content, unknown_directory,
+                                      unknown_release, unknown_revision,
+                                      unknown_snapshot):
 
-        swh_id = 'swh:1:rev:%s' % rev_id_not_found
-        url = reverse('api-resolve-swh-pid', url_args={'swh_id': swh_id})
+        for obj_type_short, obj_id in (('cnt', unknown_content['sha1_git']),
+                                       ('dir', unknown_directory),
+                                       ('rel', unknown_release),
+                                       ('rev', unknown_revision),
+                                       ('snp', unknown_snapshot)):
 
-        mock_service.lookup_revision.side_effect = NotFoundExc('Revision not found !') # noqa
+            swh_id = 'swh:1:%s:%s' % (obj_type_short, obj_id)
 
-        resp = self.client.get(url)
+            url = reverse('api-resolve-swh-pid', url_args={'swh_id': swh_id})
 
-        self.assertEqual(resp.status_code, 404)
+            resp = self.client.get(url)
+
+            self.assertEqual(resp.status_code, 404)

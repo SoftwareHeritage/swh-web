@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -230,6 +230,22 @@ def lookup_origin(origin):
     return converters.from_origin(origin_info)
 
 
+def lookup_origins(origin_from=1, origin_count=100):
+    """Get list of archived software origins in a paginated way.
+
+    Origins are sorted by id before returning them
+
+    Args:
+        origin_from (int): The minimum id of the origins to return
+        origin_count (int): The maximum number of origins to return
+
+    Yields:
+        origins information as dicts
+    """
+    origins = storage.origin_get_range(origin_from, origin_count)
+    return map(converters.from_origin, origins)
+
+
 def search_origin(url_pattern, offset=0, limit=50, regexp=False,
                   with_visit=False):
     """Search for origins whose urls contain a provided string pattern
@@ -261,10 +277,15 @@ def search_origin_metadata(fulltext, limit=50):
         list of origin metadata as dict.
 
     """
-    results = idx_storage.origin_intrinsic_metadata_search_fulltext(
+    matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
         conjunction=[fulltext], limit=limit)
-    for result in results:
-        result['from_revision'] = hashutil.hash_to_hex(result['from_revision'])
+    results = []
+    for match in matches:
+        match['from_revision'] = hashutil.hash_to_hex(match['from_revision'])
+        result = converters.from_origin(
+            storage.origin_get({'id': match.pop('origin_id')}))
+        result['metadata'] = match
+        results.append(result)
     return results
 
 
@@ -281,7 +302,7 @@ def lookup_person(person_id):
         NotFoundExc if there is no person with the provided id.
 
     """
-    person = _first_element(storage.person_get([person_id]))
+    person = _first_element(storage.person_get([int(person_id)]))
     if not person:
         raise NotFoundExc('Person with id %s not found' % person_id)
     return converters.from_person(person)
@@ -525,12 +546,9 @@ def lookup_revision_log(rev_sha1_git, limit):
         NotFoundExc: if there is no revision with the provided sha1_git.
 
     """
+    lookup_revision(rev_sha1_git)
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
-
     revision_entries = storage.revision_log([sha1_git_bin], limit)
-    if not revision_entries:
-        raise NotFoundExc('Revision with sha1_git %s not found.'
-                          % rev_sha1_git)
     return map(converters.from_revision, revision_entries)
 
 
@@ -707,6 +725,12 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
                 'path': '.' if not dir_path else dir_path,
                 'revision': sha1_git,
                 'content': converters.from_content(content)}
+    elif entity['type'] == 'rev':  # revision
+        revision = next(storage.revision_get([entity['target']]))
+        return {'type': 'rev',
+                'path': '.' if not dir_path else dir_path,
+                'revision': sha1_git,
+                'content': converters.from_revision(revision)}
     else:
         raise NotImplementedError('Entity of type %s not implemented.'
                                   % entity['type'])
@@ -792,6 +816,7 @@ def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
        Dictionaries of origin_visit for that origin
 
     """
+    lookup_origin({'id': origin_id})
     visits = _lookup_origin_visits(origin_id, last_visit=last_visit,
                                    limit=per_page)
     for visit in visits:

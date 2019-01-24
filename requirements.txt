@@ -4,7 +4,7 @@
 
 # Runtime dependencies
 beautifulsoup4
-Django >= 1.10.7, < 2.0
+Django >= 1.11.18, < 2.0
 djangorestframework >= 3.4.0
 django_webpack_loader
 django_js_reverse
