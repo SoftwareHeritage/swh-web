@@ -269,22 +269,6 @@ def api_revision_with_origin(request, origin_id,
         enrich_fn=utils.enrich_revision)
 
 
-@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/prev/(?P<context>[0-9a-f/]+)/',
-           'api-revision-context')
-@api_doc('/revision/prev/', tags=['hidden'])
-def api_revision_with_context(request, sha1_git, context):
-    """
-    Return information about revision with id sha1_git.
-    """
-    def _enrich_revision(revision, context=context):
-        return utils.enrich_revision(revision, context)
-
-    return api_lookup(
-        service.lookup_revision, sha1_git,
-        notfound_msg='Revision with sha1_git %s not found.' % sha1_git,
-        enrich_fn=_enrich_revision)
-
-
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-revision')
 @api_doc('/revision/')
 def api_revision(request, sha1_git):

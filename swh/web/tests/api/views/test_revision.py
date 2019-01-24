@@ -758,42 +758,6 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         mock_service.lookup_revision_log_by.assert_called_once_with(
             '1', 'HEAD', None, 11)
 
-    @patch('swh.web.api.views.revision.service')
-    def test_api_revision_history(self, mock_service):
-        # for readability purposes, we use:
-        # - sha1 as 3 letters (url are way too long otherwise to respect pep8)
-        # - only keys with modification steps (all other keys are kept as is)
-
-        # given
-        stub_revision = {
-            'id': '883',
-            'children': ['777', '999'],
-            'parents': [],
-            'directory': '272'
-        }
-
-        mock_service.lookup_revision.return_value = stub_revision
-
-        # then
-        rv = self.client.get('/api/1/revision/883/prev/999/')
-
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'id': '883',
-            'url': '/api/1/revision/883/',
-            'history_url': '/api/1/revision/883/log/',
-            'history_context_url': '/api/1/revision/883/prev/999/log/',
-            'children': ['777', '999'],
-            'children_urls': ['/api/1/revision/777/',
-                              '/api/1/revision/999/'],
-            'parents': [],
-            'directory': '272',
-            'directory_url': '/api/1/directory/272/'
-        })
-
-        mock_service.lookup_revision.assert_called_once_with('883')
-
     @patch('swh.web.api.views.revision._revision_directory_by')
     def test_api_revision_directory_ko_not_found(self, mock_rev_dir):
         # given
