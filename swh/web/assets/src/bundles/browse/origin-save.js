@@ -13,7 +13,10 @@ let saveRequestsTable;
 function originSaveRequest(originType, originUrl,
                            acceptedCallback, pendingCallback, errorCallback) {
   let addSaveOriginRequestUrl = Urls.browse_origin_save_request(originType, originUrl);
-  let grecaptchaData = {'g-recaptcha-response': grecaptcha.getResponse()};
+  let grecaptchaData = {};
+  if (swh.webapp.isReCaptchaActivated()) {
+    grecaptchaData['g-recaptcha-response'] = grecaptcha.getResponse();
+  }
   let headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
@@ -28,13 +31,17 @@ function originSaveRequest(originType, originUrl,
       } else {
         pendingCallback();
       }
-      grecaptcha.reset();
+      if (swh.webapp.isReCaptchaActivated()) {
+        grecaptcha.reset();
+      }
     })
     .catch(response => {
       if (response.status === 403) {
         errorCallback();
       }
-      grecaptcha.reset();
+      if (swh.webapp.isReCaptchaActivated()) {
+        grecaptcha.reset();
+      }
     });
 }
 

@@ -69,6 +69,7 @@ DEFAULT_CONFIG = {
         }
     }),
     'grecaptcha': ('dict', {
+        'activated': True,
         'validation_url': 'https://www.google.com/recaptcha/api/siteverify',
         'site_key': '',
         'private_key': ''

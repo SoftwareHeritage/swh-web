@@ -9,6 +9,10 @@ See top-level LICENSE file for more information
 
 {% if snapshot_context and snapshot_context.origin_info and snapshot_context.origin_info.type|origin_type_savable %}
 
+  {% if grecaptcha_activated %}
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+  {% endif %}
+
   <!-- entry in the Actions menu -->
   <div class="dropdown-submenu">
     <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#swh-take-new-snapshot-modal">
@@ -47,16 +51,27 @@ See top-level LICENSE file for more information
                 <input type="text" class="form-control" id="swh-input-origin-url" value="{{ snapshot_context.origin_info.url }}" disabled>
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <div class="g-recaptcha" id="swh-take-new-snapshot-recaptcha" data-sitekey="{{ grecaptcha_site_key }}"></div>
+              <div class="form-row">
+                {% if grecaptcha_activated %}
+                  <div class="form-group col-md-6">
+                    <div class="g-recaptcha" id="swh-take-new-snapshot-recaptcha" data-sitekey="{{ grecaptcha_site_key }}"></div>
+                  </div>
+                  <div class="col-md-3"></div>
+                  <div class="form-group col-md-3">
+                    <label for="swh-take-new-snapshot-submit">&#8203;</label>
+                    <button type="submit" id="swh-take-new-snapshot-save-submit" class="btn btn-default btn-block">Submit</button>
+                  </div>
+                {% else %}
+                  <div class="col-md-4"></div>
+                  <div class="col-md-4 form-group">
+                    <label for="swh-take-new-snapshot-submit">&#8203;</label>
+                    <button type="submit" id="swh-take-new-snapshot-save-submit" class="btn btn-default btn-block">Submit</button>
+                  </div>
+                  <div class="col-md-4"></div>
+                {% endif %}
+
               </div>
-              <div class="col-md-3"></div>
-              <div class="form-group col-md-3">
-                <label for="swh-take-new-snapshot-submit">&#8203;</label>
-                <button type="submit" id="swh-take-new-snapshot-save-submit" class="btn btn-default btn-block">Submit</button>
-              </div>
-            </div>
+
           </form>
           <div id="swh-take-new-snapshot-request-status">
           </div>

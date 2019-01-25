@@ -137,3 +137,13 @@ export function initTableRowLinks(trSelector) {
   });
   $('td > a').on('click', function(e) { e.stopPropagation(); });
 }
+
+let reCaptchaActivated;
+
+export function setReCaptchaActivated(activated) {
+  reCaptchaActivated = activated;
+}
+
+export function isReCaptchaActivated() {
+  return reCaptchaActivated;
+}
