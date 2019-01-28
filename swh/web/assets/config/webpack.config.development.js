@@ -16,6 +16,7 @@ const RobotstxtPlugin = require('robotstxt-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const RemoveSourceMapUrlPlugin = require('./webpack-plugins/remove-source-map-url-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
@@ -25,6 +26,8 @@ const devServerPublicPath = 'http://localhost:' + devServerPort + '/static/';
 // set publicPath according if we are using webpack-dev-server to serve
 // our assets or not
 const publicPath = isDevServer ? devServerPublicPath : '/static/';
+
+const nodeModules = path.resolve(__dirname, '../../../../node_modules/');
 
 // collect all bundles we want to produce with webpack
 var bundles = {};
@@ -115,6 +118,10 @@ module.exports = {
   },
   // module resolving configuration
   resolve: {
+    // alias pdfjs to its minified version
+    alias: {
+      'pdfjs-dist': 'pdfjs-dist/build/pdf.min.js'
+    },
     // configure base paths for resolving modules with webpack
     modules: [
       'node_modules',
@@ -283,7 +290,9 @@ module.exports = {
         }
       }]
     }
-    ]
+    ],
+    // tell webpack to not parse minified pdfjs file to speedup build process
+    noParse: [path.resolve(nodeModules, 'pdfjs-dist/build/pdf.min.js')]
   },
   // webpack plugins
   plugins: [
@@ -327,7 +336,13 @@ module.exports = {
       Tab: 'exports-loader?Tab!bootstrap/js/dist/tab',
       Tooltip: 'exports-loader?Tooltip!bootstrap/js/dist/tooltip',
       Util: 'exports-loader?Util!bootstrap/js/dist/util'
-    })
+    }),
+    // needed in order to use pdf.js
+    new webpack.IgnorePlugin(/^\.\/pdf.worker.js$/),
+    new CopyWebpackPlugin([{
+      from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
+      to: path.resolve(__dirname, '../../static/js/')
+    }])
   ],
   // webpack optimizations
   optimization: {
