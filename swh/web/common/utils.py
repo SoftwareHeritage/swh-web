@@ -329,15 +329,19 @@ def is_recaptcha_valid(request, recaptcha_response):
         bool: Whether the reCAPTCHA response is valid or not
     """
     config = get_config()
-    return requests.post(
-        config['grecaptcha']['validation_url'],
-        data={
-            'secret': config['grecaptcha']['private_key'],
-            'response': recaptcha_response,
-            'remoteip': get_client_ip(request)
-        },
-        verify=True
-    ).json().get("success", False)
+    if config['grecaptcha']['activated'] is False:
+        recaptcha_valid = True
+    else:
+        recaptcha_valid = requests.post(
+            config['grecaptcha']['validation_url'],
+            data={
+                'secret': config['grecaptcha']['private_key'],
+                'response': recaptcha_response,
+                'remoteip': get_client_ip(request)
+            },
+            verify=True
+        ).json().get("success", False)
+    return recaptcha_valid
 
 
 def context_processor(request):
@@ -347,4 +351,5 @@ def context_processor(request):
     """
     config = get_config()
     return {'swh_object_icons': swh_object_icons,
+            'grecaptcha_activated': config['grecaptcha']['activated'],
             'grecaptcha_site_key': config['grecaptcha']['site_key']}
