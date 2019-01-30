@@ -101,6 +101,10 @@ module.exports = {
     compress: true,
     stats: {
       colors: true
+    },
+    overlay: {
+      warnings: true,
+      errors: true
     }
   },
   // set entries to the bundles we want to produce
