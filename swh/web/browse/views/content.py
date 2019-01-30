@@ -35,12 +35,12 @@ def content_raw(request, query_string):
 
     The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
     """ # noqa
-
     try:
+        reencode = bool(strtobool(request.GET.get('reencode', 'false')))
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
         content_data = request_content(query_string, max_size=None,
-                                       reencode=False)
+                                       reencode=reencode)
     except Exception as exc:
         return handle_view_exception(request, exc)
 

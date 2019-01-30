@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import pytest
 import random
 
 from hypothesis import given
@@ -98,7 +97,6 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
             'reason': 'Revision with sha1_git %s not found.' %
             unknown_revision})
 
-    @pytest.mark.xfail(reason="bugs in origin_*get methods from in-memory storage") # noqa
     @given(unknown_origin_id())
     def test_api_revision_with_origin_not_found(self, unknown_origin_id):
 
@@ -212,7 +210,6 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-    @pytest.mark.xfail(reason="bugs in origin_*get methods from in-memory storage") # noqa
     @given(unknown_origin_id())
     def test_api_directory_through_revision_origin_ko(self,
                                                       unknown_origin_id):

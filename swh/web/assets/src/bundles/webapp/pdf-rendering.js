@@ -7,6 +7,8 @@
 
 // adapted from pdf.js examples located at http://mozilla.github.io/pdf.js/examples/
 
+import {staticAsset} from 'utils/functions';
+
 export async function renderPdf(pdfUrl) {
 
   let pdfDoc = null;
@@ -76,7 +78,9 @@ export async function renderPdf(pdfUrl) {
     queueRenderPage(pageNum);
   }
 
-  let pdfjs = await import(/* webpackChunkName: "pdfjs" */ 'pdfjs-dist/webpack');
+  let pdfjs = await import(/* webpackChunkName: "pdfjs" */ 'pdfjs-dist');
+
+  pdfjs.GlobalWorkerOptions.workerSrc = staticAsset('js/pdf.worker.min.js');
 
   $(document).ready(() => {
     $('#pdf-prev').click(onPrevPage);

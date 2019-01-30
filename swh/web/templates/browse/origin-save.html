@@ -7,6 +7,13 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% block header %}
+{{ block.super }}
+{% if grecaptcha_activated %}
+  <script src="https://www.google.com/recaptcha/api.js"></script>
+{% endif %}
+{% endblock %}
+
 {% block navbar-content %}
 <h4>Save code now</h4>
 {% endblock %}
@@ -71,18 +78,27 @@ See top-level LICENSE file for more information
           <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.browse.validateSaveOriginUrl(this)" required>
           <div class="invalid-feedback">The origin url is not valid or does not reference a code repository</div>
         </div>
-        <div class="col-md-2"></div>
-      </div>
-      <div class="form-row">
-        <div class="col-md-2"></div>
-        <div class="form-group col-md-4">
-          <div class="g-recaptcha" id="save-origin-recaptcha" data-sitekey="{{ grecaptcha_site_key }}"></div>
-        </div>
-        <div class="form-group col-md-1">
-          <label for="swh-input-origin-save-submit">&#8203;</label>
-          <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
+        <div class="col-md-2">
+          {% if not grecaptcha_activated %}
+            <div class="form-group">
+              <label for="swh-input-origin-save-submit">&#8203;</label>
+              <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
+            </div>
+          {% endif %}
         </div>
       </div>
+      {% if grecaptcha_activated %}
+        <div class="form-row">
+          <div class="col-md-2"></div>
+          <div class="form-group col-md-4">
+            <div class="g-recaptcha" id="save-origin-recaptcha" data-sitekey="{{ grecaptcha_site_key }}"></div>
+          </div>
+          <div class="form-group col-md-1">
+            <label for="swh-input-origin-save-submit">&#8203;</label>
+            <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
+          </div>
+        </div>
+      {% endif %}
     </form>
     <div id="swh-origin-save-request-status">
     </div>

@@ -1049,7 +1049,8 @@ def get_readme_to_display(readmes):
             readme_name = lc_readmes[common_readme_name]['orig_name']
             readme_sha1 = lc_readmes[common_readme_name]['sha1']
             readme_url = reverse('browse-content-raw',
-                                 url_args={'query_string': readme_sha1})
+                                 url_args={'query_string': readme_sha1},
+                                 query_params={'reencode': 'true'})
             break
 
     # otherwise pick the first readme like file if any
@@ -1057,7 +1058,8 @@ def get_readme_to_display(readmes):
         readme_name = next(iter(readmes))
         readme_sha1 = readmes[readme_name]
         readme_url = reverse('browse-content-raw',
-                             url_args={'query_string': readme_sha1})
+                             url_args={'query_string': readme_sha1},
+                             query_params={'reencode': 'true'})
 
     # convert rst README to html server side as there is
     # no viable solution to perform that task client side
