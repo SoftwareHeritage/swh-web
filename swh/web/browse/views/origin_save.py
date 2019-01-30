@@ -25,7 +25,7 @@ from swh.web.common.origin_save import (
 def _browse_origin_save_request(request, origin_type, origin_url):
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
-    if is_recaptcha_valid(request, body['g-recaptcha-response']):
+    if is_recaptcha_valid(request, body.get('g-recaptcha-response')):
         try:
             response = json.dumps(create_save_origin_request(origin_type,
                                                              origin_url),
