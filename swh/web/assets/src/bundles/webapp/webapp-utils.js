@@ -76,6 +76,10 @@ $(document).ready(() => {
   });
   // activate css polyfill 'object-fit: contain' in old browsers
   objectFitImages();
+
+  // reparent the modals to the top navigation div in order to be able
+  // to display them
+  $('.swh-browse-top-navigation').append($('.modal'));
 });
 
 export function initPage(page) {

@@ -3,43 +3,38 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from hypothesis import given
 from rest_framework.test import APITestCase
-from unittest.mock import patch
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.common.utils import reverse
+from swh.web.tests.strategies import person, unknown_person
+from swh.web.tests.testcase import WebTestCase
 
 
-class PersonApiTestCase(SWHWebTestCase, APITestCase):
+class PersonApiTestCase(WebTestCase, APITestCase):
 
-    @patch('swh.web.api.views.person.service')
-    def test_api_person(self, mock_service):
-        # given
-        stub_person = {
-            'id': '198003',
-            'name': 'Software Heritage',
-            'email': 'robot@softwareheritage.org',
-        }
-        mock_service.lookup_person.return_value = stub_person
+    @given(person())
+    def test_api_person(self, person):
 
-        # when
-        rv = self.client.get('/api/1/person/198003/')
+        url = reverse('api-person', url_args={'person_id': person})
 
-        # then
+        rv = self.client.get(url)
+
+        expected_person = self.person_get(person)
+
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, stub_person)
+        self.assertEqual(rv.data, expected_person)
 
-    @patch('swh.web.api.views.person.service')
-    def test_api_person_not_found(self, mock_service):
-        # given
-        mock_service.lookup_person.return_value = None
+    @given(unknown_person())
+    def test_api_person_not_found(self, unknown_person):
 
-        # when
-        rv = self.client.get('/api/1/person/666/')
+        url = reverse('api-person', url_args={'person_id': unknown_person})
 
-        # then
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Person with id 666 not found.'})
+            'reason': 'Person with id %s not found' % unknown_person})

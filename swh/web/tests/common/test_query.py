@@ -9,10 +9,10 @@ from swh.model import hashutil
 
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class QueryTestCase(SWHWebTestCase):
+class QueryTestCase(WebTestCase):
     def test_parse_hash_malformed_query_with_more_than_2_parts(self):
         with self.assertRaises(BadInputExc):
             query.parse_hash('sha1:1234567890987654:other-stuff')

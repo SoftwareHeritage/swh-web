@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from swh.model import hashutil
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 TEST_OBJ_ID = 'd4905454cc154b492bd6afed48694ae3c579345e'
 
@@ -16,7 +16,7 @@ OBJECT_TYPES = {'directory': ('directory', None),
                 'revision_gitfast': ('revision', 'gitfast')}
 
 
-class VaultApiTestCase(SWHWebTestCase, APITestCase):
+class VaultApiTestCase(WebTestCase, APITestCase):
     @patch('swh.web.api.views.vault.service')
     def test_api_vault_cook(self, mock_service):
         stub_cook = {

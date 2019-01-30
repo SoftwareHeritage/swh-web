@@ -6,6 +6,19 @@
 import json
 import os
 
+from hypothesis import settings, HealthCheck
+
+# Register some hypothesis profiles
+
+settings.register_profile('default', settings())
+
+settings.register_profile(
+    'swh-web', settings(deadline=None,
+                        suppress_health_check=[HealthCheck.too_slow]))
+
+settings.register_profile(
+    'swh-web-fast', settings(deadline=None, max_examples=1))
+
 
 def pytest_configure(config):
     # Small hack in order to be able to run the unit tests

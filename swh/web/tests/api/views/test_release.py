@@ -3,115 +3,109 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import datetime
+from hypothesis import given
 from rest_framework.test import APITestCase
-from unittest.mock import patch
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.model.hashutil import hash_to_bytes
+from swh.web.common.utils import reverse
+from swh.web.tests.strategies import (
+    release, unknown_release, sha1, content, directory
+)
+from swh.web.tests.testcase import WebTestCase
 
 
-class ReleaseApiTestCase(SWHWebTestCase, APITestCase):
+class ReleaseApiTestCase(WebTestCase, APITestCase):
 
-    @patch('swh.web.api.views.release.service')
-    def test_api_release(self, mock_service):
-        release_id = '7045404f3d1c54e6473'
-        target_id = '6072557b6c10cd9a211'
-        # given
-        stub_release = {
-            'id': release_id,
-            'target_type': 'revision',
-            'target': target_id,
-            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
-            "synthetic": True,
-            'author': {
-                'id': 10,
-                'name': 'author release name',
-                'email': 'author@email',
-            },
-        }
+    @given(release())
+    def test_api_release(self, release):
 
-        expected_release = {
-            'id': release_id,
-            'target_type': 'revision',
-            'target': target_id,
-            'target_url': '/api/1/revision/%s/' % target_id,
-            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
-            "synthetic": True,
-            'author_url': '/api/1/person/10/',
-            'author': {
-                'id': 10,
-                'name': 'author release name',
-                'email': 'author@email',
-            },
-        }
+        url = reverse('api-release', url_args={'sha1_git': release})
 
-        mock_service.lookup_release.return_value = stub_release
+        rv = self.client.get(url)
 
-        # when
-        rv = self.client.get('/api/1/release/%s/' % release_id)
+        expected_release = self.release_get(release)
+        author_id = expected_release['author']['id']
+        target_revision = expected_release['target']
+        author_url = reverse('api-person',
+                             url_args={'person_id': author_id})
+        target_url = reverse('api-revision',
+                             url_args={'sha1_git': target_revision})
+        expected_release['author_url'] = author_url
+        expected_release['target_url'] = target_url
 
-        # then
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_release)
 
-        mock_service.lookup_release.assert_called_once_with(release_id)
+    @given(sha1(), sha1(), sha1(), content(), directory(), release())
+    def test_api_release_target_type_not_a_revision(self, new_rel1, new_rel2,
+                                                    new_rel3, content,
+                                                    directory, release):
 
-    @patch('swh.web.api.views.release.service')
-    def test_api_release_target_type_not_a_revision(self, mock_service):
-        release = '8d56a78'
-        target = '9a5c3f'
-        # given
-        stub_release = {
-            'id': release,
-            'target_type': 'other-stuff',
-            'target': target,
-            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
-            "synthetic": True,
-            'author': {
-                'id': 9,
-                'name': 'author release name',
-                'email': 'author@email',
-            },
-        }
+        for new_rel_id, target_type, target in (
+                (new_rel1, 'content', content),
+                (new_rel2, 'directory', directory),
+                (new_rel3, 'release', release)):
 
-        expected_release = {
-            'id': release,
-            'target_type': 'other-stuff',
-            'target': target,
-            "date": "Mon, 10 Mar 1997 08:00:00 GMT",
-            "synthetic": True,
-            'author_url': '/api/1/person/9/',
-            'author': {
-                'id': 9,
-                'name': 'author release name',
-                'email': 'author@email',
-            },
-        }
+            if target_type == 'content':
+                target = target['sha1_git']
 
-        mock_service.lookup_release.return_value = stub_release
+            sample_release = {
+                'author': {
+                    'email': b'author@company.org',
+                    'fullname': b'author <author@company.org>',
+                    'name': b'author'
+                },
+                'date': {
+                    'timestamp': int(datetime.now().timestamp()),
+                    'offset': 0,
+                    'negative_utc': False,
+                },
+                'id': hash_to_bytes(new_rel_id),
+                'message': b'sample release message',
+                'name': b'sample release',
+                'synthetic': False,
+                'target': hash_to_bytes(target),
+                'target_type': target_type
+            }
 
-        # when
-        rv = self.client.get('/api/1/release/%s/' % release)
+            self.storage.release_add([sample_release])
 
-        # then
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_release)
+            url = reverse('api-release', url_args={'sha1_git': new_rel_id})
 
-        mock_service.lookup_release.assert_called_once_with(release)
+            rv = self.client.get(url)
 
-    @patch('swh.web.api.views.release.service')
-    def test_api_release_not_found(self, mock_service):
-        # given
-        mock_service.lookup_release.return_value = None
+            expected_release = self.release_get(new_rel_id)
 
-        # when
-        rv = self.client.get('/api/1/release/c54e6473c71bbb716529/')
+            author_id = expected_release['author']['id']
+            author_url = reverse('api-person',
+                                 url_args={'person_id': author_id})
 
-        # then
+            if target_type == 'content':
+                url_args = {'q': 'sha1_git:%s' % target}
+            else:
+                url_args = {'sha1_git': target}
+
+            target_url = reverse('api-%s' % target_type,
+                                 url_args=url_args)
+            expected_release['author_url'] = author_url
+            expected_release['target_url'] = target_url
+
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            self.assertEqual(rv.data, expected_release)
+
+    @given(unknown_release())
+    def test_api_release_not_found(self, unknown_release):
+
+        url = reverse('api-release', url_args={'sha1_git': unknown_release})
+
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Release with sha1_git c54e6473c71bbb716529 not found.'
+            'reason': 'Release with sha1_git %s not found.' % unknown_release
         })

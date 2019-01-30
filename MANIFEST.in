@@ -10,3 +10,8 @@ recursive-include swh/web/static *
 recursive-include swh/web/templates *
 include swh/web/tests/browse/views/data/swh-logo.png
 include swh/web/tests/browse/views/data/iso-8859-1_encoded_content
+recursive-include swh/web/tests/resources *
+
+include package-lock.json
+include package.json
+include yarn.lock

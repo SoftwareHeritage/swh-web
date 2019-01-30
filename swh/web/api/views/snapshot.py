@@ -73,6 +73,20 @@ def api_snapshot(request, snapshot_id):
                 k: utils.enrich_object(v) if v else None
                 for k, v in s['branches'].items()
             }
+            for k, v in s['branches'].items():
+                if v and v['target_type'] == 'alias':
+                    if v['target'] in s['branches']:
+                        branch_alias = s['branches'][v['target']]
+                        v['target_url'] = branch_alias['target_url']
+                    else:
+                        snp = \
+                            service.lookup_snapshot(s['id'],
+                                                    branches_from=v['target'],
+                                                    branches_count=1)
+                        if snp and v['target'] in snp['branches']:
+                            branch = snp['branches'][v['target']]
+                            branch = utils.enrich_object(branch)
+                            v['target_url'] = branch['target_url']
         return s
 
     snapshot_content_max_size = get_config()['snapshot_content_max_size']
@@ -85,22 +99,17 @@ def api_snapshot(request, snapshot_id):
 
     results = api_lookup(
         service.lookup_snapshot, snapshot_id, branches_from,
-        branches_count+1, target_types,
+        branches_count, target_types,
         notfound_msg='Snapshot with id {} not found.'.format(snapshot_id),
         enrich_fn=_enrich_snapshot)
 
-    next_branch = None
-    if len(results['branches']) > branches_count:
-        next_branch = sorted(results['branches'].keys())[-1]
-        del results['branches'][next_branch]
-
     response = {'results': results, 'headers': {}}
 
-    if next_branch:
+    if results['next_branch'] is not None:
         response['headers']['link-next'] = \
             reverse('api-snapshot',
                     url_args={'snapshot_id': snapshot_id},
-                    query_params={'branches_from': next_branch,
+                    query_params={'branches_from': results['next_branch'],
                                   'branches_count': branches_count,
                                   'target_types': target_types})
 

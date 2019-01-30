@@ -8,18 +8,20 @@ from unittest.mock import patch
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.common.utils import reverse
+from swh.web.tests.testcase import WebTestCase
 
 
-class StatApiTestCase(SWHWebTestCase, APITestCase):
+class StatApiTestCase(WebTestCase, APITestCase):
     @patch('swh.web.api.views.stat.service')
     def test_api_1_stat_counters_raise_error(self, mock_service):
-        # given
+
         mock_service.stat_counters.side_effect = ValueError(
             'voluntary error to check the bad request middleware.')
-        # when
-        rv = self.client.get('/api/1/stat/counters/')
-        # then
+
+        url = reverse('api-stat-counters')
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
@@ -28,12 +30,13 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.stat.service')
     def test_api_1_stat_counters_raise_from_db(self, mock_service):
-        # given
+
         mock_service.stat_counters.side_effect = StorageDBError(
             'Storage exploded! Will be back online shortly!')
-        # when
-        rv = self.client.get('/api/1/stat/counters/')
-        # then
+
+        url = reverse('api-stat-counters')
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 503)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
@@ -44,13 +47,14 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
 
     @patch('swh.web.api.views.stat.service')
     def test_api_1_stat_counters_raise_from_api(self, mock_service):
-        # given
+
         mock_service.stat_counters.side_effect = StorageAPIError(
             'Storage API dropped dead! Will resurrect from its ashes asap!'
         )
-        # when
-        rv = self.client.get('/api/1/stat/counters/')
-        # then
+
+        url = reverse('api-stat-counters')
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 503)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
@@ -60,31 +64,12 @@ class StatApiTestCase(SWHWebTestCase, APITestCase):
             'Storage API dropped dead! Will resurrect from its ashes asap!'
         })
 
-    @patch('swh.web.api.views.stat.service')
-    def test_api_1_stat_counters(self, mock_service):
-        # given
-        stub_stats = {
-            "content": 1770830,
-            "directory": 211683,
-            "directory_entry_dir": 209167,
-            "directory_entry_file": 1807094,
-            "directory_entry_rev": 0,
-            "entity": 0,
-            "entity_history": 0,
-            "origin": 1096,
-            "person": 0,
-            "release": 8584,
-            "revision": 7792,
-            "revision_history": 0,
-            "skipped_content": 0
-        }
-        mock_service.stat_counters.return_value = stub_stats
+    def test_api_1_stat_counters(self):
 
-        # when
-        rv = self.client.get('/api/1/stat/counters/')
+        url = reverse('api-stat-counters')
+
+        rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, stub_stats)
-
-        mock_service.stat_counters.assert_called_once_with()
+        self.assertEqual(rv.data, self.storage.stat_counters())

@@ -5,10 +5,10 @@
 
 
 from swh.web.common import highlightjs
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class HighlightJsTestCase(SWHWebTestCase):
+class HighlightJsTestCase(WebTestCase):
 
     def test_get_hljs_language_from_mime_type(self):
 

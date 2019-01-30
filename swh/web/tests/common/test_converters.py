@@ -9,10 +9,10 @@ import datetime
 from swh.model import hashutil
 
 from swh.web.common import converters
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class ConvertersTestCase(SWHWebTestCase):
+class ConvertersTestCase(WebTestCase):
 
     def test_fmap(self):
         self.assertEqual([2, 3, None, 4],
@@ -169,32 +169,6 @@ class ConvertersTestCase(SWHWebTestCase):
     def test_from_swh_none(self):
         # when
         self.assertIsNone(converters.from_swh(None))
-
-    def test_from_provenance(self):
-        # given
-        input_provenance = {
-            'origin': 10,
-            'visit': 1,
-            'content': hashutil.hash_to_bytes(
-                '321caf10e9535160d90e874b45aa426de762f19f'),
-            'revision': hashutil.hash_to_bytes(
-                '123caf10e9535160d90e874b45aa426de762f19f'),
-            'path': b'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
-        }
-
-        expected_provenance = {
-            'origin': 10,
-            'visit': 1,
-            'content': '321caf10e9535160d90e874b45aa426de762f19f',
-            'revision': '123caf10e9535160d90e874b45aa426de762f19f',
-            'path': 'octave-3.4.0/doc/interpreter/octave/doc_002dS_005fISREG'
-        }
-
-        # when
-        actual_provenance = converters.from_provenance(input_provenance)
-
-        # then
-        self.assertEqual(actual_provenance, expected_provenance)
 
     def test_from_origin(self):
         # given

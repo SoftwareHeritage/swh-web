@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -39,8 +39,10 @@ def _revision_directory_by(revision, path, request_path,
     content = result['content']
     if result['type'] == 'dir':  # dir_entries
         result['content'] = list(map(enrich_directory_local, content))
-    else:  # content
+    elif result['type'] == 'file':  # content
         result['content'] = utils.enrich_content(content)
+    elif result['type'] == 'rev':  # revision
+        result['content'] = utils.enrich_revision(content)
 
     return result
 
@@ -59,7 +61,7 @@ def _revision_directory_by(revision, path, request_path,
            'api-revision-origin-log')
 @api_doc('/revision/origin/log/')
 def api_revision_log_by(request, origin_id,
-                        branch_name='refs/heads/master',
+                        branch_name='HEAD',
                         ts=None):
     """
     .. http:get:: /api/1/revision/origin/(origin_id)[/branch/(branch_name)][/ts/(timestamp)]/log
@@ -73,7 +75,7 @@ def api_revision_log_by(request, origin_id,
 
         :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name
-            associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
+            associated to the software origin, e.g., "refs/heads/master". Defaults to the HEAD branch.
         :param string timestamp: optional parameter specifying a timestamp close to which the revision
             pointed by the given branch should be looked up. The timestamp can be expressed either
             as an ISO date or as a Unix one (in UTC). Defaults to now.
@@ -116,9 +118,6 @@ def api_revision_log_by(request, origin_id,
     result = {}
     per_page = int(request.query_params.get('per_page', '10'))
 
-    if ts:
-        ts = parse_timestamp(ts)
-
     def lookup_revision_log_by_with_limit(o_id, br, ts, limit=per_page+1):
         return service.lookup_revision_log_by(o_id, br, ts, limit)
 
@@ -127,7 +126,7 @@ def api_revision_log_by(request, origin_id,
     error_msg += (' and time stamp %s.' % ts) if ts else '.'
 
     rev_get = api_lookup(
-        lookup_revision_log_by_with_limit, origin_id, branch_name, ts,
+        lookup_revision_log_by_with_limit, int(origin_id), branch_name, ts,
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_revision)
 
@@ -179,7 +178,7 @@ def api_revision_log_by(request, origin_id,
            'api-revision-origin-directory')
 @api_doc('/revision/origin/directory/', tags=['hidden'])
 def api_directory_through_revision_origin(request, origin_id,
-                                          branch_name="refs/heads/master",
+                                          branch_name='HEAD',
                                           ts=None,
                                           path=None,
                                           with_data=False):
@@ -190,7 +189,7 @@ def api_directory_through_revision_origin(request, origin_id,
     if ts:
         ts = parse_timestamp(ts)
 
-    return _revision_directory_by({'origin_id': origin_id,
+    return _revision_directory_by({'origin_id': int(origin_id),
                                    'branch_name': branch_name,
                                    'ts': ts
                                    },
@@ -210,7 +209,7 @@ def api_directory_through_revision_origin(request, origin_id,
            'api-revision-origin')
 @api_doc('/revision/origin/')
 def api_revision_with_origin(request, origin_id,
-                             branch_name="refs/heads/master",
+                             branch_name='HEAD',
                              ts=None):
     """
     .. http:get:: /api/1/revision/origin/(origin_id)/[branch/(branch_name)/][ts/(timestamp)/]
@@ -224,7 +223,7 @@ def api_revision_with_origin(request, origin_id,
 
         :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name
-            associated to the software origin, e.g., "refs/heads/master". Defaults to the master branch.
+            associated to the software origin, e.g., "refs/heads/master". Defaults to the HEAD branch.
         :param string timestamp: optional parameter specifying a timestamp close to which the revision
             pointed by the given branch should be looked up. The timestamp can be expressed either
             as an ISO date or as a Unix one (in UTC). Defaults to now.
@@ -264,29 +263,12 @@ def api_revision_with_origin(request, origin_id,
 
             :swh_web_api:`revision/origin/13706355/branch/refs/heads/2.7/`
     """ # noqa
-    ts = parse_timestamp(ts)
     return api_lookup(
-        service.lookup_revision_by, origin_id, branch_name, ts,
+        service.lookup_revision_by, int(origin_id), branch_name, ts,
         notfound_msg=('Revision with (origin_id: {}, branch_name: {}'
                       ', ts: {}) not found.'.format(origin_id,
                                                     branch_name, ts)),
         enrich_fn=utils.enrich_revision)
-
-
-@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/prev/(?P<context>[0-9a-f/]+)/',
-           'api-revision-context')
-@api_doc('/revision/prev/', tags=['hidden'])
-def api_revision_with_context(request, sha1_git, context):
-    """
-    Return information about revision with id sha1_git.
-    """
-    def _enrich_revision(revision, context=context):
-        return utils.enrich_revision(revision, context)
-
-    return api_lookup(
-        service.lookup_revision, sha1_git,
-        notfound_msg='Revision with sha1_git %s not found.' % sha1_git,
-        enrich_fn=_enrich_revision)
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-revision')

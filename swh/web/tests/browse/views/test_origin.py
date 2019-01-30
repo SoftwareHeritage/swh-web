@@ -14,7 +14,7 @@ from swh.web.common.utils import (
     reverse, gen_path_info, format_utc_iso_date,
     parse_timestamp, get_swh_persistent_id
 )
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .data.origin_test_data import (
     origin_info_test_data,
@@ -55,11 +55,11 @@ def _to_snapshot_dict(branches=None, releases=None):
             }
     return snp
 
-class SwhBrowseOriginTest(SWHWebTestCase):
+class SwhBrowseOriginTest(WebTestCase):
 
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
-    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_info')
     @patch('swh.web.browse.views.origin.get_origin_visits')
@@ -232,7 +232,9 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertContains(resp, swh_cnt_id)
         self.assertContains(resp, swh_cnt_id_url)
 
-    @patch('swh.web.browse.utils.get_origin_visits')
+        self.assertContains(resp, 'swh-take-new-snapshot')
+
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
     @patch('swh.web.browse.utils.service')
@@ -439,6 +441,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                         query_params=query_params)
 
             self.assertContains(resp, '<a href="%s">' % root_dir_release_url)
+
         self.assertContains(resp, 'vault-cook-directory')
         self.assertContains(resp, 'vault-cook-revision')
 
@@ -448,8 +451,10 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertContains(resp, swh_dir_id)
         self.assertContains(resp, swh_dir_id_url)
 
+        self.assertContains(resp, 'swh-take-new-snapshot')
 
-    @patch('swh.web.browse.utils.get_origin_visits')
+
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
@@ -530,7 +535,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                                           stub_origin_root_directory_entries,
                                           timestamp=stub_visit_iso_date)
 
-    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
@@ -623,7 +628,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
                                           path=stub_origin_sub_directory_path)
 
     @patch('swh.web.browse.views.utils.snapshot_context.request_content')
-    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
@@ -752,7 +757,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
         self.assertContains(resp, 'Content not found', status_code=404)
 
 
-    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     def test_origin_empty_snapshot(self, mock_utils_service,
@@ -821,7 +826,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
-    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
@@ -890,7 +895,7 @@ class SwhBrowseOriginTest(SWHWebTestCase):
 
     @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
-    @patch('swh.web.browse.utils.get_origin_visits')
+    @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')

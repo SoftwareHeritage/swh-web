@@ -6,10 +6,10 @@
 import pytest
 
 from swh.web.common import swh_templatetags
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 
-class SWHTemplateTagsTest(SWHWebTestCase):
+class SWHTemplateTagsTest(WebTestCase):
     def test_urlize_api_links_api(self):
         # update api link with html links content with links
         content = '{"url": "/api/1/abc/"}'

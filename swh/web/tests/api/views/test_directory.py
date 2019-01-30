@@ -3,120 +3,90 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
+
+from hypothesis import given
 from rest_framework.test import APITestCase
-from unittest.mock import patch
 
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.common.utils import reverse
+from swh.web.tests.strategies import directory, unknown_directory
+from swh.web.tests.testcase import WebTestCase
 
 
-class DirectoryApiTestCase(SWHWebTestCase, APITestCase):
+class DirectoryApiTestCase(WebTestCase, APITestCase):
 
-    @patch('swh.web.api.views.directory.service')
-    def test_api_directory(self, mock_service):
-        # given
-        stub_directories = [
-            {
-                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
-                'type': 'file',
-                'target': '4568be353ed3480476f032475e7c233eff737123',
-            },
-            {
-                'sha1_git': '1d518d8be353ed3480476f032475e7c233eff737',
-                'type': 'dir',
-                'target': '8be353ed3480476f032475e7c233eff737123456',
-            }]
+    @given(directory())
+    def test_api_directory(self, directory):
 
-        expected_directories = [
-            {
-                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
-                'type': 'file',
-                'target': '4568be353ed3480476f032475e7c233eff737123',
-                'target_url': '/api/1/content/'
-                'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
-            },
-            {
-                'sha1_git': '1d518d8be353ed3480476f032475e7c233eff737',
-                'type': 'dir',
-                'target': '8be353ed3480476f032475e7c233eff737123456',
-                'target_url':
-                '/api/1/directory/8be353ed3480476f032475e7c233eff737123456/',
-            }]
+        url = reverse('api-directory', url_args={'sha1_git': directory})
+        rv = self.client.get(url)
 
-        mock_service.lookup_directory.return_value = stub_directories
-
-        # when
-        rv = self.client.get('/api/1/directory/'
-                             '18d8be353ed3480476f032475e7c233eff7371d5/')
-
-        # then
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_directories)
 
-        mock_service.lookup_directory.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5')
+        expected_data = list(map(self._enrich_dir_data,
+                                 self.directory_ls(directory)))
 
-    @patch('swh.web.api.views.directory.service')
-    def test_api_directory_not_found(self, mock_service):
-        # given
-        mock_service.lookup_directory.return_value = []
+        self.assertEqual(rv.data, expected_data)
 
-        # when
-        rv = self.client.get('/api/1/directory/'
-                             '66618d8be353ed3480476f032475e7c233eff737/')
+    @given(unknown_directory())
+    def test_api_directory_not_found(self, unknown_directory):
 
-        # then
+        url = reverse('api-directory',
+                      url_args={'sha1_git': unknown_directory})
+        rv = self.client.get(url)
+
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Directory with sha1_git '
-            '66618d8be353ed3480476f032475e7c233eff737 not found.'})
+            'reason': 'Directory with sha1_git %s not found'
+            % unknown_directory})
 
-    @patch('swh.web.api.views.directory.service')
-    def test_api_directory_with_path_found(self, mock_service):
-        # given
-        expected_dir = {
-                'sha1_git': '18d8be353ed3480476f032475e7c233eff7371d5',
-                'type': 'file',
-                'name': 'bla',
-                'target': '4568be353ed3480476f032475e7c233eff737123',
-                'target_url': '/api/1/content/'
-                'sha1_git:4568be353ed3480476f032475e7c233eff737123/',
-            }
+    @given(directory())
+    def test_api_directory_with_path_found(self, directory):
 
-        mock_service.lookup_directory_with_path.return_value = expected_dir
+        directory_content = self.directory_ls(directory)
+        path = random.choice(directory_content)
 
-        # when
-        rv = self.client.get('/api/1/directory/'
-                             '18d8be353ed3480476f032475e7c233eff7371d5/bla/')
+        url = reverse('api-directory',
+                      url_args={'sha1_git': directory,
+                                'path': path['name']})
+        rv = self.client.get(url)
 
-        # then
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_dir)
+        self.assertEqual(rv.data, self._enrich_dir_data(path))
 
-        mock_service.lookup_directory_with_path.assert_called_once_with(
-            '18d8be353ed3480476f032475e7c233eff7371d5', 'bla')
+    @given(directory())
+    def test_api_directory_with_path_not_found(self, directory):
 
-    @patch('swh.web.api.views.directory.service')
-    def test_api_directory_with_path_not_found(self, mock_service):
-        # given
-        mock_service.lookup_directory_with_path.return_value = None
-        path = 'some/path/to/dir/'
+        path = 'some/path/to/nonexistent/dir/'
+        url = reverse('api-directory',
+                      url_args={'sha1_git': directory,
+                                'path': path})
+        rv = self.client.get(url)
 
-        # when
-        rv = self.client.get(('/api/1/directory/'
-                              '66618d8be353ed3480476f032475e7c233eff737/%s')
-                             % path)
-        path = path.strip('/')  # Path stripped of lead/trail separators
-
-        # then
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': (('Entry with path %s relative to '
-                        'directory with sha1_git '
-                        '66618d8be353ed3480476f032475e7c233eff737 not found.')
-                       % path)})
+            'reason': ('Directory entry with path %s from %s not found'
+                       % (path, directory))})
+
+    @classmethod
+    def _enrich_dir_data(cls, dir_data):
+        if dir_data['type'] == 'file':
+            dir_data['target_url'] = \
+                reverse('api-content',
+                        url_args={'q': 'sha1_git:%s' % dir_data['target']})
+        elif dir_data['type'] == 'dir':
+            dir_data['target_url'] = \
+                reverse('api-directory',
+                        url_args={'sha1_git': dir_data['target']})
+        elif dir_data['type'] == 'rev':
+            dir_data['target_url'] = \
+                reverse('api-revision',
+                        url_args={'sha1_git': dir_data['target']})
+
+        return dir_data

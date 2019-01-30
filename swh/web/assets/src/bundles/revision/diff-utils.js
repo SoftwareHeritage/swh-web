@@ -233,23 +233,26 @@ export function computeDiff(diffUrl, diffId) {
 
             // set line numbers for unified diff
             $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr('data-line-number',
+              $(lnElt).children().attr(
+                'data-line-number',
                 formatDiffLineNumbers(fromToLines[i][0], fromToLines[i][1],
-                  maxNumberChars));
+                                      maxNumberChars));
             });
 
             // set line numbers for the from side-by-side diff
             $(`#${diffId}-from .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr('data-line-number',
+              $(lnElt).children().attr(
+                'data-line-number',
                 formatDiffLineNumbers(fromLines[i], null,
-                  maxNumberChars));
+                                      maxNumberChars));
             });
 
             // set line numbers for the to side-by-side diff
             $(`#${diffId}-to .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr('data-line-number',
+              $(lnElt).children().attr(
+                'data-line-number',
                 formatDiffLineNumbers(null, toLines[i],
-                  maxNumberChars));
+                                      maxNumberChars));
             });
 
             // last processing:

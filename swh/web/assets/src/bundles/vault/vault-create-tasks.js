@@ -76,15 +76,3 @@ export function cookRevisionArchive(revisionId) {
     $('#invalid-email-modal').modal('show');
   }
 }
-
-export function initTaskCreationUi() {
-
-  // reparent the modals to the top navigation div in order to be able
-  // to display them
-  $(document).ready(function() {
-    $('.swh-browse-top-navigation').append($('#vault-cook-directory-modal'));
-    $('.swh-browse-top-navigation').append($('#vault-cook-revision-modal'));
-    $('.swh-browse-top-navigation').append($('#invalid-email-modal'));
-  });
-
-}

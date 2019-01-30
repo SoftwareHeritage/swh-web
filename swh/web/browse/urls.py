@@ -17,7 +17,6 @@ import swh.web.browse.views.snapshot # noqa
 
 from swh.web.browse.browseurls import BrowseUrls
 from swh.web.browse.identifiers import swh_id_browse
-from swh.web.config import get_config
 
 
 def _browse_help_view(request):
@@ -37,8 +36,7 @@ def _browse_vault_view(request):
 
 def _browse_origin_save_view(request):
     return render(request, 'browse/origin-save.html',
-                  {'heading': 'Request the saving of a software origin into the archive', # noqa
-                   'grecaptcha_site_key': get_config()['grecaptcha']['site_key']}) # noqa
+                  {'heading': 'Request the saving of a software origin into the archive'}) # noqa
 
 
 urlpatterns = [

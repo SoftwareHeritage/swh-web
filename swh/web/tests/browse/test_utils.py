@@ -10,92 +10,17 @@ from unittest.mock import patch
 from swh.web.browse import utils
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import SWHWebTestCase
+from swh.web.tests.testcase import WebTestCase
 
 from .views.data.revision_test_data import revision_history_log_test
 
 
-class SwhBrowseUtilsTestCase(SWHWebTestCase):
+class SwhBrowseUtilsTestCase(WebTestCase):
 
     def test_get_mimetype_and_encoding_for_content(self):
         text = b'Hello world!'
         self.assertEqual(utils.get_mimetype_and_encoding_for_content(text),
                          ('text/plain', 'us-ascii'))
-
-    @patch('swh.web.browse.utils.get_origin_visits')
-    def test_get_origin_visit(self, mock_origin_visits):
-        origin_info = {
-            'id': 2,
-            'type': 'git',
-            'url': 'https://github.com/foo/bar',
-        }
-        visits = \
-            [{'status': 'full',
-              'date': '2015-07-09T21:09:24+00:00',
-              'visit': 1,
-              'origin': origin_info['id']
-              },
-             {'status': 'full',
-              'date': '2016-02-23T18:05:23.312045+00:00',
-              'visit': 2,
-              'origin': origin_info['id']
-              },
-             {'status': 'full',
-              'date': '2016-03-28T01:35:06.554111+00:00',
-              'visit': 3,
-              'origin': origin_info['id']
-              },
-             {'status': 'full',
-              'date': '2016-06-18T01:22:24.808485+00:00',
-              'visit': 4,
-              'origin': origin_info['id']
-              },
-             {'status': 'full',
-              'date': '2016-08-14T12:10:00.536702+00:00',
-              'visit': 5,
-              'origin': origin_info['id']
-              }]
-        mock_origin_visits.return_value = visits
-
-        visit_id = 12
-        with self.assertRaises(NotFoundExc) as cm:
-            visit = utils.get_origin_visit(origin_info,
-                                           visit_id=visit_id)
-        exception_text = cm.exception.args[0]
-        self.assertIn('Visit with id %s' % visit_id, exception_text)
-        self.assertIn('type %s' % origin_info['type'], exception_text)
-        self.assertIn('url %s' % origin_info['url'], exception_text)
-
-        visit = utils.get_origin_visit(origin_info, visit_id=2)
-        self.assertEqual(visit, visits[1])
-
-        visit = utils.get_origin_visit(
-            origin_info, visit_ts='2016-02-23T18:05:23.312045+00:00')
-        self.assertEqual(visit, visits[1])
-
-        visit = utils.get_origin_visit(
-            origin_info, visit_ts='2016-02-20')
-        self.assertEqual(visit, visits[1])
-
-        visit = utils.get_origin_visit(
-            origin_info, visit_ts='2016-06-18T01:22')
-        self.assertEqual(visit, visits[3])
-
-        visit = utils.get_origin_visit(
-            origin_info, visit_ts='2016-06-18 01:22')
-        self.assertEqual(visit, visits[3])
-
-        visit = utils.get_origin_visit(
-            origin_info, visit_ts=1466208000)
-        self.assertEqual(visit, visits[3])
-
-        visit = utils.get_origin_visit(
-            origin_info, visit_ts='2014-01-01')
-        self.assertEqual(visit, visits[0])
-
-        visit = utils.get_origin_visit(
-            origin_info, visit_ts='2018-01-01')
-        self.assertEqual(visit, visits[-1])
 
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.utils.get_origin_visit')
