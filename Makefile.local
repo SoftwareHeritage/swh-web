@@ -15,10 +15,12 @@ build-webpack-prod:
 .PHONY: run-migrations
 run-migrations:
 	python3 swh/web/manage.py migrate 2>/dev/null
+	python3 swh/web/manage.py createcachetable 2>/dev/null
 
 .PHONY: run-migrations-prod
 run-migrations-prod:
 	django-admin migrate --settings=swh.web.settings.production 2>/dev/null
+	django-admin createcachetable --settings=swh.web.settings.production 2>/dev/null
 
 run-django-webpack-devserver: run-migrations
 	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; npm run start-dev & cd swh/web && python3 manage.py runserver --nostatic"
