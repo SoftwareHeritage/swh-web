@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from bisect import bisect_right
+from datetime import datetime, timezone
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -143,14 +144,33 @@ def _get_visit_date_for_save_request(save_request):
         i = bisect_right(visit_dates, save_request.request_date)
         if i != len(visit_dates):
             visit_date = visit_dates[i]
+            if origin_visits[i]['status'] == 'ongoing':
+                visit_date = None
     except Exception:
         pass
     return visit_date
 
 
+def _check_visit_update_status(save_request, save_task_status):
+    visit_date = _get_visit_date_for_save_request(save_request)
+    save_request.visit_date = visit_date
+    # visit has been performed, mark the saving task as succeed
+    if visit_date:
+        save_task_status = SAVE_TASK_SUCCEED
+    else:
+        time_now = datetime.now(tz=timezone.utc)
+        time_delta = time_now - save_request.request_date
+        # consider the task as failed if it is still in scheduled state
+        # one week after its submission
+        if time_delta.days > 7:
+            save_task_status = SAVE_TASK_FAILED
+    return visit_date, save_task_status
+
+
 def _save_request_dict(save_request, task=None):
     must_save = False
     visit_date = save_request.visit_date
+    # save task still in scheduler db
     if task:
         save_task_status = _save_task_status[task['status']]
         if save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEED) \
@@ -162,13 +182,29 @@ def _save_request_dict(save_request, task=None):
         # before reporting the task execution as successful
         if save_task_status == SAVE_TASK_SUCCEED and not visit_date:
             save_task_status = SAVE_TASK_SCHEDULED
-        if save_request.loading_task_status != save_task_status:
-            save_request.loading_task_status = save_task_status
-            must_save = True
-        if must_save:
-            save_request.save()
+        # Check tasks still marked as scheduled / not yet scheduled
+        if save_task_status in (SAVE_TASK_SCHEDULED,
+                                SAVE_TASK_NOT_YET_SCHEDULED):
+            visit_date, save_task_status = _check_visit_update_status(
+                save_request, save_task_status)
+
+    # save task may have been archived
     else:
         save_task_status = save_request.loading_task_status
+        if save_task_status in (SAVE_TASK_SCHEDULED,
+                                SAVE_TASK_NOT_YET_SCHEDULED):
+            visit_date, save_task_status = _check_visit_update_status(
+                save_request, save_task_status)
+
+        else:
+            save_task_status = save_request.loading_task_status
+
+    if save_request.loading_task_status != save_task_status:
+        save_request.loading_task_status = save_task_status
+        must_save = True
+
+    if must_save:
+        save_request.save()
 
     return {'origin_type': save_request.origin_type,
             'origin_url': save_request.origin_url,
