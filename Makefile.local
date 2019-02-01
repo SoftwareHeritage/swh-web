@@ -16,19 +16,23 @@ build-webpack-prod:
 run-migrations:
 	python3 swh/web/manage.py migrate 2>/dev/null
 
+.PHONY: run-migrations-prod
+run-migrations-prod:
+	django-admin migrate --settings=swh.web.settings.production 2>/dev/null
+
 run-django-webpack-devserver: run-migrations
 	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; npm run start-dev & cd swh/web && python3 manage.py runserver --nostatic"
 
 run-django-webpack-dev: build-webpack-dev run-migrations
 	python3 swh/web/manage.py runserver --nostatic
 
-run-django-webpack-prod: build-webpack-prod run-migrations
+run-django-webpack-prod: build-webpack-prod run-migrations-prod
 	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production
 
 run-django-server-dev: run-migrations
 	python3 swh/web/manage.py runserver --nostatic
 
-run-django-server-prod: run-migrations
+run-django-server-prod: run-migrations-prod
 	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production
 
 run-gunicorn-server: run-migrations
