@@ -43,7 +43,9 @@ def get_origin_visits(origin_info):
         new_visits = list(service.lookup_origin_visits(origin_info['id'],
                                                        last_visit=last_visit))
         if not new_visits:
-            return cache_entry
+            last_snp = service.lookup_latest_origin_snapshot(origin_info['id'])
+            if not last_snp or last_snp['id'] == cache_entry[-1]['snapshot']:
+                return cache_entry
 
     origin_visits = []
 
