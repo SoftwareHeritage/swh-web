@@ -34,8 +34,8 @@ def api_origins(request):
 
         Origins are sorted by ids before returning them.
 
-        :query int origin_from: The minimum id of the origins to return
-            (default to 1)
+        :query int origin_from: The first origin id that will be included
+            in returned results (default to 1)
         :query int origin_count: The maximum number of origins to return
             (default to 100, can not exceed 10000)
 

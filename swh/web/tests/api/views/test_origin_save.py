@@ -90,8 +90,8 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                       url_args={'origin_type': 'git',
                                 'origin_url': origin_url})
 
-        with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
-            mock_visit_date.return_value = visit_date
+        with patch('swh.web.common.origin_save._get_visit_info_for_save_request') as mock_visit_date: # noqa
+            mock_visit_date.return_value = (visit_date, None)
             response = self.client.post(url)
 
             if expected_request_status != SAVE_REQUEST_REJECTED:
@@ -129,8 +129,8 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                       url_args={'origin_type': 'git',
                                 'origin_url': origin_url})
 
-        with patch('swh.web.common.origin_save._get_visit_date_for_save_request') as mock_visit_date: # noqa
-            mock_visit_date.return_value = visit_date
+        with patch('swh.web.common.origin_save._get_visit_info_for_save_request') as mock_visit_date: # noqa
+            mock_visit_date.return_value = (visit_date, None)
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             save_request_data = response.data[0]
@@ -207,7 +207,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
 
     @patch('swh.web.common.origin_save.scheduler')
     def test_create_save_request_only_when_needed(self, mock_scheduler):
-        origin_url = 'https://gitlab.com/webpack/webpack'
+        origin_url = 'https://github.com/webpack/webpack'
         SaveOriginRequest.objects.create(origin_type='git',
                                          origin_url=origin_url,
                                          status=SAVE_REQUEST_ACCEPTED, # noqa

@@ -16,6 +16,12 @@ _code_providers = [
                          '(continuously archived)',
     },
     {
+        'provider_url': 'https://framagit.org/',
+        'provider_logo': 'img/logos/framagit.png',
+        'provider_info': 'public repositories from Framagit '
+                         '(continuously archived)',
+    },
+    {
         'provider_url': 'https://github.com',
         'provider_logo': 'img/logos/github.png',
         'provider_info': 'public repositories from GitHub '

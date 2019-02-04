@@ -1,8 +1,10 @@
-swh-web (0.0.177-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.178-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-swh
+  * New upstream release 0.0.178     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2019-02-04 15:21:40 +0100)
+  * Upstream changes:     - version 0.0.178
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 30 Jan 2019 13:01:58 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 04 Feb 2019 14:59:44 +0000
 
 swh-web (0.0.177-1~swh1) unstable-swh; urgency=medium
 
