@@ -38,8 +38,7 @@ class HtmlMinifyMiddleware(object):
         response = self.get_response(request)
         if 'text/html' in response.get('Content-Type', ''):
             try:
-                minified_html = minify(response.content.decode('utf-8'),
-                                       convert_charrefs=False)
+                minified_html = minify(response.content.decode('utf-8'))
                 response.content = minified_html.encode('utf-8')
             except Exception:
                 pass
