@@ -133,6 +133,7 @@ swh/web/common/utils.py
 swh/web/common/migrations/0001_initial.py
 swh/web/common/migrations/0002_saveoriginrequest_visit_date.py
 swh/web/common/migrations/0003_saveoriginrequest_loading_task_status.py
+swh/web/common/migrations/0004_auto_20190204_1324.py
 swh/web/common/migrations/__init__.py
 swh/web/misc/__init__.py
 swh/web/misc/coverage.py
@@ -237,6 +238,7 @@ swh/web/static/img/icons/swh-logo-archive-180x180.png
 swh/web/static/img/icons/swh-logo-archive-192x192.png
 swh/web/static/img/icons/swh-logo-archive-270x270.png
 swh/web/static/img/logos/debian.png
+swh/web/static/img/logos/framagit.png
 swh/web/static/img/logos/github.png
 swh/web/static/img/logos/gitlab.svg
 swh/web/static/img/logos/gitorious.png
