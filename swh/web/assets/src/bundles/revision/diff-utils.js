@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -63,6 +63,11 @@ function formatDiffLineNumbers(fromLine, toLine, maxNumberChars) {
     ret += toLine;
   }
   return ret;
+}
+
+function adjustCodeBlockLeftMargin(diffElt) {
+  let left = $(diffElt).find('.hljs-ln-numbers-container').width();
+  $(diffElt).find('.hljs-ln-code-container').css('margin-left', left + 'px');
 }
 
 // to compute diff and process it for display
@@ -139,8 +144,10 @@ export function computeDiff(diffUrl, diffId) {
           let diffToStr = '';
           let linesOffset = 0;
 
+          let codeLineElts = $(`#${diffId} .hljs-ln-code-container`).children();
+
           $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-            let lnText = lnElt.nextSibling.innerText;
+            let lnText = $(codeLineElts[i]).text();
             let linesInfo = linesInfoRegExp.exec(lnText);
             let fromLine = '';
             let toLine = '';
@@ -211,45 +218,55 @@ export function computeDiff(diffUrl, diffId) {
             hljs.lineNumbersBlock(block);
           });
 
+          function highlightDiffLines(diffId) {
+            let codeLineElts = $(`#${diffId} .hljs-ln-code-container`).children();
+            $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
+              let lnTextElt = codeLineElts[i];
+              let lnText = $(lnTextElt).text();
+              let linesInfo = linesInfoRegExp.exec(lnText);
+              if (linesInfo) {
+                $(lnElt).addClass('swh-diff-lines-info');
+                $(lnTextElt).addClass('swh-diff-lines-info');
+                $(lnTextElt).text('');
+                $(lnTextElt).append(`<span class="hljs-meta">${lnText}</span>`);
+              } else if (lnText.length > 0 && lnText[0] === '-') {
+                $(lnElt).addClass('swh-diff-removed-line');
+                $(lnTextElt).addClass('swh-diff-removed-line');
+              } else if (lnText.length > 0 && lnText[0] === '+') {
+                $(lnElt).addClass('swh-diff-added-line');
+                $(lnTextElt).addClass('swh-diff-added-line');
+              }
+            });
+          }
+
           // hljs.lineNumbersBlock is asynchronous so we have to postpone our
           // next treatments by adding it at the end of the current js events queue
           setTimeout(() => {
+
             // diff highlighting for added/removed lines on top of code highlighting
-            $(`.${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-              let lnText = lnElt.nextSibling.innerText;
-              let linesInfo = linesInfoRegExp.exec(lnText);
-              if (linesInfo) {
-                $(lnElt).parent().addClass('swh-diff-lines-info');
-                let linesInfoText = $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text();
-                $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').children().remove();
-                $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text('');
-                $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').append(`<span class="hljs-meta">${linesInfoText}</span>`);
-              } else if (lnText.length > 0 && lnText[0] === '-') {
-                $(lnElt).parent().addClass('swh-diff-removed-line');
-              } else if (lnText.length > 0 && lnText[0] === '+') {
-                $(lnElt).parent().addClass('swh-diff-added-line');
-              }
-            });
+            highlightDiffLines(diffId);
+            highlightDiffLines(`${diffId}-from`);
+            highlightDiffLines(`${diffId}-to`);
 
             // set line numbers for unified diff
-            $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr(
+            $(`#${diffId} .hljs-ln-numbers .hljs-ln-n`).each((i, lnElt) => {
+              $(lnElt).attr(
                 'data-line-number',
                 formatDiffLineNumbers(fromToLines[i][0], fromToLines[i][1],
                                       maxNumberChars));
             });
 
             // set line numbers for the from side-by-side diff
-            $(`#${diffId}-from .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr(
+            $(`#${diffId}-from .hljs-ln-numbers .hljs-ln-n`).each((i, lnElt) => {
+              $(lnElt).attr(
                 'data-line-number',
                 formatDiffLineNumbers(fromLines[i], null,
                                       maxNumberChars));
             });
 
             // set line numbers for the to side-by-side diff
-            $(`#${diffId}-to .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr(
+            $(`#${diffId}-to .hljs-ln-numbers .hljs-ln-n`).each((i, lnElt) => {
+              $(lnElt).attr(
                 'data-line-number',
                 formatDiffLineNumbers(null, toLines[i],
                                       maxNumberChars));
@@ -259,7 +276,7 @@ export function computeDiff(diffUrl, diffId) {
             //  - remove the '+' and '-' at the beginning of the diff lines
             //    from code highlighting
             //  - add the "no new line at end of file marker" if needed
-            $(`.${diffId} .hljs-ln-line`).each((i, lnElt) => {
+            $(`.${diffId} .hljs-ln-code`).each((i, lnElt) => {
               if (lnElt.firstChild) {
                 if (lnElt.firstChild.nodeName !== '#text') {
                   let lineText = lnElt.firstChild.innerHTML;
@@ -287,6 +304,8 @@ export function computeDiff(diffUrl, diffId) {
             }
 
             setDiffVisible(diffId);
+
+            adjustCodeBlockLeftMargin(`#${diffId}`);
 
           });
         });
@@ -410,6 +429,8 @@ export function showUnifiedDiff(event, diffId) {
 export function showSplittedDiff(event, diffId) {
   $(`#${diffId}-unified-diff`).css('display', 'none');
   $(`#${diffId}-splitted-diff`).css('display', 'block');
+  adjustCodeBlockLeftMargin(`#${diffId}-from`);
+  adjustCodeBlockLeftMargin(`#${diffId}-to`);
 }
 
 // callback when the user clicks on the 'Compute all diffs' button
