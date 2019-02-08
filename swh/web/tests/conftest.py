@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -13,11 +13,15 @@ from hypothesis import settings, HealthCheck
 settings.register_profile('default', settings())
 
 settings.register_profile(
-    'swh-web', settings(deadline=None,
-                        suppress_health_check=[HealthCheck.too_slow]))
+    'swh-web',
+    settings(deadline=None,
+             suppress_health_check=[HealthCheck.too_slow,
+                                    HealthCheck.filter_too_much]))
 
 settings.register_profile(
-    'swh-web-fast', settings(deadline=None, max_examples=1))
+    'swh-web-fast',
+    settings(deadline=None, max_examples=1,
+             suppress_health_check=[HealthCheck.filter_too_much]))
 
 
 def pytest_configure(config):

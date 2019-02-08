@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -102,6 +102,35 @@ content_display_max_size = get_config()['content_display_max_size']
 snapshot_content_max_size = get_config()['snapshot_content_max_size']
 
 
+def _reencode_content(mimetype, encoding, content_data):
+    # encode textual content to utf-8 if needed
+    if mimetype.startswith('text/'):
+        # probably a malformed UTF-8 content, re-encode it
+        # by replacing invalid chars with a substitution one
+        if encoding == 'unknown-8bit':
+            content_data = content_data.decode('utf-8', 'replace')\
+                                       .encode('utf-8')
+        elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']:
+            content_data = content_data.decode(encoding, 'replace')\
+                                       .encode('utf-8')
+    elif mimetype.startswith('application/octet-stream'):
+        # file may detect a text content as binary
+        # so try to decode it for display
+        encodings = ['us-ascii']
+        encodings += ['iso-8859-%s' % i for i in range(1, 17)]
+        for encoding in encodings:
+            try:
+                content_data = content_data.decode(encoding)\
+                                           .encode('utf-8')
+            except Exception:
+                pass
+            else:
+                # ensure display in content view
+                mimetype = 'text/plain'
+                break
+    return mimetype, content_data
+
+
 def request_content(query_string, max_size=content_display_max_size,
                     raise_if_unavailable=True, reencode=True):
     """Function that retrieves a content from the archive.
@@ -172,34 +201,11 @@ def request_content(query_string, max_size=content_display_max_size,
                 mimetype, encoding = \
                     get_mimetype_and_encoding_for_content(content_data['raw_data']) # noqa
 
-            # encode textual content to utf-8 if needed
-            if reencode and mimetype.startswith('text/'):
-                # probably a malformed UTF-8 content, re-encode it
-                # by replacing invalid chars with a substitution one
-                if encoding == 'unknown-8bit':
-                    content_data['raw_data'] = \
-                        content_data['raw_data'].decode('utf-8', 'replace')\
-                                                .encode('utf-8')
-                elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']: # noqa
-                    content_data['raw_data'] = \
-                        content_data['raw_data'].decode(encoding, 'replace')\
-                                                .encode('utf-8')
-            elif reencode and mimetype.startswith('application/octet-stream'):
-                # file may detect a text content as binary
-                # so try to decode it for display
-                encodings = ['us-ascii']
-                encodings += ['iso-8859-%s' % i for i in range(1, 17)]
-                for encoding in encodings:
-                    try:
-                        content_data['raw_data'] = \
-                                content_data['raw_data'].decode(encoding)\
-                                                        .encode('utf-8')
-                    except Exception:
-                        pass
-                    else:
-                        # ensure display in content view
-                        mimetype = 'text/plain'
-                        break
+            if reencode:
+                mimetype, raw_data = _reencode_content(
+                    mimetype, encoding, content_data['raw_data'])
+                content_data['raw_data'] = raw_data
+
     else:
         content_data['raw_data'] = None
 
