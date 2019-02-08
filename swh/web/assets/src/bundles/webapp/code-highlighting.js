@@ -18,7 +18,7 @@ export async function highlightCode(showLineNumbers = true) {
 
   // function to highlight a line
   function highlightLine(i) {
-    let lineTd = $(`.swh-content div[data-line-number="${i}"]`).parent().parent();
+    let lineTd = $(`.hljs-ln-line[data-line-number="${i}"]`);
     lineTd.css('background-color', lineHighlightColor);
     return lineTd;
   }
@@ -26,7 +26,7 @@ export async function highlightCode(showLineNumbers = true) {
   // function to reset highlighting
   function resetHighlightedLines() {
     firstHighlightedLine = null;
-    $('.swh-content tr').css('background-color', 'inherit');
+    $('.hljs-ln-line[data-line-number]').css('background-color', 'inherit');
   }
 
   function scrollToLine(lineDomElt) {

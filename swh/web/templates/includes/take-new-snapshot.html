@@ -5,6 +5,7 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load static %}
 {% load swh_templatetags %}
 
 {% if snapshot_context and snapshot_context.origin_info and snapshot_context.origin_info.type|origin_type_savable %}
@@ -71,8 +72,11 @@ See top-level LICENSE file for more information
                 {% endif %}
 
               </div>
-
           </form>
+          <div class="swh-processing-save-request text-center" style="display: none;">
+            <img src="{% static 'img/swh-spinner.gif' %}">
+            <p>Processing "take a new snapshot" request ...</p>
+          </div>
           <div id="swh-take-new-snapshot-request-status">
           </div>
         </div>
