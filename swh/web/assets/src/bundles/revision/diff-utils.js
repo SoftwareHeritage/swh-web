@@ -18,11 +18,11 @@ let nbChangedFiles = 0;
 let nbDiffsComputed = 0;
 
 // the no newline at end of file marker from Github
-let noNewLineMarker = `<span class="no-nl-marker" title="No newline at end of file">
-                         <svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16">
-                           <path fill-rule="evenodd" d="M16 5v3c0 .55-.45 1-1 1h-3v2L9 8l3-3v2h2V5h2zM8 8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4 4 1.8 4 4zM1.5 9.66L5.66 5.5C5.18 5.19 4.61 5 4 5 2.34 5 1 6.34 1 8c0 .61.19 1.17.5 1.66zM7 8c0-.61-.19-1.17-.5-1.66L2.34 10.5c.48.31 1.05.5 1.66.5 1.66 0 3-1.34 3-3z"></path>
-                         </svg>
-                       </span>`;
+let noNewLineMarker = '<span class="no-nl-marker" title="No newline at end of file">' +
+                        '<svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16">' +
+                          '<path fill-rule="evenodd" d="M16 5v3c0 .55-.45 1-1 1h-3v2L9 8l3-3v2h2V5h2zM8 8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4 4 1.8 4 4zM1.5 9.66L5.66 5.5C5.18 5.19 4.61 5 4 5 2.34 5 1 6.34 1 8c0 .61.19 1.17.5 1.66zM7 8c0-.61-.19-1.17-.5-1.66L2.34 10.5c.48.31 1.05.5 1.66.5 1.66 0 3-1.34 3-3z"></path>' +
+                        '</svg>' +
+                      '</span>';
 
 // to track the total number of added lines in files diffs
 let nbAdditions = 0;
@@ -106,8 +106,8 @@ export function computeDiff(diffUrl, diffId) {
       if (data.diff_str.indexOf('Large diff') === 0) {
         $(`#${diffId}`)[0].innerHTML = data.diff_str +
           `<br/><button class="btn btn-default btn-sm" type="button"
-           onclick="swh.revision.computeDiff('${diffUrl}&force=true', '${diffId}')">
-           Request diff</button>`;
+           onclick="swh.revision.computeDiff('${diffUrl}&force=true', '${diffId}')">` +
+           'Request diff</button>';
         setDiffVisible(diffId);
       } else if (data.diff_str.indexOf('@@') !== 0) {
         $(`#${diffId}`).text(data.diff_str);
@@ -168,7 +168,7 @@ export function computeDiff(diffUrl, diffId) {
               ++nbDeletions;
               diffFromStr += (lnText + '\n');
               ++linesOffset;
-            // line added in the from file
+            // line added in the to file
             } else if (lnText.length > 0 && lnText[0] === '+') {
               baseToLine = baseToLine + 1;
               toLine = baseToLine.toString();
