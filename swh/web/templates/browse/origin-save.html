@@ -1,11 +1,13 @@
 {% extends "./layout.html" %}
 
 {% comment %}
-Copyright (C) 2018  The Software Heritage developers
+Copyright (C) 2018-2019  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
+
+{% load static %}
 
 {% block header %}
 {{ block.super }}
@@ -100,6 +102,10 @@ See top-level LICENSE file for more information
         </div>
       {% endif %}
     </form>
+    <div class="swh-processing-save-request text-center" style="display: none;">
+      <img src="{% static 'img/swh-spinner.gif' %}">
+      <p>Processing "save code now" request ...</p>
+    </div>
     <div id="swh-origin-save-request-status">
     </div>
   </div>

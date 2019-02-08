@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -22,10 +22,12 @@ function originSaveRequest(originType, originUrl,
     'Content-Type': 'application/json'
   };
   let body = JSON.stringify(grecaptchaData);
+  $('.swh-processing-save-request').css('display', 'block');
   csrfPost(addSaveOriginRequestUrl, headers, body)
     .then(handleFetchError)
     .then(response => response.json())
     .then(data => {
+      $('.swh-processing-save-request').css('display', 'none');
       if (data.save_request_status === 'accepted') {
         acceptedCallback();
       } else {
@@ -36,6 +38,7 @@ function originSaveRequest(originType, originUrl,
       }
     })
     .catch(response => {
+      $('.swh-processing-save-request').css('display', 'none');
       if (response.status === 403) {
         errorCallback();
       }
