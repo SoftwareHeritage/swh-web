@@ -18,6 +18,7 @@
 
 /* for block of numbers */
 .hljs-ln-numbers {
+    cursor: pointer;
     user-select: none;
     text-align: center;
     color: #aaa;
