@@ -1,3 +1,4 @@
 #!/bin/bash
 
 django-admin migrate --settings=swh.web.settings.production
+django-admin createcachetable --settings=swh.web.settings.production
