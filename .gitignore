@@ -27,3 +27,4 @@ dist/
 .cache
 .pytest_cache
 .tox/
+debian/
