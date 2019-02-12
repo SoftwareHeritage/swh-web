@@ -24,7 +24,7 @@
     "autoprefixer": "^9.4.7",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.5",
-    "bootstrap": "^4.2.1",
+    "bootstrap": "^4.3.0",
     "bootstrap-loader": "^3.0.2",
     "bootstrap-year-calendar": "github:anlambert/bootstrap-year-calendar#a51523192c72e037545930d9d0e4306d54c7ce53",
     "cache-loader": "^2.0.1",
