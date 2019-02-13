@@ -1,6 +1,6 @@
 {
   "name": "swh-web",
-  "version": "0.0.180",
+  "version": "0.0.181",
   "description": "Static assets management for swh-web",
   "scripts": {
     "build-dev": "NODE_ENV=development webpack --config ./swh/web/assets/config/webpack.config.development.js  --display-modules --progress --colors",
@@ -26,7 +26,7 @@
     "babel-loader": "^8.0.5",
     "bootstrap": "^4.3.0",
     "bootstrap-loader": "^3.0.2",
-    "bootstrap-year-calendar": "github:anlambert/bootstrap-year-calendar#a51523192c72e037545930d9d0e4306d54c7ce53",
+    "bootstrap-year-calendar-bs4": "^1.0.0",
     "cache-loader": "^2.0.1",
     "clean-webpack-plugin": "^1.0.1",
     "clipboard": "^2.0.4",

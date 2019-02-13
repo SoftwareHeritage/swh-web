@@ -29,7 +29,7 @@ CACHES.update({
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': swh_web_config['throttling']['cache_uri'],
     }
-}
+})
 
 # Setup support for proxy headers
 USE_X_FORWARDED_HOST = True
