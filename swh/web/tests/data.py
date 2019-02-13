@@ -15,6 +15,9 @@ from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
 from swh.model.identifiers import directory_identifier
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.storage.algos.dir_iterators import dir_iterator
+from swh.web.browse.utils import (
+    get_mimetype_and_encoding_for_content, prepare_content_for_display
+)
 
 # Module used to initialize data that will be provided as tests input
 
@@ -173,6 +176,8 @@ def _init_tests_data():
     snapshots = set()
     persons = set()
 
+    content_path = {}
+
     # Get all objects loaded into the test archive
     for origin in _TEST_ORIGINS:
         snp = storage.snapshot_get_latest(origin['id'])
@@ -196,6 +201,8 @@ def _init_tests_data():
             persons.add(rev['committer']['id'])
             directories.add(hash_to_hex(dir_id))
             for entry in dir_iterator(storage, dir_id):
+                content_path[entry['sha1']] = '/'.join(
+                    [hash_to_hex(dir_id), entry['path'].decode('utf-8')])
                 if entry['type'] == 'file':
                     contents.add(entry['sha1'])
                 elif entry['type'] == 'dir':
@@ -209,6 +216,15 @@ def _init_tests_data():
             algo: hash_to_hex(content_metadata[algo])
             for algo in DEFAULT_ALGORITHMS
         })
+        path = content_path[content_metadata['sha1']]
+        cnt = next(storage.content_get([content_metadata['sha1']]))
+        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt['data'])
+        content_display_data = prepare_content_for_display(
+            cnt['data'], mimetype, path)
+        contents[-1]['path'] = path
+        contents[-1]['mimetype'] = mimetype
+        contents[-1]['encoding'] = encoding
+        contents[-1]['hljs-language'] = content_display_data['language']
 
     # Create indexer storage instance that will be shared by indexers
     idx_storage = get_indexer_storage('memory', {})

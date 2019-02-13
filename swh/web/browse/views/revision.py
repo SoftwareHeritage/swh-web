@@ -448,9 +448,12 @@ def revision_browse(request, sha1_git, extra_path=None):
                 content_data['raw_data'], content_data['mimetype'], path)
             content = content_display_data['content_data']
             language = content_display_data['language']
+            mimetype = content_display_data['mimetype']
         query_params = {}
         if path:
+            filename = path_info[-1]['name']
             query_params['filename'] = path_info[-1]['name']
+            revision_data['filename'] = filename
 
         top_right_link = {
             'url': reverse('browse-content-raw',

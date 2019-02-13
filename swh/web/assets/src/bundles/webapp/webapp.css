@@ -430,8 +430,13 @@ hr.swh-faded-line {
     border: none;
 }
 
+.swh-coverage-col {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 .swh-coverage {
-    height: 65px;
+    height: calc(65px + 1em);
     padding-top: 0.3rem;
     border: none;
 }

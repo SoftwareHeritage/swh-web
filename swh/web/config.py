@@ -79,7 +79,8 @@ DEFAULT_CONFIG = {
         'private_api_url': 'https://deposit.softwareheritage.org/1/private/',
         'private_api_user': 'swhworker',
         'private_api_password': ''
-    })
+    }),
+    'coverage_count_origins': ('bool', False)
 }
 
 swhweb_config = {}

@@ -233,3 +233,13 @@ LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = 'admin'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    },
+    'db_cache': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'swh_web_cache',
+    }
+}
