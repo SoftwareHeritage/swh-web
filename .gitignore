@@ -28,3 +28,5 @@ dist/
 .pytest_cache
 .tox/
 debian/
+package-lock.json
+
