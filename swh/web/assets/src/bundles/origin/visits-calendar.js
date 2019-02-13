@@ -5,8 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import 'bootstrap-year-calendar';
-import 'bootstrap-year-calendar/css/bootstrap-year-calendar.css';
+import 'bootstrap-year-calendar-bs4';
+import 'bootstrap-year-calendar-bs4/css/bootstrap-year-calendar.css';
 
 let minSize = 15;
 let maxSize = 28;
