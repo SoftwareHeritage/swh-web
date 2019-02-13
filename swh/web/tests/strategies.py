@@ -87,6 +87,40 @@ def contents():
     return lists(content(), min_size=2, max_size=8)
 
 
+def content_text():
+    """
+    Hypothesis strategy returning random textual contents ingested
+    into the test archive.
+    """
+    return content().filter(lambda c: c['mimetype'].startswith('text/'))
+
+
+def content_text_non_utf8():
+    """
+    Hypothesis strategy returning random textual contents not encoded
+    to UTF-8 ingested into the test archive.
+    """
+    return content().filter(lambda c: c['mimetype'].startswith('text/') and
+                            c['encoding'] not in ('utf-8', 'us-ascii'))
+
+
+def content_text_no_highlight():
+    """
+    Hypothesis strategy returning random textual contents with no detected
+    programming language to highlight ingested into the test archive.
+    """
+    return content().filter(lambda c: c['mimetype'].startswith('text/') and
+                            c['hljs-language'] == 'nohighlight')
+
+
+def content_image_type():
+    """
+    Hypothesis strategy returning random image contents ingested
+    into the test archive.
+    """
+    return content().filter(lambda c: c['mimetype'].startswith('image/'))
+
+
 @composite
 def new_content(draw):
     blake2s256_hex = draw(sha256())
