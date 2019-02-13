@@ -24,7 +24,7 @@ else:
 MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
                 'django.middleware.cache.FetchFromCacheMiddleware']
 
-CACHES = {
+CACHES.update({
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': swh_web_config['throttling']['cache_uri'],

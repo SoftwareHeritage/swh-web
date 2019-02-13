@@ -7,8 +7,10 @@ import json
 
 from distutils.util import strtobool
 
+from django.core.cache import caches
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
 
 from swh.web.common import service
 from swh.web.common.origin_visits import get_origin_visits
@@ -20,6 +22,7 @@ from swh.web.browse.utils import (
     get_origin_info, get_snapshot_context
 )
 from swh.web.browse.browseurls import browse_route
+from swh.web.misc.coverage import code_providers
 
 from .utils.snapshot_context import (
     browse_snapshot_directory, browse_snapshot_content,
@@ -205,6 +208,53 @@ def _origin_search(request, url_pattern):
 
         results = json.dumps(list(results), sort_keys=True, indent=4,
                              separators=(',', ': '))
+    except Exception as exc:
+        return handle_view_exception(request, exc, html_response=False)
+
+    return HttpResponse(results, content_type='application/json')
+
+
+@browse_route(r'origin/coverage_count/',
+              view_name='browse-origin-coverage-count')
+@never_cache
+def _origin_coverage_count(request):
+    """Internal browse endpoint to count the number of origins associated
+    to each code provider declared in the archive coverage list.
+    As this operation takes some times, we execute it once per day and
+    cache its results to database. The cached origin counts are then served.
+    Cache management is handled in the implementation to avoid sending
+    the same count query twice to the storage database.
+    """
+    try:
+        cache = caches['db_cache']
+        results = []
+        for code_provider in code_providers:
+            provider_id = code_provider['provider_id']
+            url_regexp = code_provider['origin_url_regexp']
+            cache_key = '%s_origins_count' % provider_id
+            prev_cache_key = '%s_origins_prev_count' % provider_id
+            # get cached origin count
+            origin_count = cache.get(cache_key, -2)
+            # cache entry has expired or does not exist
+            if origin_count == -2:
+                # mark the origin count as processing
+                cache.set(cache_key, -1, timeout=10*60)
+                # execute long count query
+                origin_count = service.storage.origin_count(url_regexp,
+                                                            regexp=True)
+                # cache count result
+                cache.set(cache_key, origin_count, timeout=24*60*60)
+                cache.set(prev_cache_key, origin_count, timeout=None)
+            # origin count is currently processing
+            elif origin_count == -1:
+                # return previous count if it exists
+                origin_count = cache.get(prev_cache_key, -1)
+            results.append({
+                'provider_id': provider_id,
+                'origin_count': origin_count,
+                'origin_types': code_provider['origin_types']
+            })
+        results = json.dumps(results)
     except Exception as exc:
         return handle_view_exception(request, exc, html_response=False)
 

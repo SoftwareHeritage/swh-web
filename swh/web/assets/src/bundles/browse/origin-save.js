@@ -52,7 +52,7 @@ export function initOriginSave() {
 
   $(document).ready(() => {
 
-    $.fn.dataTable.ext.errMode = 'throw';
+    $.fn.dataTable.ext.errMode = 'none';
 
     fetch(Urls.browse_origin_save_types_list())
       .then(response => response.json())
@@ -62,59 +62,64 @@ export function initOriginSave() {
         }
       });
 
-    saveRequestsTable = $('#swh-origin-save-requests').DataTable({
-      serverSide: true,
-      ajax: Urls.browse_origin_save_requests_list('all'),
-      columns: [
-        {
-          data: 'save_request_date',
-          name: 'request_date',
-          render: (data, type, row) => {
-            if (type === 'display') {
-              let date = new Date(data);
-              return date.toLocaleString();
-            }
-            return data;
-          }
-        },
-        {
-          data: 'origin_type',
-          name: 'origin_type'
-
-        },
-        {
-          data: 'origin_url',
-          name: 'origin_url',
-          render: (data, type, row) => {
-            if (type === 'display') {
-              return `<a href="${data}">${data}</a>`;
-            }
-            return data;
-          }
-        },
-        {
-          data: 'save_request_status',
-          name: 'status'
-        },
-        {
-          data: 'save_task_status',
-          name: 'loading_task_status',
-          render: (data, type, row) => {
-            if (data === 'succeed') {
-              let browseOriginUrl = Urls.browse_origin(row.origin_url);
-              if (row.visit_date) {
-                browseOriginUrl += `visit/${row.visit_date}/`;
+    saveRequestsTable = $('#swh-origin-save-requests')
+      .on('error.dt', (e, settings, techNote, message) => {
+        $('#swh-origin-save-request-list-error').text('An error occurred while retrieving the save requests list');
+        console.log(message);
+      })
+      .DataTable({
+        serverSide: true,
+        ajax: Urls.browse_origin_save_requests_list('all'),
+        columns: [
+          {
+            data: 'save_request_date',
+            name: 'request_date',
+            render: (data, type, row) => {
+              if (type === 'display') {
+                let date = new Date(data);
+                return date.toLocaleString();
               }
-              return `<a href="${browseOriginUrl}">${data}</a>`;
+              return data;
             }
-            return data;
+          },
+          {
+            data: 'origin_type',
+            name: 'origin_type'
+
+          },
+          {
+            data: 'origin_url',
+            name: 'origin_url',
+            render: (data, type, row) => {
+              if (type === 'display') {
+                return `<a href="${data}">${data}</a>`;
+              }
+              return data;
+            }
+          },
+          {
+            data: 'save_request_status',
+            name: 'status'
+          },
+          {
+            data: 'save_task_status',
+            name: 'loading_task_status',
+            render: (data, type, row) => {
+              if (data === 'succeed') {
+                let browseOriginUrl = Urls.browse_origin(row.origin_url);
+                if (row.visit_date) {
+                  browseOriginUrl += `visit/${row.visit_date}/`;
+                }
+                return `<a href="${browseOriginUrl}">${data}</a>`;
+              }
+              return data;
+            }
           }
-        }
-      ],
-      scrollY: '50vh',
-      scrollCollapse: true,
-      order: [[0, 'desc']]
-    });
+        ],
+        scrollY: '50vh',
+        scrollCollapse: true,
+        order: [[0, 'desc']]
+      });
 
     $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
       saveRequestsTable.draw();
