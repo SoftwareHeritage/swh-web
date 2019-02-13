@@ -1,0 +1,75 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "outputType": {
+      "description": "The type of output jslicenses file to generate",
+      "type": "string",
+      "enum": ["html", "json"]
+    },
+    "outputDir": {
+      "description": "Specify the path relative to the webpack output folder of the directory in which weblabels related files will be emitted",
+      "type": "string"
+    },
+    "exclude": {
+      "description": "Specify a list of module prefixes to exclude from processing",
+      "type": "array",
+        "items": {
+          "type": "string"
+      }
+    },
+    "srcReplace": {
+      "description": "Allow to replace js source files to copy in the generated output",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "licenseOverride": {
+      "description": "Allow to override the SPDX license expression for given source files",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["spdxLicenseExpression", "licenseFilePath"],
+        "properties": {
+          "spdxLicenseExpression": {
+            "description": "A SPDX license expression",
+            "type": "string"
+          },
+          "licenseFilePath": {
+            "description": "The path to the corresponding license file relative to the webpack project root",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "additionalScripts": {
+      "description": "Allow to declare additional scripts not processed by webpack.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "path", "spdxLicenseExpression", "licenseFilePath"],
+          "properties": {
+            "id": {
+              "description": "A js source file identifier as it will be displayed in the Weblabels page",
+              "type": "string"
+            },
+            "path": {
+              "description": "The path to the js source file relative to the webpack project root"
+            },
+            "spdxLicenseExpression": {
+              "description": "A SPDX license expression",
+              "type": "string"
+            },
+            "licenseFilePath": {
+              "description": "The path to the corresponding license file relative to the webpack project root",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -17,6 +17,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const RemoveSourceMapUrlPlugin = require('./webpack-plugins/remove-source-map-url-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
@@ -304,7 +305,8 @@ module.exports = {
   // webpack plugins
   plugins: [
     // cleanup previously generated assets
-    new CleanWebpackPlugin(['static/css', 'static/js', 'static/fonts', 'static/*.*'], {
+    new CleanWebpackPlugin(['static/css', 'static/js', 'static/fonts',
+                            'static/jssources', 'static/*.*'], {
       root: path.resolve(__dirname, '../../')
     }),
     // needed in order to use django_webpack_loader
@@ -349,7 +351,39 @@ module.exports = {
     new CopyWebpackPlugin([{
       from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
       to: path.resolve(__dirname, '../../static/js/')
-    }])
+    }]),
+    new GenerateWebLabelsPlugin({
+      outputType: 'json',
+      exclude: ['mini-css-extract-plugin',
+                'bootstrap-loader'],
+      srcReplace: {
+        './node_modules/pdfjs-dist/build/pdf.min.js':
+        './node_modules/pdfjs-dist/build/pdf.js',
+        './node_modules/admin-lte/dist/js/adminlte.min.js':
+        './node_modules/admin-lte/dist/js/adminlte.js'
+      },
+      licenseOverride: {
+        './swh/web/assets/src/thirdparty/highlightjs-line-numbers/highlightjs-line-numbers.js': {
+          'spdxLicenseExpression': 'MIT',
+          'licenseFilePath': './swh/web/assets/src/thirdparty/highlightjs-line-numbers/LICENSE'
+        },
+        './swh/web/assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.js': {
+          'spdxLicenseExpression': 'GPL-3.0',
+          'licenseFilePath': './swh/web/assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
+        }
+      },
+      additionalScripts: {
+        'js/pdf.worker.min.js': [
+          {
+            'id': 'pdfjs-dist/build/pdf.worker.js',
+            'path': './node_modules/pdfjs-dist/build/pdf.worker.js',
+            'spdxLicenseExpression': 'Apache-2.0',
+            'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
+
+          }
+        ]
+      }
+    })
   ],
   // webpack optimizations
   optimization: {

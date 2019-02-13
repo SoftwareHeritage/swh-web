@@ -20,6 +20,7 @@ swh/web/static/*.*
 swh/web/static/js/
 swh/web/static/css/
 swh/web/static/fonts/
+swh/web/static/jssources/
 .cache-loader/
 build/
 dist/
