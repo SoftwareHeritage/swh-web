@@ -3,13 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-# flake8: noqa
-
 """
 Django tests settings for swh-web.
 """
-
-import os
 
 from swh.web.config import get_config
 
@@ -71,7 +67,8 @@ swh_web_config.update({
     }
 })
 
-from .common import *
+from .common import * # noqa
+from .common import ALLOWED_HOSTS, LOGGING # noqa
 
 ALLOWED_HOSTS += ['testserver']
 
