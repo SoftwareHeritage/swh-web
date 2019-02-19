@@ -56,7 +56,7 @@
     "node-sass": "^4.11.0",
     "nodemon": "^1.18.9",
     "object-fit-images": "^3.2.4",
-    "octicons": "^4.4.0",
+    "octicons": "^8.4.1",
     "open-iconic": "^1.1.1",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "org": "^0.2.0",

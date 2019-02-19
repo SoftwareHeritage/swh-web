@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -36,5 +36,5 @@ import 'iframe-resizer';
 import 'typeface-alegreya';
 import 'typeface-alegreya-sans';
 import 'font-awesome/css/font-awesome.css';
-import 'octicons/build/font/octicons.css';
+import './octicons.css';
 import 'open-iconic/font/css/open-iconic-bootstrap.css';
