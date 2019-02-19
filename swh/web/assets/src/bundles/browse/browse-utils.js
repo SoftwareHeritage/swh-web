@@ -35,7 +35,8 @@ $(document).ready(() => {
       var title = $(this).attr('data-popover-content');
       return $(title).children('.popover-heading').html();
     },
-    offset: '50vh'
+    offset: '50vh',
+    sanitize: false
   });
 
   $('.swh-vault-menu a.dropdown-item').on('click', e => {
