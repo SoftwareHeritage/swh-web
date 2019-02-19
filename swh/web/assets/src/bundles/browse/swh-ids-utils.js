@@ -6,8 +6,8 @@
  */
 
 import ClipboardJS from 'clipboard';
-import 'utils/jquery.tabSlideOut';
-import 'utils/jquery.tabSlideOut.css';
+import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut';
+import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.css';
 
 export function swhIdObjectTypeToggled(event) {
   event.preventDefault();

@@ -63,7 +63,7 @@ let cssLoaders = [
               'font-family-no-missing-generic-family-keyword': null,
               'no-descending-specificity': null
             },
-            'ignoreFiles': 'node_modules/**/*.css'
+            'ignoreFiles': ['node_modules/**/*.css', 'swh/web/assets/src/thirdparty/**/*.css']
           }
         }),
         // automatically add vendor prefixes to css rules
@@ -144,6 +144,7 @@ module.exports = {
         loader: 'eslint-loader',
         options: {
           configFile: path.join(__dirname, '.eslintrc'),
+          ignorePath: path.join(__dirname, '.eslintignore'),
           emitWarning: true
         }
       }]

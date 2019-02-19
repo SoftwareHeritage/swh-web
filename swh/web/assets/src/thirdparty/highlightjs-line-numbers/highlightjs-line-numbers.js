@@ -1,28 +1,4 @@
-// The MIT License (MIT)
-
-// Copyright (c) 2017 Yauheni Pakala
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 // jshint multistr:true
-
-/* eslint-disable */
 
 (function (w, d) {
   'use strict';
@@ -36,6 +12,8 @@
       NUMBER_LINE_NAME = 'hljs-ln-n',
       DATA_ATTR_NAME = 'data-line-number',
       BREAK_LINE_REGEXP = /\r\n|\r|\n/g;
+
+  var resizeHandlerSet = false;
 
   if (w.hljs) {
       w.hljs.initLineNumbersOnLoad = initLineNumbersOnLoad;
@@ -51,13 +29,15 @@
       var css = d.createElement('style');
       css.type = 'text/css';
       css.innerHTML = format(
-          '.{0} table{float:left}' +
+          '.{0} table{float:left; border-collapse:collapse}' +
           '.{0} table td{padding:0}' +
-          '.{1}:before{content:attr({2})}',
+          '.{1}::before{content:attr({2})}' +
+          '.{3}::before{content: "\\200B"}', // force display of empty lines of code
       [
           TABLE_NAME,
           NUMBER_LINE_NAME,
-          DATA_ATTR_NAME
+          DATA_ATTR_NAME,
+          CODE_BLOCK_NAME
       ]);
       d.getElementsByTagName('head')[0].appendChild(css);
   }
@@ -86,16 +66,41 @@
       }
   }
 
+  function adjustLineNumbersHeights(element) {
+    var lnNumbers = element.querySelectorAll('.' + NUMBERS_BLOCK_NAME);
+    var lnCode = element.querySelectorAll('.' + CODE_BLOCK_NAME);
+
+    for (var i = 0 ; i < lnNumbers.length; ++i) {
+      lnNumbers[i].style.height = lnCode[i].offsetHeight + 'px';
+    }
+  }
+
   function lineNumbersBlock (element, options) {
       if (typeof element !== 'object') return;
-
       async(function () {
           element.innerHTML = lineNumbersInternal(element, options);
           // adjust left margin of code div as line numbers is a float left dom element
-          var codeMargin = element.querySelector('.' + NUMBERS_CONTAINER_NAME).offsetWidth;
-          var codeContainerStyle = 'margin-left:' + codeMargin + 'px';
-          var codeContainer = element.querySelector('.' + CODE_CONTAINER_NAME);
-          codeContainer.style.cssText = codeContainerStyle;
+          var lineNumbersContainer = element.querySelector('.' + NUMBERS_CONTAINER_NAME);
+          if (lineNumbersContainer) {
+            var codeMargin = lineNumbersContainer.offsetWidth;
+            var codeContainerStyle = 'margin-left:' + codeMargin + 'px';
+            var codeContainer = element.querySelector('.' + CODE_CONTAINER_NAME);
+            codeContainer.style.cssText = codeContainerStyle;
+
+            // adjust each line number cell height to the one of the div containing
+            // the wrapped line of code and set a handler to execute this
+            // operation when the browser window gets resized.
+            adjustLineNumbersHeights(element);
+            if (!resizeHandlerSet) {
+              window.addEventListener('resize', function() {
+                var hljsLnElts = document.querySelectorAll('.' + TABLE_NAME);
+                for (var i = 0 ; i < hljsLnElts.length; ++i) {
+                  adjustLineNumbersHeights(hljsLnElts[i]);
+                }
+              });
+              resizeHandlerSet = true;
+            }
+          }
       });
   }
 
@@ -253,5 +258,3 @@
   }
 
 }(window, document));
-
-/* eslint-enable */
