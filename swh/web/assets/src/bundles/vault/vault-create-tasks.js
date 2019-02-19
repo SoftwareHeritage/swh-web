@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -51,10 +51,12 @@ function validateEmail(email) {
 export function cookDirectoryArchive(directoryId) {
   let email = $('#swh-vault-directory-email').val().trim();
   if (!email || validateEmail(email)) {
-    let cookingTask = {'object_type': 'directory',
+    let cookingTask = {
+      'object_type': 'directory',
       'object_id': directoryId,
       'email': email,
-      'status': 'new'};
+      'status': 'new'
+    };
     addVaultCookingTask(cookingTask);
 
   } else {
