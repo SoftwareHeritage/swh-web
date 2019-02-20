@@ -165,6 +165,16 @@ def directory():
     return _known_swh_object('directories')
 
 
+def directory_with_subdirs():
+    """
+    Hypothesis strategy returning a random directory containing
+    sub directories ingested into the test archive.
+    """
+    return directory().filter(
+        lambda d: any([e['type'] == 'dir'
+                      for e in list(storage.directory_ls(hash_to_bytes(d)))]))
+
+
 def empty_directory():
     """
     Hypothesis strategy returning the empty directory ingested
