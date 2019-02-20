@@ -213,6 +213,20 @@ def origin_with_multiple_visits():
     return sampled_from(ret)
 
 
+def origin_with_release():
+    """
+    Hypothesis strategy returning a random origin ingested
+    into the test archive.
+    """
+    ret = []
+    for origin in tests_data['origins']:
+        snapshot = storage.snapshot_get_latest(origin['id'])
+        if any([b['target_type'] == 'release'
+                for b in snapshot['branches'].values()]):
+            ret.append(origin)
+    return sampled_from(ret)
+
+
 def unknown_origin_id():
     """
     Hypothesis strategy returning a random origin id not ingested
