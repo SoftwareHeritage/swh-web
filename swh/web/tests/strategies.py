@@ -393,8 +393,7 @@ def unknown_person():
     Hypothesis strategy returning a random person not ingested
     into the test archive.
     """
-    persons = tests_data['persons']
-    return integers(min_value=max(persons)+1)
+    return integers(min_value=1000000)
 
 
 def _get_origin_dfs_revisions_walker():
