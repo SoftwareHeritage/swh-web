@@ -1,7 +1,9 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+import os
 
 from swh.core import config
 from swh.storage import get_storage
@@ -92,12 +94,23 @@ swhweb_config = {}
 
 
 def get_config(config_file='web/web'):
-    """Read the configuration file `config_file`, update the app with
-       parameters (secret_key, conf) and return the parsed configuration as a
-       dict. If no configuration file is provided, return a default
-       configuration."""
+    """Read the configuration file `config_file`.
+
+       If an environment variable SWH_CONFIG_FILENAME is defined, this
+       takes precedence over the config_file parameter.
+
+       In any case, update the app with parameters (secret_key, conf)
+       and return the parsed configuration as a dict.
+
+       If no configuration file is provided, return a default
+       configuration.
+
+    """
 
     if not swhweb_config:
+        config_filename = os.environ.get('SWH_CONFIG_FILENAME')
+        if config_filename:
+            config_file = config_filename
         cfg = config.load_named_config(config_file, DEFAULT_CONFIG)
         swhweb_config.update(cfg)
         config.prepare_folders(swhweb_config, 'log_dir')
@@ -105,7 +118,8 @@ def get_config(config_file='web/web'):
         swhweb_config['vault'] = get_vault(**swhweb_config['vault'])
         swhweb_config['indexer_storage'] = \
             get_indexer_storage(**swhweb_config['indexer_storage'])
-        swhweb_config['scheduler'] = get_scheduler(**swhweb_config['scheduler']) # noqa
+        swhweb_config['scheduler'] = get_scheduler(
+            **swhweb_config['scheduler'])
     return swhweb_config
 
 
