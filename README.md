@@ -22,7 +22,7 @@ Those applications are powered by:
 
   * [webpack](https://webpack.js.org/) on the frontend side for better static assets management, including:
 
-    * assets dependencies management and retrieval through [npm](https://www.npmjs.com/)
+    * assets dependencies management and retrieval through [yarn](https://yarnpkg.com/en/)
     * linting of custom javascript code (through [eslint](https://eslint.org/)) and stylesheets (through [stylelint](https://stylelint.io/))
     * use of [es6](http://es6-features.org) syntax and advanced javascript feature like [async/await](https://javascript.info/async-await) or [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) thanks to [babel](https://babeljs.io/) (es6 to es5 transpiler and polyfills provider)
     * assets minification (using [UglifyJS](https://github.com/mishoo/UglifyJS2) and [cssnano](http://cssnano.co/)) but also dead code elimination for production use
@@ -49,15 +49,9 @@ To run the backend, you need to have the following Python 3 modules installed:
 * pyyaml
 * requests
 
-To compile the frontend assets, you need to have [nodejs](https://nodejs.org/en/) >= 8.x (preferably version 8.x LTS) and [npm](https://www.npmjs.com/) (or [yarn](https://yarnpkg.com/en/)) installed. If you are on Debian stretch, you can easily install an up to date nodejs/npm from the stretch-backports repository or by following the instructions located at https://github.com/nodesource/distributions.
+To compile the frontend assets, you need to have [nodejs](https://nodejs.org/en/) >= 8.x and [yarn](https://yarnpkg.com/en/) installed. If you are on Debian stretch, you can easily install an up to date nodejs from the stretch-backports repository while packages for yarn can be installed by following [these instructions](https://yarnpkg.com/en/docs/install#debian-stable).
 
 Once you have installed nodejs, issue the following command in the root directory of swh-web in order to retrieve all the frontend dependencies:
-
-```
-$ npm install
-```
-
-or if you prefer to use yarn (faster than npm):
 
 ```
 $ yarn install
@@ -85,7 +79,7 @@ Once one of these targets executed, the web applications can be executed by poin
 
 ### Npm/Yarn targets
 
-Below is a list of available npm/yarn targets in order to only execute the frontend static assets compilation (no web server will be executed):
+Below is a list of available yarn targets in order to only execute the frontend static assets compilation (no web server will be executed):
 
 * **build-dev**: compile not optimized (without mignification and dead code elimination) frontend static assets and store the results in the `swh/web/static` folder.
 
@@ -94,12 +88,6 @@ Below is a list of available npm/yarn targets in order to only execute the front
 **The build target must be executed prior performing the Debian packaging of swh-web** in order for the package to contain the optimized assets dedicated to production environment.
 
 To execute these targets, issue the following commmand:
-
-```
-$ npm run <target_name>
-```
-
-or if you prefer using yarn:
 
 ```
 $ yarn <target_name>
