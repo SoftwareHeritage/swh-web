@@ -110,7 +110,7 @@ def content_text_no_highlight():
     programming language to highlight ingested into the test archive.
     """
     return content().filter(lambda c: c['mimetype'].startswith('text/') and
-                            c['hljs-language'] == 'nohighlight')
+                            c['hljs_language'] == 'nohighlight')
 
 
 def content_image_type():
