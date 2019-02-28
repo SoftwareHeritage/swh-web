@@ -1,107 +1,64 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-# flake8: noqa
+import random
 
 from unittest.mock import patch
 
 from django.utils.html import escape
 
+from hypothesis import given
+
+from swh.web.browse.utils import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     reverse, gen_path_info, format_utc_iso_date,
     parse_timestamp, get_swh_persistent_id
 )
+from swh.web.tests.data import get_content
+from swh.web.tests.strategies import (
+    origin, origin_with_multiple_visits
+)
 from swh.web.tests.testcase import WebTestCase
 
-from .data.origin_test_data import (
-    origin_info_test_data,
-    origin_visits_test_data,
-    stub_content_origin_info, stub_content_origin_visit_id,
-    stub_content_origin_visit_unix_ts, stub_content_origin_visit_iso_date,
-    stub_content_origin_branch,
-    stub_content_origin_visits, stub_content_origin_snapshot,
-    stub_origin_info, stub_visit_id,
-    stub_origin_visits, stub_origin_snapshot,
-    stub_origin_root_directory_entries, stub_origin_master_branch,
-    stub_origin_root_directory_sha1, stub_origin_sub_directory_path,
-    stub_origin_sub_directory_entries, stub_visit_unix_ts, stub_visit_iso_date
-)
-
-from .data.content_test_data import (
-    stub_content_root_dir,
-    stub_content_text_data,
-    stub_content_text_path
-)
-
-stub_origin_info_no_type = dict(stub_origin_info)
-stub_origin_info_no_type['type'] = None
-
-def _to_snapshot_dict(branches=None, releases=None):
-    snp = {'branches': {}}
-    if branches:
-        for b in branches:
-            snp['branches'][b['name']] = {
-                'target': b['revision'],
-                'target_type': 'revision'
-            }
-    if releases:
-        for r in releases:
-            snp['branches'][r['branch_name']] =  {
-                'target': r['id'],
-                'target_type': 'release'
-            }
-    return snp
 
 class SwhBrowseOriginTest(WebTestCase):
 
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
-    @patch('swh.web.common.origin_visits.get_origin_visits')
-    @patch('swh.web.browse.utils.get_origin_info')
-    @patch('swh.web.browse.views.origin.get_origin_info')
-    @patch('swh.web.browse.views.origin.get_origin_visits')
-    @patch('swh.web.browse.views.origin.service')
-    def test_origin_visits_browse(self, mock_service, mock_get_origin_visits,
-                                  mock_get_origin_info, mock_get_origin_info_utils,
-                                  mock_get_origin_visits_utils,
-                                  mock_get_origin_visit_snapshot,
-                                  mock_utils_service):
-        mock_service.lookup_origin.return_value = origin_info_test_data
-        mock_get_origin_info.return_value = origin_info_test_data
-        mock_get_origin_info_utils.return_value = origin_info_test_data
-        mock_get_origin_visits.return_value = origin_visits_test_data
-        mock_get_origin_visits_utils.return_value = origin_visits_test_data
-        mock_get_origin_visit_snapshot.return_value = stub_content_origin_snapshot
-        mock_utils_service.lookup_snapshot_size.return_value = {
-            'revision': len(stub_content_origin_snapshot[0]),
-            'release': len(stub_content_origin_snapshot[1])
-        }
+    @given(origin_with_multiple_visits())
+    def test_origin_visits_browse(self, origin):
 
         url = reverse('browse-origin-visits',
-                      url_args={'origin_type': origin_info_test_data['type'],
-                              'origin_url': origin_info_test_data['url']})
+                      url_args={'origin_type': origin['type'],
+                                'origin_url': origin['url']})
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
 
         url = reverse('browse-origin-visits',
-                      url_args={'origin_url': origin_info_test_data['url']})
+                      url_args={'origin_url': origin['url']})
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
+
+        visits = self.origin_visit_get(origin['id'])
+
+        for v in visits:
+            vdate = format_utc_iso_date(v['date'], '%Y-%m-%dT%H:%M:%SZ')
+            browse_dir_url = reverse('browse-origin-directory',
+                                     url_args={'origin_url': origin['url'],
+                                               'timestamp': vdate})
+            self.assertContains(resp, browse_dir_url)
 
     def origin_content_view_helper(self, origin_info, origin_visits,
                                    origin_branches, origin_releases,
-                                   origin_branch,
-                                   root_dir_sha1, content_sha1, content_sha1_git,
-                                   content_path, content_data,
-                                   content_language,
+                                   root_dir_sha1, content,
                                    visit_id=None, timestamp=None):
+
+        content_path = '/'.join(content['path'].split('/')[1:])
 
         url_args = {'origin_type': origin_info['type'],
                     'origin_url': origin_info['url'],
@@ -123,11 +80,13 @@ class SwhBrowseOriginTest(WebTestCase):
                       query_params=query_params)
 
         resp = self.client.get(url)
+
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('content.html')
 
-        self.assertContains(resp, '<code class="%s">' % content_language)
-        self.assertContains(resp, escape(content_data))
+        self.assertContains(resp, '<code class="%s">' %
+                                  content['hljs_language'])
+        self.assertContains(resp, escape(content['data']))
 
         split_path = content_path.split('/')
 
@@ -150,7 +109,6 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertContains(resp, '<li class="swh-path">',
                             count=len(path_info)+1)
 
-
         self.assertContains(resp, '<a href="%s">%s</a>' %
                             (root_dir_url, root_dir_sha1[:7]))
 
@@ -164,30 +122,29 @@ class SwhBrowseOriginTest(WebTestCase):
 
         self.assertContains(resp, '<li>%s</li>' % filename)
 
-        query_string = 'sha1_git:' + content_sha1
+        query_string = 'sha1_git:' + content['sha1_git']
 
         url_raw = reverse('browse-content-raw',
                           url_args={'query_string': query_string},
                           query_params={'filename': filename})
         self.assertContains(resp, url_raw)
 
-        del url_args['path']
+        if 'args' in url_args:
+            del url_args['path']
 
-        origin_branches_url = \
-                reverse('browse-origin-branches',
-                        url_args=url_args,
-                        query_params=query_params)
+        origin_branches_url = reverse('browse-origin-branches',
+                                      url_args=url_args,
+                                      query_params=query_params)
 
         self.assertContains(resp, '<a href="%s">Branches (%s)</a>' %
-            (origin_branches_url, len(origin_branches)))
+                                  (origin_branches_url, len(origin_branches)))
 
-        origin_releases_url = \
-                reverse('browse-origin-releases',
-                        url_args=url_args,
-                        query_params=query_params)
+        origin_releases_url = reverse('browse-origin-releases',
+                                      url_args=url_args,
+                                      query_params=query_params)
 
         self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
-            (origin_releases_url, len(origin_releases)))
+                                  (origin_releases_url, len(origin_releases)))
 
         self.assertContains(resp, '<li class="swh-branch">',
                             count=len(origin_branches))
@@ -196,10 +153,9 @@ class SwhBrowseOriginTest(WebTestCase):
 
         for branch in origin_branches:
             query_params['branch'] = branch['name']
-            root_dir_branch_url = \
-                reverse('browse-origin-content',
-                        url_args=url_args,
-                        query_params=query_params)
+            root_dir_branch_url = reverse('browse-origin-content',
+                                          url_args=url_args,
+                                          query_params=query_params)
 
         self.assertContains(resp, '<a href="%s">' % root_dir_branch_url)
 
@@ -209,10 +165,9 @@ class SwhBrowseOriginTest(WebTestCase):
         query_params['branch'] = None
         for release in origin_releases:
             query_params['release'] = release['name']
-            root_dir_release_url = \
-                reverse('browse-origin-content',
-                        url_args=url_args,
-                        query_params=query_params)
+            root_dir_release_url = reverse('browse-origin-content',
+                                           url_args=url_args,
+                                           query_params=query_params)
 
             self.assertContains(resp, '<a href="%s">' % root_dir_release_url)
 
@@ -226,7 +181,7 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('content.html')
 
-        swh_cnt_id = get_swh_persistent_id('content', content_sha1_git)
+        swh_cnt_id = get_swh_persistent_id('content', content['sha1_git'])
         swh_cnt_id_url = reverse('browse-swh-id',
                                  url_args={'swh_id': swh_cnt_id})
         self.assertContains(resp, swh_cnt_id)
@@ -234,81 +189,67 @@ class SwhBrowseOriginTest(WebTestCase):
 
         self.assertContains(resp, 'swh-take-new-snapshot')
 
-    @patch('swh.web.common.origin_visits.get_origin_visits')
-    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
-    @patch('swh.web.browse.views.utils.snapshot_context.service')
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.views.utils.snapshot_context.request_content')
-    def test_origin_content_view(self, mock_request_content, mock_utils_service,
-                                 mock_service, mock_get_origin_visit_snapshot,
-                                 mock_get_origin_visits):
+    @given(origin_with_multiple_visits())
+    def test_origin_content_view(self, origin):
 
-        stub_content_text_sha1 = stub_content_text_data['checksums']['sha1']
-        stub_content_text_sha1_git = stub_content_text_data['checksums']['sha1_git']
-        mock_get_origin_visits.return_value = stub_content_origin_visits
-        mock_get_origin_visit_snapshot.return_value = stub_content_origin_snapshot
-        mock_service.lookup_directory_with_path.return_value = \
-            {'target': stub_content_text_sha1}
-        mock_request_content.return_value = stub_content_text_data
-        mock_utils_service.lookup_origin.return_value = stub_content_origin_info
-        mock_utils_service.lookup_snapshot_size.return_value = {
-            'revision': len(stub_content_origin_snapshot[0]),
-            'release': len(stub_content_origin_snapshot[1])
-        }
+        origin_visits = self.origin_visit_get(origin['id'])
 
-        self.origin_content_view_helper(stub_content_origin_info,
-                                        stub_content_origin_visits,
-                                        stub_content_origin_snapshot[0],
-                                        stub_content_origin_snapshot[1],
-                                        stub_content_origin_branch,
-                                        stub_content_root_dir,
-                                        stub_content_text_sha1,
-                                        stub_content_text_sha1_git,
-                                        stub_content_text_path,
-                                        stub_content_text_data['raw_data'],
-                                        'cpp')
+        def _get_test_data(visit_idx):
+            snapshot = self.snapshot_get(origin_visits[visit_idx]['snapshot'])
+            head_rev_id = snapshot['branches']['HEAD']['target']
+            head_rev = self.revision_get(head_rev_id)
+            dir_content = self.directory_ls(head_rev['directory'])
+            dir_files = [e for e in dir_content if e['type'] == 'file']
+            dir_file = random.choice(dir_files)
+            branches, releases = process_snapshot_branches(snapshot)
+            return {
+                'branches': branches,
+                'releases': releases,
+                'root_dir_sha1': head_rev['directory'],
+                'content': get_content(dir_file['checksums']['sha1']),
+                'visit': origin_visits[visit_idx]
+            }
 
-        self.origin_content_view_helper(stub_content_origin_info,
-                                        stub_content_origin_visits,
-                                        stub_content_origin_snapshot[0],
-                                        stub_content_origin_snapshot[1],
-                                        stub_content_origin_branch,
-                                        stub_content_root_dir,
-                                        stub_content_text_sha1,
-                                        stub_content_text_sha1_git,
-                                        stub_content_text_path,
-                                        stub_content_text_data['raw_data'],
-                                        'cpp',
-                                        visit_id=stub_content_origin_visit_id)
+        test_data = _get_test_data(-1)
 
-        self.origin_content_view_helper(stub_content_origin_info,
-                                        stub_content_origin_visits,
-                                        stub_content_origin_snapshot[0],
-                                        stub_content_origin_snapshot[1],
-                                        stub_content_origin_branch,
-                                        stub_content_root_dir,
-                                        stub_content_text_sha1,
-                                        stub_content_text_sha1_git,
-                                        stub_content_text_path,
-                                        stub_content_text_data['raw_data'],
-                                        'cpp',
-                                        timestamp=stub_content_origin_visit_unix_ts)
+        self.origin_content_view_helper(origin,
+                                        origin_visits,
+                                        test_data['branches'],
+                                        test_data['releases'],
+                                        test_data['root_dir_sha1'],
+                                        test_data['content'])
 
-        self.origin_content_view_helper(stub_content_origin_info,
-                                        stub_content_origin_visits,
-                                        stub_content_origin_snapshot[0],
-                                        stub_content_origin_snapshot[1],
-                                        stub_content_origin_branch,
-                                        stub_content_root_dir,
-                                        stub_content_text_sha1,
-                                        stub_content_text_sha1_git,
-                                        stub_content_text_path,
-                                        stub_content_text_data['raw_data'],
-                                        'cpp',
-                                        timestamp=stub_content_origin_visit_iso_date)
+        self.origin_content_view_helper(origin,
+                                        origin_visits,
+                                        test_data['branches'],
+                                        test_data['releases'],
+                                        test_data['root_dir_sha1'],
+                                        test_data['content'],
+                                        timestamp=test_data['visit']['date'])
+
+        visit_unix_ts = parse_timestamp(test_data['visit']['date']).timestamp()
+        visit_unix_ts = int(visit_unix_ts)
+
+        self.origin_content_view_helper(origin,
+                                        origin_visits,
+                                        test_data['branches'],
+                                        test_data['releases'],
+                                        test_data['root_dir_sha1'],
+                                        test_data['content'],
+                                        timestamp=visit_unix_ts)
+
+        test_data = _get_test_data(0)
+
+        self.origin_content_view_helper(origin,
+                                        origin_visits,
+                                        test_data['branches'],
+                                        test_data['releases'],
+                                        test_data['root_dir_sha1'],
+                                        test_data['content'],
+                                        visit_id=test_data['visit']['visit'])
 
     def origin_directory_view_helper(self, origin_info, origin_visits,
-                                     origin_branches, origin_releases, origin_branch,
+                                     origin_branches, origin_releases,
                                      root_directory_sha1, directory_entries,
                                      visit_id=None, timestamp=None, path=None):
 
@@ -344,7 +285,6 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('directory.html')
 
-
         self.assertContains(resp, '<td class="swh-directory">',
                             count=len(dirs))
         self.assertContains(resp, '<td class="swh-content">',
@@ -366,8 +306,8 @@ class SwhBrowseOriginTest(WebTestCase):
                 dir_url_args = dict(url_args)
                 dir_url_args['path'] = dir_path
                 dir_url = reverse('browse-origin-directory',
-                                url_args=dir_url_args,
-                                query_params=query_params)
+                                  url_args=dir_url_args,
+                                  query_params=query_params)
             self.assertContains(resp, dir_url)
 
         for f in files:
@@ -398,21 +338,21 @@ class SwhBrowseOriginTest(WebTestCase):
                                   (root_dir_branch_url,
                                    root_directory_sha1[:7]))
 
-        origin_branches_url = \
-                reverse('browse-origin-branches',
-                        url_args=url_args,
-                        query_params=query_params)
+        origin_branches_url = reverse('browse-origin-branches',
+                                      url_args=url_args,
+                                      query_params=query_params)
 
         self.assertContains(resp, '<a href="%s">Branches (%s)</a>' %
-            (origin_branches_url, len(origin_branches)))
+                                  (origin_branches_url, len(origin_branches)))
 
-        origin_releases_url = \
-                reverse('browse-origin-releases',
-                        url_args=url_args,
-                        query_params=query_params)
+        origin_releases_url = reverse('browse-origin-releases',
+                                      url_args=url_args,
+                                      query_params=query_params)
 
-        self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
-            (origin_releases_url, len(origin_releases)))
+        nb_releases = len(origin_releases)
+        if nb_releases > 0:
+            self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
+                                      (origin_releases_url, nb_releases))
 
         if path:
             url_args['path'] = path
@@ -453,179 +393,292 @@ class SwhBrowseOriginTest(WebTestCase):
 
         self.assertContains(resp, 'swh-take-new-snapshot')
 
+    @given(origin())
+    def test_origin_root_directory_view(self, origin):
 
-    @patch('swh.web.common.origin_visits.get_origin_visits')
-    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.views.origin.service')
-    def test_origin_root_directory_view(self, mock_origin_service,
-                                        mock_utils_service,
-                                        mock_get_origin_visit_snapshot,
-                                        mock_get_origin_visits):
+        origin_visits = self.origin_visit_get(origin['id'])
 
-        mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
-        mock_utils_service.lookup_directory.return_value = \
-            stub_origin_root_directory_entries
-        mock_utils_service.lookup_origin.return_value = stub_origin_info
-        mock_utils_service.lookup_snapshot_size.return_value = {
-            'revision': len(stub_origin_snapshot[0]),
-            'release': len(stub_origin_snapshot[1])
-        }
+        visit = origin_visits[-1]
+        snapshot = self.snapshot_get(visit['snapshot'])
+        head_rev_id = snapshot['branches']['HEAD']['target']
+        head_rev = self.revision_get(head_rev_id)
+        root_dir_sha1 = head_rev['directory']
+        dir_content = self.directory_ls(root_dir_sha1)
+        branches, releases = process_snapshot_branches(snapshot)
+        visit_unix_ts = parse_timestamp(visit['date']).timestamp()
+        visit_unix_ts = int(visit_unix_ts)
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content)
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries,
-                                          visit_id=stub_visit_id)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content,
+                                          visit_id=visit['visit'])
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries,
-                                          timestamp=stub_visit_unix_ts)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content,
+                                          timestamp=visit_unix_ts)
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries,
-                                          timestamp=stub_visit_iso_date)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content,
+                                          timestamp=visit['date'])
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries)
+        origin = dict(origin)
+        del origin['type']
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries,
-                                          visit_id=stub_visit_id)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content)
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries,
-                                          timestamp=stub_visit_unix_ts)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content,
+                                          visit_id=visit['visit'])
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_root_directory_entries,
-                                          timestamp=stub_visit_iso_date)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content,
+                                          timestamp=visit_unix_ts)
 
-    @patch('swh.web.common.origin_visits.get_origin_visits')
-    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.views.utils.snapshot_context.service')
-    def test_origin_sub_directory_view(self, mock_origin_service,
-                                       mock_utils_service,
-                                       mock_get_origin_visit_snapshot,
-                                       mock_get_origin_visits):
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          dir_content,
+                                          timestamp=visit['date'])
 
-        mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
-        mock_utils_service.lookup_directory.return_value = \
-            stub_origin_sub_directory_entries
-        mock_origin_service.lookup_directory_with_path.return_value = \
-            {'target': stub_origin_sub_directory_entries[0]['dir_id'],
-             'type' : 'dir'}
-        mock_utils_service.lookup_origin.return_value = stub_origin_info
-        mock_utils_service.lookup_snapshot_size.return_value = {
-            'revision': len(stub_origin_snapshot[0]),
-            'release': len(stub_origin_snapshot[1])
-        }
+    @given(origin())
+    def test_origin_sub_directory_view(self, origin):
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          path=stub_origin_sub_directory_path)
+        origin_visits = self.origin_visit_get(origin['id'])
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          visit_id=stub_visit_id,
-                                          path=stub_origin_sub_directory_path)
+        visit = origin_visits[-1]
+        snapshot = self.snapshot_get(visit['snapshot'])
+        head_rev_id = snapshot['branches']['HEAD']['target']
+        head_rev = self.revision_get(head_rev_id)
+        root_dir_sha1 = head_rev['directory']
+        subdirs = [e for e in self.directory_ls(root_dir_sha1)
+                   if e['type'] == 'dir']
+        branches, releases = process_snapshot_branches(snapshot)
+        visit_unix_ts = parse_timestamp(visit['date']).timestamp()
+        visit_unix_ts = int(visit_unix_ts)
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          timestamp=stub_visit_unix_ts,
-                                          path=stub_origin_sub_directory_path)
+        if len(subdirs) == 0:
+            return
 
-        self.origin_directory_view_helper(stub_origin_info, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          timestamp=stub_visit_iso_date,
-                                          path=stub_origin_sub_directory_path)
+        subdir = random.choice(subdirs)
+        subdir_content = self.directory_ls(subdir['target'])
+        subdir_path = subdir['name']
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path)
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          visit_id=stub_visit_id,
-                                          path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path,
+                                          visit_id=visit['visit'])
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          timestamp=stub_visit_unix_ts,
-                                          path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path,
+                                          timestamp=visit_unix_ts)
 
-        self.origin_directory_view_helper(stub_origin_info_no_type, stub_origin_visits,
-                                          stub_origin_snapshot[0],
-                                          stub_origin_snapshot[1],
-                                          stub_origin_master_branch,
-                                          stub_origin_root_directory_sha1,
-                                          stub_origin_sub_directory_entries,
-                                          timestamp=stub_visit_iso_date,
-                                          path=stub_origin_sub_directory_path)
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path,
+                                          timestamp=visit['date'])
+
+        origin = dict(origin)
+        del origin['type']
+
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path)
+
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path,
+                                          visit_id=visit['visit'])
+
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path,
+                                          timestamp=visit_unix_ts)
+
+        self.origin_directory_view_helper(origin, origin_visits,
+                                          branches,
+                                          releases,
+                                          root_dir_sha1,
+                                          subdir_content,
+                                          path=subdir_path,
+                                          timestamp=visit['date'])
+
+    def origin_branches_helper(self, origin_info, origin_snapshot):
+        url_args = {'origin_type': origin_info['type'],
+                    'origin_url': origin_info['url']}
+
+        url = reverse('browse-origin-branches',
+                      url_args=url_args)
+
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed('branches.html')
+
+        origin_branches = origin_snapshot[0]
+        origin_releases = origin_snapshot[1]
+
+        origin_branches_url = reverse('browse-origin-branches',
+                                      url_args=url_args)
+
+        self.assertContains(resp, '<a href="%s">Branches (%s)</a>' %
+                                  (origin_branches_url, len(origin_branches)))
+
+        origin_releases_url = reverse('browse-origin-releases',
+                                      url_args=url_args)
+
+        nb_releases = len(origin_releases)
+        if nb_releases > 0:
+            self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
+                                      (origin_releases_url, nb_releases))
+
+        self.assertContains(resp, '<tr class="swh-branch-entry',
+                            count=len(origin_branches))
+
+        for branch in origin_branches:
+            browse_branch_url = reverse(
+                'browse-origin-directory',
+                url_args={'origin_type': origin_info['type'],
+                          'origin_url': origin_info['url']},
+                query_params={'branch': branch['name']})
+            self.assertContains(resp, '<a href="%s">' %
+                                      escape(browse_branch_url))
+
+            browse_revision_url = reverse(
+                'browse-revision',
+                url_args={'sha1_git': branch['revision']},
+                query_params={'origin_type': origin_info['type'],
+                              'origin': origin_info['url']})
+            self.assertContains(resp, '<a href="%s">' %
+                                      escape(browse_revision_url))
+
+    @given(origin())
+    def test_origin_branches(self, origin):
+
+        origin_visits = self.origin_visit_get(origin['id'])
+
+        visit = origin_visits[-1]
+        snapshot = self.snapshot_get(visit['snapshot'])
+        snapshot_content = process_snapshot_branches(snapshot)
+
+        self.origin_branches_helper(origin, snapshot_content)
+
+        origin = dict(origin)
+        origin['type'] = None
+
+        self.origin_branches_helper(origin, snapshot_content)
+
+    def origin_releases_helper(self, origin_info, origin_snapshot):
+        url_args = {'origin_type': origin_info['type'],
+                    'origin_url': origin_info['url']}
+
+        url = reverse('browse-origin-releases',
+                      url_args=url_args)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed('releases.html')
+
+        origin_branches = origin_snapshot[0]
+        origin_releases = origin_snapshot[1]
+
+        origin_branches_url = reverse('browse-origin-branches',
+                                      url_args=url_args)
+
+        self.assertContains(resp, '<a href="%s">Branches (%s)</a>' %
+                                  (origin_branches_url, len(origin_branches)))
+
+        origin_releases_url = reverse('browse-origin-releases',
+                                      url_args=url_args)
+
+        nb_releases = len(origin_releases)
+        if nb_releases > 0:
+            self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
+                                      (origin_releases_url, nb_releases))
+
+        self.assertContains(resp, '<tr class="swh-release-entry',
+                            count=nb_releases)
+
+        for release in origin_releases:
+            browse_release_url = reverse(
+                'browse-release',
+                url_args={'sha1_git': release['id']},
+                query_params={'origin': origin_info['url']})
+            browse_revision_url = reverse(
+                'browse-revision',
+                url_args={'sha1_git': release['target']},
+                query_params={'origin': origin_info['url']})
+
+            self.assertContains(resp, '<a href="%s">' %
+                                      escape(browse_release_url))
+            self.assertContains(resp, '<a href="%s">' %
+                                      escape(browse_revision_url))
+
+    @given(origin())
+    def test_origin_releases(self, origin):
+
+        origin_visits = self.origin_visit_get(origin['id'])
+
+        visit = origin_visits[-1]
+        snapshot = self.snapshot_get(visit['snapshot'])
+        snapshot_content = process_snapshot_branches(snapshot)
+
+        self.origin_releases_helper(origin, snapshot_content)
+
+        origin = dict(origin)
+        origin['type'] = None
+
+        self.origin_releases_helper(origin, snapshot_content)
 
     @patch('swh.web.browse.views.utils.snapshot_context.request_content')
     @patch('swh.web.common.origin_visits.get_origin_visits')
@@ -653,7 +706,9 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertContains(resp, 'origin not found', status_code=404)
 
         mock_utils_service.lookup_origin.side_effect = None
-        mock_utils_service.lookup_origin.return_value = origin_info_test_data
+        mock_utils_service.lookup_origin.return_value = {'type': 'foo',
+                                                         'url': 'bar',
+                                                         'id': 457}
         mock_get_origin_visits.return_value = []
         url = reverse('browse-origin-directory',
                       url_args={'origin_type': 'foo',
@@ -663,24 +718,38 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, "No visit", status_code=404)
 
-        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visits.return_value = [{'visit': 1}]
         mock_get_origin_visit_snapshot.side_effect = \
             NotFoundExc('visit not found')
         url = reverse('browse-origin-directory',
                       url_args={'origin_type': 'foo',
                                 'origin_url': 'bar'},
-                      query_params={'visit_id': len(stub_origin_visits)+1})
+                      query_params={'visit_id': 2})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'), 'Visit.*not found')
 
-        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visits.return_value = [{
+            'date': '2015-09-26T09:30:52.373449+00:00',
+            'metadata': {},
+            'origin': 457,
+            'snapshot': 'bdaf9ac436488a8c6cda927a0f44e172934d3f65',
+            'status': 'full',
+            'visit': 1
+        }]
         mock_get_origin_visit_snapshot.side_effect = None
-        mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
+        mock_get_origin_visit_snapshot.return_value = (
+            [{'directory': 'ae59ceecf46367e8e4ad800e231fc76adc3afffb',
+              'name': 'HEAD',
+              'revision': '7bc08e1aa0b08cb23e18715a32aa38517ad34672',
+              'date': '04 May 2017, 13:27 UTC',
+              'message': ''}],
+            []
+        )
         mock_utils_service.lookup_snapshot_size.return_value = {
-            'revision': len(stub_origin_snapshot[0]),
-            'release': len(stub_origin_snapshot[1])
+            'revision': 1,
+            'release': 0
         }
         mock_utils_service.lookup_directory.side_effect = \
             NotFoundExc('Directory not found')
@@ -692,8 +761,8 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Directory not found', status_code=404)
 
-        with patch('swh.web.browse.views.utils.snapshot_context.get_snapshot_context') \
-                as mock_get_snapshot_context:
+        with patch('swh.web.browse.views.utils.snapshot_context.'
+                   'get_snapshot_context') as mock_get_snapshot_context:
             mock_get_snapshot_context.side_effect = \
                 NotFoundExc('Snapshot not found')
             url = reverse('browse-origin-directory',
@@ -705,7 +774,9 @@ class SwhBrowseOriginTest(WebTestCase):
             self.assertContains(resp, 'Snapshot not found', status_code=404)
 
         mock_origin_service.lookup_origin.side_effect = None
-        mock_origin_service.lookup_origin.return_value = origin_info_test_data
+        mock_origin_service.lookup_origin.return_value = {'type': 'foo',
+                                                          'url': 'bar',
+                                                          'id': 457}
         mock_get_origin_visits.return_value = []
         url = reverse('browse-origin-content',
                       url_args={'origin_type': 'foo',
@@ -716,46 +787,59 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, "No visit", status_code=404)
 
-        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visits.return_value = [{'visit': 1}]
         mock_get_origin_visit_snapshot.side_effect = \
             NotFoundExc('visit not found')
         url = reverse('browse-origin-content',
                       url_args={'origin_type': 'foo',
                                 'origin_url': 'bar',
                                 'path': 'foo'},
-                      query_params={'visit_id': len(stub_origin_visits)+1})
+                      query_params={'visit_id': 2})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'), 'Visit.*not found')
 
-        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visits.return_value = [{
+            'date': '2015-09-26T09:30:52.373449+00:00',
+            'metadata': {},
+            'origin': 457,
+            'snapshot': 'bdaf9ac436488a8c6cda927a0f44e172934d3f65',
+            'status': 'full',
+            'visit': 1
+        }]
         mock_get_origin_visit_snapshot.side_effect = None
         mock_get_origin_visit_snapshot.return_value = ([], [])
         url = reverse('browse-origin-content',
                       url_args={'origin_type': 'foo',
-                              'origin_url': 'bar',
-                              'path': 'baz'})
+                                'origin_url': 'bar',
+                                'path': 'baz'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertRegex(resp.content.decode('utf-8'),
                          'Origin.*has an empty list of branches')
 
-        mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
+        mock_get_origin_visit_snapshot.return_value = (
+            [{'directory': 'ae59ceecf46367e8e4ad800e231fc76adc3afffb',
+              'name': 'HEAD',
+              'revision': '7bc08e1aa0b08cb23e18715a32aa38517ad34672',
+              'date': '04 May 2017, 13:27 UTC',
+              'message': ''}],
+            []
+        )
         mock_snapshot_service.lookup_directory_with_path.return_value = \
-            {'target': stub_content_text_data['checksums']['sha1']}
+            {'target': '5ecd9f37b7a2d2e9980d201acd6286116f2ba1f1'}
         mock_request_content.side_effect = \
             NotFoundExc('Content not found')
         url = reverse('browse-origin-content',
                       url_args={'origin_type': 'foo',
-                              'origin_url': 'bar',
-                              'path': 'baz'})
+                                'origin_url': 'bar',
+                                'path': 'baz'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'Content not found', status_code=404)
-
 
     @patch('swh.web.common.origin_visits.get_origin_visits')
     @patch('swh.web.browse.utils.get_origin_visit_snapshot')
@@ -764,7 +848,14 @@ class SwhBrowseOriginTest(WebTestCase):
                                    mock_get_origin_visit_snapshot,
                                    mock_get_origin_visits):
 
-        mock_get_origin_visits.return_value = stub_origin_visits
+        mock_get_origin_visits.return_value = [{
+            'date': '2015-09-26T09:30:52.373449+00:00',
+            'metadata': {},
+            'origin': 457,
+            'snapshot': 'bdaf9ac436488a8c6cda927a0f44e172934d3f65',
+            'status': 'full',
+            'visit': 1
+        }]
         mock_get_origin_visit_snapshot.return_value = ([], [])
         mock_utils_service.lookup_snapshot_size.return_value = {
             'revision': 0,
@@ -772,148 +863,8 @@ class SwhBrowseOriginTest(WebTestCase):
         }
         url = reverse('browse-origin-directory',
                       url_args={'origin_type': 'foo',
-                              'origin_url': 'bar'})
+                                'origin_url': 'bar'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('content.html')
         self.assertRegex(resp.content.decode('utf-8'), 'snapshot.*is empty')
-
-    def origin_branches_helper(self, origin_info, origin_snapshot):
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
-
-        url = reverse('browse-origin-branches',
-                      url_args=url_args)
-
-        resp = self.client.get(url)
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed('branches.html')
-
-        origin_branches = origin_snapshot[0]
-        origin_releases = origin_snapshot[1]
-
-        origin_branches_url = \
-                reverse('browse-origin-branches',
-                        url_args=url_args)
-
-        self.assertContains(resp, '<a href="%s">Branches (%s)</a>' %
-            (origin_branches_url, len(origin_branches)))
-
-        origin_releases_url = \
-                reverse('browse-origin-releases',
-                        url_args=url_args)
-
-        self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
-            (origin_releases_url, len(origin_releases)))
-
-        self.assertContains(resp, '<tr class="swh-branch-entry',
-                            count=len(origin_branches))
-
-        for branch in origin_branches:
-            browse_branch_url = reverse('browse-origin-directory',
-                                        url_args={'origin_type': origin_info['type'],
-                                                'origin_url': origin_info['url']},
-                                        query_params={'branch': branch['name']})
-            self.assertContains(resp, '<a href="%s">' % escape(browse_branch_url))
-
-            browse_revision_url = reverse('browse-revision',
-                                          url_args={'sha1_git': branch['revision']},
-                                          query_params={'origin_type': origin_info['type'],
-                                                        'origin': origin_info['url']})
-            self.assertContains(resp, '<a href="%s">' % escape(browse_revision_url))
-
-
-    @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')
-    @patch('swh.web.browse.views.utils.snapshot_context.service')
-    @patch('swh.web.common.origin_visits.get_origin_visits')
-    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.views.origin.service')
-    def test_origin_branches(self, mock_origin_service,
-                             mock_utils_service,
-                             mock_get_origin_visit_snapshot,
-                             mock_get_origin_visits,
-                             mock_snp_ctx_service,
-                             mock_snp_ctx_process_branches):
-        mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
-        mock_utils_service.lookup_origin.return_value = stub_origin_info
-        mock_utils_service.lookup_snapshot_size.return_value = \
-            {'revision': len(stub_origin_snapshot[0]), 'release': len(stub_origin_snapshot[1])}
-        mock_snp_ctx_service.lookup_snapshot.return_value = \
-            _to_snapshot_dict(branches=stub_origin_snapshot[0])
-        mock_snp_ctx_process_branches.return_value = stub_origin_snapshot
-
-        self.origin_branches_helper(stub_origin_info, stub_origin_snapshot)
-
-        self.origin_branches_helper(stub_origin_info_no_type, stub_origin_snapshot)
-
-
-    def origin_releases_helper(self, origin_info, origin_snapshot):
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
-
-        url = reverse('browse-origin-releases',
-                      url_args=url_args)
-
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed('releases.html')
-
-        origin_branches = origin_snapshot[0]
-        origin_releases = origin_snapshot[1]
-
-        origin_branches_url = \
-                reverse('browse-origin-branches',
-                        url_args=url_args)
-
-        self.assertContains(resp, '<a href="%s">Branches (%s)</a>' %
-            (origin_branches_url, len(origin_branches)))
-
-        origin_releases_url = \
-                reverse('browse-origin-releases',
-                        url_args=url_args)
-
-        self.assertContains(resp, '<a href="%s">Releases (%s)</a>' %
-            (origin_releases_url, len(origin_releases)))
-
-        self.assertContains(resp, '<tr class="swh-release-entry',
-                            count=len(origin_releases))
-
-        for release in origin_releases:
-            browse_release_url = reverse('browse-release',
-                                         url_args={'sha1_git': release['id']},
-                                         query_params={'origin': origin_info['url']})
-            browse_revision_url = reverse('browse-revision',
-                                          url_args={'sha1_git': release['target']},
-                                          query_params={'origin': origin_info['url']})
-
-            self.assertContains(resp, '<a href="%s">' % escape(browse_release_url))
-            self.assertContains(resp, '<a href="%s">' % escape(browse_revision_url))
-
-
-    @patch('swh.web.browse.views.utils.snapshot_context.process_snapshot_branches')
-    @patch('swh.web.browse.views.utils.snapshot_context.service')
-    @patch('swh.web.common.origin_visits.get_origin_visits')
-    @patch('swh.web.browse.utils.get_origin_visit_snapshot')
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.views.origin.service')
-    def test_origin_releases(self, mock_origin_service,
-                             mock_utils_service,
-                             mock_get_origin_visit_snapshot,
-                             mock_get_origin_visits,
-                             mock_snp_ctx_service,
-                             mock_snp_ctx_process_branches):
-        mock_get_origin_visits.return_value = stub_origin_visits
-        mock_get_origin_visit_snapshot.return_value = stub_origin_snapshot
-        mock_utils_service.lookup_origin.return_value = stub_origin_info
-        mock_utils_service.lookup_snapshot_size.return_value = \
-            {'revision': len(stub_origin_snapshot[0]), 'release': len(stub_origin_snapshot[1])}
-        mock_snp_ctx_service.lookup_snapshot.return_value = \
-            _to_snapshot_dict(releases=stub_origin_snapshot[1])
-        mock_snp_ctx_process_branches.return_value = stub_origin_snapshot
-
-        self.origin_releases_helper(stub_origin_info, stub_origin_snapshot)
-        self.origin_releases_helper(stub_origin_info_no_type, stub_origin_snapshot)
-

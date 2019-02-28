@@ -1,61 +1,92 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-# flake8: noqa
+import random
 
-from unittest.mock import patch
+from hypothesis import given
 
-from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, get_swh_persistent_id
 )
-from swh.web.tests.testcase import WebTestCase
-
-from .data.release_test_data import (
-    stub_release
+from swh.web.tests.strategies import (
+    release, origin_with_release, unknown_release
 )
-
-from .data.origin_test_data import stub_origin_visits
+from swh.web.tests.testcase import WebTestCase
 
 
 class SwhBrowseReleaseTest(WebTestCase):
 
-    @patch('swh.web.browse.views.release.service')
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.common.origin_visits.get_origin_visits')
-    def test_release_browse(self, mock_get_origin_visits, mock_service_utils,
-                       mock_service):
-        mock_service.lookup_release.return_value = stub_release
+    @given(release())
+    def test_release_browse(self, release):
 
         url = reverse('browse-release',
-                      url_args={'sha1_git': stub_release['id']})
+                      url_args={'sha1_git': release})
 
-        release_id = stub_release['id']
-        release_name = stub_release['name']
-        author_id = stub_release['author']['id']
-        author_name = stub_release['author']['name']
-        author_url = reverse('browse-person',
-                             url_args={'person_id': author_id})
-
-        release_date = stub_release['date']
-        message = stub_release['message']
-        target_type = stub_release['target_type']
-        target = stub_release['target']
-        target_url = reverse('browse-revision', url_args={'sha1_git': target})
-
-        message_lines = stub_release['message'].split('\n')
+        release_data = self.release_get(release)
 
         resp = self.client.get(url)
+
+        self._release_browse_checks(resp, release_data)
+
+    @given(origin_with_release())
+    def test_release_browse_with_origin(self, origin):
+        snapshot = self.snapshot_get_latest(origin['id'])
+        release = random.choice([b for b in snapshot['branches'].values()
+                                 if b['target_type'] == 'release'])
+        url = reverse('browse-release',
+                      url_args={'sha1_git': release['target']},
+                      query_params={'origin': origin['url']})
+
+        release_data = self.release_get(release['target'])
+
+        resp = self.client.get(url)
+
+        self._release_browse_checks(resp, release_data, origin)
+
+    @given(unknown_release())
+    def test_release_browse_not_found(self, unknown_release):
+        url = reverse('browse-release',
+                      url_args={'sha1_git': unknown_release})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+        self.assertTemplateUsed('error.html')
+        err_msg = 'Release with sha1_git %s not found' % unknown_release
+        self.assertContains(resp, err_msg, status_code=404)
+
+    def _release_browse_checks(self, resp, release_data, origin_info=None):
+
+        query_params = {}
+        if origin_info:
+            query_params['origin'] = origin_info['url']
+
+        release_id = release_data['id']
+        release_name = release_data['name']
+        author_id = release_data['author']['id']
+        author_name = release_data['author']['name']
+        author_url = reverse('browse-person',
+                             url_args={'person_id': author_id},
+                             query_params=query_params)
+
+        release_date = release_data['date']
+        message = release_data['message']
+        target_type = release_data['target_type']
+        target = release_data['target']
+
+        target_url = reverse('browse-revision',
+                             url_args={'sha1_git': target},
+                             query_params=query_params)
+        message_lines = message.split('\n')
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/release.html')
         self.assertContains(resp, '<a href="%s">%s</a>' %
                                   (author_url, author_name))
         self.assertContains(resp, format_utc_iso_date(release_date))
-        self.assertContains(resp, '<h6>%s</h6>%s' % (message_lines[0],
-                                                     '\n'.join(message_lines[1:])))
+        self.assertContains(resp,
+                            '<h6>%s</h6>%s' % (message_lines[0] or 'None',
+                                               '\n'.join(message_lines[1:])))
         self.assertContains(resp, release_id)
         self.assertContains(resp, release_name)
         self.assertContains(resp, target_type)
@@ -67,44 +98,3 @@ class SwhBrowseReleaseTest(WebTestCase):
                                  url_args={'swh_id': swh_rel_id})
         self.assertContains(resp, swh_rel_id)
         self.assertContains(resp, swh_rel_id_url)
-
-        origin_info = {
-            'id': 13706355,
-            'type': 'git',
-            'url': 'https://github.com/python/cpython'
-        }
-
-        mock_service_utils.lookup_origin.return_value = origin_info
-        mock_get_origin_visits.return_value = stub_origin_visits
-
-        url = reverse('browse-release',
-                      url_args={'sha1_git': stub_release['id']},
-                      query_params={'origin': origin_info['url']})
-
-        resp = self.client.get(url)
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed('browse/release.html')
-
-        self.assertContains(resp, author_url)
-        self.assertContains(resp, author_name)
-        self.assertContains(resp, format_utc_iso_date(release_date))
-        self.assertContains(resp, '<h6>%s</h6>%s' % (message_lines[0],
-                                                     '\n'.join(message_lines[1:])))
-        self.assertContains(resp, release_id)
-        self.assertContains(resp, release_name)
-        self.assertContains(resp, target_type)
-
-        target_url = reverse('browse-revision', url_args={'sha1_git': target},
-                             query_params={'origin': origin_info['url']})
-
-        self.assertContains(resp, '<a href="%s">%s</a>' % (target_url, target))
-
-        mock_service.lookup_release.side_effect = \
-            NotFoundExc('Release not found')
-        url = reverse('browse-release',
-                      url_args={'sha1_git': 'ffff'})
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 404)
-        self.assertTemplateUsed('error.html')
-        self.assertContains(resp, 'Release not found', status_code=404)

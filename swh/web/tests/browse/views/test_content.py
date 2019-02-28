@@ -147,7 +147,7 @@ class SwhBrowseContentTest(WebTestCase):
         mimetype = content_display['mimetype']
 
         if mimetype.startswith('text/'):
-            hljs_language = content['hljs-language']
+            hljs_language = content['hljs_language']
             self.assertContains(resp, '<code class="%s">' % hljs_language)
             self.assertContains(resp, escape(content_display['content_data']))
 

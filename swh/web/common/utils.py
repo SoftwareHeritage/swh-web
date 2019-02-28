@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -33,7 +33,7 @@ swh_object_icons = {
     'revisions history': 'fa fa-history',
     'release': 'fa fa-tag',
     'releases': 'fa fa-tag',
-    'revision': 'octicon octicon-git-commit',
+    'revision': 'octicon-git-commit',
     'snapshot': 'fa fa-camera',
     'visits': 'fa fa-calendar',
 }

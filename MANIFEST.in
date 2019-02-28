@@ -11,6 +11,5 @@ recursive-include swh/web/static *
 recursive-include swh/web/templates *
 recursive-include swh/web/tests/resources *
 
-include package-lock.json
 include package.json
 include yarn.lock

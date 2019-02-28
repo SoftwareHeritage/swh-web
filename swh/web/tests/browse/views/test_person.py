@@ -1,30 +1,22 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from unittest.mock import patch
+from hypothesis import given
 
-from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
+from swh.web.tests.strategies import person, unknown_person
 from swh.web.tests.testcase import WebTestCase
 
 
 class SwhBrowsePersonTest(WebTestCase):
 
-    @patch('swh.web.browse.views.person.service')
-    def test_person_browse(self, mock_service):
-        test_person_data = \
-            {
-                "email": "j.adams440@gmail.com",
-                "fullname": "oysterCrusher <j.adams440@gmail.com>",
-                "id": 457587,
-                "name": "oysterCrusher"
-            }
+    @given(person())
+    def test_person_browse(self, person):
+        test_person_data = self.person_get(person)
 
-        mock_service.lookup_person.return_value = test_person_data
-
-        url = reverse('browse-person', url_args={'person_id': 457587})
+        url = reverse('browse-person', url_args={'person_id': person})
 
         resp = self.client.get(url)
 
@@ -40,13 +32,12 @@ class SwhBrowsePersonTest(WebTestCase):
                                    test_person_data['email'],
                                    test_person_data['email']))
 
-    @patch('swh.web.browse.views.person.service')
-    def test_person_request_error(self, mock_service):
-        mock_service.lookup_person.side_effect = \
-            NotFoundExc('Person not found')
-
-        url = reverse('browse-person', url_args={'person_id': 457587})
+    @given(unknown_person())
+    def test_person_request_error(self, unknown_person):
+        url = reverse('browse-person', url_args={'person_id': unknown_person})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
-        self.assertContains(resp, 'Person not found', status_code=404)
+        self.assertContains(resp,
+                            'Person with id %s not found' % unknown_person,
+                            status_code=404)

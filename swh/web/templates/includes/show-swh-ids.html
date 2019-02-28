@@ -55,32 +55,25 @@ See top-level LICENSE file for more information
                 <pre><a class="swh-id" id="{{ swh_id.swh_id }}" href="{{ swh_id.swh_id_url }}">{{ swh_id.swh_id }}</a></pre>
                 {% if swh_id.show_options %}
                   <div class="float-left">
-                    <div class="card">
-                      <div class="card-header">
-                        Options
-                      </div>
-                      <div class="card-body">
-                        <form id="swh-id-options">
-                          {% if snapshot_context and snapshot_context.origin_info %}
-                            <div class="form-check swh-id-option">
-                              <input class="form-check-input swh-id-option-origin" value="option-origin" type="checkbox"
-                                    id="swh-id-option-origin"
-                                    data-swh-origin="{{ snapshot_context.origin_info.url }}"
-                                    onclick="swh.browse.swhIdOptionOriginToggled(event)">
-                              <label class="form-check-label" for="swh-id-option-origin">Add origin info</label>
-                            </div>
-                          {% endif %}
-                          {% if swh_id.object_type == 'content' %}
-                            <div class="form-check swh-id-option">
-                              <input class="form-check-input swh-id-option-lines" value="option-lines" type="checkbox"
-                                    id="swh-id-option-lines"
-                                    onclick="swh.browse.swhIdOptionLinesToggled(event)">
-                              <label class="form-check-label" for="swh-id-option-lines">Add selected lines info</label>
-                            </div>
-                          {% endif %}
-                        </form>
-                      </div>
-                    </div>
+                    <form id="swh-id-options">
+                      {% if snapshot_context and snapshot_context.origin_info %}
+                        <div class="form-check swh-id-option">
+                          <input class="form-check-input swh-id-option-origin" value="option-origin" type="checkbox"
+                                id="swh-id-option-origin"
+                                data-swh-origin="{{ snapshot_context.origin_info.url }}"
+                                onclick="swh.browse.swhIdOptionOriginToggled(event)">
+                          <label class="form-check-label" for="swh-id-option-origin">Add origin info</label>
+                        </div>
+                      {% endif %}
+                      {% if swh_id.object_type == 'content' %}
+                        <div class="form-check swh-id-option">
+                          <input class="form-check-input swh-id-option-lines" value="option-lines" type="checkbox"
+                                id="swh-id-option-lines"
+                                onclick="swh.browse.swhIdOptionLinesToggled(event)">
+                          <label class="form-check-label" for="swh-id-option-lines">Add selected lines info</label>
+                        </div>
+                      {% endif %}
+                    </form>
                   </div>
                 {% endif %}
                 <div class="float-right">

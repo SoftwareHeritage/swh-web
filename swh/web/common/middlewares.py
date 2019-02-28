@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -19,8 +19,13 @@ class HtmlPrettifyMiddleware(object):
     def __call__(self, request):
         response = self.get_response(request)
         if 'text/html' in response.get('Content-Type', ''):
-            response.content = \
-                BeautifulSoup(response.content, 'lxml').prettify()
+            if hasattr(response, 'content'):
+                content = response.content
+                response.content = BeautifulSoup(content, 'lxml').prettify()
+            elif hasattr(response, 'streaming_content'):
+                content = b''.join(response.streaming_content)
+                response.streaming_content = \
+                    BeautifulSoup(content, 'lxml').prettify()
 
         return response
 

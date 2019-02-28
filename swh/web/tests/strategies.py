@@ -110,7 +110,7 @@ def content_text_no_highlight():
     programming language to highlight ingested into the test archive.
     """
     return content().filter(lambda c: c['mimetype'].startswith('text/') and
-                            c['hljs-language'] == 'nohighlight')
+                            c['hljs_language'] == 'nohighlight')
 
 
 def content_image_type():
@@ -165,6 +165,16 @@ def directory():
     return _known_swh_object('directories')
 
 
+def directory_with_subdirs():
+    """
+    Hypothesis strategy returning a random directory containing
+    sub directories ingested into the test archive.
+    """
+    return directory().filter(
+        lambda d: any([e['type'] == 'dir'
+                      for e in list(storage.directory_ls(hash_to_bytes(d)))]))
+
+
 def empty_directory():
     """
     Hypothesis strategy returning the empty directory ingested
@@ -199,6 +209,20 @@ def origin_with_multiple_visits():
     for origin in tests_data['origins']:
         visits = list(storage.origin_visit_get(origin['id']))
         if len(visits) > 1:
+            ret.append(origin)
+    return sampled_from(ret)
+
+
+def origin_with_release():
+    """
+    Hypothesis strategy returning a random origin ingested
+    into the test archive.
+    """
+    ret = []
+    for origin in tests_data['origins']:
+        snapshot = storage.snapshot_get_latest(origin['id'])
+        if any([b['target_type'] == 'release'
+                for b in snapshot['branches'].values()]):
             ret.append(origin)
     return sampled_from(ret)
 
@@ -383,8 +407,7 @@ def unknown_person():
     Hypothesis strategy returning a random person not ingested
     into the test archive.
     """
-    persons = tests_data['persons']
-    return integers(min_value=max(persons)+1)
+    return integers(min_value=1000000)
 
 
 def _get_origin_dfs_revisions_walker():

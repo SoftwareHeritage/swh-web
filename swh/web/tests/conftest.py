@@ -21,7 +21,8 @@ settings.register_profile(
 settings.register_profile(
     'swh-web-fast',
     settings(deadline=None, max_examples=1,
-             suppress_health_check=[HealthCheck.filter_too_much]))
+             suppress_health_check=[HealthCheck.too_slow,
+                                    HealthCheck.filter_too_much]))
 
 
 def pytest_configure(config):

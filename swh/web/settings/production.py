@@ -3,15 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-# flake8: noqa
-
 """
 Django production settings for swh-web.
 """
 
-import os
-
-from .common import *
+from .common import * # noqa
+from .common import (
+    MIDDLEWARE, CACHES, ALLOWED_HOSTS, WEBPACK_LOADER
+)
 from .common import swh_web_config
 from .common import REST_FRAMEWORK
 
@@ -22,7 +21,7 @@ else:
     MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
 
 MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
-                'django.middleware.cache.FetchFromCacheMiddleware']
+               'django.middleware.cache.FetchFromCacheMiddleware']
 
 CACHES.update({
     'default': {

@@ -1,19 +1,19 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from unittest.mock import patch
+import random
 
-from swh.web.common.exc import BadInputExc, NotFoundExc
+from hypothesis import given
+
 from swh.web.common.utils import reverse, get_swh_persistent_id
 from swh.web.common.utils import gen_path_info
-from swh.web.tests.testcase import WebTestCase
-
-from .data.directory_test_data import (
-    stub_root_directory_sha1, stub_root_directory_data,
-    stub_sub_directory_path, stub_sub_directory_data
+from swh.web.tests.strategies import (
+    directory, directory_with_subdirs, invalid_sha1,
+    unknown_directory
 )
+from swh.web.tests.testcase import WebTestCase
 
 
 class SwhBrowseDirectoryTest(WebTestCase):
@@ -89,46 +89,29 @@ class SwhBrowseDirectoryTest(WebTestCase):
         self.assertContains(resp, swh_dir_id)
         self.assertContains(resp, swh_dir_id_url)
 
-    @patch('swh.web.browse.utils.service')
-    def test_root_directory_view(self, mock_service):
-        mock_service.lookup_directory.return_value = \
-            stub_root_directory_data
+    @given(directory())
+    def test_root_directory_view(self, directory):
+        self.directory_view(directory, self.directory_ls(directory))
 
-        self.directory_view(stub_root_directory_sha1, stub_root_directory_data)
+    @given(directory_with_subdirs())
+    def test_sub_directory_view(self, directory):
+        dir_content = self.directory_ls(directory)
+        subdir = random.choice([e for e in dir_content if e['type'] == 'dir'])
+        subdir_content = self.directory_ls(subdir['target'])
+        self.directory_view(directory, subdir_content, subdir['name'])
 
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.views.directory.service')
-    def test_sub_directory_view(self, mock_directory_service,
-                                mock_utils_service):
-        mock_utils_service.lookup_directory.return_value = \
-            stub_sub_directory_data
-        mock_directory_service.lookup_directory_with_path.return_value = \
-            {'target': stub_sub_directory_data[0]['dir_id'],
-             'type': 'dir'}
-
-        self.directory_view(stub_root_directory_sha1, stub_sub_directory_data,
-                            stub_sub_directory_path)
-
-    @patch('swh.web.browse.utils.service')
-    @patch('swh.web.browse.views.directory.service')
-    def test_directory_request_errors(self, mock_directory_service,
-                                      mock_utils_service):
-
-        mock_utils_service.lookup_directory.side_effect = \
-            BadInputExc('directory not found')
+    @given(invalid_sha1(), unknown_directory())
+    def test_directory_request_errors(self, invalid_sha1, unknown_directory):
 
         dir_url = reverse('browse-directory',
-                          url_args={'sha1_git': '1253456'})
+                          url_args={'sha1_git': invalid_sha1})
 
         resp = self.client.get(dir_url)
         self.assertEqual(resp.status_code, 400)
         self.assertTemplateUsed('browse/error.html')
 
-        mock_utils_service.lookup_directory.side_effect = \
-            NotFoundExc('directory not found')
-
         dir_url = reverse('browse-directory',
-                          url_args={'sha1_git': '1253456'})
+                          url_args={'sha1_git': unknown_directory})
 
         resp = self.client.get(dir_url)
         self.assertEqual(resp.status_code, 404)
