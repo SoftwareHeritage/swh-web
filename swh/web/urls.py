@@ -1,12 +1,15 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+import json
 
 from django.conf import settings
 from django.conf.urls import (
     url, include, handler400, handler403, handler404, handler500
 )
+from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.views import serve
 from django.shortcuts import render
 from django.views.generic.base import RedirectView
@@ -30,6 +33,15 @@ def default_view(request):
     return render(request, "homepage.html")
 
 
+def jslicenses(request):
+    jslicenses_file = finders.find('jssources/jslicenses.json')
+    jslicenses_data = json.load(open(jslicenses_file))
+    jslicenses_data = sorted(jslicenses_data.items(),
+                             key=lambda item: item[0].split('/')[-1])
+    return render(request, "jslicenses.html",
+                  {'jslicenses_data': jslicenses_data})
+
+
 urlpatterns = [
     url(r'^admin/', include('swh.web.admin.urls')),
     url(r'^favicon\.ico$', favicon_view),
@@ -39,7 +51,8 @@ urlpatterns = [
     url(r'^jsreverse/$', urls_js, name='js_reverse'),
     url(r'^(?P<swh_id>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$',
         swh_id_browse, name='browse-swh-id'),
-    url(r'^coverage/$', swh_coverage, name='swh-coverage')
+    url(r'^coverage/$', swh_coverage, name='swh-coverage'),
+    url(r'^jslicenses/$', jslicenses, name='jslicenses'),
 ]
 
 

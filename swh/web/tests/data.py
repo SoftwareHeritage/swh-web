@@ -151,6 +151,8 @@ _TEST_ORIGINS = [
     }
 ]
 
+_contents = {}
+
 
 # Tests data initialization
 def _init_tests_data():
@@ -224,7 +226,9 @@ def _init_tests_data():
         contents[-1]['path'] = path
         contents[-1]['mimetype'] = mimetype
         contents[-1]['encoding'] = encoding
-        contents[-1]['hljs-language'] = content_display_data['language']
+        contents[-1]['hljs_language'] = content_display_data['language']
+        contents[-1]['data'] = content_display_data['content_data']
+        _contents[contents[-1]['sha1']] = contents[-1]
 
     # Create indexer storage instance that will be shared by indexers
     idx_storage = get_indexer_storage('memory', {})
@@ -261,6 +265,10 @@ def _init_tests_data():
         'revisions': list(map(hash_to_hex, revisions)),
         'snapshots': list(snapshots)
     }
+
+
+def get_content(content_sha1):
+    return _contents.get(content_sha1)
 
 
 _tests_data = None

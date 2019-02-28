@@ -3,17 +3,15 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-# flake8: noqa
-
 """
 Django development settings for swh-web.
 """
 
-import os
+from django.core.cache import cache
 
-from .common import *
+from .common import * # noqa
+from .common import MIDDLEWARE
 
 MIDDLEWARE += ['swh.web.common.middlewares.HtmlPrettifyMiddleware']
 
-from django.core.cache import cache
 cache.clear()

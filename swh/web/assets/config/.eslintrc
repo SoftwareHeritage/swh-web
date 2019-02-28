@@ -97,9 +97,9 @@
             "CallExpression": {
                 "arguments": "first"
             },
-            "ArrayExpression": 1,
-            "ObjectExpression": 1,
-            "ImportDeclaration": 1,
+            "ArrayExpression": "first",
+            "ObjectExpression": "first",
+            "ImportDeclaration": "first",
             "flatTernaryExpressions": false,
             "ignoreComments": false
         }],
