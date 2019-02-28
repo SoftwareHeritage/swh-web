@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -166,3 +166,17 @@ def origin_type_savable(origin_type):
             If the origin type is savable or not
     """
     return origin_type in get_savable_origin_types()
+
+
+@register.filter
+def split(value, arg):
+    """Django template filter to split a string.
+
+        Args:
+            value (str): the string to split
+            arg (str): the split separator
+
+        Returns:
+            list: the splitted string parts
+    """
+    return value.split(arg)

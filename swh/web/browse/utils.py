@@ -511,8 +511,7 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
     query_params = None
     if snapshot_context and snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
-        query_params = {'origin_type': origin_info['type'],
-                        'origin': origin_info['url']}
+        query_params = {'origin': origin_info['url']}
         if 'timestamp' in snapshot_context['url_args']:
             query_params['timestamp'] = \
                  snapshot_context['url_args']['timestamp']
@@ -542,9 +541,7 @@ def gen_revision_url(revision_id, snapshot_context=None):
     query_params = None
     if snapshot_context and snapshot_context['origin_info']:
         origin_info = snapshot_context['origin_info']
-        origin_type = snapshot_context['origin_type']
-        query_params = {'origin_type': origin_type,
-                        'origin': origin_info['url']}
+        query_params = {'origin': origin_info['url']}
         if 'timestamp' in snapshot_context['url_args']:
             query_params['timestamp'] = \
                  snapshot_context['url_args']['timestamp']

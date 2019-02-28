@@ -165,8 +165,8 @@ def _check_visit_update_status(save_request, save_task_status):
         time_now = datetime.now(tz=timezone.utc)
         time_delta = time_now - save_request.request_date
         # consider the task as failed if it is still in scheduled state
-        # one week after its submission
-        if time_delta.days > 7:
+        # 30 days after its submission
+        if time_delta.days > 30:
             save_task_status = SAVE_TASK_FAILED
     return visit_date, save_task_status
 

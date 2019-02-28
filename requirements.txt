@@ -17,6 +17,7 @@ pypandoc
 python-dateutil
 pyyaml
 requests
+python-memcached
 
 # Doc dependencies
 sphinx

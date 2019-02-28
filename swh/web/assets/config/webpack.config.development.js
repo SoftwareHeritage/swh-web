@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -17,6 +17,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const RemoveSourceMapUrlPlugin = require('./webpack-plugins/remove-source-map-url-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
@@ -63,7 +64,8 @@ let cssLoaders = [
               'font-family-no-missing-generic-family-keyword': null,
               'no-descending-specificity': null
             },
-            'ignoreFiles': 'node_modules/**/*.css'
+            'ignoreFiles': ['node_modules/**/*.css',
+                            'swh/web/assets/src/thirdparty/**/*.css']
           }
         }),
         // automatically add vendor prefixes to css rules
@@ -134,166 +136,168 @@ module.exports = {
   },
   // module import configuration
   module: {
-    rules: [{
+    rules: [
+      {
       // Preprocess all js files with eslint for consistent code style
       // and avoid bad js development practices.
-      enforce: 'pre',
-      test: /\.js$/,
-      exclude: /node_modules/,
-      use: [{
-        loader: 'eslint-loader',
-        options: {
-          configFile: path.join(__dirname, '.eslintrc'),
-          emitWarning: true
-        }
-      }]
-    },
-    {
+        enforce: 'pre',
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [{
+          loader: 'eslint-loader',
+          options: {
+            configFile: path.join(__dirname, '.eslintrc'),
+            ignorePath: path.join(__dirname, '.eslintignore'),
+            emitWarning: true
+          }
+        }]
+      },
+      {
       // Use babel-loader in order to use es6 syntax in js files
       // but also advanced js features like async/await syntax.
       // All code get transpiled to es5 in order to be executed
       // in a large majority of browsers.
-      test: /\.js$/,
-      exclude: /node_modules/,
-      use: [
-        {
-          loader: 'cache-loader'
-        },
-        {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-            // use env babel presets to benefit from es6 syntax
-              ['@babel/preset-env', {
-              // Do not transform es6 module syntax to another module type
-              // in order to benefit from dead code elimination (aka tree shaking)
-              // when running webpack in production mode
-                'loose': true,
-                'modules': false
-              }]
-            ],
-            plugins: [
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'cache-loader'
+          },
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                // use env babel presets to benefit from es6 syntax
+                ['@babel/preset-env', {
+                  // Do not transform es6 module syntax to another module type
+                  // in order to benefit from dead code elimination (aka tree shaking)
+                  // when running webpack in production mode
+                  'loose': true,
+                  'modules': false
+                }]
+              ],
+              plugins: [
               // use babel transform-runtime plugin in order to use aync/await syntax
-              ['@babel/plugin-transform-runtime', {
-                'corejs': 2,
-                'regenerator': true
-              }],
-              // use other babel plugins to benefit from advanced js features (es2017)
-              '@babel/plugin-syntax-dynamic-import'
-            ]
+                ['@babel/plugin-transform-runtime', {
+                  'corejs': 2,
+                  'regenerator': true
+                }],
+                // use other babel plugins to benefit from advanced js features (es2017)
+                '@babel/plugin-syntax-dynamic-import'
+              ]
+            }
+          }]
+      },
+      // expose jquery to the global context as $ and jQuery when importing it
+      {
+        test: require.resolve('jquery'),
+        use: [{
+          loader: 'expose-loader',
+          options: 'jQuery'
+        }, {
+          loader: 'expose-loader',
+          options: '$'
+        }]
+      },
+      // expose highlightjs to the global context as hljs when importing it
+      {
+        test: require.resolve('highlight.js'),
+        use: [{
+          loader: 'expose-loader',
+          options: 'hljs'
+        }]
+      },
+      {
+        test: require.resolve('js-cookie'),
+        use: [{
+          loader: 'expose-loader',
+          options: 'Cookies'
+        }]
+      },
+      // css import configuration:
+      //  - first process it with postcss
+      //  - then extract it to a dedicated file associated to each bundle
+      {
+        test: /\.css$/,
+        use: cssLoaders
+      },
+      // sass import configuration:
+      //  - generate css with sass-loader
+      //  - process it with postcss
+      //  - then extract it to a dedicated file associated to each bundle
+      {
+        test: /\.scss$/,
+        use: cssLoaders.concat([
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: !isDevServer
+            }
+          }
+        ])
+      },
+      // less import configuration:
+      //  - generate css with less-loader
+      //  - process it with postcss
+      //  - then extract it to a dedicated file associated to each bundle
+      {
+        test: /\.less$/,
+        use: cssLoaders.concat([
+          {
+            loader: 'less-loader',
+            options: {
+              sourceMap: !isDevServer
+            }
+          }
+        ])
+      },
+      // web fonts import configuration
+      {
+        test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'fonts/'
           }
         }]
-    },
-    // expose jquery to the global context as $ and jQuery when importing it
-    {
-      test: require.resolve('jquery'),
-      use: [{
-        loader: 'expose-loader',
-        options: 'jQuery'
       }, {
-        loader: 'expose-loader',
-        options: '$'
-      }]
-    },
-    // expose highlightjs to the global context as hljs when importing it
-    {
-      test: require.resolve('highlight.js'),
-      use: [{
-        loader: 'expose-loader',
-        options: 'hljs'
-      }]
-    },
-    {
-      test: require.resolve('js-cookie'),
-      use: [{
-        loader: 'expose-loader',
-        options: 'Cookies'
-      }]
-    },
-    // css import configuration:
-    //  - first process it with postcss
-    //  - then extract it to a dedicated file associated to each bundle
-    {
-      test: /\.css$/,
-      use: cssLoaders
-    },
-    // sass import configuration:
-    //  - generate css with sass-loader
-    //  - process it with postcss
-    //  - then extract it to a dedicated file associated to each bundle
-    {
-      test: /\.scss$/,
-      use: cssLoaders.concat([
-        {
-          loader: 'sass-loader',
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+        use: [{
+          loader: 'file-loader',
           options: {
-            sourceMap: !isDevServer
+            name: '[name].[ext]',
+            outputPath: 'fonts/'
           }
-        }
-      ])
-    },
-    // less import configuration:
-    //  - generate css with less-loader
-    //  - process it with postcss
-    //  - then extract it to a dedicated file associated to each bundle
-    {
-      test: /\.less$/,
-      use: cssLoaders.concat([
-        {
-          loader: 'less-loader',
+        }]
+      }, {
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
+        use: [{
+          loader: 'file-loader',
           options: {
-            sourceMap: !isDevServer
+            name: '[name].[ext]',
+            outputPath: 'fonts/'
           }
-        }
-      ])
-    },
-    // web fonts import configuration
-    {
-      test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
-      use: [{
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: 'fonts/'
-        }
-      }]
-    }, {
-      test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-      use: [{
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: 'fonts/'
-        }
-      }]
-    }, {
-      test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-      use: [{
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: 'fonts/'
-        }
-      }]
-    }, {
-      test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-      use: [{
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: 'fonts/'
-        }
-      }]
-    }, {
-      test: /\.otf(\?v=\d+\.\d+\.\d+)?$/,
-      use: [{
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: 'fonts/'
-        }
-      }]
-    }
+        }]
+      }, {
+        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'fonts/'
+          }
+        }]
+      }, {
+        test: /\.otf(\?v=\d+\.\d+\.\d+)?$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'fonts/'
+          }
+        }]
+      }
     ],
     // tell webpack to not parse minified pdfjs file to speedup build process
     noParse: [path.resolve(nodeModules, 'pdfjs-dist/build/pdf.min.js')]
@@ -301,7 +305,8 @@ module.exports = {
   // webpack plugins
   plugins: [
     // cleanup previously generated assets
-    new CleanWebpackPlugin(['static/css', 'static/js', 'static/fonts', 'static/*.*'], {
+    new CleanWebpackPlugin(['static/css', 'static/js', 'static/fonts',
+                            'static/jssources', 'static/*.*'], {
       root: path.resolve(__dirname, '../../')
     }),
     // needed in order to use django_webpack_loader
@@ -346,7 +351,39 @@ module.exports = {
     new CopyWebpackPlugin([{
       from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
       to: path.resolve(__dirname, '../../static/js/')
-    }])
+    }]),
+    new GenerateWebLabelsPlugin({
+      outputType: 'json',
+      exclude: ['mini-css-extract-plugin',
+                'bootstrap-loader'],
+      srcReplace: {
+        './node_modules/pdfjs-dist/build/pdf.min.js':
+        './node_modules/pdfjs-dist/build/pdf.js',
+        './node_modules/admin-lte/dist/js/adminlte.min.js':
+        './node_modules/admin-lte/dist/js/adminlte.js'
+      },
+      licenseOverride: {
+        './swh/web/assets/src/thirdparty/highlightjs-line-numbers/highlightjs-line-numbers.js': {
+          'spdxLicenseExpression': 'MIT',
+          'licenseFilePath': './swh/web/assets/src/thirdparty/highlightjs-line-numbers/LICENSE'
+        },
+        './swh/web/assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.js': {
+          'spdxLicenseExpression': 'GPL-3.0',
+          'licenseFilePath': './swh/web/assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
+        }
+      },
+      additionalScripts: {
+        'js/pdf.worker.min.js': [
+          {
+            'id': 'pdfjs-dist/build/pdf.worker.js',
+            'path': './node_modules/pdfjs-dist/build/pdf.worker.js',
+            'spdxLicenseExpression': 'Apache-2.0',
+            'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
+
+          }
+        ]
+      }
+    })
   ],
   // webpack optimizations
   optimization: {
