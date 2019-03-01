@@ -5,7 +5,8 @@
   "scripts": {
     "build-dev": "NODE_ENV=development webpack --config ./swh/web/assets/config/webpack.config.development.js --display-modules --progress --colors",
     "start-dev": "NODE_ENV=development nodemon --watch swh/web/api --watch swh/web/browse --watch swh/web/templates --watch swh/web/common --watch swh/web/settings --watch swh/web/assets/config --ext py,html,js --exec \"webpack-dev-server --config ./swh/web/assets/config/webpack.config.development.js --progress --colors\"",
-    "build": "NODE_ENV=production webpack --config ./swh/web/assets/config/webpack.config.production.js --display-modules --progress --colors"
+    "build": "NODE_ENV=production webpack --config ./swh/web/assets/config/webpack.config.production.js --display-modules --progress --colors",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -49,6 +50,7 @@
     "highlightjs-line-numbers.js": "^2.6.0",
     "iframe-resizer": "^3.6.5",
     "imports-loader": "^0.8.0",
+    "jest": "^24.1.0",
     "jquery": "^3.3.1",
     "js-cookie": "^2.2.0",
     "less": "^3.9.0",
