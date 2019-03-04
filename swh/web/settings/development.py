@@ -14,4 +14,6 @@ from .common import MIDDLEWARE
 
 MIDDLEWARE += ['swh.web.common.middlewares.HtmlPrettifyMiddleware']
 
+AUTH_PASSWORD_VALIDATORS = []  # disable any pwd validation mechanism
+
 cache.clear()
