@@ -29,7 +29,8 @@ webpackProdConfig.optimization.minimizer = [
   new OptimizeCSSAssetsPlugin({
     cssProcessorOptions: {
       map: {
-        inline: false
+        inline: false,
+        annotation: true
       },
       minifyFontValues: false,
       discardUnused: false,
