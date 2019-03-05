@@ -104,12 +104,14 @@ See top-level LICENSE file for more information
       url: Urls.api_stat_counters(),
       dataType: 'json',
       success: function (data) {
-        $('#nb-files').html(data.content.toLocaleString());
-        $('#nb-commits').html(data.revision.toLocaleString());
-        $('#nb-projects').html(data.origin.toLocaleString());
-        $('#nb-dirs').html(data.directory.toLocaleString());
-        $('#nb-authors').html(data.person.toLocaleString());
-        $('#nb-releases').html(data.release.toLocaleString());
+        if (data.content) {
+          $('#nb-files').html(data.content.toLocaleString());
+          $('#nb-commits').html(data.revision.toLocaleString());
+          $('#nb-projects').html(data.origin.toLocaleString());
+          $('#nb-dirs').html(data.directory.toLocaleString());
+          $('#nb-authors').html(data.person.toLocaleString());
+          $('#nb-releases').html(data.release.toLocaleString());
+        }
       }
     });
     $('.swh-coverage-list').iFrameResize({heightCalculationMethod: 'taggedElement'});
