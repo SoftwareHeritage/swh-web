@@ -15,7 +15,7 @@ const BundleTracker = require('webpack-bundle-tracker');
 const RobotstxtPlugin = require('robotstxt-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const RemoveSourceMapUrlPlugin = require('./webpack-plugins/remove-source-map-url-webpack-plugin');
+const FixSwhSourceMapsPlugin = require('./webpack-plugins/fix-swh-source-maps-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
 
@@ -325,8 +325,8 @@ module.exports = {
       filename: 'css/[name].[chunkhash].css',
       chunkFilename: 'css/[name].[chunkhash].css'
     }),
-    // for removing some warnings in js console about not found source maps
-    new RemoveSourceMapUrlPlugin(),
+    // fix generated asset sourcemaps to workaround a Firefox issue
+    new FixSwhSourceMapsPlugin(),
     // define some global variables accessible from js code
     new webpack.DefinePlugin({
       __STATIC__: JSON.stringify(publicPath)
