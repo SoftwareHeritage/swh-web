@@ -1,6 +1,6 @@
 {
   "name": "swh-web",
-  "version": "0.0.184",
+  "version": "0.0.185",
   "description": "Static assets management for swh-web",
   "scripts": {
     "build-dev": "NODE_ENV=development webpack --config ./swh/web/assets/config/webpack.config.development.js --display-modules --progress --colors",
