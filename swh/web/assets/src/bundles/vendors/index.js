@@ -30,9 +30,7 @@ import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 import './datatables.css';
 
 // iframe-resizer
-// import 'iframe-resizer';
-import 'iframe-resizer/js/iframeResizer';
-import 'iframe-resizer/js/iframeResizer.contentWindow';
+import 'iframe-resizer';
 
 // web fonts
 import 'typeface-alegreya';
