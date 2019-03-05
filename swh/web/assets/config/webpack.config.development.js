@@ -305,9 +305,11 @@ module.exports = {
   // webpack plugins
   plugins: [
     // cleanup previously generated assets
-    new CleanWebpackPlugin(['static/css', 'static/js', 'static/fonts',
-                            'static/jssources', 'static/*.*'], {
-      root: path.resolve(__dirname, '../../')
+    new CleanWebpackPlugin({
+      verbose: true,
+      cleanOnceBeforeBuildPatterns: ['**/*', '!xml', '!xml/*', '!img', '!img/*',
+                                     '!img/logos', '!img/logos/*', '!img/icons',
+                                     '!img/icons/*']
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
