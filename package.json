@@ -35,6 +35,7 @@
     "d3": "^5.8.2",
     "datatables.net-bs4": "^1.10.19",
     "ejs": "^2.6.1",
+    "elementsfrompoint-polyfill": "^1.0.0",
     "eslint": "^5.15.1",
     "eslint-loader": "^2.1.2",
     "eslint-plugin-import": "^2.16.0",
