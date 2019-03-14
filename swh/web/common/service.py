@@ -283,7 +283,7 @@ def search_origin_metadata(fulltext, limit=50):
     for match in matches:
         match['from_revision'] = hashutil.hash_to_hex(match['from_revision'])
         result = converters.from_origin(
-            storage.origin_get({'id': match.pop('origin_id')}))
+            storage.origin_get({'id': match.pop('id')}))
         result['metadata'] = match
         results.append(result)
     return results

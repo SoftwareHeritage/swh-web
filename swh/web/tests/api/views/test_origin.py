@@ -231,7 +231,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                 'from_revision':
                 b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed \xf2U\xfa\x05B8',
                 'metadata': {'author': 'Jane Doe'},
-                'origin_id': origin['id'],
+                'id': origin['id'],
                 'tool': {
                     'configuration': {
                         'context': ['NpmMapping', 'CodemetaMapping'],
@@ -280,7 +280,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                 'from_revision':
                 b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed \xf2U\xfa\x05B8',
                 'metadata': {'author': 'Jane Doe'},
-                'origin_id': origin['id'],
+                'id': origin['id'],
                 'tool': {
                     'configuration': {
                         'context': ['NpmMapping', 'CodemetaMapping'],
