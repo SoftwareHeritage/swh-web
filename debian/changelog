@@ -1,8 +1,11 @@
-swh-web (0.0.186-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.187-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-swh
+  * New upstream release 0.0.187     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2019-03-14 15:22:01 +0100)
+  * Upstream changes:     - Apply rename of 'origin_id' in the indexer
+    API.
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 05 Mar 2019 16:00:04 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 14 Mar 2019 14:41:39 +0000
 
 swh-web (0.0.186-1~swh1) unstable-swh; urgency=medium
 

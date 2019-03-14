@@ -153,8 +153,8 @@ swh/web/settings/production.py
 swh/web/settings/tests.py
 swh/web/static/robots.txt
 swh/web/static/webpack-stats.json
-swh/web/static/css/browse.0155e1c4ec3c61116485.css
-swh/web/static/css/browse.0155e1c4ec3c61116485.css.map
+swh/web/static/css/browse.d42fd2a4ef72b319809e.css
+swh/web/static/css/browse.d42fd2a4ef72b319809e.css.map
 swh/web/static/css/highlightjs.1a675cc7a0e71b352ce6.css
 swh/web/static/css/highlightjs.1a675cc7a0e71b352ce6.css.map
 swh/web/static/css/org.89a71cc53d6a42e6ef63.css
@@ -169,8 +169,8 @@ swh/web/static/css/vault.6f9a4c81f627548dfe23.css
 swh/web/static/css/vault.6f9a4c81f627548dfe23.css.map
 swh/web/static/css/vendors.46c81de170c32a146929.css
 swh/web/static/css/vendors.46c81de170c32a146929.css.map
-swh/web/static/css/webapp.773849227335c2943634.css
-swh/web/static/css/webapp.773849227335c2943634.css.map
+swh/web/static/css/webapp.2a1b3e79ae4151309979.css
+swh/web/static/css/webapp.2a1b3e79ae4151309979.css.map
 swh/web/static/fonts/alegreya-latin-400.woff
 swh/web/static/fonts/alegreya-latin-400.woff2
 swh/web/static/fonts/alegreya-latin-400italic.woff
@@ -254,8 +254,8 @@ swh/web/static/img/logos/inria.jpg
 swh/web/static/img/logos/pypi.svg
 swh/web/static/js/admin.ffe32df0e0b6f773ca10.js
 swh/web/static/js/admin.ffe32df0e0b6f773ca10.js.map
-swh/web/static/js/browse.0155e1c4ec3c61116485.js
-swh/web/static/js/browse.0155e1c4ec3c61116485.js.map
+swh/web/static/js/browse.d42fd2a4ef72b319809e.js
+swh/web/static/js/browse.d42fd2a4ef72b319809e.js.map
 swh/web/static/js/highlightjs.1a675cc7a0e71b352ce6.js
 swh/web/static/js/highlightjs.1a675cc7a0e71b352ce6.js.map
 swh/web/static/js/org.89a71cc53d6a42e6ef63.js
@@ -273,8 +273,8 @@ swh/web/static/js/vault.6f9a4c81f627548dfe23.js
 swh/web/static/js/vault.6f9a4c81f627548dfe23.js.map
 swh/web/static/js/vendors.46c81de170c32a146929.js
 swh/web/static/js/vendors.46c81de170c32a146929.js.map
-swh/web/static/js/webapp.773849227335c2943634.js
-swh/web/static/js/webapp.773849227335c2943634.js.map
+swh/web/static/js/webapp.2a1b3e79ae4151309979.js
+swh/web/static/js/webapp.2a1b3e79ae4151309979.js.map
 swh/web/static/jssources/LICENSE.txt
 swh/web/static/jssources/jslicenses.json
 swh/web/static/jssources/@babel/polyfill/LICENSE.txt
