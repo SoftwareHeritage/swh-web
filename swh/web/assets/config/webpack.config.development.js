@@ -364,10 +364,6 @@ module.exports = {
         './node_modules/admin-lte/dist/js/adminlte.js'
       },
       licenseOverride: {
-        './swh/web/assets/src/thirdparty/highlightjs-line-numbers/highlightjs-line-numbers.js': {
-          'spdxLicenseExpression': 'MIT',
-          'licenseFilePath': './swh/web/assets/src/thirdparty/highlightjs-line-numbers/LICENSE'
-        },
         './swh/web/assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.js': {
           'spdxLicenseExpression': 'GPL-3.0',
           'licenseFilePath': './swh/web/assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
