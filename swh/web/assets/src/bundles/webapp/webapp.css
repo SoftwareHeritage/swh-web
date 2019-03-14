@@ -17,8 +17,8 @@ body {
     padding-bottom: 120px;
 }
 
-a {
-    border-bottom-style: none;
+a:active,
+a.active {
     outline: none;
 }
 
@@ -100,7 +100,6 @@ pre {
 
 .swh-web-app-link a {
     text-decoration: none;
-    outline: none;
     border: none;
 }
 
@@ -461,10 +460,6 @@ hr.swh-faded-line {
     width: 100%;
     height: 320px;
     border: none;
-}
-
-tr.swh-tr-hover-highlight {
-    cursor: pointer;
 }
 
 tr.swh-tr-hover-highlight:hover td {

@@ -130,14 +130,6 @@ export function getSwhObjectIcon(swhObjectType) {
   return swhObjectIcons[swhObjectType];
 }
 
-export function initTableRowLinks(trSelector) {
-  $(trSelector).on('click', function() {
-    window.location = $(this).data('href');
-    return false;
-  });
-  $('td > a').on('click', function(e) { e.stopPropagation(); });
-}
-
 let reCaptchaActivated;
 
 export function setReCaptchaActivated(activated) {
