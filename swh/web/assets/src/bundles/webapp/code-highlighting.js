@@ -93,7 +93,7 @@ export async function highlightCode(showLineNumbers = true) {
           window.location.hash = `#L${line}`;
           scrollToLine(evt.target);
         }
-      } else if ($(evt.target).closest('.hljs').length) {
+      } else if ($(evt.target).closest('.hljs-ln').length) {
         resetHighlightedLines();
         removeUrlFragment();
       }

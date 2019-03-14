@@ -191,7 +191,8 @@ export function initOriginSave() {
 }
 
 export function validateSaveOriginUrl(input) {
-  let validUrl = validate({website: input.value}, {
+  let originUrl = input.value.trim();
+  let validUrl = validate({website: originUrl}, {
     website: {
       url: {
         schemes: ['http', 'https', 'svn', 'git']
@@ -201,26 +202,28 @@ export function validateSaveOriginUrl(input) {
   let originType = $('#swh-input-origin-type').val();
   if (originType === 'git' && validUrl) {
     // additional checks for well known code hosting providers
-    let githubIdx = input.value.indexOf('://github.com');
-    let gitlabIdx = input.value.indexOf('://gitlab.');
-    let gitSfIdx = input.value.indexOf('://git.code.sf.net');
-    let bitbucketIdx = input.value.indexOf('://bitbucket.org');
+    let githubIdx = originUrl.indexOf('://github.com');
+    let gitlabIdx = originUrl.indexOf('://gitlab.');
+    let gitSfIdx = originUrl.indexOf('://git.code.sf.net');
+    let bitbucketIdx = originUrl.indexOf('://bitbucket.org');
     if (githubIdx !== -1 && githubIdx <= 5) {
-      validUrl = isGitRepoUrl(input.value, 'github.com');
+      validUrl = isGitRepoUrl(originUrl, 'github.com');
     } else if (gitlabIdx !== -1 && gitlabIdx <= 5) {
       let startIdx = gitlabIdx + 3;
-      let idx = input.value.indexOf('/', startIdx);
+      let idx = originUrl.indexOf('/', startIdx);
       if (idx !== -1) {
-        let gitlabDomain = input.value.substr(startIdx, idx - startIdx);
+        let gitlabDomain = originUrl.substr(startIdx, idx - startIdx);
         // GitLab repo url needs to be suffixed by '.git' in order to be successfully loaded
-        validUrl = isGitRepoUrl(input.value, gitlabDomain) && input.value.endsWith('.git');
+        // This is due to a bug in dulwich < 0.19.11.
+        // TODO: remove this check once dulwich >= 0.19.11 is used in production
+        validUrl = isGitRepoUrl(originUrl, gitlabDomain) && originUrl.endsWith('.git');
       } else {
         validUrl = false;
       }
     } else if (gitSfIdx !== -1 && gitSfIdx <= 5) {
-      validUrl = isGitRepoUrl(input.value, 'git.code.sf.net/p');
+      validUrl = isGitRepoUrl(originUrl, 'git.code.sf.net/p');
     } else if (bitbucketIdx !== -1 && bitbucketIdx <= 5) {
-      validUrl = isGitRepoUrl(input.value, 'bitbucket.org');
+      validUrl = isGitRepoUrl(originUrl, 'bitbucket.org');
     }
   }
   if (validUrl) {
