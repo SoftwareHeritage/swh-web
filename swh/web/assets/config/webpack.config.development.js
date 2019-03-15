@@ -306,7 +306,6 @@ module.exports = {
   plugins: [
     // cleanup previously generated assets
     new CleanWebpackPlugin({
-      verbose: true,
       cleanOnceBeforeBuildPatterns: ['**/*', '!xml', '!xml/*', '!img', '!img/*',
                                      '!img/logos', '!img/logos/*', '!img/icons',
                                      '!img/icons/*']
