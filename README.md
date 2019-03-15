@@ -73,7 +73,7 @@ Below is the list of available make targets that can be executed from the root d
 
 Once one of these targets executed, the web applications can be executed by pointing your browser to http://localhost:5004.
 
-### Npm/Yarn targets
+### Yarn targets
 
 Below is a list of available yarn targets in order to only execute the frontend static assets compilation (no web server will be executed):
 
