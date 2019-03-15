@@ -1,16 +1,20 @@
 TEST_DIRS := ./swh/web/tests
+YARN ?= yarn
+
+yarn-install: package.json
+	$(YARN) install
 
 .PHONY: build-webpack-dev
-build-webpack-dev:
-	yarn build-dev
+build-webpack-dev: yarn-install
+	$(YARN) build-dev
 
 .PHONY: build-webpack-dev-no-verbose
-build-webpack-dev-no-verbose:
-	yarn build-dev >/dev/null
+build-webpack-dev-no-verbose: yarn-install
+	$(YARN) build-dev >/dev/null
 
 .PHONY: build-webpack-prod
-build-webpack-prod:
-	yarn build
+build-webpack-prod: yarn-install
+	$(YARN) build
 
 .PHONY: run-migrations
 run-migrations:
@@ -22,8 +26,8 @@ run-migrations-prod:
 	django-admin migrate --settings=swh.web.settings.production 2>/dev/null
 	django-admin createcachetable --settings=swh.web.settings.production 2>/dev/null
 
-run-django-webpack-devserver: run-migrations
-	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; yarn start-dev & cd swh/web && python3 manage.py runserver --nostatic"
+run-django-webpack-devserver: run-migrations yarn-install
+	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & cd swh/web && python3 manage.py runserver --nostatic"
 
 run-django-webpack-dev: build-webpack-dev run-migrations
 	python3 swh/web/manage.py runserver --nostatic
