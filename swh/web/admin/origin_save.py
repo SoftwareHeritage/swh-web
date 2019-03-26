@@ -171,3 +171,18 @@ def _admin_origin_save_request_reject(request, origin_type, origin_url):
     sor.status = SAVE_REQUEST_REJECTED
     sor.save()
     return HttpResponse(status=200)
+
+
+@admin_route(r'origin/save/request/remove/(?P<sor_id>.+)/',
+             view_name='admin-origin-save-request-remove')
+@require_POST
+@staff_member_required(login_url=settings.LOGIN_URL)
+def _admin_origin_save_request_remove(request, sor_id):
+    try:
+        entry = SaveOriginRequest.objects.get(id=sor_id)
+    except ObjectDoesNotExist:
+        status_code = 404
+    else:
+        entry.delete()
+        status_code = 200
+    return HttpResponse(status=status_code)

@@ -74,6 +74,10 @@ def api_save_origin(request, origin_type, origin_url):
     """ # noqa
 
     if request.method == 'POST':
-        return create_save_origin_request(origin_type, origin_url)
+        sor = create_save_origin_request(origin_type, origin_url)
+        del sor['id']
     else:
-        return get_save_origin_requests(origin_type, origin_url)
+        sor = get_save_origin_requests(origin_type, origin_url)
+        for s in sor: del s['id'] # noqa
+
+    return sor
