@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.conf.urls import url
+from django.shortcuts import redirect
 
 
 class UrlsIndex(object):
@@ -19,7 +20,7 @@ class UrlsIndex(object):
     scope = 'default'
 
     @classmethod
-    def add_url_pattern(cls, url_pattern, view, view_name):
+    def add_url_pattern(cls, url_pattern, view, view_name=None):
         """
         Class method that adds an url pattern to the current scope.
 
@@ -35,6 +36,23 @@ class UrlsIndex(object):
                                                    name=view_name))
         else:
             cls._urlpatterns[cls.scope].append(url(url_pattern, view))
+
+    @classmethod
+    def add_redirect_for_checksum_args(cls, view_name, url_patterns,
+                                       checksum_args):
+        new_view_name = view_name+'-uppercase-checksum'
+        for url_pattern in url_patterns:
+            url_pattern_upper = url_pattern.replace('[0-9a-f]',
+                                                    '[0-9a-fA-F]')
+
+            def view_redirect(request, *args, **kwargs):
+                for checksum_arg in checksum_args:
+                    checksum_upper = kwargs[checksum_arg]
+                    kwargs[checksum_arg] = checksum_upper.lower()
+                return redirect(view_name, *args, **kwargs)
+
+            cls.add_url_pattern(url_pattern_upper, view_redirect,
+                                new_view_name)
 
     @classmethod
     def get_url_patterns(cls):
