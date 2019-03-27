@@ -97,10 +97,16 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
     for (let i = 0; i < patternsArray.length; ++i) {
       patternsArray[i] = escapeStringRegexp(patternsArray[i]);
     }
-    let patternsPermut = [];
-    heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
-    let regex = patternsPermut.join('|');
-    baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
+    // url length must be less than 4096 for modern browsers
+    // assuming average word length, 6 is max patternArray.length
+    if (patternsArray.length < 7) {
+      let patternsPermut = [];
+      heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
+      let regex = patternsPermut.join('|');
+      baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
+    } else {
+      baseSearchUrl = Urls.browse_origin_search(patternsArray.join('.*')) + `?regexp=true`;
+    }
   }
 
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
