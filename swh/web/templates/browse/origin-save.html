@@ -91,11 +91,12 @@ See top-level LICENSE file for more information
       </div>
       {% if grecaptcha_activated %}
         <div class="form-row">
-          <div class="col-md-2"></div>
+          <div class="col-md-1"></div>
           <div class="form-group col-md-4">
             <div class="g-recaptcha" id="save-origin-recaptcha" data-sitekey="{{ grecaptcha_site_key }}"></div>
           </div>
-          <div class="form-group col-md-1">
+          <div class="col-md-2"></div>
+          <div class="form-group col-md-2">
             <label for="swh-input-origin-save-submit">&#8203;</label>
             <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
           </div>

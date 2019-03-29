@@ -24,7 +24,7 @@ See top-level LICENSE file for more information
       </thead>
       <tbody>
         {% for branch in displayed_branches %}
-          <tr class="swh-branch-entry swh-tr-hover-highlight" data-href="{{ branch.directory_url }}">
+          <tr class="swh-branch-entry swh-tr-hover-highlight">
             <td class="swh-branch-name">
               <a href="{{ branch.directory_url }}">
                 <i class="{{ swh_object_icons.branch }} fa-fw"></i>{{ branch.name }}
@@ -36,24 +36,16 @@ See top-level LICENSE file for more information
               </a>
             </td>
             <td class="swh-branch-message swh-table-cell-text-overflow" title="{{ branch.message }}">
-              <a href="{{ branch.directory_url }}">
-                {{ branch.message }}
-              </a>
+              {{ branch.message }}
             </td>
             <td class="swh-branch-date">
-              <a href="{{ branch.directory_url }}">
-                {{ branch.date }}
-              </a>
+              {{ branch.date }}
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-
-  <script>
-    swh.webapp.initTableRowLinks('tr.swh-branch-entry');
-  </script>
 
 {% else %}
   <i>The list of branches is empty !</i>

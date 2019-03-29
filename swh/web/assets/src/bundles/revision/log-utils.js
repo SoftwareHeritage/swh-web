@@ -10,7 +10,6 @@ export function revsOrderingTypeClicked(event) {
 }
 
 export function initRevisionsLog() {
-  swh.webapp.initTableRowLinks('tr.swh-revision-log-entry');
   $(document).ready(() => {
     let urlParams = new URLSearchParams(window.location.search);
     let revsOrderingType = urlParams.get('revs_ordering');

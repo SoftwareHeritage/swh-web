@@ -47,3 +47,16 @@ export function isGitRepoUrl(url, domain) {
 export function removeUrlFragment() {
   history.replaceState('', document.title, window.location.pathname + window.location.search);
 }
+
+export function selectText(startNode, endNode) {
+  let selection = window.getSelection();
+  selection.removeAllRanges();
+  let range = document.createRange();
+  range.setStart(startNode, 0);
+  if (endNode.nodeName !== '#text') {
+    range.setEnd(endNode, endNode.childNodes.length);
+  } else {
+    range.setEnd(endNode, endNode.textContent.length);
+  }
+  selection.addRange(range);
+}

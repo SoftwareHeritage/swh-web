@@ -846,7 +846,8 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
 # list of origin types that can be found in the swh archive
 # TODO: retrieve it dynamically in an efficient way instead
 #       of hardcoding it
-_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit', 'pypi']
+_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit',
+                     'pypi', 'npm']
 
 
 def get_origin_info(origin_url, origin_type=None):

@@ -24,12 +24,6 @@ li.swh-release:hover {
     background-color: #e8e8e8;
 }
 
-.nav a,
-.swh-branch a,
-.swh-release a {
-    outline: none;
-}
-
 .swh-branch a:hover,
 .swh-release a:hover {
     text-decoration: none;

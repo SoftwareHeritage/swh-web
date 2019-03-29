@@ -51,6 +51,12 @@ export function initOriginSaveAdmin() {
 
     let columnsData = [
       {
+        data: 'id',
+        name: 'id',
+        visible: false,
+        searchable: false
+      },
+      {
         data: 'save_request_date',
         name: 'request_date',
         render: (data, type, row) => {
@@ -64,7 +70,6 @@ export function initOriginSaveAdmin() {
       {
         data: 'origin_type',
         name: 'origin_type'
-
       },
       {
         data: 'origin_url',
@@ -96,6 +101,7 @@ export function initOriginSaveAdmin() {
       scrollCollapse: true,
       order: [[0, 'desc']]
     });
+    enableRowSelection('#swh-origin-save-rejected-requests');
 
     columnsData.push({
       data: 'save_task_status',
@@ -117,6 +123,7 @@ export function initOriginSaveAdmin() {
       scrollCollapse: true,
       order: [[0, 'desc']]
     });
+    enableRowSelection('#swh-origin-save-accepted-requests');
 
     $('#swh-origin-save-requests-nav-item').on('shown.bs.tab', () => {
       pendingSaveRequestsTable.draw();
@@ -253,4 +260,35 @@ export function rejectOriginSaveRequest() {
       'Are you sure to reject this origin save request ?',
       rejectOriginSaveRequestCallback);
   }
+}
+
+function removeOriginSaveRequest(requestTable) {
+  let selectedRow = requestTable.row('.selected');
+  if (selectedRow.length) {
+    let requestId = selectedRow.data()['id'];
+    let removeOriginSaveRequestCallback = () => {
+      let removeSaveRequestUrl = Urls.admin_origin_save_request_remove(requestId);
+      csrfPost(removeSaveRequestUrl)
+        .then(() => {
+          requestTable.ajax.reload(null, false);
+        });
+    };
+
+    swh.webapp.showModalConfirm(
+      'Remove origin save request ?',
+      'Are you sure to remove this origin save request ?',
+      removeOriginSaveRequestCallback);
+  }
+}
+
+export function removePendingOriginSaveRequest() {
+  removeOriginSaveRequest(pendingSaveRequestsTable);
+}
+
+export function removeAcceptedOriginSaveRequest() {
+  removeOriginSaveRequest(acceptedSaveRequestsTable);
+}
+
+export function removeRejectedOriginSaveRequest() {
+  removeOriginSaveRequest(rejectedSaveRequestsTable);
 }

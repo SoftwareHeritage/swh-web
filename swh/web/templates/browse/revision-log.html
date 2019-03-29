@@ -63,31 +63,23 @@ See top-level LICENSE file for more information
       </thead>
       <tbody>
         {% for rev in revision_log %}
-          <tr class="swh-revision-log-entry swh-tr-hover-highlight" data-href="{{ rev.url }}" title="{{ rev.tooltip }}">
+          <tr class="swh-revision-log-entry swh-tr-hover-highlight" title="{{ rev.tooltip }}">
             <td class="swh-revision-log-entry-id">
               <a href="{{ rev.url }}">
                 <i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>{{ rev.id }}
               </a>
             </td>
             <td class="swh-revision-log-entry-author">
-              <a href="{{ rev.url }}">
-                {{ rev.author }}
-              </a>
+              {{ rev.author }}
             </td>
             <td class="swh-revision-log-entry-date">
-              <a href="{{ rev.url }}">
-                {{ rev.date }}
-              </a>
+              {{ rev.date }}
             </td>
             <td class="swh-log-entry-message swh-table-cell-text-overflow">
-              <a href="{{ rev.url }}">
-                {{ rev.message }}
-              </a>
+              {{ rev.message }}
             </td>
             <td class="swh-revision-log-entry-commit-date">
-              <a href="{{ rev.url }}">
-                {{ rev.commit_date }}
-              </a>
+              {{ rev.commit_date }}
             </td>
           </tr>
         {% endfor %}
