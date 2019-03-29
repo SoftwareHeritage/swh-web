@@ -35,10 +35,10 @@ function populateOriginSearchResultsTable(data, offset) {
     for (let i = localOffset; i < localOffset + perPage && i < data.length; ++i) {
       let elem = data[i];
       let browseUrl = Urls.browse_origin(elem.url);
-      let tableRow = `<tr id="origin-${elem.id}" class="swh-search-result-entry swh-tr-hover-highlight" data-href="${browseUrl}">`;
-      tableRow += `<td style="width: 120px;"><a href="${browseUrl}">${elem.type}</a></td>`;
+      let tableRow = `<tr id="origin-${elem.id}" class="swh-search-result-entry swh-tr-hover-highlight">`;
+      tableRow += `<td style="width: 120px;">${elem.type}</td>`;
       tableRow += `<td style="white-space: nowrap;"><a href="${browseUrl}">${elem.url}</a></td>`;
-      tableRow += `<td id="visit-status-origin-${elem.id}"><a href="${browseUrl}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></a></td>`;
+      tableRow += `<td id="visit-status-origin-${elem.id}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>`;
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
@@ -59,7 +59,6 @@ function populateOriginSearchResultsTable(data, offset) {
         });
     }
     fixTableRowsStyle();
-    swh.webapp.initTableRowLinks('tr.swh-search-result-entry');
   } else {
     $('#swh-origin-search-results').hide();
     $('#swh-no-result').text('No origins matching the search criteria were found.');
@@ -98,10 +97,16 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
     for (let i = 0; i < patternsArray.length; ++i) {
       patternsArray[i] = escapeStringRegexp(patternsArray[i]);
     }
-    let patternsPermut = [];
-    heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
-    let regex = patternsPermut.join('|');
-    baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
+    // url length must be less than 4096 for modern browsers
+    // assuming average word length, 6 is max patternArray.length
+    if (patternsArray.length < 7) {
+      let patternsPermut = [];
+      heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
+      let regex = patternsPermut.join('|');
+      baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
+    } else {
+      baseSearchUrl = Urls.browse_origin_search(patternsArray.join('.*')) + `?regexp=true`;
+    }
   }
 
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');

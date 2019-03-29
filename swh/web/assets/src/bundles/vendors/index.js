@@ -8,10 +8,11 @@
 // vendors bundles centralizing assets used in all swh-web applications
 
 // polyfills in order to use advanced js features (like Promise or fetch)
-// in older browsers
+// in browsers that do not support them
 import '@babel/polyfill';
 import 'whatwg-fetch/dist/fetch.umd';
 import 'url-search-params-polyfill';
+import 'elementsfrompoint-polyfill';
 
 // jquery and bootstrap
 import 'jquery';

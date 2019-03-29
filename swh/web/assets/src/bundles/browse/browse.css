@@ -130,20 +130,3 @@ td.swh-branch-message {
 td.swh-branch-date {
     min-width: 250px;
 }
-
-td.swh-branch-name a,
-td.swh-branch-message a,
-td.swh-branch-date a {
-    text-decoration: none;
-}
-
-td.swh-release-name a,
-td.swh-release-message a,
-td.swh-release-date a {
-    text-decoration: none;
-}
-
-tr.swh-directory-entry a,
-tr.swh-search-result-entry a {
-    text-decoration: none;
-}
