@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from unittest.mock import patch
 
 from swh.web.common.models import (
-    SaveAuthorizedOrigin, SaveUnauthorizedOrigin
+    SaveAuthorizedOrigin, SaveUnauthorizedOrigin, SaveOriginRequest
 )
 from swh.web.common.origin_save import can_save_origin
 from swh.web.common.models import (
@@ -214,3 +214,19 @@ class OriginSaveAdminTestCase(WebTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0]['save_request_status'],
                          SAVE_REQUEST_REJECTED)
+
+    def test_remove_save_request(self):
+        sor = SaveOriginRequest.objects.create(origin_type='git',
+                                               origin_url='https://wikipedia.com', # noqa
+                                               status=SAVE_REQUEST_PENDING)
+        self.assertEqual(SaveOriginRequest.objects.count(), 1)
+
+        remove_request_url = reverse('admin-origin-save-request-remove',
+                                     url_args={'sor_id': sor.id})
+
+        self.check_not_login(remove_request_url)
+
+        self.client.login(username=_user_name, password=_user_password)
+        response = self.client.post(remove_request_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(SaveOriginRequest.objects.count(), 0)

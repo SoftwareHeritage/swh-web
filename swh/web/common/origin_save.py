@@ -210,7 +210,8 @@ def _save_request_dict(save_request, task=None):
     if must_save:
         save_request.save()
 
-    return {'origin_type': save_request.origin_type,
+    return {'id': save_request.id,
+            'origin_type': save_request.origin_type,
             'origin_url': save_request.origin_url,
             'save_request_date': save_request.request_date.isoformat(),
             'save_request_status': save_request.status,

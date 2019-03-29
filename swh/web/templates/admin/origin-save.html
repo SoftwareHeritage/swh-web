@@ -47,6 +47,7 @@ See top-level LICENSE file for more information
         <table id="swh-origin-save-pending-requests" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
+              <th></th>
               <th>Request date</th>
               <th>Origin type</th>
               <th>Origin url</th>
@@ -54,7 +55,7 @@ See top-level LICENSE file for more information
           </thead>
         </table>
         <div class="row text-right mt-3">
-          <div class="col-md-8">
+          <div class="col-md-6">
           </div>
           <div class="col-md-2">
               <button class="btn btn-default" onclick="swh.admin.acceptOriginSaveRequest()">Accept selected</button>
@@ -62,12 +63,16 @@ See top-level LICENSE file for more information
           <div class="col-md-2">
             <button class="btn btn-default" onclick="swh.admin.rejectOriginSaveRequest()">Reject selected</button>
           </div>
+          <div class="col-md-2">
+              <button class="btn btn-default" onclick="swh.admin.removePendingOriginSaveRequest()">Remove selected</button>
+          </div>
         </div>
       </div>
       <div class="tab-pane fade" id="swh-save-requests-accepted" role="tabpanel" aria-labelledby="swh-save-requests-accepted-tab">
         <table id="swh-origin-save-accepted-requests" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
+              <th></th>
               <th>Request date</th>
               <th>Origin type</th>
               <th>Origin url</th>
@@ -75,17 +80,32 @@ See top-level LICENSE file for more information
             </tr>
           </thead>
         </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-10">
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-default" onclick="swh.admin.removeAcceptedOriginSaveRequest()">Remove selected</button>
+          </div>
+        </div>
       </div>
       <div class="tab-pane fade" id="swh-save-requests-rejected" role="tabpanel" aria-labelledby="swh-save-requests-rejected-tab">
         <table id="swh-origin-save-rejected-requests" class="table swh-table swh-table-striped" width="100%">
           <thead>
             <tr>
+              <th></th>
               <th>Request date</th>
               <th>Origin type</th>
               <th>Origin url</th>
             </tr>
           </thead>
         </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-10">
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-default" onclick="swh.admin.removeRejectedOriginSaveRequest()">Remove selected</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

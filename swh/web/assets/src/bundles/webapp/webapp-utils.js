@@ -1,5 +1,6 @@
 import objectFitImages from 'object-fit-images';
 import {Layout} from 'admin-lte';
+import {selectText} from 'utils/functions';
 
 let collapseSidebar = false;
 let previousSidebarState = localStorage.getItem('swh-sidebar-collapsed');
@@ -80,6 +81,47 @@ $(document).ready(() => {
   // reparent the modals to the top navigation div in order to be able
   // to display them
   $('.swh-browse-top-navigation').append($('.modal'));
+
+  let selectedCode = null;
+
+  function getCodeOrPreEltUnderPointer(e) {
+    let elts = document.elementsFromPoint(e.clientX, e.clientY);
+    for (let elt of elts) {
+      if (elt.nodeName === 'CODE' || elt.nodeName === 'PRE') {
+        return elt;
+      }
+    }
+    return null;
+  }
+
+  // click handler to set focus on code block for copy
+  $(document).click(e => {
+    selectedCode = getCodeOrPreEltUnderPointer(e);
+  });
+
+  function selectCode(event, selectedCode) {
+    if (selectedCode) {
+      let hljsLnCodeElts = $(selectedCode).find('.hljs-ln-code');
+      if (hljsLnCodeElts.length) {
+        selectText(hljsLnCodeElts[0], hljsLnCodeElts[hljsLnCodeElts.length - 1]);
+      } else {
+        selectText(selectedCode.firstChild, selectedCode.lastChild);
+      }
+      event.preventDefault();
+    }
+  }
+
+  // select the whole text of focused code block when user
+  // double clicks or hits Ctrl+A
+  $(document).dblclick(e => {
+    selectCode(e, getCodeOrPreEltUnderPointer(e));
+  });
+
+  $(document).keydown(e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+      selectCode(e, selectedCode);
+    }
+  });
 });
 
 export function initPage(page) {
@@ -128,14 +170,6 @@ export function setSwhObjectIcons(icons) {
 
 export function getSwhObjectIcon(swhObjectType) {
   return swhObjectIcons[swhObjectType];
-}
-
-export function initTableRowLinks(trSelector) {
-  $(trSelector).on('click', function() {
-    window.location = $(this).data('href');
-    return false;
-  });
-  $('td > a').on('click', function(e) { e.stopPropagation(); });
 }
 
 let reCaptchaActivated;

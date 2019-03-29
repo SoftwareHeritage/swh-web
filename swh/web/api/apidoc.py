@@ -255,6 +255,9 @@ class api_doc(object):  # noqa: N801
         noargs (boolean): set to True if the route has no arguments, and its
             result should be displayed anytime its documentation
             is requested. Default to False
+        need_params (boolean): specify the route requires query parameters
+            otherwise errors will occur. It enables to avoid displaying the
+            invalid response in its HTML documentation. Default to False.
         tags (list): Further information on api endpoints. Two values are
             possibly expected:
 
@@ -267,12 +270,13 @@ class api_doc(object):  # noqa: N801
         api_version (str): api version string
 
     """
-    def __init__(self, route, noargs=False, tags=[], handle_response=False,
-                 api_version='1'):
+    def __init__(self, route, noargs=False, need_params=False, tags=[],
+                 handle_response=False, api_version='1'):
         super().__init__()
         self.route = route
         self.urlpattern = '^' + api_version + route + '$'
         self.noargs = noargs
+        self.need_params = need_params
         self.tags = set(tags)
         self.handle_response = handle_response
 
@@ -306,7 +310,11 @@ class api_doc(object):  # noqa: N801
             try:
                 response = f(request, **kwargs)
             except Exception as exc:
-                return error_response(request, exc, doc_data)
+                if request.accepted_media_type == 'text/html' and \
+                        self.need_params and not request.query_params:
+                    response = None
+                else:
+                    return error_response(request, exc, doc_data)
 
             if self.handle_response:
                 return response
