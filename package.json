@@ -97,5 +97,8 @@
       "autoprefixer": {},
       "postcss-normalize": {}
     }
+  },
+  "dependencies": {
+    "showdown-xss-filter": "^0.2.0"
   }
 }

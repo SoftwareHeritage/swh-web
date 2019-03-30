@@ -1995,7 +1995,7 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@2:
+commander@2, commander@^2.9.0:
   version "2.19.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.19.0.tgz#f6198aa84e5b83c46054b94ddedbfed5ee9ff12a"
   integrity sha512-6tvAOO+D6OENvRAh524Dh9jcfKTYDQAqvqezbCW82xj5X0pSrcpxtvRKHLG0yBY6SD7PSDrJaj+0AiOcKVd1Xg==
@@ -2396,6 +2396,11 @@ cssesc@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
   integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
+
+cssfilter@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/cssfilter/-/cssfilter-0.0.8.tgz#6564caccba8a76dd9b4b920668b9fb7fda50e54c"
+  integrity sha1-ZWTKzLqKdt2bS5IGaLn7f9pQ5Uw=
 
 cssnano-preset-default@^4.0.7:
   version "4.0.7"
@@ -7868,6 +7873,13 @@ shebang-regex@^1.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-1.0.0.tgz#da42f49740c0b42db2ca9728571cb190c98efea3"
   integrity sha1-2kL0l0DAtC2yypcoVxyxkMmO/qM=
 
+showdown-xss-filter@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/showdown-xss-filter/-/showdown-xss-filter-0.2.0.tgz#39857bae56d6184979f26876b187bb87e9f4f04c"
+  integrity sha1-OYV7rlbWGEl58mh2sYe7h+n08Ew=
+  dependencies:
+    xss "0.2.x"
+
 showdown@^1.9.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/showdown/-/showdown-1.9.0.tgz#d49d2a0b6db21b7c2e96ef855f7b3b2a28ef46f4"
@@ -9268,6 +9280,14 @@ xregexp@4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/xregexp/-/xregexp-4.0.0.tgz#e698189de49dd2a18cc5687b05e17c8e43943020"
   integrity sha512-PHyM+sQouu7xspQQwELlGwwd05mXUFqwFYfqPO0cC7x4fxyHnnuetmQr6CjJiafIDoH4MogHb9dOoJzR/Y4rFg==
+
+xss@0.2.x:
+  version "0.2.18"
+  resolved "https://registry.yarnpkg.com/xss/-/xss-0.2.18.tgz#6df5fb5ca28bdc51e78624ff63f19e13ebd73bab"
+  integrity sha1-bfX7XKKL3FHnhiT/Y/GeE+vXO6s=
+  dependencies:
+    commander "^2.9.0"
+    cssfilter "^0.0.8"
 
 xtend@^4.0.0, xtend@^4.0.1, xtend@~4.0.1:
   version "4.0.1"
