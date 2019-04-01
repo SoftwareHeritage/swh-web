@@ -70,6 +70,7 @@ export function initOriginSave() {
       .DataTable({
         serverSide: true,
         ajax: Urls.browse_origin_save_requests_list('all'),
+        searchDelay: 1000,
         columns: [
           {
             data: 'save_request_date',

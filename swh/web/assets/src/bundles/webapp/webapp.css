@@ -367,6 +367,7 @@ ul.nav-sidebar a {
 .swh-id-option {
     display: inline-block;
     margin-right: 5px;
+    line-height: 1rem;
 }
 
 .nav-pills .nav-link:not(.active):hover {
