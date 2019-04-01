@@ -114,7 +114,9 @@ $(document).ready(() => {
   // select the whole text of focused code block when user
   // double clicks or hits Ctrl+A
   $(document).dblclick(e => {
-    selectCode(e, getCodeOrPreEltUnderPointer(e));
+    if ((e.ctrlKey || e.metaKey)) {
+      selectCode(e, getCodeOrPreEltUnderPointer(e));
+    }
   });
 
   $(document).keydown(e => {
