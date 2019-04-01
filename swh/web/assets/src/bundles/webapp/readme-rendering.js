@@ -10,9 +10,10 @@ import {handleFetchError} from 'utils/functions';
 export async function renderMarkdown(domElt, markdownDocUrl) {
 
   let showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
+  let xssFilter = require('showdown-xss-filter');
 
   $(document).ready(() => {
-    let converter = new showdown.Converter({tables: true});
+    let converter = new showdown.Converter({tables: true, extensions: [xssFilter]});
     fetch(markdownDocUrl)
       .then(handleFetchError)
       .then(response => response.text())
@@ -71,7 +72,9 @@ export function renderTxt(domElt, txtDocUrl) {
           renderOrgData(domElt, data.replace(orgMode, ''));
         } else {
           $(domElt).addClass('swh-readme-txt');
-          $(domElt).html(`<pre>${data}</pre>`);
+          $(domElt)
+            .html('')
+            .append($('<pre></pre>').text(data));
         }
       })
       .catch(() => {
