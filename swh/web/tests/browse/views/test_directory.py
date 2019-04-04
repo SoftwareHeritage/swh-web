@@ -116,3 +116,16 @@ class SwhBrowseDirectoryTest(WebTestCase):
         resp = self.client.get(dir_url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('browse/error.html')
+
+    @given(directory())
+    def test_directory_uppercase(self, directory):
+        url = reverse('browse-directory-uppercase-checksum',
+                      url_args={'sha1_git': directory.upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('browse-directory',
+                               url_args={'sha1_git': directory})
+
+        self.assertEqual(resp['location'], redirect_url)

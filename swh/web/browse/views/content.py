@@ -27,8 +27,9 @@ from swh.web.browse.utils import (
 from swh.web.browse.browseurls import browse_route
 
 
-@browse_route(r'content/(?P<query_string>.+)/raw/',
-              view_name='browse-content-raw')
+@browse_route(r'content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+.)/raw/',
+              view_name='browse-content-raw',
+              checksum_args=['query_string'])
 def content_raw(request, query_string):
     """Django view that produces a raw display of a content identified
     by its hash value.
@@ -162,8 +163,9 @@ def _contents_diff(request, from_query_string, to_query_string):
     return HttpResponse(diff_data_json, content_type='application/json')
 
 
-@browse_route(r'content/(?P<query_string>.+)/',
-              view_name='browse-content')
+@browse_route(r'content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+.)/',
+              view_name='browse-content',
+              checksum_args=['query_string'])
 def content_display(request, query_string):
     """Django view that produces an HTML display of a content identified
     by its hash value.
