@@ -373,3 +373,16 @@ class ContentApiTestCase(WebTestCase, APITestCase):
             ],
             'search_stats': {'nbfiles': 1, 'pct': 0.0}
         })
+
+    @given(content())
+    def test_api_content_uppercase(self, content):
+        url = reverse('api-content-uppercase-checksum',
+                      url_args={'q': content['sha1'].upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('api-content',
+                               url_args={'q': content['sha1']})
+
+        self.assertEqual(resp['location'], redirect_url)

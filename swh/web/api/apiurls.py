@@ -56,12 +56,14 @@ class api_route(object):  # noqa: N801
     def __init__(self, url_pattern=None, view_name=None,
                  methods=['GET', 'HEAD', 'OPTIONS'],
                  throttle_scope='swh_api',
-                 api_version='1'):
+                 api_version='1',
+                 checksum_args=None):
         super().__init__()
         self.url_pattern = '^' + api_version + url_pattern + '$'
         self.view_name = view_name
         self.methods = methods
         self.throttle_scope = throttle_scope
+        self.checksum_args = checksum_args
 
     def __call__(self, f):
         # create a DRF view from the wrapped function
@@ -76,4 +78,9 @@ class api_route(object):  # noqa: N801
         # register the route and its view in the endpoints index
         APIUrls.add_url_pattern(self.url_pattern, api_view_f,
                                 self.view_name)
+
+        if self.checksum_args:
+            APIUrls.add_redirect_for_checksum_args(self.view_name,
+                                                   [self.url_pattern],
+                                                   self.checksum_args)
         return f

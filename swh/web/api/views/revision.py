@@ -271,7 +271,8 @@ def api_revision_with_origin(request, origin_id,
         enrich_fn=utils.enrich_revision)
 
 
-@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-revision')
+@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-revision',
+           checksum_args=['sha1_git'])
 @api_doc('/revision/')
 def api_revision(request, sha1_git):
     """
@@ -327,7 +328,7 @@ def api_revision(request, sha1_git):
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/raw/',
-           'api-revision-raw-message')
+           'api-revision-raw-message', checksum_args=['sha1_git'])
 @api_doc('/revision/raw/', tags=['hidden'], handle_response=True)
 def api_revision_raw_message(request, sha1_git):
     """Return the raw data of the message of revision identified by sha1_git
@@ -341,9 +342,9 @@ def api_revision_raw_message(request, sha1_git):
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/directory/',
-           'api-revision-directory')
+           'api-revision-directory', checksum_args=['sha1_git'])
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/directory/(?P<dir_path>.+)/',
-           'api-revision-directory')
+           'api-revision-directory', checksum_args=['sha1_git'])
 @api_doc('/revision/directory/')
 def api_revision_directory(request, sha1_git,
                            dir_path=None,
@@ -386,10 +387,11 @@ def api_revision_directory(request, sha1_git,
                                   with_data=with_data)
 
 
-@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/log/', 'api-revision-log')
+@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/log/', 'api-revision-log',
+           checksum_args=['sha1_git'])
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)'
-           r'/prev/(?P<prev_sha1s>[0-9a-f/]+)/log/',
-           'api-revision-log')
+           r'/prev/(?P<prev_sha1s>[0-9a-f]*/*)/log/',
+           'api-revision-log', checksum_args=['sha1_git', 'prev_sha1s'])
 @api_doc('/revision/log/')
 def api_revision_log(request, sha1_git, prev_sha1s=None):
     """
