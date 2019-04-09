@@ -40,6 +40,7 @@ the
   SHA256). Note that content objects are nameless; their names are
   context-dependent and stored as part of directory entries (see below).<br />
   *Also known as:* "blob"
+  * Example: `curl -i https://archive.softwareheritage.org/api/1/content/d9eb5b70855e76431bc5797dd65956315ae5ffb0/`
 - **Directory**: a list of directory entries, where each entry can point to
   content objects ("file entries"), revisions ("revision entries"), or
   transitively to other directories ("directory entries"). All entries are
