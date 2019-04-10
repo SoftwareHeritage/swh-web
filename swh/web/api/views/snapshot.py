@@ -12,7 +12,8 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-snapshot')
+@api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-snapshot',
+           checksum_args=['snapshot_id'])
 @api_doc('/snapshot/')
 def api_snapshot(request, snapshot_id):
     """

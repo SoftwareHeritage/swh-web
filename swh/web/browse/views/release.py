@@ -19,7 +19,8 @@ from swh.web.browse.utils import (
 
 
 @browse_route(r'release/(?P<sha1_git>[0-9a-f]+)/',
-              view_name='browse-release')
+              view_name='browse-release',
+              checksum_args=['sha1_git'])
 def release_browse(request, sha1_git):
     """
     Django view that produces an HTML display of a release

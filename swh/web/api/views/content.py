@@ -16,7 +16,8 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/content/(?P<q>.+)/filetype/', 'api-content-filetype')
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/filetype/',
+           'api-content-filetype', checksum_args=['q'])
 @api_doc('/content/filetype/')
 def api_content_filetype(request, q):
     """
@@ -60,7 +61,8 @@ def api_content_filetype(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/language/', 'api-content-language')
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/language/',
+           'api-content-language', checksum_args=['q'])
 @api_doc('/content/language/')
 def api_content_language(request, q):
     """
@@ -103,7 +105,8 @@ def api_content_language(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/license/', 'api-content-license')
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/license/',
+           'api-content-license', checksum_args=['q'])
 @api_doc('/content/license/')
 def api_content_license(request, q):
     """
@@ -146,7 +149,7 @@ def api_content_license(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/ctags/', 'api-content-ctags')
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/ctags/', 'api-content-ctags')
 @api_doc('/content/ctags/', tags=['hidden'])
 def api_content_ctags(request, q):
     """
@@ -159,7 +162,8 @@ def api_content_ctags(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>.+)/raw/', 'api-content-raw')
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/raw/', 'api-content-raw',
+           checksum_args=['q'])
 @api_doc('/content/raw/', handle_response=True)
 def api_content_raw(request, q):
     """
@@ -324,7 +328,8 @@ def api_check_content_known(request, q=None):
     return response
 
 
-@api_route(r'/content/(?P<q>.+)/', 'api-content')
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/', 'api-content',
+           checksum_args=['q'])
 @api_doc('/content/')
 def api_content_metadata(request, q):
     """

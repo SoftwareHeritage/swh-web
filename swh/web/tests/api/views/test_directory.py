@@ -74,6 +74,19 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
             'reason': ('Directory entry with path %s from %s not found'
                        % (path, directory))})
 
+    @given(directory())
+    def test_api_directory_uppercase(self, directory):
+        url = reverse('api-directory-uppercase-checksum',
+                      url_args={'sha1_git': directory.upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('api-directory',
+                               url_args={'sha1_git': directory})
+
+        self.assertEqual(resp['location'], redirect_url)
+
     @classmethod
     def _enrich_dir_data(cls, dir_data):
         if dir_data['type'] == 'file':
