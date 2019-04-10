@@ -158,3 +158,16 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
                         _get_branch_url(alias_target_type, alias_target)
 
         return snapshot
+
+    @given(snapshot())
+    def test_api_snapshot_uppercase(self, snapshot):
+        url = reverse('api-snapshot-uppercase-checksum',
+                      url_args={'snapshot_id': snapshot.upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('api-snapshot-uppercase-checksum',
+                               url_args={'snapshot_id': snapshot})
+
+        self.assertEqual(resp['location'], redirect_url)

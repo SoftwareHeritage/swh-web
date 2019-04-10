@@ -230,7 +230,7 @@ export function initOriginSearch() {
     if (query) {
       $('#origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);
-      $('#swh-search-origins-with-content').prop('checked', withContent);
+      $('#swh-filter-empty-visits').prop('checked', withContent);
       $('#swh-search-origin-metadata').prop('checked', searchMetadata);
       doSearch();
     }

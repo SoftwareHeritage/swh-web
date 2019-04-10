@@ -109,3 +109,16 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
             'exception': 'NotFoundExc',
             'reason': 'Release with sha1_git %s not found.' % unknown_release
         })
+
+    @given(release())
+    def test_api_release_uppercase(self, release):
+        url = reverse('api-release-uppercase-checksum',
+                      url_args={'sha1_git': release.upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('api-release-uppercase-checksum',
+                               url_args={'sha1_git': release})
+
+        self.assertEqual(resp['location'], redirect_url)

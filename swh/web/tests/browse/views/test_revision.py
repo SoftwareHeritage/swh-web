@@ -247,3 +247,16 @@ class SwhBrowseRevisionTest(WebTestCase):
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'the origin mentioned in your request'
                                   ' appears broken', status_code=404)
+
+    @given(revision())
+    def test_revision_uppercase(self, revision):
+        url = reverse('browse-revision-uppercase-checksum',
+                      url_args={'sha1_git': revision.upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('browse-revision',
+                               url_args={'sha1_git': revision})
+
+        self.assertEqual(resp['location'], redirect_url)

@@ -24,9 +24,10 @@ class browse_route(object):  # noqa: N801
            reverse the url
     """ # noqa
 
-    def __init__(self, *url_patterns, view_name=None):
+    def __init__(self, *url_patterns, view_name=None, checksum_args=None):
         super().__init__()
         self.url_patterns = []
+        self.checksum_args = checksum_args
         for url_pattern in url_patterns:
             self.url_patterns.append('^' + url_pattern + '$')
         self.view_name = view_name
@@ -35,4 +36,10 @@ class browse_route(object):  # noqa: N801
         # register the route and its view in the browse endpoints index
         for url_pattern in self.url_patterns:
             BrowseUrls.add_url_pattern(url_pattern, f, self.view_name)
+
+        if self.checksum_args:
+            BrowseUrls.add_redirect_for_checksum_args(self.view_name,
+                                                      self.url_patterns,
+                                                      self.checksum_args)
+
         return f
