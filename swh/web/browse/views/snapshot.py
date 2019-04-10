@@ -17,7 +17,8 @@ from .utils.snapshot_context import (
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/',
-              view_name='browse-snapshot')
+              view_name='browse-snapshot',
+              checksum_args=['snapshot_id'])
 def snapshot_browse(request, snapshot_id):
     """Django view for browsing the content of a snapshot.
 
@@ -31,7 +32,8 @@ def snapshot_browse(request, snapshot_id):
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/directory/',
               r'snapshot/(?P<snapshot_id>[0-9a-f]+)/directory/(?P<path>.+)/',
-              view_name='browse-snapshot-directory')
+              view_name='browse-snapshot-directory',
+              checksum_args=['snapshot_id'])
 def snapshot_directory_browse(request, snapshot_id, path=None):
     """Django view for browsing the content of a directory collected
     in a snapshot.
@@ -48,7 +50,8 @@ def snapshot_directory_browse(request, snapshot_id, path=None):
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/content/(?P<path>.+)/',
-              view_name='browse-snapshot-content')
+              view_name='browse-snapshot-content',
+              checksum_args=['snapshot_id'])
 def snapshot_content_browse(request, snapshot_id, path):
     """Django view that produces an HTML display of a content
     collected in a snapshot.
@@ -59,7 +62,8 @@ def snapshot_content_browse(request, snapshot_id, path):
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/log/',
-              view_name='browse-snapshot-log')
+              view_name='browse-snapshot-log',
+              checksum_args=['snapshot_id'])
 def snapshot_log_browse(request, snapshot_id):
     """Django view that produces an HTML display of revisions history (aka
     the commit log) collected in a snapshot.
@@ -70,7 +74,8 @@ def snapshot_log_browse(request, snapshot_id):
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/branches/',
-              view_name='browse-snapshot-branches')
+              view_name='browse-snapshot-branches',
+              checksum_args=['snapshot_id'])
 def snapshot_branches_browse(request, snapshot_id):
     """Django view that produces an HTML display of the list of releases
     collected in a snapshot.
@@ -81,7 +86,8 @@ def snapshot_branches_browse(request, snapshot_id):
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/releases/',
-              view_name='browse-snapshot-releases')
+              view_name='browse-snapshot-releases',
+              checksum_args=['snapshot_id'])
 def snapshot_releases_browse(request, snapshot_id):
     """Django view that produces an HTML display of the list of releases
     collected in a snapshot.

@@ -137,7 +137,8 @@ def _gen_revision_changes_list(revision, changes, snapshot_context):
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/diff/',
-              view_name='diff-revision')
+              view_name='diff-revision',
+              checksum_args=['sha1_git'])
 def _revision_diff(request, sha1_git):
     """
     Browse internal endpoint to compute revision diff
@@ -175,7 +176,8 @@ NB_LOG_ENTRIES = 100
 
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/log/',
-              view_name='browse-revision-log')
+              view_name='browse-revision-log',
+              checksum_args=['sha1_git'])
 def revision_log_browse(request, sha1_git):
     """
     Django view that produces an HTML display of the history
@@ -254,7 +256,8 @@ def revision_log_browse(request, sha1_git):
 
 @browse_route(r'revision/(?P<sha1_git>[0-9a-f]+)/',
               r'revision/(?P<sha1_git>[0-9a-f]+)/(?P<extra_path>.+)/',
-              view_name='browse-revision')
+              view_name='browse-revision',
+              checksum_args=['sha1_git'])
 def revision_browse(request, sha1_git, extra_path=None):
     """
     Django view that produces an HTML display of a revision

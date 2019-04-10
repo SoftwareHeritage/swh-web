@@ -348,3 +348,15 @@ class SwhBrowseContentTest(WebTestCase):
 
         return prepare_content_for_display(content_data, mime_type,
                                            content['path'])
+
+    @given(content())
+    def test_content_uppercase(self, content):
+        url = reverse('browse-content-uppercase-checksum',
+                      url_args={'query_string': content['sha1'].upper()})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('browse-content',
+                               url_args={'query_string': content['sha1']})
+
+        self.assertEqual(resp['location'], redirect_url)

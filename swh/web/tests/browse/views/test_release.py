@@ -98,3 +98,16 @@ class SwhBrowseReleaseTest(WebTestCase):
                                  url_args={'swh_id': swh_rel_id})
         self.assertContains(resp, swh_rel_id)
         self.assertContains(resp, swh_rel_id_url)
+
+    @given(release())
+    def test_release_uppercase(self, release):
+        url = reverse('browse-release-uppercase-checksum',
+                      url_args={'sha1_git': release.upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('browse-release',
+                               url_args={'sha1_git': release})
+
+        self.assertEqual(resp['location'], redirect_url)

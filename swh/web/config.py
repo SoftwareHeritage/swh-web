@@ -6,11 +6,13 @@
 import os
 
 from swh.core import config
-from swh.storage import get_storage
 from swh.indexer.storage import get_indexer_storage
-from swh.vault import get_vault
 from swh.scheduler import get_scheduler
+from swh.storage import get_storage
+from swh.vault import get_vault
+from swh.web import settings
 
+SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 DEFAULT_CONFIG = {
     'allowed_hosts': ('list', []),
@@ -81,6 +83,7 @@ DEFAULT_CONFIG = {
         'site_key': '',
         'private_key': ''
     }),
+    'development_db': ('string', os.path.join(SETTINGS_DIR, 'db.sqlite3')),
     'production_db': ('string', '/var/lib/swh/web.sqlite3'),
     'deposit': ('dict', {
         'private_api_url': 'https://deposit.softwareheritage.org/1/private/',

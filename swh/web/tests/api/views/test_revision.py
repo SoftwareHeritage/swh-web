@@ -524,3 +524,16 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         revision['parents'] = parents_id_url
 
         return revision
+
+    @given(revision())
+    def test_api_revision_uppercase(self, revision):
+        url = reverse('api-revision-uppercase-checksum',
+                      url_args={'sha1_git': revision.upper()})
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        redirect_url = reverse('api-revision',
+                               url_args={'sha1_git': revision})
+
+        self.assertEqual(resp['location'], redirect_url)
