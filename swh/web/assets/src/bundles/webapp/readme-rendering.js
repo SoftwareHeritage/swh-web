@@ -1,25 +1,39 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
+import DOMPurify from 'dompurify';
+
 import {handleFetchError} from 'utils/functions';
+
+DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
+  if (node.nodeName === 'IMG' && data.attrName === 'src') {
+    // remove leading slash from image src to fix rendering
+    if (data.attrValue.startsWith('/')) {
+      data.attrValue = data.attrValue.slice(1);
+    }
+  }
+});
+
+export function filterXSS(html) {
+  return DOMPurify.sanitize(html);
+}
 
 export async function renderMarkdown(domElt, markdownDocUrl) {
 
   let showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
-  let xssFilter = require('showdown-xss-filter');
 
   $(document).ready(() => {
-    let converter = new showdown.Converter({tables: true, extensions: [xssFilter]});
+    let converter = new showdown.Converter({tables: true});
     fetch(markdownDocUrl)
       .then(handleFetchError)
       .then(response => response.text())
       .then(data => {
         $(domElt).addClass('swh-showdown');
-        $(domElt).html(converter.makeHtml(data));
+        $(domElt).html(filterXSS(converter.makeHtml(data)));
       })
       .catch(() => {
         $(domElt).text('Readme bytes are not available');
@@ -36,7 +50,7 @@ export async function renderOrgData(domElt, orgDocData) {
   let orgDocument = parser.parse(orgDocData, {toc: false});
   let orgHTMLDocument = orgDocument.convert(org.ConverterHTML, {});
   $(domElt).addClass('swh-org');
-  $(domElt).html(orgHTMLDocument.toString());
+  $(domElt).html(filterXSS(orgHTMLDocument.toString()));
   // remove toc and section numbers to get consistent
   // with other readme renderings
   $('.swh-org ul').first().remove();
