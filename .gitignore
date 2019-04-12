@@ -3,7 +3,8 @@
 *~
 \#*
 .\#*
-.coverage
+/.coverage
+/.coverage.*
 .eggs/
 resources/test/
 __pycache__
