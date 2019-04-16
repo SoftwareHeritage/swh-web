@@ -11,6 +11,7 @@ from collections import defaultdict
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.from_disk import DentryPerms
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
@@ -296,7 +297,6 @@ class ServiceTestCase(WebTestCase):
             self, revision, unknown_revision):
         sha1_git_root = unknown_revision
         sha1_git = revision
-
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_revision_with_context(sha1_git_root, sha1_git)
         self.assertIn('Revision root %s not found' % sha1_git_root,
@@ -341,9 +341,63 @@ class ServiceTestCase(WebTestCase):
         self.assertIn('Revision %s not found' % unknown_revision,
                       cm.exception.args[0])
 
-    @given(revision())
-    def test_lookup_directory_with_revision_ko_path_to_nowhere(self, revision):
+    @given(unknown_content(), unknown_revision(), unknown_directory())
+    def test_lookup_directory_with_revision_unknown_content(
+            self, unknown_content, unknown_revision, unknown_directory):
 
+        dir_path = 'README.md'
+        # Create a revision that points to a directory
+        # Which points to unknown content
+        revision = {
+            'author': {
+                'name': b'abcd',
+                'email': b'abcd@company.org',
+                'fullname': b'abcd abcd'
+            },
+            'committer': {
+                'email': b'aaaa@company.org',
+                'fullname': b'aaaa aaa',
+                'name': b'aaa'
+            },
+            'committer_date': {
+                'negative_utc': False,
+                'offset': 0,
+                'timestamp': 1437511651
+            },
+            'date': {
+                'negative_utc': False,
+                'offset': 0,
+                'timestamp': 1437511651
+            },
+            'message': b'bleh',
+            'metadata': [],
+            'parents': [],
+            'synthetic': False,
+            'type': 'file',
+            'id': hash_to_bytes(unknown_revision),
+            'directory': hash_to_bytes(unknown_directory)
+        }
+        # A directory that points to unknown content
+        dir = {
+            'id': hash_to_bytes(unknown_directory),
+            'entries': [{
+                'name': bytes(dir_path.encode('utf-8')),
+                'type': 'file',
+                'target': hash_to_bytes(unknown_content['sha1_git']),
+                'perms': DentryPerms.content
+            }]
+        }
+        # Add the directory and revision in mem
+        self.storage.directory_add([dir])
+        self.storage.revision_add([revision])
+        with self.assertRaises(NotFoundExc) as cm:
+            service.lookup_directory_with_revision(unknown_revision, dir_path)
+        self.assertIn('Content not found for revision %s' % unknown_revision,
+                      cm.exception.args[0])
+
+    @given(revision())
+    def test_lookup_directory_with_revision_ko_path_to_nowhere(
+            self, revision):
         invalid_path = 'path/to/something/unknown'
         with self.assertRaises(NotFoundExc) as cm:
             service.lookup_directory_with_revision(revision, invalid_path)
