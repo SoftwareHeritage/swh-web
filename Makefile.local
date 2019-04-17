@@ -1,4 +1,5 @@
 TEST_DIRS := ./swh/web/tests
+TESTFAST_FLAGS = --hypothesis-profile=swh-web-fast
 YARN ?= yarn
 
 yarn-install: package.json
@@ -43,5 +44,8 @@ run-django-server-prod: run-migrations-prod
 
 run-gunicorn-server: run-migrations
 	gunicorn3 -b 127.0.0.1:5004 swh.web.wsgi
+
+test-fast:
+	$(TEST) $(TESTFAST_FLAGS) $(TEST_DIRS)
 
 
