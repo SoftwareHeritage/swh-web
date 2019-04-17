@@ -78,10 +78,6 @@ class SwhBrowseRevisionTest(WebTestCase):
         revision_data = self.revision_get(revision)
         dir_id = revision_data['directory']
 
-        origin_directory_url = reverse('browse-origin-directory',
-                                       url_args={'origin_url': origin['url']},
-                                       query_params={'revision': revision})
-
         origin_revision_log_url = reverse('browse-origin-log',
                                           url_args={'origin_url': origin['url']}, # noqa
                                           query_params={'revision': revision})
@@ -91,8 +87,6 @@ class SwhBrowseRevisionTest(WebTestCase):
                       query_params={'origin': origin['url']})
 
         resp = self.client.get(url)
-
-        self.assertContains(resp, origin_directory_url)
 
         self.assertContains(resp, origin_revision_log_url)
 

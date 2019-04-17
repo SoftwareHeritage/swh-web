@@ -18,7 +18,8 @@ from swh.web.browse.utils import (
     gen_revision_link, request_content, gen_content_link,
     prepare_content_for_display, content_display_max_size,
     format_log_entries, gen_revision_log_link, gen_link,
-    get_readme_to_display, get_swh_persistent_ids, process_snapshot_branches
+    get_readme_to_display, get_swh_persistent_ids,
+    gen_snapshot_link, process_snapshot_branches
 )
 
 from swh.web.common import service
@@ -327,7 +328,6 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
     nb_files = None
     nb_dirs = None
-    sum_file_sizes = None
     dir_path = None
     if root_sha1_git:
         nb_files = len(files)
@@ -335,42 +335,26 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         sum_file_sizes = filesizeformat(sum_file_sizes)
         dir_path = '/' + path
 
-    browse_dir_link = \
-        gen_directory_link(sha1_git, link_text='Browse',
-                           link_attrs={'class': 'btn btn-default btn-sm',
-                                       'role': 'button'})
+    browse_dir_link = gen_directory_link(sha1_git)
 
-    browse_rev_link = \
-        gen_revision_link(revision_id,
-                          snapshot_context=snapshot_context,
-                          link_text='Browse',
-                          link_attrs={'class': 'btn btn-default btn-sm',
-                                      'role': 'button'})
+    browse_rev_link = gen_revision_link(revision_id)
+    browse_snp_link = gen_snapshot_link(snapshot_id)
 
-    dir_metadata = {'id': sha1_git,
+    dir_metadata = {'directory': sha1_git,
                     'context-independent directory': browse_dir_link,
                     'number of regular files': nb_files,
                     'number of subdirectories': nb_dirs,
                     'sum of regular file sizes': sum_file_sizes,
                     'path': dir_path,
-                    'revision id': revision_id,
-                    'revision': browse_rev_link,
-                    'snapshot id': snapshot_id}
+                    'revision': revision_id,
+                    'context-independent revision': browse_rev_link,
+                    'snapshot': snapshot_id,
+                    'context-independent snapshot': browse_snp_link}
 
     if origin_info:
-        dir_metadata['origin id'] = origin_info['id']
         dir_metadata['origin type'] = origin_info['type']
         dir_metadata['origin url'] = origin_info['url']
         dir_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
-        dir_metadata['origin visit id'] = visit_info['visit']
-        snapshot_context_url = reverse('browse-snapshot-directory',
-                                       url_args={'snapshot_id': snapshot_id},
-                                       query_params=request.GET)
-        browse_snapshot_link = \
-            gen_link(snapshot_context_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-default btn-sm',
-                                 'role': 'button'})
-        dir_metadata['snapshot context'] = browse_snapshot_link
 
     vault_cooking = {
         'directory_context': True,
@@ -437,6 +421,9 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         sha1_git = None
         query_string = None
         content_data = None
+        split_path = path.split('/')
+        filename = split_path[-1]
+        filepath = path[:-len(filename)]
         if root_sha1_git:
             content_info = service.lookup_directory_with_path(root_sha1_git,
                                                               path)
@@ -444,6 +431,13 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
             query_string = 'sha1_git:' + sha1_git
             content_data = request_content(query_string,
                                            raise_if_unavailable=False)
+
+            if filepath:
+                dir_info = service.lookup_directory_with_path(root_sha1_git,
+                                                              filepath)
+                directory_id = dir_info['target']
+            else:
+                directory_id = root_sha1_git
 
     except Exception as exc:
         return handle_view_exception(request, exc)
@@ -466,16 +460,11 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         language = content_display_data['language']
         mimetype = content_display_data['mimetype']
 
-    filename = None
-    path_info = None
-
     browse_view_name = 'browse-' + swh_type + '-directory'
 
     breadcrumbs = []
 
-    split_path = path.split('/')
-    filename = split_path[-1]
-    path_info = gen_path_info(path[:-len(filename)])
+    path_info = gen_path_info(filepath)
     if root_sha1_git:
         breadcrumbs.append({'name': root_sha1_git[:7],
                             'url': reverse(browse_view_name,
@@ -492,10 +481,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     breadcrumbs.append({'name': filename,
                         'url': None})
 
-    browse_content_link = \
-        gen_content_link(sha1_git, link_text='Browse',
-                         link_attrs={'class': 'btn btn-default btn-sm',
-                                     'role': 'button'})
+    browse_content_link = gen_content_link(sha1_git)
 
     content_raw_url = None
     if query_string:
@@ -503,20 +489,19 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                                   url_args={'query_string': query_string},
                                   query_params={'filename': filename})
 
-    browse_rev_link = \
-        gen_revision_link(revision_id,
-                          snapshot_context=snapshot_context,
-                          link_text='Browse',
-                          link_attrs={'class': 'btn btn-default btn-sm',
-                                      'role': 'button'})
+    browse_rev_link = gen_revision_link(revision_id)
+
+    browse_dir_link = gen_directory_link(directory_id)
 
     content_metadata = {
         'context-independent content': browse_content_link,
         'path': None,
         'filename': None,
-        'revision id': revision_id,
-        'revision': browse_rev_link,
-        'snapshot id': snapshot_id
+        'directory': directory_id,
+        'context-independent directory': browse_dir_link,
+        'revision': revision_id,
+        'context-independent revision': browse_rev_link,
+        'snapshot': snapshot_id
     }
 
     cnt_sha1_git = None
@@ -525,20 +510,20 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     error_description = ''
     error_message = ''
     if content_data:
-        content_metadata['sha1 checksum'] = \
+        content_metadata['sha1'] = \
             content_data['checksums']['sha1']
-        content_metadata['sha1_git checksum'] = \
+        content_metadata['sha1_git'] = \
             content_data['checksums']['sha1_git']
-        content_metadata['sha256 checksum'] = \
+        content_metadata['sha256'] = \
             content_data['checksums']['sha256']
-        content_metadata['blake2s256 checksum'] = \
+        content_metadata['blake2s256'] = \
             content_data['checksums']['blake2s256']
-        content_metadata['mime type'] = content_data['mimetype']
+        content_metadata['mimetype'] = content_data['mimetype']
         content_metadata['encoding'] = content_data['encoding']
         content_metadata['size'] = filesizeformat(content_data['length'])
         content_metadata['language'] = content_data['language']
         content_metadata['licenses'] = content_data['licenses']
-        content_metadata['path'] = '/' + path[:-len(filename)]
+        content_metadata['path'] = '/' + filepath
         content_metadata['filename'] = filename
 
         cnt_sha1_git = content_data['checksums']['sha1_git']
@@ -548,20 +533,15 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         error_description = content_data['error_description']
 
     if origin_info:
-        content_metadata['origin id'] = origin_info['id']
         content_metadata['origin type'] = origin_info['type']
         content_metadata['origin url'] = origin_info['url']
         content_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
-        content_metadata['origin visit id'] = visit_info['visit']
         browse_snapshot_url = reverse('browse-snapshot-content',
                                       url_args={'snapshot_id': snapshot_id,
                                                 'path': path},
                                       query_params=request.GET)
-        browse_snapshot_link = \
-            gen_link(browse_snapshot_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-default btn-sm',
-                                 'role': 'button'})
-        content_metadata['snapshot context'] = browse_snapshot_link
+        browse_snapshot_link = gen_link(browse_snapshot_url)
+        content_metadata['context-independent snapshot'] = browse_snapshot_link
 
     swh_objects = [{'type': 'content',
                     'id': cnt_sha1_git},
@@ -686,30 +666,23 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     revision_log_data = format_log_entries(revision_log, per_page,
                                            snapshot_context)
 
-    browse_log_link = \
-        gen_revision_log_link(revision_id, link_text='Browse',
-                              link_attrs={'class': 'btn btn-default btn-sm',
-                                          'role': 'button'})
+    browse_rev_link = gen_revision_link(revision_id)
+
+    browse_log_link = gen_revision_log_link(revision_id)
+
+    browse_snp_link = gen_snapshot_link(snapshot_id)
 
     revision_metadata = {
+        'context-independent revision': browse_rev_link,
         'context-independent revision history': browse_log_link,
-        'snapshot id': snapshot_id
+        'context-independent snapshot': browse_snp_link,
+        'snapshot': snapshot_id
     }
 
     if origin_info:
-        revision_metadata['origin id'] = origin_info['id']
         revision_metadata['origin type'] = origin_info['type']
         revision_metadata['origin url'] = origin_info['url']
         revision_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
-        revision_metadata['origin visit id'] = visit_info['visit']
-        browse_snapshot_url = reverse('browse-snapshot-log',
-                                      url_args={'snapshot_id': snapshot_id},
-                                      query_params=request.GET)
-        browse_snapshot_link = \
-            gen_link(browse_snapshot_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-default btn-sm',
-                                 'role': 'button'})
-        revision_metadata['snapshot context'] = browse_snapshot_link
 
     swh_objects = [{'type': 'revision',
                     'id': revision_id},

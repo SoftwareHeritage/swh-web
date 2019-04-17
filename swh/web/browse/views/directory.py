@@ -123,7 +123,7 @@ def directory_browse(request, sha1_git, path=None):
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
-    dir_metadata = {'id': sha1_git,
+    dir_metadata = {'directory': sha1_git,
                     'number of regular files': len(files),
                     'number of subdirectories': len(dirs),
                     'sum of regular file sizes': sum_file_sizes}
