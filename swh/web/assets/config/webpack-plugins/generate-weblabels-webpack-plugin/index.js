@@ -178,7 +178,7 @@ class GenerateWebLabelsPlugin {
       if (this.options['additionalScripts']) {
         for (let script of Object.keys(this.options['additionalScripts'])) {
           let scriptFilesData = this.options['additionalScripts'][script];
-          if (!script.startsWith('http:') && !script.startsWith('https:')) {
+          if (script.indexOf('://') === -1) {
             script = stats.publicPath + script;
           }
           this.chunkJsAssetToSrcFiles[script] = [];
@@ -192,7 +192,7 @@ class GenerateWebLabelsPlugin {
             scriptSrcData['licenses'].forEach(license => {
               license['copy_url'] = licenseCopyUrl;
             });
-            if (!scriptSrc['path'].startsWith('http:') && !scriptSrc['path'].startsWith('https:')) {
+            if (scriptSrc['path'].indexOf('://') === -1) {
               scriptSrcData['src_url'] = stats.publicPath + path.join(this.weblabelsDirName, scriptSrc['id']);
             } else {
               scriptSrcData['src_url'] = scriptSrc['path'];
@@ -355,9 +355,7 @@ class GenerateWebLabelsPlugin {
   }
 
   copyFileToOutputPath(srcFilePath, ext = '') {
-    if (this.copiedFiles.has(srcFilePath) ||
-        srcFilePath.startsWith('http:') ||
-        srcFilePath.startsWith('https:')) {
+    if (this.copiedFiles.has(srcFilePath) || srcFilePath.indexOf('://') !== -1) {
       return;
     }
     let destPath = this.cleanupPath(srcFilePath);

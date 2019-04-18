@@ -37,7 +37,7 @@ DEFAULT_CONFIG = {
     'port': ('int', 5004),
     'secret_key': ('string', 'development key'),
     # do not display code highlighting for content > 1MB
-    'content_display_max_size': ('int', 1024 * 1024),
+    'content_display_max_size': ('int', 5 * 1024 * 1024),
     'snapshot_content_max_size': ('int', 1000),
     'throttling': ('dict', {
         'cache_uri': None,  # production: memcached as cache (127.0.0.1:11211)
