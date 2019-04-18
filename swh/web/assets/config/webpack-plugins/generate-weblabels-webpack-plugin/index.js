@@ -99,6 +99,12 @@ class GenerateWebLabelsPlugin {
           }
         }
 
+        // remove webpack loader call if any
+        let loaderEndPos = srcFilePath.indexOf('!');
+        if (loaderEndPos !== -1) {
+          srcFilePath = srcFilePath.slice(loaderEndPos + 1);
+        }
+
         // iterate on all chunks containing the module
         mod.chunks.forEach(chunk => {
 
@@ -171,8 +177,12 @@ class GenerateWebLabelsPlugin {
       // process additional scripts if needed
       if (this.options['additionalScripts']) {
         for (let script of Object.keys(this.options['additionalScripts'])) {
+          let scriptFilesData = this.options['additionalScripts'][script];
+          if (!script.startsWith('http:') && !script.startsWith('https:')) {
+            script = stats.publicPath + script;
+          }
           this.chunkJsAssetToSrcFiles[script] = [];
-          for (let scriptSrc of this.options['additionalScripts'][script]) {
+          for (let scriptSrc of scriptFilesData) {
             let scriptSrcData = {'id': scriptSrc['id']};
             let licenceFilePath = scriptSrc['licenseFilePath'];
             let parsedSpdxLicenses = this.parseSpdxLicenseExpression(scriptSrc['spdxLicenseExpression'],
@@ -182,7 +192,11 @@ class GenerateWebLabelsPlugin {
             scriptSrcData['licenses'].forEach(license => {
               license['copy_url'] = licenseCopyUrl;
             });
-            scriptSrcData['src_url'] = stats.publicPath + path.join(this.weblabelsDirName, scriptSrc['id']);
+            if (!scriptSrc['path'].startsWith('http:') && !scriptSrc['path'].startsWith('https:')) {
+              scriptSrcData['src_url'] = stats.publicPath + path.join(this.weblabelsDirName, scriptSrc['id']);
+            } else {
+              scriptSrcData['src_url'] = scriptSrc['path'];
+            }
             this.chunkJsAssetToSrcFiles[script].push(scriptSrcData);
             this.copyFileToOutputPath(scriptSrc['path']);
           }
@@ -341,7 +355,9 @@ class GenerateWebLabelsPlugin {
   }
 
   copyFileToOutputPath(srcFilePath, ext = '') {
-    if (this.copiedFiles.has(srcFilePath)) {
+    if (this.copiedFiles.has(srcFilePath) ||
+        srcFilePath.startsWith('http:') ||
+        srcFilePath.startsWith('https:')) {
       return;
     }
     let destPath = this.cleanupPath(srcFilePath);
