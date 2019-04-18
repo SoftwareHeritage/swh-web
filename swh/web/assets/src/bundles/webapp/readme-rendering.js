@@ -5,22 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import DOMPurify from 'dompurify';
-
 import {handleFetchError} from 'utils/functions';
-
-DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
-  if (node.nodeName === 'IMG' && data.attrName === 'src') {
-    // remove leading slash from image src to fix rendering
-    if (data.attrValue.startsWith('/')) {
-      data.attrValue = data.attrValue.slice(1);
-    }
-  }
-});
-
-export function filterXSS(html) {
-  return DOMPurify.sanitize(html);
-}
 
 export async function renderMarkdown(domElt, markdownDocUrl) {
 
@@ -33,7 +18,7 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
       .then(response => response.text())
       .then(data => {
         $(domElt).addClass('swh-showdown');
-        $(domElt).html(filterXSS(converter.makeHtml(data)));
+        $(domElt).html(swh.webapp.filterXSS(converter.makeHtml(data)));
       })
       .catch(() => {
         $(domElt).text('Readme bytes are not available');
@@ -50,7 +35,7 @@ export async function renderOrgData(domElt, orgDocData) {
   let orgDocument = parser.parse(orgDocData, {toc: false});
   let orgHTMLDocument = orgDocument.convert(org.ConverterHTML, {});
   $(domElt).addClass('swh-org');
-  $(domElt).html(filterXSS(orgHTMLDocument.toString()));
+  $(domElt).html(swh.webapp.filterXSS(orgHTMLDocument.toString()));
   // remove toc and section numbers to get consistent
   // with other readme renderings
   $('.swh-org ul').first().remove();

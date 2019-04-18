@@ -183,3 +183,13 @@ export function setReCaptchaActivated(activated) {
 export function isReCaptchaActivated() {
   return reCaptchaActivated;
 }
+
+let browsedSwhObjectMetadata = {};
+
+export function setBrowsedSwhObjectMetadata(metadata) {
+  browsedSwhObjectMetadata = metadata;
+}
+
+export function getBrowsedSwhObjectMetadata() {
+  return browsedSwhObjectMetadata;
+}

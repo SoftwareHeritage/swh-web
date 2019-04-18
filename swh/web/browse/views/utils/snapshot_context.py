@@ -8,7 +8,7 @@
 # Its purpose is to factorize code for the views reachable from the
 # /origin/.* and /snapshot/.* endpoints.
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 
 from swh.model.identifiers import snapshot_identifier
@@ -241,14 +241,6 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
         sha1_git = root_sha1_git
         if root_sha1_git and path:
             dir_info = service.lookup_directory_with_path(root_sha1_git, path)
-            # some readme files can reference assets reachable from the
-            # browsed directory, handle that special case in order to
-            # correctly displayed them
-            if dir_info and dir_info['type'] == 'file':
-                file_raw_url = reverse(
-                    'browse-content-raw',
-                    url_args={'query_string': dir_info['checksums']['sha1']})
-                return redirect(file_raw_url)
             sha1_git = dir_info['target']
 
         dirs = []

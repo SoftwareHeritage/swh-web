@@ -8,7 +8,7 @@ import json
 import textwrap
 
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -266,18 +266,6 @@ def revision_browse(request, sha1_git, extra_path=None):
     """
     try:
         revision = service.lookup_revision(sha1_git)
-        # some readme files can reference assets reachable from the
-        # browsed directory, handle that special case in order to
-        # correctly displayed them
-        if extra_path:
-            dir_info = \
-                service.lookup_directory_with_path(revision['directory'],
-                                                   extra_path)
-            if dir_info and dir_info['type'] == 'file':
-                file_raw_url = reverse(
-                    'browse-content-raw',
-                    url_args={'query_string': dir_info['checksums']['sha1']})
-                return redirect(file_raw_url)
         origin_info = None
         snapshot_context = None
         origin_type = request.GET.get('origin_type', None)
