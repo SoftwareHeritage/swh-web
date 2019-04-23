@@ -12,7 +12,7 @@ from django.core.validators import URLValidator
 
 from swh.web import config
 from swh.web.common import service
-from swh.web.common.exc import BadInputExc, ForbiddenExc
+from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.common.models import (
     SaveUnauthorizedOrigin, SaveAuthorizedOrigin, SaveOriginRequest,
     SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED, SAVE_REQUEST_PENDING,
@@ -386,6 +386,7 @@ def get_save_origin_requests(origin_type, origin_url):
 
     Raises:
         BadInputExc: the origin type or url is invalid
+        NotFoundExc: no save requests can be found for the given origin
 
     Returns:
         list: A list of save origin requests dict as described in
@@ -395,4 +396,7 @@ def get_save_origin_requests(origin_type, origin_url):
     _check_origin_url_valid(origin_url)
     sors = SaveOriginRequest.objects.filter(origin_type=origin_type,
                                             origin_url=origin_url)
+    if sors.count() == 0:
+        raise NotFoundExc(('No save requests found for origin with type '
+                           '%s and url %s.') % (origin_type, origin_url))
     return get_save_origin_requests_from_queryset(sors)
