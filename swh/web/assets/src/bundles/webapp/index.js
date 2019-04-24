@@ -21,3 +21,4 @@ export * from './webapp-utils';
 export * from './code-highlighting';
 export * from './readme-rendering';
 export * from './pdf-rendering';
+export * from './xss-filtering';
