@@ -1,8 +1,10 @@
-swh-web (0.0.192-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.193-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-swh
+  * New upstream release 0.0.193     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2019-05-02 16:59:26 +0200)
+  * Upstream changes:     - version 0.0.193
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 02 May 2019 12:35:36 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 02 May 2019 15:12:33 +0000
 
 swh-web (0.0.192-1~swh1) unstable-swh; urgency=medium
 
