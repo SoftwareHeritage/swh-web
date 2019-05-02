@@ -246,3 +246,16 @@ class SaveApiTestCase(WebTestCase, APITestCase):
         sors = list(SaveOriginRequest.objects.filter(origin_type='git',
                                                      origin_url=origin_url))
         self.assertEqual(len(sors), 3)
+
+    def test_get_save_requests_unknown_origin(self):
+        unknown_origin_url = 'https://gitlab.com/foo/bar'
+        url = reverse('api-save-origin',
+                      url_args={'origin_type': 'git',
+                                'origin_url': unknown_origin_url})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data, {
+            'exception': 'NotFoundExc',
+            'reason': ('No save requests found for origin with type '
+                       'git and url %s.') % unknown_origin_url
+        })
