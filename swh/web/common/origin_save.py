@@ -83,13 +83,11 @@ def can_save_origin(origin_url):
 
 
 # map origin type to scheduler task
-# TODO: do not hardcode the task name here
-# TODO: unlock hg and svn loading once the scheduler
-#       loading tasks are available in production
+# TODO: do not hardcode the task name here (T1157)
 _origin_type_task = {
-    'git': 'origin-update-git',
-    # 'hg': 'origin-load-hg',
-    # 'svn': 'origin-load-svn'
+    'git': 'load-git',
+    'hg': 'load-hg',
+    'svn': 'load-svn'
 }
 
 
