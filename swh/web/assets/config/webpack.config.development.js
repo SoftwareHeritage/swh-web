@@ -18,6 +18,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FixSwhSourceMapsPlugin = require('./webpack-plugins/fix-swh-source-maps-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
+const loadedMathJaxJsFiles = require('./mathjax-js-files');
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
@@ -369,17 +370,20 @@ module.exports = {
           'licenseFilePath': './swh/web/assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
         }
       },
-      additionalScripts: {
-        'js/pdf.worker.min.js': [
-          {
-            'id': 'pdfjs-dist/build/pdf.worker.js',
-            'path': './node_modules/pdfjs-dist/build/pdf.worker.js',
-            'spdxLicenseExpression': 'Apache-2.0',
-            'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
+      additionalScripts: Object.assign(
+        {
+          'js/pdf.worker.min.js': [
+            {
+              'id': 'pdfjs-dist/build/pdf.worker.js',
+              'path': './node_modules/pdfjs-dist/build/pdf.worker.js',
+              'spdxLicenseExpression': 'Apache-2.0',
+              'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
 
-          }
-        ]
-      }
+            }
+          ]
+        },
+        loadedMathJaxJsFiles
+      )
     })
   ],
   // webpack optimizations

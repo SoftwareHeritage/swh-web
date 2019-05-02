@@ -71,6 +71,7 @@ def api_save_origin(request, origin_type, origin_url):
         :statuscode 200: no error
         :statuscode 400: an invalid origin type or url has been provided
         :statuscode 403: the provided origin url is blacklisted
+        :statuscode 404: no save requests have been found for a given origin
     """ # noqa
 
     if request.method == 'POST':

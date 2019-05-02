@@ -12,9 +12,9 @@ from swh.web.common.utils import (
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
-    gen_person_link, gen_revision_link,
-    get_snapshot_context, gen_link,
-    gen_snapshot_link, get_swh_persistent_ids
+    gen_person_link, gen_revision_link, get_snapshot_context, gen_link,
+    gen_snapshot_link, get_swh_persistent_ids, gen_directory_link,
+    gen_content_link, gen_release_link
 )
 
 
@@ -75,30 +75,25 @@ def release_browse(request, sha1_git):
             gen_person_link(release['author']['id'], author_name,
                             snapshot_context)
     release_data['date'] = format_utc_iso_date(release['date'])
-    release_data['id'] = sha1_git
+    release_data['release'] = sha1_git
     release_data['name'] = release['name']
     release_data['synthetic'] = release['synthetic']
+    release_data['target'] = release['target']
     release_data['target type'] = release['target_type']
 
-    if release['target_type'] == 'revision':
-        release_data['target'] = \
-            gen_revision_link(release['target'],
-                              snapshot_context=snapshot_context)
-    elif release['target_type'] == 'content':
-        content_url = \
-            reverse('browse-content',
-                    url_args={'query_string': 'sha1_git:' + release['target']})
-        release_data['target'] = gen_link(content_url, release['target'])
-    elif release['target_type'] == 'directory':
-        directory_url = \
-            reverse('browse-directory',
-                    url_args={'sha1_git': release['target']})
-        release_data['target'] = gen_link(directory_url, release['target'])
-    elif release['target_type'] == 'release':
-        release_url = \
-            reverse('browse-release',
-                    url_args={'sha1_git': release['target']})
-        release_data['target'] = gen_link(release_url, release['target'])
+    if snapshot_context:
+        if release['target_type'] == 'revision':
+            release_data['context-independent target'] = \
+                gen_revision_link(release['target'])
+        elif release['target_type'] == 'content':
+            release_data['context-independent target'] = \
+                gen_content_link(release['target'])
+        elif release['target_type'] == 'directory':
+            release_data['context-independent target'] = \
+                gen_directory_link(release['target'])
+        elif release['target_type'] == 'release':
+            release_data['context-independent target'] = \
+                gen_release_link(release['target'])
 
     release_note_lines = []
     if release['message']:
@@ -106,17 +101,11 @@ def release_browse(request, sha1_git):
 
     vault_cooking = None
 
-    query_params = {}
-    if snapshot_id:
-        query_params = {'snapshot_id': snapshot_id}
-    elif origin_info:
-        query_params = {'origin': origin_info['url']}
-
-    target_url = ''
+    target_link = None
     if release['target_type'] == 'revision':
-        target_url = reverse('browse-revision',
-                             url_args={'sha1_git': release['target']},
-                             query_params=query_params)
+        target_link = gen_revision_link(release['target'],
+                                        snapshot_context=snapshot_context,
+                                        link_text=None, link_attrs=None)
         try:
             revision = service.lookup_revision(release['target'])
             vault_cooking = {
@@ -128,9 +117,9 @@ def release_browse(request, sha1_git):
         except Exception:
             pass
     elif release['target_type'] == 'directory':
-        target_url = reverse('browse-directory',
-                             url_args={'sha1_git': release['target']},
-                             query_params=query_params)
+        target_link = gen_directory_link(release['target'],
+                                         snapshot_context=snapshot_context,
+                                         link_text=None, link_attrs=None)
         try:
             revision = service.lookup_directory(release['target'])
             vault_cooking = {
@@ -142,36 +131,28 @@ def release_browse(request, sha1_git):
         except Exception:
             pass
     elif release['target_type'] == 'content':
-        target_url = reverse('browse-content',
-                             url_args={'query_string': release['target']},
-                             query_params=query_params)
+        target_link = gen_content_link(release['target'],
+                                       snapshot_context=snapshot_context,
+                                       link_text=None, link_attrs=None)
     elif release['target_type'] == 'release':
-        target_url = reverse('browse-release',
-                             url_args={'sha1_git': release['target']},
-                             query_params=query_params)
+        target_link = gen_release_link(release['target'],
+                                       snapshot_context=snapshot_context,
+                                       link_text=None, link_attrs=None)
 
-    release['target_url'] = target_url
+    release['target_link'] = target_link
 
     if snapshot_context:
-        release_data['snapshot id'] = snapshot_context['snapshot_id']
+        release_data['snapshot'] = snapshot_context['snapshot_id']
 
     if origin_info:
-        release_url = reverse('browse-release',
-                              url_args={'sha1_git': release['id']})
         release_data['context-independent release'] = \
-            gen_link(release_url, link_text='Browse',
-                     link_attrs={'class': 'btn btn-default btn-sm',
-                                 'role': 'button'})
-        release_data['origin id'] = origin_info['id']
+            gen_release_link(release['id'])
         release_data['origin type'] = origin_info['type']
         release_data['origin url'] = gen_link(origin_info['url'],
                                               origin_info['url'])
         browse_snapshot_link = \
-            gen_snapshot_link(snapshot_context['snapshot_id'],
-                              link_text='Browse',
-                              link_attrs={'class': 'btn btn-default btn-sm',
-                                          'role': 'button'})
-        release_data['snapshot'] = browse_snapshot_link
+            gen_snapshot_link(snapshot_context['snapshot_id'])
+        release_data['context-independent snapshot'] = browse_snapshot_link
 
     swh_objects = [{'type': 'release',
                     'id': sha1_git}]

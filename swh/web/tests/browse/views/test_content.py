@@ -308,7 +308,7 @@ class SwhBrowseContentTest(WebTestCase):
                 'blake2s256': ('38702b7168c7785bfe748b51b45d9856070ba90'
                                'f9dc6d90f2ea75d4356411ffe')
             },
-            'length': 3000000,
+            'length': 30000000,
             'raw_data': None,
             'mimetype': 'text/plain',
             'encoding': 'us-ascii',

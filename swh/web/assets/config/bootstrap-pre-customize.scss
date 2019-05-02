@@ -9,14 +9,14 @@
 
 // global text colors and fonts
 $body-color: rgba(0, 0, 0, 0.55);
-$font-family-sans-serif: "Alegreya Sans", sans-serif;
+$font-family-sans-serif: "Alegreya Sans", sans-serif !important;
 $link-color: rgba(0, 0, 0, 0.75);
 $code-color: #c7254e;
 
 // headings
 $headings-line-height: 1.1;
 $headings-color: #e20026;
-$headings-font-family: "Alegreya Sans", sans-serif;
+$headings-font-family: "Alegreya Sans", sans-serif !important;
 
 // remove the ugly box shadow from bootstrap 4.x
 $input-btn-focus-width: 0;
@@ -35,3 +35,6 @@ $nav-pills-link-active-bg: #f2f4f5;
 
 // table cell padding
 $table-cell-padding: 0.4rem;
+
+// remove container padding
+$grid-gutter-width: 0;
