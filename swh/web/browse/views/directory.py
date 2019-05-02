@@ -3,7 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import os
 
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
 
@@ -35,14 +37,6 @@ def directory_browse(request, sha1_git, path=None):
     try:
         if path:
             dir_info = service.lookup_directory_with_path(sha1_git, path)
-            # some readme files can reference assets reachable from the
-            # browsed directory, handle that special case in order to
-            # correctly displayed them
-            if dir_info and dir_info['type'] == 'file':
-                file_raw_url = reverse(
-                    'browse-content-raw',
-                    url_args={'query_string': dir_info['checksums']['sha1']})
-                return redirect(file_raw_url)
             sha1_git = dir_info['target']
 
         dirs, files = get_directory_entries(sha1_git)
@@ -123,7 +117,7 @@ def directory_browse(request, sha1_git, path=None):
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
-    dir_metadata = {'id': sha1_git,
+    dir_metadata = {'directory': sha1_git,
                     'number of regular files': len(files),
                     'number of subdirectories': len(dirs),
                     'sum of regular file sizes': sum_file_sizes}
@@ -159,3 +153,25 @@ def directory_browse(request, sha1_git, path=None):
                    'vault_cooking': vault_cooking,
                    'show_actions_menu': True,
                    'swh_ids': swh_ids})
+
+
+@browse_route(r'directory/resolve/content-path/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/', # noqa
+              view_name='browse-directory-resolve-content-path',
+              checksum_args=['sha1_git'])
+def _directory_resolve_content_path(request, sha1_git, path):
+    """
+    Internal endpoint redirecting to data url for a specific file path
+    relative to a root directory.
+    """
+    try:
+        path = os.path.normpath(path)
+        if not path.startswith('../'):
+            dir_info = service.lookup_directory_with_path(sha1_git, path)
+            if dir_info['type'] == 'file':
+                sha1 = dir_info['checksums']['sha1']
+                data_url = reverse('browse-content-raw',
+                                   url_args={'query_string': sha1})
+                return redirect(data_url)
+    except Exception:
+        pass
+    return HttpResponse(status=404)

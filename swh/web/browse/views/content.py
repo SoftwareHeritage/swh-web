@@ -14,7 +14,7 @@ from django.template.defaultfilters import filesizeformat
 
 from swh.model.hashutil import hash_to_hex
 
-from swh.web.common import query
+from swh.web.common import query, service
 from swh.web.common.utils import (
     reverse, gen_path_info, swh_object_icons
 )
@@ -22,7 +22,7 @@ from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.utils import (
     request_content, prepare_content_for_display,
     content_display_max_size, get_snapshot_context,
-    get_swh_persistent_ids, gen_link
+    get_swh_persistent_ids, gen_link, gen_directory_link
 )
 from swh.web.browse.browseurls import browse_route
 
@@ -219,6 +219,8 @@ def content_display(request, query_string):
     root_dir = None
     filename = None
     path_info = None
+    directory_id = None
+    directory_url = None
 
     query_params = {'origin': origin_url}
 
@@ -247,6 +249,15 @@ def content_display(request, query_string):
         breadcrumbs.append({'name': filename,
                             'url': None})
 
+    if path and root_dir != path:
+        dir_info = service.lookup_directory_with_path(root_dir, path)
+        directory_id = dir_info['target']
+    elif root_dir != path:
+        directory_id = root_dir
+
+    if directory_id:
+        directory_url = gen_directory_link(directory_id)
+
     query_params = {'filename': filename}
 
     content_raw_url = reverse('browse-content-raw',
@@ -254,16 +265,18 @@ def content_display(request, query_string):
                               query_params=query_params)
 
     content_metadata = {
-        'sha1 checksum': content_data['checksums']['sha1'],
-        'sha1_git checksum': content_data['checksums']['sha1_git'],
-        'sha256 checksum': content_data['checksums']['sha256'],
-        'blake2s256 checksum': content_data['checksums']['blake2s256'],
-        'mime type': content_data['mimetype'],
+        'sha1': content_data['checksums']['sha1'],
+        'sha1_git': content_data['checksums']['sha1_git'],
+        'sha256': content_data['checksums']['sha256'],
+        'blake2s256': content_data['checksums']['blake2s256'],
+        'mimetype': content_data['mimetype'],
         'encoding': content_data['encoding'],
         'size': filesizeformat(content_data['length']),
         'language': content_data['language'],
         'licenses': content_data['licenses'],
-        'filename': filename
+        'filename': filename,
+        'directory': directory_id,
+        'context-independent directory': directory_url
     }
 
     if filename:

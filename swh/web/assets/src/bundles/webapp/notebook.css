@@ -1,0 +1,155 @@
+/**
+ * Copyright (C) 2019  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+/* Adapted from https://github.com/jsvine/nbpreview/blob/master/css/vendor/notebook.css */
+
+.nb-notebook {
+    line-height: 1.5;
+    padding-left: 6em;
+    overflow-y: hidden;
+}
+
+.nb-worksheet {
+    width: 99%;
+}
+
+.nb-stdout,
+.nb-stderr {
+    white-space: pre-wrap;
+    margin: 1em 0;
+    padding: 0.1em 0.5em;
+}
+
+.nb-stderr {
+    background-color: #faa;
+}
+
+.nb-cell + .nb-cell {
+    margin-top: 0.5em;
+}
+
+.nb-output table {
+    border: 1px solid #000;
+    border-collapse: collapse;
+}
+
+.nb-output th {
+    font-weight: bold;
+}
+
+.nb-output th,
+.nb-output td {
+    border: 1px solid #000;
+    padding: 0.25em;
+    text-align: left;
+    vertical-align: middle;
+    border-collapse: collapse;
+}
+
+.nb-cell {
+    position: relative;
+}
+
+.nb-raw-cell {
+    white-space: pre-wrap;
+    background-color: #f5f2f0;
+    font-family: Consolas, Monaco, 'Andale Mono', monospace;
+    padding: 1em;
+    margin: 0 0.5em;
+}
+
+.nb-input {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+    margin: 0.4em;
+    padding: 0;
+}
+
+.nb-notebook pre {
+    margin: 0.4em !important;
+    border: none;
+    padding: 0;
+    background-color: transparent;
+    min-height: 1rem;
+}
+
+.nb-output {
+    min-height: 1em;
+    overflow-x: auto;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+.nb-output img {
+    max-width: 100%;
+}
+
+.nb-output::before,
+.nb-input::before {
+    position: absolute;
+    font-family: monospace;
+    color: #999;
+    left: -7.5em;
+    width: 7em;
+    text-align: right;
+    font-size: 14px;
+}
+
+.nb-input::before {
+    content: "In [" attr(data-prompt-number) "]:";
+    color: #303f9f;
+}
+
+.nb-output::before {
+    content: "Out [" attr(data-prompt-number) "]:";
+    color: #d84315;
+}
+
+.nb-latex-output .MathJax_Display {
+    text-align: left !important;
+}
+
+.nb-markdown-cell,
+.nb-heading-cell {
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+.nb-code-cell {
+    margin: 0.4em;
+}
+
+.nb-output pre {
+    margin-top: 0.2em !important;
+}
+
+@media screen and (max-width: 600px) {
+    .nb-notebook {
+        padding-left: 0;
+    }
+
+    .nb-input {
+        margin-top: 2em !important;
+    }
+
+    .nb-output::before,
+    .nb-input::before {
+        text-align: left;
+    }
+
+    .nb-input::before {
+        left: 0.5em;
+        top: -2em;
+    }
+
+    .nb-output::before {
+        position: relative;
+        left: 0;
+        top: 0;
+    }
+}

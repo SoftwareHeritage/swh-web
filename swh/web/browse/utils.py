@@ -467,7 +467,7 @@ def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
     return get_snapshot_content(visit_info['snapshot'])
 
 
-def gen_link(url, link_text=None, link_attrs={}):
+def gen_link(url, link_text=None, link_attrs=None):
     """
     Utility function for generating an HTML link to insert
     in Django templates.
@@ -484,16 +484,33 @@ def gen_link(url, link_text=None, link_attrs={}):
 
     """
     attrs = ' '
-    for k, v in link_attrs.items():
-        attrs += '%s="%s" ' % (k, v)
+    if link_attrs:
+        for k, v in link_attrs.items():
+            attrs += '%s="%s" ' % (k, v)
     if not link_text:
         link_text = url
     link = '<a%shref="%s">%s</a>' % (attrs, url, link_text)
     return mark_safe(link)
 
 
+def _snapshot_context_query_params(snapshot_context):
+    query_params = None
+    if snapshot_context and snapshot_context['origin_info']:
+        origin_info = snapshot_context['origin_info']
+        query_params = {'origin': origin_info['url']}
+        if 'timestamp' in snapshot_context['url_args']:
+            query_params['timestamp'] = \
+                 snapshot_context['url_args']['timestamp']
+        if 'visit_id' in snapshot_context['query_params']:
+            query_params['visit_id'] = \
+                snapshot_context['query_params']['visit_id']
+    elif snapshot_context:
+        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+    return query_params
+
+
 def gen_person_link(person_id, person_name, snapshot_context=None,
-                    link_attrs={}):
+                    link_attrs=None):
     """
     Utility function for generating a link to a person HTML view
     to insert in Django templates.
@@ -508,18 +525,7 @@ def gen_person_link(person_id, person_name, snapshot_context=None,
         An HTML link in the form '<a href="person_view_url">person_name</a>'
 
     """
-    query_params = None
-    if snapshot_context and snapshot_context['origin_info']:
-        origin_info = snapshot_context['origin_info']
-        query_params = {'origin': origin_info['url']}
-        if 'timestamp' in snapshot_context['url_args']:
-            query_params['timestamp'] = \
-                 snapshot_context['url_args']['timestamp']
-        if 'visit_id' in snapshot_context['query_params']:
-            query_params['visit_id'] = \
-                snapshot_context['query_params']['visit_id']
-    elif snapshot_context:
-        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+    query_params = _snapshot_context_query_params(snapshot_context)
     person_url = reverse('browse-person', url_args={'person_id': person_id},
                          query_params=query_params)
     return gen_link(person_url, person_name or 'None', link_attrs)
@@ -538,18 +544,7 @@ def gen_revision_url(revision_id, snapshot_context=None):
         str: The url to browse the revision
 
     """
-    query_params = None
-    if snapshot_context and snapshot_context['origin_info']:
-        origin_info = snapshot_context['origin_info']
-        query_params = {'origin': origin_info['url']}
-        if 'timestamp' in snapshot_context['url_args']:
-            query_params['timestamp'] = \
-                 snapshot_context['url_args']['timestamp']
-        if 'visit_id' in snapshot_context['query_params']:
-            query_params['visit_id'] = \
-                snapshot_context['query_params']['visit_id']
-    elif snapshot_context:
-        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+    query_params = _snapshot_context_query_params(snapshot_context)
 
     return reverse('browse-revision',
                    url_args={'sha1_git': revision_id},
@@ -557,7 +552,9 @@ def gen_revision_url(revision_id, snapshot_context=None):
 
 
 def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
-                      link_text=None, link_attrs={}):
+                      link_text='Browse',
+                      link_attrs={'class': 'btn btn-default btn-sm',
+                                  'role': 'button'}):
     """
     Utility function for generating a link to a revision HTML view
     to insert in Django templates.
@@ -568,6 +565,8 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
             characters for the link text
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing link
+        link_text (str): optional text for the generated link
+            (the revision id will be used by default)
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
 
@@ -588,29 +587,9 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
         return gen_link(revision_url, link_text, link_attrs)
 
 
-def gen_origin_link(origin_info, link_attrs={}):
-    """
-    Utility function for generating a link to a software origin HTML view
-    to insert in Django templates.
-
-    Args:
-        origin_info (dict): a dict filled with origin information
-            (id, type, url)
-        link_attrs (dict): optional attributes (e.g. class)
-            to add to the link
-
-    Returns:
-        An HTML link in the form '<a href="origin_view_url">Origin: origin_url</a>'
-
-    """ # noqa
-    origin_browse_url = reverse('browse-origin',
-                                url_args={'origin_type': origin_info['type'],
-                                          'origin_url': origin_info['url']})
-    return gen_link(origin_browse_url,
-                    'Origin: ' + origin_info['url'], link_attrs)
-
-
-def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
+def gen_directory_link(sha1_git, snapshot_context=None, link_text='Browse',
+                       link_attrs={'class': 'btn btn-default btn-sm',
+                                   'role': 'button'}):
     """
     Utility function for generating a link to a directory HTML view
     to insert in Django templates.
@@ -618,7 +597,7 @@ def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
     Args:
         sha1_git (str): directory identifier
         link_text (str): optional text for the generated link
-            (the generated url will be used by default)
+            (the directory id will be used by default)
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
 
@@ -629,15 +608,20 @@ def gen_directory_link(sha1_git, link_text=None, link_attrs={}):
     if not sha1_git:
         return None
 
+    query_params = _snapshot_context_query_params(snapshot_context)
+
     directory_url = reverse('browse-directory',
-                            url_args={'sha1_git': sha1_git})
+                            url_args={'sha1_git': sha1_git},
+                            query_params=query_params)
 
     if not link_text:
-        link_text = directory_url
+        link_text = sha1_git
     return gen_link(directory_url, link_text, link_attrs)
 
 
-def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
+def gen_snapshot_link(snapshot_id, snapshot_context=None, link_text='Browse',
+                      link_attrs={'class': 'btn btn-default btn-sm',
+                                  'role': 'button'}):
     """
     Utility function for generating a link to a snapshot HTML view
     to insert in Django templates.
@@ -645,7 +629,7 @@ def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
     Args:
         snapshot_id (str): snapshot identifier
         link_text (str): optional text for the generated link
-            (the generated url will be used by default)
+            (the snapshot id will be used by default)
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
 
@@ -653,56 +637,20 @@ def gen_snapshot_link(snapshot_id, link_text=None, link_attrs={}):
         An HTML link in the form '<a href="snapshot_view_url">link_text</a>'
 
     """
+
+    query_params = _snapshot_context_query_params(snapshot_context)
+
     snapshot_url = reverse('browse-snapshot',
-                           url_args={'snapshot_id': snapshot_id})
+                           url_args={'snapshot_id': snapshot_id},
+                           query_params=query_params)
     if not link_text:
-        link_text = snapshot_url
+        link_text = snapshot_id
     return gen_link(snapshot_url, link_text, link_attrs)
 
 
-def gen_snapshot_directory_link(snapshot_context, revision_id=None,
-                                link_text=None, link_attrs={}):
-    """
-    Utility function for generating a link to a directory HTML view
-    in the context of a snapshot to insert in Django templates.
-
-    Args:
-        snapshot_context (dict): the snapshot information
-        revision_id (str): optional revision identifier in order
-            to use the associated directory
-        link_text (str): optional text to use for the generated link
-        link_attrs (dict): optional attributes (e.g. class)
-            to add to the link
-
-    Returns:
-        An HTML link in the form
-        '<a href="origin_directory_view_url">origin_directory_view_url</a>'
-    """
-    query_params = {'revision': revision_id}
-    if snapshot_context['origin_info']:
-        origin_info = snapshot_context['origin_info']
-        url_args = {'origin_url': origin_info['url']}
-        if 'timestamp' in snapshot_context['url_args']:
-            url_args['timestamp'] = \
-                snapshot_context['url_args']['timestamp']
-        if 'visit_id' in snapshot_context['query_params']:
-            query_params['visit_id'] = \
-                snapshot_context['query_params']['visit_id']
-        directory_url = reverse('browse-origin-directory',
-                                url_args=url_args,
-                                query_params=query_params)
-    else:
-        url_args = {'snapshot_id': snapshot_context['snapshot_id']}
-        directory_url = reverse('browse-snapshot-directory',
-                                url_args=url_args,
-                                query_params=query_params)
-
-    if not link_text:
-        link_text = directory_url
-    return gen_link(directory_url, link_text, link_attrs)
-
-
-def gen_content_link(sha1_git, link_text=None, link_attrs={}):
+def gen_content_link(sha1_git, snapshot_context=None, link_text='Browse',
+                     link_attrs={'class': 'btn btn-default btn-sm',
+                                 'role': 'button'}):
     """
     Utility function for generating a link to a content HTML view
     to insert in Django templates.
@@ -710,7 +658,7 @@ def gen_content_link(sha1_git, link_text=None, link_attrs={}):
     Args:
         sha1_git (str): content identifier
         link_text (str): optional text for the generated link
-            (the generated url will be used by default)
+            (the content sha1_git will be used by default)
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
 
@@ -720,10 +668,14 @@ def gen_content_link(sha1_git, link_text=None, link_attrs={}):
     """
     if not sha1_git:
         return None
+
+    query_params = _snapshot_context_query_params(snapshot_context)
+
     content_url = reverse('browse-content',
-                          url_args={'query_string': 'sha1_git:' + sha1_git})
+                          url_args={'query_string': 'sha1_git:' + sha1_git},
+                          query_params=query_params)
     if not link_text:
-        link_text = content_url
+        link_text = sha1_git
     return gen_link(content_url, link_text, link_attrs)
 
 
@@ -763,8 +715,10 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     return revision_log_url
 
 
-def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
-                          link_attrs={}):
+def gen_revision_log_link(revision_id, snapshot_context=None,
+                          link_text='Browse',
+                          link_attrs={'class': 'btn btn-default btn-sm',
+                                      'role': 'button'}):
     """
     Utility function for generating a link to a revision log HTML view
     (possibly in the context of an origin) to insert in Django templates.
@@ -774,6 +728,7 @@ def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
         snapshot_context (dict): if provided, generate snapshot-dependent
             browsing link
         link_text (str): optional text to use for the generated link
+            (the revision id will be used by default)
         link_attrs (dict): optional attributes (e.g. class)
             to add to the link
 
@@ -787,8 +742,37 @@ def gen_revision_log_link(revision_id, snapshot_context=None, link_text=None,
     revision_log_url = get_revision_log_url(revision_id, snapshot_context)
 
     if not link_text:
-        link_text = revision_log_url
+        link_text = revision_id
     return gen_link(revision_log_url, link_text, link_attrs)
+
+
+def gen_release_link(sha1_git, snapshot_context=None, link_text='Browse',
+                     link_attrs={'class': 'btn btn-default btn-sm',
+                                 'role': 'button'}):
+    """
+    Utility function for generating a link to a release HTML view
+    to insert in Django templates.
+
+    Args:
+        sha1_git (str): release identifier
+        link_text (str): optional text for the generated link
+            (the release id will be used by default)
+        link_attrs (dict): optional attributes (e.g. class)
+            to add to the link
+
+    Returns:
+        An HTML link in the form '<a href="release_view_url">link_text</a>'
+
+    """
+
+    query_params = _snapshot_context_query_params(snapshot_context)
+
+    release_url = reverse('browse-release',
+                          url_args={'sha1_git': sha1_git},
+                          query_params=query_params)
+    if not link_text:
+        link_text = sha1_git
+    return gen_link(release_url, link_text, link_attrs)
 
 
 def format_log_entries(revision_log, per_page, snapshot_context=None):

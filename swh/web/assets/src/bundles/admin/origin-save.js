@@ -76,7 +76,8 @@ export function initOriginSaveAdmin() {
         name: 'origin_url',
         render: (data, type, row) => {
           if (type === 'display') {
-            return `<a href="${data}">${data}</a>`;
+            const sanitizedURL = $.fn.dataTable.render.text().display(data);
+            return `<a href="${sanitizedURL}">${sanitizedURL}</a>`;
           }
           return data;
         }

@@ -8,7 +8,7 @@ import json
 import textwrap
 
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -22,8 +22,7 @@ from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
     gen_link, gen_person_link, gen_revision_link, gen_revision_url,
-    get_snapshot_context, gen_snapshot_directory_link,
-    get_revision_log_url, get_directory_entries,
+    get_snapshot_context, get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
     content_display_max_size, gen_snapshot_link, get_readme_to_display,
     get_swh_persistent_ids, format_log_entries
@@ -267,18 +266,6 @@ def revision_browse(request, sha1_git, extra_path=None):
     """
     try:
         revision = service.lookup_revision(sha1_git)
-        # some readme files can reference assets reachable from the
-        # browsed directory, handle that special case in order to
-        # correctly displayed them
-        if extra_path:
-            dir_info = \
-                service.lookup_directory_with_path(revision['directory'],
-                                                   extra_path)
-            if dir_info and dir_info['type'] == 'file':
-                file_raw_url = reverse(
-                    'browse-content-raw',
-                    url_args={'query_string': dir_info['checksums']['sha1']})
-                return redirect(file_raw_url)
         origin_info = None
         snapshot_context = None
         origin_type = request.GET.get('origin_type', None)
@@ -349,42 +336,32 @@ def revision_browse(request, sha1_git, extra_path=None):
     revision_data['committer date'] = \
         format_utc_iso_date(revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])
+    revision_data['directory'] = revision['directory']
     if snapshot_context:
-        revision_data['snapshot id'] = snapshot_id
-        revision_data['directory'] = \
-            gen_snapshot_directory_link(snapshot_context, sha1_git,
-                                        link_text='Browse',
-                                        link_attrs={'class': 'btn btn-default btn-sm', # noqa
-                                                    'role': 'button'})
-    else:
-        revision_data['directory'] = \
-            gen_directory_link(revision['directory'], link_text='Browse',
-                               link_attrs={'class': 'btn btn-default btn-sm',
-                                           'role': 'button'})
-    revision_data['id'] = sha1_git
+        revision_data['snapshot'] = snapshot_id
+        browse_snapshot_link = \
+            gen_snapshot_link(snapshot_id)
+        revision_data['context-independent snapshot'] = browse_snapshot_link
+
+    revision_data['context-independent directory'] = \
+        gen_directory_link(revision['directory'])
+    revision_data['revision'] = sha1_git
     revision_data['merge'] = revision['merge']
     revision_data['metadata'] = escape(json.dumps(revision['metadata'],
                                        sort_keys=True,
                                        indent=4, separators=(',', ': ')))
 
     if origin_info:
-        revision_data['context-independent revision'] = \
-            gen_revision_link(sha1_git, link_text='Browse',
-                              link_attrs={'class': 'btn btn-default btn-sm',
-                                          'role': 'button'})
-        revision_data['origin id'] = origin_info['id']
         revision_data['origin type'] = origin_info['type']
         revision_data['origin url'] = gen_link(origin_info['url'],
                                                origin_info['url'])
-        browse_snapshot_link = \
-            gen_snapshot_link(snapshot_id, link_text='Browse',
-                              link_attrs={'class': 'btn btn-default btn-sm',
-                                          'role': 'button'})
-        revision_data['snapshot'] = browse_snapshot_link
+        revision_data['context-independent revision'] = \
+            gen_revision_link(sha1_git)
 
     parents = ''
     for p in revision['parents']:
-        parent_link = gen_revision_link(p, snapshot_context=snapshot_context)
+        parent_link = gen_revision_link(p, link_text=None, link_attrs=None,
+                                        snapshot_context=snapshot_context)
         parents += parent_link + '<br/>'
 
     revision_data['parents'] = mark_safe(parents)

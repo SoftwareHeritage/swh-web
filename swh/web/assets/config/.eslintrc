@@ -40,7 +40,9 @@
         "__STATIC__": false,
         "Image": false,
         "Cookies": false,
-        "grecaptcha": false
+        "grecaptcha": false,
+        "nb": false,
+        "MathJax": false
     },
 
     "rules": {

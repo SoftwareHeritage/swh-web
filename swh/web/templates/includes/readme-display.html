@@ -19,7 +19,7 @@ See top-level LICENSE file for more information
 
   {% if readme_html %}
     <script>
-      $('#readme').html({{ readme_html|jsonify }});
+      $('#readme').html(swh.webapp.filterXSS({{ readme_html|jsonify }}));
     </script>
   {% elif readme_name.lower == 'readme' or readme_name.lower == 'readme.txt' %}
     <script>
