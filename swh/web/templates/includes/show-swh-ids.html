@@ -59,18 +59,18 @@ See top-level LICENSE file for more information
                       {% if snapshot_context and snapshot_context.origin_info %}
                         <div class="form-check swh-id-option">
                           <input class="form-check-input swh-id-option-origin" value="option-origin" type="checkbox"
-                                id="swh-id-option-origin"
+                                id="swh-id-option-origin-{{ swh_id.object_type }}"
                                 data-swh-origin="{{ snapshot_context.origin_info.url }}"
                                 onclick="swh.browse.swhIdOptionOriginToggled(event)">
-                          <label class="form-check-label" for="swh-id-option-origin">Add origin info</label>
+                          <label class="form-check-label" for="swh-id-option-origin-{{ swh_id.object_type }}">Add origin info</label>
                         </div>
                       {% endif %}
                       {% if swh_id.object_type == 'content' %}
                         <div class="form-check swh-id-option">
                           <input class="form-check-input swh-id-option-lines" value="option-lines" type="checkbox"
-                                id="swh-id-option-lines"
+                                id="swh-id-option-lines-{{ swh_id.object_type }}"
                                 onclick="swh.browse.swhIdOptionLinesToggled(event)">
-                          <label class="form-check-label" for="swh-id-option-lines">Add selected lines info</label>
+                          <label class="form-check-label" for="swh-id-option-lines-{{ swh_id.object_type }}">Add selected lines info</label>
                         </div>
                       {% endif %}
                     </form>

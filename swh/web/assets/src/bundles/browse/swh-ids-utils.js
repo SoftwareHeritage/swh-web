@@ -20,7 +20,9 @@ export function swhIdOptionOriginToggled(event) {
   let originPart = ';origin=' + $(event.target).data('swh-origin');
   let currentSwhId = swhIdElt.text();
   if ($(event.target).prop('checked')) {
-    currentSwhId += originPart;
+    if (currentSwhId.indexOf(originPart) === -1) {
+      currentSwhId += originPart;
+    }
   } else {
     currentSwhId = currentSwhId.replace(originPart, '');
   }
