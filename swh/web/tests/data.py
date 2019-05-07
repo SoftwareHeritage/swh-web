@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from copy import deepcopy
 import os
 import time
 
@@ -158,6 +159,10 @@ _contents = {}
 def _init_tests_data():
     # Load git repositories from archives
     loader = GitLoaderFromArchive(config=_TEST_LOADER_CONFIG)
+
+    # Get reference to the memory storage
+    storage = loader.storage
+
     for origin in _TEST_ORIGINS:
         nb_visits = len(origin['archives'])
         for i, archive in enumerate(origin['archives']):
@@ -167,9 +172,6 @@ def _init_tests_data():
             loader.load(origin['url'], origin_repo_archive, None)
             if nb_visits > 1 and i != nb_visits - 1:
                 time.sleep(1)
-
-    # Get reference to the memory storage
-    storage = loader.storage
 
     contents = set()
     directories = set()
@@ -233,20 +235,6 @@ def _init_tests_data():
     # Create indexer storage instance that will be shared by indexers
     idx_storage = get_indexer_storage('memory', {})
 
-    # Instantiate content indexers that will be used in tests
-    # and force them to use the memory storages
-    indexers = {}
-    for idx_name, idx_class in (('mimetype_indexer', _MimetypeIndexer),
-                                ('language_indexer', _LanguageIndexer),
-                                ('license_indexer', _FossologyLicenseIndexer),
-                                ('ctags_indexer', _CtagsIndexer)):
-        idx = idx_class()
-        idx.storage = storage
-        idx.objstorage = storage.objstorage
-        idx.idx_storage = idx_storage
-        idx.register_tools(idx.config['tools'])
-        indexers[idx_name] = idx
-
     # Add the empty directory to the test archive
     empty_dir_id = directory_identifier({'entries': []})
     empty_dir_id_bin = hash_to_bytes(empty_dir_id)
@@ -256,15 +244,33 @@ def _init_tests_data():
     return {
         'storage': storage,
         'idx_storage': idx_storage,
-        **indexers,
         'origins': _TEST_ORIGINS,
         'contents': contents,
         'directories': list(directories),
         'persons': list(persons),
         'releases': list(releases),
         'revisions': list(map(hash_to_hex, revisions)),
-        'snapshots': list(snapshots)
+        'snapshots': list(snapshots),
+        'generated_checksums': set(),
     }
+
+
+def _init_indexers(tests_data):
+    # Instantiate content indexers that will be used in tests
+    # and force them to use the memory storages
+    indexers = {}
+    for idx_name, idx_class in (('mimetype_indexer', _MimetypeIndexer),
+                                ('language_indexer', _LanguageIndexer),
+                                ('license_indexer', _FossologyLicenseIndexer),
+                                ('ctags_indexer', _CtagsIndexer)):
+        idx = idx_class()
+        idx.storage = tests_data['storage']
+        idx.objstorage = tests_data['storage'].objstorage
+        idx.idx_storage = tests_data['idx_storage']
+        idx.register_tools(idx.config['tools'])
+        indexers[idx_name] = idx
+
+    return indexers
 
 
 def get_content(content_sha1):
@@ -272,13 +278,27 @@ def get_content(content_sha1):
 
 
 _tests_data = None
+_current_tests_data = None
+_indexer_loggers = {}
 
 
-def get_tests_data():
+def get_tests_data(reset=False):
     """
     Initialize tests data and return them in a dict.
     """
-    global _tests_data
+    global _tests_data, _current_tests_data
     if _tests_data is None:
         _tests_data = _init_tests_data()
-    return _tests_data
+        indexers = _init_indexers(_tests_data)
+        for (name, idx) in indexers.items():
+            # pytest makes the loggers use a temporary file; and deepcopy
+            # requires serializability. So we remove them, and add them
+            # back after the copy.
+            _indexer_loggers[name] = idx.log
+            del idx.log
+        _tests_data.update(indexers)
+    if reset or _current_tests_data is None:
+        _current_tests_data = deepcopy(_tests_data)
+        for (name, logger) in _indexer_loggers.items():
+            _current_tests_data[name].log = logger
+    return _current_tests_data
