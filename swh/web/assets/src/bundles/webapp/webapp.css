@@ -42,7 +42,8 @@ footer {
 }
 
 footer a,
-footer a:visited {
+footer a:visited,
+footer a:hover {
     color: #fecd1b;
 }
 
