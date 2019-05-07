@@ -32,152 +32,130 @@ class WebTestCase(TestCase):
     a json serializable format in order to ease tests implementation.
 
     """
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        tests_data = get_tests_data()
-        cls.storage = tests_data['storage']
-        cls.idx_storage = tests_data['idx_storage']
-        cls.mimetype_indexer = tests_data['mimetype_indexer']
-        cls.language_indexer = tests_data['language_indexer']
-        cls.license_indexer = tests_data['license_indexer']
-        cls.ctags_indexer = tests_data['ctags_indexer']
+    def _pre_setup(self):
+        cache.clear()
+
+        tests_data = get_tests_data(reset=True)
+        self.storage = tests_data['storage']
+        self.idx_storage = tests_data['idx_storage']
+        self.mimetype_indexer = tests_data['mimetype_indexer']
+        self.language_indexer = tests_data['language_indexer']
+        self.license_indexer = tests_data['license_indexer']
+        self.ctags_indexer = tests_data['ctags_indexer']
 
         # Update swh-web configuration to use the in-memory storage
         # instantiated in the tests.data module
         swh_config = config.get_config()
-        swh_config.update({'storage': cls.storage})
-        service.storage = cls.storage
+        swh_config.update({'storage': self.storage})
+        service.storage = self.storage
 
         # Update swh-web configuration to use the in-memory indexer storage
         # instantiated in the tests.data modules
-        swh_config.update({'indexer_storage': cls.idx_storage})
-        service.idx_storage = cls.idx_storage
+        swh_config.update({'indexer_storage': self.idx_storage})
+        service.idx_storage = self.idx_storage
 
-    @classmethod
-    def content_add_mimetype(cls, cnt_id):
-        cls.mimetype_indexer.run([hash_to_bytes(cnt_id)],
-                                 'update-dups')
+        super()._pre_setup()
 
-    @classmethod
-    def content_get_mimetype(cls, cnt_id):
-        mimetype = next(cls.idx_storage.content_mimetype_get(
+    def content_add_mimetype(self, cnt_id):
+        self.mimetype_indexer.run([hash_to_bytes(cnt_id)],
+                                  'update-dups')
+
+    def content_get_mimetype(self, cnt_id):
+        mimetype = next(self.idx_storage.content_mimetype_get(
                         [hash_to_bytes(cnt_id)]))
         return converters.from_filetype(mimetype)
 
-    @classmethod
-    def content_add_language(cls, cnt_id):
-        cls.language_indexer.run([hash_to_bytes(cnt_id)],
-                                 'update-dups')
+    def content_add_language(self, cnt_id):
+        self.language_indexer.run([hash_to_bytes(cnt_id)],
+                                  'update-dups')
 
-    @classmethod
-    def content_get_language(cls, cnt_id):
-        lang = next(cls.idx_storage.content_language_get(
+    def content_get_language(self, cnt_id):
+        lang = next(self.idx_storage.content_language_get(
                     [hash_to_bytes(cnt_id)]))
         return converters.from_swh(lang, hashess={'id'})
 
-    @classmethod
-    def content_add_license(cls, cnt_id):
-        cls.license_indexer.run([hash_to_bytes(cnt_id)],
-                                'update-dups')
+    def content_add_license(self, cnt_id):
+        self.license_indexer.run([hash_to_bytes(cnt_id)],
+                                 'update-dups')
 
-    @classmethod
-    def content_get_license(cls, cnt_id):
+    def content_get_license(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        lic = next(cls.idx_storage.content_fossology_license_get(
+        lic = next(self.idx_storage.content_fossology_license_get(
                    [cnt_id_bytes]))
         return converters.from_swh({'id': cnt_id_bytes,
                                     'facts': lic[cnt_id_bytes]},
                                    hashess={'id'})
 
-    @classmethod
-    def content_add_ctags(cls, cnt_id):
-        cls.ctags_indexer.run([hash_to_bytes(cnt_id)],
-                              'update-dups')
+    def content_add_ctags(self, cnt_id):
+        self.ctags_indexer.run([hash_to_bytes(cnt_id)],
+                               'update-dups')
 
-    @classmethod
-    def content_get_ctags(cls, cnt_id):
+    def content_get_ctags(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        ctags = cls.idx_storage.content_ctags_get([cnt_id_bytes])
+        ctags = self.idx_storage.content_ctags_get([cnt_id_bytes])
         for ctag in ctags:
             yield converters.from_swh(ctag, hashess={'id'})
 
-    @classmethod
-    def content_get_metadata(cls, cnt_id):
+    def content_get_metadata(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        metadata = next(cls.storage.content_get_metadata([cnt_id_bytes]))
+        metadata = next(self.storage.content_get_metadata([cnt_id_bytes]))
         return converters.from_swh(metadata,
                                    hashess={'sha1', 'sha1_git', 'sha256',
                                             'blake2s256'})
 
-    @classmethod
-    def content_get(cls, cnt_id):
+    def content_get(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        cnt = next(cls.storage.content_get([cnt_id_bytes]))
+        cnt = next(self.storage.content_get([cnt_id_bytes]))
         return converters.from_content(cnt)
 
-    @classmethod
-    def directory_ls(cls, dir_id):
+    def directory_ls(self, dir_id):
         cnt_id_bytes = hash_to_bytes(dir_id)
         dir_content = map(converters.from_directory_entry,
-                          cls.storage.directory_ls(cnt_id_bytes))
+                          self.storage.directory_ls(cnt_id_bytes))
         return list(dir_content)
 
-    @classmethod
-    def release_get(cls, rel_id):
+    def release_get(self, rel_id):
         rel_id_bytes = hash_to_bytes(rel_id)
-        rel_data = next(cls.storage.release_get([rel_id_bytes]))
+        rel_data = next(self.storage.release_get([rel_id_bytes]))
         return converters.from_release(rel_data)
 
-    @classmethod
-    def revision_get(cls, rev_id):
+    def revision_get(self, rev_id):
         rev_id_bytes = hash_to_bytes(rev_id)
-        rev_data = next(cls.storage.revision_get([rev_id_bytes]))
+        rev_data = next(self.storage.revision_get([rev_id_bytes]))
         return converters.from_revision(rev_data)
 
-    @classmethod
-    def revision_log(cls, rev_id, limit=None):
+    def revision_log(self, rev_id, limit=None):
         rev_id_bytes = hash_to_bytes(rev_id)
         return list(map(converters.from_revision,
-                    cls.storage.revision_log([rev_id_bytes], limit=limit)))
+                    self.storage.revision_log([rev_id_bytes], limit=limit)))
 
-    @classmethod
-    def snapshot_get_latest(cls, origin_id):
-        snp = cls.storage.snapshot_get_latest(origin_id)
+    def snapshot_get_latest(self, origin_id):
+        snp = self.storage.snapshot_get_latest(origin_id)
         return converters.from_snapshot(snp)
 
-    @classmethod
-    def origin_get(cls, origin_info):
-        origin = cls.storage.origin_get(origin_info)
+    def origin_get(self, origin_info):
+        origin = self.storage.origin_get(origin_info)
         return converters.from_origin(origin)
 
-    @classmethod
-    def origin_visit_get(cls, origin_id):
-        visits = cls.storage.origin_visit_get(origin_id)
+    def origin_visit_get(self, origin_id):
+        visits = self.storage.origin_visit_get(origin_id)
         return list(map(converters.from_origin_visit, visits))
 
-    @classmethod
-    def origin_visit_get_by(cls, origin_id, visit_id):
-        visit = cls.storage.origin_visit_get_by(origin_id, visit_id)
+    def origin_visit_get_by(self, origin_id, visit_id):
+        visit = self.storage.origin_visit_get_by(origin_id, visit_id)
         return converters.from_origin_visit(visit)
 
-    @classmethod
-    def snapshot_get(cls, snapshot_id):
-        snp = cls.storage.snapshot_get(hash_to_bytes(snapshot_id))
+    def snapshot_get(self, snapshot_id):
+        snp = self.storage.snapshot_get(hash_to_bytes(snapshot_id))
         return converters.from_snapshot(snp)
 
-    @classmethod
-    def snapshot_get_branches(cls, snapshot_id, branches_from='',
+    def snapshot_get_branches(self, snapshot_id, branches_from='',
                               branches_count=1000, target_types=None):
-        snp = cls.storage.snapshot_get_branches(hash_to_bytes(snapshot_id),
-                                                branches_from.encode(),
-                                                branches_count, target_types)
+        snp = self.storage.snapshot_get_branches(
+            hash_to_bytes(snapshot_id), branches_from.encode(),
+            branches_count, target_types)
         return converters.from_snapshot(snp)
 
-    @classmethod
-    def person_get(cls, person_id):
-        person = next(cls.storage.person_get([person_id]))
+    def person_get(self, person_id):
+        person = next(self.storage.person_get([person_id]))
         return converters.from_person(person)
-
-    def setUp(self):
-        cache.clear()
