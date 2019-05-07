@@ -32,26 +32,21 @@ hypothesis_default_settings = settings.get_profile('default')
 if repr(settings()) == repr(hypothesis_default_settings):
     settings.load_profile('swh-web')
 
-# Import tests data
-tests_data = get_tests_data()
-storage = tests_data['storage']
-
 
 # The following strategies exploit the hypothesis capabilities
 
-_generated_checksums = set()
-
 
 def _filter_checksum(cs):
+    generated_checksums = get_tests_data()['generated_checksums']
     if not int.from_bytes(cs, byteorder='little') or \
-            cs in _generated_checksums:
+            cs in generated_checksums:
         return False
-    _generated_checksums.add(cs)
+    generated_checksums.add(cs)
     return True
 
 
 def _known_swh_object(object_type):
-    return sampled_from(tests_data[object_type])
+    return sampled_from(get_tests_data()[object_type])
 
 
 def sha1():
@@ -152,8 +147,8 @@ def unknown_content():
     into the test archive.
     """
     return new_content().filter(
-        lambda c: next(storage.content_get(
-            [hash_to_bytes(c['sha1'])])) is None)
+        lambda c: next(get_tests_data()['storage'].content_get(
+             [hash_to_bytes(c['sha1'])])) is None)
 
 
 def unknown_contents():
@@ -177,6 +172,7 @@ def directory_with_subdirs():
     Hypothesis strategy returning a random directory containing
     sub directories ingested into the test archive.
     """
+    storage = get_tests_data()['storage']
     return directory().filter(
         lambda d: any([e['type'] == 'dir'
                       for e in list(storage.directory_ls(hash_to_bytes(d)))]))
@@ -195,6 +191,7 @@ def unknown_directory():
     Hypothesis strategy returning a random directory not ingested
     into the test archive.
     """
+    storage = get_tests_data()['storage']
     return sha1().filter(
         lambda s: len(list(storage.directory_missing([hash_to_bytes(s)]))) > 0)
 
@@ -213,8 +210,9 @@ def origin_with_multiple_visits():
     into the test archive.
     """
     ret = []
+    tests_data = get_tests_data()
     for origin in tests_data['origins']:
-        visits = list(storage.origin_visit_get(origin['id']))
+        visits = list(tests_data['storage'].origin_visit_get(origin['id']))
         if len(visits) > 1:
             ret.append(origin)
     return sampled_from(ret)
@@ -226,8 +224,9 @@ def origin_with_release():
     into the test archive.
     """
     ret = []
+    tests_data = get_tests_data()
     for origin in tests_data['origins']:
-        snapshot = storage.snapshot_get_latest(origin['id'])
+        snapshot = tests_data['storage'].snapshot_get_latest(origin['id'])
         if any([b['target_type'] == 'release'
                 for b in snapshot['branches'].values()]):
             ret.append(origin)
@@ -247,6 +246,7 @@ def new_origin():
     Hypothesis strategy returning a random origin not ingested
     into the test archive.
     """
+    storage = get_tests_data()['storage']
     return new_origin_strategy().map(lambda origin: origin.to_dict()).filter(
         lambda origin: storage.origin_get([origin])[0] is None)
 
@@ -288,7 +288,7 @@ def unknown_release():
     into the test archive.
     """
     return sha1().filter(
-        lambda s: next(storage.release_get([s])) is None)
+        lambda s: next(get_tests_data()['storage'].release_get([s])) is None)
 
 
 def revision():
@@ -304,6 +304,7 @@ def unknown_revision():
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
+    storage = get_tests_data()['storage']
     return sha1().filter(
         lambda s: next(storage.revision_get([hash_to_bytes(s)])) is None)
 
@@ -398,6 +399,7 @@ def unknown_snapshot():
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
+    storage = get_tests_data()['storage']
     return sha1().filter(
         lambda s: storage.snapshot_get(hash_to_bytes(s)) is None)
 
@@ -419,6 +421,8 @@ def unknown_person():
 
 
 def _get_origin_dfs_revisions_walker():
+    tests_data = get_tests_data()
+    storage = tests_data['storage']
     origin = random.choice(tests_data['origins'][:-1])
     snapshot = storage.snapshot_get_latest(origin['id'])
     head = snapshot['branches'][b'HEAD']['target']
