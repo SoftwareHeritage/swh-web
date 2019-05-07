@@ -10,6 +10,7 @@
 
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
+from django.utils.html import escape
 
 from swh.model.identifiers import snapshot_identifier
 
@@ -117,7 +118,7 @@ def _branch_not_found(branch_type, branch, branches, snapshot_id=None,
               ' and url %s not found!' % (branch_type, branch, timestamp,
                                           origin_info['type'],
                                           origin_info['url'])
-    raise NotFoundExc(msg)
+    raise NotFoundExc(escape(msg))
 
 
 def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
