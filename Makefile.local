@@ -28,22 +28,26 @@ run-migrations-prod:
 	django-admin migrate --settings=swh.web.settings.production 2>/dev/null
 	django-admin createcachetable --settings=swh.web.settings.production 2>/dev/null
 
+.PHONY: clear-memcached
+clear-memcached:
+	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
+
 run-django-webpack-devserver: run-migrations yarn-install
 	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & cd swh/web && python3 manage.py runserver --nostatic"
 
 run-django-webpack-dev: build-webpack-dev run-migrations
 	python3 swh/web/manage.py runserver --nostatic
 
-run-django-webpack-prod: build-webpack-prod run-migrations-prod
+run-django-webpack-prod: build-webpack-prod run-migrations-prod clear-memcached
 	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production
 
 run-django-server-dev: run-migrations
 	python3 swh/web/manage.py runserver --nostatic
 
-run-django-server-prod: run-migrations-prod
+run-django-server-prod: run-migrations-prod clear-memcached
 	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production
 
-run-gunicorn-server: run-migrations
+run-gunicorn-server: run-migrations clear-memcached
 	gunicorn3 -b 127.0.0.1:5004 swh.web.wsgi
 
 test-full:
