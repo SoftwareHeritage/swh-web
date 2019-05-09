@@ -50,6 +50,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
             'sha1:%s.' % unknown_content['sha1']
         })
 
+    @pytest.mark.xfail  # Language indexer is disabled
     @given(content())
     def test_api_content_language(self, content):
 
