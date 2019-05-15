@@ -18,7 +18,7 @@ from swh.web.browse.utils import (
     get_snapshot_context, get_directory_entries, gen_directory_link,
     gen_revision_link, request_content, gen_content_link,
     prepare_content_for_display, content_display_max_size,
-    format_log_entries, gen_revision_log_link, gen_link,
+    format_log_entries, gen_revision_log_link,
     get_readme_to_display, get_swh_persistent_ids,
     gen_snapshot_link, process_snapshot_branches
 )
@@ -529,11 +529,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         content_metadata['origin type'] = origin_info['type']
         content_metadata['origin url'] = origin_info['url']
         content_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
-        browse_snapshot_url = reverse('browse-snapshot-content',
-                                      url_args={'snapshot_id': snapshot_id,
-                                                'path': path},
-                                      query_params=request.GET)
-        browse_snapshot_link = gen_link(browse_snapshot_url)
+        browse_snapshot_link = gen_snapshot_link(snapshot_id)
         content_metadata['context-independent snapshot'] = browse_snapshot_link
 
     swh_objects = [{'type': 'content',
