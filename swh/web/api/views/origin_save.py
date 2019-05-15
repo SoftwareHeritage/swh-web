@@ -51,7 +51,7 @@ def api_save_origin(request, origin_type, origin_url):
         for the same origin).
 
         :param string origin_type: the type of origin to save
-            (currently only ``git`` but ``hg`` and ``svn`` will soon be available)
+            (currently the supported types are ``git``, ``hg`` and ``svn``)
         :param string origin_url: the url of the origin to save
 
         :reqheader Accept: the requested response content type,
