@@ -12,6 +12,7 @@ import textwrap
 
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 from importlib import reload
 
@@ -489,7 +490,8 @@ def gen_link(url, link_text=None, link_attrs=None):
             attrs += '%s="%s" ' % (k, v)
     if not link_text:
         link_text = url
-    link = '<a%shref="%s">%s</a>' % (attrs, url, link_text)
+    link = '<a%shref="%s">%s</a>' \
+        % (attrs, escape(url), escape(link_text))
     return mark_safe(link)
 
 
@@ -861,7 +863,7 @@ def get_origin_info(origin_url, origin_type=None):
                 return origin_info
             except Exception:
                 pass
-    raise NotFoundExc('Origin with url %s not found!' % origin_url)
+    raise NotFoundExc('Origin with url %s not found!' % escape(origin_url))
 
 
 def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
@@ -923,7 +925,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
         if not snapshot_id:
             raise NotFoundExc('No snapshot associated to the visit of origin '
-                              '%s on %s' % (origin_url, fmt_date))
+                              '%s on %s' % (escape(origin_url), fmt_date))
 
         # provided timestamp is not necessarily equals to the one
         # of the retrieved visit, so get the exact one in order

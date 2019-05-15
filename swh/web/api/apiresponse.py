@@ -6,6 +6,8 @@
 import json
 import traceback
 
+from django.utils.html import escape
+
 from rest_framework.response import Response
 
 from swh.storage.exc import StorageDBError, StorageAPIError
@@ -177,6 +179,10 @@ def error_response(request, error, doc_data):
         'exception': error.__class__.__name__,
         'reason': str(error),
     }
+
+    if request.accepted_media_type == 'text/html':
+        error_data['reason'] = escape(error_data['reason'])
+
     if get_config()['debug']:
         error_data['traceback'] = traceback.format_exc()
 

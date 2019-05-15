@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.utils.html import escape
 
 from swh.web import config
 from swh.web.common import service
@@ -127,7 +128,7 @@ def _check_origin_url_valid(origin_url):
         _validate_url(origin_url)
     except ValidationError:
         raise BadInputExc('The provided origin url (%s) is not valid!' %
-                          origin_url)
+                          escape(origin_url))
 
 
 def _get_visit_info_for_save_request(save_request):
