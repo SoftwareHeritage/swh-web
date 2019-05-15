@@ -70,6 +70,8 @@ def api_content_language(request, q):
 
         Get information about the programming language used in a content object.
 
+        Note: this endpoint currently returns no data.
+
         :param string hash_type: optional parameter specifying which hashing algorithm has been used
             to compute the content checksum. It can be either ``sha1``, ``sha1_git``, ``sha256``
             or ``blake2s256``. If that parameter is not provided, it is assumed that the

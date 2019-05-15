@@ -120,7 +120,7 @@ See top-level LICENSE file for more information
   var branch = false;
   {% if snapshot_context %}
     snapshotContext = true;
-    branch = {{ snapshot_context.branch|jsonify }};
+    branch = "{{ snapshot_context.branch|escape }}";
   {% endif %}
-  swh.browse.initSnapshotNavigation(snapshotContext, branch);
+  swh.browse.initSnapshotNavigation(snapshotContext, branch !== "None");
 </script>
