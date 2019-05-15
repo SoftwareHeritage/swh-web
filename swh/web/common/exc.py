@@ -8,6 +8,7 @@ import traceback
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 from swh.web.config import get_config
 
@@ -68,7 +69,7 @@ def swh_handle400(request):
     """
     error_description = 'The server cannot process the request to %s due to '\
                         'something that is perceived to be a client error.' %\
-                        request.META['PATH_INFO']
+                        escape(request.META['PATH_INFO'])
     return _generate_error_page(request, 400, error_description)
 
 
@@ -77,7 +78,7 @@ def swh_handle403(request):
     Custom Django HTTP error 403 handler for swh-web.
     """
     error_description = 'The resource %s requires an authentication.' %\
-                        request.META['PATH_INFO']
+                        escape(request.META['PATH_INFO'])
     return _generate_error_page(request, 403, error_description)
 
 
@@ -86,7 +87,7 @@ def swh_handle404(request):
     Custom Django HTTP error 404 handler for swh-web.
     """
     error_description = 'The resource %s could not be found on the server.' %\
-                        request.META['PATH_INFO']
+                        escape(request.META['PATH_INFO'])
     return _generate_error_page(request, 404, error_description)
 
 
@@ -96,7 +97,7 @@ def swh_handle500(request):
     """
     error_description = 'An unexpected condition was encountered when '\
                         'requesting resource %s.' %\
-                        request.META['PATH_INFO']
+                        escape(request.META['PATH_INFO'])
     return _generate_error_page(request, 500, error_description)
 
 

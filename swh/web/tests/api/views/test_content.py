@@ -50,6 +50,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
             'sha1:%s.' % unknown_content['sha1']
         })
 
+    @pytest.mark.xfail  # Language indexer is disabled
     @given(content())
     def test_api_content_language(self, content):
 
@@ -81,6 +82,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
             'sha1:%s.' % unknown_content['sha1']
         })
 
+    @pytest.mark.xfail  # Language indexer is disabled
     @pytest.mark.skipif(ctags_json_missing,
                         reason="requires ctags with json output support")
     @given(contents_with_ctags())

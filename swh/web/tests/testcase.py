@@ -39,7 +39,6 @@ class WebTestCase(TestCase):
         self.storage = tests_data['storage']
         self.idx_storage = tests_data['idx_storage']
         self.mimetype_indexer = tests_data['mimetype_indexer']
-        self.language_indexer = tests_data['language_indexer']
         self.license_indexer = tests_data['license_indexer']
         self.ctags_indexer = tests_data['ctags_indexer']
 
@@ -66,6 +65,7 @@ class WebTestCase(TestCase):
         return converters.from_filetype(mimetype)
 
     def content_add_language(self, cnt_id):
+        raise NotImplementedError('Language indexer is disabled.')
         self.language_indexer.run([hash_to_bytes(cnt_id)],
                                   'update-dups')
 

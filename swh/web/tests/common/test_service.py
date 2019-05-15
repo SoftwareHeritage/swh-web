@@ -125,6 +125,7 @@ class ServiceTestCase(WebTestCase):
         expected_filetype = self.content_get_mimetype(content['sha1'])
         self.assertEqual(actual_filetype, expected_filetype)
 
+    @pytest.mark.xfail  # Language indexer is disabled.
     @given(content())
     def test_lookup_content_language(self, content):
 

@@ -42,7 +42,8 @@ footer {
 }
 
 footer a,
-footer a:visited {
+footer a:visited,
+footer a:hover {
     color: #fecd1b;
 }
 
@@ -469,4 +470,8 @@ tr.swh-tr-hover-highlight:hover td {
 
 tr.swh-api-doc-route a {
     text-decoration: none;
+}
+
+.swh-apidoc .col {
+    margin: 10px;
 }

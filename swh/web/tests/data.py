@@ -7,7 +7,6 @@ from copy import deepcopy
 import os
 import time
 
-from swh.indexer.language import LanguageIndexer
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
@@ -72,23 +71,6 @@ class _MimetypeIndexer(MimetypeIndexer):
                 'configuration': {
                     "type": "library",
                     "debian-package": "python3-magic"
-                }
-            }
-        }
-
-
-# LanguageIndexer with custom configuration for tests
-class _LanguageIndexer(LanguageIndexer):
-    def parse_config_file(self, *args, **kwargs):
-        return {
-            **_TEST_INDEXER_BASE_CONFIG,
-            'tools': {
-                'name': 'pygments',
-                'version': '2.0.1+dfsg-1.1+deb8u1',
-                'configuration': {
-                    'type': 'library',
-                    'debian-package': 'python3-pygments',
-                    'max_content_size': 10240,
                 }
             }
         }
@@ -260,7 +242,6 @@ def _init_indexers(tests_data):
     # and force them to use the memory storages
     indexers = {}
     for idx_name, idx_class in (('mimetype_indexer', _MimetypeIndexer),
-                                ('language_indexer', _LanguageIndexer),
                                 ('license_indexer', _FossologyLicenseIndexer),
                                 ('ctags_indexer', _CtagsIndexer)):
         idx = idx_class()
