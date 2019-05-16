@@ -88,7 +88,7 @@ def lookup_hash(q):
 
     """
     algo, hash = query.parse_hash(q)
-    found = storage.content_find({algo: hash})
+    found = _first_element(storage.content_find({algo: hash}))
     return {'found': converters.from_content(found),
             'algo': algo}
 
@@ -103,7 +103,7 @@ def search_hash(q):
 
     """
     algo, hash = query.parse_hash(q)
-    found = storage.content_find({algo: hash})
+    found = _first_element(storage.content_find({algo: hash}))
     return {'found': found is not None}
 
 
@@ -119,7 +119,7 @@ def _lookup_content_sha1(q):
     """
     algo, hash = query.parse_hash(q)
     if algo != 'sha1':
-        hashes = storage.content_find({algo: hash})
+        hashes = _first_element(storage.content_find({algo: hash}))
         if not hashes:
             return None
         return hashes['sha1']
@@ -690,25 +690,20 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
 
     """
     sha1_git_bin = _to_sha1_bin(sha1_git)
-
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
         raise NotFoundExc('Revision %s not found' % sha1_git)
-
     dir_sha1_git_bin = revision['directory']
-
     if dir_path:
         paths = dir_path.strip(os.path.sep).split(os.path.sep)
         entity = storage.directory_entry_get_by_path(
             dir_sha1_git_bin, list(map(lambda p: p.encode('utf-8'), paths)))
-
         if not entity:
             raise NotFoundExc(
                 "Directory or File '%s' pointed to by revision %s not found"
                 % (dir_path, sha1_git))
     else:
         entity = {'type': 'dir', 'target': dir_sha1_git_bin}
-
     if entity['type'] == 'dir':
         directory_entries = storage.directory_ls(entity['target']) or []
         return {'type': 'dir',
@@ -717,7 +712,11 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
                 'content': list(map(converters.from_directory_entry,
                                     directory_entries))}
     elif entity['type'] == 'file':  # content
-        content = storage.content_find({'sha1_git': entity['target']})
+        content = _first_element(
+            storage.content_find({'sha1_git': entity['target']}))
+        if not content:
+            raise NotFoundExc('Content not found for revision %s'
+                              % sha1_git)
         if with_data:
             c = _first_element(storage.content_get([content['sha1']]))
             content['data'] = c['data']
@@ -747,7 +746,7 @@ def lookup_content(q):
 
     """
     algo, hash = query.parse_hash(q)
-    c = storage.content_find({algo: hash})
+    c = _first_element(storage.content_find({algo: hash}))
     if not c:
         raise NotFoundExc('Content with %s checksum equals to %s not found!' %
                           (algo, hashutil.hash_to_hex(hash)))
