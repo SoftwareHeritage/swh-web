@@ -15,7 +15,6 @@ requests
 python-memcached
 sphinx
 sphinxcontrib-httpdomain
-swh.core>=0.0.57
 swh.model>=0.0.32
 swh.storage>=0.0.140
 swh.vault>=0.0.23
@@ -26,4 +25,5 @@ swh.scheduler>=0.0.31
 pytest
 pytest-django
 hypothesis
+swh.core[http]>=0.0.61
 swh.loader.git>=0.0.47

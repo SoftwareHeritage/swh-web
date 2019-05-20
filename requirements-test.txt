@@ -1,4 +1,5 @@
 pytest
 pytest-django
 hypothesis
+swh.core[http] >= 0.0.61
 swh.loader.git >= 0.0.47

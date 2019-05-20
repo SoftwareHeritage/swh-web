@@ -171,8 +171,8 @@ swh/web/static/css/vault.d3301724e72732613d37.css
 swh/web/static/css/vault.d3301724e72732613d37.css.map
 swh/web/static/css/vendors.03855ba2d5707029b254.css
 swh/web/static/css/vendors.03855ba2d5707029b254.css.map
-swh/web/static/css/webapp.705444d32d34e3bc5043.css
-swh/web/static/css/webapp.705444d32d34e3bc5043.css.map
+swh/web/static/css/webapp.b979e897536467ca4793.css
+swh/web/static/css/webapp.b979e897536467ca4793.css.map
 swh/web/static/fonts/alegreya-latin-400.woff
 swh/web/static/fonts/alegreya-latin-400.woff2
 swh/web/static/fonts/alegreya-latin-400italic.woff
@@ -254,8 +254,8 @@ swh/web/static/img/logos/googlecode.png
 swh/web/static/img/logos/hal.png
 swh/web/static/img/logos/inria.jpg
 swh/web/static/img/logos/pypi.svg
-swh/web/static/js/admin.728881fdb561789879dd.js
-swh/web/static/js/admin.728881fdb561789879dd.js.map
+swh/web/static/js/admin.e72f14c77b3a7af60340.js
+swh/web/static/js/admin.e72f14c77b3a7af60340.js.map
 swh/web/static/js/browse.f07d52177a412e075463.js
 swh/web/static/js/browse.f07d52177a412e075463.js.map
 swh/web/static/js/highlightjs.932df6c1a60ab424d6d3.js
@@ -275,8 +275,8 @@ swh/web/static/js/vault.d3301724e72732613d37.js
 swh/web/static/js/vault.d3301724e72732613d37.js.map
 swh/web/static/js/vendors.03855ba2d5707029b254.js
 swh/web/static/js/vendors.03855ba2d5707029b254.js.map
-swh/web/static/js/webapp.705444d32d34e3bc5043.js
-swh/web/static/js/webapp.705444d32d34e3bc5043.js.map
+swh/web/static/js/webapp.b979e897536467ca4793.js
+swh/web/static/js/webapp.b979e897536467ca4793.js.map
 swh/web/static/jssources/LICENSE.txt
 swh/web/static/jssources/jslicenses.json
 swh/web/static/jssources/@babel/polyfill/LICENSE.txt
