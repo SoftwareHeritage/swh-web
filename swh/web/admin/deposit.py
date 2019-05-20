@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -71,15 +71,21 @@ def _admin_deposit_list(request):
         data = paginator.page(page).object_list
         table_data['recordsTotal'] = deposits_data['count']
         table_data['recordsFiltered'] = len(deposits)
-        table_data['data'] = [{'id': d['id'],
-                               'external_id': d['external_id'],
-                               'reception_date': d['reception_date'],
-                               'status': d['status'],
-                               'status_detail': d['status_detail'],
-                               'swh_id': d['swh_id']
-                               } for d in data]
+        table_data['data'] = [{
+            'id': d['id'],
+            'external_id': d['external_id'],
+            'reception_date': d['reception_date'],
+            'status': d['status'],
+            'status_detail': d['status_detail'],
+            'swh_anchor_id': d['swh_anchor_id'],
+            'swh_anchor_id_context': d['swh_anchor_id_context'],
+            'swh_id': d['swh_id'],
+            'swh_id_context': d['swh_id_context']
+         } for d in data]
+
     except Exception:
-        table_data['error'] = 'An error occurred while retrieving the list of deposits !' # noqa
+        table_data['error'] = ('An error occurred while retrieving '
+                               'the list of deposits !')
 
     return HttpResponse(json.dumps(table_data),
                         content_type='application/json')

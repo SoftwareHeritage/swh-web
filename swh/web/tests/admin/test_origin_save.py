@@ -142,7 +142,7 @@ class OriginSaveAdminTestCase(WebTestCase):
             {
                 'priority': 'high',
                 'policy': 'oneshot',
-                'type': 'origin-update-git',
+                'type': 'load-git',
                 'arguments': {
                     'kwargs': {
                         'repo_url': origin_url
@@ -195,7 +195,7 @@ class OriginSaveAdminTestCase(WebTestCase):
             {
                 'priority': 'high',
                 'policy': 'oneshot',
-                'type': 'origin-update-git',
+                'type': 'load-git',
                 'arguments': {
                     'kwargs': {
                         'repo_url': origin_url
