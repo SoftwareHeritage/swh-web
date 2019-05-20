@@ -60,7 +60,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                 [{
                     'priority': 'high',
                     'policy': 'oneshot',
-                    'type': 'origin-update-git',
+                    'type': 'load-git',
                     'arguments': {
                         'kwargs': {
                             'repo_url': origin_url
@@ -75,7 +75,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
             [{
                 'priority': 'high',
                 'policy': 'oneshot',
-                'type': 'origin-update-git',
+                'type': 'load-git',
                 'arguments': {
                     'kwargs': {
                         'repo_url': origin_url
@@ -114,7 +114,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
             [{
                 'priority': 'high',
                 'policy': 'oneshot',
-                'type': 'origin-update-git',
+                'type': 'load-git',
                 'arguments': {
                     'kwargs': {
                         'repo_url': origin_url
