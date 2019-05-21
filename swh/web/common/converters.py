@@ -227,7 +227,11 @@ class SWHMetadataEncoder(json.JSONEncoder):
     """
     def default(self, obj):
         if isinstance(obj, bytes):
-            return obj.decode('utf-8')
+            try:
+                return obj.decode('utf-8')
+            except UnicodeDecodeError:
+                # fallback to binary representation to avoid display errors
+                return repr(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
 
