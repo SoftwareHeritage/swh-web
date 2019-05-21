@@ -1,6 +1,6 @@
 {
   "name": "swh-web",
-  "version": "0.0.198",
+  "version": "0.0.199",
   "description": "Static assets management for swh-web",
   "scripts": {
     "build-dev": "NODE_ENV=development webpack --config ./swh/web/assets/config/webpack.config.development.js --display-modules --progress --colors",
@@ -92,7 +92,8 @@
     "webpack": "^4.31.0",
     "webpack-bundle-tracker": "^0.4.2-beta",
     "webpack-cli": "^3.3.2",
-    "webpack-dev-server": "^3.3.1"
+    "webpack-dev-server": "^3.4.1",
+    "wepack": "^0.0.1"
   },
   "browserslist": [
     "cover 99.5%",
