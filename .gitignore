@@ -31,4 +31,4 @@ dist/
 .tox/
 debian/
 package-lock.json
-
+yarn-error.log

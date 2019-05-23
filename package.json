@@ -45,12 +45,12 @@
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.4",
+    "@babel/core": "^7.4.5",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/polyfill": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
-    "@babel/runtime-corejs2": "^7.4.4",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/runtime-corejs2": "^7.4.5",
     "autoprefixer": "^9.5.1",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.6",
@@ -63,7 +63,7 @@
     "eslint": "^5.15.3",
     "eslint-loader": "^2.1.2",
     "eslint-plugin-import": "^2.17.2",
-    "eslint-plugin-node": "^9.0.1",
+    "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "exports-loader": "^0.7.0",
@@ -89,11 +89,10 @@
     "stylelint-config-standard": "^18.3.0",
     "terser-webpack-plugin": "^1.2.4",
     "url-loader": "^1.1.2",
-    "webpack": "^4.31.0",
+    "webpack": "^4.32.2",
     "webpack-bundle-tracker": "^0.4.2-beta",
     "webpack-cli": "^3.3.2",
-    "webpack-dev-server": "^3.4.1",
-    "wepack": "^0.0.1"
+    "webpack-dev-server": "^3.4.1"
   },
   "browserslist": [
     "cover 99.5%",
