@@ -359,6 +359,10 @@ ul.nav-sidebar a {
     .swh-navbar-content h4 {
         font-size: 1rem;
     }
+
+    .swh-donate-link {
+        display: none;
+    }
 }
 
 .form-check-label {
