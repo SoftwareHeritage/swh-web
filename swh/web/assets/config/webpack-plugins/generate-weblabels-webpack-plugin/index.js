@@ -33,6 +33,7 @@ class GenerateWebLabelsPlugin {
     this.srcExtsRegexp = new RegExp('^.*.(' + this.srcExts.join('|') + ')$');
     this.chunkNameToJsAsset = {};
     this.chunkJsAssetToSrcFiles = {};
+    this.srcIdsInChunkJsAsset = {};
     this.packageJsonCache = {};
     this.packageLicenseFile = {};
     this.exclude = [];
@@ -113,6 +114,7 @@ class GenerateWebLabelsPlugin {
           // init the chunk to source files mapping if needed
           if (!this.chunkJsAssetToSrcFiles.hasOwnProperty(chunkJsAsset)) {
             this.chunkJsAssetToSrcFiles[chunkJsAsset] = [];
+            this.srcIdsInChunkJsAsset[chunkJsAsset] = new Set();
           }
           // check if the source file needs to be replaces
           if (this.options['srcReplace'] && this.options['srcReplace'].hasOwnProperty(srcFilePath)) {
@@ -168,7 +170,7 @@ class GenerateWebLabelsPlugin {
           srcFileData['src_url'] = stats.publicPath + path.join(this.weblabelsDirName, srcFileData['id']);
 
           // add source file metadata to the webpack chunk
-          this.chunkJsAssetToSrcFiles[chunkJsAsset].push(srcFileData);
+          this.addSrcFileDataToJsChunkAsset(chunkJsAsset, srcFileData);
           // copy non-minified source to output folder
           this.copyFileToOutputPath(srcFilePath);
         });
@@ -182,6 +184,7 @@ class GenerateWebLabelsPlugin {
             script = stats.publicPath + script;
           }
           this.chunkJsAssetToSrcFiles[script] = [];
+          this.srcIdsInChunkJsAsset[script] = new Set();
           for (let scriptSrc of scriptFilesData) {
             let scriptSrcData = {'id': scriptSrc['id']};
             let licenceFilePath = scriptSrc['licenseFilePath'];
@@ -197,7 +200,7 @@ class GenerateWebLabelsPlugin {
             } else {
               scriptSrcData['src_url'] = scriptSrc['path'];
             }
-            this.chunkJsAssetToSrcFiles[script].push(scriptSrcData);
+            this.addSrcFileDataToJsChunkAsset(script, scriptSrcData);
             this.copyFileToOutputPath(scriptSrc['path']);
           }
         }
@@ -219,6 +222,13 @@ class GenerateWebLabelsPlugin {
                        });
       }
     });
+  }
+
+  addSrcFileDataToJsChunkAsset(chunkJsAsset, srcFileData) {
+    if (!this.srcIdsInChunkJsAsset[chunkJsAsset].has(srcFileData['id'])) {
+      this.chunkJsAssetToSrcFiles[chunkJsAsset].push(srcFileData);
+      this.srcIdsInChunkJsAsset[chunkJsAsset].add(srcFileData['id']);
+    }
   }
 
   cleanupPath(moduleFilePath) {
