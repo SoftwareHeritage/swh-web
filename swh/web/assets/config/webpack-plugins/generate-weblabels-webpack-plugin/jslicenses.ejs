@@ -39,7 +39,13 @@
              let bundled_js_srcs = jslicenses_data[jsasset]; %>
           <tr>
             <td>
-              <a href="<%= jsasset %>"><%= jsasset.split('/').slice(-1)[0] %></a>
+              <a href="<%= jsasset %>">
+              <% if (jsasset.split('/').slice(-1)[0]) { %>
+                <%= jsasset.split('/').slice(-1)[0] %>
+              <% } else { %>
+                <%= jsasset %>
+              <% } %>
+              </a>
             </td>
             <td>
               <% for (let i = 0; i < bundled_js_srcs.length ; ++i) {

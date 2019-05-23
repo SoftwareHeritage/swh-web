@@ -178,7 +178,7 @@ class GenerateWebLabelsPlugin {
       if (this.options['additionalScripts']) {
         for (let script of Object.keys(this.options['additionalScripts'])) {
           let scriptFilesData = this.options['additionalScripts'][script];
-          if (script.indexOf('://') === -1) {
+          if (script.indexOf('://') === -1 && !script.startsWith('/')) {
             script = stats.publicPath + script;
           }
           this.chunkJsAssetToSrcFiles[script] = [];
@@ -192,7 +192,7 @@ class GenerateWebLabelsPlugin {
             scriptSrcData['licenses'].forEach(license => {
               license['copy_url'] = licenseCopyUrl;
             });
-            if (scriptSrc['path'].indexOf('://') === -1) {
+            if (scriptSrc['path'].indexOf('://') === -1 && !scriptSrc['path'].startsWith('/')) {
               scriptSrcData['src_url'] = stats.publicPath + path.join(this.weblabelsDirName, scriptSrc['id']);
             } else {
               scriptSrcData['src_url'] = scriptSrc['path'];
@@ -355,7 +355,8 @@ class GenerateWebLabelsPlugin {
   }
 
   copyFileToOutputPath(srcFilePath, ext = '') {
-    if (this.copiedFiles.has(srcFilePath) || srcFilePath.indexOf('://') !== -1) {
+    if (this.copiedFiles.has(srcFilePath) || srcFilePath.indexOf('://') !== -1 ||
+        !fs.existsSync(srcFilePath)) {
       return;
     }
     let destPath = this.cleanupPath(srcFilePath);
