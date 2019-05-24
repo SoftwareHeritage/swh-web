@@ -235,7 +235,7 @@ a.dropdown-left::before {
 }
 
 #back-to-top {
-    display: initial;
+    display: none;
     position: fixed;
     bottom: 30px;
     right: 30px;
