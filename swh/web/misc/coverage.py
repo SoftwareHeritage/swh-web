@@ -93,6 +93,15 @@ code_providers = [
         'origin_types': 'repositories',
     },
     {
+        'provider_id': 'npm',
+        'provider_url': 'https://www.npmjs.com/',
+        'provider_logo': 'img/logos/npm.png',
+        'provider_info': 'public packages from the package registry for '
+                         'javascript (continuously archived)',
+        'origin_url_regexp': '^https://www.npmjs.com/',
+        'origin_types': 'packages',
+    },
+    {
         'provider_id': 'pypi',
         'provider_url': 'https://pypi.org',
         'provider_logo': 'img/logos/pypi.svg',
