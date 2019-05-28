@@ -11,6 +11,7 @@ from django.utils.html import escape
 
 from hypothesis import given
 
+from swh.model.hashutil import hash_to_bytes
 from swh.web.browse.utils import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
@@ -19,7 +20,8 @@ from swh.web.common.utils import (
 )
 from swh.web.tests.data import get_content
 from swh.web.tests.strategies import (
-    origin, origin_with_multiple_visits
+    origin, origin_with_multiple_visits, new_origin,
+    new_snapshot, visit_dates, revisions
 )
 from swh.web.tests.testcase import WebTestCase
 
@@ -679,6 +681,30 @@ class SwhBrowseOriginTest(WebTestCase):
         origin['type'] = None
 
         self.origin_releases_helper(origin, snapshot_content)
+
+    @given(new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
+           revisions(min_size=3, max_size=3))
+    def test_origin_snapshot_null_branch(self, new_origin, new_snapshot,
+                                         visit_dates, revisions):
+        snp_dict = new_snapshot.to_dict()
+        new_origin = self.storage.origin_add([new_origin])[0]
+        for i, branch in enumerate(snp_dict['branches'].keys()):
+            if i == 0:
+                snp_dict['branches'][branch] = None
+            else:
+                snp_dict['branches'][branch]['target_type'] = 'revision'
+                snp_dict['branches'][branch]['target'] = hash_to_bytes(
+                    revisions[i-1])
+        self.storage.snapshot_add([snp_dict])
+        visit = self.storage.origin_visit_add(new_origin['id'], visit_dates[0])
+        self.storage.origin_visit_update(new_origin['id'], visit['visit'],
+                                         status='partial',
+                                         snapshot=snp_dict['id'])
+
+        url = reverse('browse-origin-directory',
+                      url_args={'origin_url': new_origin['url']})
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200)
 
     @patch('swh.web.browse.views.utils.snapshot_context.request_content')
     @patch('swh.web.common.origin_visits.get_origin_visits')

@@ -362,20 +362,20 @@ def new_revision(draw):
     }
 
 
-def revisions():
+def revisions(min_size=2, max_size=8):
     """
     Hypothesis strategy returning random revisions ingested
     into the test archive.
     """
-    return lists(revision(), min_size=2, max_size=8)
+    return lists(revision(), min_size=min_size, max_size=max_size)
 
 
-def unknown_revisions():
+def unknown_revisions(min_size=2, max_size=8):
     """
     Hypothesis strategy returning random revisions not ingested
     into the test archive.
     """
-    return lists(unknown_revision(), min_size=2, max_size=8)
+    return lists(unknown_revision(), min_size=min_size, max_size=max_size)
 
 
 def snapshot():
