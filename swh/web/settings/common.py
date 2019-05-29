@@ -243,3 +243,5 @@ CACHES = {
         'LOCATION': 'swh_web_cache',
     }
 }
+
+JS_REVERSE_JS_MINIFY = False

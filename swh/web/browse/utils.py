@@ -370,6 +370,9 @@ def process_snapshot_branches(snapshot):
                                           branches_count=1)
             if snp and branch_target in snp['branches']:
 
+                if snp['branches'][branch_target] is None:
+                    continue
+
                 target_type = snp['branches'][branch_target]['target_type']
                 target = snp['branches'][branch_target]['target']
                 if target_type == 'revision':

@@ -380,6 +380,14 @@ module.exports = {
               'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
 
             }
+          ],
+          '/jsreverse/': [
+            {
+              'id': 'jsreverse',
+              'path': '/jsreverse/',
+              'spdxLicenseExpression': 'AGPL-3.0-or-later',
+              'licenseFilePath': './LICENSE'
+            }
           ]
         },
         loadedMathJaxJsFiles

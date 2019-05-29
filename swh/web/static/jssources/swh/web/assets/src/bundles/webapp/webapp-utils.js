@@ -124,6 +124,18 @@ $(document).ready(() => {
       selectCode(e, selectedCode);
     }
   });
+
+  // show/hide back-to-top button
+  let scrollThreshold = 0;
+  scrollThreshold += $('.swh-top-bar').height() || 0;
+  scrollThreshold += $('.navbar').height() || 0;
+  $(window).scroll(() => {
+    if ($(window).scrollTop() > scrollThreshold) {
+      $('#back-to-top').css('display', 'block');
+    } else {
+      $('#back-to-top').css('display', 'none');
+    }
+  });
 });
 
 export function initPage(page) {

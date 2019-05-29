@@ -33,7 +33,11 @@ You can find the details of the content of each bundle in the <a href="https://w
   {% for jsasset, bundled_js_srcs in jslicenses_data %}
     <tr>
       <td>
-        <a href="{{ jsasset }}">{{ jsasset | split:"/" | last }}</a>
+        {% if jsasset|split:"/"|last %}
+          <a href="{{ jsasset }}">{{ jsasset | split:"/" | last }}</a>
+        {% else %}
+          <a href="{{ jsasset }}">{{ jsasset }}</a>
+        {% endif %}
       </td>
       <td>
         {% for js_src in bundled_js_srcs %}

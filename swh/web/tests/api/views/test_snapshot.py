@@ -8,8 +8,11 @@ import random
 from hypothesis import given
 from rest_framework.test import APITestCase
 
+from swh.model.hashutil import hash_to_hex
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import snapshot, unknown_snapshot
+from swh.web.tests.strategies import (
+    snapshot, unknown_snapshot, new_snapshot
+)
 from swh.web.tests.testcase import WebTestCase
 
 
@@ -171,3 +174,16 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
                                url_args={'snapshot_id': snapshot})
 
         self.assertEqual(resp['location'], redirect_url)
+
+    @given(new_snapshot(min_size=4))
+    def test_api_snapshot_null_branch(self, new_snapshot):
+        snp_dict = new_snapshot.to_dict()
+        snp_id = hash_to_hex(snp_dict['id'])
+        for branch in snp_dict['branches'].keys():
+            snp_dict['branches'][branch] = None
+            break
+        self.storage.snapshot_add([snp_dict])
+        url = reverse('api-snapshot',
+                      url_args={'snapshot_id': snp_id})
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200)
