@@ -160,4 +160,4 @@ An object declaring additional JavaScript assets loaded by your web application 
 }
 ```
 
-The paths of the license and source files must be relative to the webpack project root folder.
+If the path for a Javascript asset or a license file does not correspond to an url or does not start with '/', it is considered to be relative to the webpack project root folder.

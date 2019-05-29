@@ -286,6 +286,7 @@ class SwhBrowseContentTest(WebTestCase):
         content_data['data'] = None
 
         mock_service.lookup_content.return_value = content_data
+        mock_service.lookup_content_filetype.side_effect = Exception()
         mock_service.lookup_content_raw.side_effect = NotFoundExc(
             'Content bytes not available!')
 

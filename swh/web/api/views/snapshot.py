@@ -78,7 +78,8 @@ def api_snapshot(request, snapshot_id):
                 if v and v['target_type'] == 'alias':
                     if v['target'] in s['branches']:
                         branch_alias = s['branches'][v['target']]
-                        v['target_url'] = branch_alias['target_url']
+                        if branch_alias:
+                            v['target_url'] = branch_alias['target_url']
                     else:
                         snp = \
                             service.lookup_snapshot(s['id'],
