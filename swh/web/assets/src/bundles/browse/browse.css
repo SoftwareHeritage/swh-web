@@ -130,3 +130,11 @@ td.swh-branch-message {
 td.swh-branch-date {
     min-width: 250px;
 }
+
+@media screen and (max-width: 600px) {
+    .swh-corner-ribbon {
+        line-height: 30px;
+        top: 53px;
+        right: -65px;
+    }
+}

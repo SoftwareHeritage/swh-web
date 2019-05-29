@@ -45,9 +45,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
     </script>
 
-    <script type="text/javascript" charset="utf-8">
-      {% js_reverse_inline %}
-    </script>
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
     {% block header %}{% endblock %}
 
