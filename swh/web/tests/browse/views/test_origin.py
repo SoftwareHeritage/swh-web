@@ -887,6 +887,11 @@ class SwhBrowseOriginTest(WebTestCase):
             'revision': 0,
             'release': 0
         }
+        mock_utils_service.lookup_origin.return_value = {
+            'id': 457,
+            'type': 'git',
+            'url': 'https://github.com/foo/bar'
+        }
         url = reverse('browse-origin-directory',
                       url_args={'origin_type': 'foo',
                                 'origin_url': 'bar'})
