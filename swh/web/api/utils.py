@@ -57,20 +57,18 @@ def enrich_object(object):
     """
     obj = object.copy()
     if 'target' in obj and 'target_type' in obj:
-        if obj['target_type'] == 'revision':
-            obj['target_url'] = reverse('api-revision',
-                                        url_args={'sha1_git': obj['target']})
-        elif obj['target_type'] == 'release':
-            obj['target_url'] = reverse('api-release',
-                                        url_args={'sha1_git': obj['target']})
+        if obj['target_type'] in ('revision', 'release', 'directory'):
+            obj['target_url'] = \
+                reverse('api-%s' % obj['target_type'],
+                        url_args={'sha1_git': obj['target']})
         elif obj['target_type'] == 'content':
             obj['target_url'] = \
                 reverse('api-content',
                         url_args={'q': 'sha1_git:' + obj['target']})
-
-        elif obj['target_type'] == 'directory':
-            obj['target_url'] = reverse('api-directory',
-                                        url_args={'sha1_git': obj['target']})
+        elif obj['target_type'] == 'snapshot':
+            obj['target_url'] = \
+                reverse('api-snapshot',
+                        url_args={'snapshot_id': obj['target']})
 
     if 'author' in obj:
         author = obj['author']
