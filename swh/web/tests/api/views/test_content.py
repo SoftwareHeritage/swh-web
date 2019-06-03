@@ -9,8 +9,9 @@ from hypothesis import given
 from rest_framework.test import APITestCase
 
 from swh.web.common.utils import reverse
+from swh.web.tests.data import random_content
 from swh.web.tests.strategies import (
-    content, unknown_content, contents_with_ctags
+    content, contents_with_ctags
 )
 from swh.web.tests.testcase import (
     WebTestCase, ctags_json_missing, fossology_missing
@@ -35,11 +36,11 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         expected_data['content_url'] = content_url
         self.assertEqual(rv.data, expected_data)
 
-    @given(unknown_content())
-    def test_api_content_filetype_sha_not_found(self, unknown_content):
+    def test_api_content_filetype_sha_not_found(self):
+        unknown_content_ = random_content()
 
         url = reverse('api-content-filetype',
-                      url_args={'q': 'sha1:%s' % unknown_content['sha1']})
+                      url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -47,7 +48,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No filetype information found for content '
-            'sha1:%s.' % unknown_content['sha1']
+            'sha1:%s.' % unknown_content_['sha1']
         })
 
     @pytest.mark.xfail  # Language indexer is disabled
@@ -67,11 +68,11 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         expected_data['content_url'] = content_url
         self.assertEqual(rv.data, expected_data)
 
-    @given(unknown_content())
-    def test_api_content_language_sha_not_found(self, unknown_content):
+    def test_api_content_language_sha_not_found(self):
+        unknown_content_ = random_content()
 
         url = reverse('api-content-language',
-                      url_args={'q': 'sha1:%s' % unknown_content['sha1']})
+                      url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -79,7 +80,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No language information found for content '
-            'sha1:%s.' % unknown_content['sha1']
+            'sha1:%s.' % unknown_content_['sha1']
         })
 
     @pytest.mark.xfail  # Language indexer is disabled
@@ -179,11 +180,11 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         expected_data['content_url'] = content_url
         self.assertEqual(rv.data, expected_data)
 
-    @given(unknown_content())
-    def test_api_content_license_sha_not_found(self, unknown_content):
+    def test_api_content_license_sha_not_found(self):
+        unknown_content_ = random_content()
 
         url = reverse('api-content-license',
-                      url_args={'q': 'sha1:%s' % unknown_content['sha1']})
+                      url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -191,7 +192,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'No license information found for content '
-            'sha1:%s.' % unknown_content['sha1']
+            'sha1:%s.' % unknown_content_['sha1']
         })
 
     @given(content())
@@ -212,25 +213,25 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                                                    content['sha1']})
         self.assertEqual(rv.data, expected_data)
 
-    @given(unknown_content())
-    def test_api_content_not_found_as_json(self, unknown_content):
+    def test_api_content_not_found_as_json(self):
+        unknown_content_ = random_content()
 
         url = reverse('api-content',
-                      url_args={'q': 'sha1:%s' % unknown_content['sha1']})
+                      url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content with sha1 checksum equals to %s not found!'
-            % unknown_content['sha1']
+            % unknown_content_['sha1']
         })
 
-    @given(unknown_content())
-    def test_api_content_not_found_as_yaml(self, unknown_content):
+    def test_api_content_not_found_as_yaml(self):
+        unknown_content_ = random_content()
 
         url = reverse('api-content',
-                      url_args={'q': 'sha256:%s' % unknown_content['sha256']})
+                      url_args={'q': 'sha256:%s' % unknown_content_['sha256']})
         rv = self.client.get(url, HTTP_ACCEPT='application/yaml')
 
         self.assertEqual(rv.status_code, 404)
@@ -239,14 +240,14 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content with sha256 checksum equals to %s not found!' %
-            unknown_content['sha256']
+            unknown_content_['sha256']
         })
 
-    @given(unknown_content())
-    def test_api_content_raw_ko_not_found(self, unknown_content):
+    def test_api_content_raw_ko_not_found(self):
+        unknown_content_ = random_content()
 
         url = reverse('api-content-raw',
-                      url_args={'q': 'sha1:%s' % unknown_content['sha1']})
+                      url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -254,7 +255,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Content with sha1 checksum equals to %s not found!' %
-            unknown_content['sha1']
+            unknown_content_['sha1']
         })
 
     @given(content())
@@ -357,11 +358,11 @@ class ContentApiTestCase(WebTestCase, APITestCase):
             'search_stats': {'nbfiles': 1, 'pct': 100.0}
         })
 
-    @given(unknown_content())
-    def test_api_check_content_known_not_found(self, unknown_content):
+    def test_api_check_content_known_not_found(self):
+        unknown_content_ = random_content()
 
         url = reverse('api-content-known',
-                      url_args={'q': unknown_content['sha1']})
+                      url_args={'q': unknown_content_['sha1']})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 200)
@@ -370,7 +371,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
             'search_res': [
                 {
                     'found': False,
-                    'sha1': unknown_content['sha1']
+                    'sha1': unknown_content_['sha1']
                 }
             ],
             'search_stats': {'nbfiles': 1, 'pct': 0.0}

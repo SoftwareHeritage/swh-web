@@ -5,6 +5,7 @@
 
 from copy import deepcopy
 import os
+import random
 import time
 
 from swh.indexer.fossology_license import FossologyLicenseIndexer
@@ -60,6 +61,27 @@ _TEST_INDEXER_BASE_CONFIG = {
         'args': {},
     }
 }
+
+
+def random_sha1():
+    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(20)))
+
+
+def random_sha256():
+    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(32)))
+
+
+def random_blake2s256():
+    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(32)))
+
+
+def random_content():
+    return {
+        'sha1': random_sha1(),
+        'sha1_git': random_sha1(),
+        'sha256': random_sha256(),
+        'blake2s256': random_blake2s256(),
+    }
 
 
 # MimetypeIndexer with custom configuration for tests
