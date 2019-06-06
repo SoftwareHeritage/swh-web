@@ -612,10 +612,11 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                                              revision_id,
                                              max_revs=offset+per_page+1,
                                              state=revs_walker_state)
-            rev_log += list(revs_walker)
+            rev_log += [rev['id'] for rev in revs_walker]
             revs_walker_state = revs_walker.export_state()
 
-        revision_log = rev_log[offset:offset+per_page]
+        revs = rev_log[offset:offset+per_page]
+        revision_log = service.lookup_revision_multiple(revs)
 
         request.session[session_key] = {
             'rev_log': rev_log,

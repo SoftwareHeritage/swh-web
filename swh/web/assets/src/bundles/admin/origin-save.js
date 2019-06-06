@@ -91,7 +91,12 @@ export function initOriginSaveAdmin() {
       columns: columnsData,
       scrollY: '50vh',
       scrollCollapse: true,
-      order: [[0, 'desc']]
+      order: [[0, 'desc']],
+      responsive: {
+        details: {
+          type: 'none'
+        }
+      }
     });
     enableRowSelection('#swh-origin-save-pending-requests');
 
@@ -102,7 +107,12 @@ export function initOriginSaveAdmin() {
       columns: columnsData,
       scrollY: '50vh',
       scrollCollapse: true,
-      order: [[0, 'desc']]
+      order: [[0, 'desc']],
+      responsive: {
+        details: {
+          type: 'none'
+        }
+      }
     });
     enableRowSelection('#swh-origin-save-rejected-requests');
 
@@ -125,7 +135,12 @@ export function initOriginSaveAdmin() {
       columns: columnsData,
       scrollY: '50vh',
       scrollCollapse: true,
-      order: [[0, 'desc']]
+      order: [[0, 'desc']],
+      responsive: {
+        details: {
+          type: 'none'
+        }
+      }
     });
     enableRowSelection('#swh-origin-save-accepted-requests');
 

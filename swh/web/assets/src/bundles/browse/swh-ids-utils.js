@@ -96,11 +96,9 @@ $(document).ready(() => {
   $('#swh-identifiers').tabSlideOut(tabSlideOptions);
 
   // set the tab visible once the close animation is terminated
-  setTimeout(() => {
-    $('#swh-identifiers').css('visibility', 'visible');
-    $('.swh-id-option-origin').trigger('click');
-    $('.swh-id-option-lines').trigger('click');
-  });
+  $('#swh-identifiers').css('display', 'block');
+  $('.swh-id-option-origin').trigger('click');
+  $('.swh-id-option-lines').trigger('click');
 
   $(window).on('hashchange', () => {
     setIdLinesPart('.swh-id-option-lines');
