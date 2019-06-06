@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from distutils.util import strtobool
+from functools import partial
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc
@@ -22,6 +23,25 @@ def _enrich_origin(origin):
         return o
 
     return origin
+
+
+def _enrich_origin_visit(origin_visit, *,
+                         with_origin_url, with_origin_visit_url):
+    ov = origin_visit.copy()
+    if with_origin_url:
+        ov['origin_url'] = reverse('api-origin',
+                                   url_args={'origin_id': ov['origin']})
+    if with_origin_visit_url:
+        ov['origin_visit_url'] = reverse('api-origin-visit',
+                                         url_args={'origin_id': ov['origin'],
+                                                   'visit_id': ov['visit']})
+    snapshot = ov['snapshot']
+    if snapshot:
+        ov['snapshot_url'] = reverse('api-snapshot',
+                                     url_args={'snapshot_id': snapshot})
+    else:
+        ov['snapshot_url'] = None
+    return ov
 
 
 @api_route(r'/origins/', 'api-origins')
@@ -340,22 +360,11 @@ def api_origin_visits(request, origin_id):
         for v in visits:
             yield v
 
-    def _enrich_origin_visit(origin_visit):
-        ov = origin_visit.copy()
-        ov['origin_visit_url'] = reverse('api-origin-visit',
-                                         url_args={'origin_id': origin_id,
-                                                   'visit_id': ov['visit']})
-        snapshot = ov['snapshot']
-        if snapshot:
-            ov['snapshot_url'] = reverse('api-snapshot',
-                                         url_args={'snapshot_id': snapshot})
-        else:
-            ov['snapshot_url'] = None
-        return ov
-
     results = api_lookup(_lookup_origin_visits, origin_id,
                          notfound_msg='No origin {} found'.format(origin_id),
-                         enrich_fn=_enrich_origin_visit)
+                         enrich_fn=partial(_enrich_origin_visit,
+                                           with_origin_url=False,
+                                           with_origin_visit_url=True))
 
     if results:
         nb_results = len(results)
@@ -416,21 +425,10 @@ def api_origin_visit(request, origin_id, visit_id):
 
             :swh_web_api:`origin/1500/visit/1/`
     """ # noqa
-    def _enrich_origin_visit(origin_visit):
-        ov = origin_visit.copy()
-        ov['origin_url'] = reverse('api-origin',
-                                   url_args={'origin_id': ov['origin']})
-        snapshot = ov['snapshot']
-        if snapshot:
-            ov['snapshot_url'] = reverse('api-snapshot',
-                                         url_args={'snapshot_id': snapshot})
-        else:
-            ov['snapshot_url'] = None
-
-        return ov
-
     return api_lookup(
         service.lookup_origin_visit, int(origin_id), int(visit_id),
         notfound_msg=('No visit {} for origin {} found'
                       .format(visit_id, origin_id)),
-        enrich_fn=_enrich_origin_visit)
+        enrich_fn=partial(_enrich_origin_visit,
+                          with_origin_url=True,
+                          with_origin_visit_url=False))

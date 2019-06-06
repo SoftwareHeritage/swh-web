@@ -13,8 +13,8 @@ See top-level LICENSE file for more information
       <thead>
         <tr>
           <th>File</th>
-          <th>Mode</th>
-          <th>Size</th>
+          <th class="d-none d-md-table-cell">Mode</th>
+          <th class="d-none d-sm-table-cell">Size</th>
         </tr>
       </thead>
       <tbody>
@@ -26,10 +26,10 @@ See top-level LICENSE file for more information
                 {{ d.name }}
               </a>
             </td>
-            <td>
+            <td class="d-none d-md-table-cell">
               {{ d.perms }}
             </td>
-            <td>
+            <td class="d-none d-sm-table-cell">
             </td>
           </tr>
         {% endfor %}
@@ -41,10 +41,10 @@ See top-level LICENSE file for more information
                 {{ f.name }}
               </a>
             </td>
-            <td>
+            <td class="d-none d-md-table-cell">
               {{ f.perms }}
             </td>
-            <td>
+            <td class="d-none d-sm-table-cell">
               {{ f.length }}
             </td>
           </tr>
