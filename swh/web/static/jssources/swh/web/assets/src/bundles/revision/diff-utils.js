@@ -65,6 +65,38 @@ function formatDiffLineNumbers(fromLine, toLine, maxNumberChars) {
   return ret;
 }
 
+function parseDiffHunkRangeIfAny(lineText) {
+  let baseFromLine, baseToLine;
+  if (lineText.startsWith('@@')) {
+    let linesInfoRegExp = new RegExp(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@$/gm);
+    let linesInfoRegExp2 = new RegExp(/^@@ -(\d+) \+(\d+),(\d+) @@$/gm);
+    let linesInfoRegExp3 = new RegExp(/^@@ -(\d+),(\d+) \+(\d+) @@$/gm);
+    let linesInfoRegExp4 = new RegExp(/^@@ -(\d+) \+(\d+) @@$/gm);
+    let linesInfo = linesInfoRegExp.exec(lineText);
+    let linesInfo2 = linesInfoRegExp2.exec(lineText);
+    let linesInfo3 = linesInfoRegExp3.exec(lineText);
+    let linesInfo4 = linesInfoRegExp4.exec(lineText);
+    if (linesInfo) {
+      baseFromLine = parseInt(linesInfo[1]) - 1;
+      baseToLine = parseInt(linesInfo[3]) - 1;
+    } else if (linesInfo2) {
+      baseFromLine = parseInt(linesInfo2[1]) - 1;
+      baseToLine = parseInt(linesInfo2[2]) - 1;
+    } else if (linesInfo3) {
+      baseFromLine = parseInt(linesInfo3[1]) - 1;
+      baseToLine = parseInt(linesInfo3[3]) - 1;
+    } else if (linesInfo4) {
+      baseFromLine = parseInt(linesInfo4[1]) - 1;
+      baseToLine = parseInt(linesInfo4[2]) - 1;
+    }
+  }
+  if (baseFromLine !== undefined) {
+    return [baseFromLine, baseToLine];
+  } else {
+    return null;
+  }
+}
+
 // to compute diff and process it for display
 export function computeDiff(diffUrl, diffId) {
 
@@ -128,7 +160,6 @@ export function computeDiff(diffUrl, diffId) {
 
           // process unified diff lines in order to generate side-by-side diffs text
           // but also compute line numbers for unified and side-by-side diffs
-          let linesInfoRegExp = new RegExp(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@$/gm);
           let baseFromLine = '';
           let baseToLine = '';
           let fromToLines = [];
@@ -141,13 +172,13 @@ export function computeDiff(diffUrl, diffId) {
 
           $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
             let lnText = lnElt.nextSibling.innerText;
-            let linesInfo = linesInfoRegExp.exec(lnText);
+            let linesInfo = parseDiffHunkRangeIfAny(lnText);
             let fromLine = '';
             let toLine = '';
             // parsed lines info from the diff output
             if (linesInfo) {
-              baseFromLine = parseInt(linesInfo[1]) - 1;
-              baseToLine = parseInt(linesInfo[3]) - 1;
+              baseFromLine = linesInfo[0];
+              baseToLine = linesInfo[1];
               linesOffset = 0;
               diffFromStr += (lnText + '\n');
               diffToStr += (lnText + '\n');
@@ -217,8 +248,7 @@ export function computeDiff(diffUrl, diffId) {
             // diff highlighting for added/removed lines on top of code highlighting
             $(`.${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
               let lnText = lnElt.nextSibling.innerText;
-              let linesInfo = linesInfoRegExp.exec(lnText);
-              if (linesInfo) {
+              if (lnText.startsWith('@@')) {
                 $(lnElt).parent().addClass('swh-diff-lines-info');
                 let linesInfoText = $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text();
                 $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').children().remove();

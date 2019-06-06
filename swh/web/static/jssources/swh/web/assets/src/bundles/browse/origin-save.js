@@ -86,7 +86,6 @@ export function initOriginSave() {
           {
             data: 'origin_type',
             name: 'origin_type'
-
           },
           {
             data: 'origin_url',
@@ -120,7 +119,12 @@ export function initOriginSave() {
         ],
         scrollY: '50vh',
         scrollCollapse: true,
-        order: [[0, 'desc']]
+        order: [[0, 'desc']],
+        responsive: {
+          details: {
+            type: 'none'
+          }
+        }
       });
 
     $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
