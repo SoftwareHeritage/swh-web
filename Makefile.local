@@ -33,7 +33,7 @@ clear-memcached:
 	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
 
 run-django-webpack-devserver: run-migrations yarn-install
-	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & cd swh/web && python3 manage.py runserver --nostatic"
+	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & sleep 10 && cd swh/web && python3 manage.py runserver --nostatic"
 
 run-django-webpack-dev: build-webpack-dev run-migrations
 	python3 swh/web/manage.py runserver --nostatic

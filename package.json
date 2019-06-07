@@ -3,9 +3,9 @@
   "version": "0.0.201",
   "description": "Static assets management for swh-web",
   "scripts": {
-    "build-dev": "NODE_ENV=development webpack --config ./swh/web/assets/config/webpack.config.development.js --display-modules --progress --colors",
-    "start-dev": "NODE_ENV=development nodemon --watch swh/web/api --watch swh/web/browse --watch swh/web/templates --watch swh/web/common --watch swh/web/settings --watch swh/web/assets/config --ext py,html,js --exec \"webpack-dev-server --config ./swh/web/assets/config/webpack.config.development.js --progress --colors\"",
-    "build": "NODE_ENV=production webpack --config ./swh/web/assets/config/webpack.config.production.js --display-modules --progress --colors"
+    "build-dev": "NODE_ENV=development webpack --config ./swh/web/assets/config/webpack.config.development.js --colors",
+    "start-dev": "NODE_ENV=development nodemon --watch swh/web/api --watch swh/web/browse --watch swh/web/templates --watch swh/web/common --watch swh/web/settings --watch swh/web/assets/config --ext py,html,js --exec \"webpack-dev-server --info=false --config ./swh/web/assets/config/webpack.config.development.js --colors\"",
+    "build": "NODE_ENV=production webpack --config ./swh/web/assets/config/webpack.config.production.js --colors"
   },
   "repository": {
     "type": "git",
@@ -77,6 +77,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "postcss-loader": "^3.0.0",
     "postcss-normalize": "^8.0.0",
+    "progress-bar-webpack-plugin": "^1.12.1",
     "resolve-url-loader": "^3.1.0",
     "robotstxt-webpack-plugin": "^5.0.0",
     "sass-loader": "^7.1.0",
