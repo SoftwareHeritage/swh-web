@@ -22,6 +22,14 @@ $(document).ready(() => {
     boundary: 'viewport',
     container: 'body',
     html: true,
+    placement: function() {
+      const width = $(window).width();
+      if (width < 768) {
+        return 'top';
+      } else {
+        return 'right';
+      }
+    },
     template: `<div class="popover" role="tooltip">
                  <div class="arrow"></div>
                  <h3 class="popover-header"></h3>
