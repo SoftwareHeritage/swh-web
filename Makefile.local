@@ -20,13 +20,13 @@ build-webpack-prod: yarn-install
 
 .PHONY: run-migrations
 run-migrations:
-	python3 swh/web/manage.py migrate 2>/dev/null
-	python3 swh/web/manage.py createcachetable 2>/dev/null
+	python3 swh/web/manage.py migrate -v0 2>/dev/null
+	python3 swh/web/manage.py createcachetable -v0 2>/dev/null
 
 .PHONY: run-migrations-prod
 run-migrations-prod:
-	django-admin migrate --settings=swh.web.settings.production 2>/dev/null
-	django-admin createcachetable --settings=swh.web.settings.production 2>/dev/null
+	django-admin migrate --settings=swh.web.settings.production -v0 2>/dev/null
+	django-admin createcachetable --settings=swh.web.settings.production -v0 2>/dev/null
 
 .PHONY: clear-memcached
 clear-memcached:
