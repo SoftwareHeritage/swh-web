@@ -50,7 +50,15 @@ run-django-server-prod: run-migrations-prod clear-memcached
 run-gunicorn-server: run-migrations clear-memcached
 	gunicorn3 -b 127.0.0.1:5004 swh.web.wsgi
 
+run-django-webpack-memory-storages: build-webpack-dev run-migrations
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests
+
 test-full:
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
+test-frontend: build-webpack-dev run-migrations
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run && pkill -P $$!
+
+test-frontend-ui: build-webpack-dev run-migrations
+	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT; jobs -p | head -1 | xargs pkill -P' SIGINT SIGTERM ERR EXIT; python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress open"
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,10 @@
 Django tests settings for swh-web.
 """
 
+import sys
+
 from swh.web.config import get_config
+from swh.web.tests.data import get_tests_data, override_storages
 
 scope1_limiter_rate = 3
 scope1_limiter_rate_post = 1
@@ -67,10 +70,24 @@ swh_web_config.update({
     }
 })
 
+
 from .common import * # noqa
 from .common import ALLOWED_HOSTS, LOGGING # noqa
 
-ALLOWED_HOSTS += ['testserver']
+# when not running unit tests, make the webapp fetch data from memory storages
+if 'pytest' not in sys.argv[0]:
+    swh_web_config.update({
+        'debug': True,
+        'grecaptcha': {
+            'activated': False,
+            'site_key': '',
+            'private_key': ''
+        }
+    })
+    test_data = get_tests_data()
+    override_storages(test_data['storage'], test_data['idx_storage'])
+else:
+    ALLOWED_HOSTS += ['testserver']
 
-# Silent DEBUG output when running unit tests
-LOGGING['handlers']['console']['level'] = 'INFO'
+    # Silent DEBUG output when running unit tests
+    LOGGING['handlers']['console']['level'] = 'INFO'

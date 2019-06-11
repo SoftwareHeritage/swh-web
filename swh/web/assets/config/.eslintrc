@@ -13,14 +13,16 @@
 
     "env": {
         "es6": true,
-        "node": true
+        "node": true,
+        "cypress/globals": true
     },
 
     "plugins": [
         "import",
         "node",
         "promise",
-        "standard"
+        "standard",
+        "cypress"
     ],
 
     "globals": {
