@@ -54,12 +54,40 @@ describe('Code highlighting tests', function() {
 
   it('should emphasize a range of lines by clicking on two line numbers and holding shift', function() {
     cy.visit(url);
-    // TODO
+
+    cy.get(`.hljs-ln-numbers[data-line-number="${lineStart}"]`)
+      .scrollIntoView()
+      .click()
+      .get(`body`)
+      .type(`{shift}`, { release: false })
+      .get(`.hljs-ln-numbers[data-line-number="${lineEnd}"]`)
+      .scrollIntoView()
+      .click()
+      .get('.hljs-ln-line')
+      .then(lines => {
+        for (let line of lines) {
+          let lineNumber = parseInt($(line).data('line-number'));
+          if (lineNumber >= lineStart && lineNumber <= lineEnd) {
+            assert.notEqual($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+          } else {
+            assert.equal($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+          }
+        }
+      });
   });
 
   it('should remove emphasized lines when clicking anywhere in code', function() {
     cy.visit(`${url}/#L${lineStart}-L${lineEnd}`);
-    // TODO
+
+    cy.get(`.hljs-ln-code[data-line-number="1"]`)
+      .scrollIntoView()
+      .click()
+      .get('.hljs-ln-line')
+      .then(lines => {
+        for (let line of lines) {
+          assert.equal($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+        }
+      });
   });
 
 });
