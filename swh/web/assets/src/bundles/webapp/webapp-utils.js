@@ -1,6 +1,7 @@
 import objectFitImages from 'object-fit-images';
 import {Layout} from 'admin-lte';
 import {selectText} from 'utils/functions';
+import {BREAKPOINT_MD} from 'utils/constants';
 
 let collapseSidebar = false;
 let previousSidebarState = localStorage.getItem('swh-sidebar-collapsed');
@@ -23,6 +24,11 @@ Layout.prototype.fixLayoutHeight = () => {
 };
 
 $(document).on('DOMContentLoaded', () => {
+  // set state to collapsed on smaller devices
+  if ($(window).width() < BREAKPOINT_MD) {
+    collapseSidebar = true;
+  }
+
   // restore previous sidebar state (collapsed/expanded)
   if (collapseSidebar) {
     // hack to avoid animated transition for collapsing sidebar
@@ -42,7 +48,7 @@ $(document).on('DOMContentLoaded', () => {
 });
 
 $(document).on('collapsed.lte.pushmenu', event => {
-  if ($('body').width() > 980) {
+  if ($('body').width() >= BREAKPOINT_MD) {
     $('.swh-words-logo-swh').css('visibility', 'visible');
   }
 });
@@ -71,7 +77,7 @@ $(document).ready(() => {
   ensureNoFooterOverflow();
   $(window).resize(function() {
     ensureNoFooterOverflow();
-    if ($('body').hasClass('sidebar-collapse') && $('body').width() > 980) {
+    if ($('body').hasClass('sidebar-collapse') && $('body').width() >= BREAKPOINT_MD) {
       $('.swh-words-logo-swh').css('visibility', 'visible');
     }
   });

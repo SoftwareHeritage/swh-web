@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import {BREAKPOINT_SM} from 'utils/constants';
+
 $(document).ready(() => {
 
   $('.dropdown-submenu a.dropdown-item').on('click', e => {
@@ -24,7 +26,7 @@ $(document).ready(() => {
     html: true,
     placement: function() {
       const width = $(window).width();
-      if (width < 768) {
+      if (width < BREAKPOINT_SM) {
         return 'top';
       } else {
         return 'right';
