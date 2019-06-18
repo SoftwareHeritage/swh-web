@@ -10,8 +10,9 @@ from rest_framework.test import APITestCase
 
 from swh.model.hashutil import hash_to_hex
 from swh.web.common.utils import reverse
+from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    snapshot, unknown_snapshot, new_snapshot
+    snapshot, new_snapshot
 )
 from swh.web.tests.testcase import WebTestCase
 
@@ -117,8 +118,8 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_data)
 
-    @given(unknown_snapshot())
-    def test_api_snapshot_errors(self, unknown_snapshot):
+    def test_api_snapshot_errors(self):
+        unknown_snapshot_ = random_sha1()
 
         url = reverse('api-snapshot',
                       url_args={'snapshot_id': '63ce369'})
@@ -126,7 +127,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 400)
 
         url = reverse('api-snapshot',
-                      url_args={'snapshot_id': unknown_snapshot})
+                      url_args={'snapshot_id': unknown_snapshot_})
         rv = self.client.get(url)
         self.assertEqual(rv.status_code, 404)
 
@@ -186,4 +187,4 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-snapshot',
                       url_args={'snapshot_id': snp_id})
         rv = self.client.get(url)
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)

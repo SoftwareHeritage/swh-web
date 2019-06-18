@@ -269,7 +269,7 @@ def _origin_latest_snapshot(request, origin_id):
     been visited by Software Heritage and has at least one full visit.
     """
     result = \
-        service.lookup_latest_origin_snapshot(origin_id,
+        service.lookup_latest_origin_snapshot(int(origin_id),
                                               allowed_statuses=['full',
                                                                 'partial'])
 

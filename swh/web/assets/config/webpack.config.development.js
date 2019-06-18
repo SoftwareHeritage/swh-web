@@ -8,6 +8,7 @@
 // webpack configuration for compiling static assets in development mode
 
 // import required node modules and webpack plugins
+const chalk = require('chalk');
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
@@ -18,6 +19,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FixSwhSourceMapsPlugin = require('./webpack-plugins/fix-swh-source-maps-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+
 const loadedMathJaxJsFiles = require('./mathjax-js-files');
 
 // are we running webpack-dev-server ?
@@ -102,9 +105,7 @@ module.exports = {
       'Access-Control-Allow-Origin': '*'
     },
     compress: true,
-    stats: {
-      colors: true
-    },
+    stats: 'errors-only',
     overlay: {
       warnings: true,
       errors: true
@@ -135,6 +136,7 @@ module.exports = {
       path.resolve(__dirname, '../src')
     ]
   },
+  stats: 'errors-only',
   // module import configuration
   module: {
     rules: [
@@ -170,17 +172,19 @@ module.exports = {
               presets: [
                 // use env babel presets to benefit from es6 syntax
                 ['@babel/preset-env', {
+                  'useBuiltIns': 'entry',
                   // Do not transform es6 module syntax to another module type
                   // in order to benefit from dead code elimination (aka tree shaking)
                   // when running webpack in production mode
                   'loose': true,
-                  'modules': false
+                  'modules': false,
+                  'corejs': 3
                 }]
               ],
               plugins: [
               // use babel transform-runtime plugin in order to use aync/await syntax
                 ['@babel/plugin-transform-runtime', {
-                  'corejs': 2,
+                  'corejs': 3,
                   'regenerator': true
                 }],
                 // use other babel plugins to benefit from advanced js features (es2017)
@@ -392,6 +396,10 @@ module.exports = {
         },
         loadedMathJaxJsFiles
       )
+    }),
+    new ProgressBarPlugin({
+      format: chalk.cyan.bold('webpack build of swh-web assets') + ' [:bar] ' + chalk.green.bold(':percent') + ' (:elapsed seconds)',
+      width: 50
     })
   ],
   // webpack optimizations

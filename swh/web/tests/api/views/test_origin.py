@@ -76,7 +76,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             'An unexpected error occurred in the api backend: %s' % err_msg
         })
 
-    @given(new_origin(), visit_dates(4), new_snapshots(4))
+    @given(new_origin(), visit_dates(3), new_snapshots(3))
     def test_api_lookup_origin_visits(self, new_origin, visit_dates,
                                       new_snapshots):
 
@@ -116,7 +116,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
             self.assertEqual(rv.data, expected_visits)
 
-    @given(new_origin(), visit_dates(4), new_snapshots(4))
+    @given(new_origin(), visit_dates(3), new_snapshots(3))
     def test_api_lookup_origin_visit(self, new_origin, visit_dates,
                                      new_snapshots):
 
@@ -335,7 +335,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 400, rv.content)
         mock_idx_storage.assert_not_called()
 
-    @given(new_origins(20))
+    @given(new_origins(10))
     def test_api_lookup_origins(self, new_origins):
 
         nb_origins = len(new_origins)

@@ -80,11 +80,16 @@
 
 .swh-popover {
     max-height: 50vh;
-    max-width: 80vw;
     overflow-y: auto;
     overflow-x: auto;
     padding: 0;
     padding-right: 1.4em;
+}
+
+@media screen and (min-width: 768px) {
+    .swh-popover {
+        max-width: 80vh;
+    }
 }
 
 .swh-search-pagination {

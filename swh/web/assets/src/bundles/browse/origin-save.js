@@ -13,17 +13,12 @@ let saveRequestsTable;
 function originSaveRequest(originType, originUrl,
                            acceptedCallback, pendingCallback, errorCallback) {
   let addSaveOriginRequestUrl = Urls.browse_origin_save_request(originType, originUrl);
-  let grecaptchaData = {};
-  if (swh.webapp.isReCaptchaActivated()) {
-    grecaptchaData['g-recaptcha-response'] = grecaptcha.getResponse();
-  }
   let headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   };
-  let body = JSON.stringify(grecaptchaData);
   $('.swh-processing-save-request').css('display', 'block');
-  csrfPost(addSaveOriginRequestUrl, headers, body)
+  csrfPost(addSaveOriginRequestUrl, headers)
     .then(handleFetchError)
     .then(response => response.json())
     .then(data => {
@@ -33,17 +28,11 @@ function originSaveRequest(originType, originUrl,
       } else {
         pendingCallback();
       }
-      if (swh.webapp.isReCaptchaActivated()) {
-        grecaptcha.reset();
-      }
     })
     .catch(response => {
       $('.swh-processing-save-request').css('display', 'none');
       if (response.status === 403) {
         errorCallback();
-      }
-      if (swh.webapp.isReCaptchaActivated()) {
-        grecaptcha.reset();
       }
     });
 }
@@ -148,7 +137,7 @@ export function initOriginSave() {
 
     let saveRequestRejectedAlert =
       `<div class="alert alert-danger" role="alert">
-        The "save code now" request has been rejected because the reCAPTCHA could not be validated or the provided origin url is blacklisted.
+        The "save code now" request has been rejected because the provided origin url is blacklisted.
       </div>`;
 
     $('#swh-save-origin-form').submit(event => {
@@ -253,7 +242,7 @@ export function initTakeNewSnapshot() {
 
   let newSnapshotRequestRejectedAlert =
     `<div class="alert alert-danger" role="alert">
-      The "take new snapshot" request has been rejected because the reCAPTCHA could not be validated.
+      The "take new snapshot" request has been rejected.
     </div>`;
 
   $(document).ready(() => {

@@ -9,7 +9,8 @@ from hypothesis import given
 from rest_framework.test import APITestCase
 
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import directory, unknown_directory
+from swh.web.tests.data import random_sha1
+from swh.web.tests.strategies import directory
 from swh.web.tests.testcase import WebTestCase
 
 
@@ -29,11 +30,11 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
 
         self.assertEqual(rv.data, expected_data)
 
-    @given(unknown_directory())
-    def test_api_directory_not_found(self, unknown_directory):
+    def test_api_directory_not_found(self):
+        unknown_directory_ = random_sha1()
 
         url = reverse('api-directory',
-                      url_args={'sha1_git': unknown_directory})
+                      url_args={'sha1_git': unknown_directory_})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -41,7 +42,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Directory with sha1_git %s not found'
-            % unknown_directory})
+            % unknown_directory_})
 
     @given(directory())
     def test_api_directory_with_path_found(self, directory):

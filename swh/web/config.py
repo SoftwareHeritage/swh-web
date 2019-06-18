@@ -77,12 +77,6 @@ DEFAULT_CONFIG = {
             'url': 'http://127.0.0.1:5008/'
         }
     }),
-    'grecaptcha': ('dict', {
-        'activated': True,
-        'validation_url': 'https://www.google.com/recaptcha/api/siteverify',
-        'site_key': '',
-        'private_key': ''
-    }),
     'development_db': ('string', os.path.join(SETTINGS_DIR, 'db.sqlite3')),
     'production_db': ('string', '/var/lib/swh/web.sqlite3'),
     'deposit': ('dict', {

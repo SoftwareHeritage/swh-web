@@ -3,11 +3,13 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
+
 from hypothesis import given
 from rest_framework.test import APITestCase
 
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import person, unknown_person
+from swh.web.tests.strategies import person
 from swh.web.tests.testcase import WebTestCase
 
 
@@ -26,10 +28,10 @@ class PersonApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_person)
 
-    @given(unknown_person())
-    def test_api_person_not_found(self, unknown_person):
+    def test_api_person_not_found(self):
+        unknown_person_ = random.randint(1000, 10000000)
 
-        url = reverse('api-person', url_args={'person_id': unknown_person})
+        url = reverse('api-person', url_args={'person_id': unknown_person_})
 
         rv = self.client.get(url)
 
@@ -37,4 +39,4 @@ class PersonApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Person with id %s not found' % unknown_person})
+            'reason': 'Person with id %s not found' % unknown_person_})
