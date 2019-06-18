@@ -6,7 +6,6 @@
 import docutils.parsers.rst
 import docutils.utils
 import re
-import requests
 
 from datetime import datetime, timezone
 from dateutil import parser as date_parser
@@ -15,6 +14,8 @@ from dateutil import tz
 from django.urls import reverse as django_reverse
 from django.http import QueryDict
 
+from rest_framework.authentication import SessionAuthentication
+
 from swh.model.exceptions import ValidationError
 from swh.model.identifiers import (
     persistent_identifier, parse_persistent_identifier,
@@ -22,7 +23,6 @@ from swh.model.identifiers import (
 )
 
 from swh.web.common.exc import BadInputExc
-from swh.web.config import get_config
 
 swh_object_icons = {
     'branch': 'fa fa-code-fork',
@@ -317,39 +317,20 @@ def get_client_ip(request):
     return ip
 
 
-def is_recaptcha_valid(request, recaptcha_response):
-    """
-    Verify if the response for Google reCAPTCHA is valid.
-
-    Args:
-        request (django.http.HttpRequest): the incoming HTTP request
-        recaptcha_response (str): the reCAPTCHA response
-
-    Returns:
-        bool: Whether the reCAPTCHA response is valid or not
-    """
-    config = get_config()
-    if config['grecaptcha']['activated'] is False:
-        recaptcha_valid = True
-    else:
-        recaptcha_valid = requests.post(
-            config['grecaptcha']['validation_url'],
-            data={
-                'secret': config['grecaptcha']['private_key'],
-                'response': recaptcha_response,
-                'remoteip': get_client_ip(request)
-            },
-            verify=True
-        ).json().get("success", False)
-    return recaptcha_valid
-
-
 def context_processor(request):
     """
     Django context processor used to inject variables
     in all swh-web templates.
     """
-    config = get_config()
-    return {'swh_object_icons': swh_object_icons,
-            'grecaptcha_activated': config['grecaptcha']['activated'],
-            'grecaptcha_site_key': config['grecaptcha']['site_key']}
+    return {'swh_object_icons': swh_object_icons}
+
+
+class EnforceCSRFAuthentication(SessionAuthentication):
+    """
+    Helper class to enforce CSRF validation on a DRF view
+    when a user is not authenticated.
+    """
+    def authenticate(self, request):
+        user = getattr(request._request, 'user', None)
+        self.enforce_csrf(request)
+        return (user, None)

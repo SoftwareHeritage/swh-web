@@ -192,16 +192,6 @@ export function getSwhObjectIcon(swhObjectType) {
   return swhObjectIcons[swhObjectType];
 }
 
-let reCaptchaActivated;
-
-export function setReCaptchaActivated(activated) {
-  reCaptchaActivated = activated;
-}
-
-export function isReCaptchaActivated() {
-  return reCaptchaActivated;
-}
-
 let browsedSwhObjectMetadata = {};
 
 export function setBrowsedSwhObjectMetadata(metadata) {

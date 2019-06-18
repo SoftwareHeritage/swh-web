@@ -10,7 +10,6 @@ Django tests settings for swh-web.
 import sys
 
 from swh.web.config import get_config
-from swh.web.tests.data import get_tests_data, override_storages
 
 scope1_limiter_rate = 3
 scope1_limiter_rate_post = 1
@@ -18,6 +17,7 @@ scope2_limiter_rate = 5
 scope2_limiter_rate_post = 2
 scope3_limiter_rate = 1
 scope3_limiter_rate_post = 1
+save_origin_rate_post = 10
 
 swh_web_config = get_config()
 
@@ -43,9 +43,8 @@ swh_web_config.update({
             'swh_save_origin': {
                 'limiter_rate': {
                     'default': '120/h',
-                    'POST': '10/h'
-                },
-                'exempted_networks': ['127.0.0.0/8']
+                    'POST': '%s/h' % save_origin_rate_post,
+                }
             },
             'scope1': {
                 'limiter_rate': {
@@ -78,12 +77,8 @@ from .common import ALLOWED_HOSTS, LOGGING # noqa
 if 'pytest' not in sys.argv[0]:
     swh_web_config.update({
         'debug': True,
-        'grecaptcha': {
-            'activated': False,
-            'site_key': '',
-            'private_key': ''
-        }
     })
+    from swh.web.tests.data import get_tests_data, override_storages # noqa
     test_data = get_tests_data()
     override_storages(test_data['storage'], test_data['idx_storage'])
 else:

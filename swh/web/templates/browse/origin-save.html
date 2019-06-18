@@ -9,13 +9,6 @@ See top-level LICENSE file for more information
 
 {% load static %}
 
-{% block header %}
-{{ block.super }}
-{% if grecaptcha_activated %}
-  <script src="https://www.google.com/recaptcha/api.js"></script>
-{% endif %}
-{% endblock %}
-
 {% block navbar-content %}
 <h4>Save code now</h4>
 {% endblock %}
@@ -81,27 +74,12 @@ See top-level LICENSE file for more information
           <div class="invalid-feedback">The origin url is not valid or does not reference a code repository</div>
         </div>
         <div class="col-md-2">
-          {% if not grecaptcha_activated %}
-            <div class="form-group">
-              <label for="swh-input-origin-save-submit">&#8203;</label>
-              <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-      {% if grecaptcha_activated %}
-        <div class="form-row">
-          <div class="col-md-1"></div>
-          <div class="form-group col-md-4">
-            <div class="g-recaptcha" id="save-origin-recaptcha" data-sitekey="{{ grecaptcha_site_key }}"></div>
-          </div>
-          <div class="col-md-2"></div>
-          <div class="form-group col-md-2">
+          <div class="form-group">
             <label for="swh-input-origin-save-submit">&#8203;</label>
             <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
           </div>
         </div>
-      {% endif %}
+      </div>
     </form>
     <div class="swh-processing-save-request text-center" style="display: none;">
       <img src="{% static 'img/swh-spinner.gif' %}">
