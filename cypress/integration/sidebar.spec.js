@@ -7,7 +7,7 @@
 
 const url = '/'
 
-describe('Sidebar tests', function() {
+describe('Sidebar tests On Large Screen', function() {
   beforeEach(function () {
     cy.visit(url);
   })
@@ -52,5 +52,30 @@ describe('Sidebar tests', function() {
       .then(() => {
         assert.isBelow(collapsedWidth, expandedWidth);
       })
+  })
+})
+
+describe('Sidebar Tests on small screens', function() {
+  beforeEach(function () {
+    cy.viewport('iphone-6');
+    cy.visit(url);
+  })
+
+  it('should be collapsed by default', function() {
+    cy.get('.swh-sidebar')
+      .should('not.be.visible');
+  })
+
+  it('should toggle sidebar when swh-push-menu is clicked', function() {
+    cy.get('.swh-push-menu')
+      .click()
+      .wait(250)
+      .get('.swh-sidebar')
+      .should('be.visible')
+      .get('#sidebar-overlay')
+      .click({force: true})
+      .wait(250)
+      .get('.swh-sidebar')
+      .should('not.be.visible');
   })
 })
