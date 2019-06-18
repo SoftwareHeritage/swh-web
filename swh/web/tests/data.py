@@ -5,6 +5,7 @@
 
 from copy import deepcopy
 import os
+import random
 import time
 
 from swh.indexer.fossology_license import FossologyLicenseIndexer
@@ -15,9 +16,11 @@ from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
 from swh.model.identifiers import directory_identifier
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.storage.algos.dir_iterators import dir_iterator
+from swh.web import config
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content, prepare_content_for_display
 )
+from swh.web.common import service
 
 # Module used to initialize data that will be provided as tests input
 
@@ -58,6 +61,27 @@ _TEST_INDEXER_BASE_CONFIG = {
         'args': {},
     }
 }
+
+
+def random_sha1():
+    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(20)))
+
+
+def random_sha256():
+    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(32)))
+
+
+def random_blake2s256():
+    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(32)))
+
+
+def random_content():
+    return {
+        'sha1': random_sha1(),
+        'sha1_git': random_sha1(),
+        'sha256': random_sha256(),
+        'blake2s256': random_blake2s256(),
+    }
 
 
 # MimetypeIndexer with custom configuration for tests
@@ -283,3 +307,16 @@ def get_tests_data(reset=False):
         for (name, logger) in _indexer_loggers.items():
             _current_tests_data[name].log = logger
     return _current_tests_data
+
+
+def override_storages(storage, idx_storage):
+    """
+    Helper function to replace the storages from which archive data
+    are fetched.
+    """
+    swh_config = config.get_config()
+    swh_config.update({'storage': storage})
+    service.storage = storage
+
+    swh_config.update({'indexer_storage': idx_storage})
+    service.idx_storage = idx_storage

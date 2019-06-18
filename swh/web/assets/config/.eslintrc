@@ -13,14 +13,16 @@
 
     "env": {
         "es6": true,
-        "node": true
+        "node": true,
+        "cypress/globals": true
     },
 
     "plugins": [
         "import",
         "node",
         "promise",
-        "standard"
+        "standard",
+        "cypress"
     ],
 
     "globals": {
@@ -40,7 +42,6 @@
         "__STATIC__": false,
         "Image": false,
         "Cookies": false,
-        "grecaptcha": false,
         "nb": false,
         "MathJax": false
     },
@@ -291,7 +292,7 @@
         "yield-star-spacing": ["error", "both"],
         "yoda": ["error", "never"],
 
-        "import/export": "error",
+        "import/export": "off",
         "import/first": "error",
         "import/no-duplicates": "error",
         "import/no-webpack-loader-syntax": "off",

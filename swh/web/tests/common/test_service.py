@@ -15,12 +15,13 @@ from swh.model.from_disk import DentryPerms
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
+from swh.web.tests.data import random_sha1, random_content
 from swh.web.tests.strategies import (
-    content, contents, unknown_content, unknown_contents,
+    content, contents, unknown_contents,
     contents_with_ctags, origin, new_origin, visit_dates, directory,
-    release, revision, unknown_revision, revisions, unknown_revisions,
+    release, revision, unknown_revision, revisions,
     ancestor_revisions, non_ancestor_revisions, invalid_sha1, sha256,
-    revision_with_submodules, unknown_directory, empty_directory,
+    revision_with_submodules, empty_directory,
     new_revision, new_origins
 )
 from swh.web.tests.testcase import (
@@ -58,11 +59,11 @@ class ServiceTestCase(WebTestCase):
         self.assertEqual(service.lookup_multiple_hashes(input_data),
                          expected_output)
 
-    @given(unknown_content())
-    def test_lookup_hash_does_not_exist(self, unknown_content):
+    def test_lookup_hash_does_not_exist(self):
+        unknown_content_ = random_content()
 
         actual_lookup = service.lookup_hash('sha1_git:%s' %
-                                            unknown_content['sha1_git'])
+                                            unknown_content_['sha1_git'])
 
         self.assertEqual(actual_lookup, {'found': None,
                                          'algo': 'sha1_git'})
@@ -77,11 +78,11 @@ class ServiceTestCase(WebTestCase):
         self.assertEqual({'found': content_metadata,
                           'algo': 'sha1'}, actual_lookup)
 
-    @given(unknown_content())
-    def test_search_hash_does_not_exist(self, content):
+    def test_search_hash_does_not_exist(self):
+        unknown_content_ = random_content()
 
         actual_lookup = service.search_hash('sha1_git:%s' %
-                                            content['sha1_git'])
+                                            unknown_content_['sha1_git'])
 
         self.assertEqual({'found': False}, actual_lookup)
 
@@ -108,12 +109,12 @@ class ServiceTestCase(WebTestCase):
 
         self.assertEqual(actual_ctags, expected_data)
 
-    @given(unknown_content())
-    def test_lookup_content_ctags_no_hash(self, unknown_content):
+    def test_lookup_content_ctags_no_hash(self):
+        unknown_content_ = random_content()
 
         actual_ctags = \
             list(service.lookup_content_ctags('sha1:%s' %
-                                              unknown_content['sha1']))
+                                              unknown_content_['sha1']))
 
         self.assertEqual(actual_ctags, [])
 
@@ -333,17 +334,18 @@ class ServiceTestCase(WebTestCase):
         self.assertIn('Revision %s is not an ancestor of %s' %
                       (sha1_git, root_sha1_git), cm.exception.args[0])
 
-    @given(unknown_revision())
-    def test_lookup_directory_with_revision_not_found(self, unknown_revision):
+    def test_lookup_directory_with_revision_not_found(self):
+        unknown_revision_ = random_sha1()
 
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_directory_with_revision(unknown_revision)
-        self.assertIn('Revision %s not found' % unknown_revision,
+            service.lookup_directory_with_revision(unknown_revision_)
+        self.assertIn('Revision %s not found' % unknown_revision_,
                       cm.exception.args[0])
 
-    @given(unknown_content(), unknown_revision(), unknown_directory())
-    def test_lookup_directory_with_revision_unknown_content(
-            self, unknown_content, unknown_revision, unknown_directory):
+    def test_lookup_directory_with_revision_unknown_content(self):
+        unknown_content_ = random_content()
+        unknown_revision_ = random_sha1()
+        unknown_directory_ = random_sha1()
 
         dir_path = 'README.md'
         # Create a revision that points to a directory
@@ -374,16 +376,16 @@ class ServiceTestCase(WebTestCase):
             'parents': [],
             'synthetic': False,
             'type': 'file',
-            'id': hash_to_bytes(unknown_revision),
-            'directory': hash_to_bytes(unknown_directory)
+            'id': hash_to_bytes(unknown_revision_),
+            'directory': hash_to_bytes(unknown_directory_)
         }
         # A directory that points to unknown content
         dir = {
-            'id': hash_to_bytes(unknown_directory),
+            'id': hash_to_bytes(unknown_directory_),
             'entries': [{
                 'name': bytes(dir_path.encode('utf-8')),
                 'type': 'file',
-                'target': hash_to_bytes(unknown_content['sha1_git']),
+                'target': hash_to_bytes(unknown_content_['sha1_git']),
                 'perms': DentryPerms.content
             }]
         }
@@ -391,8 +393,10 @@ class ServiceTestCase(WebTestCase):
         self.storage.directory_add([dir])
         self.storage.revision_add([revision])
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_directory_with_revision(unknown_revision, dir_path)
-        self.assertIn('Content not found for revision %s' % unknown_revision,
+            service.lookup_directory_with_revision(
+                unknown_revision_, dir_path)
+        self.assertIn('Content not found for revision %s' %
+                      unknown_revision_,
                       cm.exception.args[0])
 
     @given(revision())
@@ -536,15 +540,15 @@ class ServiceTestCase(WebTestCase):
             'No message for revision with sha1_git %s.' % new_revision_id
         )
 
-    @given(unknown_revision())
-    def test_lookup_revision_msg_no_rev(self, unknown_revision):
+    def test_lookup_revision_msg_no_rev(self):
+        unknown_revision_ = random_sha1()
 
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_message(unknown_revision)
+            service.lookup_revision_message(unknown_revision_)
 
         self.assertEqual(
             cm.exception.args[0],
-            'Revision with sha1_git %s not found.' % unknown_revision
+            'Revision with sha1_git %s not found.' % unknown_revision_
         )
 
     @given(revisions())
@@ -558,13 +562,13 @@ class ServiceTestCase(WebTestCase):
 
         self.assertEqual(actual_revisions, expected_revisions)
 
-    @given(unknown_revisions())
-    def test_lookup_revision_multiple_none_found(self, unknown_revisions):
+    def test_lookup_revision_multiple_none_found(self):
+        unknown_revisions_ = [random_sha1(), random_sha1(), random_sha1()]
 
         actual_revisions = \
-            list(service.lookup_revision_multiple(unknown_revisions))
+            list(service.lookup_revision_multiple(unknown_revisions_))
 
-        self.assertEqual(actual_revisions, [None] * len(unknown_revisions))
+        self.assertEqual(actual_revisions, [None] * len(unknown_revisions_))
 
     @given(revision())
     def test_lookup_revision_log(self, revision):
@@ -604,15 +608,15 @@ class ServiceTestCase(WebTestCase):
             service.lookup_revision_log_by(
                 origin['id'], 'unknown_branch_name', None, limit=100)
 
-    @given(unknown_content())
-    def test_lookup_content_raw_not_found(self, unknown_content):
+    def test_lookup_content_raw_not_found(self):
+        unknown_content_ = random_content()
 
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_content_raw('sha1:' + unknown_content['sha1'])
+            service.lookup_content_raw('sha1:' + unknown_content_['sha1'])
 
         self.assertIn(cm.exception.args[0],
                       'Content with %s checksum equals to %s not found!' %
-                      ('sha1', unknown_content['sha1']))
+                      ('sha1', unknown_content_['sha1']))
 
     @given(content())
     def test_lookup_content_raw(self, content):
@@ -624,15 +628,15 @@ class ServiceTestCase(WebTestCase):
 
         self.assertEqual(actual_content, expected_content)
 
-    @given(unknown_content())
-    def test_lookup_content_not_found(self, unknown_content):
+    def test_lookup_content_not_found(self):
+        unknown_content_ = random_content()
 
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_content('sha1:%s' % unknown_content['sha1'])
+            service.lookup_content('sha1:%s' % unknown_content_['sha1'])
 
         self.assertIn(cm.exception.args[0],
                       'Content with %s checksum equals to %s not found!' %
-                      ('sha1', unknown_content['sha1']))
+                      ('sha1', unknown_content_['sha1']))
 
     @given(content())
     def test_lookup_content_with_sha1(self, content):
@@ -668,14 +672,14 @@ class ServiceTestCase(WebTestCase):
         with self.assertRaises(BadInputExc):
             service.lookup_directory('directory_id')
 
-    @given(unknown_directory())
-    def test_lookup_directory_not_found(self, unknown_directory):
+    def test_lookup_directory_not_found(self):
+        unknown_directory_ = random_sha1()
 
         with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_directory(unknown_directory)
+            service.lookup_directory(unknown_directory_)
 
         self.assertIn('Directory with sha1_git %s not found'
-                      % unknown_directory, cm.exception.args[0])
+                      % unknown_directory_, cm.exception.args[0])
 
     @given(directory())
     def test_lookup_directory(self, directory):

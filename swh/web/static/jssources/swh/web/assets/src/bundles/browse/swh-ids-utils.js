@@ -9,6 +9,8 @@ import ClipboardJS from 'clipboard';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.css';
 
+import {BREAKPOINT_SM} from 'utils/constants';
+
 export function swhIdObjectTypeToggled(event) {
   event.preventDefault();
   $(event.target).tab('show');
@@ -85,7 +87,15 @@ $(document).ready(() => {
   }
 
   let tabSlideOptions = {
-    tabLocation: 'right'
+    tabLocation: 'right',
+    offset: function() {
+      const width = $(window).width();
+      if (width < BREAKPOINT_SM) {
+        return '250px';
+      } else {
+        return '200px';
+      }
+    }
   };
   // ensure tab scrolling on small screens
   if (window.innerHeight < 600 || window.innerWidth < 500) {

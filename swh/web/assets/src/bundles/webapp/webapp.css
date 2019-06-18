@@ -168,8 +168,8 @@ pre {
 }
 
 .popover {
-    max-width: 100%;
-    z-index: 2000;
+    max-width: 97%;
+    z-index: 40000;
 }
 
 .modal {
