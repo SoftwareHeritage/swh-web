@@ -19,7 +19,7 @@ class SwhBrowseUtilsTestCase(WebTestCase):
                          ('text/plain', 'us-ascii'))
 
     @given(origin_with_multiple_visits())
-    def test_get_origin_visit_snapshot(self, origin):
+    def test_get_origin_visit_snapshot_simple(self, origin):
 
         visits = self.origin_visit_get(origin['id'])
 
@@ -53,6 +53,8 @@ class SwhBrowseUtilsTestCase(WebTestCase):
                         'target': rel_data['target'],
                         'directory': rev_data['directory']
                     })
+
+            assert branches and releases, 'Incomplete test data.'
 
             origin_visit_branches = utils.get_origin_visit_snapshot(
                 origin, visit_id=visit['visit'])

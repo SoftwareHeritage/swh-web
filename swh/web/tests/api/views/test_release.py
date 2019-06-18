@@ -9,8 +9,9 @@ from rest_framework.test import APITestCase
 
 from swh.model.hashutil import hash_to_bytes
 from swh.web.common.utils import reverse
+from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    release, unknown_release, sha1, content, directory
+    release, sha1, content, directory
 )
 from swh.web.tests.testcase import WebTestCase
 
@@ -96,10 +97,10 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
             self.assertEqual(rv['Content-Type'], 'application/json')
             self.assertEqual(rv.data, expected_release)
 
-    @given(unknown_release())
-    def test_api_release_not_found(self, unknown_release):
+    def test_api_release_not_found(self):
+        unknown_release_ = random_sha1()
 
-        url = reverse('api-release', url_args={'sha1_git': unknown_release})
+        url = reverse('api-release', url_args={'sha1_git': unknown_release_})
 
         rv = self.client.get(url)
 
@@ -107,7 +108,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Release with sha1_git %s not found.' % unknown_release
+            'reason': 'Release with sha1_git %s not found.' % unknown_release_
         })
 
     @given(release())

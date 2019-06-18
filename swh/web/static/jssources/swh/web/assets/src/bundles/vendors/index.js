@@ -9,9 +9,9 @@
 
 // polyfills in order to use advanced js features (like Promise or fetch)
 // in browsers that do not support them
-import '@babel/polyfill';
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 import 'whatwg-fetch/dist/fetch.umd';
-import 'url-search-params-polyfill';
 import 'elementsfrompoint-polyfill';
 
 // jquery and bootstrap

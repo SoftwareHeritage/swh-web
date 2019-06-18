@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import {BREAKPOINT_SM} from 'utils/constants';
+
 $(document).ready(() => {
 
   $('.dropdown-submenu a.dropdown-item').on('click', e => {
@@ -22,6 +24,14 @@ $(document).ready(() => {
     boundary: 'viewport',
     container: 'body',
     html: true,
+    placement: function() {
+      const width = $(window).width();
+      if (width < BREAKPOINT_SM) {
+        return 'top';
+      } else {
+        return 'right';
+      }
+    },
     template: `<div class="popover" role="tooltip">
                  <div class="arrow"></div>
                  <h3 class="popover-header"></h3>

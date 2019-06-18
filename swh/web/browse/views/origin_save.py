@@ -7,34 +7,38 @@ import json
 
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseForbidden
-from django.views.decorators.http import require_POST
+
+from rest_framework.decorators import api_view, authentication_classes
 
 from swh.web.browse.browseurls import browse_route
 from swh.web.common.exc import ForbiddenExc
 from swh.web.common.models import SaveOriginRequest
-from swh.web.common.utils import is_recaptcha_valid
 from swh.web.common.origin_save import (
     create_save_origin_request, get_savable_origin_types,
     get_save_origin_requests_from_queryset
 )
+from swh.web.common.throttling import throttle_scope
+from swh.web.common.utils import EnforceCSRFAuthentication
 
 
 @browse_route(r'origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
               view_name='browse-origin-save-request')
-@require_POST
+@api_view(['POST'])
+@authentication_classes((EnforceCSRFAuthentication, ))
+@throttle_scope('swh_save_origin')
 def _browse_origin_save_request(request, origin_type, origin_url):
-    body_unicode = request.body.decode('utf-8')
-    body = json.loads(body_unicode)
-    if is_recaptcha_valid(request, body.get('g-recaptcha-response')):
-        try:
-            response = json.dumps(create_save_origin_request(origin_type,
-                                                             origin_url),
-                                  separators=(',', ': '))
-            return HttpResponse(response, content_type='application/json')
-        except ForbiddenExc as exc:
-            return HttpResponseForbidden(str(exc))
-    else:
-        return HttpResponseForbidden('The reCAPTCHA could not be validated !')
+    """
+    This view is called through AJAX from the save code now form of swh-web.
+    We use DRF here as we want to rate limit the number of submitted requests
+    per user to avoid being possibly flooded by bots.
+    """
+    try:
+        response = json.dumps(create_save_origin_request(origin_type,
+                                                         origin_url),
+                              separators=(',', ': '))
+        return HttpResponse(response, content_type='application/json')
+    except ForbiddenExc as exc:
+        return HttpResponseForbidden(str(exc))
 
 
 @browse_route(r'origin/save/types/list/',

@@ -14,9 +14,9 @@ from swh.model.hashutil import hash_to_hex
 from swh.web.common.exc import NotFoundExc
 
 from swh.web.common.utils import reverse, parse_timestamp
+from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    revision, unknown_revision, new_revision,
-    unknown_origin_id, origin, origin_with_multiple_visits
+    revision, new_revision, origin, origin_with_multiple_visits
 )
 from swh.web.tests.testcase import WebTestCase
 
@@ -37,10 +37,11 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-    @given(unknown_revision())
-    def test_api_revision_not_found(self, unknown_revision):
+    def test_api_revision_not_found(self):
+        unknown_revision_ = random_sha1()
 
-        url = reverse('api-revision', url_args={'sha1_git': unknown_revision})
+        url = reverse('api-revision',
+                      url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -48,7 +49,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Revision with sha1_git %s not found.' %
-            unknown_revision})
+            unknown_revision_})
 
     @given(revision())
     def test_api_revision_raw_ok(self, revision):
@@ -83,11 +84,11 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
             'reason': 'No message for revision with sha1_git %s.' %
             new_revision_id})
 
-    @given(unknown_revision())
-    def test_api_revision_raw_ko_no_rev(self, unknown_revision):
+    def test_api_revision_raw_ko_no_rev(self):
+        unknown_revision_ = random_sha1()
 
         url = reverse('api-revision-raw-message',
-                      url_args={'sha1_git': unknown_revision})
+                      url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -95,13 +96,13 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Revision with sha1_git %s not found.' %
-            unknown_revision})
+            unknown_revision_})
 
-    @given(unknown_origin_id())
-    def test_api_revision_with_origin_not_found(self, unknown_origin_id):
+    def test_api_revision_with_origin_not_found(self):
+        unknown_origin_id_ = random.randint(1000, 1000000)
 
         url = reverse('api-revision-origin',
-                      url_args={'origin_id': unknown_origin_id})
+                      url_args={'origin_id': unknown_origin_id_})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -109,7 +110,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Origin with id %s not found!' %
-            unknown_origin_id})
+            unknown_origin_id_})
 
     @given(origin())
     def test_api_revision_with_origin(self, origin):
@@ -210,12 +211,11 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-    @given(unknown_origin_id())
-    def test_api_directory_through_revision_origin_ko(self,
-                                                      unknown_origin_id):
+    def test_api_directory_through_revision_origin_ko(self):
+        unknown_origin_id_ = random.randint(1000, 1000000)
 
         url = reverse('api-revision-origin-directory',
-                      url_args={'origin_id': unknown_origin_id})
+                      url_args={'origin_id': unknown_origin_id_})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 404)
@@ -223,7 +223,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Origin with id %s not found!' %
-            unknown_origin_id
+            unknown_origin_id_
         })
 
     @given(origin())
@@ -306,11 +306,11 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                 query_params={'per_page': per_page})
             self.assertIn(next_log_url, rv['Link'])
 
-    @given(unknown_revision())
-    def test_api_revision_log_not_found(self, unknown_revision):
+    def test_api_revision_log_not_found(self):
+        unknown_revision_ = random_sha1()
 
         url = reverse('api-revision-log',
-                      url_args={'sha1_git': unknown_revision})
+                      url_args={'sha1_git': unknown_revision_})
 
         rv = self.client.get(url)
 
@@ -319,7 +319,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Revision with sha1_git %s not found.' %
-            unknown_revision})
+            unknown_revision_})
         self.assertFalse(rv.has_header('Link'))
 
     @given(revision())

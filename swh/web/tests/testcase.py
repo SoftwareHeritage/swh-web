@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,9 +10,8 @@ from django.core.cache import cache
 from hypothesis.extra.django import TestCase
 
 from swh.model.hashutil import hash_to_bytes
-from swh.web import config
-from swh.web.common import converters, service
-from swh.web.tests.data import get_tests_data
+from swh.web.common import converters
+from swh.web.tests.data import get_tests_data, override_storages
 
 
 ctags_json_missing = \
@@ -42,16 +41,9 @@ class WebTestCase(TestCase):
         self.license_indexer = tests_data['license_indexer']
         self.ctags_indexer = tests_data['ctags_indexer']
 
-        # Update swh-web configuration to use the in-memory storage
+        # Update swh-web configuration to use the in-memory storages
         # instantiated in the tests.data module
-        swh_config = config.get_config()
-        swh_config.update({'storage': self.storage})
-        service.storage = self.storage
-
-        # Update swh-web configuration to use the in-memory indexer storage
-        # instantiated in the tests.data modules
-        swh_config.update({'indexer_storage': self.idx_storage})
-        service.idx_storage = self.idx_storage
+        override_storages(tests_data['storage'], tests_data['idx_storage'])
 
         super()._pre_setup()
 
