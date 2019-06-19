@@ -31,8 +31,9 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
                           .format(object_name, hex_id)))
 
 
-@api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
+@api_route(r'/vault/directory/(?P<dir_id>[0-9a-f]+)/',
            'api-vault-cook-directory', methods=['GET', 'POST'],
+           checksum_args=['dir_id'],
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/directory/')
@@ -87,8 +88,9 @@ def api_vault_cook_directory(request, dir_id):
     return res
 
 
-@api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/raw/',
-           'api-vault-fetch-directory')
+@api_route(r'/vault/directory/(?P<dir_id>[0-9a-f]+)/raw/',
+           'api-vault-fetch-directory',
+           checksum_args=['dir_id'])
 @api_doc('/vault/directory/raw/', handle_response=True)
 def api_vault_fetch_directory(request, dir_id):
     """
@@ -120,8 +122,9 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
-@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/',
+@api_route(r'/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/',
            'api-vault-cook-revision_gitfast', methods=['GET', 'POST'],
+           checksum_args=['rev_id'],
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/revision/gitfast/')
@@ -177,8 +180,9 @@ def api_vault_cook_revision_gitfast(request, rev_id):
     return res
 
 
-@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
-           'api-vault-fetch-revision_gitfast')
+@api_route(r'/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/raw/',
+           'api-vault-fetch-revision_gitfast',
+           checksum_args=['rev_id'])
 @api_doc('/vault/revision/gitfast/raw/', handle_response=True)
 def api_vault_fetch_revision_gitfast(request, rev_id):
     """
