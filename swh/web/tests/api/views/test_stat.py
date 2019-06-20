@@ -19,7 +19,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
         mock_service.stat_counters.side_effect = ValueError(
             'voluntary error to check the bad request middleware.')
 
-        url = reverse('api-stat-counters')
+        url = reverse('api-1-stat-counters')
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 400)
@@ -34,7 +34,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
         mock_service.stat_counters.side_effect = StorageDBError(
             'Storage exploded! Will be back online shortly!')
 
-        url = reverse('api-stat-counters')
+        url = reverse('api-1-stat-counters')
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 503)
@@ -52,7 +52,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
             'Storage API dropped dead! Will resurrect from its ashes asap!'
         )
 
-        url = reverse('api-stat-counters')
+        url = reverse('api-1-stat-counters')
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 503)
@@ -66,7 +66,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
 
     def test_api_1_stat_counters(self):
 
-        url = reverse('api-stat-counters')
+        url = reverse('api-1-stat-counters')
 
         rv = self.client.get(url)
 

@@ -17,7 +17,7 @@ from swh.web.api.views.utils import api_lookup
 
 
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/filetype/',
-           'api-content-filetype', checksum_args=['q'])
+           'api-1-content-filetype', checksum_args=['q'])
 @api_doc('/content/filetype/')
 def api_content_filetype(request, q):
     """
@@ -62,7 +62,7 @@ def api_content_filetype(request, q):
 
 
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/language/',
-           'api-content-language', checksum_args=['q'])
+           'api-1-content-language', checksum_args=['q'])
 @api_doc('/content/language/')
 def api_content_language(request, q):
     """
@@ -108,7 +108,7 @@ def api_content_language(request, q):
 
 
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/license/',
-           'api-content-license', checksum_args=['q'])
+           'api-1-content-license', checksum_args=['q'])
 @api_doc('/content/license/')
 def api_content_license(request, q):
     """
@@ -151,7 +151,8 @@ def api_content_license(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/ctags/', 'api-content-ctags')
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/ctags/',
+           'api-1-content-ctags')
 @api_doc('/content/ctags/', tags=['hidden'])
 def api_content_ctags(request, q):
     """
@@ -164,7 +165,7 @@ def api_content_ctags(request, q):
         enrich_fn=utils.enrich_metadata_endpoint)
 
 
-@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/raw/', 'api-content-raw',
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/raw/', 'api-1-content-raw',
            checksum_args=['q'])
 @api_doc('/content/raw/', handle_response=True)
 def api_content_raw(request, q):
@@ -212,7 +213,7 @@ def api_content_raw(request, q):
     return response
 
 
-@api_route(r'/content/symbol/(?P<q>.+)/', 'api-content-symbol')
+@api_route(r'/content/symbol/(?P<q>.+)/', 'api-1-content-symbol')
 @api_doc('/content/symbol/', tags=['hidden'])
 def api_content_symbol(request, q=None):
     """Search content objects by `Ctags <http://ctags.sourceforge.net/>`_-style
@@ -243,7 +244,7 @@ def api_content_symbol(request, q=None):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('api-content-symbol', url_args={'q': q},
+                'link-next': reverse('api-1-content-symbol', url_args={'q': q},
                                      query_params=query_params)
             }
 
@@ -254,8 +255,8 @@ def api_content_symbol(request, q=None):
     return result
 
 
-@api_route(r'/content/known/search/', 'api-content-known', methods=['POST'])
-@api_route(r'/content/known/(?P<q>(?!search).*)/', 'api-content-known')
+@api_route(r'/content/known/search/', 'api-1-content-known', methods=['POST'])
+@api_route(r'/content/known/(?P<q>(?!search).*)/', 'api-1-content-known')
 @api_doc('/content/known/', tags=['hidden'])
 def api_check_content_known(request, q=None):
     """
@@ -330,7 +331,7 @@ def api_check_content_known(request, q=None):
     return response
 
 
-@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/', 'api-content',
+@api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/', 'api-1-content',
            checksum_args=['q'])
 @api_doc('/content/')
 def api_content_metadata(request, q):

@@ -22,7 +22,7 @@ See top-level LICENSE file for more information
 {% endblock %}
 
 {% block content %}
-<div class="swh-api-doc">
+<div class="swh-api-1-doc">
   <p>
     Below you can find a list of the available endpoints for version 1 of the
     Software Heritage API. For a more general introduction please refer to
@@ -36,7 +36,7 @@ See top-level LICENSE file for more information
   </p>
 </div>
 
-<div class="swh-api-doc table-responsive">
+<div class="swh-api-1-doc table-responsive">
   <table class="table table-striped search-res swh-table" width="100%">
     <col width="200">
     <thead class="thead-default">
@@ -45,7 +45,7 @@ See top-level LICENSE file for more information
     </thead>
     <tbody>
       {% for route, doc in doc_routes %}
-        <tr class="swh-api-doc-route swh-tr-hover-highlight {% for tag in doc.tags %} swh-api-doc-route-{{ tag }} {% endfor %}">
+        <tr class="swh-api-1-doc-route swh-tr-hover-highlight {% for tag in doc.tags %} swh-api-1-doc-route-{{ tag }} {% endfor %}">
           {% if doc.tags|length > 0 %}
             <td id="{{ route }}">
               {% url doc.route_view_name %}

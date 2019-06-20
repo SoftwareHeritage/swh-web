@@ -9,7 +9,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/person/(?P<person_id>[0-9]+)/', 'api-person')
+@api_route(r'/person/(?P<person_id>[0-9]+)/', 'api-1-person')
 @api_doc('/person/')
 def api_person(request, person_id):
     """

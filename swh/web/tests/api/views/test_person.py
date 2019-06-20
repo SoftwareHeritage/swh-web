@@ -18,7 +18,7 @@ class PersonApiTestCase(WebTestCase, APITestCase):
     @given(person())
     def test_api_person(self, person):
 
-        url = reverse('api-person', url_args={'person_id': person})
+        url = reverse('api-1-person', url_args={'person_id': person})
 
         rv = self.client.get(url)
 
@@ -31,7 +31,7 @@ class PersonApiTestCase(WebTestCase, APITestCase):
     def test_api_person_not_found(self):
         unknown_person_ = random.randint(1000, 10000000)
 
-        url = reverse('api-person', url_args={'person_id': unknown_person_})
+        url = reverse('api-1-person', url_args={'person_id': unknown_person_})
 
         rv = self.client.get(url)
 

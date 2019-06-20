@@ -13,7 +13,7 @@ from swh.web.common.origin_save import (
 
 
 @api_route(r'/origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
-           'api-save-origin', methods=['GET', 'POST'],
+           'api-1-save-origin', methods=['GET', 'POST'],
            throttle_scope='swh_save_origin')
 @never_cache
 @api_doc('/origin/save/')

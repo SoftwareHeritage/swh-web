@@ -295,7 +295,8 @@ def api_doc(route, noargs=False, need_params=False, tags=[],
                 doc_data = get_doc_data(f, route, noargs)
                 return make_api_response(request, None, doc_data)
 
-            view_name = 'api-%s' % route[1:-1].replace('/', '-')
+            view_name = 'api-%s-%s' % \
+                (api_version, route[1:-1].replace('/', '-'))
             APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
 
         @wraps(f)

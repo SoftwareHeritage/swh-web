@@ -21,16 +21,16 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
     @given(release())
     def test_api_release(self, release):
 
-        url = reverse('api-release', url_args={'sha1_git': release})
+        url = reverse('api-1-release', url_args={'sha1_git': release})
 
         rv = self.client.get(url)
 
         expected_release = self.release_get(release)
         author_id = expected_release['author']['id']
         target_revision = expected_release['target']
-        author_url = reverse('api-person',
+        author_url = reverse('api-1-person',
                              url_args={'person_id': author_id})
-        target_url = reverse('api-revision',
+        target_url = reverse('api-1-revision',
                              url_args={'sha1_git': target_revision})
         expected_release['author_url'] = author_url
         expected_release['target_url'] = target_url
@@ -73,14 +73,14 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
 
             self.storage.release_add([sample_release])
 
-            url = reverse('api-release', url_args={'sha1_git': new_rel_id})
+            url = reverse('api-1-release', url_args={'sha1_git': new_rel_id})
 
             rv = self.client.get(url)
 
             expected_release = self.release_get(new_rel_id)
 
             author_id = expected_release['author']['id']
-            author_url = reverse('api-person',
+            author_url = reverse('api-1-person',
                                  url_args={'person_id': author_id})
 
             if target_type == 'content':
@@ -88,7 +88,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
             else:
                 url_args = {'sha1_git': target}
 
-            target_url = reverse('api-%s' % target_type,
+            target_url = reverse('api-1-%s' % target_type,
                                  url_args=url_args)
             expected_release['author_url'] = author_url
             expected_release['target_url'] = target_url
@@ -100,7 +100,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
     def test_api_release_not_found(self):
         unknown_release_ = random_sha1()
 
-        url = reverse('api-release', url_args={'sha1_git': unknown_release_})
+        url = reverse('api-1-release', url_args={'sha1_git': unknown_release_})
 
         rv = self.client.get(url)
 
@@ -113,13 +113,13 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
 
     @given(release())
     def test_api_release_uppercase(self, release):
-        url = reverse('api-release-uppercase-checksum',
+        url = reverse('api-1-release-uppercase-checksum',
                       url_args={'sha1_git': release.upper()})
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 302)
 
-        redirect_url = reverse('api-release-uppercase-checksum',
+        redirect_url = reverse('api-1-release-uppercase-checksum',
                                url_args={'sha1_git': release})
 
         self.assertEqual(resp['location'], redirect_url)

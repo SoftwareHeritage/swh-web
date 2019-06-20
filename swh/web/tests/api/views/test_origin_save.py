@@ -32,7 +32,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
             url='https://gitlab.com/user_to_exclude')
 
     def test_invalid_origin_type(self):
-        url = reverse('api-save-origin',
+        url = reverse('api-1-save-origin',
                       url_args={'origin_type': 'foo',
                                 'origin_url': 'https://github.com/torvalds/linux'}) # noqa
 
@@ -40,7 +40,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_origin_url(self):
-        url = reverse('api-save-origin',
+        url = reverse('api-1-save-origin',
                       url_args={'origin_type': 'git',
                                 'origin_url': 'bar'})
 
@@ -86,7 +86,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                 'id': 1,
              }]
 
-        url = reverse('api-save-origin',
+        url = reverse('api-1-save-origin',
                       url_args={'origin_type': 'git',
                                 'origin_url': origin_url})
 
@@ -125,7 +125,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                 'id': 1,
              }]
 
-        url = reverse('api-save-origin',
+        url = reverse('api-1-save-origin',
                       url_args={'origin_type': 'git',
                                 'origin_url': origin_url})
 
@@ -249,7 +249,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
 
     def test_get_save_requests_unknown_origin(self):
         unknown_origin_url = 'https://gitlab.com/foo/bar'
-        url = reverse('api-save-origin',
+        url = reverse('api-1-save-origin',
                       url_args={'origin_type': 'git',
                                 'origin_url': unknown_origin_url})
         response = self.client.get(url)
