@@ -245,7 +245,8 @@ class APIDocException(Exception):
     """
 
 
-class api_doc(object):  # noqa: N801
+def api_doc(route, noargs=False, need_params=False, tags=[],
+            handle_response=False, api_version='1'):
     """
     Decorate an API function to register it in the API doc route index
     and create the corresponding DRF route.
@@ -270,99 +271,95 @@ class api_doc(object):  # noqa: N801
         api_version (str): api version string
 
     """
-    def __init__(self, route, noargs=False, need_params=False, tags=[],
-                 handle_response=False, api_version='1'):
-        super().__init__()
-        self.route = route
-        self.urlpattern = '^' + api_version + route + '$'
-        self.noargs = noargs
-        self.need_params = need_params
-        self.tags = set(tags)
-        self.handle_response = handle_response
+    urlpattern = '^' + api_version + route + '$'
+    tags = set(tags)
 
     # @api_doc() Decorator call
-    def __call__(self, f):
+    def decorator(f):
 
         # If the route is not hidden, add it to the index
-        if 'hidden' not in self.tags:
-            doc_data = self.get_doc_data(f)
+        if 'hidden' not in tags:
+            doc_data = get_doc_data(f, route, noargs)
             doc_desc = doc_data['description']
             first_dot_pos = doc_desc.find('.')
-            APIUrls.add_route(self.route, doc_desc[:first_dot_pos+1],
-                              tags=self.tags)
+            APIUrls.add_route(route, doc_desc[:first_dot_pos+1],
+                              tags=tags)
 
         # If the decorated route has arguments, we create a specific
         # documentation view
-        if not self.noargs:
+        if not noargs:
 
             @api_view(['GET', 'HEAD'])
             def doc_view(request):
-                doc_data = self.get_doc_data(f)
+                doc_data = get_doc_data(f, route, noargs)
                 return make_api_response(request, None, doc_data)
 
-            view_name = 'api-%s' % self.route[1:-1].replace('/', '-')
-            APIUrls.add_url_pattern(self.urlpattern, doc_view, view_name)
+            view_name = 'api-%s' % route[1:-1].replace('/', '-')
+            APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
 
         @wraps(f)
         def documented_view(request, **kwargs):
-            doc_data = self.get_doc_data(f)
+            doc_data = get_doc_data(f, route, noargs)
 
             try:
                 response = f(request, **kwargs)
             except Exception as exc:
                 if request.accepted_media_type == 'text/html' and \
-                        self.need_params and not request.query_params:
+                        need_params and not request.query_params:
                     response = None
                 else:
                     return error_response(request, exc, doc_data)
 
-            if self.handle_response:
+            if handle_response:
                 return response
             else:
                 return make_api_response(request, response, doc_data)
 
         return documented_view
 
-    @functools.lru_cache(maxsize=32)
-    def get_doc_data(self, f):
-        """
-        Build documentation data for the decorated api endpoint function
-        """
-        data = {
-            'description': '',
-            'response_data': None,
-            'urls': [],
-            'args': [],
-            'params': [],
-            'resheaders': [],
-            'reqheaders': [],
-            'return_type': '',
-            'returns': [],
-            'status_codes': [],
-            'examples': [],
-            'route': self.route,
-            'noargs': self.noargs
-        }
+    return decorator
 
-        if not f.__doc__:
-            raise APIDocException('apidoc %s: expected a docstring'
-                                  ' for function %s'
-                                  % (self.__class__.__name__, f.__name__))
 
-        # use raw docstring as endpoint documentation if sphinx
-        # httpdomain is not used
-        if '.. http' not in f.__doc__:
-            data['description'] = f.__doc__
-        # else parse the sphinx httpdomain docstring with docutils
-        # (except when building the swh-web documentation through autodoc
-        # sphinx extension, not needed and raise errors with sphinx >= 1.7)
-        elif 'SWH_WEB_DOC_BUILD' not in os.environ:
-            _parse_httpdomain_doc(f.__doc__, data)
-            # process returned object info for nicer html display
-            returns_list = ''
-            for ret in data['returns']:
-                returns_list += '\t* **%s (%s)**: %s\n' %\
-                    (ret['name'], ret['type'], ret['doc'])
-            data['returns_list'] = returns_list
+@functools.lru_cache(maxsize=32)
+def get_doc_data(f, route, noargs):
+    """
+    Build documentation data for the decorated api endpoint function
+    """
+    data = {
+        'description': '',
+        'response_data': None,
+        'urls': [],
+        'args': [],
+        'params': [],
+        'resheaders': [],
+        'reqheaders': [],
+        'return_type': '',
+        'returns': [],
+        'status_codes': [],
+        'examples': [],
+        'route': route,
+        'noargs': noargs
+    }
 
-        return data
+    if not f.__doc__:
+        raise APIDocException('apidoc: expected a docstring'
+                              ' for function %s'
+                              % (f.__name__,))
+
+    # use raw docstring as endpoint documentation if sphinx
+    # httpdomain is not used
+    if '.. http' not in f.__doc__:
+        data['description'] = f.__doc__
+    # else parse the sphinx httpdomain docstring with docutils
+    # (except when building the swh-web documentation through autodoc
+    # sphinx extension, not needed and raise errors with sphinx >= 1.7)
+    elif 'SWH_WEB_DOC_BUILD' not in os.environ:
+        _parse_httpdomain_doc(f.__doc__, data)
+        # process returned object info for nicer html display
+        returns_list = ''
+        for ret in data['returns']:
+            returns_list += '\t* **%s (%s)**: %s\n' %\
+                (ret['name'], ret['type'], ret['doc'])
+        data['returns_list'] = returns_list
+
+    return data
