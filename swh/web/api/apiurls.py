@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import functools
+
 from rest_framework.decorators import api_view
 
 from swh.web.common.urlsindex import UrlsIndex
@@ -63,6 +65,7 @@ def api_route(url_pattern=None, view_name=None,
         # create a DRF view from the wrapped function
         @api_view(methods)
         @throttling.throttle_scope(throttle_scope)
+        @functools.wraps(f)
         def api_view_f(*args, **kwargs):
             return f(*args, **kwargs)
         # small hacks for correctly generating API endpoints index doc

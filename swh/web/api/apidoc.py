@@ -290,6 +290,7 @@ def api_doc(route, noargs=False, need_params=False, tags=[],
         if not noargs:
 
             @api_view(['GET', 'HEAD'])
+            @wraps(f)
             def doc_view(request):
                 doc_data = get_doc_data(f, route, noargs)
                 return make_api_response(request, None, doc_data)
