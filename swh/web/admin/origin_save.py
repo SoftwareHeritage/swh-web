@@ -154,7 +154,10 @@ def _admin_origin_save_remove_unauthorized_url(request, origin_url):
 @require_POST
 @staff_member_required(login_url=settings.LOGIN_URL)
 def _admin_origin_save_request_accept(request, origin_type, origin_url):
-    SaveAuthorizedOrigin.objects.create(url=origin_url)
+    try:
+        SaveAuthorizedOrigin.objects.get(url=origin_url)
+    except ObjectDoesNotExist:
+        SaveAuthorizedOrigin.objects.create(url=origin_url)
     create_save_origin_request(origin_type, origin_url)
     return HttpResponse(status=200)
 
@@ -164,7 +167,10 @@ def _admin_origin_save_request_accept(request, origin_type, origin_url):
 @require_POST
 @staff_member_required(login_url=settings.LOGIN_URL)
 def _admin_origin_save_request_reject(request, origin_type, origin_url):
-    SaveUnauthorizedOrigin.objects.create(url=origin_url)
+    try:
+        SaveUnauthorizedOrigin.objects.get(url=origin_url)
+    except ObjectDoesNotExist:
+        SaveUnauthorizedOrigin.objects.create(url=origin_url)
     sor = SaveOriginRequest.objects.get(origin_type=origin_type,
                                         origin_url=origin_url,
                                         status=SAVE_REQUEST_PENDING)
