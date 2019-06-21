@@ -326,6 +326,39 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
                 .assert_called_with(conjunction=['Jane Doe'], limit=100)
 
+    @given(origin())
+    def test_api_origin_intrinsic_metadata_get(self, origin):
+        with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
+            mock_idx_storage.origin_intrinsic_metadata_get \
+                .side_effect = lambda origin_ids: [{
+                    'from_revision': (
+                        b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
+                        b'\xf2U\xfa\x05B8'),
+                    'metadata': {'author': 'Jane Doe'},
+                    'id': origin['id'],
+                    'tool': {
+                        'configuration': {
+                            'context': ['NpmMapping', 'CodemetaMapping'],
+                            'type': 'local'
+                        },
+                        'id': 3,
+                        'name': 'swh-metadata-detector',
+                        'version': '0.0.1'
+                    }
+                }]
+
+            url = reverse('api-origin-intrinsic-metadata-get',
+                          url_args={'origin_type': origin['type'],
+                                    'origin_url': origin['url']})
+            rv = self.client.get(url)
+
+            mock_idx_storage.origin_intrinsic_metadata_get \
+                            .assert_called_once_with([origin['id']])
+            self.assertEqual(rv.status_code, 200, rv.content)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            expected_data = {'author': 'Jane Doe'}
+            self.assertEqual(rv.data, expected_data)
+
     @patch('swh.web.common.service.idx_storage')
     def test_api_origin_metadata_search_invalid(self, mock_idx_storage):
 

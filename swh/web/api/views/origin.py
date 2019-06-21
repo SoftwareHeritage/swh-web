@@ -433,3 +433,47 @@ def api_origin_visit(request, origin_id, visit_id):
         enrich_fn=partial(_enrich_origin_visit,
                           with_origin_url=True,
                           with_origin_visit_url=False))
+
+
+@api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+           '/intrinsic-metadata', 'api-origin-intrinsic-metadata-get')
+@api_doc('/origin/')
+def api_origin_intrinsic_metadata_get(request, origin_type, origin_url):
+    """
+    .. http:get:: /api/1/origin/(origin_type)/url/(origin_url)/intrinsic-metadata
+
+        Get intrinsic metadata of a software origin.
+
+        :param string origin_type: the origin type (possible values are ``git``, ``svn``,
+            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        :param string origin_url: the origin url
+
+        :>jsonarr dict metadata: instrinsic metadata of the origin (as a JSON-LD/CodeMeta dictionary)
+
+        :reqheader Accept: the requested response content type,
+            either ``application/json`` (default) or ``application/yaml``
+        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin can not be found in the archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/git/url/https://github.com/python/cpython//intrinsic-metadata`
+    """ # noqa
+    ori_dict = {
+        'type': origin_type,
+        'url': origin_url
+    }
+
+    error_msg = 'Origin with type %s and URL %s not found' % (
+        ori_dict['type'], ori_dict['url'])
+
+    return api_lookup(
+        service.lookup_origin_intrinsic_metadata, ori_dict,
+        notfound_msg=error_msg,
+        enrich_fn=_enrich_origin)

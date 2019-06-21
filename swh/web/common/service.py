@@ -289,6 +289,28 @@ def search_origin_metadata(fulltext, limit=50):
     return results
 
 
+def lookup_origin_intrinsic_metadata(origin_dict):
+    """Return intrinsic metadata for origin whose origin_id matches given
+    origin_id.
+
+    Args:
+        origin_dict: origin's dict with keys ('type' AND 'url')
+
+    Returns:
+        origin metadata.
+
+    """
+    origin_info = storage.origin_get(origin_dict)
+    if not origin_info:
+        msg = 'Origin with type %s and url %s not found!' % \
+            (origin_dict['type'], origin_dict['url'])
+        raise NotFoundExc(msg)
+
+    origin_ids = [origin_info['id']]
+    match = idx_storage.origin_intrinsic_metadata_get(origin_ids)[0]
+    return match['metadata']
+
+
 def lookup_person(person_id):
     """Return information about the person with id person_id.
 
