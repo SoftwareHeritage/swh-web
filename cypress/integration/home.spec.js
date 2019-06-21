@@ -14,11 +14,11 @@ describe('Home Page Tests', function() {
     cy.visit(url);
     cy.get('.swh-counter')
       .then((counters) => {
-        for(let counter of counters) {
+        for (let counter of counters) {
           let innerText = $(counter).text();
           const value = parseInt(innerText.replace(/,/g, ''));
           assert.isAbove(value, 0);
         }
       });
-  })
-})
+  });
+});

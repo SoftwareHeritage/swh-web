@@ -5,22 +5,22 @@
  * See top-level LICENSE file for more information
  */
 
-const url = 'api/'
+const url = 'api/';
 
 describe('Back-to-top button tests', function() {
-  beforeEach(function () {
+  beforeEach(function() {
     cy.visit(url);
-  })
+  });
 
   it('should be hidden when on top', function() {
     cy.get('#back-to-top').should('not.be.visible');
-  })
+  });
 
   it('should be visible when scrolled down', function() {
     cy.scrollTo('bottom')
       .get('#back-to-top')
       .should('be.visible');
-  })
+  });
 
   it('should scroll to top when clicked', function() {
     cy.scrollTo('bottom')
@@ -29,6 +29,6 @@ describe('Back-to-top button tests', function() {
       .window()
       .then((window) => {
         assert.equal(window.scrollY, 0);
-      })
-  })
-})
+      });
+  });
+});

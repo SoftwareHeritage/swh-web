@@ -5,12 +5,12 @@
  * See top-level LICENSE file for more information
  */
 
-const url = '/'
+const url = '/';
 
 describe('Sidebar tests On Large Screen', function() {
-  beforeEach(function () {
+  beforeEach(function() {
     cy.visit(url);
-  })
+  });
 
   it('should toggle sidebar when swh-push-menu is clicked', function() {
     cy.get('.swh-push-menu')
@@ -28,8 +28,8 @@ describe('Sidebar tests On Large Screen', function() {
           .should('have.class', 'sidebar-open')
           .get('.nav-link > p')
           .should('not.have.css', 'opacity', '0');
-      })
-  })
+      });
+  });
 
   it('should have less width when collapsed compared to open', function() {
     let collapsedWidth, expandedWidth;
@@ -51,20 +51,20 @@ describe('Sidebar tests On Large Screen', function() {
       })
       .then(() => {
         assert.isBelow(collapsedWidth, expandedWidth);
-      })
-  })
-})
+      });
+  });
+});
 
 describe('Sidebar Tests on small screens', function() {
-  beforeEach(function () {
+  beforeEach(function() {
     cy.viewport('iphone-6');
     cy.visit(url);
-  })
+  });
 
   it('should be collapsed by default', function() {
     cy.get('.swh-sidebar')
       .should('not.be.visible');
-  })
+  });
 
   it('should toggle sidebar when swh-push-menu is clicked', function() {
     cy.get('.swh-push-menu')
@@ -77,5 +77,5 @@ describe('Sidebar Tests on small screens', function() {
       .wait(250)
       .get('.swh-sidebar')
       .should('not.be.visible');
-  })
-})
+  });
+});
