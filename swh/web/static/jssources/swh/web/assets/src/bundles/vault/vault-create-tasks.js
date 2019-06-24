@@ -18,9 +18,9 @@ function addVaultCookingTask(cookingTask) {
   }) === undefined) {
     let cookingUrl;
     if (cookingTask.object_type === 'directory') {
-      cookingUrl = Urls.api_vault_cook_directory(cookingTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_directory(cookingTask.object_id);
     } else {
-      cookingUrl = Urls.api_vault_cook_revision_gitfast(cookingTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_revision_gitfast(cookingTask.object_id);
     }
     if (cookingTask.email) {
       cookingUrl += '?email=' + cookingTask.email;

@@ -49,16 +49,16 @@ def _revision_directory_by(revision, path, request_path,
 
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)/log/',
-           'api-revision-origin-log')
+           'api-1-revision-origin-log')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/log/',
-           'api-revision-origin-log')
+           'api-1-revision-origin-log')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/ts/(?P<ts>.+)/log/',
-           'api-revision-origin-log')
+           'api-1-revision-origin-log')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)'
            r'/ts/(?P<ts>.+)/log/',
-           'api-revision-origin-log')
+           'api-1-revision-origin-log')
 @api_doc('/revision/origin/log/')
 def api_revision_log_by(request, origin_id,
                         branch_name='HEAD',
@@ -147,7 +147,7 @@ def api_revision_log_by(request, origin_id,
             query_params['per_page'] = per_page
 
         result['headers'] = {
-            'link-next': reverse('api-revision-origin-log', url_args=params,
+            'link-next': reverse('api-1-revision-origin-log', url_args=params,
                                  query_params=query_params)
         }
 
@@ -160,22 +160,22 @@ def api_revision_log_by(request, origin_id,
 
 
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/directory/',
-           'api-revision-origin-directory')
+           'api-1-revision-origin-directory')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/directory/(?P<path>.+)/',
-           'api-revision-origin-directory')
+           'api-1-revision-origin-directory')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)/directory/',
-           'api-revision-origin-directory')
+           'api-1-revision-origin-directory')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)/ts/(?P<ts>.+)/directory/',
-           'api-revision-origin-directory')
+           'api-1-revision-origin-directory')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)/directory/(?P<path>.+)/',
-           'api-revision-origin-directory')
+           'api-1-revision-origin-directory')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)/ts/(?P<ts>.+)'
            r'/directory/(?P<path>.+)/',
-           'api-revision-origin-directory')
+           'api-1-revision-origin-directory')
 @api_doc('/revision/origin/directory/', tags=['hidden'])
 def api_directory_through_revision_origin(request, origin_id,
                                           branch_name='HEAD',
@@ -198,15 +198,15 @@ def api_directory_through_revision_origin(request, origin_id,
 
 
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/',
-           'api-revision-origin')
+           'api-1-revision-origin')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)/',
-           'api-revision-origin')
+           'api-1-revision-origin')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)'
            r'/branch/(?P<branch_name>.+)/ts/(?P<ts>.+)/',
-           'api-revision-origin')
+           'api-1-revision-origin')
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>.+)/',
-           'api-revision-origin')
+           'api-1-revision-origin')
 @api_doc('/revision/origin/')
 def api_revision_with_origin(request, origin_id,
                              branch_name='HEAD',
@@ -271,7 +271,7 @@ def api_revision_with_origin(request, origin_id,
         enrich_fn=utils.enrich_revision)
 
 
-@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-revision',
+@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-1-revision',
            checksum_args=['sha1_git'])
 @api_doc('/revision/')
 def api_revision(request, sha1_git):
@@ -328,7 +328,7 @@ def api_revision(request, sha1_git):
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/raw/',
-           'api-revision-raw-message', checksum_args=['sha1_git'])
+           'api-1-revision-raw-message', checksum_args=['sha1_git'])
 @api_doc('/revision/raw/', tags=['hidden'], handle_response=True)
 def api_revision_raw_message(request, sha1_git):
     """Return the raw data of the message of revision identified by sha1_git
@@ -342,9 +342,9 @@ def api_revision_raw_message(request, sha1_git):
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/directory/',
-           'api-revision-directory', checksum_args=['sha1_git'])
+           'api-1-revision-directory', checksum_args=['sha1_git'])
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/directory/(?P<dir_path>.+)/',
-           'api-revision-directory', checksum_args=['sha1_git'])
+           'api-1-revision-directory', checksum_args=['sha1_git'])
 @api_doc('/revision/directory/')
 def api_revision_directory(request, sha1_git,
                            dir_path=None,
@@ -387,11 +387,11 @@ def api_revision_directory(request, sha1_git,
                                   with_data=with_data)
 
 
-@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/log/', 'api-revision-log',
+@api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/log/', 'api-1-revision-log',
            checksum_args=['sha1_git'])
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)'
            r'/prev/(?P<prev_sha1s>[0-9a-f]*/*)/log/',
-           'api-revision-log', checksum_args=['sha1_git', 'prev_sha1s'])
+           'api-1-revision-log', checksum_args=['sha1_git', 'prev_sha1s'])
 @api_doc('/revision/log/')
 def api_revision_log(request, sha1_git, prev_sha1s=None):
     """
@@ -464,7 +464,7 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
             query_params['per_page'] = per_page
 
         result['headers'] = {
-            'link-next': reverse('api-revision-log',
+            'link-next': reverse('api-1-revision-log',
                                  url_args={'sha1_git': new_last_sha1},
                                  query_params=query_params)
         }

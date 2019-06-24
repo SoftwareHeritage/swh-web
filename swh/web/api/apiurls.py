@@ -1,12 +1,14 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import functools
+
 from rest_framework.decorators import api_view
 
 from swh.web.common.urlsindex import UrlsIndex
-from swh.web.common.throttling import throttle_scope
+from swh.web.common import throttling
 
 
 class APIUrls(UrlsIndex):
@@ -31,7 +33,7 @@ class APIUrls(UrlsIndex):
         """
         Add a route to the self-documenting API reference
         """
-        route_view_name = 'api-%s' % route[1:-1].replace('/', '-')
+        route_view_name = 'api-1-%s' % route[1:-1].replace('/', '-')
         if route not in cls._apidoc_routes:
             d = {'docstring': docstring,
                  'route_view_name': route_view_name}
@@ -40,7 +42,11 @@ class APIUrls(UrlsIndex):
             cls._apidoc_routes[route] = d
 
 
-class api_route(object):  # noqa: N801
+def api_route(url_pattern=None, view_name=None,
+              methods=['GET', 'HEAD', 'OPTIONS'],
+              throttle_scope='swh_api',
+              api_version='1',
+              checksum_args=None):
     """
     Decorator to ease the registration of an API endpoint
     using the Django REST Framework.
@@ -53,34 +59,27 @@ class api_route(object):  # noqa: N801
 
     """
 
-    def __init__(self, url_pattern=None, view_name=None,
-                 methods=['GET', 'HEAD', 'OPTIONS'],
-                 throttle_scope='swh_api',
-                 api_version='1',
-                 checksum_args=None):
-        super().__init__()
-        self.url_pattern = '^' + api_version + url_pattern + '$'
-        self.view_name = view_name
-        self.methods = methods
-        self.throttle_scope = throttle_scope
-        self.checksum_args = checksum_args
+    url_pattern = '^' + api_version + url_pattern + '$'
 
-    def __call__(self, f):
+    def decorator(f):
         # create a DRF view from the wrapped function
-        @api_view(self.methods)
-        @throttle_scope(self.throttle_scope)
+        @api_view(methods)
+        @throttling.throttle_scope(throttle_scope)
+        @functools.wraps(f)
         def api_view_f(*args, **kwargs):
             return f(*args, **kwargs)
         # small hacks for correctly generating API endpoints index doc
         api_view_f.__name__ = f.__name__
-        api_view_f.http_method_names = self.methods
+        api_view_f.http_method_names = methods
 
         # register the route and its view in the endpoints index
-        APIUrls.add_url_pattern(self.url_pattern, api_view_f,
-                                self.view_name)
+        APIUrls.add_url_pattern(url_pattern, api_view_f,
+                                view_name)
 
-        if self.checksum_args:
-            APIUrls.add_redirect_for_checksum_args(self.view_name,
-                                                   [self.url_pattern],
-                                                   self.checksum_args)
+        if checksum_args:
+            APIUrls.add_redirect_for_checksum_args(view_name,
+                                                   [url_pattern],
+                                                   checksum_args)
         return f
+
+    return decorator

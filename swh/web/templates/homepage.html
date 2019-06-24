@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2017-2018  The Software Heritage developers
+Copyright (C) 2017-2019  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -88,8 +88,8 @@ See top-level LICENSE file for more information
       </a>
     </div>
     <div class="col-md-3 swh-web-app-link" align="center">
-      <a href="{% url 'api-homepage' %}">
-        <img id="swh-web-api-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
+      <a href="{% url 'api-1-homepage' %}">
+        <img id="swh-web-api-1-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
         <h5>Web API</h5>
         <p>Query the archive programmatically using a RESTful API.</p>
       </a>
@@ -101,7 +101,7 @@ See top-level LICENSE file for more information
 <script>
   $(document).ready(function() {
     $.ajax({
-      url: Urls.api_stat_counters(),
+      url: Urls.api_1_stat_counters(),
       dataType: 'json',
       success: function (data) {
         if (data.content) {

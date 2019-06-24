@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,10 +10,10 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/directory/(?P<sha1_git>[0-9a-f]+)/', 'api-directory',
+@api_route(r'/directory/(?P<sha1_git>[0-9a-f]+)/', 'api-1-directory',
            checksum_args=['sha1_git'])
 @api_route(r'/directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/',
-           'api-directory',
+           'api-1-directory',
            checksum_args=['sha1_git'])
 @api_doc('/directory/')
 def api_directory(request, sha1_git, path=None):

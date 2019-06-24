@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -34,7 +34,7 @@ class SwhIdsApiTestCase(WebTestCase, APITestCase):
 
             swh_id = 'swh:1:%s:%s;origin=%s' % (obj_type_short, obj_id,
                                                 origin['url'])
-            url = reverse('api-resolve-swh-pid', url_args={'swh_id': swh_id})
+            url = reverse('api-1-resolve-swh-pid', url_args={'swh_id': swh_id})
 
             resp = self.client.get(url)
 
@@ -64,7 +64,7 @@ class SwhIdsApiTestCase(WebTestCase, APITestCase):
     def test_swh_id_resolve_invalid(self):
         rev_id_invalid = '96db9023b8_foo_50d6c108e9a3'
         swh_id = 'swh:1:rev:%s' % rev_id_invalid
-        url = reverse('api-resolve-swh-pid', url_args={'swh_id': swh_id})
+        url = reverse('api-1-resolve-swh-pid', url_args={'swh_id': swh_id})
 
         resp = self.client.get(url)
 
@@ -84,7 +84,7 @@ class SwhIdsApiTestCase(WebTestCase, APITestCase):
 
             swh_id = 'swh:1:%s:%s' % (obj_type_short, obj_id)
 
-            url = reverse('api-resolve-swh-pid', url_args={'swh_id': swh_id})
+            url = reverse('api-1-resolve-swh-pid', url_args={'swh_id': swh_id})
 
             resp = self.client.get(url)
 

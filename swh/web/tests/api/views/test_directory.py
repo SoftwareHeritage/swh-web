@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -19,7 +19,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
     @given(directory())
     def test_api_directory(self, directory):
 
-        url = reverse('api-directory', url_args={'sha1_git': directory})
+        url = reverse('api-1-directory', url_args={'sha1_git': directory})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 200)
@@ -33,7 +33,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
     def test_api_directory_not_found(self):
         unknown_directory_ = random_sha1()
 
-        url = reverse('api-directory',
+        url = reverse('api-1-directory',
                       url_args={'sha1_git': unknown_directory_})
         rv = self.client.get(url)
 
@@ -50,7 +50,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
         directory_content = self.directory_ls(directory)
         path = random.choice(directory_content)
 
-        url = reverse('api-directory',
+        url = reverse('api-1-directory',
                       url_args={'sha1_git': directory,
                                 'path': path['name']})
         rv = self.client.get(url)
@@ -63,7 +63,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
     def test_api_directory_with_path_not_found(self, directory):
 
         path = 'some/path/to/nonexistent/dir/'
-        url = reverse('api-directory',
+        url = reverse('api-1-directory',
                       url_args={'sha1_git': directory,
                                 'path': path})
         rv = self.client.get(url)
@@ -77,13 +77,13 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
 
     @given(directory())
     def test_api_directory_uppercase(self, directory):
-        url = reverse('api-directory-uppercase-checksum',
+        url = reverse('api-1-directory-uppercase-checksum',
                       url_args={'sha1_git': directory.upper()})
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 302)
 
-        redirect_url = reverse('api-directory',
+        redirect_url = reverse('api-1-directory',
                                url_args={'sha1_git': directory})
 
         self.assertEqual(resp['location'], redirect_url)
@@ -92,15 +92,15 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
     def _enrich_dir_data(cls, dir_data):
         if dir_data['type'] == 'file':
             dir_data['target_url'] = \
-                reverse('api-content',
+                reverse('api-1-content',
                         url_args={'q': 'sha1_git:%s' % dir_data['target']})
         elif dir_data['type'] == 'dir':
             dir_data['target_url'] = \
-                reverse('api-directory',
+                reverse('api-1-directory',
                         url_args={'sha1_git': dir_data['target']})
         elif dir_data['type'] == 'rev':
             dir_data['target_url'] = \
-                reverse('api-revision',
+                reverse('api-1-revision',
                         url_args={'sha1_git': dir_data['target']})
 
         return dir_data
