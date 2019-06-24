@@ -5,6 +5,9 @@
  * See top-level LICENSE file for more information
  */
 
-Cypress.Screenshot.defaults({
-  screenshotOnRunFailure: false
-});
+import axios from 'axios';
+
+export async function httpGetJson(url) {
+  const response = await axios.get(url);
+  return response.data;
+}

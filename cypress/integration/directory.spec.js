@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {httpGetJson} from './utils';
+import {httpGetJson} from '../utils';
 
 const url = 'browse/origin/https://github.com/memononen/libtess2/directory/';
 const $ = Cypress.$;
