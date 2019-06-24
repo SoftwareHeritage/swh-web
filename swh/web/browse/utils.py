@@ -111,7 +111,7 @@ def _reencode_content(mimetype, encoding, content_data):
         if encoding == 'unknown-8bit':
             content_data = content_data.decode('utf-8', 'replace')\
                                        .encode('utf-8')
-        elif 'ascii' not in encoding and encoding not in ['utf-8', 'binary']:
+        elif encoding not in ['utf-8', 'binary']:
             content_data = content_data.decode(encoding, 'replace')\
                                        .encode('utf-8')
     elif mimetype.startswith('application/octet-stream'):
