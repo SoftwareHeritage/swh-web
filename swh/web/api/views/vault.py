@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -31,8 +31,9 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
                           .format(object_name, hex_id)))
 
 
-@api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/',
-           'api-vault-cook-directory', methods=['GET', 'POST'],
+@api_route(r'/vault/directory/(?P<dir_id>[0-9a-f]+)/',
+           'api-1-vault-cook-directory', methods=['GET', 'POST'],
+           checksum_args=['dir_id'],
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/directory/')
@@ -82,13 +83,14 @@ def api_vault_cook_directory(request, dir_id):
         dir_id, ['sha1'], 'Only sha1_git is supported.')
 
     res = _dispatch_cook_progress(request, 'directory', obj_id)
-    res['fetch_url'] = reverse('api-vault-fetch-directory',
+    res['fetch_url'] = reverse('api-1-vault-fetch-directory',
                                url_args={'dir_id': dir_id})
     return res
 
 
-@api_route(r'/vault/directory/(?P<dir_id>[a-fA-F0-9]+)/raw/',
-           'api-vault-fetch-directory')
+@api_route(r'/vault/directory/(?P<dir_id>[0-9a-f]+)/raw/',
+           'api-1-vault-fetch-directory',
+           checksum_args=['dir_id'])
 @api_doc('/vault/directory/raw/', handle_response=True)
 def api_vault_fetch_directory(request, dir_id):
     """
@@ -120,8 +122,9 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
-@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/',
-           'api-vault-cook-revision_gitfast', methods=['GET', 'POST'],
+@api_route(r'/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/',
+           'api-1-vault-cook-revision_gitfast', methods=['GET', 'POST'],
+           checksum_args=['rev_id'],
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/revision/gitfast/')
@@ -172,13 +175,14 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         rev_id, ['sha1'], 'Only sha1_git is supported.')
 
     res = _dispatch_cook_progress(request, 'revision_gitfast', obj_id)
-    res['fetch_url'] = reverse('api-vault-fetch-revision_gitfast',
+    res['fetch_url'] = reverse('api-1-vault-fetch-revision_gitfast',
                                url_args={'rev_id': rev_id})
     return res
 
 
-@api_route(r'/vault/revision/(?P<rev_id>[a-fA-F0-9]+)/gitfast/raw/',
-           'api-vault-fetch-revision_gitfast')
+@api_route(r'/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/raw/',
+           'api-1-vault-fetch-revision_gitfast',
+           checksum_args=['rev_id'])
 @api_doc('/vault/revision/gitfast/raw/', handle_response=True)
 def api_vault_fetch_revision_gitfast(request, rev_id):
     """

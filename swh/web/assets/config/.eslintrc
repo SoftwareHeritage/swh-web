@@ -22,7 +22,8 @@
         "node",
         "promise",
         "standard",
-        "cypress"
+        "cypress",
+        "chai-friendly"
     ],
 
     "globals": {
@@ -209,11 +210,7 @@
         "no-unreachable": "error",
         "no-unsafe-finally": "error",
         "no-unsafe-negation": "error",
-        "no-unused-expressions": ["error", {
-            "allowShortCircuit": true,
-            "allowTernary": true,
-            "allowTaggedTemplates": true
-        }],
+        "no-unused-expressions": 0,
         "no-unused-vars": ["error", {
             "vars": "all",
             "args": "none",
@@ -305,6 +302,7 @@
         "standard/array-bracket-even-spacing": ["error", "either"],
         "standard/computed-property-even-spacing": ["error", "even"],
         "standard/no-callback-literal": "error",
-        "standard/object-curly-even-spacing": ["error", "either"]
+        "standard/object-curly-even-spacing": ["error", "either"],
+        "chai-friendly/no-unused-expressions": 2
     }
 }

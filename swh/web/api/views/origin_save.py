@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -13,7 +13,7 @@ from swh.web.common.origin_save import (
 
 
 @api_route(r'/origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
-           'api-save-origin', methods=['GET', 'POST'],
+           'api-1-save-origin', methods=['GET', 'POST'],
            throttle_scope='swh_save_origin')
 @never_cache
 @api_doc('/origin/save/')

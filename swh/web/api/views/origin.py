@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,8 +18,8 @@ from swh.web.api.views.utils import api_lookup
 def _enrich_origin(origin):
     if 'id' in origin:
         o = origin.copy()
-        o['origin_visits_url'] = \
-            reverse('api-origin-visits', url_args={'origin_id': origin['id']})
+        o['origin_visits_url'] = reverse(
+            'api-1-origin-visits', url_args={'origin_id': origin['id']})
         return o
 
     return origin
@@ -29,22 +29,22 @@ def _enrich_origin_visit(origin_visit, *,
                          with_origin_url, with_origin_visit_url):
     ov = origin_visit.copy()
     if with_origin_url:
-        ov['origin_url'] = reverse('api-origin',
+        ov['origin_url'] = reverse('api-1-origin',
                                    url_args={'origin_id': ov['origin']})
     if with_origin_visit_url:
-        ov['origin_visit_url'] = reverse('api-origin-visit',
+        ov['origin_visit_url'] = reverse('api-1-origin-visit',
                                          url_args={'origin_id': ov['origin'],
                                                    'visit_id': ov['visit']})
     snapshot = ov['snapshot']
     if snapshot:
-        ov['snapshot_url'] = reverse('api-snapshot',
+        ov['snapshot_url'] = reverse('api-1-snapshot',
                                      url_args={'snapshot_id': snapshot})
     else:
         ov['snapshot_url'] = None
     return ov
 
 
-@api_route(r'/origins/', 'api-origins')
+@api_route(r'/origins/', 'api-1-origins')
 @api_doc('/origins/', noargs=True)
 def api_origins(request):
     """
@@ -92,14 +92,15 @@ def api_origins(request):
     if len(results) > origin_count:
         origin_from = results.pop()['id']
         response['headers']['link-next'] = reverse(
-            'api-origins', query_params={'origin_from': origin_from,
-                                         'origin_count': origin_count})
+            'api-1-origins',
+            query_params={'origin_from': origin_from,
+                          'origin_count': origin_count})
     return response
 
 
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-origin')
+@api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-1-origin')
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
-           'api-origin')
+           'api-1-origin')
 @api_doc('/origin/')
 def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
     """
@@ -179,7 +180,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
 
 @api_route(r'/origin/search/(?P<url_pattern>.+)/',
-           'api-origin-search')
+           'api-1-origin-search')
 @api_doc('/origin/search/')
 def api_origin_search(request, url_pattern):
     """
@@ -235,7 +236,7 @@ def api_origin_search(request, url_pattern):
         query_params['regexp'] = regexp
 
         result['headers'] = {
-            'link-next': reverse('api-origin-search',
+            'link-next': reverse('api-1-origin-search',
                                  url_args={'url_pattern': url_pattern},
                                  query_params=query_params)
         }
@@ -248,7 +249,7 @@ def api_origin_search(request, url_pattern):
 
 
 @api_route(r'/origin/metadata-search/',
-           'api-origin-metadata-search')
+           'api-1-origin-metadata-search')
 @api_doc('/origin/metadata-search/', noargs=True, need_params=True)
 def api_origin_metadata_search(request):
     """
@@ -297,7 +298,7 @@ def api_origin_metadata_search(request):
     }
 
 
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'api-origin-visits')
+@api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'api-1-origin-visits')
 @api_doc('/origin/visits/')
 def api_origin_visits(request, origin_id):
     """
@@ -377,7 +378,7 @@ def api_origin_visits(request, origin_id):
                 query_params['per_page'] = per_page
 
             result['headers'] = {
-                'link-next': reverse('api-origin-visits',
+                'link-next': reverse('api-1-origin-visits',
                                      url_args={'origin_id': origin_id},
                                      query_params=query_params)
             }
@@ -390,7 +391,7 @@ def api_origin_visits(request, origin_id):
 
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/',
-           'api-origin-visit')
+           'api-1-origin-visit')
 @api_doc('/origin/visit/')
 def api_origin_visit(request, origin_id, visit_id):
     """

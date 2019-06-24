@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,7 +12,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-snapshot',
+@api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-1-snapshot',
            checksum_args=['snapshot_id'])
 @api_doc('/snapshot/')
 def api_snapshot(request, snapshot_id):
@@ -109,7 +109,7 @@ def api_snapshot(request, snapshot_id):
 
     if results['next_branch'] is not None:
         response['headers']['link-next'] = \
-            reverse('api-snapshot',
+            reverse('api-1-snapshot',
                     url_args={'snapshot_id': snapshot_id},
                     query_params={'branches_from': results['next_branch'],
                                   'branches_count': branches_count,

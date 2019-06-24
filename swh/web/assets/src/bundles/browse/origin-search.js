@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -90,7 +90,7 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
   let baseSearchUrl;
   let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
   if (searchMetadata) {
-    baseSearchUrl = Urls.api_origin_metadata_search() + `?fulltext=${patterns}`;
+    baseSearchUrl = Urls.api_1_origin_metadata_search() + `?fulltext=${patterns}`;
   } else {
     originPatterns = patterns;
     let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
@@ -137,7 +137,7 @@ function doSearch() {
   offset = 0;
   inSearch = true;
   // first try to resolve a swh persistent identifier
-  let resolvePidUrl = Urls.api_resolve_swh_pid(patterns);
+  let resolvePidUrl = Urls.api_1_resolve_swh_pid(patterns);
   fetch(resolvePidUrl)
     .then(handleFetchError)
     .then(response => response.json())

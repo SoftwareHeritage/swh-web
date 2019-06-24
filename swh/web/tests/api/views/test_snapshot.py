@@ -1,4 +1,4 @@
-# Copyright (C) 2018  The Software Heritage developers
+# Copyright (C) 2018-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -22,7 +22,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
     @given(snapshot())
     def test_api_snapshot(self, snapshot):
 
-        url = reverse('api-snapshot',
+        url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': snapshot})
         rv = self.client.get(url)
 
@@ -51,7 +51,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
 
         while branches_offset < len(snapshot_branches):
             branches_from = snapshot_branches[branches_offset]['name']
-            url = reverse('api-snapshot',
+            url = reverse('api-1-snapshot',
                           url_args={'snapshot_id': snapshot},
                           query_params={'branches_from': branches_from,
                                         'branches_count': branches_count})
@@ -75,7 +75,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
 
             if branches_offset < len(snapshot_branches):
                 next_url = reverse(
-                    'api-snapshot',
+                    'api-1-snapshot',
                     url_args={'snapshot_id': snapshot},
                     query_params={'branches_from': next_branch,
                                   'branches_count': branches_count})
@@ -83,7 +83,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
             else:
                 self.assertFalse(rv.has_header('Link'))
 
-        url = reverse('api-snapshot',
+        url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': snapshot})
         rv = self.client.get(url)
 
@@ -105,7 +105,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
 
         target_type = random.choice(snapshot_branches)['target_type']
 
-        url = reverse('api-snapshot',
+        url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': snapshot},
                       query_params={'target_types': target_type})
         rv = self.client.get(url)
@@ -121,12 +121,12 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
     def test_api_snapshot_errors(self):
         unknown_snapshot_ = random_sha1()
 
-        url = reverse('api-snapshot',
+        url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': '63ce369'})
         rv = self.client.get(url)
         self.assertEqual(rv.status_code, 400)
 
-        url = reverse('api-snapshot',
+        url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': unknown_snapshot_})
         rv = self.client.get(url)
         self.assertEqual(rv.status_code, 404)
@@ -135,9 +135,9 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
         def _get_branch_url(target_type, target):
             url = None
             if target_type == 'revision':
-                url = reverse('api-revision', url_args={'sha1_git': target})
+                url = reverse('api-1-revision', url_args={'sha1_git': target})
             if target_type == 'release':
-                url = reverse('api-release', url_args={'sha1_git': target})
+                url = reverse('api-1-release', url_args={'sha1_git': target})
             return url
 
         for branch in snapshot['branches'].keys():
@@ -165,13 +165,13 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
 
     @given(snapshot())
     def test_api_snapshot_uppercase(self, snapshot):
-        url = reverse('api-snapshot-uppercase-checksum',
+        url = reverse('api-1-snapshot-uppercase-checksum',
                       url_args={'snapshot_id': snapshot.upper()})
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 302)
 
-        redirect_url = reverse('api-snapshot-uppercase-checksum',
+        redirect_url = reverse('api-1-snapshot-uppercase-checksum',
                                url_args={'snapshot_id': snapshot})
 
         self.assertEqual(resp['location'], redirect_url)
@@ -184,7 +184,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
             snp_dict['branches'][branch] = None
             break
         self.storage.snapshot_add([snp_dict])
-        url = reverse('api-snapshot',
+        url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': snp_id})
         rv = self.client.get(url)
         self.assertEqual(rv.status_code, 200, rv.data)

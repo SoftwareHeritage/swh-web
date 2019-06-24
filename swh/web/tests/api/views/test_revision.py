@@ -26,7 +26,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     @given(revision())
     def test_api_revision(self, revision):
 
-        url = reverse('api-revision', url_args={'sha1_git': revision})
+        url = reverse('api-1-revision', url_args={'sha1_git': revision})
         rv = self.client.get(url)
 
         expected_revision = self.revision_get(revision)
@@ -40,7 +40,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     def test_api_revision_not_found(self):
         unknown_revision_ = random_sha1()
 
-        url = reverse('api-revision',
+        url = reverse('api-1-revision',
                       url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
@@ -54,7 +54,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     @given(revision())
     def test_api_revision_raw_ok(self, revision):
 
-        url = reverse('api-revision-raw-message',
+        url = reverse('api-1-revision-raw-message',
                       url_args={'sha1_git': revision})
         rv = self.client.get(url)
 
@@ -72,7 +72,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         new_revision_id = hash_to_hex(new_revision['id'])
 
-        url = reverse('api-revision-raw-message',
+        url = reverse('api-1-revision-raw-message',
                       url_args={'sha1_git': new_revision_id})
 
         rv = self.client.get(url)
@@ -87,7 +87,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     def test_api_revision_raw_ko_no_rev(self):
         unknown_revision_ = random_sha1()
 
-        url = reverse('api-revision-raw-message',
+        url = reverse('api-1-revision-raw-message',
                       url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
@@ -101,7 +101,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     def test_api_revision_with_origin_not_found(self):
         unknown_origin_id_ = random.randint(1000, 1000000)
 
-        url = reverse('api-revision-origin',
+        url = reverse('api-1-revision-origin',
                       url_args={'origin_id': unknown_origin_id_})
         rv = self.client.get(url)
 
@@ -115,7 +115,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     @given(origin())
     def test_api_revision_with_origin(self, origin):
 
-        url = reverse('api-revision-origin',
+        url = reverse('api-1-revision-origin',
                       url_args={'origin_id': origin['id']})
         rv = self.client.get(url)
 
@@ -138,7 +138,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
             list(b for b in snapshot['branches'].keys()
                  if snapshot['branches'][b]['target_type'] == 'revision'))
 
-        url = reverse('api-revision-origin',
+        url = reverse('api-1-revision-origin',
                       url_args={'origin_id': origin['id'],
                                 'branch_name': branch_name})
 
@@ -164,7 +164,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
             list(b for b in snapshot['branches'].keys()
                  if snapshot['branches'][b]['target_type'] == 'revision'))
 
-        url = reverse('api-revision-origin',
+        url = reverse('api-1-revision-origin',
                       url_args={'origin_id': origin['id'],
                                 'branch_name': branch_name,
                                 'ts': visit['date']})
@@ -195,7 +195,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         formatted_date = date.strftime('Today is %B %d, %Y at %X')
 
-        url = reverse('api-revision-origin',
+        url = reverse('api-1-revision-origin',
                       url_args={'origin_id': origin['id'],
                                 'branch_name': branch_name,
                                 'ts': formatted_date})
@@ -214,7 +214,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     def test_api_directory_through_revision_origin_ko(self):
         unknown_origin_id_ = random.randint(1000, 1000000)
 
-        url = reverse('api-revision-origin-directory',
+        url = reverse('api-1-revision-origin-directory',
                       url_args={'origin_id': unknown_origin_id_})
         rv = self.client.get(url)
 
@@ -229,7 +229,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     @given(origin())
     def test_api_directory_through_revision_origin(self, origin):
 
-        url = reverse('api-revision-origin-directory',
+        url = reverse('api-1-revision-origin-directory',
                       url_args={'origin_id': origin['id']})
         rv = self.client.get(url)
 
@@ -241,29 +241,29 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         for entry in directory:
             if entry['type'] == 'dir':
                 entry['target_url'] = reverse(
-                    'api-directory',
+                    'api-1-directory',
                     url_args={'sha1_git': entry['target']}
                 )
                 entry['dir_url'] = reverse(
-                    'api-revision-origin-directory',
+                    'api-1-revision-origin-directory',
                     url_args={'origin_id': origin['id'],
                               'path': entry['name']})
             elif entry['type'] == 'file':
                 entry['target_url'] = reverse(
-                    'api-content',
+                    'api-1-content',
                     url_args={'q': 'sha1_git:%s' % entry['target']}
                 )
                 entry['file_url'] = reverse(
-                    'api-revision-origin-directory',
+                    'api-1-revision-origin-directory',
                     url_args={'origin_id': origin['id'],
                               'path': entry['name']})
             elif entry['type'] == 'rev':
                 entry['target_url'] = reverse(
-                    'api-revision',
+                    'api-1-revision',
                     url_args={'sha1_git': entry['target']}
                 )
                 entry['rev_url'] = reverse(
-                    'api-revision-origin-directory',
+                    'api-1-revision-origin-directory',
                     url_args={'origin_id': origin['id'],
                               'path': entry['name']})
 
@@ -283,7 +283,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         per_page = 10
 
-        url = reverse('api-revision-log', url_args={'sha1_git': revision},
+        url = reverse('api-1-revision-log', url_args={'sha1_git': revision},
                       query_params={'per_page': per_page})
 
         rv = self.client.get(url)
@@ -301,7 +301,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         if has_next:
             self.assertIn('Link', rv)
             next_log_url = reverse(
-                'api-revision-log',
+                'api-1-revision-log',
                 url_args={'sha1_git': expected_log[-1]['id']},
                 query_params={'per_page': per_page})
             self.assertIn(next_log_url, rv['Link'])
@@ -309,7 +309,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
     def test_api_revision_log_not_found(self):
         unknown_revision_ = random_sha1()
 
-        url = reverse('api-revision-log',
+        url = reverse('api-1-revision-log',
                       url_args={'sha1_git': unknown_revision_})
 
         rv = self.client.get(url)
@@ -332,7 +332,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         per_page = 10
 
-        url = reverse('api-revision-log',
+        url = reverse('api-1-revision-log',
                       url_args={'sha1_git': rev,
                                 'prev_sha1s': prev_rev},
                       query_params={'per_page': per_page})
@@ -353,7 +353,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         per_page = 10
 
-        url = reverse('api-revision-origin-log',
+        url = reverse('api-1-revision-origin-log',
                       url_args={'origin_id': origin['id']},
                       query_params={'per_page': per_page})
 
@@ -375,7 +375,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         if has_next:
             self.assertIn('Link', rv)
             next_log_url = reverse(
-                'api-revision-origin-log',
+                'api-1-revision-origin-log',
                 url_args={'origin_id': origin['id'],
                           'branch_name': 'HEAD'},
                 query_params={'per_page': per_page,
@@ -387,7 +387,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         invalid_branch_name = 'foobar'
 
-        url = reverse('api-revision-origin-log',
+        url = reverse('api-1-revision-origin-log',
                       url_args={'origin_id': origin['id'],
                                 'branch_name': invalid_branch_name})
 
@@ -492,28 +492,28 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
     def _enrich_revision(self, revision):
         author_url = reverse(
-            'api-person',
+            'api-1-person',
             url_args={'person_id': revision['author']['id']})
 
         committer_url = reverse(
-            'api-person',
+            'api-1-person',
             url_args={'person_id': revision['committer']['id']})
 
         directory_url = reverse(
-            'api-directory',
+            'api-1-directory',
             url_args={'sha1_git': revision['directory']})
 
-        history_url = reverse('api-revision-log',
+        history_url = reverse('api-1-revision-log',
                               url_args={'sha1_git': revision['id']})
 
         parents_id_url = []
         for p in revision['parents']:
             parents_id_url.append({
                 'id': p,
-                'url': reverse('api-revision', url_args={'sha1_git': p})
+                'url': reverse('api-1-revision', url_args={'sha1_git': p})
             })
 
-        revision_url = reverse('api-revision',
+        revision_url = reverse('api-1-revision',
                                url_args={'sha1_git': revision['id']})
 
         revision['author_url'] = author_url
@@ -527,13 +527,13 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
     @given(revision())
     def test_api_revision_uppercase(self, revision):
-        url = reverse('api-revision-uppercase-checksum',
+        url = reverse('api-1-revision-uppercase-checksum',
                       url_args={'sha1_git': revision.upper()})
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 302)
 
-        redirect_url = reverse('api-revision',
+        redirect_url = reverse('api-1-revision',
                                url_args={'sha1_git': revision})
 
         self.assertEqual(resp['location'], redirect_url)
