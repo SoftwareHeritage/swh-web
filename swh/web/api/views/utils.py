@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -55,10 +55,10 @@ def api_home(request):
     return Response({}, template_name='api/api.html')
 
 
-APIUrls.add_url_pattern(r'^$', api_home, view_name='api-homepage')
+APIUrls.add_url_pattern(r'^$', api_home, view_name='api-1-homepage')
 
 
-@api_route(r'/', 'api-endpoints')
+@api_route(r'/', 'api-1-endpoints')
 def api_endpoints(request):
     """Display the list of opened api endpoints.
 

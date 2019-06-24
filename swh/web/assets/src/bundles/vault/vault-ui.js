@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -72,9 +72,9 @@ export function recookObject() {
     // build cook request url
     let cookingUrl;
     if (recookTask.object_type === 'directory') {
-      cookingUrl = Urls.api_vault_cook_directory(recookTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_directory(recookTask.object_id);
     } else {
-      cookingUrl = Urls.api_vault_cook_revision_gitfast(recookTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_revision_gitfast(recookTask.object_id);
     }
     if (recookTask.email) {
       cookingUrl += '?email=' + recookTask.email;
@@ -124,9 +124,9 @@ function checkVaultCookingTasks() {
     tasks[cookingTask.object_id] = cookingTask;
     let cookingUrl;
     if (cookingTask.object_type === 'directory') {
-      cookingUrl = Urls.api_vault_cook_directory(cookingTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_directory(cookingTask.object_id);
     } else {
-      cookingUrl = Urls.api_vault_cook_revision_gitfast(cookingTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_revision_gitfast(cookingTask.object_id);
     }
     if (cookingTask.status !== 'done' && cookingTask.status !== 'failed') {
       cookingTaskRequests.push(fetch(cookingUrl));

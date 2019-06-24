@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -59,20 +59,20 @@ def enrich_object(object):
     if 'target' in obj and 'target_type' in obj:
         if obj['target_type'] in ('revision', 'release', 'directory'):
             obj['target_url'] = \
-                reverse('api-%s' % obj['target_type'],
+                reverse('api-1-%s' % obj['target_type'],
                         url_args={'sha1_git': obj['target']})
         elif obj['target_type'] == 'content':
             obj['target_url'] = \
-                reverse('api-content',
+                reverse('api-1-content',
                         url_args={'q': 'sha1_git:' + obj['target']})
         elif obj['target_type'] == 'snapshot':
             obj['target_url'] = \
-                reverse('api-snapshot',
+                reverse('api-1-snapshot',
                         url_args={'snapshot_id': obj['target']})
 
     if 'author' in obj:
         author = obj['author']
-        obj['author_url'] = reverse('api-person',
+        obj['author_url'] = reverse('api-1-person',
                                     url_args={'person_id': author['id']})
 
     return obj
@@ -89,18 +89,18 @@ def enrich_directory(directory, context_url=None):
         target_type = directory['type']
         target = directory['target']
         if target_type == 'file':
-            directory['target_url'] = \
-                reverse('api-content', url_args={'q': 'sha1_git:%s' % target})
+            directory['target_url'] = reverse(
+                'api-1-content', url_args={'q': 'sha1_git:%s' % target})
             if context_url:
                 directory['file_url'] = context_url + directory['name'] + '/'
         elif target_type == 'dir':
-            directory['target_url'] = reverse('api-directory',
-                                              url_args={'sha1_git': target})
+            directory['target_url'] = reverse(
+                'api-1-directory', url_args={'sha1_git': target})
             if context_url:
                 directory['dir_url'] = context_url + directory['name'] + '/'
         else:
-            directory['target_url'] = reverse('api-revision',
-                                              url_args={'sha1_git': target})
+            directory['target_url'] = reverse(
+                'api-1-revision', url_args={'sha1_git': target})
             if context_url:
                 directory['rev_url'] = context_url + directory['name'] + '/'
 
@@ -112,7 +112,7 @@ def enrich_metadata_endpoint(content):
 
     """
     c = content.copy()
-    c['content_url'] = reverse('api-content',
+    c['content_url'] = reverse('api-1-content',
                                url_args={'q': 'sha1:%s' % c['id']})
     return c
 
@@ -146,14 +146,15 @@ def enrich_content(content, top_url=False, query_string=None):
     if hash_algo in checksums:
         q = '%s:%s' % (hash_algo, checksums[hash_algo])
         if top_url:
-            content['content_url'] = reverse('api-content', url_args={'q': q})
-        content['data_url'] = reverse('api-content-raw', url_args={'q': q})
-        content['filetype_url'] = reverse('api-content-filetype',
-                                          url_args={'q': q})
-        content['language_url'] = reverse('api-content-language',
-                                          url_args={'q': q})
-        content['license_url'] = reverse('api-content-license',
-                                         url_args={'q': q})
+            content['content_url'] = reverse(
+                'api-1-content', url_args={'q': q})
+        content['data_url'] = reverse('api-1-content-raw', url_args={'q': q})
+        content['filetype_url'] = reverse(
+            'api-1-content-filetype', url_args={'q': q})
+        content['language_url'] = reverse(
+            'api-1-content-language', url_args={'q': q})
+        content['license_url'] = reverse(
+            'api-1-content-license', url_args={'q': q})
 
     return content
 
@@ -166,32 +167,31 @@ def enrich_revision(revision):
         revision: the revision as a dict
     """
 
-    revision['url'] = reverse('api-revision',
+    revision['url'] = reverse('api-1-revision',
                               url_args={'sha1_git': revision['id']})
-    revision['history_url'] = reverse('api-revision-log',
+    revision['history_url'] = reverse('api-1-revision-log',
                                       url_args={'sha1_git': revision['id']})
 
     if 'author' in revision:
         author = revision['author']
-        revision['author_url'] = reverse('api-person',
+        revision['author_url'] = reverse('api-1-person',
                                          url_args={'person_id': author['id']})
 
     if 'committer' in revision:
         committer = revision['committer']
-        revision['committer_url'] = \
-            reverse('api-person', url_args={'person_id': committer['id']})
+        revision['committer_url'] = reverse(
+            'api-1-person', url_args={'person_id': committer['id']})
 
     if 'directory' in revision:
-        revision['directory_url'] = \
-            reverse('api-directory',
-                    url_args={'sha1_git': revision['directory']})
+        revision['directory_url'] = reverse(
+            'api-1-directory', url_args={'sha1_git': revision['directory']})
 
     if 'parents' in revision:
         parents = []
         for parent in revision['parents']:
             parents.append({
                 'id': parent,
-                'url': reverse('api-revision', url_args={'sha1_git': parent})
+                'url': reverse('api-1-revision', url_args={'sha1_git': parent})
             })
 
         revision['parents'] = parents
@@ -199,13 +199,13 @@ def enrich_revision(revision):
     if 'children' in revision:
         children = []
         for child in revision['children']:
-            children.append(reverse('api-revision',
-                                    url_args={'sha1_git': child}))
+            children.append(reverse(
+                'api-1-revision', url_args={'sha1_git': child}))
         revision['children_urls'] = children
 
     if 'message_decoding_failed' in revision:
         revision['message_url'] = \
-            reverse('api-revision-raw-message',
+            reverse('api-1-revision-raw-message',
                     url_args={'sha1_git': revision['id']})
 
     return revision
