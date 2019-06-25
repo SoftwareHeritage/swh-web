@@ -9,7 +9,11 @@ const url = '/';
 
 describe('Sidebar tests On Large Screen', function() {
   beforeEach(function() {
-    cy.visit(url);
+    cy.visit(url, {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+      }
+    });
   });
 
   it('should toggle sidebar when swh-push-menu is clicked', function() {
