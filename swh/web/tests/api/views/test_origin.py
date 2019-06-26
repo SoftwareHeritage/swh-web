@@ -327,7 +327,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                 .assert_called_with(conjunction=['Jane Doe'], limit=100)
 
     @given(origin())
-    def test_api_origin_intrinsic_metadata_get(self, origin):
+    def test_api_origin_intrinsic_metadata(self, origin):
         with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
             mock_idx_storage.origin_intrinsic_metadata_get \
                 .side_effect = lambda origin_ids: [{
@@ -347,7 +347,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                     }
                 }]
 
-            url = reverse('api-origin-intrinsic-metadata-get',
+            url = reverse('api-origin-intrinsic-metadata',
                           url_args={'origin_type': origin['type'],
                                     'origin_url': origin['url']})
             rv = self.client.get(url)

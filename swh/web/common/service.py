@@ -307,8 +307,12 @@ def lookup_origin_intrinsic_metadata(origin_dict):
         raise NotFoundExc(msg)
 
     origin_ids = [origin_info['id']]
-    match = idx_storage.origin_intrinsic_metadata_get(origin_ids)[0]
-    return match['metadata']
+    match = _first_element(
+        idx_storage.origin_intrinsic_metadata_get(origin_ids))
+    result = {}
+    if match:
+        result = match['metadata']
+    return result
 
 
 def lookup_person(person_id):

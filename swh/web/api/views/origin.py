@@ -436,19 +436,19 @@ def api_origin_visit(request, origin_id, visit_id):
 
 
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-           '/intrinsic-metadata', 'api-origin-intrinsic-metadata-get')
-@api_doc('/origin/')
-def api_origin_intrinsic_metadata_get(request, origin_type, origin_url):
+           '/intrinsic-metadata', 'api-origin-intrinsic-metadata')
+@api_doc('/origin/intrinsic-metadata/')
+def api_origin_intrinsic_metadata(request, origin_type, origin_url):
     """
     .. http:get:: /api/1/origin/(origin_type)/url/(origin_url)/intrinsic-metadata
 
-        Get intrinsic metadata of a software origin.
+        Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
         :param string origin_type: the origin type (possible values are ``git``, ``svn``,
             ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
         :param string origin_url: the origin url
 
-        :>jsonarr dict metadata: instrinsic metadata of the origin (as a JSON-LD/CodeMeta dictionary)
+        :>json string ???: intrinsic metadata field of the origin
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
@@ -463,7 +463,7 @@ def api_origin_intrinsic_metadata_get(request, origin_type, origin_url):
 
         .. parsed-literal::
 
-            :swh_web_api:`origin/git/url/https://github.com/python/cpython//intrinsic-metadata`
+            :swh_web_api:`origin/git/url/https://github.com/python/cpython/intrinsic-metadata`
     """ # noqa
     ori_dict = {
         'type': origin_type,
