@@ -63,7 +63,7 @@ def api_origins(request):
         :>jsonarr string origin_visits_url: link to in order to get information about the
             visits for that origin
         :>jsonarr string type: the type of software origin (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
         :>jsonarr string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
@@ -114,7 +114,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
         :>json string origin_visits_url: link to in order to get information about the
             visits for that origin
         :>json string type: the type of software origin (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
         :>json string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
@@ -137,7 +137,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
         Get information about a software origin.
 
         :param string origin_type: the origin type (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
         :param string origin_url: the origin url
 
         :>json number id: the origin unique identifier
@@ -445,7 +445,7 @@ def api_origin_intrinsic_metadata(request, origin_type, origin_url):
         Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
         :param string origin_type: the origin type (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
         :param string origin_url: the origin url
 
         :>json string ???: intrinsic metadata field of the origin

@@ -20,7 +20,7 @@ Origin visits
     its type and url.
 
     :param string origin_type: the type of software origin (possible values are ``git``, ``svn``,
-        ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
@@ -59,7 +59,7 @@ Origin directory
     content can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string path: optional parameter used to specify the path of a directory
         reachable from the origin root one
@@ -108,7 +108,7 @@ Origin directory
     content can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -169,7 +169,7 @@ Origin content
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string path: path of a content reachable from the origin root directory
     :query string branch: specify the origin branch name from which
@@ -221,7 +221,7 @@ Origin content
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -286,7 +286,7 @@ Origin history
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :query int per_page: the number of log entries to display per page
     :query int offset: the number of revisions to skip before returning those to display
@@ -343,7 +343,7 @@ Origin history
     can also be specified by using the branch query parameter.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -393,7 +393,7 @@ Origin branches
     That list of branches is paginated, each page displaying a maximum of 100 branches.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
@@ -421,7 +421,7 @@ Origin branches
     That list of branches is paginated, each page displaying a maximum of 100 branches.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -454,7 +454,7 @@ Origin releases
     That list of releases is paginated, each page displaying a maximum of 100 releases.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
@@ -482,7 +482,7 @@ Origin releases
     That list of releases is paginated, each page displaying a maximum of 100 releases.
 
     :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``)
+        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.

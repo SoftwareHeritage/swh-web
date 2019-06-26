@@ -19,8 +19,8 @@ Revision
     :param string sha1_git: hexadecimal representation for the **sha1_git**
          identifier of a revision
     :query string origin_type: used internally to associate a software origin type
-        (possible values are ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``ftp``
-        or ``deposit``) to the revision
+        (possible values are ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``,
+        ``ftp`` or ``deposit``) to the revision
     :query string origin_url: used internally to associate an origin url
         (e.g. https://github.com/user/repo) to the revision
     :query string timestamp: used internally to associate an origin visit to the
