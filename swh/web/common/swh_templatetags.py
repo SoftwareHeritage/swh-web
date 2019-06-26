@@ -63,15 +63,18 @@ def urlize_links_and_mails(text):
         The text as is otherwise.
 
     """
-    if 'href="' not in text:
-        text = re.sub(r'(/api/[^"<]*|/browse/[^"<]*|http.*$)',
-                      r'<a href="\1">\1</a>',
-                      text)
-        return re.sub(r'([^ <>"]+@[^ <>"]+)',
-                      r'<a href="mailto:\1">\1</a>',
-                      text)
-    else:
-        return text
+    try:
+        if 'href="' not in text:
+            text = re.sub(r'(/api/[^"<]*|/browse/[^"<]*|http.*$)',
+                          r'<a href="\1">\1</a>',
+                          text)
+            return re.sub(r'([^ <>"]+@[^ <>"]+)',
+                          r'<a href="mailto:\1">\1</a>',
+                          text)
+    except Exception:
+        pass
+
+    return text
 
 
 @register.filter
