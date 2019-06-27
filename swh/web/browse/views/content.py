@@ -34,8 +34,9 @@ def content_raw(request, query_string):
     """Django view that produces a raw display of a content identified
     by its hash value.
 
-    The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
+    """
     try:
         reencode = bool(strtobool(request.GET.get('reencode', 'false')))
         algo, checksum = query.parse_hash(query_string)
@@ -170,8 +171,9 @@ def content_display(request, query_string):
     """Django view that produces an HTML display of a content identified
     by its hash value.
 
-    The url that points to it is :http:get:`/browse/content/[(algo_hash):](hash)/`
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/content/[(algo_hash):](hash)/`
+    """
     try:
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)

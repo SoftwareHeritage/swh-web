@@ -21,14 +21,17 @@ def api_person(request, person_id):
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
 
         :>json string email: the email of the person
-        :>json string fullname: the full name of the person: combination of its name and email
+        :>json string fullname: the full name of the person: combination of its
+            name and email
         :>json number id: the unique identifier of the person
         :>json string name: the name of the person
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: requested person can not be found in the archive
@@ -38,7 +41,7 @@ def api_person(request, person_id):
         .. parsed-literal::
 
             :swh_web_api:`person/8275/`
-    """ # noqa
+    """
     return api_lookup(
         service.lookup_person, person_id,
         notfound_msg='Person with id {} not found.'.format(person_id))

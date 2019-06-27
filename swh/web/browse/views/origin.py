@@ -30,14 +30,20 @@ from .utils.snapshot_context import (
     browse_snapshot_releases
 )
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/', # noqa
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/directory/', # noqa
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/directory/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/', # noqa
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_url>.+)/directory/', # noqa
-              r'origin/(?P<origin_url>.+)/directory/(?P<path>.+)/', # noqa
+
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/visit/(?P<timestamp>.+)/directory/',
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/visit/(?P<timestamp>.+)/directory/(?P<path>.+)/',
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/directory/',
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/directory/(?P<path>.+)/',
+              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/',
+              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)'
+              '/directory/(?P<path>.+)/',
+              r'origin/(?P<origin_url>.+)/directory/',
+              r'origin/(?P<origin_url>.+)/directory/(?P<path>.+)/',
               view_name='browse-origin-directory')
 def origin_directory_browse(request, origin_url, origin_type=None,
                             timestamp=None, path=None):
@@ -54,10 +60,13 @@ def origin_directory_browse(request, origin_url, origin_type=None,
         timestamp=timestamp, path=path)
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/content/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/content/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/content/(?P<path>.+)/', # noqa
-              r'origin/(?P<origin_url>.+)/content/(?P<path>.+)/', # noqa
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/visit/(?P<timestamp>.+)/content/(?P<path>.+)/',
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/content/(?P<path>.+)/',
+              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)'
+              '/content/(?P<path>.+)/',
+              r'origin/(?P<origin_url>.+)/content/(?P<path>.+)/',
               view_name='browse-origin-content')
 def origin_content_browse(request, origin_url, origin_type=None, path=None,
                           timestamp=None):
@@ -78,9 +87,10 @@ def origin_content_browse(request, origin_url, origin_type=None, path=None,
 PER_PAGE = 20
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/log/', # noqa
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/visit/(?P<timestamp>.+)/log/',
               r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/log/',
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/log/', # noqa
+              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/log/',
               r'origin/(?P<origin_url>.+)/log/',
               view_name='browse-origin-log')
 def origin_log_browse(request, origin_url, origin_type=None, timestamp=None):
@@ -95,10 +105,13 @@ def origin_log_browse(request, origin_url, origin_type=None, timestamp=None):
     return browse_snapshot_log(request, origin_type=origin_type,
                                origin_url=origin_url, timestamp=timestamp)
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/branches/', # noqa
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/branches/', # noqa
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/branches/', # noqa
-              r'origin/(?P<origin_url>.+)/branches/', # noqa
+
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/visit/(?P<timestamp>.+)/branches/',
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/branches/',
+              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/branches/',
+              r'origin/(?P<origin_url>.+)/branches/',
               view_name='browse-origin-branches')
 def origin_branches_browse(request, origin_url, origin_type=None,
                            timestamp=None):
@@ -115,10 +128,12 @@ def origin_branches_browse(request, origin_url, origin_type=None,
                                     origin_url=origin_url, timestamp=timestamp)
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/releases/', # noqa
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/releases/', # noqa
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/releases/', # noqa
-              r'origin/(?P<origin_url>.+)/releases/', # noqa
+@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/visit/(?P<timestamp>.+)/releases/',
+              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+              '/releases/',
+              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/releases/',
+              r'origin/(?P<origin_url>.+)/releases/',
               view_name='browse-origin-releases')
 def origin_releases_browse(request, origin_url, origin_type=None,
                            timestamp=None):
@@ -142,8 +157,9 @@ def origin_visits_browse(request, origin_url, origin_type=None):
     """Django view that produces an HTML display of visits reporting
     for a swh origin identified by its id or its url.
 
-    The url that points to it is :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visits/`.
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visits/`.
+    """
     try:
         origin_info = get_origin_info(origin_url, origin_type)
         origin_visits = get_origin_visits(origin_info)
@@ -285,7 +301,7 @@ def _origin_latest_snapshot(request, origin_id):
 def origin_browse(request, origin_url, origin_type=None):
     """Django view that redirects to the display of the latest archived
     snapshot for a given software origin.
-    """ # noqa
+    """
     last_snapshot_url = reverse('browse-origin-directory',
                                 url_args={'origin_type': origin_type,
                                           'origin_url': origin_url})

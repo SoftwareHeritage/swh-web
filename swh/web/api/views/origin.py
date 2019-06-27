@@ -60,19 +60,22 @@ def api_origins(request):
             (default to 100, can not exceed 10000)
 
         :>jsonarr number id: the origin unique identifier
-        :>jsonarr string origin_visits_url: link to in order to get information about the
-            visits for that origin
-        :>jsonarr string type: the type of software origin (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
+        :>jsonarr string origin_visits_url: link to in order to get information
+            about the visits for that origin
+        :>jsonarr string type: the type of software origin (possible values
+            are ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp``
+            or ``deposit``)
         :>jsonarr string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
-        :resheader Link: indicates that a subsequent or previous result page are available
-            and contains the urls pointing to them
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
+        :resheader Link: indicates that a subsequent or previous result page
+            are available and contains the urls pointing to them
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
 
@@ -81,7 +84,7 @@ def api_origins(request):
         .. parsed-literal::
 
             :swh_web_api:`origins?origin_from=50000&origin_count=500`
-    """ # noqa
+    """
     origin_from = int(request.query_params.get('origin_from', '1'))
     origin_count = int(request.query_params.get('origin_count', '100'))
     origin_count = min(origin_count, 10000)
@@ -111,17 +114,20 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
         :param int origin_id: a software origin identifier
 
         :>json number id: the origin unique identifier
-        :>json string origin_visits_url: link to in order to get information about the
-            visits for that origin
-        :>json string type: the type of software origin (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
+        :>json string origin_visits_url: link to in order to get information
+            about the visits for that origin
+        :>json string type: the type of software origin (possible values are
+            ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or
+            ``deposit``)
         :>json string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: requested origin can not be found in the archive
@@ -136,21 +142,24 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         Get information about a software origin.
 
-        :param string origin_type: the origin type (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
+        :param string origin_type: the origin type (possible values are
+            ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or
+            ``deposit``)
         :param string origin_url: the origin url
 
         :>json number id: the origin unique identifier
-        :>json string origin_visits_url: link to in order to get information about the
-            visits for that origin
+        :>json string origin_visits_url: link to in order to get information
+            about the visits for that origin
         :>json string type: the type of software origin
         :>json string url: the origin canonical url
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :reqheader Accept: the requested response content type, either
+            ``application/json`` (default) or ``application/yaml``
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: requested origin can not be found in the archive
@@ -160,7 +169,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
         .. parsed-literal::
 
             :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
-    """ # noqa
+    """
     ori_dict = {
         'id': int(origin_id) if origin_id else None,
         'type': origin_type,
@@ -191,24 +200,27 @@ def api_origin_search(request, url_pattern):
         The search is performed in a case insensitive way.
 
         :param string url_pattern: a string pattern or a regular expression
-        :query int offset: the number of found origins to skip before returning results
+        :query int offset: the number of found origins to skip before returning
+            results
         :query int limit: the maximum number of found origins to return
-        :query boolean regexp: if true, consider provided pattern as a regular expression
-            and search origins whose urls match it
-        :query boolean with_visit: if true, only return origins with at least one visit
-            by Software heritage
+        :query boolean regexp: if true, consider provided pattern as a regular
+            expression and search origins whose urls match it
+        :query boolean with_visit: if true, only return origins with at least
+            one visit by Software heritage
 
         :>jsonarr number id: the origin unique identifier
-        :>jsonarr string origin_visits_url: link to in order to get information about the
-            visits for that origin
+        :>jsonarr string origin_visits_url: link to in order to get information
+            about the visits for that origin
         :>jsonarr string type: the type of software origin
         :>jsonarr string url: the origin canonical url
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
 
@@ -217,7 +229,7 @@ def api_origin_search(request, url_pattern):
         .. parsed-literal::
 
             :swh_web_api:`origin/search/python/?limit=2`
-    """ # noqa
+    """
     result = {}
     offset = int(request.query_params.get('offset', '0'))
     limit = int(request.query_params.get('limit', '70'))
@@ -259,22 +271,26 @@ def api_origin_metadata_search(request):
         JSON-LD/CodeMeta dictionary) match the provided criteria.
         For now, only full-text search on this dictionary is supported.
 
-        :query str fulltext: a string that will be matched against origin metadata;
-            results are ranked and ordered starting with the best ones.
+        :query str fulltext: a string that will be matched against origin
+            metadata; results are ranked and ordered starting with the best
+            ones.
         :query int limit: the maximum number of found origins to return
             (bounded to 100)
 
         :>jsonarr number origin_id: the origin unique identifier
-        :>jsonarr dict metadata: metadata of the origin (as a JSON-LD/CodeMeta dictionary)
+        :>jsonarr dict metadata: metadata of the origin (as a
+            JSON-LD/CodeMeta dictionary)
         :>jsonarr string from_revision: the revision used to extract these
             metadata (the current HEAD or one of the former HEADs)
         :>jsonarr dict tool: the tool used to extract these metadata
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
 
@@ -283,7 +299,7 @@ def api_origin_metadata_search(request):
         .. parsed-literal::
 
             :swh_web_api:`origin/metadata-search/?limit=2&fulltext=Jane%20Doe`
-    """ # noqa
+    """
     fulltext = request.query_params.get('fulltext', None)
     limit = min(int(request.query_params.get('limit', '70')), 100)
 
@@ -309,26 +325,33 @@ def api_origin_visits(request, origin_id):
         to their date.
 
         :param int origin_id: a software origin identifier
-        :query int per_page: specify the number of visits to list, for pagination purposes
-        :query int last_visit: visit to start listing from, for pagination purposes
+        :query int per_page: specify the number of visits to list, for
+            pagination purposes
+        :query int last_visit: visit to start listing from, for pagination
+            purposes
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
-        :resheader Link: indicates that a subsequent result page is available and contains
-            the url pointing to it
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
+        :resheader Link: indicates that a subsequent result page is available
+            and contains the url pointing to it
 
         :>jsonarr string date: ISO representation of the visit date (in UTC)
         :>jsonarr number id: the unique identifier of the origin
-        :>jsonarr string origin_visit_url: link to :http:get:`/api/1/origin/(origin_id)/visit/(visit_id)/`
-            in order to get information about the visit
+        :>jsonarr string origin_visit_url: link to
+            :http:get:`/api/1/origin/(origin_id)/visit/(visit_id)/` in order to
+            get information about the visit
         :>jsonarr string snapshot: the snapshot identifier of the visit
-        :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
-            in order to get information about the snapshot of the visit
-        :>jsonarr string status: status of the visit (either **full**, **partial** or **ongoing**)
+        :>jsonarr string snapshot_url: link to
+            :http:get:`/api/1/snapshot/(snapshot_id)/` in order to get
+            information about the snapshot of the visit
+        :>jsonarr string status: status of the visit (either **full**,
+            **partial** or **ongoing**)
         :>jsonarr number visit: the unique identifier of the visit
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: requested origin can not be found in the archive
@@ -338,7 +361,7 @@ def api_origin_visits(request, origin_id):
         .. parsed-literal::
 
             :swh_web_api:`origin/1/visits/`
-    """ # noqa
+    """
     result = {}
     origin_id = int(origin_id)
     per_page = int(request.query_params.get('per_page', '10'))
@@ -402,30 +425,35 @@ def api_origin_visit(request, origin_id, visit_id):
         :param int origin_id: a software origin identifier
         :param int visit_id: a visit identifier
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :reqheader Accept: the requested response content type, either
+            ``application/json`` (default) or ``application/yaml``
+        :resheader Content-Type: this depends on :http:header:`Accept`
+            header of request
 
         :>json string date: ISO representation of the visit date (in UTC)
         :>json number origin: the origin unique identifier
         :>json string origin_url: link to get information about the origin
         :>jsonarr string snapshot: the snapshot identifier of the visit
-        :>jsonarr string snapshot_url: link to :http:get:`/api/1/snapshot/(snapshot_id)/`
-            in order to get information about the snapshot of the visit
-        :>json string status: status of the visit (either **full**, **partial** or **ongoing**)
+        :>jsonarr string snapshot_url: link to
+            :http:get:`/api/1/snapshot/(snapshot_id)/` in order to get
+            information about the snapshot of the visit
+        :>json string status: status of the visit (either **full**,
+            **partial** or **ongoing**)
         :>json number visit: the unique identifier of the visit
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 404: requested origin or visit can not be found in the archive
+        :statuscode 404: requested origin or visit can not be found in the
+            archive
 
         **Example:**
 
         .. parsed-literal::
 
             :swh_web_api:`origin/1500/visit/1/`
-    """ # noqa
+    """
     return api_lookup(
         service.lookup_origin_visit, int(origin_id), int(visit_id),
         notfound_msg=('No visit {} for origin {} found'

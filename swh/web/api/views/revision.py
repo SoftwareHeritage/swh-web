@@ -278,38 +278,49 @@ def api_revision(request, sha1_git):
     """
     .. http:get:: /api/1/revision/(sha1_git)/
 
-        Get information about a revision in the archive.
-        Revisions are identified by **sha1** checksums, compatible with Git commit identifiers.
-        See :func:`swh.model.identifiers.revision_identifier` in our data model module for details
-        about how they are computed.
+        Get information about a revision in the archive. Revisions are
+        identified by **sha1** checksums, compatible with Git commit
+        identifiers.
+        See :func:`swh.model.identifiers.revision_identifier` in our data model
+        module for details about how they are computed.
 
-        :param string sha1_git: hexadecimal representation of the revision **sha1_git** identifier
+        :param string sha1_git: hexadecimal representation of the revision
+            **sha1_git** identifier
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Content-Type: this depends on :http:header:`Accept` header
+            of request
 
         :>json object author: information about the author of the revision
-        :>json string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the author of the revision
-        :>json object committer: information about the committer of the revision
-        :>json string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the committer of the revision
-        :>json string committer_date: ISO representation of the commit date (in UTC)
+        :>json string author_url: link to
+            :http:get:`/api/1/person/(person_id)/` to get information about the
+            author of the revision
+        :>json object committer: information about the committer of the
+            revision
+        :>json string committer_url: link to
+            :http:get:`/api/1/person/(person_id)/` to get information about the
+            committer of the revision
+        :>json string committer_date: ISO representation of the commit date
+            (in UTC)
         :>json string date: ISO representation of the revision date (in UTC)
         :>json string directory: the unique identifier that revision points to
-        :>json string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
-            to get information about the directory associated to the revision
+        :>json string directory_url: link to
+            :http:get:`/api/1/directory/(sha1_git)/[(path)/]` to get
+            information about the directory associated to the revision
         :>json string id: the revision unique identifier
-        :>json boolean merge: whether or not the revision corresponds to a merge commit
+        :>json boolean merge: whether or not the revision corresponds to a
+            merge commit
         :>json string message: the message associated to the revision
-        :>json array parents: the parents of the revision, i.e. the previous revisions
-            that head directly to it, each entry of that array contains an unique parent
-            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more information about it
+        :>json array parents: the parents of the revision, i.e. the previous
+            revisions that head directly to it, each entry of that array
+            contains an unique parent revision identifier but also a link to
+            :http:get:`/api/1/revision/(sha1_git)/` to get more information
+            about it
         :>json string type: the type of the revision
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided

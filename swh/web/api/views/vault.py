@@ -50,7 +50,8 @@ def api_vault_cook_directory(request, dir_id):
         through a GET request.
 
         Once the cooking task has been executed, the resulting archive can
-        be downloaded using the dedicated endpoint :http:get:`/api/1/vault/directory/(dir_id)/raw/`.
+        be downloaded using the dedicated endpoint
+            :http:get:`/api/1/vault/directory/(dir_id)/raw/`.
 
         Then to extract the cooked directory in the current one, use::
 
@@ -62,23 +63,28 @@ def api_vault_cook_directory(request, dir_id):
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Content-Type: this depends on
+            :http:header:`Accept` header of request
 
-        :>json string fetch_url: the url from which to download the archive once it has been cooked
+        :>json string fetch_url: the url from which to download the archive
+            once it has been cooked
             (see :http:get:`/api/1/vault/directory/(dir_id)/raw/`)
-        :>json string obj_type: the type of object to cook (directory or revision)
-        :>json string progress_message: message describing the cooking task progress
+        :>json string obj_type: the type of object to cook
+            (directory or revision)
+        :>json string progress_message: message describing the cooking task
+            progress
         :>json number id: the cooking task id
-        :>json string status: the cooking task status (either **new**, **pending**,
-            **done** or **failed**)
+        :>json string status: the cooking task status
+            (either **new**, **pending**, **done** or **failed**)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
+            :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
         :statuscode 404: requested directory can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
 
@@ -105,12 +111,13 @@ def api_vault_fetch_directory(request, dir_id):
 
         :resheader Content-Type: application/octet-stream
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
         :statuscode 404: requested directory can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(
@@ -140,8 +147,9 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         through a POST request or check the status of a previously created one
         through a GET request.
 
-        Once the cooking task has been executed, the resulting gitfast archive can
-        be downloaded using the dedicated endpoint :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
+        Once the cooking task has been executed, the resulting gitfast archive
+        can be downloaded using the dedicated endpoint
+            :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
 
         Then to import the revision in the current directory, use::
 
@@ -155,22 +163,27 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
         :reqheader Accept: the requested response content type,
             either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        :resheader Content-Type: this depends on
+            :http:header:`Accept` header of request
 
-        :>json string fetch_url: the url from which to download the archive once it has been cooked
+        :>json string fetch_url: the url from which to download the archive
+            once it has been cooked
             (see :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`)
-        :>json string obj_type: the type of object to cook (directory or revision)
-        :>json string progress_message: message describing the cooking task progress
+        :>json string obj_type: the type of object to cook
+            (directory or revision)
+        :>json string progress_message: message describing the cooking task
+            progress
         :>json number id: the cooking task id
         :>json string status: the cooking task status (new/pending/done/failed)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
+            :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
         :statuscode 404: requested revision can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
 
@@ -197,12 +210,13 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
 
         :resheader Content-Type: application/octet-stream
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
         :statuscode 404: requested revision can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(

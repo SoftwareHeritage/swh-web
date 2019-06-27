@@ -183,7 +183,7 @@ def revision_log_browse(request, sha1_git):
     log for a revision identified by its id.
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`
-    """ # noqa
+    """
     try:
         per_page = int(request.GET.get('per_page', NB_LOG_ENTRIES))
         offset = int(request.GET.get('offset', 0))

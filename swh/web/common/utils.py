@@ -225,12 +225,13 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
     Returns:
         dict: a dict with the following keys:
 
-            * **swh_id_parsed (swh.model.identifiers.PersistentId)**: the parsed identifier
+            * **swh_id_parsed (swh.model.identifiers.PersistentId)**:
+                the parsed identifier
             * **browse_url (str)**: the url for browsing the pointed object
 
     Raises:
         BadInputExc: if the provided identifier can not be parsed
-    """ # noqa
+    """
     try:
         swh_id_parsed = parse_persistent_identifier(swh_id)
         object_type = swh_id_parsed.object_type
