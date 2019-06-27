@@ -9,7 +9,7 @@ from django.views.decorators.cache import never_cache
 from swh.model import hashutil
 from swh.web.common import service, query
 from swh.web.common.utils import reverse
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
@@ -37,6 +37,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/directory/')
+@format_docstring()
 def api_vault_cook_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/
@@ -61,10 +62,7 @@ def api_vault_cook_directory(request, dir_id):
 
         :query string email: e-mail to notify when the archive is ready
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on
-            :http:header:`Accept` header of request
+        {common_headers}
 
         :>json string fetch_url: the url from which to download the archive
             once it has been cooked
@@ -135,6 +133,7 @@ def api_vault_fetch_directory(request, dir_id):
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/revision/gitfast/')
+@format_docstring()
 def api_vault_cook_revision_gitfast(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/
@@ -161,10 +160,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
         :query string email: e-mail to notify when the gitfast archive is ready
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on
-            :http:header:`Accept` header of request
+        {common_headers}
 
         :>json string fetch_url: the url from which to download the archive
             once it has been cooked

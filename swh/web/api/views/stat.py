@@ -4,12 +4,13 @@
 # See top-level LICENSE file for more information
 
 from swh.web.common import service
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 
 
 @api_route(r'/stat/counters/', 'api-1-stat-counters')
 @api_doc('/stat/counters/', noargs=True)
+@format_docstring()
 def api_stats(request):
     """
     .. http:get:: /api/1/stat/counters/
@@ -36,10 +37,7 @@ def api_stats(request):
         :>json number snapshot: current number of snapshot objects
             (aka set of named branches) in the archive
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on
-            :http:header:`Accept` header of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`

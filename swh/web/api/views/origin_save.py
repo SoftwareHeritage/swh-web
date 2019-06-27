@@ -5,7 +5,7 @@
 
 from django.views.decorators.cache import never_cache
 
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common.origin_save import (
     create_save_origin_request, get_save_origin_requests
@@ -17,6 +17,7 @@ from swh.web.common.origin_save import (
            throttle_scope='swh_save_origin')
 @never_cache
 @api_doc('/origin/save/')
+@format_docstring()
 def api_save_origin(request, origin_type, origin_url):
     """
     .. http:get:: /api/1/origin/save/(origin_type)/url/(origin_url)/
@@ -55,10 +56,7 @@ def api_save_origin(request, origin_type, origin_url):
             (currently the supported types are ``git``, ``hg`` and ``svn``)
         :param string origin_url: the url of the origin to save
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept`
-            header of request
+        {common_headers}
 
         :>json string origin_url: the url of the origin to save
         :>json string origin_type: the type of the origin to save

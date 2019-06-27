@@ -6,7 +6,7 @@
 from swh.web.common import service
 from swh.web.common.utils import reverse
 from swh.web.config import get_config
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
@@ -15,6 +15,7 @@ from swh.web.api.views.utils import api_lookup
 @api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-1-snapshot',
            checksum_args=['snapshot_id'])
 @api_doc('/snapshot/')
+@format_docstring()
 def api_snapshot(request, snapshot_id):
     """
     .. http:get:: /api/1/snapshot/(snapshot_id)/
@@ -45,12 +46,8 @@ def api_snapshot(request, snapshot_id):
             ``directory``, ``revision``, ``release``, ``snapshot`` or
             ``alias``)
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
-        :resheader Link: indicates that a subsequent result page is available
-            and contains the url pointing to it
+        {common_headers}
+        {resheader_link}
 
         :>json object branches: object containing all branches associated to
             the snapshot,for each of them the associated target type and id are

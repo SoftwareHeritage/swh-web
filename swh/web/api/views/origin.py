@@ -10,7 +10,7 @@ from swh.web.common import service
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import reverse
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
@@ -46,6 +46,7 @@ def _enrich_origin_visit(origin_visit, *,
 
 @api_route(r'/origins/', 'api-1-origins')
 @api_doc('/origins/', noargs=True)
+@format_docstring()
 def api_origins(request):
     """
     .. http:get:: /api/1/origins/
@@ -67,12 +68,8 @@ def api_origins(request):
             or ``deposit``)
         :>jsonarr string url: the origin canonical url
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
-        :resheader Link: indicates that a subsequent or previous result page
-            are available and contains the urls pointing to them
+        {common_headers}
+        {resheader_link}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -105,6 +102,7 @@ def api_origins(request):
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
            'api-1-origin')
 @api_doc('/origin/')
+@format_docstring()
 def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
     """
     .. http:get:: /api/1/origin/(origin_id)/
@@ -121,10 +119,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
             ``deposit``)
         :>json string url: the origin canonical url
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -153,10 +148,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
         :>json string type: the type of software origin
         :>json string url: the origin canonical url
 
-        :reqheader Accept: the requested response content type, either
-            ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -191,6 +183,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 @api_route(r'/origin/search/(?P<url_pattern>.+)/',
            'api-1-origin-search')
 @api_doc('/origin/search/')
+@format_docstring()
 def api_origin_search(request, url_pattern):
     """
     .. http:get:: /api/1/origin/search/(url_pattern)/
@@ -214,10 +207,7 @@ def api_origin_search(request, url_pattern):
         :>jsonarr string type: the type of software origin
         :>jsonarr string url: the origin canonical url
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -263,6 +253,7 @@ def api_origin_search(request, url_pattern):
 @api_route(r'/origin/metadata-search/',
            'api-1-origin-metadata-search')
 @api_doc('/origin/metadata-search/', noargs=True, need_params=True)
+@format_docstring()
 def api_origin_metadata_search(request):
     """
     .. http:get:: /api/1/origin/metadata-search/
@@ -284,10 +275,7 @@ def api_origin_metadata_search(request):
             metadata (the current HEAD or one of the former HEADs)
         :>jsonarr dict tool: the tool used to extract these metadata
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -316,6 +304,7 @@ def api_origin_metadata_search(request):
 
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'api-1-origin-visits')
 @api_doc('/origin/visits/')
+@format_docstring()
 def api_origin_visits(request, origin_id):
     """
     .. http:get:: /api/1/origin/(origin_id)/visits/
@@ -330,12 +319,8 @@ def api_origin_visits(request, origin_id):
         :query int last_visit: visit to start listing from, for pagination
             purposes
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
-        :resheader Link: indicates that a subsequent result page is available
-            and contains the url pointing to it
+        {common_headers}
+        {resheader_link}
 
         :>jsonarr string date: ISO representation of the visit date (in UTC)
         :>jsonarr number id: the unique identifier of the origin
@@ -416,6 +401,7 @@ def api_origin_visits(request, origin_id):
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/',
            'api-1-origin-visit')
 @api_doc('/origin/visit/')
+@format_docstring()
 def api_origin_visit(request, origin_id, visit_id):
     """
     .. http:get:: /api/1/origin/(origin_id)/visit/(visit_id)/
@@ -425,10 +411,7 @@ def api_origin_visit(request, origin_id, visit_id):
         :param int origin_id: a software origin identifier
         :param int visit_id: a visit identifier
 
-        :reqheader Accept: the requested response content type, either
-            ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept`
-            header of request
+        {common_headers}
 
         :>json string date: ISO representation of the visit date (in UTC)
         :>json number origin: the origin unique identifier
@@ -466,6 +449,7 @@ def api_origin_visit(request, origin_id, visit_id):
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
            '/intrinsic-metadata', 'api-origin-intrinsic-metadata')
 @api_doc('/origin/intrinsic-metadata/')
+@format_docstring()
 def api_origin_intrinsic_metadata(request, origin_type, origin_url):
     """
     .. http:get:: /api/1/origin/(origin_type)/url/(origin_url)/intrinsic-metadata
@@ -478,9 +462,7 @@ def api_origin_intrinsic_metadata(request, origin_type, origin_url):
 
         :>json string ???: intrinsic metadata field of the origin
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 

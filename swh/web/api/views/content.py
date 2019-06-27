@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from swh.web.common import service
 from swh.web.common.utils import reverse
 from swh.web.common.exc import NotFoundExc
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
@@ -19,6 +19,7 @@ from swh.web.api.views.utils import api_lookup
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/filetype/',
            'api-1-content-filetype', checksum_args=['q'])
 @api_doc('/content/filetype/')
+@format_docstring()
 def api_content_filetype(request, q):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/filetype/
@@ -39,9 +40,7 @@ def api_content_filetype(request, q):
         :>json string mimetype: the detected MIME type of the content
         :>json object tool: information about the tool used to detect the content filetype
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
@@ -64,6 +63,7 @@ def api_content_filetype(request, q):
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/language/',
            'api-1-content-language', checksum_args=['q'])
 @api_doc('/content/language/')
+@format_docstring()
 def api_content_language(request, q):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/language/
@@ -85,9 +85,7 @@ def api_content_language(request, q):
         :>json string lang: the detected programming language if any
         :>json object tool: information about the tool used to detect the programming language
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
@@ -110,6 +108,7 @@ def api_content_language(request, q):
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/license/',
            'api-1-content-license', checksum_args=['q'])
 @api_doc('/content/license/')
+@format_docstring()
 def api_content_license(request, q):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/license/
@@ -129,9 +128,7 @@ def api_content_license(request, q):
         :>json array licenses: array of strings containing the detected license names if any
         :>json object tool: information about the tool used to detect the license
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
@@ -258,6 +255,7 @@ def api_content_symbol(request, q=None):
 @api_route(r'/content/known/search/', 'api-1-content-known', methods=['POST'])
 @api_route(r'/content/known/(?P<q>(?!search).*)/', 'api-1-content-known')
 @api_doc('/content/known/', tags=['hidden'])
+@format_docstring()
 def api_check_content_known(request, q=None):
     """
     .. http:get:: /api/1/content/known/(sha1)[,(sha1), ...,(sha1)]/
@@ -269,9 +267,7 @@ def api_check_content_known(request, q=None):
             for the content to check existence. Multiple values can be provided separated
             by ','.
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         :>json array search_res: array holding the search result for each provided **sha1**
         :>json object search_stats: some statistics regarding the number of **sha1** provided
@@ -334,6 +330,7 @@ def api_check_content_known(request, q=None):
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/', 'api-1-content',
            checksum_args=['q'])
 @api_doc('/content/')
+@format_docstring()
 def api_content_metadata(request, q):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/
@@ -349,9 +346,7 @@ def api_content_metadata(request, q):
         :param string hash: hexadecimal representation of the checksum value computed with
             the specified hashing algorithm.
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         :>json object checksums: object holding the computed checksum values for the requested content
         :>json string data_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/raw/`

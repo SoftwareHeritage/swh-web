@@ -114,9 +114,7 @@ def api_revision_log_by(request, origin_id,
             pointed by the given branch should be looked up. The timestamp can be expressed either
             as an ISO date or as a Unix one (in UTC). Defaults to now.
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         {return_revision_array}
 
@@ -245,9 +243,7 @@ def api_revision_with_origin(request, origin_id,
             pointed by the given branch should be looked up. The timestamp can be expressed either
             as an ISO date or as a Unix one (in UTC). Defaults to now.
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         {return_revision}
 
@@ -287,10 +283,7 @@ def api_revision(request, sha1_git):
         :param string sha1_git: hexadecimal representation of the revision
             **sha1_git** identifier
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header
-            of request
+        {common_headers}
 
         {return_revision}
 
@@ -332,6 +325,7 @@ def api_revision_raw_message(request, sha1_git):
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/directory/(?P<dir_path>.+)/',
            'api-1-revision-directory', checksum_args=['sha1_git'])
 @api_doc('/revision/directory/')
+@format_docstring()
 def api_revision_directory(request, sha1_git,
                            dir_path=None,
                            with_data=False):
@@ -347,9 +341,7 @@ def api_revision_directory(request, sha1_git,
         :param string path: optional parameter to get information about the directory entry
             pointed by that relative path
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         :>json array content: directory entries as returned by :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
         :>json string path: path of directory from the revision root one
@@ -392,11 +384,8 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
             If provided, revisions information will be added at the beginning of the returned list.
         :query int per_page: number of elements in the returned list, for pagination purpose
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
-        :resheader Link: indicates that a subsequent result page is available and contains
-            the url pointing to it
+        {common_headers}
+        {resheader_link}
 
         {return_revision_array}
 

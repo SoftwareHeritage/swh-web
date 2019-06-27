@@ -5,7 +5,7 @@
 
 from swh.web.common import service
 from swh.web.api import utils
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
@@ -13,6 +13,7 @@ from swh.web.api.views.utils import api_lookup
 @api_route(r'/release/(?P<sha1_git>[0-9a-f]+)/', 'api-1-release',
            checksum_args=['sha1_git'])
 @api_doc('/release/')
+@format_docstring()
 def api_release(request, sha1_git):
     """
     .. http:get:: /api/1/release/(sha1_git)/
@@ -25,10 +26,7 @@ def api_release(request, sha1_git):
         :param string sha1_git: hexadecimal representation of the release
             **sha1_git** identifier
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept`
-            header of request
+        {common_headers}
 
         :>json object author: information about the author of the release
         :>json string author_url: link to

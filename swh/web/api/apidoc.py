@@ -367,8 +367,25 @@ def get_doc_data(f, route, noargs):
     return data
 
 
+DOC_COMMON_HEADERS = '''
+        :reqheader Accept: the requested response content type,
+            either ``application/json`` (default) or ``application/yaml``
+        :resheader Content-Type: this depends on :http:header:`Accept`
+            header of request'''
+DOC_RESHEADER_LINK = '''
+        :resheader Link: indicates that a subsequent result page is
+            available and contains the url pointing to it
+'''
+
+DEFAULT_SUBSTITUTIONS = {
+    'common_headers': DOC_COMMON_HEADERS,
+    'resheader_link': DOC_RESHEADER_LINK,
+}
+
+
 def format_docstring(**substitutions):
     def decorator(f):
-        f.__doc__ = f.__doc__.format(**substitutions)
+        f.__doc__ = f.__doc__.format(**{
+            **DEFAULT_SUBSTITUTIONS, **substitutions})
         return f
     return decorator
