@@ -24,7 +24,7 @@ See top-level LICENSE file for more information
       {% elif swh_object_metadata.filename and swh_object_metadata.filename|default:""|slice:"-5:" == "ipynb" %}
         <div class="swh-ipynb">
         </div>
-      {% elif "text/" in mimetype %}
+      {% elif "text/" in mimetype and swh_object_metadata.encoding != "binary" %}
         <div class="highlightjs">
           <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>
@@ -40,7 +40,7 @@ See top-level LICENSE file for more information
           <canvas id="pdf-canvas"></canvas>
         </div>
       {% elif content %}
-        Content with mime type {{ mimetype }} can not be displayed.
+        Content with mime type {{ swh_object_metadata.mimetype }} can not be displayed.
       {% else %}
         {% include "includes/http-error.html" %}
       {% endif %}
