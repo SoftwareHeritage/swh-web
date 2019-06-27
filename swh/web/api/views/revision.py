@@ -9,9 +9,42 @@ from swh.web.common import service
 from swh.web.common.utils import reverse
 from swh.web.common.utils import parse_timestamp
 from swh.web.api import utils
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
+
+
+DOC_RETURN_REVISION = '''
+        :>json object author: information about the author of the revision
+        :>json string author_url: link to
+            :http:get:`/api/1/person/(person_id)/` to get information about the
+            author of the revision
+        :>json object committer: information about the committer of the
+            revision
+        :>json string committer_url: link to
+            :http:get:`/api/1/person/(person_id)/` to get information about the
+            committer of the revision
+        :>json string committer_date: ISO representation of the commit date
+            (in UTC)
+        :>json string date: ISO representation of the revision date (in UTC)
+        :>json string directory: the unique identifier that revision points to
+        :>json string directory_url: link to
+            :http:get:`/api/1/directory/(sha1_git)/[(path)/]` to get
+            information about the directory associated to the revision
+        :>json string id: the revision unique identifier
+        :>json boolean merge: whether or not the revision corresponds to a
+            merge commit
+        :>json string message: the message associated to the revision
+        :>json array parents: the parents of the revision, i.e. the previous
+            revisions that head directly to it, each entry of that array
+            contains an unique parent revision identifier but also a link to
+            :http:get:`/api/1/revision/(sha1_git)/` to get more information
+            about it
+        :>json string type: the type of the revision
+''' # noqa
+
+DOC_RETURN_REVISION_ARRAY = \
+    DOC_RETURN_REVISION.replace(':>json', ':>jsonarr')
 
 
 def _revision_directory_by(revision, path, request_path,
@@ -60,6 +93,7 @@ def _revision_directory_by(revision, path, request_path,
            r'/ts/(?P<ts>.+)/log/',
            'api-1-revision-origin-log')
 @api_doc('/revision/origin/log/')
+@format_docstring(return_revision_array=DOC_RETURN_REVISION_ARRAY)
 def api_revision_log_by(request, origin_id,
                         branch_name='HEAD',
                         ts=None):
@@ -84,25 +118,7 @@ def api_revision_log_by(request, origin_id,
             either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
-        :>jsonarr object author: information about the author of the revision
-        :>jsonarr string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the author of the revision
-        :>jsonarr object committer: information about the committer of the revision
-        :>jsonarr string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the committer of the revision
-        :>jsonarr string committer_date: ISO representation of the commit date (in UTC)
-        :>jsonarr string date: ISO representation of the revision date (in UTC)
-        :>jsonarr string directory: the unique identifier that revision points to
-        :>jsonarr string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
-            to get information about the directory associated to the revision
-        :>jsonarr string id: the revision unique identifier
-        :>jsonarr boolean merge: whether or not the revision corresponds to a merge commit
-        :>jsonarr string message: the message associated to the revision
-        :>jsonarr array parents: the parents of the revision, i.e. the previous revisions
-            that head directly to it, each entry of that array contains an unique parent
-            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more information about it
-        :>jsonarr string type: the type of the revision
+        {return_revision_array}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
@@ -208,6 +224,7 @@ def api_directory_through_revision_origin(request, origin_id,
 @api_route(r'/revision/origin/(?P<origin_id>[0-9]+)/ts/(?P<ts>.+)/',
            'api-1-revision-origin')
 @api_doc('/revision/origin/')
+@format_docstring(return_revision=DOC_RETURN_REVISION)
 def api_revision_with_origin(request, origin_id,
                              branch_name='HEAD',
                              ts=None):
@@ -232,25 +249,7 @@ def api_revision_with_origin(request, origin_id,
             either ``application/json`` (default) or ``application/yaml``
         :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
-        :>json object author: information about the author of the revision
-        :>json string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the author of the revision
-        :>json object committer: information about the committer of the revision
-        :>json string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the committer of the revision
-        :>json string committer_date: ISO representation of the commit date (in UTC)
-        :>json string date: ISO representation of the revision date (in UTC)
-        :>json string directory: the unique identifier that revision points to
-        :>json string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
-            to get information about the directory associated to the revision
-        :>json string id: the revision unique identifier
-        :>json boolean merge: whether or not the revision corresponds to a merge commit
-        :>json string message: the message associated to the revision
-        :>json array parents: the parents of the revision, i.e. the previous revisions
-            that head directly to it, each entry of that array contains an unique parent
-            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more information about it
-        :>json string type: the type of the revision
+        {return_revision}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
@@ -274,6 +273,7 @@ def api_revision_with_origin(request, origin_id,
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/', 'api-1-revision',
            checksum_args=['sha1_git'])
 @api_doc('/revision/')
+@format_docstring(return_revision=DOC_RETURN_REVISION)
 def api_revision(request, sha1_git):
     """
     .. http:get:: /api/1/revision/(sha1_git)/
@@ -292,32 +292,7 @@ def api_revision(request, sha1_git):
         :resheader Content-Type: this depends on :http:header:`Accept` header
             of request
 
-        :>json object author: information about the author of the revision
-        :>json string author_url: link to
-            :http:get:`/api/1/person/(person_id)/` to get information about the
-            author of the revision
-        :>json object committer: information about the committer of the
-            revision
-        :>json string committer_url: link to
-            :http:get:`/api/1/person/(person_id)/` to get information about the
-            committer of the revision
-        :>json string committer_date: ISO representation of the commit date
-            (in UTC)
-        :>json string date: ISO representation of the revision date (in UTC)
-        :>json string directory: the unique identifier that revision points to
-        :>json string directory_url: link to
-            :http:get:`/api/1/directory/(sha1_git)/[(path)/]` to get
-            information about the directory associated to the revision
-        :>json string id: the revision unique identifier
-        :>json boolean merge: whether or not the revision corresponds to a
-            merge commit
-        :>json string message: the message associated to the revision
-        :>json array parents: the parents of the revision, i.e. the previous
-            revisions that head directly to it, each entry of that array
-            contains an unique parent revision identifier but also a link to
-            :http:get:`/api/1/revision/(sha1_git)/` to get more information
-            about it
-        :>json string type: the type of the revision
+        {return_revision}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -404,6 +379,7 @@ def api_revision_directory(request, sha1_git,
            r'/prev/(?P<prev_sha1s>[0-9a-f]*/*)/log/',
            'api-1-revision-log', checksum_args=['sha1_git', 'prev_sha1s'])
 @api_doc('/revision/log/')
+@format_docstring(return_revision_array=DOC_RETURN_REVISION_ARRAY)
 def api_revision_log(request, sha1_git, prev_sha1s=None):
     """
     .. http:get:: /api/1/revision/(sha1_git)[/prev/(prev_sha1s)]/log/
@@ -422,25 +398,7 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         :resheader Link: indicates that a subsequent result page is available and contains
             the url pointing to it
 
-        :>jsonarr object author: information about the author of the revision
-        :>jsonarr string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the author of the revision
-        :>jsonarr object committer: information about the committer of the revision
-        :>jsonarr string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
-            information about the committer of the revision
-        :>jsonarr string committer_date: ISO representation of the commit date (in UTC)
-        :>jsonarr string date: ISO representation of the revision date (in UTC)
-        :>jsonarr string directory: the unique identifier that revision points to
-        :>jsonarr string directory_url: link to :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
-            to get information about the directory associated to the revision
-        :>jsonarr string id: the revision unique identifier
-        :>jsonarr boolean merge: whether or not the revision corresponds to a merge commit
-        :>jsonarr string message: the message associated to the revision
-        :>jsonarr array parents: the parents of the revision, i.e. the previous revisions
-            that head directly to it, each entry of that array contains an unique parent
-            revision identifier but also a link to :http:get:`/api/1/revision/(sha1_git)/`
-            to get more information about it
-        :>jsonarr string type: the type of the revision
+        {return_revision_array}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 

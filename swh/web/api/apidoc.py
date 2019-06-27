@@ -365,3 +365,10 @@ def get_doc_data(f, route, noargs):
         data['returns_list'] = returns_list
 
     return data
+
+
+def format_docstring(**substitutions):
+    def decorator(f):
+        f.__doc__ = f.__doc__.format(**substitutions)
+        return f
+    return decorator
