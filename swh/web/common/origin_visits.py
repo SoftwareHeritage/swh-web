@@ -149,29 +149,18 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
                 return v
         return visits[-1]
 
-    parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
+    target_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
 
-    visit_idx = None
-    for i, visit in enumerate(visits):
-        ts = math.floor(parse_timestamp(visit['date']).timestamp())
-        if i == 0 and parsed_visit_ts <= ts:
-            return visit
-        elif i == len(visits) - 1:
-            if parsed_visit_ts >= ts:
-                return visit
-        else:
-            next_ts = math.floor(
-                parse_timestamp(visits[i+1]['date']).timestamp())
-            if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
-                if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
-                    visit_idx = i
-                    break
-                else:
-                    visit_idx = i+1
-                    break
+    # Find the visit with date closest to the target (in absolute value)
+    (abs_time_delta, visit_idx) = min(
+        ((math.floor(parse_timestamp(visit['date']).timestamp()), i)
+         for (i, visit) in enumerate(visits)),
+        key=lambda ts_and_i: abs(ts_and_i[0] - target_visit_ts))
 
     if visit_idx is not None:
         visit = visits[visit_idx]
+        # If multiple visits have the same date, select the one with
+        # the largest id.
         while visit_idx < len(visits) - 1 and \
                 visit['date'] == visits[visit_idx+1]['date']:
             visit_idx = visit_idx + 1
