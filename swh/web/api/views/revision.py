@@ -107,6 +107,16 @@ def api_revision_log_by(request, origin_id,
         but operates on the revision that has been found at a given software origin,
         close to a given point in time, pointed by a given branch.
 
+        .. warning::
+
+            As all endpoints using an ``origin_id``, this endpoint is
+            deprecated and will be removed in the near future.
+            You should instead use successively
+            :http:get:`/api/1/origin/(origin_url)/visits/`,
+            :http:get:`/api/1/snapshot/(snapshot_id)/`, and
+            :http:get:`/api/1/revision/(sha1_git)[/prev/(prev_sha1s)]/log/`.
+
+
         :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name
             associated to the software origin, e.g., "refs/heads/master". Defaults to the HEAD branch.
@@ -199,6 +209,16 @@ def api_directory_through_revision_origin(request, origin_id,
     """
     Display directory or content information through a revision identified
     by origin/branch/timestamp.
+
+        .. warning::
+
+            As all endpoints using an ``origin_id``, this endpoint is
+            deprecated and will be removed in the near future.
+            You should instead use successively
+            :http:get:`/api/1/origin/(origin_url)/visits/`,
+            :http:get:`/api/1/snapshot/(snapshot_id)/`,
+            :http:get:`/api/1/revision/(sha1_git)/`,
+            :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
     """
     if ts:
         ts = parse_timestamp(ts)
@@ -235,6 +255,15 @@ def api_revision_with_origin(request, origin_id,
         This endpoint behaves like :http:get:`/api/1/revision/(sha1_git)/`,
         but operates on the revision that has been found at a given software origin,
         close to a given point in time, pointed by a given branch.
+
+        .. warning::
+
+            As all endpoints using an ``origin_id``, this endpoint is
+            deprecated and will be removed in the near future.
+            You should instead use successively
+            :http:get:`/api/1/origin/(origin_url)/visits/`,
+            :http:get:`/api/1/snapshot/(snapshot_id)/`, and
+            :http:get:`/api/1/revision/(sha1_git)/`.
 
         :param int origin_id: a software origin identifier
         :param string branch_name: optional parameter specifying a fully-qualified branch name

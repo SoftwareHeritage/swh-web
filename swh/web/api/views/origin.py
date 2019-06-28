@@ -163,6 +163,12 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         Get information about a software origin.
 
+        .. warning::
+
+            As all endpoints using an ``origin_id``, this endpoint is
+            deprecated and will be removed in the near future.
+            Use :http:get:`/api/1/origin/(origin_url)/get/` instead.
+
         :param int origin_id: a software origin identifier
 
         {return_origin}
@@ -381,6 +387,12 @@ def api_origin_visits(request, origin_id=None, origin_url=None):
         Visits are returned sorted in descending order according
         to their date.
 
+        .. warning::
+
+            As all endpoints using an ``origin_id``, this endpoint is
+            deprecated and will be removed in the near future.
+            Use :http:get:`/api/1/origin/(origin_url)/visits/` instead.
+
         :param int origin_id: a software origin identifier
         :query int per_page: specify the number of visits to list, for
             pagination purposes
@@ -497,6 +509,13 @@ def api_origin_visit(request, visit_id, origin_url=None, origin_id=None):
     .. http:get:: /api/1/origin/(origin_id)/visit/(visit_id)/
 
         Get information about a specific visit of a software origin.
+
+        .. warning::
+
+            As all endpoints using an ``origin_id``, this endpoint is
+            deprecated and will be removed in the near future.
+            Use :http:get:`/api/1/origin/(origin_url)/visit/(visit_id)`
+            instead.
 
         :param int origin_id: a software origin identifier
         :param int visit_id: a visit identifier
