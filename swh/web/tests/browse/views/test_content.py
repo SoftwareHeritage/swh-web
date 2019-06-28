@@ -25,7 +25,7 @@ from swh.web.tests.testcase import WebTestCase
 
 class SwhBrowseContentTest(WebTestCase):
 
-    @given(content())
+    @given(content_text())
     def test_content_view_text(self, content):
 
         sha1_git = content['sha1_git']
@@ -128,8 +128,8 @@ class SwhBrowseContentTest(WebTestCase):
                                   % (mimetype, content_data.decode('utf-8')))
         self.assertContains(resp, url_raw)
 
-    @given(content())
-    def test_content_view_with_path(self, content):
+    @given(content_text())
+    def test_content_view_text_with_path(self, content):
 
         path = content['path']
 
