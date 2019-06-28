@@ -26,7 +26,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
                       url_args={'snapshot_id': snapshot})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         expected_data = self.snapshot_get(snapshot)
         expected_data = self._enrich_snapshot(expected_data)
@@ -56,7 +56,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
                           query_params={'branches_from': branches_from,
                                         'branches_count': branches_count})
             rv = self.client.get(url)
-            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
             expected_data = self.snapshot_get_branches(snapshot, branches_from,
                                                        branches_count)
@@ -87,7 +87,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
                       url_args={'snapshot_id': snapshot})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, whole_snapshot)
 
@@ -114,7 +114,7 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
             snapshot, target_types=target_type)
         expected_data = self._enrich_snapshot(expected_data)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_data)
 
@@ -124,12 +124,12 @@ class SnapshotApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': '63ce369'})
         rv = self.client.get(url)
-        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 400, rv.data)
 
         url = reverse('api-1-snapshot',
                       url_args={'snapshot_id': unknown_snapshot_})
         rv = self.client.get(url)
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
 
     def _enrich_snapshot(self, snapshot):
         def _get_branch_url(target_type, target):

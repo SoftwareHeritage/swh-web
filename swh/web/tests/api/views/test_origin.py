@@ -33,7 +33,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-origin-visits', url_args={'origin_id': 2})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 400, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'ValueError',
@@ -50,7 +50,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-origin-visits', url_args={'origin_id': 2})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv.status_code, 503, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'StorageDBError',
@@ -68,7 +68,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-origin-visits', url_args={'origin_id': 2})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv.status_code, 503, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'StorageAPIError',
@@ -100,7 +100,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
             rv = self.client.get(url)
 
-            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
 
             for expected_visit in expected_visits:
@@ -132,7 +132,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                                     'visit_id': visit_id})
 
             rv = self.client.get(url)
-            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
 
             expected_visit = self.origin_visit_get_by(origin_id, visit_id)
@@ -161,7 +161,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -183,7 +183,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         expected_origin['origin_visits_url'] = origin_visits_url
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_origin)
 
@@ -202,7 +202,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         expected_origin['origin_visits_url'] = origin_visits_url
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_origin)
 
@@ -214,7 +214,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                                 'origin_url': new_origin['url']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -386,7 +386,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
 
         start = origin_from_idx
         end = origin_from_idx + origin_count

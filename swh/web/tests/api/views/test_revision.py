@@ -33,7 +33,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
@@ -44,7 +44,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                       url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -77,7 +77,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -91,7 +91,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                       url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -105,7 +105,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                       url_args={'origin_id': unknown_origin_id_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -125,7 +125,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
@@ -149,7 +149,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
@@ -176,7 +176,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
@@ -207,7 +207,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
@@ -218,7 +218,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                       url_args={'origin_id': unknown_origin_id_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -274,7 +274,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
             'type': 'dir'
         }
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_result)
 
@@ -293,7 +293,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         has_next = len(expected_log) > per_page
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data,
                          expected_log[:-1] if has_next else expected_log)
@@ -314,7 +314,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -344,7 +344,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         expected_log.insert(0, prev_revision)
         expected_log = list(map(self._enrich_revision, expected_log))
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_log)
 
@@ -368,7 +368,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         has_next = len(expected_log) > per_page
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data,
                          expected_log[:-1] if has_next else expected_log)
@@ -393,7 +393,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertFalse(rv.has_header('Link'))
         self.assertEqual(
@@ -410,7 +410,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         # then
         rv = self.client.get('/api/1/revision/999/directory/some/path/to/dir/')
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -454,7 +454,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         # then
         rv = self.client.get('/api/1/revision/999/directory/some/path/')
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, stub_dir)
 
@@ -483,7 +483,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         url = '/api/1/revision/666/directory/some/other/path/'
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, stub_content)
 
