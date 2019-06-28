@@ -212,8 +212,7 @@ def lookup_origin(origin):
     """Return information about the origin matching dict origin.
 
     Args:
-        origin: origin's dict with keys either 'id' or
-        ('type' AND 'url')
+        origin: origin's dict with keys either 'id' or 'url'
 
     Returns:
         origin information as dict.
@@ -221,11 +220,8 @@ def lookup_origin(origin):
     """
     origin_info = storage.origin_get(origin)
     if not origin_info:
-        if 'id' in origin and origin['id']:
-            msg = 'Origin with id %s not found!' % origin['id']
-        else:
-            msg = 'Origin with type %s and url %s not found!' % \
-                (origin['type'], origin['url'])
+        msg = 'Origin %s not found!' % \
+            (origin.get('id') or origin['url'])
         raise NotFoundExc(msg)
     return converters.from_origin(origin_info)
 
@@ -814,11 +810,11 @@ def stat_counters():
     return storage.stat_counters()
 
 
-def _lookup_origin_visits(origin_id, last_visit=None, limit=10):
+def _lookup_origin_visits(origin_url, last_visit=None, limit=10):
     """Yields the origin origin_ids' visits.
 
     Args:
-        origin_id (int): origin to list visits for
+        origin_url (str): origin to list visits for
         last_visit (int): last visit to lookup from
         limit (int): Number of elements max to display
 
@@ -827,8 +823,10 @@ def _lookup_origin_visits(origin_id, last_visit=None, limit=10):
 
     """
     limit = min(limit, MAX_LIMIT)
-    yield from storage.origin_visit_get(
-        origin_id, last_visit=last_visit, limit=limit)
+    for visit in storage.origin_visit_get(
+            origin_url, last_visit=last_visit, limit=limit):
+        visit['origin'] = origin_url
+        yield visit
 
 
 def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
@@ -841,28 +839,28 @@ def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
        Dictionaries of origin_visit for that origin
 
     """
-    lookup_origin({'id': origin_id})
     visits = _lookup_origin_visits(origin_id, last_visit=last_visit,
                                    limit=per_page)
     for visit in visits:
         yield converters.from_origin_visit(visit)
 
 
-def lookup_origin_visit(origin_id, visit_id):
+def lookup_origin_visit(origin_url, visit_id):
     """Return information about visit visit_id with origin origin_id.
 
     Args:
-        origin_id: origin concerned by the visit
+        origin (str): origin concerned by the visit
         visit_id: the visit identifier to lookup
 
     Yields:
        The dict origin_visit concerned
 
     """
-    visit = storage.origin_visit_get_by(origin_id, visit_id)
+    visit = storage.origin_visit_get_by(origin_url, visit_id)
     if not visit:
-        raise NotFoundExc('Origin with id %s or its visit '
-                          'with id %s not found!' % (origin_id, visit_id))
+        raise NotFoundExc('Origin %s or its visit '
+                          'with id %s not found!' % (origin_url, visit_id))
+    visit['origin'] = origin_url
     return converters.from_origin_visit(visit)
 
 

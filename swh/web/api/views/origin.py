@@ -15,25 +15,62 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
 
+DOC_RETURN_ORIGIN = '''
+        :>json string origin_visits_url: link to in order to get information
+            about the visits for that origin
+        :>json string url: the origin canonical url
+        :>json string type: the type of software origin (deprecated value;
+            types are now associated to visits instead of origins)
+        :>json number id: the origin unique identifier (deprecated value;
+            you should only refer to origins based on their URL)
+'''
+
+DOC_RETURN_ORIGIN_ARRAY = \
+    DOC_RETURN_ORIGIN.replace(':>json', ':>jsonarr')
+
+DOC_RETURN_ORIGIN_VISIT = '''
+        :>json string date: ISO representation of the visit date (in UTC)
+        :>json str origin: the origin canonical url
+        :>json string origin_url: link to get information about the origin
+        :>jsonarr string snapshot: the snapshot identifier of the visit
+        :>jsonarr string snapshot_url: link to
+            :http:get:`/api/1/snapshot/(snapshot_id)/` in order to get
+            information about the snapshot of the visit
+        :>json string status: status of the visit (either **full**,
+            **partial** or **ongoing**)
+        :>json number visit: the unique identifier of the visit
+'''
+
+DOC_RETURN_ORIGIN_VISIT_ARRAY = \
+    DOC_RETURN_ORIGIN_VISIT.replace(':>json', ':>jsonarr')
+
+DOC_RETURN_ORIGIN_VISIT_ARRAY += '''
+        :>jsonarr number id: the unique identifier of the origin
+        :>jsonarr string origin_visit_url: link to
+            :http:get:`/api/1/origin/(origin_url)/visit/(visit_id)/`
+            in order to get information about the visit
+'''
+
+
 def _enrich_origin(origin):
     if 'id' in origin:
         o = origin.copy()
         o['origin_visits_url'] = reverse(
-            'api-1-origin-visits', url_args={'origin_id': origin['id']})
+            'api-1-origin-visits', url_args={'origin_url': origin['url']})
         return o
 
     return origin
 
 
 def _enrich_origin_visit(origin_visit, *,
-                         with_origin_url, with_origin_visit_url):
+                         with_origin_link, with_origin_visit_link):
     ov = origin_visit.copy()
-    if with_origin_url:
+    if with_origin_link:
         ov['origin_url'] = reverse('api-1-origin',
-                                   url_args={'origin_id': ov['origin']})
-    if with_origin_visit_url:
+                                   url_args={'origin_url': ov['origin']})
+    if with_origin_visit_link:
         ov['origin_visit_url'] = reverse('api-1-origin-visit',
-                                         url_args={'origin_id': ov['origin'],
+                                         url_args={'origin_url': ov['origin'],
                                                    'visit_id': ov['visit']})
     snapshot = ov['snapshot']
     if snapshot:
@@ -46,7 +83,7 @@ def _enrich_origin_visit(origin_visit, *,
 
 @api_route(r'/origins/', 'api-1-origins')
 @api_doc('/origins/', noargs=True)
-@format_docstring()
+@format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
 def api_origins(request):
     """
     .. http:get:: /api/1/origins/
@@ -60,13 +97,7 @@ def api_origins(request):
         :query int origin_count: The maximum number of origins to return
             (default to 100, can not exceed 10000)
 
-        :>jsonarr number id: the origin unique identifier
-        :>jsonarr string origin_visits_url: link to in order to get information
-            about the visits for that origin
-        :>jsonarr string type: the type of software origin (possible values
-            are ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp``
-            or ``deposit``)
-        :>jsonarr string url: the origin canonical url
+        {return_origin_array}
 
         {common_headers}
         {resheader_link}
@@ -98,26 +129,43 @@ def api_origins(request):
     return response
 
 
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-1-origin')
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
            'api-1-origin')
+@api_route(r'/origin/(?P<origin_url>.+)/get/', 'api-1-origin')
+@api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-1-origin')
 @api_doc('/origin/')
-@format_docstring()
+@format_docstring(return_origin=DOC_RETURN_ORIGIN)
 def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
     """
+    .. http:get:: /api/1/origin/(origin_url)/get/
+
+        Get information about a software origin.
+
+        :param string origin_url: the origin url
+
+        {return_origin}
+
+        {common_headers}
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin can not be found in the archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
+
     .. http:get:: /api/1/origin/(origin_id)/
 
         Get information about a software origin.
 
         :param int origin_id: a software origin identifier
 
-        :>json number id: the origin unique identifier
-        :>json string origin_visits_url: link to in order to get information
-            about the visits for that origin
-        :>json string type: the type of software origin (possible values are
-            ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or
-            ``deposit``)
-        :>json string url: the origin canonical url
+        {return_origin}
 
         {common_headers}
 
@@ -137,16 +185,17 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         Get information about a software origin.
 
+        .. warning::
+
+            This endpoint is deprecated. You should use
+            :http:get:`/api/1/origin/(origin_url)/get/` instead.
+
         :param string origin_type: the origin type (possible values are
             ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or
             ``deposit``)
         :param string origin_url: the origin url
 
-        :>json number id: the origin unique identifier
-        :>json string origin_visits_url: link to in order to get information
-            about the visits for that origin
-        :>json string type: the type of software origin
-        :>json string url: the origin canonical url
+        {return_origin}
 
         {common_headers}
 
@@ -168,11 +217,8 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
         'url': origin_url
     }
     ori_dict = {k: v for k, v in ori_dict.items() if ori_dict[k]}
-    if 'id' in ori_dict:
-        error_msg = 'Origin with id %s not found.' % ori_dict['id']
-    else:
-        error_msg = 'Origin with type %s and URL %s not found' % (
-            ori_dict['type'], ori_dict['url'])
+    error_msg = 'Origin %s not found.' % \
+        (ori_dict.get('id') or ori_dict['url'])
 
     return api_lookup(
         service.lookup_origin, ori_dict,
@@ -183,7 +229,7 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 @api_route(r'/origin/search/(?P<url_pattern>.+)/',
            'api-1-origin-search')
 @api_doc('/origin/search/')
-@format_docstring()
+@format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
 def api_origin_search(request, url_pattern):
     """
     .. http:get:: /api/1/origin/search/(url_pattern)/
@@ -201,11 +247,7 @@ def api_origin_search(request, url_pattern):
         :query boolean with_visit: if true, only return origins with at least
             one visit by Software heritage
 
-        :>jsonarr number id: the origin unique identifier
-        :>jsonarr string origin_visits_url: link to in order to get information
-            about the visits for that origin
-        :>jsonarr string type: the type of software origin
-        :>jsonarr string url: the origin canonical url
+        {return_origin_array}
 
         {common_headers}
 
@@ -253,7 +295,7 @@ def api_origin_search(request, url_pattern):
 @api_route(r'/origin/metadata-search/',
            'api-1-origin-metadata-search')
 @api_doc('/origin/metadata-search/', noargs=True, need_params=True)
-@format_docstring()
+@format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
 def api_origin_metadata_search(request):
     """
     .. http:get:: /api/1/origin/metadata-search/
@@ -268,12 +310,7 @@ def api_origin_metadata_search(request):
         :query int limit: the maximum number of found origins to return
             (bounded to 100)
 
-        :>jsonarr number origin_id: the origin unique identifier
-        :>jsonarr dict metadata: metadata of the origin (as a
-            JSON-LD/CodeMeta dictionary)
-        :>jsonarr string from_revision: the revision used to extract these
-            metadata (the current HEAD or one of the former HEADs)
-        :>jsonarr dict tool: the tool used to extract these metadata
+        {return_origin_array}
 
         {common_headers}
 
@@ -302,11 +339,42 @@ def api_origin_metadata_search(request):
     }
 
 
+@api_route(r'/origin/(?P<origin_url>.*)/visits/', 'api-1-origin-visits')
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'api-1-origin-visits')
 @api_doc('/origin/visits/')
-@format_docstring()
-def api_origin_visits(request, origin_id):
+@format_docstring(
+    return_origin_visit_array=DOC_RETURN_ORIGIN_VISIT_ARRAY)
+def api_origin_visits(request, origin_id=None, origin_url=None):
     """
+    .. http:get:: /api/1/origin/(origin_url)/visits/
+
+        Get information about all visits of a software origin.
+        Visits are returned sorted in descending order according
+        to their date.
+
+        :param str origin_url: a software origin URL
+        :query int per_page: specify the number of visits to list, for
+            pagination purposes
+        :query int last_visit: visit to start listing from, for pagination
+            purposes
+
+        {common_headers}
+        {resheader_link}
+
+        {return_origin_visit_array}
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin can not be found in the archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/https://github.com/hylang/hy/visits/`
+
     .. http:get:: /api/1/origin/(origin_id)/visits/
 
         Get information about all visits of a software origin.
@@ -322,18 +390,7 @@ def api_origin_visits(request, origin_id):
         {common_headers}
         {resheader_link}
 
-        :>jsonarr string date: ISO representation of the visit date (in UTC)
-        :>jsonarr number id: the unique identifier of the origin
-        :>jsonarr string origin_visit_url: link to
-            :http:get:`/api/1/origin/(origin_id)/visit/(visit_id)/` in order to
-            get information about the visit
-        :>jsonarr string snapshot: the snapshot identifier of the visit
-        :>jsonarr string snapshot_url: link to
-            :http:get:`/api/1/snapshot/(snapshot_id)/` in order to get
-            information about the snapshot of the visit
-        :>jsonarr string status: status of the visit (either **full**,
-            **partial** or **ongoing**)
-        :>jsonarr number visit: the unique identifier of the visit
+        {return_origin_visit_array}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -348,15 +405,22 @@ def api_origin_visits(request, origin_id):
             :swh_web_api:`origin/1/visits/`
     """
     result = {}
-    origin_id = int(origin_id)
+    if origin_url:
+        origin_query = {'url': origin_url}
+        notfound_msg = 'No origin {} found'.format(origin_url)
+        url_args_next = {'origin_url': origin_url}
+    else:
+        origin_query = {'id': int(origin_id)}
+        notfound_msg = 'No origin {} found'.format(origin_id)
+        url_args_next = {'origin_id': origin_id}
     per_page = int(request.query_params.get('per_page', '10'))
     last_visit = request.query_params.get('last_visit')
     if last_visit:
         last_visit = int(last_visit)
 
     def _lookup_origin_visits(
-            origin_id, last_visit=last_visit, per_page=per_page):
-        all_visits = get_origin_visits({'id': origin_id})
+            origin_query, last_visit=last_visit, per_page=per_page):
+        all_visits = get_origin_visits(origin_query)
         all_visits.reverse()
         visits = []
         if not last_visit:
@@ -369,11 +433,11 @@ def api_origin_visits(request, origin_id):
         for v in visits:
             yield v
 
-    results = api_lookup(_lookup_origin_visits, origin_id,
-                         notfound_msg='No origin {} found'.format(origin_id),
+    results = api_lookup(_lookup_origin_visits, origin_query,
+                         notfound_msg=notfound_msg,
                          enrich_fn=partial(_enrich_origin_visit,
-                                           with_origin_url=False,
-                                           with_origin_visit_url=True))
+                                           with_origin_link=False,
+                                           with_origin_visit_link=True))
 
     if results:
         nb_results = len(results)
@@ -387,7 +451,7 @@ def api_origin_visits(request, origin_id):
 
             result['headers'] = {
                 'link-next': reverse('api-1-origin-visits',
-                                     url_args={'origin_id': origin_id},
+                                     url_args=url_args_next,
                                      query_params=query_params)
             }
 
@@ -398,12 +462,38 @@ def api_origin_visits(request, origin_id):
     return result
 
 
+@api_route(r'/origin/(?P<origin_url>.*)/visit/(?P<visit_id>[0-9]+)/',
+           'api-1-origin-visit')
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/',
            'api-1-origin-visit')
 @api_doc('/origin/visit/')
-@format_docstring()
-def api_origin_visit(request, origin_id, visit_id):
+@format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
+def api_origin_visit(request, visit_id, origin_url=None, origin_id=None):
     """
+    .. http:get:: /api/1/origin/(origin_url)/visit/(visit_id)/
+
+        Get information about a specific visit of a software origin.
+
+        :param str origin_url: a software origin URL
+        :param int visit_id: a visit identifier
+
+        {common_headers}
+
+        {return_origin_visit}
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin or visit can not be found in the
+            archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/https://github.com/hylang/hy/visit/1/`
+
     .. http:get:: /api/1/origin/(origin_id)/visit/(visit_id)/
 
         Get information about a specific visit of a software origin.
@@ -413,16 +503,7 @@ def api_origin_visit(request, origin_id, visit_id):
 
         {common_headers}
 
-        :>json string date: ISO representation of the visit date (in UTC)
-        :>json number origin: the origin unique identifier
-        :>json string origin_url: link to get information about the origin
-        :>jsonarr string snapshot: the snapshot identifier of the visit
-        :>jsonarr string snapshot_url: link to
-            :http:get:`/api/1/snapshot/(snapshot_id)/` in order to get
-            information about the snapshot of the visit
-        :>json string status: status of the visit (either **full**,
-            **partial** or **ongoing**)
-        :>json number visit: the unique identifier of the visit
+        {return_origin_visit}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
             :http:method:`options`
@@ -437,13 +518,15 @@ def api_origin_visit(request, origin_id, visit_id):
 
             :swh_web_api:`origin/1500/visit/1/`
     """
+    if not origin_url:
+        origin_url = service.lookup_origin({'id': int(origin_id)})['url']
     return api_lookup(
-        service.lookup_origin_visit, int(origin_id), int(visit_id),
+        service.lookup_origin_visit, origin_url, int(visit_id),
         notfound_msg=('No visit {} for origin {} found'
-                      .format(visit_id, origin_id)),
+                      .format(visit_id, origin_url)),
         enrich_fn=partial(_enrich_origin_visit,
-                          with_origin_url=True,
-                          with_origin_visit_url=False))
+                          with_origin_link=True,
+                          with_origin_visit_link=False))
 
 
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
@@ -480,8 +563,7 @@ def api_origin_intrinsic_metadata(request, origin_type, origin_url):
         'url': origin_url
     }
 
-    error_msg = 'Origin with type %s and URL %s not found' % (
-        ori_dict['type'], ori_dict['url'])
+    error_msg = 'Origin with URL %s not found' % ori_dict['url']
 
     return api_lookup(
         service.lookup_origin_intrinsic_metadata, ori_dict,

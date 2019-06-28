@@ -35,15 +35,20 @@ def get_origin_visits(origin_info):
 
     from swh.web.common import service
 
-    cache_entry_id = 'origin_%s_visits' % origin_info['id']
+    if 'url' in origin_info:
+        origin_url = origin_info['url']
+    else:
+        origin_url = service.lookup_origin(origin_info)['url']
+
+    cache_entry_id = 'origin_visits_%s' % origin_url
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
         last_visit = cache_entry[-1]['visit']
-        new_visits = list(service.lookup_origin_visits(origin_info['id'],
+        new_visits = list(service.lookup_origin_visits(origin_url,
                                                        last_visit=last_visit))
         if not new_visits:
-            last_snp = service.lookup_latest_origin_snapshot(origin_info['id'])
+            last_snp = service.lookup_latest_origin_snapshot(origin_url)
             if not last_snp or last_snp['id'] == cache_entry[-1]['snapshot']:
                 return cache_entry
 
@@ -52,7 +57,7 @@ def get_origin_visits(origin_info):
     per_page = service.MAX_LIMIT
     last_visit = None
     while 1:
-        visits = list(service.lookup_origin_visits(origin_info['id'],
+        visits = list(service.lookup_origin_visits(origin_url,
                                                    last_visit=last_visit,
                                                    per_page=per_page))
         origin_visits += visits
@@ -105,10 +110,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
     visits = get_origin_visits(origin_info)
 
     if not visits:
-        if 'type' in origin_info and 'url' in origin_info:
+        if 'url' in origin_info:
             message = ('No visit associated to origin with'
-                       ' type %s and url %s!' % (origin_info['type'],
-                                                 origin_info['url']))
+                       ' url %s!' % origin_info['url'])
         else:
             message = ('No visit associated to origin with'
                        ' id %s!' % origin_info['id'])
@@ -119,9 +123,8 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
         if len(visit) == 0:
             if 'type' in origin_info and 'url' in origin_info:
                 message = ('Visit for snapshot with id %s for origin with type'
-                           ' %s and url %s not found!' %
-                           (snapshot_id, origin_info['type'],
-                            origin_info['url']))
+                           ' url %s not found!' %
+                           (snapshot_id, origin_info['url']))
             else:
                 message = ('Visit for snapshot with id %s for origin with'
                            ' id %s not found!' %
@@ -133,9 +136,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
         visit = [v for v in visits if v['visit'] == int(visit_id)]
         if len(visit) == 0:
             if 'type' in origin_info and 'url' in origin_info:
-                message = ('Visit with id %s for origin with type %s'
+                message = ('Visit with id %s for origin with'
                            ' and url %s not found!' %
-                           (visit_id, origin_info['type'], origin_info['url']))
+                           (visit_id, origin_info['url']))
             else:
                 message = ('Visit with id %s for origin with id %s'
                            ' not found!' % (visit_id, origin_info['id']))
@@ -168,9 +171,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
         return visit
     else:
         if 'type' in origin_info and 'url' in origin_info:
-            message = ('Visit with timestamp %s for origin with type %s '
+            message = ('Visit with timestamp %s for origin with '
                        'and url %s not found!' %
-                       (visit_ts, origin_info['type'], origin_info['url']))
+                       (visit_ts, origin_info['url']))
         else:
             message = ('Visit with timestamp %s for origin with id %s '
                        'not found!' % (visit_ts, origin_info['id']))

@@ -109,7 +109,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Origin with id %s not found!' %
+            'reason': 'Origin %s not found!' %
             unknown_origin_id_})
 
     @given(origin())
@@ -222,7 +222,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Origin with id %s not found!' %
+            'reason': 'Origin %s not found!' %
             unknown_origin_id_
         })
 

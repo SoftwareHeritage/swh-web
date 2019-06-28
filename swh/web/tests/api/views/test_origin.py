@@ -30,7 +30,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         mock_get_origin_visits.side_effect = ValueError(err_msg)
 
-        url = reverse('api-1-origin-visits', url_args={'origin_id': 2})
+        url = reverse(
+            'api-1-origin-visits', url_args={'origin_url': 'http://foo'})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 400, rv.data)
@@ -47,7 +48,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         mock_get_origin_visits.side_effect = StorageDBError(err_msg)
 
-        url = reverse('api-1-origin-visits', url_args={'origin_id': 2})
+        url = reverse(
+            'api-1-origin-visits', url_args={'origin_url': 'http://foo'})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 503, rv.data)
@@ -65,7 +67,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         mock_get_origin_visits.side_effect = StorageAPIError(err_msg)
 
-        url = reverse('api-1-origin-visits', url_args={'origin_id': 2})
+        url = reverse(
+            'api-1-origin-visits', url_args={'origin_url': 'http://foo'})
         rv = self.client.get(url)
 
         self.assertEqual(rv.status_code, 503, rv.data)
@@ -94,7 +97,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                 (all_visits[1]['visit'], all_visits[2:4])):
 
             url = reverse('api-1-origin-visits',
-                          url_args={'origin_id': origin_id},
+                          url_args={'origin_url': new_origin['url']},
                           query_params={'per_page': 2,
                                         'last_visit': last_visit})
 
@@ -106,11 +109,53 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             for expected_visit in expected_visits:
                 origin_visit_url = reverse(
                     'api-1-origin-visit',
-                    url_args={'origin_id': origin_id,
+                    url_args={'origin_url': new_origin['url'],
                               'visit_id': expected_visit['visit']})
                 snapshot_url = reverse(
                     'api-1-snapshot',
                     url_args={'snapshot_id': expected_visit['snapshot']})
+                expected_visit['origin'] = new_origin['url']
+                expected_visit['origin_visit_url'] = origin_visit_url
+                expected_visit['snapshot_url'] = snapshot_url
+
+            self.assertEqual(rv.data, expected_visits)
+
+    @given(new_origin(), visit_dates(3), new_snapshots(3))
+    def test_api_lookup_origin_visits_by_id(self, new_origin, visit_dates,
+                                            new_snapshots):
+
+        origin_id = self.storage.origin_add_one(new_origin)
+        new_origin['id'] = origin_id
+        for i, visit_date in enumerate(visit_dates):
+            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            self.storage.snapshot_add(origin_id, origin_visit['visit'],
+                                      new_snapshots[i])
+
+        all_visits = list(reversed(get_origin_visits(new_origin)))
+
+        for last_visit, expected_visits in (
+                (None, all_visits[:2]),
+                (all_visits[1]['visit'], all_visits[2:4])):
+
+            url = reverse('api-1-origin-visits',
+                          url_args={'origin_url': new_origin['url']},
+                          query_params={'per_page': 2,
+                                        'last_visit': last_visit})
+
+            rv = self.client.get(url)
+
+            self.assertEqual(rv.status_code, 200, rv.data)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+
+            for expected_visit in expected_visits:
+                origin_visit_url = reverse(
+                    'api-1-origin-visit',
+                    url_args={'origin_url': new_origin['url'],
+                              'visit_id': expected_visit['visit']})
+                snapshot_url = reverse(
+                    'api-1-snapshot',
+                    url_args={'snapshot_id': expected_visit['snapshot']})
+                expected_visit['origin'] = new_origin['url']
                 expected_visit['origin_visit_url'] = origin_visit_url
                 expected_visit['snapshot_url'] = snapshot_url
 
@@ -119,6 +164,39 @@ class OriginApiTestCase(WebTestCase, APITestCase):
     @given(new_origin(), visit_dates(3), new_snapshots(3))
     def test_api_lookup_origin_visit(self, new_origin, visit_dates,
                                      new_snapshots):
+
+        origin_id = self.storage.origin_add_one(new_origin)
+        new_origin['id'] = origin_id
+        for i, visit_date in enumerate(visit_dates):
+            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            visit_id = origin_visit['visit']
+            self.storage.snapshot_add(origin_id, origin_visit['visit'],
+                                      new_snapshots[i])
+            url = reverse('api-1-origin-visit',
+                          url_args={'origin_url': new_origin['url'],
+                                    'visit_id': visit_id})
+
+            rv = self.client.get(url)
+            self.assertEqual(rv.status_code, 200, rv.data)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+
+            expected_visit = self.origin_visit_get_by(origin_id, visit_id)
+
+            origin_url = reverse('api-1-origin',
+                                 url_args={'origin_url': new_origin['url']})
+            snapshot_url = reverse(
+                'api-1-snapshot',
+                url_args={'snapshot_id': expected_visit['snapshot']})
+
+            expected_visit['origin'] = new_origin['url']
+            expected_visit['origin_url'] = origin_url
+            expected_visit['snapshot_url'] = snapshot_url
+
+            self.assertEqual(rv.data, expected_visit)
+
+    @given(new_origin(), visit_dates(3), new_snapshots(3))
+    def test_api_lookup_origin_visit_by_id(self, new_origin, visit_dates,
+                                           new_snapshots):
 
         origin_id = self.storage.origin_add_one(new_origin)
         new_origin['id'] = origin_id
@@ -138,11 +216,12 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             expected_visit = self.origin_visit_get_by(origin_id, visit_id)
 
             origin_url = reverse('api-1-origin',
-                                 url_args={'origin_id': origin_id})
+                                 url_args={'origin_url': new_origin['url']})
             snapshot_url = reverse(
                 'api-1-snapshot',
                 url_args={'snapshot_id': expected_visit['snapshot']})
 
+            expected_visit['origin'] = new_origin['url']
             expected_visit['origin_url'] = origin_url
             expected_visit['snapshot_url'] = snapshot_url
 
@@ -150,6 +229,27 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
     @given(origin())
     def test_api_lookup_origin_visit_not_found(self, origin):
+
+        all_visits = list(reversed(get_origin_visits(origin)))
+
+        max_visit_id = max([v['visit'] for v in all_visits])
+
+        url = reverse('api-1-origin-visit',
+                      url_args={'origin_url': origin['url'],
+                                'visit_id': max_visit_id + 1})
+
+        rv = self.client.get(url)
+
+        self.assertEqual(rv.status_code, 404, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, {
+            'exception': 'NotFoundExc',
+            'reason': 'Origin %s or its visit with id %s not found!' %
+            (origin['url'], max_visit_id+1)
+        })
+
+    @given(origin())
+    def test_api_lookup_origin_visit_not_found_by_id(self, origin):
 
         all_visits = list(reversed(get_origin_visits(origin)))
 
@@ -165,8 +265,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Origin with id %s or its visit with id %s not found!' %
-            (origin['id'], max_visit_id+1)
+            'reason': 'Origin %s or its visit with id %s not found!' %
+            (origin['url'], max_visit_id+1)
         })
 
     @given(origin())
@@ -179,7 +279,25 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         expected_origin = self.origin_get(origin)
 
         origin_visits_url = reverse('api-1-origin-visits',
-                                    url_args={'origin_id': origin['id']})
+                                    url_args={'origin_url': origin['url']})
+
+        expected_origin['origin_visits_url'] = origin_visits_url
+
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.data, expected_origin)
+
+    @given(origin())
+    def test_api_origin_by_url(self, origin):
+
+        url = reverse('api-1-origin',
+                      url_args={'origin_url': origin['url']})
+        rv = self.client.get(url)
+
+        expected_origin = self.origin_get(origin)
+
+        origin_visits_url = reverse('api-1-origin-visits',
+                                    url_args={'origin_url': origin['url']})
 
         expected_origin['origin_visits_url'] = origin_visits_url
 
@@ -198,7 +316,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         expected_origin = self.origin_get(origin)
 
         origin_visits_url = reverse('api-1-origin-visits',
-                                    url_args={'origin_id': origin['id']})
+                                    url_args={'origin_url': origin['url']})
 
         expected_origin['origin_visits_url'] = origin_visits_url
 
@@ -218,8 +336,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Origin with type %s and url %s not found!' %
-            (new_origin['type'], new_origin['url'])
+            'reason': 'Origin %s not found!' % new_origin['url']
         })
 
     @given(origin())
@@ -395,7 +512,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         for expected_origin in expected_origins:
             expected_origin['origin_visits_url'] = reverse(
                 'api-1-origin-visits',
-                url_args={'origin_id': expected_origin['id']})
+                url_args={'origin_url': expected_origin['url']})
 
         self.assertEqual(rv.data, expected_origins)
 
