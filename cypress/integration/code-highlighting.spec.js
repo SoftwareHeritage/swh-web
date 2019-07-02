@@ -5,13 +5,22 @@
  * See top-level LICENSE file for more information
  */
 
-const url = 'browse/origin/https://github.com/memononen/libtess2/content/Source/tess.h';
+const origin = 'https://github.com/memononen/libtess2';
+const contentPath = 'Source/tess.h';
 const lineStart = 32;
 const lineEnd = 42;
 
 const $ = Cypress.$;
 
+let url;
+
 describe('Code highlighting tests', function() {
+
+  before(function() {
+    cy.visit('/').window().then(win => {
+      url = win.Urls.browse_origin_content(origin, contentPath);
+    });
+  });
 
   it('should highlight source code and add line numbers', function() {
     cy.visit(url);

@@ -5,34 +5,43 @@
  * See top-level LICENSE file for more information
  */
 
-const url = 'browse/origin/https://github.com/memononen/libtess2/content/Source/tess.h';
+const origin = 'https://github.com/memononen/libtess2';
+const contentPath = 'Source/tess.h';
 
 let fileName, filePath, sha1git, rawFilePath, numberLines, originUrl;
 
+let Urls, url;
+
 describe('Test File Rendering', function() {
   before(function() {
-    cy.visit(url);
-    cy.window().then(async win => {
-      const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
 
-      console.log(metadata);
+    cy.visit('/').window().then(win => {
+      Urls = win.Urls;
+    }).then(() => {
 
-      fileName = metadata.filename;
-      filePath = metadata.path;
-      originUrl = metadata['origin url'];
-      sha1git = metadata.sha1_git;
-      rawFilePath = '/browse/content/sha1_git:' + sha1git +
-                    '/raw/?filename=' + encodeURIComponent(fileName);
+      url = Urls.browse_origin_content(origin, contentPath);
 
-      cy.request(rawFilePath)
-        .then((response) => {
-          const fileText = response.body;
-          const fileLines = fileText.split('\n');
-          numberLines = fileLines.length;
+      cy.visit(url);
+      cy.window().then(async win => {
+        const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
 
-          // If last line is empty its not shown
-          if (!fileLines[numberLines - 1]) numberLines -= 1;
-        });
+        fileName = metadata.filename;
+        filePath = metadata.path;
+        originUrl = metadata['origin url'];
+        sha1git = metadata.sha1_git;
+        rawFilePath = Urls.browse_content_raw(`sha1_git:${sha1git}`) +
+                      `?filename=${encodeURIComponent(fileName)}`;
+
+        cy.request(rawFilePath)
+          .then((response) => {
+            const fileText = response.body;
+            const fileLines = fileText.split('\n');
+            numberLines = fileLines.length;
+
+            // If last line is empty its not shown
+            if (!fileLines[numberLines - 1]) numberLines -= 1;
+          });
+      });
     });
   });
 
@@ -65,13 +74,20 @@ describe('Test File Rendering', function() {
   });
 
   it('should have links to all ancestor directories', function() {
-    for (let i = 0; i < filePath.length; i++) {
-      if (filePath.charAt(i) === '/') {
-        const dirPath = '/browse/origin/' + originUrl + '/directory' + filePath.substring(0, i + 1);
-        cy.get(`a[href='${dirPath}']`)
-          .should('be.visible');
-      }
+    const rootDirUrl = Urls.browse_origin_directory(originUrl);
+    cy.get(`a[href='${rootDirUrl}']`)
+      .should('be.visible');
+
+    let splittedPath = filePath.split('/');
+    for (let i = 2; i < splittedPath.length; ++i) {
+
+      const subDirPath = splittedPath.slice(1, i).join('/');
+      const subDirUrl = Urls.browse_origin_directory(originUrl, subDirPath);
+
+      cy.get(`a[href='${subDirUrl}']`)
+        .should('be.visible');
     }
+
   });
 
   it('should have correct url to raw file', function() {
