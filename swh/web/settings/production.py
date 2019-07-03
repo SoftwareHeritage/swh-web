@@ -23,12 +23,13 @@ else:
 MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
                'django.middleware.cache.FetchFromCacheMiddleware']
 
-CACHES.update({
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': swh_web_config['throttling']['cache_uri'],
-    }
-})
+if swh_web_config.get('throttling', {}).get('cache_uri'):
+    CACHES.update({
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': swh_web_config['throttling']['cache_uri'],
+        }
+    })
 
 # Setup support for proxy headers
 USE_X_FORWARDED_HOST = True
