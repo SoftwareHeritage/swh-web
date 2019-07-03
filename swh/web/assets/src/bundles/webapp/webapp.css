@@ -487,3 +487,18 @@ a.toggle-col {
 a.toggle-col.col-hidden {
     text-decoration: line-through;
 }
+
+.admonition.warning {
+    background: #fcf8e3;
+    border: 1px solid #faebcc;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.admonition.warning p {
+    margin-bottom: 0;
+}
+
+.admonition.warning .first {
+    font-size: 1.5rem;
+}

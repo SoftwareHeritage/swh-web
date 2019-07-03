@@ -109,8 +109,9 @@ def api_revision_log_by(request, origin_id,
 
         .. warning::
 
-            As all endpoints using an ``origin_id``, this endpoint is
-            deprecated and will be removed in the near future.
+            All endpoints using an ``origin_id`` are  deprecated and will be
+            removed in the near future. Only those using an ``origin_url``
+            will remain available.
             You should instead use successively
             :http:get:`/api/1/origin/(origin_url)/visits/`,
             :http:get:`/api/1/snapshot/(snapshot_id)/`, and
@@ -212,8 +213,9 @@ def api_directory_through_revision_origin(request, origin_id,
 
         .. warning::
 
-            As all endpoints using an ``origin_id``, this endpoint is
-            deprecated and will be removed in the near future.
+            All endpoints using an ``origin_id`` are  deprecated and will be
+            removed in the near future. Only those using an ``origin_url``
+            will remain available.
             You should instead use successively
             :http:get:`/api/1/origin/(origin_url)/visits/`,
             :http:get:`/api/1/snapshot/(snapshot_id)/`,
@@ -258,8 +260,9 @@ def api_revision_with_origin(request, origin_id,
 
         .. warning::
 
-            As all endpoints using an ``origin_id``, this endpoint is
-            deprecated and will be removed in the near future.
+            All endpoints using an ``origin_id`` are  deprecated and will be
+            removed in the near future. Only those using an ``origin_url``
+            will remain available.
             You should instead use successively
             :http:get:`/api/1/origin/(origin_url)/visits/`,
             :http:get:`/api/1/snapshot/(snapshot_id)/`, and

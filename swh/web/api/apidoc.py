@@ -77,7 +77,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         par = re.sub('\[.*\]', '', par) # noqa
         par = par.replace('//', '/')
         # transform references to api endpoints into valid rst links
-        par = re.sub(':http:get:`(.*)`', r'`<\1>`_', par)
+        par = re.sub(':http:get:`([^,]*)`', r'`<\1>`_', par)
         # transform references to some elements into bold text
         par = re.sub(':http:header:`(.*)`', r'**\1**', par)
         par = re.sub(':func:`(.*)`', r'**\1**', par)
@@ -157,7 +157,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         if isinstance(node.parent, docutils.nodes.block_quote):
             text = self.process_paragraph(str(node))
             # endpoint description
-            if not text.startswith('**') and self.data['description'] != text:
+            if (not text.startswith('**') and
+                    text not in self.data['description']):
                 self.data['description'] += '\n\n' if self.data['description'] else '' # noqa
                 self.data['description'] += text
             # http methods
@@ -193,6 +194,12 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                 if isinstance(child, docutils.nodes.paragraph):
                     line_text = self.process_paragraph(str(child))
                     self.data['description'] += '\t* %s\n' % line_text
+
+    def visit_warning(self, node):
+        text = self.process_paragraph(str(node))
+        rst_warning = '\n\n.. warning::\n%s\n' % textwrap.indent(text, '\t')
+        if rst_warning not in self.data['description']:
+            self.data['description'] += rst_warning
 
     def unknown_visit(self, node):
         pass

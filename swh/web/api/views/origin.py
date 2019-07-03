@@ -165,9 +165,10 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         .. warning::
 
-            As all endpoints using an ``origin_id``, this endpoint is
-            deprecated and will be removed in the near future.
-            Use :http:get:`/api/1/origin/(origin_url)/get/` instead.
+            All endpoints using an ``origin_id`` or an ``origin_type`` are
+            deprecated and will be removed in the near future. Only those
+            using an ``origin_url`` will remain available.
+            You should use :http:get:`/api/1/origin/(origin_url)/get/` instead.
 
         :param int origin_id: a software origin identifier
 
@@ -193,8 +194,10 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         .. warning::
 
-            This endpoint is deprecated. You should use
-            :http:get:`/api/1/origin/(origin_url)/get/` instead.
+            All endpoints using an ``origin_id`` or an ``origin_type`` are
+            deprecated and will be removed in the near future. Only those
+            using an ``origin_url`` will remain available.
+            You should use :http:get:`/api/1/origin/(origin_url)/get/` instead.
 
         :param string origin_type: the origin type (possible values are
             ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or
@@ -389,8 +392,9 @@ def api_origin_visits(request, origin_id=None, origin_url=None):
 
         .. warning::
 
-            As all endpoints using an ``origin_id``, this endpoint is
-            deprecated and will be removed in the near future.
+            All endpoints using an ``origin_id`` are  deprecated and will be
+            removed in the near future. Only those using an ``origin_url``
+            will remain available.
             Use :http:get:`/api/1/origin/(origin_url)/visits/` instead.
 
         :param int origin_id: a software origin identifier
@@ -512,8 +516,9 @@ def api_origin_visit(request, visit_id, origin_url=None, origin_id=None):
 
         .. warning::
 
-            As all endpoints using an ``origin_id``, this endpoint is
-            deprecated and will be removed in the near future.
+            All endpoints using an ``origin_id`` are  deprecated and will be
+            removed in the near future. Only those using an ``origin_url``
+            will remain available.
             Use :http:get:`/api/1/origin/(origin_url)/visit/(visit_id)`
             instead.
 
