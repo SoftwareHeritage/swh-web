@@ -10,29 +10,25 @@ import {httpGetJson} from '../utils';
 const origin = 'https://github.com/memononen/libtess2';
 const $ = Cypress.$;
 
-let Urls, url, dirs, files;
+let url, dirs, files;
 
 describe('Directory Tests', function() {
 
   before(function() {
-    cy.visit('/').window().then(win => {
-      Urls = win.Urls;
-      url = Urls.browse_origin_directory(origin);
-    }).then(() => {
-      cy.visit(url).window().then(async win => {
-        const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
-        const apiUrl = Cypress.config().baseUrl + Urls.api_1_directory(metadata.directory);
-        let dirContent = await httpGetJson(apiUrl);
-        files = [];
-        dirs = [];
-        for (let entry of dirContent) {
-          if (entry.type === 'file') {
-            files.push(entry);
-          } else {
-            dirs.push(entry);
-          }
+    url = this.Urls.browse_origin_directory(origin);
+    cy.visit(url).window().then(async win => {
+      const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
+      const apiUrl = Cypress.config().baseUrl + this.Urls.api_1_directory(metadata.directory);
+      let dirContent = await httpGetJson(apiUrl);
+      files = [];
+      dirs = [];
+      for (let entry of dirContent) {
+        if (entry.type === 'file') {
+          files.push(entry);
+        } else {
+          dirs.push(entry);
         }
-      });
+      }
     });
   });
 

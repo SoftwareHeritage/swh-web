@@ -10,38 +10,32 @@ const contentPath = 'Source/tess.h';
 
 let fileName, filePath, sha1git, rawFilePath, numberLines, originUrl;
 
-let Urls, url;
+let url;
 
 describe('Test File Rendering', function() {
   before(function() {
+    url = this.Urls.browse_origin_content(origin, contentPath);
 
-    cy.visit('/').window().then(win => {
-      Urls = win.Urls;
-    }).then(() => {
+    cy.visit(url);
+    cy.window().then(async win => {
+      const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
 
-      url = Urls.browse_origin_content(origin, contentPath);
+      fileName = metadata.filename;
+      filePath = metadata.path;
+      originUrl = metadata['origin url'];
+      sha1git = metadata.sha1_git;
+      rawFilePath = this.Urls.browse_content_raw(`sha1_git:${sha1git}`) +
+                    `?filename=${encodeURIComponent(fileName)}`;
 
-      cy.visit(url);
-      cy.window().then(async win => {
-        const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
+      cy.request(rawFilePath)
+        .then((response) => {
+          const fileText = response.body;
+          const fileLines = fileText.split('\n');
+          numberLines = fileLines.length;
 
-        fileName = metadata.filename;
-        filePath = metadata.path;
-        originUrl = metadata['origin url'];
-        sha1git = metadata.sha1_git;
-        rawFilePath = Urls.browse_content_raw(`sha1_git:${sha1git}`) +
-                      `?filename=${encodeURIComponent(fileName)}`;
-
-        cy.request(rawFilePath)
-          .then((response) => {
-            const fileText = response.body;
-            const fileLines = fileText.split('\n');
-            numberLines = fileLines.length;
-
-            // If last line is empty its not shown
-            if (!fileLines[numberLines - 1]) numberLines -= 1;
-          });
-      });
+          // If last line is empty its not shown
+          if (!fileLines[numberLines - 1]) numberLines -= 1;
+        });
     });
   });
 
@@ -74,7 +68,7 @@ describe('Test File Rendering', function() {
   });
 
   it('should have links to all ancestor directories', function() {
-    const rootDirUrl = Urls.browse_origin_directory(originUrl);
+    const rootDirUrl = this.Urls.browse_origin_directory(originUrl);
     cy.get(`a[href='${rootDirUrl}']`)
       .should('be.visible');
 
@@ -82,7 +76,7 @@ describe('Test File Rendering', function() {
     for (let i = 2; i < splittedPath.length; ++i) {
 
       const subDirPath = splittedPath.slice(1, i).join('/');
-      const subDirUrl = Urls.browse_origin_directory(originUrl, subDirPath);
+      const subDirUrl = this.Urls.browse_origin_directory(originUrl, subDirPath);
 
       cy.get(`a[href='${subDirUrl}']`)
         .should('be.visible');

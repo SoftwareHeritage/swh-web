@@ -17,9 +17,7 @@ let url;
 describe('Code highlighting tests', function() {
 
   before(function() {
-    cy.visit('/').window().then(win => {
-      url = win.Urls.browse_origin_content(origin, contentPath);
-    });
+    url = this.Urls.browse_origin_content(origin, contentPath);
   });
 
   it('should highlight source code and add line numbers', function() {
@@ -36,11 +34,12 @@ describe('Code highlighting tests', function() {
     cy.visit(`${url}/#L${lineStart}-L${lineEnd}`);
     cy.get('.hljs-ln-line').then(lines => {
       for (let line of lines) {
-        let lineNumber = parseInt($(line).data('line-number'));
+        let lineElt = $(line);
+        let lineNumber = parseInt(lineElt.data('line-number'));
         if (lineNumber >= lineStart && lineNumber <= lineEnd) {
-          assert.notEqual($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+          assert.notEqual(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
         } else {
-          assert.equal($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+          assert.equal(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
         }
       }
     });
@@ -50,13 +49,14 @@ describe('Code highlighting tests', function() {
     cy.visit(url);
     cy.get('.hljs-ln-numbers').then(lnNumbers => {
       let lnNumber = lnNumbers[Math.floor(Math.random() * lnNumbers.length)];
-      assert.equal($(lnNumber).css('background-color'), 'rgba(0, 0, 0, 0)');
-      let line = parseInt($(lnNumber).data('line-number'));
+      let lnNumberElt = $(lnNumber);
+      assert.equal(lnNumberElt.css('background-color'), 'rgba(0, 0, 0, 0)');
+      let line = parseInt(lnNumberElt.data('line-number'));
       cy.get(`.hljs-ln-numbers[data-line-number="${line}"]`)
         .scrollIntoView()
         .click()
         .then(() => {
-          assert.notEqual($(lnNumber).css('background-color'), 'rgba(0, 0, 0, 0)');
+          assert.notEqual(lnNumberElt.css('background-color'), 'rgba(0, 0, 0, 0)');
         });
     });
   });
@@ -75,11 +75,12 @@ describe('Code highlighting tests', function() {
       .get('.hljs-ln-line')
       .then(lines => {
         for (let line of lines) {
-          let lineNumber = parseInt($(line).data('line-number'));
+          let lineElt = $(line);
+          let lineNumber = parseInt(lineElt.data('line-number'));
           if (lineNumber >= lineStart && lineNumber <= lineEnd) {
-            assert.notEqual($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+            assert.notEqual(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
           } else {
-            assert.equal($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+            assert.equal(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
           }
         }
       });
@@ -94,7 +95,8 @@ describe('Code highlighting tests', function() {
       .get('.hljs-ln-line')
       .then(lines => {
         for (let line of lines) {
-          assert.equal($(line).css('background-color'), 'rgba(0, 0, 0, 0)');
+          let lineElt = $(line);
+          assert.equal(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
         }
       });
   });

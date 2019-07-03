@@ -8,3 +8,9 @@
 Cypress.Screenshot.defaults({
   screenshotOnRunFailure: false
 });
+
+before(function() {
+  cy.visit('/').window().then(win => {
+    this.Urls = win.Urls;
+  });
+});
