@@ -7,12 +7,51 @@
 
 import {handleFetchError} from 'utils/functions';
 
+import {decode} from 'html-encoder-decoder';
+
 export async function renderMarkdown(domElt, markdownDocUrl) {
 
   let showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
+  await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
+
+  // Adapted from https://github.com/Bloggify/showdown-highlight
+  // Copyright (c) 2016-19 Bloggify <support@bloggify.org> (https://bloggify.org)
+  function showdownHighlight() {
+    return [{
+      type: 'output',
+      filter: function(text, converter, options) {
+        let left = '<pre><code\\b[^>]*>';
+        let right = '</code></pre>';
+        let flags = 'g';
+        let classAttr = 'class="';
+        let replacement = (wholeMatch, match, left, right) => {
+          match = decode(match);
+          let lang = (left.match(/class="([^ "]+)/) || [])[1];
+
+          if (left.includes(classAttr)) {
+            let attrIndex = left.indexOf(classAttr) + classAttr.length;
+            left = left.slice(0, attrIndex) + 'hljs ' + left.slice(attrIndex);
+          } else {
+            left = left.slice(0, -1) + ' class="hljs">';
+          }
+
+          if (lang && hljs.getLanguage(lang)) {
+            return left + hljs.highlight(lang, match).value + right;
+          } else {
+            return left + hljs.highlightAuto(match).value + right;
+          }
+        };
+
+        return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
+      }
+    }];
+  }
 
   $(document).ready(() => {
-    let converter = new showdown.Converter({tables: true});
+    let converter = new showdown.Converter({
+      tables: true,
+      extensions: [showdownHighlight]
+    });
     fetch(markdownDocUrl)
       .then(handleFetchError)
       .then(response => response.text())
