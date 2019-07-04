@@ -6,6 +6,7 @@
 import random
 
 from hypothesis import given
+import pytest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -194,6 +195,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
             self.assertEqual(rv.data, expected_visit)
 
+    @pytest.mark.origin_id
     @given(new_origin(), visit_dates(3), new_snapshots(3))
     def test_api_lookup_origin_visit_by_id(self, new_origin, visit_dates,
                                            new_snapshots):
@@ -248,6 +250,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             (origin['url'], max_visit_id+1)
         })
 
+    @pytest.mark.origin_id
     @given(origin())
     def test_api_lookup_origin_visit_not_found_by_id(self, origin):
 
@@ -269,6 +272,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             (origin['url'], max_visit_id+1)
         })
 
+    @pytest.mark.origin_id
     @given(origin())
     def test_api_origin_by_id(self, origin):
 
@@ -348,7 +352,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                         b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
                         b'\xf2U\xfa\x05B8'),
                     'metadata': {'author': 'Jane Doe'},
-                    'id': origin['id'],
+                    'origin_url': origin['url'],
                     'tool': {
                         'configuration': {
                             'context': ['NpmMapping', 'CodemetaMapping'],
@@ -367,7 +371,6 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             self.assertEqual(rv.status_code, 200, rv.content)
             self.assertEqual(rv['Content-Type'], 'application/json')
             expected_data = [{
-                'id': origin['id'],
                 'type': origin['type'],
                 'url': origin['url'],
                 'metadata': {
@@ -385,6 +388,10 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                     }
                 }
             }]
+            actual_data = rv.data
+            for d in actual_data:
+                if 'id' in d:
+                    del d['id']
             self.assertEqual(rv.data, expected_data)
             mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
                 .assert_called_with(conjunction=['Jane Doe'], limit=70)
@@ -399,7 +406,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                         b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
                         b'\xf2U\xfa\x05B8'),
                     'metadata': {'author': 'Jane Doe'},
-                    'id': origin['id'],
+                    'origin_url': origin['url'],
                     'tool': {
                         'configuration': {
                             'context': ['NpmMapping', 'CodemetaMapping'],
@@ -452,7 +459,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                         b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
                         b'\xf2U\xfa\x05B8'),
                     'metadata': {'author': 'Jane Doe'},
-                    'id': origin['id'],
+                    'origin_url': origin['url'],
                     'tool': {
                         'configuration': {
                             'context': ['NpmMapping', 'CodemetaMapping'],
@@ -470,7 +477,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             rv = self.client.get(url)
 
             mock_idx_storage.origin_intrinsic_metadata_get \
-                            .assert_called_once_with([origin['id']])
+                            .assert_called_once_with([origin['url']])
             self.assertEqual(rv.status_code, 200, rv.content)
             self.assertEqual(rv['Content-Type'], 'application/json')
             expected_data = {'author': 'Jane Doe'}
@@ -485,6 +492,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 400, rv.content)
         mock_idx_storage.assert_not_called()
 
+    @pytest.mark.origin_id
     @given(new_origins(10))
     def test_api_lookup_origins(self, new_origins):
 

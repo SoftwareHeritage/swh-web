@@ -53,7 +53,7 @@ DOC_RETURN_ORIGIN_VISIT_ARRAY += '''
 
 
 def _enrich_origin(origin):
-    if 'id' in origin:
+    if 'url' in origin:
         o = origin.copy()
         o['origin_visits_url'] = reverse(
             'api-1-origin-visits', url_args={'origin_url': origin['url']})

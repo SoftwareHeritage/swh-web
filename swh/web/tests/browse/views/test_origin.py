@@ -46,7 +46,7 @@ class SwhBrowseOriginTest(WebTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('origin-visits.html')
 
-        visits = self.origin_visit_get(origin['id'])
+        visits = self.origin_visit_get(origin['url'])
 
         for v in visits:
             vdate = format_utc_iso_date(v['date'], '%Y-%m-%dT%H:%M:%SZ')
@@ -194,7 +194,7 @@ class SwhBrowseOriginTest(WebTestCase):
     @given(origin_with_multiple_visits())
     def test_origin_content_view(self, origin):
 
-        origin_visits = self.origin_visit_get(origin['id'])
+        origin_visits = self.origin_visit_get(origin['url'])
 
         def _get_test_data(visit_idx):
             snapshot = self.snapshot_get(origin_visits[visit_idx]['snapshot'])
@@ -398,7 +398,7 @@ class SwhBrowseOriginTest(WebTestCase):
     @given(origin())
     def test_origin_root_directory_view(self, origin):
 
-        origin_visits = self.origin_visit_get(origin['id'])
+        origin_visits = self.origin_visit_get(origin['url'])
 
         visit = origin_visits[-1]
         snapshot = self.snapshot_get(visit['snapshot'])
@@ -470,7 +470,7 @@ class SwhBrowseOriginTest(WebTestCase):
     @given(origin())
     def test_origin_sub_directory_view(self, origin):
 
-        origin_visits = self.origin_visit_get(origin['id'])
+        origin_visits = self.origin_visit_get(origin['url'])
 
         visit = origin_visits[-1]
         snapshot = self.snapshot_get(visit['snapshot'])
@@ -607,7 +607,7 @@ class SwhBrowseOriginTest(WebTestCase):
     @given(origin())
     def test_origin_branches(self, origin):
 
-        origin_visits = self.origin_visit_get(origin['id'])
+        origin_visits = self.origin_visit_get(origin['url'])
 
         visit = origin_visits[-1]
         snapshot = self.snapshot_get(visit['snapshot'])
@@ -669,7 +669,7 @@ class SwhBrowseOriginTest(WebTestCase):
     @given(origin())
     def test_origin_releases(self, origin):
 
-        origin_visits = self.origin_visit_get(origin['id'])
+        origin_visits = self.origin_visit_get(origin['url'])
 
         visit = origin_visits[-1]
         snapshot = self.snapshot_get(visit['snapshot'])
@@ -696,8 +696,9 @@ class SwhBrowseOriginTest(WebTestCase):
                 snp_dict['branches'][branch]['target'] = hash_to_bytes(
                     revisions[i-1])
         self.storage.snapshot_add([snp_dict])
-        visit = self.storage.origin_visit_add(new_origin['id'], visit_dates[0])
-        self.storage.origin_visit_update(new_origin['id'], visit['visit'],
+        visit = self.storage.origin_visit_add(
+            new_origin['url'], visit_dates[0])
+        self.storage.origin_visit_update(new_origin['url'], visit['visit'],
                                          status='partial',
                                          snapshot=snp_dict['id'])
 

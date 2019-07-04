@@ -138,20 +138,17 @@ class _CtagsIndexer(CtagsIndexer):
 # input data for tests
 _TEST_ORIGINS = [
     {
-        'id': 1,
         'type': 'git',
         'url': 'https://github.com/wcoder/highlightjs-line-numbers.js',
         'archives': ['highlightjs-line-numbers.js.zip',
                      'highlightjs-line-numbers.js_visit2.zip']
     },
     {
-        'id': 2,
         'type': 'git',
         'url': 'https://github.com/memononen/libtess2',
         'archives': ['libtess2.zip']
     },
     {
-        'id': 3,
         'type': 'git',
         'url': 'repo_with_submodules',
         'archives': ['repo_with_submodules.tgz']
@@ -178,6 +175,7 @@ def _init_tests_data():
             loader.load(origin['url'], origin_repo_archive, None)
             if nb_visits > 1 and i != nb_visits - 1:
                 time.sleep(1)
+        origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
 
     contents = set()
     directories = set()
@@ -190,7 +188,7 @@ def _init_tests_data():
 
     # Get all objects loaded into the test archive
     for origin in _TEST_ORIGINS:
-        snp = storage.snapshot_get_latest(origin['id'])
+        snp = storage.snapshot_get_latest(origin['url'])
         snapshots.add(hash_to_hex(snp['id']))
         for branch_name, branch_data in snp['branches'].items():
             if branch_data['target_type'] == 'revision':

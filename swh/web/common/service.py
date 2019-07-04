@@ -279,15 +279,15 @@ def search_origin_metadata(fulltext, limit=50):
     for match in matches:
         match['from_revision'] = hashutil.hash_to_hex(match['from_revision'])
         result = converters.from_origin(
-            storage.origin_get({'id': match.pop('id')}))
+            storage.origin_get({'url': match.pop('origin_url')}))
         result['metadata'] = match
         results.append(result)
     return results
 
 
 def lookup_origin_intrinsic_metadata(origin_dict):
-    """Return intrinsic metadata for origin whose origin_id matches given
-    origin_id.
+    """Return intrinsic metadata for origin whose origin matches given
+    origin.
 
     Args:
         origin_dict: origin's dict with keys ('type' AND 'url')
@@ -302,9 +302,9 @@ def lookup_origin_intrinsic_metadata(origin_dict):
             (origin_dict['type'], origin_dict['url'])
         raise NotFoundExc(msg)
 
-    origin_ids = [origin_info['id']]
+    origins = [origin_info['url']]
     match = _first_element(
-        idx_storage.origin_intrinsic_metadata_get(origin_ids))
+        idx_storage.origin_intrinsic_metadata_get(origins))
     result = {}
     if match:
         result = match['metadata']
@@ -502,7 +502,7 @@ def lookup_revision_message(rev_sha1_git):
     return res
 
 
-def _lookup_revision_id_by(origin_id, branch_name, timestamp):
+def _lookup_revision_id_by(origin, branch_name, timestamp):
     def _get_snapshot_branch(snapshot, branch_name):
         snapshot = lookup_snapshot(visit['snapshot'],
                                    branches_from=branch_name,
@@ -512,7 +512,14 @@ def _lookup_revision_id_by(origin_id, branch_name, timestamp):
             branch = snapshot['branches'][branch_name]
         return branch
 
-    visit = get_origin_visit({'id': origin_id}, visit_ts=timestamp)
+    if isinstance(origin, int):
+        origin = {'id': origin}
+    elif isinstance(origin, str):
+        origin = {'url': origin}
+    else:
+        raise TypeError('"origin" must be an int or a string.')
+
+    visit = get_origin_visit(origin, visit_ts=timestamp)
     branch = _get_snapshot_branch(visit['snapshot'], branch_name)
     rev_id = None
     if branch and branch['target_type'] == 'revision':
@@ -524,21 +531,21 @@ def _lookup_revision_id_by(origin_id, branch_name, timestamp):
 
     if not rev_id:
         raise NotFoundExc('Revision for origin %s and branch %s not found.'
-                          % (origin_id, branch_name))
+                          % (origin.get('url') or origin['id'], branch_name))
 
     return rev_id
 
 
-def lookup_revision_by(origin_id,
+def lookup_revision_by(origin,
                        branch_name='HEAD',
                        timestamp=None):
-    """Lookup revision by origin id, snapshot branch name and visit timestamp.
+    """Lookup revision by origin, snapshot branch name and visit timestamp.
 
     If branch_name is not provided, lookup using 'HEAD' as default.
     If timestamp is not provided, use the most recent.
 
     Args:
-        origin_id (int): origin of the revision
+        origin (Union[int,str]): origin of the revision
         branch_name (str): snapshot branch name
         timestamp (str/int): origin visit time frame
 
@@ -549,7 +556,7 @@ def lookup_revision_by(origin_id,
         NotFoundExc if no revision corresponds to the criterion
 
     """
-    rev_id = _lookup_revision_id_by(origin_id, branch_name, timestamp)
+    rev_id = _lookup_revision_id_by(origin, branch_name, timestamp)
     return lookup_revision(rev_id)
 
 
@@ -574,11 +581,11 @@ def lookup_revision_log(rev_sha1_git, limit):
     return map(converters.from_revision, revision_entries)
 
 
-def lookup_revision_log_by(origin_id, branch_name, timestamp, limit):
-    """Lookup revision by origin id, snapshot branch name and visit timestamp.
+def lookup_revision_log_by(origin, branch_name, timestamp, limit):
+    """Lookup revision by origin, snapshot branch name and visit timestamp.
 
     Args:
-        origin_id (int): origin of the revision
+        origin (Union[int,str]): origin of the revision
         branch_name (str): snapshot branch
         timestamp (str/int): origin visit time frame
         limit (int): the maximum number of revisions returned
@@ -590,21 +597,21 @@ def lookup_revision_log_by(origin_id, branch_name, timestamp, limit):
         NotFoundExc: if no revision corresponds to the criterion
 
     """
-    rev_id = _lookup_revision_id_by(origin_id, branch_name, timestamp)
+    rev_id = _lookup_revision_id_by(origin, branch_name, timestamp)
     return lookup_revision_log(rev_id, limit)
 
 
-def lookup_revision_with_context_by(origin_id, branch_name, timestamp,
+def lookup_revision_with_context_by(origin, branch_name, timestamp,
                                     sha1_git, limit=100):
     """Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
-    sha1_git_root being resolved through the lookup of a revision by origin_id,
+    sha1_git_root being resolved through the lookup of a revision by origin,
     branch_name and ts.
 
     In other words, sha1_git is an ancestor of sha1_git_root.
 
     Args:
-        - origin_id: origin of the revision.
+        - origin: origin of the revision.
         - branch_name: revision's branch.
         - timestamp: revision's time frame.
         - sha1_git: one of sha1_git_root's ancestors.
@@ -621,7 +628,7 @@ def lookup_revision_with_context_by(origin_id, branch_name, timestamp,
         ancestor of sha1_git_root.
 
     """
-    rev_root_id = _lookup_revision_id_by(origin_id, branch_name, timestamp)
+    rev_root_id = _lookup_revision_id_by(origin, branch_name, timestamp)
 
     rev_root_id_bin = hashutil.hash_to_bytes(rev_root_id)
 
@@ -811,7 +818,7 @@ def stat_counters():
 
 
 def _lookup_origin_visits(origin_url, last_visit=None, limit=10):
-    """Yields the origin origin_ids' visits.
+    """Yields the origin origins' visits.
 
     Args:
         origin_url (str): origin to list visits for
@@ -829,24 +836,24 @@ def _lookup_origin_visits(origin_url, last_visit=None, limit=10):
         yield visit
 
 
-def lookup_origin_visits(origin_id, last_visit=None, per_page=10):
-    """Yields the origin origin_ids' visits.
+def lookup_origin_visits(origin, last_visit=None, per_page=10):
+    """Yields the origin origins' visits.
 
     Args:
-        origin_id: origin to list visits for
+        origin: origin to list visits for
 
     Yields:
        Dictionaries of origin_visit for that origin
 
     """
-    visits = _lookup_origin_visits(origin_id, last_visit=last_visit,
+    visits = _lookup_origin_visits(origin, last_visit=last_visit,
                                    limit=per_page)
     for visit in visits:
         yield converters.from_origin_visit(visit)
 
 
 def lookup_origin_visit(origin_url, visit_id):
-    """Return information about visit visit_id with origin origin_id.
+    """Return information about visit visit_id with origin origin.
 
     Args:
         origin (str): origin concerned by the visit
@@ -911,14 +918,14 @@ def lookup_snapshot(snapshot_id, branches_from='', branches_count=1000,
     return converters.from_snapshot(snapshot)
 
 
-def lookup_latest_origin_snapshot(origin_id, allowed_statuses=None):
+def lookup_latest_origin_snapshot(origin, allowed_statuses=None):
     """Return information about the latest snapshot of an origin.
 
     .. warning:: At most 1000 branches contained in the snapshot
         will be returned for performance reasons.
 
     Args:
-        origin_id: integer identifier of the origin
+        origin: URL or integer identifier of the origin
         allowed_statuses: list of visit statuses considered
             to find the latest snapshot for the visit. For instance,
             ``allowed_statuses=['full']`` will only consider visits that
@@ -927,7 +934,7 @@ def lookup_latest_origin_snapshot(origin_id, allowed_statuses=None):
     Returns:
         A dict filled with the snapshot content.
     """
-    snapshot = storage.snapshot_get_latest(origin_id, allowed_statuses)
+    snapshot = storage.snapshot_get_latest(origin, allowed_statuses)
     return converters.from_snapshot(snapshot)
 
 
@@ -939,6 +946,8 @@ def lookup_revision_through(revision, limit=100):
         Here are the supported combination of possible values:
         - origin_id, branch_name, ts, sha1_git
         - origin_id, branch_name, ts
+        - origin_url, branch_name, ts, sha1_git
+        - origin_url, branch_name, ts
         - sha1_git_root, sha1_git
         - sha1_git
 
@@ -946,23 +955,43 @@ def lookup_revision_through(revision, limit=100):
         None if the revision is not found or the actual revision.
 
     """
-    if 'origin_id' in revision and \
-       'branch_name' in revision and \
-       'ts' in revision and \
-       'sha1_git' in revision:
+    if (
+            'origin_url' in revision and
+            'branch_name' in revision and
+            'ts' in revision and
+            'sha1_git' in revision):
+        return lookup_revision_with_context_by(revision['origin_url'],
+                                               revision['branch_name'],
+                                               revision['ts'],
+                                               revision['sha1_git'],
+                                               limit)
+    if (
+            'origin_id' in revision and
+            'branch_name' in revision and
+            'ts' in revision and
+            'sha1_git' in revision):
         return lookup_revision_with_context_by(revision['origin_id'],
                                                revision['branch_name'],
                                                revision['ts'],
                                                revision['sha1_git'],
                                                limit)
-    if 'origin_id' in revision and \
-       'branch_name' in revision and \
-       'ts' in revision:
+    if (
+            'origin_url' in revision and
+            'branch_name' in revision and
+            'ts' in revision):
+        return lookup_revision_by(revision['origin_url'],
+                                  revision['branch_name'],
+                                  revision['ts'])
+    if (
+            'origin_id' in revision and
+            'branch_name' in revision and
+            'ts' in revision):
         return lookup_revision_by(revision['origin_id'],
                                   revision['branch_name'],
                                   revision['ts'])
-    if 'sha1_git_root' in revision and \
-       'sha1_git' in revision:
+    if (
+            'sha1_git_root' in revision and
+            'sha1_git' in revision):
         return lookup_revision_with_context(revision['sha1_git_root'],
                                             revision['sha1_git'],
                                             limit)
