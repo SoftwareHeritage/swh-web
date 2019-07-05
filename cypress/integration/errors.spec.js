@@ -37,6 +37,16 @@ function urlShouldShowError(url, error) {
 }
 
 describe('Test Errors', function() {
+  it('should show navigation buttons on error page', function() {
+    cy.visit(invalidPageUrl, {
+      failOnStatusCode: false
+    });
+    cy.get('a[onclick="window.history.back();"]')
+      .should('be.visible');
+    cy.get('a[href="/"')
+      .should('be.visible');
+  });
+
   context('For unarchived repositories', function() {
     it('should display NotFoundExc for unarchived repo', function() {
       const url = this.Urls.browse_origin_directory(unarchivedRepo.url);
