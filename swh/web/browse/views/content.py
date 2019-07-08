@@ -38,11 +38,11 @@ def content_raw(request, query_string):
         :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
     """
     try:
-        reencode = bool(strtobool(request.GET.get('reencode', 'false')))
+        re_encode = bool(strtobool(request.GET.get('re_encode', 'false')))
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
         content_data = request_content(query_string, max_size=None,
-                                       reencode=reencode)
+                                       re_encode=re_encode)
     except Exception as exc:
         return handle_view_exception(request, exc)
 

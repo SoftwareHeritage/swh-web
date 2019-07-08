@@ -166,7 +166,7 @@ def origin_type_savable(origin_type):
             origin_type (str): the type of software origin
 
         Returns:
-            If the origin type is savable or not
+            If the origin type is saveable or not
     """
     return origin_type in get_savable_origin_types()
 
@@ -180,6 +180,6 @@ def split(value, arg):
             arg (str): the split separator
 
         Returns:
-            list: the splitted string parts
+            list: the split string parts
     """
     return value.split(arg)

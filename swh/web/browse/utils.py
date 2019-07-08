@@ -103,7 +103,7 @@ content_display_max_size = get_config()['content_display_max_size']
 snapshot_content_max_size = get_config()['snapshot_content_max_size']
 
 
-def _reencode_content(mimetype, encoding, content_data):
+def _re_encode_content(mimetype, encoding, content_data):
     # encode textual content to utf-8 if needed
     if mimetype.startswith('text/'):
         # probably a malformed UTF-8 content, re-encode it
@@ -133,7 +133,7 @@ def _reencode_content(mimetype, encoding, content_data):
 
 
 def request_content(query_string, max_size=content_display_max_size,
-                    raise_if_unavailable=True, reencode=True):
+                    raise_if_unavailable=True, re_encode=True):
     """Function that retrieves a content from the archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -202,8 +202,8 @@ def request_content(query_string, max_size=content_display_max_size,
                 mimetype, encoding = \
                     get_mimetype_and_encoding_for_content(content_data['raw_data']) # noqa
 
-            if reencode:
-                mimetype, raw_data = _reencode_content(
+            if re_encode:
+                mimetype, raw_data = _re_encode_content(
                     mimetype, encoding, content_data['raw_data'])
                 content_data['raw_data'] = raw_data
 
@@ -1045,7 +1045,7 @@ def get_readme_to_display(readmes):
             readme_sha1 = lc_readmes[common_readme_name]['sha1']
             readme_url = reverse('browse-content-raw',
                                  url_args={'query_string': readme_sha1},
-                                 query_params={'reencode': 'true'})
+                                 query_params={'re_encode': 'true'})
             break
 
     # otherwise pick the first readme like file if any
@@ -1054,7 +1054,7 @@ def get_readme_to_display(readmes):
         readme_sha1 = readmes[readme_name]
         readme_url = reverse('browse-content-raw',
                              url_args={'query_string': readme_sha1},
-                             query_params={'reencode': 'true'})
+                             query_params={'re_encode': 'true'})
 
     # convert rst README to html server side as there is
     # no viable solution to perform that task client side
