@@ -852,6 +852,25 @@ def lookup_origin_visits(origin, last_visit=None, per_page=10):
         yield converters.from_origin_visit(visit)
 
 
+def lookup_origin_visit_latest(origin_url, require_snapshot):
+    """Return the origin's latest visit
+
+    Args:
+        origin_url (str): origin to list visits for
+        require_snapshot (bool): filter out origins without a snapshot
+
+    Returns:
+       dict: The origin_visit concerned
+
+    """
+    visit = storage.origin_visit_get_latest(
+        origin_url, require_snapshot=require_snapshot)
+    if isinstance(visit['origin'], int):
+        # soon-to-be-legacy origin ids
+        visit['origin'] = storage.origin_get({'id': visit['origin']})['url']
+    return converters.from_origin_visit(visit)
+
+
 def lookup_origin_visit(origin_url, visit_id):
     """Return information about visit visit_id with origin origin.
 

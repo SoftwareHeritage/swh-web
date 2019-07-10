@@ -478,6 +478,48 @@ def api_origin_visits(request, origin_id=None, origin_url=None):
     return result
 
 
+@api_route(r'/origin/(?P<origin_url>.*)/visit/latest/',
+           'api-1-origin-visit-latest')
+@api_doc('/origin/visit/')
+@format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
+def api_origin_visit_latest(request, origin_url=None):
+    """
+    .. http:get:: /api/1/origin/(origin_url)/visit/latest/
+
+        Get information about a specific visit of a software origin.
+
+        :param str origin_url: a software origin URL
+        :query boolean require_snapshot: if true, only return a visit
+            with a snapshot
+
+        {common_headers}
+
+        {return_origin_visit}
+
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin or visit can not be found in the
+            archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`origin/https://github.com/hylang/hy/visit/latest/`
+    """
+    require_snapshot = request.query_params.get('require_snapshot', 'false')
+    return api_lookup(
+        service.lookup_origin_visit_latest, origin_url,
+        bool(strtobool(require_snapshot)),
+        notfound_msg=('No visit for origin {} found'
+                      .format(origin_url)),
+        enrich_fn=partial(_enrich_origin_visit,
+                          with_origin_link=True,
+                          with_origin_visit_link=False))
+
+
 @api_route(r'/origin/(?P<origin_url>.*)/visit/(?P<visit_id>[0-9]+)/',
            'api-1-origin-visit')
 @api_route(r'/origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/',

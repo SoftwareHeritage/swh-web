@@ -201,6 +201,79 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
             self.assertEqual(rv.data, expected_visit)
 
+    @given(new_origin(), visit_dates(2), new_snapshots(1))
+    def test_api_lookup_origin_visit_latest(
+            self, new_origin, visit_dates, new_snapshots):
+
+        origin_id = self.storage.origin_add_one(new_origin)
+        new_origin['id'] = origin_id
+        visit_dates.sort()
+        visit_ids = []
+        for i, visit_date in enumerate(visit_dates):
+            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            visit_ids.append(origin_visit['visit'])
+
+        self.storage.snapshot_add([new_snapshots[0]])
+        self.storage.origin_visit_update(
+            origin_id, visit_ids[0],
+            snapshot=new_snapshots[0]['id'])
+
+        url = reverse('api-1-origin-visit-latest',
+                      url_args={'origin_url': new_origin['url']})
+
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+
+        expected_visit = self.origin_visit_get_by(origin_id, visit_ids[1])
+
+        origin_url = reverse('api-1-origin',
+                             url_args={'origin_url': new_origin['url']})
+
+        expected_visit['origin'] = new_origin['url']
+        expected_visit['origin_url'] = origin_url
+        expected_visit['snapshot_url'] = None
+
+        self.assertEqual(rv.data, expected_visit)
+
+    @given(new_origin(), visit_dates(2), new_snapshots(1))
+    def test_api_lookup_origin_visit_latest_with_snapshot(
+            self, new_origin, visit_dates, new_snapshots):
+        origin_id = self.storage.origin_add_one(new_origin)
+        new_origin['id'] = origin_id
+        visit_dates.sort()
+        visit_ids = []
+        for i, visit_date in enumerate(visit_dates):
+            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            visit_ids.append(origin_visit['visit'])
+
+        self.storage.snapshot_add([new_snapshots[0]])
+        self.storage.origin_visit_update(
+            origin_id, visit_ids[0],
+            snapshot=new_snapshots[0]['id'])
+
+        url = reverse('api-1-origin-visit-latest',
+                      url_args={'origin_url': new_origin['url']})
+        url += '?require_snapshot=true'
+
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+
+        expected_visit = self.origin_visit_get_by(origin_id, visit_ids[0])
+
+        origin_url = reverse('api-1-origin',
+                             url_args={'origin_url': new_origin['url']})
+        snapshot_url = reverse(
+            'api-1-snapshot',
+            url_args={'snapshot_id': expected_visit['snapshot']})
+
+        expected_visit['origin'] = new_origin['url']
+        expected_visit['origin_url'] = origin_url
+        expected_visit['snapshot_url'] = snapshot_url
+
+        self.assertEqual(rv.data, expected_visit)
+
     @pytest.mark.origin_id
     @given(new_origin(), visit_dates(3), new_snapshots(3))
     def test_api_lookup_origin_visit_by_id(self, new_origin, visit_dates,
