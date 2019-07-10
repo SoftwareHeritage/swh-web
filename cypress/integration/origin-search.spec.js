@@ -77,7 +77,7 @@ describe('Test origin-search', function() {
       .should('be.visible');
     cy.contains('tr', archivedRepo.url)
       .should('be.visible')
-      .children('#visit-status-origin-2')
+      .children('#visit-status-origin-0')
       .children('i')
       .should('have.class', 'fa-check')
       .and('have.attr', 'title',
