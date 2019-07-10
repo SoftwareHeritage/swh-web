@@ -479,7 +479,8 @@ def api_origin_visits(request, origin_id=None, origin_url=None):
 
 
 @api_route(r'/origin/(?P<origin_url>.*)/visit/latest/',
-           'api-1-origin-visit-latest')
+           'api-1-origin-visit-latest',
+           throttle_scope='swh_api_origin_visit_latest')
 @api_doc('/origin/visit/')
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
 def api_origin_visit_latest(request, origin_url=None):
