@@ -277,24 +277,6 @@ def _origin_coverage_count(request):
     return HttpResponse(results, content_type='application/json')
 
 
-@browse_route(r'origin/(?P<origin_id>[0-9]+)/latest_snapshot/',
-              view_name='browse-origin-latest-snapshot')
-def _origin_latest_snapshot(request, origin_id):
-    """
-    Internal browse endpoint used to check if an origin has already
-    been visited by Software Heritage and has at least one full visit.
-    """
-    result = \
-        service.lookup_latest_origin_snapshot(int(origin_id),
-                                              allowed_statuses=['full',
-                                                                'partial'])
-
-    result = json.dumps(result, sort_keys=True, indent=4,
-                        separators=(',', ': '))
-
-    return HttpResponse(result, content_type='application/json')
-
-
 @browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
               r'origin/(?P<origin_url>.+)/',
               view_name='browse-origin')
