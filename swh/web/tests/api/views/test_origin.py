@@ -88,8 +88,10 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         new_origin['id'] = origin_id
         for i, visit_date in enumerate(visit_dates):
             origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
-            self.storage.snapshot_add(origin_id, origin_visit['visit'],
-                                      new_snapshots[i])
+            self.storage.snapshot_add([new_snapshots[i]])
+            self.storage.origin_visit_update(
+                origin_id, origin_visit['visit'],
+                snapshot=new_snapshots[i]['id'])
 
         all_visits = list(reversed(get_origin_visits(new_origin)))
 
@@ -129,8 +131,10 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         new_origin['id'] = origin_id
         for i, visit_date in enumerate(visit_dates):
             origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
-            self.storage.snapshot_add(origin_id, origin_visit['visit'],
-                                      new_snapshots[i])
+            self.storage.snapshot_add([new_snapshots[i]])
+            self.storage.origin_visit_update(
+                origin_id, origin_visit['visit'],
+                snapshot=new_snapshots[i]['id'])
 
         all_visits = list(reversed(get_origin_visits(new_origin)))
 
@@ -171,8 +175,10 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         for i, visit_date in enumerate(visit_dates):
             origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
             visit_id = origin_visit['visit']
-            self.storage.snapshot_add(origin_id, origin_visit['visit'],
-                                      new_snapshots[i])
+            self.storage.snapshot_add([new_snapshots[i]])
+            self.storage.origin_visit_update(
+                origin_id, origin_visit['visit'],
+                snapshot=new_snapshots[i]['id'])
             url = reverse('api-1-origin-visit',
                           url_args={'origin_url': new_origin['url'],
                                     'visit_id': visit_id})
@@ -205,8 +211,10 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         for i, visit_date in enumerate(visit_dates):
             origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
             visit_id = origin_visit['visit']
-            self.storage.snapshot_add(origin_id, origin_visit['visit'],
-                                      new_snapshots[i])
+            self.storage.snapshot_add([new_snapshots[i]])
+            self.storage.origin_visit_update(
+                origin_id, origin_visit['visit'],
+                snapshot=new_snapshots[i]['id'])
             url = reverse('api-1-origin-visit',
                           url_args={'origin_id': origin_id,
                                     'visit_id': visit_id})
