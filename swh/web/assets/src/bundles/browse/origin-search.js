@@ -38,7 +38,7 @@ function populateOriginSearchResultsTable(origins, offset) {
       let tableRow = `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow += `<td style="width: 120px;">${origin.type}</td>`;
       tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
-      tableRow += `<td id="visit-status-origin-${i}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>`;
+      tableRow += `<td class="swh-visit-status" id="visit-status-origin-${i}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>`;
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon

@@ -77,8 +77,8 @@ describe('Test origin-search', function() {
       .should('be.visible');
     cy.contains('tr', archivedRepo.url)
       .should('be.visible')
-      .children('#visit-status-origin-0')
-      .children('i')
+      .find('.swh-visit-status')
+      .find('i')
       .should('have.class', 'fa-check')
       .and('have.attr', 'title',
            'Origin has at least one full visit by Software Heritage');
