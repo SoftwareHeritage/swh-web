@@ -1,3 +1,9 @@
+swh-web (0.0.203-1~swh1~bpo10+1) buster-swh; urgency=medium
+
+  * Rebuild for buster-swh
+
+ -- Nicolas Dandrimont <olasd@debian.org>  Thu, 11 Jul 2019 14:58:06 +0200
+
 swh-web (0.0.203-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.203     - (tagged by Antoine Lambert
