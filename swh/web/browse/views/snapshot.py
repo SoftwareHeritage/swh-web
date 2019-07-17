@@ -60,7 +60,9 @@ def snapshot_content_browse(request, snapshot_id, path):
     The url that points to it is
         :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
     """
-    return browse_snapshot_content(request, snapshot_id=snapshot_id, path=path)
+    language = request.GET.get('language', None)
+    return browse_snapshot_content(request, snapshot_id=snapshot_id, path=path,
+                                   selected_language=language)
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/log/',

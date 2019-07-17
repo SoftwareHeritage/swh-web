@@ -94,6 +94,14 @@ See top-level LICENSE file for more information
         {{ top_right_link.text }}
       </a>
     {% endif %}
+    {% if available_languages %}
+      <select data-placeholder="Select Language" class="language-select chosen-select">
+        <option value=""></option>
+        {% for lang in available_languages %}
+          <option value="{{ lang }}">{{ lang }}</option>
+        {% endfor %}
+      </select>
+    {% endif %}
     {% if show_actions_menu %}
       <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
         <i class="fa fa-bars fa-fw" aria-hidden="true"></i>Actions
@@ -121,6 +129,12 @@ See top-level LICENSE file for more information
   {% if snapshot_context %}
     snapshotContext = true;
     branch = "{{ snapshot_context.branch|escape }}";
+  {% endif %}
+  {% if available_languages %}
+    $(".chosen-select").val("{{ language }}");
+    $(".chosen-select").chosen().change(function(event, params) {
+      updateLanguage(params.selected);
+    });
   {% endif %}
   swh.browse.initSnapshotNavigation(snapshotContext, branch !== "None");
 </script>

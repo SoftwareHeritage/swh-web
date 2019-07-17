@@ -31,6 +31,12 @@ import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 import 'datatables.net-responsive-bs4/css/responsive.bootstrap4.css';
 import './datatables.css';
 
+// chosen-js
+import 'chosen-js';
+import 'chosen-js/chosen.min.css';
+import 'chosen-js/chosen-sprite.png';
+import 'chosen-js/chosen-sprite@2x.png';
+
 // iframe-resizer
 import 'iframe-resizer';
 

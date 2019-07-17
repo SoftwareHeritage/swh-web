@@ -43,7 +43,7 @@ function populateOriginSearchResultsTable(origins, offset) {
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
       let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url);
-      latestSnapshotUrl += "?require_snapshot=true";
+      latestSnapshotUrl += '?require_snapshot=true';
       fetch(latestSnapshotUrl)
         .then(response => response.json())
         .then(data => {

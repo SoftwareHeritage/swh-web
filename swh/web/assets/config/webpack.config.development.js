@@ -302,6 +302,15 @@ module.exports = {
             outputPath: 'fonts/'
           }
         }]
+      }, {
+        test: /\.png$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'img/thirdParty/'
+          }
+        }]
       }
     ],
     // tell webpack to not parse minified pdfjs file to speedup build process

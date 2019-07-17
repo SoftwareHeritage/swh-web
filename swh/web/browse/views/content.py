@@ -14,7 +14,7 @@ from django.template.defaultfilters import filesizeformat
 
 from swh.model.hashutil import hash_to_hex
 
-from swh.web.common import query, service
+from swh.web.common import query, service, highlightjs
 from swh.web.common.utils import (
     reverse, gen_path_info, swh_object_icons
 )
@@ -181,6 +181,8 @@ def content_display(request, query_string):
                                        raise_if_unavailable=False)
         origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
+        selected_language = request.GET.get('language', None)
+
         if not origin_url:
             origin_url = request.GET.get('origin', None)
         snapshot_context = None
@@ -217,6 +219,15 @@ def content_display(request, query_string):
         content = content_display_data['content_data']
         language = content_display_data['language']
         mimetype = content_display_data['mimetype']
+
+    # Override language with user-selected language
+    if selected_language is not None:
+        language = selected_language
+
+    available_languages = None
+
+    if mimetype and 'text/' in mimetype:
+        available_languages = highlightjs._hljs_languages
 
     root_dir = None
     filename = None
@@ -303,6 +314,7 @@ def content_display(request, query_string):
                    'max_content_size': content_display_max_size,
                    'mimetype': mimetype,
                    'language': language,
+                   'available_languages': available_languages,
                    'breadcrumbs': breadcrumbs,
                    'top_right_link': {
                         'url': content_raw_url,

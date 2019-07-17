@@ -79,9 +79,10 @@ def origin_content_browse(request, origin_url, origin_type=None, path=None,
         * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/content/(path)/`
 
     """ # noqa
+    language = request.GET.get('language', None)
     return browse_snapshot_content(request, origin_type=origin_type,
                                    origin_url=origin_url, timestamp=timestamp,
-                                   path=path)
+                                   path=path, selected_language=language)
 
 
 PER_PAGE = 20

@@ -21,3 +21,32 @@
 .swh-content svg {
     max-width: 100%;
 }
+
+.chosen-container {
+    color: #444;
+}
+
+.chosen-container .chosen-single div b {
+    margin-top: 2px;
+    filter: brightness(0%);
+}
+
+.chosen-container .chosen-single {
+    height: 31px;
+    line-height: 1.5;
+    border-radius: 0px;
+    background-color: #f4f4f4;
+    border-color: #ddd;
+    background-image:none;
+    -webkit-box-shadow: none;
+	-moz-box-shadow: none;
+    box-shadow: none;
+    font-weight: 400;
+    font-size: 14px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.chosen-container .chosen-single:hover {
+    background-color: #e7e7e7;
+}
