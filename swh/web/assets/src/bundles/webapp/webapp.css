@@ -351,6 +351,10 @@ ul.nav-sidebar a {
 }
 
 @media (max-width: 600px) {
+    .card {
+        min-width: 80%;
+    }
+
     .swh-image-error {
         width: 40px;
         height: auto;

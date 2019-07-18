@@ -32,7 +32,7 @@
 }
 
 .chosen-container .chosen-single {
-    height: 31px;
+    height: 100%;
     line-height: 1.5;
     border-radius: 0px;
     background-color: #f4f4f4;
