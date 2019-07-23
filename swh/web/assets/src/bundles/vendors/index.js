@@ -34,8 +34,6 @@ import './datatables.css';
 // chosen-js
 import 'chosen-js';
 import 'chosen-js/chosen.min.css';
-import 'chosen-js/chosen-sprite.png';
-import 'chosen-js/chosen-sprite@2x.png';
 
 // iframe-resizer
 import 'iframe-resizer';
