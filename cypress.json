@@ -3,5 +3,16 @@
   "video": false,
   "viewportWidth": 1920,
   "viewportHeight": 1080,
-  "defaultCommandTimeout": 10000
+  "defaultCommandTimeout": 10000,
+  "reporter": "cypress-multi-reporters",
+  "reporterOptions": {
+    "reporterEnabled": "mochawesome",
+    "mochawesomeReporterOptions": {
+      "reportDir": "cypress/mochawesome/results",
+      "quiet": true,
+      "overwrite": false,
+      "html": false,
+      "json": true
+    }
+  }
 }

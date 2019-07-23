@@ -33,3 +33,4 @@ dist/
 debian/
 package-lock.json
 yarn-error.log
+cypress/mochawesome/

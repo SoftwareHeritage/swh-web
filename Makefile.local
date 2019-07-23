@@ -57,7 +57,7 @@ test-full:
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
 test-frontend: build-webpack-dev run-migrations
-	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run && pkill -P $$!
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run && pkill -P $$! && $(YARN) run mochawesome
 
 test-frontend-ui: build-webpack-dev run-migrations
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT; jobs -p | head -1 | xargs pkill -P' SIGINT SIGTERM ERR EXIT; python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress open"
