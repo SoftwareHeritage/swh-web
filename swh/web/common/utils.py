@@ -323,7 +323,8 @@ def context_processor(request):
     Django context processor used to inject variables
     in all swh-web templates.
     """
-    return {'swh_object_icons': swh_object_icons}
+    return {'swh_object_icons': swh_object_icons,
+            'available_languages': None}
 
 
 class EnforceCSRFAuthentication(SessionAuthentication):
