@@ -34,3 +34,14 @@ export function getTime(text) {
 
   return time;
 }
+
+export function checkLanguageHighlighting(language) {
+  cy.get('code')
+    .should('be.visible')
+    .and('have.class', 'hljs')
+    .and('have.class', language)
+    .and('not.be.empty')
+    .find('table.hljs-ln')
+    .should('be.visible')
+    .and('not.be.empty');
+}

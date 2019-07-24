@@ -83,6 +83,7 @@ from .common import ALLOWED_HOSTS, LOGGING # noqa
 if 'pytest' not in sys.argv[0]:
     swh_web_config.update({
         'debug': True,
+        'e2e_tests_mode': True
     })
     from swh.web.tests.data import get_tests_data, override_storages # noqa
     test_data = get_tests_data()

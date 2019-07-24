@@ -90,7 +90,8 @@ DEFAULT_CONFIG = {
         'private_api_user': 'swhworker',
         'private_api_password': ''
     }),
-    'coverage_count_origins': ('bool', False)
+    'coverage_count_origins': ('bool', False),
+    'e2e_tests_mode': ('bool', False)
 }
 
 swhweb_config = {}
