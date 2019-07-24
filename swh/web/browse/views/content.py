@@ -227,7 +227,7 @@ def content_display(request, query_string):
     available_languages = None
 
     if mimetype and 'text/' in mimetype:
-        available_languages = highlightjs._hljs_languages
+        available_languages = highlightjs.get_supported_languages()
 
     root_dir = None
     filename = None

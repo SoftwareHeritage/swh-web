@@ -461,7 +461,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     available_languages = None
 
     if mimetype and 'text/' in mimetype:
-        available_languages = highlightjs._hljs_languages
+        available_languages = highlightjs.get_supported_languages()
 
     browse_view_name = 'browse-' + swh_type + '-directory'
 
