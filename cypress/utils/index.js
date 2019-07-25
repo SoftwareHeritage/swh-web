@@ -45,3 +45,8 @@ export function checkLanguageHighlighting(language) {
     .should('be.visible')
     .and('not.be.empty');
 }
+
+export function random(start, end) {
+  const range = end - start;
+  return Math.floor(Math.random() * range) + start;
+}
