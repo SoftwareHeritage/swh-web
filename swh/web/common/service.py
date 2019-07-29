@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from swh.model import hashutil
 
-from swh.storage.algos import revisions_walker
+from swh.storage.algos import diff, revisions_walker
 
 from swh.web.common import converters
 from swh.web.common import query
@@ -1070,7 +1070,8 @@ def diff_revision(rev_id):
     """
     rev_sha1_git_bin = _to_sha1_bin(rev_id)
 
-    changes = storage.diff_revision(rev_sha1_git_bin, track_renaming=True)
+    changes = diff.diff_revision(storage, rev_sha1_git_bin,
+                                 track_renaming=True)
 
     for change in changes:
         change['from'] = converters.from_directory_entry(change['from'])
