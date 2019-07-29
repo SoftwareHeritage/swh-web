@@ -1,0 +1,72 @@
+/**
+ * Copyright (C) 2019  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+import {getTime} from '../utils';
+
+const origin = 'https://github.com/wcoder/highlightjs-line-numbers.js';
+
+function checkTimeLink(element) {
+  expect(element.text()).not.to.be.empty;
+
+  const timeStringLink = element.attr('href').split('visit/')[1].split('/')[0];
+
+  // time in link should be equal to that in text
+  assert.deepEqual(getTime(timeStringLink), getTime(element.text()));
+}
+
+function searchInCalendar(date) {
+  cy.contains('label', 'Show all visits')
+    .click();
+  cy.get(`.year${date.year}`)
+    .click({force: true});
+  cy.contains('.month', date.monthName)
+    .find('.day-content')
+    .eq(date.date - 1)
+    .trigger('mouseover')
+    .get('.popover-body')
+    .should('be.visible')
+    .and('contain', `${date.hours}:${date.minutes} UTC`);
+}
+
+describe('Visits tests', function() {
+  beforeEach(function() {
+    cy.visit(this.Urls.browse_origin_visits(origin));
+  });
+
+  it('should display first full visit time', function() {
+    cy.get('#swh-first-full-visit > .swh-visit-full')
+      .then(($el) => {
+        checkTimeLink($el);
+        searchInCalendar(getTime($el.text()));
+      });
+  });
+
+  it('should display last full visit time', function() {
+    cy.get('#swh-last-full-visit > .swh-visit-full')
+      .then(($el) => {
+        checkTimeLink($el);
+        searchInCalendar(getTime($el.text()));
+      });
+  });
+
+  it('should display last visit time', function() {
+    cy.get('#swh-last-visit > .swh-visit-full')
+      .then(($el) => {
+        checkTimeLink($el);
+        searchInCalendar(getTime($el.text()));
+      });
+  });
+
+  it('should display list of visits and mark them on calendar', function() {
+    cy.get('.swh-visits-list-row .swh-visit-full')
+      .should('be.visible')
+      .each(($el) => {
+        checkTimeLink($el);
+        searchInCalendar(getTime($el.text()));
+      });
+  });
+});

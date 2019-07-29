@@ -6,7 +6,6 @@
 from copy import deepcopy
 import os
 import random
-import time
 
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
@@ -141,17 +140,21 @@ _TEST_ORIGINS = [
         'type': 'git',
         'url': 'https://github.com/wcoder/highlightjs-line-numbers.js',
         'archives': ['highlightjs-line-numbers.js.zip',
-                     'highlightjs-line-numbers.js_visit2.zip']
+                     'highlightjs-line-numbers.js_visit2.zip'],
+        'visit_date': ['Dec 1 2018, 01:00 UTC',
+                       'Jan 20 2019, 15:00 UTC']
     },
     {
         'type': 'git',
         'url': 'https://github.com/memononen/libtess2',
-        'archives': ['libtess2.zip']
+        'archives': ['libtess2.zip'],
+        'visit_date': ['May 25 2018, 01:00 UTC']
     },
     {
         'type': 'git',
         'url': 'repo_with_submodules',
-        'archives': ['repo_with_submodules.tgz']
+        'archives': ['repo_with_submodules.tgz'],
+        'visit_date': ['Jan 1 2019, 01:00 UTC']
     }
 ]
 
@@ -167,14 +170,13 @@ def _init_tests_data():
     storage = loader.storage
 
     for origin in _TEST_ORIGINS:
-        nb_visits = len(origin['archives'])
         for i, archive in enumerate(origin['archives']):
             origin_repo_archive = \
                 os.path.join(os.path.dirname(__file__),
                              'resources/repos/%s' % archive)
-            loader.load(origin['url'], origin_repo_archive, None)
-            if nb_visits > 1 and i != nb_visits - 1:
-                time.sleep(1)
+            loader.load(origin['url'], origin_repo_archive,
+                        origin['visit_date'][i])
+
         origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
 
     contents = set()

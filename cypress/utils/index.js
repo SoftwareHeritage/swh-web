@@ -11,3 +11,26 @@ export async function httpGetJson(url) {
   const response = await axios.get(url);
   return response.data;
 }
+
+/**
+ * Converts string with Time information
+ * to an object with Time information
+ */
+export function getTime(text) {
+  const date = new Date(text);
+
+  function pad(n) {
+    return n < 10 ? '0' + n : n;
+  }
+
+  const time = {
+    date: date.getUTCDate(),
+    month: date.getUTCMonth(),
+    monthName: date.toLocaleString('en', { month: 'long' }),
+    year: date.getUTCFullYear(),
+    hours: pad(date.getUTCHours()),
+    minutes: pad(date.getUTCMinutes())
+  };
+
+  return time;
+}
