@@ -43,4 +43,3 @@ import 'typeface-alegreya';
 import 'typeface-alegreya-sans';
 import 'font-awesome/css/font-awesome.css';
 import './octicons.css';
-import 'open-iconic/font/css/open-iconic-bootstrap.css';

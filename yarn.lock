@@ -1633,16 +1633,7 @@ bootstrap-slider@^10.6.1:
   resolved "https://registry.yarnpkg.com/bootstrap-slider/-/bootstrap-slider-10.6.2.tgz#7341f468c012bdaa6a1d8625d989fdeb8ed7dd38"
   integrity sha512-8JTPZB9QVOdrGzYF3YgC3YW6ssfPeBvBwZnXffiZ7YH/zz1D0EKlZvmQsm/w3N0XjVNYQEoQ0ax+jHrErV4K1Q==
 
-bootstrap-year-calendar-bs4@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/bootstrap-year-calendar-bs4/-/bootstrap-year-calendar-bs4-1.0.0.tgz#b72b1c1dcd3ae15c71765847a2c0b1f7ee3a08af"
-  integrity sha512-O+E+zfOvefBxFdZ49HeS3jA8k3tlqXdiDxfQ6F+PllorJ1KPeGO7yF7h+345IjZuPtGSNqrwB2eNYPJOWb1BQw==
-  dependencies:
-    bootstrap ">=4.0.0"
-    jquery ">=1.8.2"
-    open-iconic ">=1.1.1"
-
-bootstrap@>=4.0, bootstrap@>=4.0.0, bootstrap@>=4.1.2, bootstrap@^4.3.1:
+bootstrap@>=4.0, bootstrap@>=4.1.2, bootstrap@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.3.1.tgz#280ca8f610504d99d7b6b4bfc4b68cec601704ac"
   integrity sha512-rXqOmH1VilAt2DyPzluTi2blhk17bO7ef+zLLPlWvG494pDxcM234pJ8wTc/6R40UWizAIIMgxjvxZg5kmsbag==
@@ -5586,7 +5577,7 @@ jquery-ui-dist@^1.12.1:
   resolved "https://registry.yarnpkg.com/jquery-ui-dist/-/jquery-ui-dist-1.12.1.tgz#5c0815d3cc6f90ff5faaf5b268a6e23b4ca904fa"
   integrity sha1-XAgV08xvkP9fqvWyaKbiO0ypBPo=
 
-jquery@>=1.10, jquery@>=1.12.0, jquery@>=1.7, jquery@>=1.8, jquery@>=1.8.2, jquery@>=2.1.0, jquery@^3.0, "jquery@^3.0 || ^2.0 || ^1.0", jquery@^3.4.0, jquery@^3.4.1:
+jquery@>=1.10, jquery@>=1.12.0, jquery@>=1.7, jquery@>=1.8, jquery@>=2.1.0, jquery@^3.0, "jquery@^3.0 || ^2.0 || ^1.0", jquery@^3.4.0, jquery@^3.4.1:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
   integrity sha512-36+AdBzCL+y6qjw5Tx7HgzeGCzC81MDDgaUP8ld2zhx58HdqXGoBd+tHdrBMiyjGQs0Hxs/MLZTu/eHNJJuWPw==
@@ -5624,6 +5615,11 @@ js-yaml@3.13.1, js-yaml@^3.13.1, js-yaml@^3.9.0:
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
+
+js-year-calendar@^1.0.0-alpha.6:
+  version "1.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/js-year-calendar/-/js-year-calendar-1.0.0-alpha.6.tgz#a9ab0d726b22dfe6fd055723aeb4d57a7b411ed8"
+  integrity sha512-f/CsFGkKeFPustS038pwZNTsyfwkvUX7Jk2Xk97fsuJOYV9UqrHgJM9jB8IeGWWFSTiiGzxpQGmkTCQ1V3Ck7A==
 
 jsbn@~0.1.0:
   version "0.1.1"
@@ -6890,7 +6886,7 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-open-iconic@>=1.1.1, open-iconic@^1.1.1:
+open-iconic@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/open-iconic/-/open-iconic-1.1.1.tgz#9dcfc8c7cd3c61cdb4a236b1a347894c97adc0c6"
   integrity sha1-nc/Ix808Yc20ojaxo0eJTJetwMY=

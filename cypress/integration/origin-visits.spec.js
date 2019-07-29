@@ -26,7 +26,7 @@ function searchInCalendar(date) {
   cy.contains('.month', date.monthName)
     .find('.day-content')
     .eq(date.date - 1)
-    .trigger('mouseover')
+    .trigger('mouseenter')
     .get('.popover-body')
     .should('be.visible')
     .and('contain', `${date.hours}:${date.minutes} UTC`);
