@@ -103,7 +103,7 @@ content_display_max_size = get_config()['content_display_max_size']
 snapshot_content_max_size = get_config()['snapshot_content_max_size']
 
 
-def _reencode_content(mimetype, encoding, content_data):
+def _re_encode_content(mimetype, encoding, content_data):
     # encode textual content to utf-8 if needed
     if mimetype.startswith('text/'):
         # probably a malformed UTF-8 content, re-encode it
@@ -133,7 +133,7 @@ def _reencode_content(mimetype, encoding, content_data):
 
 
 def request_content(query_string, max_size=content_display_max_size,
-                    raise_if_unavailable=True, reencode=True):
+                    raise_if_unavailable=True, re_encode=True):
     """Function that retrieves a content from the archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -202,8 +202,8 @@ def request_content(query_string, max_size=content_display_max_size,
                 mimetype, encoding = \
                     get_mimetype_and_encoding_for_content(content_data['raw_data']) # noqa
 
-            if reencode:
-                mimetype, raw_data = _reencode_content(
+            if re_encode:
+                mimetype, raw_data = _re_encode_content(
                     mimetype, encoding, content_data['raw_data'])
                 content_data['raw_data'] = raw_data
 
@@ -286,13 +286,14 @@ def process_snapshot_branches(snapshot):
 
     Args:
         snapshot_branches (dict): A dict describing the branches of a snapshot
-            as returned for instance by :func:`swh.web.common.service.lookup_snapshot`
+            as returned for instance by
+            :func:`swh.web.common.service.lookup_snapshot`
 
     Returns:
         tuple: A tuple whose first member is the sorted list of branches
             targeting revisions and second member the sorted list of branches
             targeting releases
-    """ # noqa
+    """
     snapshot_branches = snapshot['branches']
     branches = {}
     branch_aliases = {}
@@ -880,7 +881,8 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         snapshot_id (str): hexadecimal representation of a snapshot identifier,
             all other parameters will be ignored if it is provided
         origin_type (str): the origin type (git, svn, deposit, ...)
-        origin_url (str): the origin_url (e.g. https://github.com/(user)/(repo)/)
+        origin_url (str): the origin_url
+            (e.g. https://github.com/(user)/(repo)/)
         timestamp (str): a datetime string for retrieving the closest
             visit of the origin
         visit_id (int): optional visit id for disambiguation in case
@@ -904,7 +906,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
 
     Raises:
         NotFoundExc: if no snapshot is found for the visit of an origin.
-    """ # noqa
+    """
     origin_info = None
     visit_info = None
     url_args = None
@@ -1043,7 +1045,7 @@ def get_readme_to_display(readmes):
             readme_sha1 = lc_readmes[common_readme_name]['sha1']
             readme_url = reverse('browse-content-raw',
                                  url_args={'query_string': readme_sha1},
-                                 query_params={'reencode': 'true'})
+                                 query_params={'re_encode': 'true'})
             break
 
     # otherwise pick the first readme like file if any
@@ -1052,7 +1054,7 @@ def get_readme_to_display(readmes):
         readme_sha1 = readmes[readme_name]
         readme_url = reverse('browse-content-raw',
                              url_args={'query_string': readme_sha1},
-                             query_params={'reencode': 'true'})
+                             query_params={'re_encode': 'true'})
 
     # convert rst README to html server side as there is
     # no viable solution to perform that task client side
@@ -1081,20 +1083,22 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
 
     Args:
         swh_objects (list): a list of dict with the following keys:
-            * type: swh object type (content/directory/release/revision/snapshot)
+            * type: swh object type
+                (content/directory/release/revision/snapshot)
             * id: swh object id
-        snapshot_context (dict): optional parameter describing the snapshot in which
-            the object has been found
+        snapshot_context (dict): optional parameter describing the snapshot in
+            which the object has been found
 
     Returns:
         list: a list of dict with the following keys:
-            * object_type: the swh object type (content/directory/release/revision/snapshot)
+            * object_type: the swh object type
+                (content/directory/release/revision/snapshot)
             * object_icon: the swh object icon to use in HTML views
             * swh_id: the computed swh object persistent identifier
             * swh_id_url: the url resolving the persistent identifier
-            * show_options: boolean indicating if the persistent id options must
-              be displayed in persistent ids HTML view
-    """ # noqa
+            * show_options: boolean indicating if the persistent id options
+                must be displayed in persistent ids HTML view
+    """
     swh_ids = []
     for swh_object in swh_objects:
         if not swh_object['id']:

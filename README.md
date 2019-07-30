@@ -83,7 +83,7 @@ Below is a list of available yarn targets in order to only execute the frontend 
 
 **The build target must be executed prior performing the Debian packaging of swh-web** in order for the package to contain the optimized assets dedicated to production environment.
 
-To execute these targets, issue the following commmand:
+To execute these targets, issue the following command:
 
 ```
 $ yarn <target_name>

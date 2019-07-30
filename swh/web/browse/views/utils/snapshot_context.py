@@ -23,7 +23,7 @@ from swh.web.browse.utils import (
     gen_snapshot_link, process_snapshot_branches
 )
 
-from swh.web.common import service
+from swh.web.common import service, highlightjs
 from swh.web.common.exc import (
     handle_view_exception, NotFoundExc
 )
@@ -399,7 +399,8 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
 
 
 def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
-                            origin_url=None, timestamp=None, path=None):
+                            origin_url=None, timestamp=None, path=None,
+                            selected_language=None):
     """
     Django view implementation for browsing a content in a snapshot context.
     """
@@ -452,6 +453,15 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         content = content_display_data['content_data']
         language = content_display_data['language']
         mimetype = content_display_data['mimetype']
+
+    # Override language with user-selected language
+    if selected_language is not None:
+        language = selected_language
+
+    available_languages = None
+
+    if mimetype and 'text/' in mimetype:
+        available_languages = highlightjs.get_supported_languages()
 
     browse_view_name = 'browse-' + swh_type + '-directory'
 
@@ -562,6 +572,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
                    'max_content_size': content_display_max_size,
                    'mimetype': mimetype,
                    'language': language,
+                   'available_languages': available_languages,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
                    'top_right_link': {
                         'url': content_raw_url,

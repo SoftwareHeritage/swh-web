@@ -28,7 +28,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1_git:%s' % content['sha1_git']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         content_url = reverse('api-1-content',
                               url_args={'q': 'sha1:%s' % content['sha1']})
@@ -43,7 +43,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -60,7 +60,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1_git:%s' % content['sha1_git']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         content_url = reverse('api-1-content',
                               url_args={'q': 'sha1:%s' % content['sha1']})
@@ -75,7 +75,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -101,7 +101,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       query_params={'per_page': 100})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         for entry in rv.data:
             content_sha1 = entry['sha1']
@@ -135,7 +135,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-content-symbol', url_args={'q': 'bar'})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -153,7 +153,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1_git:%s' % content['sha1_git']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         content_url = reverse('api-1-content',
                               url_args={'q': 'sha1:%s' % content['sha1']})
@@ -172,7 +172,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1_git:%s' % content['sha1_git']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         content_url = reverse('api-1-content',
                               url_args={'q': 'sha1:%s' % content['sha1']})
@@ -187,7 +187,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -201,7 +201,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-content', {'q': 'sha1:%s' % content['sha1']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         expected_data = self.content_get_metadata(content['sha1'])
         for key, view_name in (('data_url', 'api-1-content-raw'),
@@ -219,7 +219,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-content',
                       url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -234,7 +234,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha256:%s' % unknown_content_['sha256']})
         rv = self.client.get(url, HTTP_ACCEPT='application/yaml')
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertTrue('application/yaml' in rv['Content-Type'])
 
         self.assertEqual(rv.data, {
@@ -250,7 +250,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': 'sha1:%s' % unknown_content_['sha1']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -301,7 +301,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': content['sha1']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
 
         self.assertEqual(rv.data, {
@@ -321,7 +321,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': content['sha1']})
         rv = self.client.get(url, HTTP_ACCEPT='application/yaml')
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/yaml')
 
         self.assertEqual(rv.data, {
@@ -346,7 +346,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
             HTTP_ACCEPT='application/yaml'
         )
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertTrue('application/yaml' in rv['Content-Type'])
         self.assertEqual(rv.data, {
             'search_res': [
@@ -365,7 +365,7 @@ class ContentApiTestCase(WebTestCase, APITestCase):
                       url_args={'q': unknown_content_['sha1']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'search_res': [

@@ -11,7 +11,7 @@ from hypothesis import given
 
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content, prepare_content_for_display,
-    _reencode_content
+    _re_encode_content
 )
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse, get_swh_persistent_id
@@ -25,7 +25,7 @@ from swh.web.tests.testcase import WebTestCase
 
 class SwhBrowseContentTest(WebTestCase):
 
-    @given(content())
+    @given(content_text())
     def test_content_view_text(self, content):
 
         sha1_git = content['sha1_git']
@@ -128,8 +128,8 @@ class SwhBrowseContentTest(WebTestCase):
                                   % (mimetype, content_data.decode('utf-8')))
         self.assertContains(resp, url_raw)
 
-    @given(content())
-    def test_content_view_with_path(self, content):
+    @given(content_text())
+    def test_content_view_text_with_path(self, content):
 
         path = content['path']
 
@@ -344,8 +344,8 @@ class SwhBrowseContentTest(WebTestCase):
         mime_type, encoding = get_mimetype_and_encoding_for_content(
             content_data['data'])
 
-        mime_type, content_data = _reencode_content(mime_type, encoding,
-                                                    content_data['data'])
+        mime_type, content_data = _re_encode_content(mime_type, encoding,
+                                                     content_data['data'])
 
         return prepare_content_for_display(content_data, mime_type,
                                            content['path'])

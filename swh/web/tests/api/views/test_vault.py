@@ -39,7 +39,7 @@ class VaultApiTestCase(WebTestCase, APITestCase):
                 url += '{}/'.format(obj_type_format)
             rv = self.client.post(url, {'email': 'test@test.mail'})
 
-            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
 
             self.assertEqual(rv.data, stub_cook)
@@ -78,7 +78,7 @@ class VaultApiTestCase(WebTestCase, APITestCase):
                 url += '{}/'.format(obj_type_format)
             rv = self.client.post(url, {'email': 'test@test.mail'})
 
-            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
 
             self.assertEqual(rv.data, stub_cook)
@@ -106,7 +106,7 @@ class VaultApiTestCase(WebTestCase, APITestCase):
                 url += '{}/'.format(obj_type_format)
             rv = self.client.post(url)
 
-            self.assertEqual(rv.status_code, 404)
+            self.assertEqual(rv.status_code, 404, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
 
             self.assertEqual(rv.data['exception'], 'NotFoundExc')
@@ -115,7 +115,7 @@ class VaultApiTestCase(WebTestCase, APITestCase):
 
             rv = self.client.get(url + 'raw/')
 
-            self.assertEqual(rv.status_code, 404)
+            self.assertEqual(rv.status_code, 404, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
             self.assertEqual(rv.data['exception'], 'NotFoundExc')
             mock_service.vault_fetch.assert_called_with(

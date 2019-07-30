@@ -62,7 +62,13 @@ DEFAULT_CONFIG = {
                     'POST': '10/h'
                 },
                 'exempted_networks': ['127.0.0.0/8']
-            }
+            },
+            'swh_api_origin_visit_latest': {
+                'limiter_rate': {
+                    'default': '700/m'
+                },
+                'exempted_networks': ['127.0.0.0/8'],
+            },
         }
     }),
     'vault': ('dict', {

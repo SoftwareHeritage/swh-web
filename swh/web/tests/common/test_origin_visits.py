@@ -80,7 +80,6 @@ class OriginVisitsTestCase(WebTestCase):
                                      visit_id=visit_id)
         exception_text = cm.exception.args[0]
         self.assertIn('Visit with id %s' % visit_id, exception_text)
-        self.assertIn('type %s' % origin_info['type'], exception_text)
         self.assertIn('url %s' % origin_info['url'], exception_text)
 
         visit = get_origin_visit(origin_info, visit_id=2)

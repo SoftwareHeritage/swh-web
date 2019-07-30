@@ -45,9 +45,6 @@ fs.readdirSync(bundlesDir).forEach(file => {
 let cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
-    loader: 'cache-loader'
-  },
-  {
     loader: 'css-loader',
     options: {
       sourceMap: !isDevServer
@@ -74,7 +71,10 @@ let cssLoaders = [
         }),
         // automatically add vendor prefixes to css rules
         require('autoprefixer')(),
-        require('postcss-normalize')()
+        require('postcss-normalize')(),
+        require('postcss-reporter')({
+          clearReportedMessages: true
+        })
       ]
     }
   }
@@ -136,7 +136,7 @@ module.exports = {
       path.resolve(__dirname, '../src')
     ]
   },
-  stats: 'errors-only',
+  stats: 'errors-warnings',
   // module import configuration
   module: {
     rules: [
@@ -151,6 +151,7 @@ module.exports = {
           options: {
             configFile: path.join(__dirname, '.eslintrc'),
             ignorePath: path.join(__dirname, '.eslintignore'),
+            cache: true,
             emitWarning: true
           }
         }]
@@ -163,9 +164,6 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: [
-          {
-            loader: 'cache-loader'
-          },
           {
             loader: 'babel-loader',
             options: {
@@ -300,6 +298,15 @@ module.exports = {
           options: {
             name: '[name].[ext]',
             outputPath: 'fonts/'
+          }
+        }]
+      }, {
+        test: /\.png$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'img/thirdParty/'
           }
         }]
       }

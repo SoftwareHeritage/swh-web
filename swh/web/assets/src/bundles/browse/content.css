@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2019  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -15,4 +15,36 @@
 .swh-content pre code {
     margin: 0;
     padding: 0;
+}
+
+.swh-content img,
+.swh-content svg {
+    max-width: 100%;
+}
+
+.chosen-container {
+    color: #444;
+}
+
+.chosen-container .chosen-single div b {
+    margin-top: 2px;
+    filter: brightness(0%);
+}
+
+.chosen-container .chosen-single {
+    height: 100%;
+    line-height: 1.5;
+    border-radius: 0;
+    background-color: #f4f4f4;
+    border-color: #ddd;
+    background-image: none;
+    box-shadow: none;
+    font-weight: 400;
+    font-size: 14px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.chosen-container .chosen-single:hover {
+    background-color: #e7e7e7;
 }

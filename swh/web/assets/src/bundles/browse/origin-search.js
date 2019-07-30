@@ -25,35 +25,35 @@ function clearOriginSearchResultsTable() {
   $('#origin-search-results tbody tr').remove();
 }
 
-function populateOriginSearchResultsTable(data, offset) {
+function populateOriginSearchResultsTable(origins, offset) {
   let localOffset = offset % limit;
-  if (data.length > 0) {
+  if (origins.length > 0) {
     $('#swh-origin-search-results').show();
     $('#swh-no-result').hide();
     clearOriginSearchResultsTable();
     let table = $('#origin-search-results tbody');
-    for (let i = localOffset; i < localOffset + perPage && i < data.length; ++i) {
-      let elem = data[i];
-      let browseUrl = Urls.browse_origin(elem.url);
-      let tableRow = `<tr id="origin-${elem.id}" class="swh-search-result-entry swh-tr-hover-highlight">`;
-      tableRow += `<td style="width: 120px;">${elem.type}</td>`;
-      tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(elem.url)}</a></td>`;
-      tableRow += `<td id="visit-status-origin-${elem.id}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>`;
+    for (let i = localOffset; i < localOffset + perPage && i < origins.length; ++i) {
+      let origin = origins[i];
+      let browseUrl = Urls.browse_origin(origin.url);
+      let tableRow = `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
+      tableRow += `<td style="width: 120px;">${origin.type}</td>`;
+      tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
+      tableRow += `<td class="swh-visit-status" id="visit-status-origin-${i}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>`;
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
-      let latestSnapshotUrl = Urls.browse_origin_latest_snapshot(elem.id);
+      let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url);
+      latestSnapshotUrl += '?require_snapshot=true';
       fetch(latestSnapshotUrl)
         .then(response => response.json())
         .then(data => {
-          let originId = elem.id;
-          $(`#visit-status-origin-${originId}`).children().remove();
+          $(`#visit-status-origin-${i}`).children().remove();
           if (data) {
-            $(`#visit-status-origin-${originId}`).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');
+            $(`#visit-status-origin-${i}`).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');
           } else {
-            $(`#visit-status-origin-${originId}`).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="fa fa-times"></i>');
+            $(`#visit-status-origin-${i}`).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="fa fa-times"></i>');
             if ($('#swh-filter-empty-visits').prop('checked')) {
-              $(`#origin-${originId}`).remove();
+              $(`#origin-${i}`).remove();
             }
           }
         });
@@ -64,8 +64,8 @@ function populateOriginSearchResultsTable(data, offset) {
     $('#swh-no-result').text('No origins matching the search criteria were found.');
     $('#swh-no-result').show();
   }
-  if (data.length - localOffset < perPage ||
-      (data.length < limit && (localOffset + perPage) === data.length)) {
+  if (origins.length - localOffset < perPage ||
+      (origins.length < limit && (localOffset + perPage) === origins.length)) {
     $('#origins-next-results-button').addClass('disabled');
   } else {
     $('#origins-next-results-button').removeClass('disabled');
