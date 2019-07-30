@@ -5,8 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import 'bootstrap-year-calendar-bs4';
-import 'bootstrap-year-calendar-bs4/css/bootstrap-year-calendar.css';
+import Calendar from 'js-year-calendar';
+import 'js-year-calendar/dist/js-year-calendar.css';
 
 let minSize = 15;
 let maxSize = 28;
@@ -51,7 +51,7 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
 
   closePopover();
 
-  $('#swh-visits-calendar').calendar({
+  new Calendar('#swh-visits-calendar', {
     dataSource: filteredVisits,
     style: 'custom',
     minDate: minDate,

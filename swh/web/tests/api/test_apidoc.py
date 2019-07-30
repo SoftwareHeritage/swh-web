@@ -83,7 +83,7 @@ class APIDocTestCase(WebTestCase, APITestCase):
         rv = self.client.get('/api/1/some/doc/route/')
 
         # then
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertTemplateUsed('api/apidoc.html')
 
     def test_apidoc_route_fn(self):
@@ -92,7 +92,7 @@ class APIDocTestCase(WebTestCase, APITestCase):
         rv = self.client.get('/api/1/some/1/1/')
 
         # then
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
 
     @staticmethod
     @api_route(r'/some/full/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',
@@ -109,7 +109,7 @@ class APIDocTestCase(WebTestCase, APITestCase):
         rv = self.client.get('/api/1/some/complete/doc/route/')
 
         # then
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertTemplateUsed('api/apidoc.html')
 
     def test_apidoc_full_stack_fn(self):
@@ -117,7 +117,7 @@ class APIDocTestCase(WebTestCase, APITestCase):
         rv = self.client.get('/api/1/some/full/1/1/')
 
         # then
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
 
     def test_api_doc_parse_httpdomain(self):
         doc_data = {

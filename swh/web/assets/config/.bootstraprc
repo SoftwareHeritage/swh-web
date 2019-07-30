@@ -7,7 +7,6 @@ bootstrapVersion: 4
 # Webpack loaders, order matters
 
 styleLoaders:
-  - cache-loader
   - css-loader?sourceMap
   - postcss-loader?sourceMap
   - sass-loader?sourceMap
@@ -44,7 +43,7 @@ preBootstrapCustomizations: ./bootstrap-pre-customize.scss
 # Usually this endpoint-file contains list of @imports of your application styles
 #
 # appStyles: ./path/to/your/app/styles/endpoint.scss
-appStyles: ../../../../node_modules/admin-lte/build/scss/AdminLTE-raw.scss
+appStyles: ../../../../node_modules/admin-lte/build/scss/AdminLTE.scss
 
 ### Bootstrap styles
 styles:

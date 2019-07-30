@@ -32,7 +32,7 @@ class SwhBrowseReleaseTest(WebTestCase):
 
     @given(origin_with_release())
     def test_release_browse_with_origin(self, origin):
-        snapshot = self.snapshot_get_latest(origin['id'])
+        snapshot = self.snapshot_get_latest(origin['url'])
         release = random.choice([b for b in snapshot['branches'].values()
                                  if b['target_type'] == 'release'])
         url = reverse('browse-release',

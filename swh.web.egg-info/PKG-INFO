@@ -1,14 +1,14 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.0.203
+Version: 0.0.204
 Summary: Software Heritage Web UI
 Home-page: https://forge.softwareheritage.org/diffusion/DWUI/
 Author: Software Heritage developers
 Author-email: swh-devel@inria.fr
 License: UNKNOWN
-Project-URL: Funding, https://www.softwareheritage.org/donate
-Project-URL: Source, https://forge.softwareheritage.org/source/swh-web
 Project-URL: Bug Reports, https://forge.softwareheritage.org/maniphest
+Project-URL: Source, https://forge.softwareheritage.org/source/swh-web
+Project-URL: Funding, https://www.softwareheritage.org/donate
 Description: # swh-web
         
         This repository holds the development of Software Heritage web applications:
@@ -94,7 +94,7 @@ Description: # swh-web
         
         **The build target must be executed prior performing the Debian packaging of swh-web** in order for the package to contain the optimized assets dedicated to production environment.
         
-        To execute these targets, issue the following commmand:
+        To execute these targets, issue the following command:
         
         ```
         $ yarn <target_name>

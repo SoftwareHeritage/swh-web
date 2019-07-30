@@ -6,6 +6,7 @@
 import random
 
 from hypothesis import given
+import pytest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -33,7 +34,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
@@ -44,7 +45,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                       url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -77,7 +78,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -91,48 +92,51 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                       url_args={'sha1_git': unknown_revision_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
             'reason': 'Revision with sha1_git %s not found.' %
             unknown_revision_})
 
-    def test_api_revision_with_origin_not_found(self):
-        unknown_origin_id_ = random.randint(1000, 1000000)
+    @pytest.mark.origin_id
+    def test_api_revision_with_origin_id_not_found(self):
+        unknown_origin_id = random.randint(1000, 1000000)
 
         url = reverse('api-1-revision-origin',
-                      url_args={'origin_id': unknown_origin_id_})
+                      url_args={'origin_id': unknown_origin_id})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
-        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 404, rv.data)
+        self.assertEqual(rv['content-type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Origin with id %s not found!' %
-            unknown_origin_id_})
+            'reason': 'Origin %s not found!' %
+            unknown_origin_id})
 
+    @pytest.mark.origin_id
     @given(origin())
-    def test_api_revision_with_origin(self, origin):
+    def test_api_revision_with_origin_id(self, origin):
 
         url = reverse('api-1-revision-origin',
                       url_args={'origin_id': origin['id']})
         rv = self.client.get(url)
 
-        snapshot = self.snapshot_get_latest(origin['id'])
+        snapshot = self.snapshot_get_latest(origin['url'])
         expected_revision = self.revision_get(
             snapshot['branches']['HEAD']['target'])
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
+    @pytest.mark.origin_id
     @given(origin())
-    def test_api_revision_with_origin_and_branch_name(self, origin):
+    def test_api_revision_with_origin_id_and_branch_name(self, origin):
 
-        snapshot = self.snapshot_get_latest(origin['id'])
+        snapshot = self.snapshot_get_latest(origin['url'])
 
         branch_name = random.choice(
             list(b for b in snapshot['branches'].keys()
@@ -149,14 +153,15 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['content-type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
+    @pytest.mark.origin_id
     @given(origin_with_multiple_visits())
-    def test_api_revision_with_origin_and_branch_name_and_ts(self, origin):
+    def test_api_revision_with_origin_id_and_branch_name_and_ts(self, origin):
 
-        visit = random.choice(self.origin_visit_get(origin['id']))
+        visit = random.choice(self.origin_visit_get(origin['url']))
 
         snapshot = self.snapshot_get(visit['snapshot'])
 
@@ -176,14 +181,15 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
+    @pytest.mark.origin_id
     @given(origin_with_multiple_visits())
-    def test_api_revision_with_origin_and_branch_name_and_ts_escapes(self,
-                                                                     origin):
-        visit = random.choice(self.origin_visit_get(origin['id']))
+    def test_api_revision_with_origin_id_and_branch_name_and_ts_escapes(
+            self, origin):
+        visit = random.choice(self.origin_visit_get(origin['url']))
 
         snapshot = self.snapshot_get(visit['snapshot'])
 
@@ -207,27 +213,29 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_revision)
 
-    def test_api_directory_through_revision_origin_ko(self):
+    @pytest.mark.origin_id
+    def test_api_directory_through_revision_origin_id_ko(self):
         unknown_origin_id_ = random.randint(1000, 1000000)
 
         url = reverse('api-1-revision-origin-directory',
                       url_args={'origin_id': unknown_origin_id_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
-            'reason': 'Origin with id %s not found!' %
+            'reason': 'Origin %s not found!' %
             unknown_origin_id_
         })
 
+    @pytest.mark.origin_id
     @given(origin())
-    def test_api_directory_through_revision_origin(self, origin):
+    def test_api_directory_through_revision_origin_id(self, origin):
 
         url = reverse('api-1-revision-origin-directory',
                       url_args={'origin_id': origin['id']})
@@ -274,7 +282,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
             'type': 'dir'
         }
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_result)
 
@@ -293,7 +301,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         has_next = len(expected_log) > per_page
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data,
                          expected_log[:-1] if has_next else expected_log)
@@ -314,7 +322,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -344,12 +352,13 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         expected_log.insert(0, prev_revision)
         expected_log = list(map(self._enrich_revision, expected_log))
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_log)
 
+    @pytest.mark.origin_id
     @given(origin())
-    def test_api_revision_log_by(self, origin):
+    def test_api_revision_log_by_origin_id(self, origin):
 
         per_page = 10
 
@@ -359,7 +368,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        snapshot = self.snapshot_get_latest(origin['id'])
+        snapshot = self.snapshot_get_latest(origin['url'])
 
         expected_log = self.revision_log(
             snapshot['branches']['HEAD']['target'], limit=per_page+1)
@@ -368,7 +377,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         has_next = len(expected_log) > per_page
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data,
                          expected_log[:-1] if has_next else expected_log)
@@ -382,6 +391,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
                               'sha1_git': expected_log[-1]['id']})
             self.assertIn(next_log_url, rv['Link'])
 
+    @pytest.mark.origin_id
     @given(origin())
     def test_api_revision_log_by_ko(self, origin):
 
@@ -393,7 +403,28 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertFalse(rv.has_header('Link'))
+        self.assertEqual(
+            rv.data,
+            {'exception': 'NotFoundExc',
+             'reason': 'Revision for origin %s and branch %s not found.' %
+             (origin['id'], invalid_branch_name)})
+
+    @pytest.mark.origin_id
+    @given(origin())
+    def test_api_revision_log_by_origin_id_ko(self, origin):
+
+        invalid_branch_name = 'foobar'
+
+        url = reverse('api-1-revision-origin-log',
+                      url_args={'origin_id': origin['id'],
+                                'branch_name': invalid_branch_name})
+
+        rv = self.client.get(url)
+
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertFalse(rv.has_header('Link'))
         self.assertEqual(
@@ -410,7 +441,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         # then
         rv = self.client.get('/api/1/revision/999/directory/some/path/to/dir/')
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -454,7 +485,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         # then
         rv = self.client.get('/api/1/revision/999/directory/some/path/')
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, stub_dir)
 
@@ -483,7 +514,7 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         url = '/api/1/revision/666/directory/some/other/path/'
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, stub_content)
 

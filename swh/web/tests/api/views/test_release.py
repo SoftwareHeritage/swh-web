@@ -35,7 +35,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
         expected_release['author_url'] = author_url
         expected_release['target_url'] = target_url
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_release)
 
@@ -93,7 +93,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
             expected_release['author_url'] = author_url
             expected_release['target_url'] = target_url
 
-            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
             self.assertEqual(rv.data, expected_release)
 
@@ -104,7 +104,7 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',

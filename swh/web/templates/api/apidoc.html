@@ -38,7 +38,7 @@ See top-level LICENSE file for more information
     {{ description | safe_docstring_display | safe }}
   </div>
 {% endif %}
-{% if response_data  %}
+{% if response_data is not None %}
   <div>
     <h4>Request</h4>
     <pre><strong>{{ request.method }}</strong> {{ request.path }}</pre>

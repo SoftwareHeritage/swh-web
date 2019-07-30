@@ -22,7 +22,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-directory', url_args={'sha1_git': directory})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
 
         expected_data = list(map(self._enrich_dir_data,
@@ -37,7 +37,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
                       url_args={'sha1_git': unknown_directory_})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',
@@ -55,7 +55,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
                                 'path': path['name']})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, self._enrich_dir_data(path))
 
@@ -68,7 +68,7 @@ class DirectoryApiTestCase(WebTestCase, APITestCase):
                                 'path': path})
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',

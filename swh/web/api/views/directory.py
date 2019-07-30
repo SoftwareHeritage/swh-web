@@ -5,7 +5,7 @@
 
 from swh.web.common import service
 from swh.web.api import utils
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
@@ -16,6 +16,7 @@ from swh.web.api.views.utils import api_lookup
            'api-1-directory',
            checksum_args=['sha1_git'])
 @api_doc('/directory/')
+@format_docstring()
 def api_directory(request, sha1_git, path=None):
     """
     .. http:get:: /api/1/directory/(sha1_git)/[(path)/]
@@ -34,9 +35,7 @@ def api_directory(request, sha1_git, path=None):
         :param string path: optional parameter to get information about the directory entry
             pointed by that relative path
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         :>jsonarr object checksums: object holding the computed checksum values for a directory entry
             (only for file entries)
