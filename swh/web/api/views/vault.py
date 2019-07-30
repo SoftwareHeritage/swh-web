@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 
 from swh.model import hashutil
@@ -222,3 +223,18 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
     response = HttpResponse(res, content_type='application/gzip')
     response['Content-disposition'] = 'attachment; filename={}'.format(fname)
     return response
+
+
+@api_route(r'/vault/revision_gitfast/(?P<rev_id>[0-9a-f]+)/raw/',
+           'api-1-vault-revision_gitfast-raw',
+           checksum_args=['rev_id'])
+@api_doc('/vault/revision_gitfast/raw/', tags=['hidden'], handle_response=True)
+def _api_vault_revision_gitfast_raw(request, rev_id):
+    """
+    The vault backend sends an email containing an invalid url to fetch a
+    gitfast archive. So setup a redirection to the correct one as a temporary
+    workaround.
+    """
+    rev_gitfast_raw_url = reverse('api-1-vault-fetch-revision_gitfast',
+                                  url_args={'rev_id': rev_id})
+    return redirect(rev_gitfast_raw_url)
