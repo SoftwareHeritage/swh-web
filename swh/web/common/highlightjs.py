@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import functools
+
 from pygments.lexers import (
     get_all_lexers,
     get_lexer_for_filename
@@ -296,3 +298,15 @@ def get_hljs_language_from_mime_type(mime_type):
     if mime_type and mime_type in _mime_type_to_hljs_language:
         return _mime_type_to_hljs_language[mime_type]
     return None
+
+
+@functools.lru_cache()
+def get_supported_languages():
+    """
+    Return the list of programming languages that can be highlighted using the
+    highlight.js library.
+
+    Returns:
+        List[str]: the list of supported languages
+    """
+    return sorted(list(_hljs_languages))

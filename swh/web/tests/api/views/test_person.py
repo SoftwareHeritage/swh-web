@@ -24,7 +24,7 @@ class PersonApiTestCase(WebTestCase, APITestCase):
 
         expected_person = self.person_get(person)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, expected_person)
 
@@ -35,7 +35,7 @@ class PersonApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.status_code, 404, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'NotFoundExc',

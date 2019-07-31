@@ -131,7 +131,7 @@ class RendererTestCase(WebTestCase):
             # then
             mock_filter.assert_called_with(request, data)
             self.assertEqual(rv.data, expected_data)
-            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.status_code, 200, rv.data)
             if mime_type == 'text/html':
                 self.assertEqual(rv.template_name, 'api/apidoc.html')
 

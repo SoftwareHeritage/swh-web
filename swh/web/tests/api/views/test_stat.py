@@ -22,7 +22,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-stat-counters')
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 400, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'ValueError',
@@ -37,7 +37,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-stat-counters')
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv.status_code, 503, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'StorageDBError',
@@ -55,7 +55,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-stat-counters')
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 503)
+        self.assertEqual(rv.status_code, 503, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
             'exception': 'StorageAPIError',
@@ -70,6 +70,6 @@ class StatApiTestCase(WebTestCase, APITestCase):
 
         rv = self.client.get(url)
 
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, self.storage.stat_counters())

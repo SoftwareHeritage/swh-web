@@ -57,6 +57,11 @@
     top: -2px;
 }
 
+#swh-visits-calendar.calendar {
+    min-height: 700px;
+    overflow: visible;
+}
+
 #swh-visits-calendar.calendar table td {
     width: 28px;
     height: 28px;

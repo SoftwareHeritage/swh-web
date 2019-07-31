@@ -15,7 +15,7 @@ export async function renderPdf(pdfUrl) {
   let pageNum = 1;
   let pageRendering = false;
   let pageNumPending = null;
-  let scale = 1.5;
+  let defaultScale = 1.5;
   let canvas = $('#pdf-canvas')[0];
   let ctx = canvas.getContext('2d');
 
@@ -24,6 +24,9 @@ export async function renderPdf(pdfUrl) {
     pageRendering = true;
     // Using promise to fetch the page
     pdfDoc.getPage(num).then(page => {
+      let divWidth = $('.swh-content').width();
+      let scale = Math.min(defaultScale, divWidth / page.getViewport(1).width);
+
       let viewport = page.getViewport(scale);
       canvas.width = viewport.width;
       canvas.height = viewport.height;
@@ -94,6 +97,11 @@ export async function renderPdf(pdfUrl) {
     }, function(reason) {
       // PDF loading error
       console.error(reason);
+    });
+
+    // Render PDF on resize
+    $(window).on('resize', function() {
+      queueRenderPage(pageNum);
     });
   });
 

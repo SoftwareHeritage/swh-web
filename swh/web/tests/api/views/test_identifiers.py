@@ -58,7 +58,7 @@ class SwhIdsApiTestCase(WebTestCase, APITestCase):
                 'scheme_version': 1
             }
 
-            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.status_code, 200, resp.data)
             self.assertEqual(resp.data, expected_result)
 
     def test_swh_id_resolve_invalid(self):
@@ -68,7 +68,7 @@ class SwhIdsApiTestCase(WebTestCase, APITestCase):
 
         resp = self.client.get(url)
 
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 400, resp.data)
 
     @given(unknown_content(), unknown_directory(), unknown_release(),
            unknown_revision(), unknown_snapshot())
@@ -88,4 +88,4 @@ class SwhIdsApiTestCase(WebTestCase, APITestCase):
 
             resp = self.client.get(url)
 
-            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(resp.status_code, 404, resp.data)

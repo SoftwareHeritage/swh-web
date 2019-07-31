@@ -21,7 +21,7 @@ class SwhBrowseUtilsTestCase(WebTestCase):
     @given(origin_with_multiple_visits())
     def test_get_origin_visit_snapshot_simple(self, origin):
 
-        visits = self.origin_visit_get(origin['id'])
+        visits = self.origin_visit_get(origin['url'])
 
         for visit in visits:
 

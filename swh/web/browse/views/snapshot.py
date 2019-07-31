@@ -38,8 +38,9 @@ def snapshot_directory_browse(request, snapshot_id, path=None):
     """Django view for browsing the content of a directory collected
     in a snapshot.
 
-    The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/directory/[(path)/]`
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/snapshot/(snapshot_id)/directory/[(path)/]`
+    """
     origin_type = request.GET.get('origin_type', None)
     origin_url = request.GET.get('origin_url', None)
     if not origin_url:
@@ -56,9 +57,12 @@ def snapshot_content_browse(request, snapshot_id, path):
     """Django view that produces an HTML display of a content
     collected in a snapshot.
 
-    The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
-    """ # noqa
-    return browse_snapshot_content(request, snapshot_id=snapshot_id, path=path)
+    The url that points to it is
+        :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
+    """
+    language = request.GET.get('language', None)
+    return browse_snapshot_content(request, snapshot_id=snapshot_id, path=path,
+                                   selected_language=language)
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/log/',
@@ -68,8 +72,9 @@ def snapshot_log_browse(request, snapshot_id):
     """Django view that produces an HTML display of revisions history (aka
     the commit log) collected in a snapshot.
 
-    The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/log/`
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/snapshot/(snapshot_id)/log/`
+    """
     return browse_snapshot_log(request, snapshot_id=snapshot_id)
 
 
@@ -80,8 +85,9 @@ def snapshot_branches_browse(request, snapshot_id):
     """Django view that produces an HTML display of the list of releases
     collected in a snapshot.
 
-    The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/branches/`
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/snapshot/(snapshot_id)/branches/`
+    """
     return browse_snapshot_branches(request, snapshot_id=snapshot_id)
 
 
@@ -92,6 +98,7 @@ def snapshot_releases_browse(request, snapshot_id):
     """Django view that produces an HTML display of the list of releases
     collected in a snapshot.
 
-    The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/releases/`
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/snapshot/(snapshot_id)/releases/`
+    """
     return browse_snapshot_releases(request, snapshot_id=snapshot_id)
