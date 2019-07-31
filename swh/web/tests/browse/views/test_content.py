@@ -123,9 +123,8 @@ class SwhBrowseContentTest(WebTestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/content.html')
-
         self.assertContains(resp, '<img src="data:%s;base64,%s"/>'
-                                  % (mimetype, content_data.decode('utf-8')))
+                                  % (mimetype, content_data))
         self.assertContains(resp, url_raw)
 
     @given(content_text())
