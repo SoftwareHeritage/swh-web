@@ -1,5 +1,5 @@
 beautifulsoup4
-Django<2.0,>=1.10.7
+Django<2.0,>=1.11.0
 djangorestframework>=3.4.0
 django_webpack_loader
 django_js_reverse
