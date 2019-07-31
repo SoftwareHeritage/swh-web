@@ -267,6 +267,7 @@ def prepare_content_for_display(content_data, mime_type, path):
     if mime_type.startswith('image/'):
         if mime_type in _browsers_supported_image_mimes:
             content_data = base64.b64encode(content_data)
+            content_data = content_data.decode('utf-8')
         else:
             content_data = None
 
