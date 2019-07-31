@@ -31,8 +31,9 @@ def directory_browse(request, sha1_git, path=None):
     """Django view for browsing the content of a directory identified
     by its sha1_git value.
 
-    The url that points to it is :http:get:`/browse/directory/(sha1_git)/[(path)/]`
-    """ # noqa
+    The url that points to it is
+        :http:get:`/browse/directory/(sha1_git)/[(path)/]`
+    """
     root_sha1_git = sha1_git
     try:
         if path:

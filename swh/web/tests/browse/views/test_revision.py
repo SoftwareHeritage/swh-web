@@ -73,7 +73,7 @@ class SwhBrowseRevisionTest(WebTestCase):
     @given(origin())
     def test_revision_origin_browse(self, origin):
 
-        snapshot = self.snapshot_get_latest(origin['id'])
+        snapshot = self.snapshot_get_latest(origin['url'])
         revision = snapshot['branches']['HEAD']['target']
         revision_data = self.revision_get(revision)
         dir_id = revision_data['directory']

@@ -10,13 +10,14 @@ from swh.model.identifiers import (
 
 from swh.web.common import service
 from swh.web.common.utils import resolve_swh_persistent_id
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 
 
 @api_route(r'/resolve/(?P<swh_id>.*)/',
            'api-1-resolve-swh-pid')
 @api_doc('/resolve/')
+@format_docstring()
 def api_resolve_swh_pid(request, swh_id):
     """
     .. http:get:: /api/1/resolve/(swh_id)/
@@ -37,9 +38,7 @@ def api_resolve_swh_pid(request, swh_id):
         :>json string object_type: the type of the pointed object
         :>json number scheme_version: the scheme version of the persistent identifier
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 

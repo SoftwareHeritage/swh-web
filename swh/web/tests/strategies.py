@@ -212,7 +212,7 @@ def origin_with_multiple_visits():
     ret = []
     tests_data = get_tests_data()
     for origin in tests_data['origins']:
-        visits = list(tests_data['storage'].origin_visit_get(origin['id']))
+        visits = list(tests_data['storage'].origin_visit_get(origin['url']))
         if len(visits) > 1:
             ret.append(origin)
     return sampled_from(ret)
@@ -226,7 +226,7 @@ def origin_with_release():
     ret = []
     tests_data = get_tests_data()
     for origin in tests_data['origins']:
-        snapshot = tests_data['storage'].snapshot_get_latest(origin['id'])
+        snapshot = tests_data['storage'].snapshot_get_latest(origin['url'])
         if any([b['target_type'] == 'release'
                 for b in snapshot['branches'].values()]):
             ret.append(origin)
@@ -424,7 +424,7 @@ def _get_origin_dfs_revisions_walker():
     tests_data = get_tests_data()
     storage = tests_data['storage']
     origin = random.choice(tests_data['origins'][:-1])
-    snapshot = storage.snapshot_get_latest(origin['id'])
+    snapshot = storage.snapshot_get_latest(origin['url'])
     head = snapshot['branches'][b'HEAD']['target']
     return get_revisions_walker('dfs', storage, head)
 

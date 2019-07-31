@@ -4,12 +4,13 @@
 # See top-level LICENSE file for more information
 
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 
 from swh.model import hashutil
 from swh.web.common import service, query
 from swh.web.common.utils import reverse
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 
@@ -37,6 +38,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/directory/')
+@format_docstring()
 def api_vault_cook_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/
@@ -50,7 +52,8 @@ def api_vault_cook_directory(request, dir_id):
         through a GET request.
 
         Once the cooking task has been executed, the resulting archive can
-        be downloaded using the dedicated endpoint :http:get:`/api/1/vault/directory/(dir_id)/raw/`.
+        be downloaded using the dedicated endpoint
+            :http:get:`/api/1/vault/directory/(dir_id)/raw/`.
 
         Then to extract the cooked directory in the current one, use::
 
@@ -60,25 +63,27 @@ def api_vault_cook_directory(request, dir_id):
 
         :query string email: e-mail to notify when the archive is ready
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
-        :>json string fetch_url: the url from which to download the archive once it has been cooked
+        :>json string fetch_url: the url from which to download the archive
+            once it has been cooked
             (see :http:get:`/api/1/vault/directory/(dir_id)/raw/`)
-        :>json string obj_type: the type of object to cook (directory or revision)
-        :>json string progress_message: message describing the cooking task progress
+        :>json string obj_type: the type of object to cook
+            (directory or revision)
+        :>json string progress_message: message describing the cooking task
+            progress
         :>json number id: the cooking task id
-        :>json string status: the cooking task status (either **new**, **pending**,
-            **done** or **failed**)
+        :>json string status: the cooking task status
+            (either **new**, **pending**, **done** or **failed**)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
+            :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
         :statuscode 404: requested directory can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
 
@@ -105,12 +110,13 @@ def api_vault_fetch_directory(request, dir_id):
 
         :resheader Content-Type: application/octet-stream
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
         :statuscode 404: requested directory can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(
@@ -128,6 +134,7 @@ def api_vault_fetch_directory(request, dir_id):
            throttle_scope='swh_vault_cooking')
 @never_cache
 @api_doc('/vault/revision/gitfast/')
+@format_docstring()
 def api_vault_cook_revision_gitfast(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/
@@ -140,8 +147,9 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         through a POST request or check the status of a previously created one
         through a GET request.
 
-        Once the cooking task has been executed, the resulting gitfast archive can
-        be downloaded using the dedicated endpoint :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
+        Once the cooking task has been executed, the resulting gitfast archive
+        can be downloaded using the dedicated endpoint
+            :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
 
         Then to import the revision in the current directory, use::
 
@@ -153,24 +161,26 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
         :query string email: e-mail to notify when the gitfast archive is ready
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
+        {common_headers}
 
-        :>json string fetch_url: the url from which to download the archive once it has been cooked
+        :>json string fetch_url: the url from which to download the archive
+            once it has been cooked
             (see :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`)
-        :>json string obj_type: the type of object to cook (directory or revision)
-        :>json string progress_message: message describing the cooking task progress
+        :>json string obj_type: the type of object to cook
+            (directory or revision)
+        :>json string progress_message: message describing the cooking task
+            progress
         :>json number id: the cooking task id
         :>json string status: the cooking task status (new/pending/done/failed)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
+            :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
         :statuscode 404: requested revision can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
 
@@ -197,12 +207,13 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
 
         :resheader Content-Type: application/octet-stream
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
         :statuscode 404: requested revision can not be found in the archive
-    """ # noqa
+    """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(
@@ -212,3 +223,18 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
     response = HttpResponse(res, content_type='application/gzip')
     response['Content-disposition'] = 'attachment; filename={}'.format(fname)
     return response
+
+
+@api_route(r'/vault/revision_gitfast/(?P<rev_id>[0-9a-f]+)/raw/',
+           'api-1-vault-revision_gitfast-raw',
+           checksum_args=['rev_id'])
+@api_doc('/vault/revision_gitfast/raw/', tags=['hidden'], handle_response=True)
+def _api_vault_revision_gitfast_raw(request, rev_id):
+    """
+    The vault backend sends an email containing an invalid url to fetch a
+    gitfast archive. So setup a redirection to the correct one as a temporary
+    workaround.
+    """
+    rev_gitfast_raw_url = reverse('api-1-vault-fetch-revision_gitfast',
+                                  url_args={'rev_id': rev_id})
+    return redirect(rev_gitfast_raw_url)

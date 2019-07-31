@@ -65,7 +65,7 @@ export async function highlightCode(showLineNumbers = true) {
     $('code').each((i, block) => {
       hljs.highlightBlock(block);
       if (showLineNumbers) {
-        hljs.lineNumbersBlock(block);
+        hljs.lineNumbersBlock(block, {singleLine: true});
       }
     });
 

@@ -35,15 +35,20 @@ def get_origin_visits(origin_info):
 
     from swh.web.common import service
 
-    cache_entry_id = 'origin_%s_visits' % origin_info['id']
+    if 'url' in origin_info:
+        origin_url = origin_info['url']
+    else:
+        origin_url = service.lookup_origin(origin_info)['url']
+
+    cache_entry_id = 'origin_visits_%s' % origin_url
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
         last_visit = cache_entry[-1]['visit']
-        new_visits = list(service.lookup_origin_visits(origin_info['id'],
+        new_visits = list(service.lookup_origin_visits(origin_url,
                                                        last_visit=last_visit))
         if not new_visits:
-            last_snp = service.lookup_latest_origin_snapshot(origin_info['id'])
+            last_snp = service.lookup_latest_origin_snapshot(origin_url)
             if not last_snp or last_snp['id'] == cache_entry[-1]['snapshot']:
                 return cache_entry
 
@@ -52,7 +57,7 @@ def get_origin_visits(origin_info):
     per_page = service.MAX_LIMIT
     last_visit = None
     while 1:
-        visits = list(service.lookup_origin_visits(origin_info['id'],
+        visits = list(service.lookup_origin_visits(origin_url,
                                                    last_visit=last_visit,
                                                    per_page=per_page))
         origin_visits += visits
@@ -105,10 +110,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
     visits = get_origin_visits(origin_info)
 
     if not visits:
-        if 'type' in origin_info and 'url' in origin_info:
+        if 'url' in origin_info:
             message = ('No visit associated to origin with'
-                       ' type %s and url %s!' % (origin_info['type'],
-                                                 origin_info['url']))
+                       ' url %s!' % origin_info['url'])
         else:
             message = ('No visit associated to origin with'
                        ' id %s!' % origin_info['id'])
@@ -119,9 +123,8 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
         if len(visit) == 0:
             if 'type' in origin_info and 'url' in origin_info:
                 message = ('Visit for snapshot with id %s for origin with type'
-                           ' %s and url %s not found!' %
-                           (snapshot_id, origin_info['type'],
-                            origin_info['url']))
+                           ' url %s not found!' %
+                           (snapshot_id, origin_info['url']))
             else:
                 message = ('Visit for snapshot with id %s for origin with'
                            ' id %s not found!' %
@@ -133,9 +136,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
         visit = [v for v in visits if v['visit'] == int(visit_id)]
         if len(visit) == 0:
             if 'type' in origin_info and 'url' in origin_info:
-                message = ('Visit with id %s for origin with type %s'
+                message = ('Visit with id %s for origin with'
                            ' and url %s not found!' %
-                           (visit_id, origin_info['type'], origin_info['url']))
+                           (visit_id, origin_info['url']))
             else:
                 message = ('Visit with id %s for origin with id %s'
                            ' not found!' % (visit_id, origin_info['id']))
@@ -149,29 +152,18 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
                 return v
         return visits[-1]
 
-    parsed_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
+    target_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
 
-    visit_idx = None
-    for i, visit in enumerate(visits):
-        ts = math.floor(parse_timestamp(visit['date']).timestamp())
-        if i == 0 and parsed_visit_ts <= ts:
-            return visit
-        elif i == len(visits) - 1:
-            if parsed_visit_ts >= ts:
-                return visit
-        else:
-            next_ts = math.floor(
-                parse_timestamp(visits[i+1]['date']).timestamp())
-            if parsed_visit_ts >= ts and parsed_visit_ts < next_ts:
-                if (parsed_visit_ts - ts) < (next_ts - parsed_visit_ts):
-                    visit_idx = i
-                    break
-                else:
-                    visit_idx = i+1
-                    break
+    # Find the visit with date closest to the target (in absolute value)
+    (abs_time_delta, visit_idx) = min(
+        ((math.floor(parse_timestamp(visit['date']).timestamp()), i)
+         for (i, visit) in enumerate(visits)),
+        key=lambda ts_and_i: abs(ts_and_i[0] - target_visit_ts))
 
     if visit_idx is not None:
         visit = visits[visit_idx]
+        # If multiple visits have the same date, select the one with
+        # the largest id.
         while visit_idx < len(visits) - 1 and \
                 visit['date'] == visits[visit_idx+1]['date']:
             visit_idx = visit_idx + 1
@@ -179,9 +171,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
         return visit
     else:
         if 'type' in origin_info and 'url' in origin_info:
-            message = ('Visit with timestamp %s for origin with type %s '
+            message = ('Visit with timestamp %s for origin with '
                        'and url %s not found!' %
-                       (visit_ts, origin_info['type'], origin_info['url']))
+                       (visit_ts, origin_info['url']))
         else:
             message = ('Visit with timestamp %s for origin with id %s '
                        'not found!' % (visit_ts, origin_info['id']))

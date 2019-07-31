@@ -6,7 +6,7 @@
 from swh.web.common import service
 from swh.web.common.utils import reverse
 from swh.web.config import get_config
-from swh.web.api.apidoc import api_doc
+from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api import utils
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
@@ -15,23 +15,25 @@ from swh.web.api.views.utils import api_lookup
 @api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-1-snapshot',
            checksum_args=['snapshot_id'])
 @api_doc('/snapshot/')
+@format_docstring()
 def api_snapshot(request, snapshot_id):
     """
     .. http:get:: /api/1/snapshot/(snapshot_id)/
 
         Get information about a snapshot in the archive.
 
-        A snapshot is a set of named branches, which are pointers to objects at any
-        level of the Software Heritage DAG. It represents a full picture of an
-        origin at a given time.
+        A snapshot is a set of named branches, which are pointers to objects
+        at any level of the Software Heritage DAG. It represents a full picture
+        of an origin at a given time.
 
-        As well as pointing to other objects in the Software Heritage DAG, branches
-        can also be aliases, in which case their target is the name of another
-        branch in the same snapshot, or dangling, in which case the target is
-        unknown.
+        As well as pointing to other objects in the Software Heritage DAG,
+        branches can also be aliases, in which case their target is the name of
+        another branch in the same snapshot, or dangling, in which case the
+        target is unknown.
 
-        A snapshot identifier is a salted sha1. See :func:`swh.model.identifiers.snapshot_identifier`
-        in our data model module for details about how they are computed.
+        A snapshot identifier is a salted sha1. See
+        :func:`swh.model.identifiers.snapshot_identifier` in our data model
+        module for details about how they are computed.
 
         :param sha1 snapshot_id: a snapshot identifier
         :query str branches_from: optional parameter used to skip branches
@@ -39,22 +41,21 @@ def api_snapshot(request, snapshot_id):
         :query int branches_count: optional parameter used to restrain
             the amount of returned branches (default to 1000)
         :query str target_types: optional comma separated list parameter
-            used to filter the target types of branch to return (possible values
-            that can be contained in that list are ``content``, ``directory``,
-            ``revision``, ``release``, ``snapshot`` or ``alias``)
+            used to filter the target types of branch to return (possible
+            values that can be contained in that list are ``content``,
+            ``directory``, ``revision``, ``release``, ``snapshot`` or
+            ``alias``)
 
-        :reqheader Accept: the requested response content type,
-            either ``application/json`` (default) or ``application/yaml``
-        :resheader Content-Type: this depends on :http:header:`Accept` header of request
-        :resheader Link: indicates that a subsequent result page is available and contains
-            the url pointing to it
+        {common_headers}
+        {resheader_link}
 
-        :>json object branches: object containing all branches associated to the snapshot,
-            for each of them the associated target type and id are given but also
-            a link to get information about that target
+        :>json object branches: object containing all branches associated to
+            the snapshot,for each of them the associated target type and id are
+            given but also a link to get information about that target
         :>json string id: the unique identifier of the snapshot
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+            :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid snapshot identifier has been provided
@@ -65,7 +66,7 @@ def api_snapshot(request, snapshot_id):
         .. parsed-literal::
 
             :swh_web_api:`snapshot/6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a/`
-    """ # noqa
+    """
 
     def _enrich_snapshot(snapshot):
         s = snapshot.copy()

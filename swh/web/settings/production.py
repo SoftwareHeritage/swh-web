@@ -8,9 +8,7 @@ Django production settings for swh-web.
 """
 
 from .common import * # noqa
-from .common import (
-    MIDDLEWARE, CACHES, ALLOWED_HOSTS, WEBPACK_LOADER
-)
+from .common import MIDDLEWARE, CACHES, WEBPACK_LOADER
 from .common import swh_web_config
 from .common import REST_FRAMEWORK
 
@@ -23,12 +21,13 @@ else:
 MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
                'django.middleware.cache.FetchFromCacheMiddleware']
 
-CACHES.update({
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': swh_web_config['throttling']['cache_uri'],
-    }
-})
+if swh_web_config.get('throttling', {}).get('cache_uri'):
+    CACHES.update({
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': swh_web_config['throttling']['cache_uri'],
+        }
+    })
 
 # Setup support for proxy headers
 USE_X_FORWARDED_HOST = True
@@ -36,12 +35,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # We're going through seven (or, in that case, 2) proxies thanks to Varnish
 REST_FRAMEWORK['NUM_PROXIES'] = 2
-
-ALLOWED_HOSTS += [
-    'archive.softwareheritage.org',
-    'base.softwareheritage.org',
-    'archive.internal.softwareheritage.org',
-]
 
 DATABASES = {
     'default': {

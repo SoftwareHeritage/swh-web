@@ -216,13 +216,18 @@ class ServiceTestCase(WebTestCase):
 
         self.assertEqual(actual_origin_visit, expected_visit)
 
+    @pytest.mark.origin_id
     @given(new_origin())
-    def test_lookup_origin(self, new_origin):
+    def test_lookup_origin_by_id(self, new_origin):
         origin_id = self.storage.origin_add_one(new_origin)
 
         actual_origin = service.lookup_origin({'id': origin_id})
         expected_origin = self.storage.origin_get({'id': origin_id})
         self.assertEqual(actual_origin, expected_origin)
+
+    @given(new_origin())
+    def test_lookup_origin(self, new_origin):
+        self.storage.origin_add_one(new_origin)
 
         actual_origin = service.lookup_origin({'type': new_origin['type'],
                                                'url': new_origin['url']})
@@ -580,7 +585,7 @@ class ServiceTestCase(WebTestCase):
         self.assertEqual(actual_revision_log, expected_revision_log)
 
     def _get_origin_branches(self, origin):
-        origin_visit = self.origin_visit_get(origin['id'])[-1]
+        origin_visit = self.origin_visit_get(origin['url'])[-1]
         snapshot = self.snapshot_get(origin_visit['snapshot'])
         branches = {k: v for (k, v) in snapshot['branches'].items()
                     if v['target_type'] == 'revision'}
@@ -593,7 +598,7 @@ class ServiceTestCase(WebTestCase):
         branch_name = random.choice(list(branches.keys()))
 
         actual_log =  \
-            list(service.lookup_revision_log_by(origin['id'], branch_name,
+            list(service.lookup_revision_log_by(origin['url'], branch_name,
                                                 None, limit=25))
 
         expected_log = \
@@ -606,7 +611,7 @@ class ServiceTestCase(WebTestCase):
 
         with self.assertRaises(NotFoundExc):
             service.lookup_revision_log_by(
-                origin['id'], 'unknown_branch_name', None, limit=100)
+                origin['url'], 'unknown_branch_name', None, limit=100)
 
     def test_lookup_content_raw_not_found(self):
         unknown_content_ = random_content()
@@ -702,7 +707,8 @@ class ServiceTestCase(WebTestCase):
     def test_lookup_revision_by_nothing_found(self, origin):
 
         with self.assertRaises(NotFoundExc):
-            service.lookup_revision_by(origin['id'], 'invalid-branch-name')
+            service.lookup_revision_by(
+                origin['url'], 'invalid-branch-name')
 
     @given(origin())
     def test_lookup_revision_by(self, origin):
@@ -711,7 +717,7 @@ class ServiceTestCase(WebTestCase):
         branch_name = random.choice(list(branches.keys()))
 
         actual_revision =  \
-            service.lookup_revision_by(origin['id'], branch_name, None)
+            service.lookup_revision_by(origin['url'], branch_name, None)
 
         expected_revision = \
             self.revision_get(branches[branch_name]['target'])
@@ -722,7 +728,7 @@ class ServiceTestCase(WebTestCase):
     def test_lookup_revision_with_context_by_ko(self, origin, revision):
 
         with self.assertRaises(NotFoundExc):
-            service.lookup_revision_with_context_by(origin['id'],
+            service.lookup_revision_with_context_by(origin['url'],
                                                     'invalid-branch-name',
                                                     None,
                                                     revision)
@@ -745,7 +751,7 @@ class ServiceTestCase(WebTestCase):
         rev = root_rev_log[-1]['id']
 
         actual_root_rev, actual_rev = service.lookup_revision_with_context_by(
-            origin['id'], branch_name, None, rev)
+            origin['url'], branch_name, None, rev)
 
         expected_root_rev = self.revision_get(root_rev)
         expected_rev = self.revision_get(rev)
@@ -772,13 +778,13 @@ class ServiceTestCase(WebTestCase):
         rev = root_rev_log[-1]['id']
 
         self.assertEqual(service.lookup_revision_through({
-                            'origin_id': origin['id'],
+                            'origin_url': origin['url'],
                             'branch_name': branch_name,
                             'ts': None,
                             'sha1_git': rev
                          }),
                          service.lookup_revision_with_context_by(
-                            origin['id'], branch_name, None, rev)
+                            origin['url'], branch_name, None, rev)
                          )
 
     @given(origin())
@@ -788,12 +794,12 @@ class ServiceTestCase(WebTestCase):
         branch_name = random.choice(list(branches.keys()))
 
         self.assertEqual(service.lookup_revision_through({
-                            'origin_id': origin['id'],
+                            'origin_url': origin['url'],
                             'branch_name': branch_name,
                             'ts': None,
                          }),
                          service.lookup_revision_by(
-                            origin['id'], branch_name, None)
+                            origin['url'], branch_name, None)
                          )
 
     @given(ancestor_revisions())
@@ -860,6 +866,7 @@ class ServiceTestCase(WebTestCase):
                 revision, dir_entry['name'], with_data=True))
         )
 
+    @pytest.mark.origin_id
     @given(new_origins(20))
     def test_lookup_origins(self, new_origins):
 
