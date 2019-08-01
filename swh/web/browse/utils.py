@@ -81,18 +81,29 @@ def get_mimetype_and_encoding_for_content(content):
         associated to the provided content.
 
     """
-    while True:
-        try:
-            magic_result = magic.detect_from_content(content)
-            mime_type = magic_result.mime_type
-            encoding = magic_result.encoding
-            break
-        except Exception:
-            # workaround an issue with the magic module who can fail
-            # if detect_from_content is called multiple times in
-            # a short amount of time
-            reload(magic)
-
+    # https://pypi.org/project/python-magic/
+    # packaged as python3-magic in debian buster
+    if hasattr(magic, 'from_buffer'):
+        m = magic.Magic(mime=True, mime_encoding=True)
+        mime_encoding = m.from_buffer(content)
+        mime_type, encoding = mime_encoding.split(';')
+        encoding = encoding.replace(' charset=', '')
+    # https://pypi.org/project/file-magic/
+    # packaged as python3-magic in debian stretch
+    else:
+        # TODO: Remove that code when production environment is upgraded
+        #       to debian buster
+        while True:
+            try:
+                magic_result = magic.detect_from_content(content)
+                mime_type = magic_result.mime_type
+                encoding = magic_result.encoding
+                break
+            except Exception:
+                # workaround an issue with the magic module who can fail
+                # if detect_from_content is called multiple times in
+                # a short amount of time
+                reload(magic)
     return mime_type, encoding
 
 

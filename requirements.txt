@@ -9,7 +9,7 @@ djangorestframework >= 3.4.0
 django_webpack_loader
 django_js_reverse
 docutils
-file_magic >= 0.3.0
+python-magic >= 0.4.0
 htmlmin
 lxml
 pygments
