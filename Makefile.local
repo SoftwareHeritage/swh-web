@@ -10,6 +10,10 @@ yarn-install: package.json
 build-webpack-dev: yarn-install
 	$(YARN) build-dev
 
+.PHONY: build-webpack-test
+build-webpack-test: yarn-install
+	$(YARN) build-test
+
 .PHONY: build-webpack-dev-no-verbose
 build-webpack-dev-no-verbose: yarn-install
 	$(YARN) build-dev >/dev/null
@@ -56,9 +60,9 @@ run-django-webpack-memory-storages: build-webpack-dev run-migrations
 test-full:
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
-test-frontend: build-webpack-dev run-migrations
+test-frontend: build-webpack-test run-migrations
 	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run && pkill -P $$! && $(YARN) run mochawesome
 
-test-frontend-ui: build-webpack-dev run-migrations
+test-frontend-ui: build-webpack-test run-migrations
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT; jobs -p | head -1 | xargs pkill -P' SIGINT SIGTERM ERR EXIT; python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress open"
 

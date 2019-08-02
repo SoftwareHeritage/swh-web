@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import '@cypress/code-coverage/support';
+
 Cypress.Screenshot.defaults({
   screenshotOnRunFailure: false
 });

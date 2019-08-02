@@ -187,7 +187,12 @@ module.exports = {
                 }],
                 // use other babel plugins to benefit from advanced js features (es2017)
                 '@babel/plugin-syntax-dynamic-import'
-              ]
+              ],
+              env: {
+                test: {
+                  plugins: ['istanbul']
+                }
+              }
             }
           }]
       },

@@ -34,3 +34,5 @@ debian/
 package-lock.json
 yarn-error.log
 cypress/mochawesome/
+.nyc_output/
+cypress/coverage/
