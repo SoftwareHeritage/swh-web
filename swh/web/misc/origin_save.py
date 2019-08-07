@@ -5,12 +5,13 @@
 
 import json
 
+from django.conf.urls import url
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import render
 
 from rest_framework.decorators import api_view, authentication_classes
 
-from swh.web.browse.browseurls import browse_route
 from swh.web.common.exc import ForbiddenExc
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
@@ -21,12 +22,16 @@ from swh.web.common.throttling import throttle_scope
 from swh.web.common.utils import EnforceCSRFAuthentication
 
 
-@browse_route(r'origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
-              view_name='browse-origin-save-request')
+def _origin_save_view(request):
+    return render(request, 'misc/origin-save.html',
+                  {'heading': ('Request the saving of a software origin into '
+                               'the archive')})
+
+
 @api_view(['POST'])
 @authentication_classes((EnforceCSRFAuthentication, ))
 @throttle_scope('swh_save_origin')
-def _browse_origin_save_request(request, origin_type, origin_url):
+def _origin_save_request(request, origin_type, origin_url):
     """
     This view is called through AJAX from the save code now form of swh-web.
     We use DRF here as we want to rate limit the number of submitted requests
@@ -41,17 +46,13 @@ def _browse_origin_save_request(request, origin_type, origin_url):
         return HttpResponseForbidden(str(exc))
 
 
-@browse_route(r'origin/save/types/list/',
-              view_name='browse-origin-save-types-list')
-def _browse_origin_save_types_list(request):
+def _origin_save_types_list(request):
     origin_types = json.dumps(get_savable_origin_types(),
                               separators=(',', ': '))
     return HttpResponse(origin_types, content_type='application/json')
 
 
-@browse_route(r'origin/save/requests/list/(?P<status>.+)/',
-              view_name='browse-origin-save-requests-list')
-def _browse_origin_save_requests_list(request, status):
+def _origin_save_requests_list(request, status):
 
     if status != 'all':
         save_requests = SaveOriginRequest.objects.filter(status=status)
@@ -88,3 +89,14 @@ def _browse_origin_save_requests_list(request, status):
     table_data['data'] = paginator.page(page).object_list
     table_data_json = json.dumps(table_data, separators=(',', ': '))
     return HttpResponse(table_data_json, content_type='application/json')
+
+
+urlpatterns = [
+    url(r'^save/$', _origin_save_view, name='origin-save'),
+    url(r'^save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/$',
+        _origin_save_request, name='origin-save-request'),
+    url(r'^save/types/list/$', _origin_save_types_list,
+        name='origin-save-types-list'),
+    url(r'^save/requests/list/(?P<status>.+)/$', _origin_save_requests_list,
+        name='origin-save-requests-list'),
+]

@@ -17,7 +17,7 @@ from swh.web.settings.tests import save_origin_rate_post
 from swh.web.tests.testcase import WebTestCase
 
 
-class SwhBrowseOriginSaveTest(WebTestCase, APITestCase):
+class SwhOriginSaveTest(WebTestCase, APITestCase):
 
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
@@ -26,40 +26,47 @@ class SwhBrowseOriginSaveTest(WebTestCase, APITestCase):
             'url': 'https://github.com/python/cpython'
         }
 
-    @patch('swh.web.browse.views.origin_save.create_save_origin_request')
+    @patch('swh.web.misc.origin_save.create_save_origin_request')
     def test_save_request_form_csrf_token(
             self, mock_create_save_origin_request):
 
         self._mock_create_save_origin_request(mock_create_save_origin_request)
 
-        url = reverse('browse-origin-save-request',
+        url = reverse('origin-save-request',
                       url_args={'origin_type': self.origin['type'],
                                 'origin_url':  self.origin['url']})
 
         resp = self.client.post(url)
         self.assertEqual(resp.status_code, 403)
 
-        data = self._get_csrf_token(reverse('browse-origin-save'))
+        data = self._get_csrf_token(reverse('origin-save'))
         resp = self.client.post(url, data=data)
         self.assertEqual(resp.status_code, 200)
 
-    @patch('swh.web.browse.views.origin_save.create_save_origin_request')
+    @patch('swh.web.misc.origin_save.create_save_origin_request')
     def test_save_request_form_rate_limit(
             self, mock_create_save_origin_request):
 
         self._mock_create_save_origin_request(mock_create_save_origin_request)
 
-        url = reverse('browse-origin-save-request',
+        url = reverse('origin-save-request',
                       url_args={'origin_type': self.origin['type'],
                                 'origin_url':  self.origin['url']})
 
-        data = self._get_csrf_token(reverse('browse-origin-save'))
+        data = self._get_csrf_token(reverse('origin-save'))
         for _ in range(save_origin_rate_post):
             resp = self.client.post(url, data=data)
             self.assertEqual(resp.status_code, 200)
 
         resp = self.client.post(url, data=data)
         self.assertEqual(resp.status_code, 429)
+
+    def test_old_save_url_redirection(self):
+        url = reverse('browse-origin-save')
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+        redirect_url = reverse('origin-save')
+        self.assertEqual(resp['location'], redirect_url)
 
     def _get_csrf_token(self, url):
         resp = self.client.get(url)

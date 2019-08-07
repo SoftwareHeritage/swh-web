@@ -12,7 +12,7 @@ let saveRequestsTable;
 
 function originSaveRequest(originType, originUrl,
                            acceptedCallback, pendingCallback, errorCallback) {
-  let addSaveOriginRequestUrl = Urls.browse_origin_save_request(originType, originUrl);
+  let addSaveOriginRequestUrl = Urls.origin_save_request(originType, originUrl);
   let headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
@@ -45,7 +45,7 @@ export function initOriginSave() {
 
     $.fn.dataTable.ext.errMode = 'none';
 
-    fetch(Urls.browse_origin_save_types_list())
+    fetch(Urls.origin_save_types_list())
       .then(response => response.json())
       .then(data => {
         for (let originType of data) {
@@ -60,7 +60,7 @@ export function initOriginSave() {
       })
       .DataTable({
         serverSide: true,
-        ajax: Urls.browse_origin_save_requests_list('all'),
+        ajax: Urls.origin_save_requests_list('all'),
         searchDelay: 1000,
         columns: [
           {

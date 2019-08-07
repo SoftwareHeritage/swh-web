@@ -24,6 +24,7 @@ def _jslicenses(request):
 urlpatterns = [
     url(r'^', include('swh.web.misc.coverage')),
     url(r'^jslicenses/$', _jslicenses, name='jslicenses'),
+    url(r'^', include('swh.web.misc.origin_save')),
 ]
 
 

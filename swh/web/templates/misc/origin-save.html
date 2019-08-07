@@ -1,4 +1,4 @@
-{% extends "./layout.html" %}
+{% extends "../layout.html" %}
 
 {% comment %}
 Copyright (C) 2018-2019  The Software Heritage developers
@@ -7,13 +7,20 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load render_bundle from webpack_loader %}
 {% load static %}
+
+{% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
+
+{% block header %}
+{% render_bundle 'save' %}
+{% endblock %}
 
 {% block navbar-content %}
 <h4>Save code now</h4>
 {% endblock %}
 
-{% block browse-content %}
+{% block content %}
 
 <ul class="nav nav-tabs" style="padding-left: 5px;">
   <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="swh-origin-save-request-create-tab" href="#swh-origin-save-requests-create">Create save request</a></li>
@@ -70,7 +77,7 @@ See top-level LICENSE file for more information
         </div>
         <div class="form-group col-md-6">
           <label for="swh-input-origin-url">Origin url</label>
-          <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.browse.validateSaveOriginUrl(this)" required>
+          <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.save.validateSaveOriginUrl(this)" required>
           <div class="invalid-feedback">The origin url is not valid or does not reference a code repository</div>
         </div>
         <div class="col-md-2">
@@ -107,7 +114,7 @@ See top-level LICENSE file for more information
 
 <script>
   swh.webapp.initPage('origin-save');
-  swh.browse.initOriginSave();
+  swh.save.initOriginSave();
 </script>
 
 {% endblock %}
