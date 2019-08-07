@@ -7,7 +7,7 @@
 
 import {getTime} from '../utils';
 
-const origin = 'https://github.com/wcoder/highlightjs-line-numbers.js';
+let origin;
 
 function checkTimeLink(element) {
   expect(element.text()).not.to.be.empty;
@@ -33,8 +33,12 @@ function searchInCalendar(date) {
 }
 
 describe('Visits tests', function() {
+  before(function() {
+    origin = this.origin[1];
+  });
+
   beforeEach(function() {
-    cy.visit(this.Urls.browse_origin_visits(origin));
+    cy.visit(this.Urls.browse_origin_visits(origin.url));
   });
 
   it('should display first full visit time', function() {

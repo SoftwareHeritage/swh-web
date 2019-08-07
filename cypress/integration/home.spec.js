@@ -5,9 +5,9 @@
  * See top-level LICENSE file for more information
  */
 
-const url = '/';
-
 const $ = Cypress.$;
+
+const url = '/';
 
 describe('Home Page Tests', function() {
   it('should display positive stats for each category', function() {

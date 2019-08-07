@@ -14,7 +14,7 @@ describe('Code highlighting tests', function() {
   extensions.forEach(ext => {
     it(`should highlight source files with extension ${ext}`, function() {
       cy.request(this.Urls.tests_content_code_extension(ext)).then(response => {
-        let data = response.body;
+        const data = response.body;
         cy.visit(`${this.Urls.browse_content(data.sha1)}?path=file.${ext}`);
         checkLanguageHighlighting(data.language);
       });
@@ -26,7 +26,7 @@ describe('Code highlighting tests', function() {
   filenames.forEach(filename => {
     it(`should highlight source files with filenames ${filename}`, function() {
       cy.request(this.Urls.tests_content_code_filename(filename)).then(response => {
-        let data = response.body;
+        const data = response.body;
         cy.visit(`${this.Urls.browse_content(data.sha1)}?path=${filename}`);
         checkLanguageHighlighting(data.language);
       });
@@ -41,13 +41,10 @@ describe('Image rendering tests', function() {
   imgExtensions.forEach(ext => {
     it(`should render image with extension ${ext}`, function() {
       cy.request(this.Urls.tests_content_other_extension(ext)).then(response => {
-        let data = response.body;
+        const data = response.body;
         cy.visit(`${this.Urls.browse_content(data.sha1)}?path=file.${ext}`);
         cy.get('.swh-content img')
-          .then(img => {
-            assert.notEqual(img[0].width, 0);
-            assert.notEqual(img[0].height, 0);
-          });
+          .should('be.visible');
       });
     });
   });
@@ -62,7 +59,7 @@ describe('PDF rendering test', function() {
 
   it(`should render a PDF file`, function() {
     cy.request(this.Urls.tests_content_other_extension('pdf')).then(response => {
-      let data = response.body;
+      const data = response.body;
       cy.visit(`${this.Urls.browse_content(data.sha1)}?path=file.pdf`);
       cy.get('.swh-content canvas')
         .wait(2000)
@@ -82,7 +79,7 @@ describe('Jupyter notebook rendering test', function() {
 
   it(`should render a notebook file to HTML`, function() {
     cy.request(this.Urls.tests_content_other_extension('ipynb')).then(response => {
-      let data = response.body;
+      const data = response.body;
       cy.visit(`${this.Urls.browse_content(data.sha1)}?path=file.ipynb`);
       cy.get('.nb-notebook')
         .should('be.visible')

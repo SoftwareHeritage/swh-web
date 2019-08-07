@@ -5,19 +5,20 @@
  * See top-level LICENSE file for more information
  */
 
-const origin = 'https://github.com/memononen/libtess2';
-const contentPath = 'Source/tess.h';
-const lineStart = 32;
-const lineEnd = 42;
+import {random} from '../utils';
 
 const $ = Cypress.$;
+
+let origin;
+const lineStart = 32;
+const lineEnd = 42;
 
 let url;
 
 describe('Code highlighting tests', function() {
-
   before(function() {
-    url = this.Urls.browse_origin_content(origin, contentPath);
+    origin = this.origin[0];
+    url = this.Urls.browse_origin_content(origin.url, origin.content[0].path);
   });
 
   it('should highlight source code and add line numbers', function() {
@@ -30,12 +31,11 @@ describe('Code highlighting tests', function() {
   });
 
   it('should emphasize source code lines based on url fragment', function() {
-
     cy.visit(`${url}/#L${lineStart}-L${lineEnd}`);
     cy.get('.hljs-ln-line').then(lines => {
       for (let line of lines) {
-        let lineElt = $(line);
-        let lineNumber = parseInt(lineElt.data('line-number'));
+        const lineElt = $(line);
+        const lineNumber = parseInt(lineElt.data('line-number'));
         if (lineNumber >= lineStart && lineNumber <= lineEnd) {
           assert.notEqual(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
         } else {
@@ -48,12 +48,11 @@ describe('Code highlighting tests', function() {
   it('should emphasize a line by clicking on its number', function() {
     cy.visit(url);
     cy.get('.hljs-ln-numbers').then(lnNumbers => {
-      let lnNumber = lnNumbers[Math.floor(Math.random() * lnNumbers.length)];
-      let lnNumberElt = $(lnNumber);
+      const lnNumber = lnNumbers[random(0, lnNumbers.length)];
+      const lnNumberElt = $(lnNumber);
       assert.equal(lnNumberElt.css('background-color'), 'rgba(0, 0, 0, 0)');
-      let line = parseInt(lnNumberElt.data('line-number'));
+      const line = parseInt(lnNumberElt.data('line-number'));
       cy.get(`.hljs-ln-numbers[data-line-number="${line}"]`)
-        .scrollIntoView()
         .click()
         .then(() => {
           assert.notEqual(lnNumberElt.css('background-color'), 'rgba(0, 0, 0, 0)');
@@ -65,18 +64,16 @@ describe('Code highlighting tests', function() {
     cy.visit(url);
 
     cy.get(`.hljs-ln-numbers[data-line-number="${lineStart}"]`)
-      .scrollIntoView()
       .click()
       .get(`body`)
       .type(`{shift}`, { release: false })
       .get(`.hljs-ln-numbers[data-line-number="${lineEnd}"]`)
-      .scrollIntoView()
       .click()
       .get('.hljs-ln-line')
       .then(lines => {
         for (let line of lines) {
-          let lineElt = $(line);
-          let lineNumber = parseInt(lineElt.data('line-number'));
+          const lineElt = $(line);
+          const lineNumber = parseInt(lineElt.data('line-number'));
           if (lineNumber >= lineStart && lineNumber <= lineEnd) {
             assert.notEqual(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
           } else {
@@ -90,15 +87,9 @@ describe('Code highlighting tests', function() {
     cy.visit(`${url}/#L${lineStart}-L${lineEnd}`);
 
     cy.get(`.hljs-ln-code[data-line-number="1"]`)
-      .scrollIntoView()
       .click()
       .get('.hljs-ln-line')
-      .then(lines => {
-        for (let line of lines) {
-          let lineElt = $(line);
-          assert.equal(lineElt.css('background-color'), 'rgba(0, 0, 0, 0)');
-        }
-      });
+      .should('have.css', 'background-color', 'rgba(0, 0, 0, 0)');
   });
 
 });

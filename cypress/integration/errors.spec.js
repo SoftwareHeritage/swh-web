@@ -7,18 +7,7 @@
 
 import {httpGetJson} from '../utils';
 
-const unarchivedRepo = {
-  url: 'https://github.com/SoftwareHeritage/swh-web',
-  revisionSha1git: '7bf1b2f489f16253527807baead7957ca9e8adde',
-  snapshotSha1git: 'd9829223095de4bb529790de8ba4e4813e38672d',
-  rootDirSha1git: '7d887d96c0047a77e2e8c4ee9bb1528463677663',
-  readmeSha1git: 'b203ec39300e5b7e97b6e20986183cbd0b797859'
-};
-
-const archivedRepo = {
-  url: 'https://github.com/memononen/libtess2',
-  invalidSubDir: 'Source1'
-};
+let origin;
 
 const invalidChecksum = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
@@ -37,6 +26,10 @@ function urlShouldShowError(url, error) {
 }
 
 describe('Test Errors', function() {
+  before(function() {
+    origin = this.origin[0];
+  });
+
   it('should show navigation buttons on error page', function() {
     cy.visit(invalidPageUrl, {
       failOnStatusCode: false
@@ -49,47 +42,47 @@ describe('Test Errors', function() {
 
   context('For unarchived repositories', function() {
     it('should display NotFoundExc for unarchived repo', function() {
-      const url = this.Urls.browse_origin_directory(unarchivedRepo.url);
+      const url = this.Urls.browse_origin_directory(this.unarchivedRepo.url);
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Origin with url ' + unarchivedRepo.url + ' not found!'
+        msg: 'NotFoundExc: Origin with url ' + this.unarchivedRepo.url + ' not found!'
       });
     });
 
     it('should display NotFoundExc for unarchived content', function() {
-      const url = this.Urls.browse_content(`sha1_git:${unarchivedRepo.readmeSha1git}`);
+      const url = this.Urls.browse_content(`sha1_git:${this.unarchivedRepo.content[0].sha1git}`);
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Content with sha1_git checksum equals to ' + unarchivedRepo.readmeSha1git + ' not found!'
+        msg: 'NotFoundExc: Content with sha1_git checksum equals to ' + this.unarchivedRepo.content[0].sha1git + ' not found!'
       });
     });
 
     it('should display NotFoundExc for unarchived directory sha1git', function() {
-      const url = this.Urls.browse_directory(unarchivedRepo.rootDirSha1git);
+      const url = this.Urls.browse_directory(this.unarchivedRepo.rootDirectory);
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Directory with sha1_git ' + unarchivedRepo.rootDirSha1git + ' not found'
+        msg: 'NotFoundExc: Directory with sha1_git ' + this.unarchivedRepo.rootDirectory + ' not found'
       });
     });
 
     it('should display NotFoundExc for unarchived revision sha1git', function() {
-      const url = this.Urls.browse_revision(unarchivedRepo.revisionSha1git);
+      const url = this.Urls.browse_revision(this.unarchivedRepo.revision);
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Revision with sha1_git ' + unarchivedRepo.revisionSha1git + ' not found.'
+        msg: 'NotFoundExc: Revision with sha1_git ' + this.unarchivedRepo.revision + ' not found.'
       });
     });
 
     it('should display NotFoundExc for unarchived snapshot sha1git', function() {
-      const url = this.Urls.browse_snapshot(unarchivedRepo.snapshotSha1git);
+      const url = this.Urls.browse_snapshot(this.unarchivedRepo.snapshot);
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'Snapshot with id ' + unarchivedRepo.snapshotSha1git + ' not found!'
+        msg: 'Snapshot with id ' + this.unarchivedRepo.snapshot + ' not found!'
       });
     });
 
@@ -97,45 +90,37 @@ describe('Test Errors', function() {
 
   context('For archived repositories', function() {
     before(function() {
-      const url = this.Urls.browse_origin_directory(archivedRepo.url);
+      const url = this.Urls.browse_origin_directory(origin.url);
       cy.visit(url);
-      cy.window().then(async win => {
-        const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
-        const apiUrl = Cypress.config().baseUrl + this.Urls.api_1_directory(metadata.directory);
-        const dirContent = await httpGetJson(apiUrl);
-
-        archivedRepo.contentSha1git = dirContent.find(x => x.type === 'file').checksums.sha1_git;
-        archivedRepo.directorySha1git = metadata.directory;
-      });
     });
 
     it('should display NotFoundExc for invalid directory from archived repo', function() {
-      const rootDir = this.Urls.browse_origin_directory(archivedRepo.url);
-      const subDir = rootDir + archivedRepo.invalidSubDir;
+      const rootDir = this.Urls.browse_origin_directory(origin.url);
+      const subDir = rootDir + origin.invalidSubDir;
 
       urlShouldShowError(subDir, {
         code: '404',
         msg: 'NotFoundExc: Directory entry with path ' +
-              archivedRepo.invalidSubDir + ' from ' +
-              archivedRepo.directorySha1git + ' not found'
+              origin.invalidSubDir + ' from ' +
+              origin.rootDirectory + ' not found'
       });
     });
 
     it(`should display NotFoundExc for incorrect origin_url
         with correct content hash`, function() {
-      const url = this.Urls.browse_content(`sha1_git:${archivedRepo.contentSha1git}`) +
-                  `?origin_url=${unarchivedRepo.url}`;
+      const url = this.Urls.browse_content(`sha1_git:${origin.content[0].sha1git}`) +
+                  `?origin_url=${this.unarchivedRepo.url}`;
       urlShouldShowError(url, {
         code: '404',
         msg: 'The Software Heritage archive has a content ' +
             'with the hash you provided but the origin ' +
             'mentioned in your request appears broken: ' +
-            unarchivedRepo.url + '. ' +
+            this.unarchivedRepo.url + '. ' +
             'Please check the URL and try again.\n\n' +
             'Nevertheless, you can still browse the content ' +
             'without origin information: ' +
             '/browse/content/sha1_git:' +
-            archivedRepo.contentSha1git + '/'
+            origin.content[0].sha1git + '/'
       });
     });
   });
