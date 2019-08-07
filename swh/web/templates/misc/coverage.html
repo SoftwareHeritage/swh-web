@@ -69,7 +69,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   {% if count_origins %}
     <script>
       $.ajax({
-        url: Urls.browse_origin_coverage_count(),
+        url: Urls.swh_coverage_count(),
         dataType: 'json',
         success: function (data) {
           for (var i = 0 ; i < data.length; ++i) {
