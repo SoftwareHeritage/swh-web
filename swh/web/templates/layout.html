@@ -47,6 +47,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
+    <script>
+      swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});
+    </script>
+
     {% block header %}{% endblock %}
 
     <link rel="icon" href="{% static 'img/icons/swh-logo-32x32.png' %}" sizes="32x32" />
@@ -205,9 +209,5 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <a href="#top"><img alt="back to top" src="{% static 'img/arrow-up-small.png' %}" /></a>
     </div>
   </body>
-
-  <script>
-    swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});
-  </script>
 
 </html>

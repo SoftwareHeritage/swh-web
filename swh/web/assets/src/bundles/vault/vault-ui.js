@@ -235,7 +235,7 @@ export function initUi() {
     checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
   });
 
-  checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
+  checkVaultCookingTasks();
 
   window.onfocus = () => {
     clearTimeout(checkVaultId);
