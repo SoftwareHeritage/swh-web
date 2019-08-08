@@ -170,19 +170,16 @@ module.exports = {
               presets: [
                 // use env babel presets to benefit from es6 syntax
                 ['@babel/preset-env', {
-                  'useBuiltIns': 'entry',
                   // Do not transform es6 module syntax to another module type
                   // in order to benefit from dead code elimination (aka tree shaking)
                   // when running webpack in production mode
                   'loose': true,
-                  'modules': false,
-                  'corejs': 3
+                  'modules': false
                 }]
               ],
               plugins: [
               // use babel transform-runtime plugin in order to use aync/await syntax
                 ['@babel/plugin-transform-runtime', {
-                  'corejs': 3,
                   'regenerator': true
                 }],
                 // use other babel plugins to benefit from advanced js features (es2017)
