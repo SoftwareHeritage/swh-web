@@ -37,43 +37,53 @@ before(function() {
     content: []
   }];
 
-  cy.visit('/').window().then(win => {
+  const getMetadataForOrigin = async originUrl => {
+    const originVisitsApiUrl = this.Urls.api_1_origin_visits(originUrl);
+    const originVisits = await httpGetJson(originVisitsApiUrl);
+    const lastVisit = originVisits[0];
+    const snapshotApiUrl = this.Urls.api_1_snapshot(lastVisit.snapshot);
+    const lastOriginSnapshot = await httpGetJson(snapshotApiUrl);
+    const revisionApiUrl = this.Urls.api_1_revision(lastOriginSnapshot.branches.HEAD.target);
+    const lastOriginHeadRevision = await httpGetJson(revisionApiUrl);
+    return {
+      'directory': lastOriginHeadRevision.directory,
+      'revision': lastOriginHeadRevision.id,
+      'snapshot': lastOriginSnapshot.id
+    };
+  };
+
+  cy.visit('/').window().then(async win => {
     this.Urls = win.Urls;
 
     for (let origin of this.origin) {
-      cy.visit(this.Urls.browse_origin_directory(origin.url))
-        .window().then(async win => {
-          const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
 
-          const apiUrl = Cypress.config().baseUrl + this.Urls.api_1_directory(metadata.directory);
-          origin.dirContent = await httpGetJson(apiUrl);
-
-          origin.rootDirectory = metadata.directory;
-          origin.revision = metadata.revision;
-          origin.snapshot = metadata.snapshot;
-        });
+      const metadata = await getMetadataForOrigin(origin.url);
+      const directoryApiUrl = this.Urls.api_1_directory(metadata.directory);
+      origin.dirContent = await httpGetJson(directoryApiUrl);
+      origin.rootDirectory = metadata.directory;
+      origin.revision = metadata.revision;
+      origin.snapshot = metadata.snapshot;
 
       for (let content of origin.content) {
-        cy.visit(this.Urls.browse_origin_content(origin.url, content.path))
-          .window().then(win => {
-            const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
 
-            content.name = metadata.filename;
-            content.sha1git = metadata.sha1_git;
-            content.directory = metadata.directory;
+        const contentPathApiUrl = this.Urls.api_1_directory(origin.rootDirectory, content.path);
+        const contentMetaData = await httpGetJson(contentPathApiUrl);
 
-            content.rawFilePath = this.Urls.browse_content_raw(`sha1_git:${content.sha1git}`) +
-                                `?filename=${encodeURIComponent(content.name)}`;
+        content.name = contentMetaData.name;
+        content.sha1git = contentMetaData.target;
+        content.directory = contentMetaData.dir_id;
 
-            cy.request(content.rawFilePath)
-              .then((response) => {
-                const fileText = response.body;
-                const fileLines = fileText.split('\n');
-                content.numberLines = fileLines.length;
+        content.rawFilePath = this.Urls.browse_content_raw(`sha1_git:${content.sha1git}`) +
+                            `?filename=${encodeURIComponent(content.name)}`;
 
-                // If last line is empty its not shown
-                if (!fileLines[content.numberLines - 1]) content.numberLines -= 1;
-              });
+        cy.request(content.rawFilePath)
+          .then((response) => {
+            const fileText = response.body;
+            const fileLines = fileText.split('\n');
+            content.numberLines = fileLines.length;
+
+            // If last line is empty its not shown
+            if (!fileLines[content.numberLines - 1]) content.numberLines -= 1;
           });
       }
 
