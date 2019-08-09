@@ -84,13 +84,15 @@ DEFAULT_CONFIG = {
         }
     }),
     'development_db': ('string', os.path.join(SETTINGS_DIR, 'db.sqlite3')),
+    'test_db': ('string', os.path.join(SETTINGS_DIR, 'testdb.sqlite3')),
     'production_db': ('string', '/var/lib/swh/web.sqlite3'),
     'deposit': ('dict', {
         'private_api_url': 'https://deposit.softwareheritage.org/1/private/',
         'private_api_user': 'swhworker',
         'private_api_password': ''
     }),
-    'coverage_count_origins': ('bool', False)
+    'coverage_count_origins': ('bool', False),
+    'e2e_tests_mode': ('bool', False)
 }
 
 swhweb_config = {}

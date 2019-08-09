@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"
+                       xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <!-- Created on Tue, 05 Feb 2019 08:17:49 GMT -->
+  <ShortName>Software Heritage archive</ShortName>
+  <Description>Possibly the largest source code archive in the world. Covers public GitHub, GitLab, Debian, GNU, Google Code, PyPI and more</Description>
+  <Url type="text/html" method="get" template="https://archive.softwareheritage.org/browse/search/?q={searchTerms}&amp;with_visit&amp;with_content"/>
+  <Image width="16" height="16">https://mycroftproject.com/updateos.php/id0/swh.png</Image>
+  <Developer>Katrin Leinweber</Developer>
+  <InputEncoding>UTF-8</InputEncoding>
+  <moz:SearchForm>https://archive.softwareheritage.org/</moz:SearchForm>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://mycroftproject.com/updateos.php/id0/swh.xml"/>
+</OpenSearchDescription>
