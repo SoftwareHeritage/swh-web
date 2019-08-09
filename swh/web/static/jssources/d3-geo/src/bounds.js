@@ -32,6 +32,9 @@ var boundsStream = {
     else if (deltaSum > epsilon) phi1 = 90;
     else if (deltaSum < -epsilon) phi0 = -90;
     range[0] = lambda0, range[1] = lambda1;
+  },
+  sphere: function() {
+    lambda0 = -(lambda1 = 180), phi0 = -(phi1 = 90);
   }
 };
 

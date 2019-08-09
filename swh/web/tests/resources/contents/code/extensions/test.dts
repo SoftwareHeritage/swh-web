@@ -1,0 +1,34 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "allwinner,sun4i-a10", "allwinner,sun7i-a20", "allwinner,sun8i-h3", "allwinner,sun50i-a64", "allwinner,sun50i-h5";
+
+	fragment@0 {
+		target = <&pio>;
+		__overlay__ {
+			apds9960_pin_irq: apds9960_pin_irq {
+				pins = "PA10";
+				function = "irq";
+				bias-pull-up;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&i2c0>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			apds9960@39 {
+				compatible = "avago,apds9960";
+				reg = <0x39>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&apds9960_pin_irq>;
+				interrupt-parent = <&pio>;
+				interrupts = <0 10 2>; /* PA10 IRQ_TYPE_EDGE_FALLING */
+				status = "okay";
+			};
+		};
+	};
+};
