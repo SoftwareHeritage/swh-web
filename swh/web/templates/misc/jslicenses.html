@@ -1,0 +1,77 @@
+{% extends "../layout.html" %}
+
+{% comment %}
+Copyright (C) 2019  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+
+{% block title %}JavaScript license information{% endblock %}
+
+{% block navbar-content %}
+<h4>JavaScript license information</h4>
+{% endblock %}
+
+{% block content %}
+<p>
+This page states the licenses of all the JavaScript files loaded by that web application.
+The loaded JavaScript files correspond to bundles concatenating multiple source files.
+You can find the details of the content of each bundle in the <a href="https://www.gnu.org/licenses/javascript-labels.html">Web Labels</a> table below.
+</p>
+<table id="jslicense-labels1" class="table swh-table swh-table-striped" style="white-space: nowrap">
+  <thead>
+    <tr>
+      <th>Script</th>
+      <th>Licenses</th>
+      <th>Sources</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for jsasset, bundled_js_srcs in jslicenses_data %}
+    <tr>
+      <td>
+        {% if jsasset|split:"/"|last %}
+          <a href="{{ jsasset }}">{{ jsasset | split:"/" | last }}</a>
+        {% else %}
+          <a href="{{ jsasset }}">{{ jsasset }}</a>
+        {% endif %}
+      </td>
+      <td>
+        {% for js_src in bundled_js_srcs %}
+          {% for js_license in js_src.licenses %}
+            <a href="{{ js_license.url }}">{{ js_license.name }}</a>
+            {% if js_license.copy_url %}
+              (<a href="{{ js_license.copy_url }}">view</a>)
+            {% endif %}
+            {% if not forloop.last %}
+              <br/>
+            {% endif %}
+          {% endfor %}
+          {% if not forloop.last %}
+            <br/>
+            <hr style="margin: 0.25rem"/>
+          {% endif %}
+        {% endfor %}
+      </td>
+      <td>
+        {% for js_src in bundled_js_srcs %}
+          <a href="{{ js_src.src_url }}">{{ js_src.id }}</a>
+          {% for js_license in js_src.licenses %}
+            {% if not forloop.last %}
+              <br/>
+            {% endif %}
+          {% endfor %}
+          {% if not forloop.last %}
+            <br/>
+            <hr style="margin: 0.25rem"/>
+          {% endif %}
+        {% endfor %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

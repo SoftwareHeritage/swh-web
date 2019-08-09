@@ -235,14 +235,7 @@ export function initUi() {
     checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
   });
 
-  checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
-
-  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', e => {
-    if (e.currentTarget.text.trim() === 'Vault') {
-      clearTimeout(checkVaultId);
-      checkVaultCookingTasks();
-    }
-  });
+  checkVaultCookingTasks();
 
   window.onfocus = () => {
     clearTimeout(checkVaultId);

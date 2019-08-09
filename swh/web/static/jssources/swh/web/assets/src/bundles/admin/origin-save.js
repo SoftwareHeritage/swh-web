@@ -86,7 +86,7 @@ export function initOriginSaveAdmin() {
 
     pendingSaveRequestsTable = $('#swh-origin-save-pending-requests').DataTable({
       serverSide: true,
-      ajax: Urls.browse_origin_save_requests_list('pending'),
+      ajax: Urls.origin_save_requests_list('pending'),
       searchDelay: 1000,
       columns: columnsData,
       scrollY: '50vh',
@@ -102,7 +102,7 @@ export function initOriginSaveAdmin() {
 
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable({
       serverSide: true,
-      ajax: Urls.browse_origin_save_requests_list('rejected'),
+      ajax: Urls.origin_save_requests_list('rejected'),
       searchDelay: 1000,
       columns: columnsData,
       scrollY: '50vh',
@@ -130,7 +130,7 @@ export function initOriginSaveAdmin() {
 
     acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable({
       serverSide: true,
-      ajax: Urls.browse_origin_save_requests_list('accepted'),
+      ajax: Urls.origin_save_requests_list('accepted'),
       searchDelay: 1000,
       columns: columnsData,
       scrollY: '50vh',
