@@ -79,10 +79,18 @@ swh_web_config.update({
 from .common import * # noqa
 from .common import ALLOWED_HOSTS, LOGGING # noqa
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': swh_web_config['test_db'],
+    }
+}
+
 # when not running unit tests, make the webapp fetch data from memory storages
 if 'pytest' not in sys.argv[0]:
     swh_web_config.update({
         'debug': True,
+        'e2e_tests_mode': True
     })
     from swh.web.tests.data import get_tests_data, override_storages # noqa
     test_data = get_tests_data()

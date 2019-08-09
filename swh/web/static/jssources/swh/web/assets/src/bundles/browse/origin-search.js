@@ -216,12 +216,6 @@ export function initOriginSearch() {
       event.preventDefault();
     });
 
-    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', e => {
-      if (e.currentTarget.text.trim() === 'Search') {
-        fixTableRowsStyle();
-      }
-    });
-
     let urlParams = new URLSearchParams(window.location.search);
     let query = urlParams.get('q');
     let withVisit = urlParams.has('with_visit');

@@ -1,0 +1,91 @@
+{% comment %}
+Copyright (C) 2015-2019  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<!DOCTYPE html>
+
+{% load js_reverse %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Software Heritage archive coverage</title>
+    {% render_bundle 'vendors' %}
+    {% render_bundle 'webapp' %}
+    <script>
+/*
+@licstart  The following is the entire license notice for the JavaScript code in this page.
+
+Copyright (C) 2015-2019  The Software Heritage developers
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+@licend  The above is the entire license notice for the JavaScript code in this page.
+*/
+    </script>
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
+    <base target="_parent">
+  </head>
+
+  <body style="padding-bottom: 0;">
+    <div class="content-wrapper" style="margin-left: 0;" data-iframe-height>
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            {% for provider in providers %}
+              <div class="col-md-2 swh-coverage-col">
+                <div class="card swh-coverage" id="{{ provider.provider_id }}" title="{{ provider.provider_info }}">
+                  <a href="{{ provider.provider_url }}">
+                    <img class="card-img-top swh-coverage-logo" src="{% static provider.provider_logo %}">
+                  </a>
+                  <div class="text-center swh-coverage-origin-count"></div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <a href="{% url 'jslicenses' %}" rel="jslicense" style="display: none;">JavaScript license information</a>
+  </body>
+  {% if count_origins %}
+    <script>
+      $.ajax({
+        url: Urls.swh_coverage_count(),
+        dataType: 'json',
+        success: function (data) {
+          for (var i = 0 ; i < data.length; ++i) {
+            var origin_count = data[i].origin_count;
+            var provider_id = data[i].provider_id;
+            var origin_types = data[i].origin_types;
+            if (origin_count < 0) {
+              $('.swh-coverage-origin-count').text('');
+              break;
+            } else {
+              var text = origin_count.toLocaleString() + ' ' + origin_types;
+              $('#'+provider_id + ' .swh-coverage-origin-count').text(text);
+            }
+          }
+        }
+      });
+    </script>
+  {% endif %}
+</html>

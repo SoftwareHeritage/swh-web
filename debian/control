@@ -44,5 +44,6 @@ Depends: python3-swh.core (>= 0.0.57~),
          python3-swh.vault (>= 0.0.23~),
          python3-swh.scheduler (>= 0.0.31~),
          ${misc:Depends},
-         ${python3:Depends}
+         ${python3:Depends},
+         python3-magic (>= 0.3.0~)
 Description: Software Heritage Web Applications

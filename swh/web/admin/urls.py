@@ -13,11 +13,11 @@ import swh.web.admin.origin_save # noqa
 import swh.web.admin.deposit # noqa
 
 
-def admin_default_view(request):
+def _admin_default_view(request):
     return redirect('admin-origin-save')
 
 
-urlpatterns = [url(r'^$', admin_default_view, name='admin'),
+urlpatterns = [url(r'^$', _admin_default_view, name='admin'),
                url(r'^login/$',
                    LoginView.as_view(template_name='login.html'),
                    name='login'),
