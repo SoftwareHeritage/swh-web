@@ -31,10 +31,17 @@ before(function() {
     }, {
       path: 'premake4.lua'
     }],
+    directory: [{
+      path: 'Source',
+      id: 'cd19126d815470b28919d64b2a8e6a3e37f900dd'
+    }],
+    revision: [],
     invalidSubDir: 'Source1'
   }, {
     url: 'https://github.com/wcoder/highlightjs-line-numbers.js',
-    content: []
+    content: [],
+    directory: [],
+    revision: ['1c480a4573d2a003fc2630c21c2b25829de49972']
   }];
 
   const getMetadataForOrigin = async originUrl => {
@@ -92,4 +99,26 @@ before(function() {
 
     }
   });
+});
+
+// force the use of fetch polyfill wrapping XmlHttpRequest
+// in order for cypress to be able to intercept and stub them
+Cypress.on('window:before:load', win => {
+  win.fetch = null;
+});
+
+// Ensure code coverage data do not get lost each time a new
+// page is loaded during a single test execution
+let coverage = {};
+
+Cypress.on('window:before:unload', e => {
+  coverage = Object.assign(coverage, e.currentTarget.__coverage__);
+});
+
+beforeEach(function() {
+  coverage = {};
+});
+
+afterEach(function() {
+  cy.task('combineCoverage', coverage);
 });
