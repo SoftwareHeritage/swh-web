@@ -5,15 +5,12 @@
  * See top-level LICENSE file for more information
  */
 
-const origin = {
-  url: 'https://github.com/memononen/libtess2',
-  revision: '344b31572659aa74426c5c6ad91bbde3fe23bbb8'
-};
-
+let origin;
 let diffData;
 
 describe('Test Diffs View', function() {
   before(function() {
+    origin = this.origin[0];
     const url = this.Urls.browse_revision(origin.revision) + `?origin=${origin.url}`;
 
     cy.visit(url).window().then(win => {
