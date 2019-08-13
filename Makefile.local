@@ -24,8 +24,8 @@ build-webpack-prod: yarn-install
 
 .PHONY: run-migrations
 run-migrations:
-	python3 swh/web/manage.py migrate -v0 2>/dev/null
-	python3 swh/web/manage.py createcachetable -v0 2>/dev/null
+	python3 swh/web/manage.py migrate --settings=swh.web.settings.development -v0 2>/dev/null
+	python3 swh/web/manage.py createcachetable --settings=swh.web.settings.development -v0 2>/dev/null
 
 .PHONY: run-migrations-prod
 run-migrations-prod:
@@ -44,16 +44,16 @@ clear-memcached:
 	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
 
 run-django-webpack-devserver: run-migrations yarn-install
-	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & sleep 10 && cd swh/web && python3 manage.py runserver --nostatic"
+	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & sleep 10 && cd swh/web && python3 manage.py runserver --nostatic --settings=swh.web.settings.development"
 
 run-django-webpack-dev: build-webpack-dev run-migrations
-	python3 swh/web/manage.py runserver --nostatic
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.development
 
 run-django-webpack-prod: build-webpack-prod run-migrations-prod clear-memcached
 	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production
 
 run-django-server-dev: run-migrations
-	python3 swh/web/manage.py runserver --nostatic
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.development
 
 run-django-server-prod: run-migrations-prod clear-memcached
 	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production

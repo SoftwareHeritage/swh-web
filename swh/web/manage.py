@@ -5,7 +5,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import os
 import sys
 
 from swh.web import config
@@ -16,12 +15,6 @@ if __name__ == "__main__":
     # in swh/web/urls.py, we pass the nostatic options to runserver
     # in order to have gzip compression enabled.
     swh_web_config['serve_assets'] = '--nostatic' in sys.argv
-    if len(sys.argv) > 1 and sys.argv[1] == 'test':
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE",
-                              "swh.web.settings.tests")
-    else:
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE",
-                              "swh.web.settings.development")
     # import root urls module for swh-web before running the django dev server
     # in order to ensure it will be automatically reloaded when source files
     # are modified (as django autoreload feature only works if the modules are
