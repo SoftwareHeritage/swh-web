@@ -98,8 +98,8 @@ describe('Test origin-search', function() {
     });
 
     it('should resolve revision', function() {
-      const redirectUrl = this.Urls.browse_revision(origin.revision);
-      const persistentId = `swh:1:rev:${origin.revision}`;
+      const redirectUrl = this.Urls.browse_revision(origin.revisions[0]);
+      const persistentId = `swh:1:rev:${origin.revisions[0]}`;
 
       searchShouldRedirect(persistentId, redirectUrl);
     });

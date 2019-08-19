@@ -35,13 +35,13 @@ before(function() {
       path: 'Source',
       id: 'cd19126d815470b28919d64b2a8e6a3e37f900dd'
     }],
-    revision: [],
+    revisions: [],
     invalidSubDir: 'Source1'
   }, {
     url: 'https://github.com/wcoder/highlightjs-line-numbers.js',
     content: [],
     directory: [],
-    revision: ['1c480a4573d2a003fc2630c21c2b25829de49972']
+    revisions: ['1c480a4573d2a003fc2630c21c2b25829de49972']
   }];
 
   const getMetadataForOrigin = async originUrl => {
@@ -68,7 +68,7 @@ before(function() {
       const directoryApiUrl = this.Urls.api_1_directory(metadata.directory);
       origin.dirContent = await httpGetJson(directoryApiUrl);
       origin.rootDirectory = metadata.directory;
-      origin.revision = metadata.revision;
+      origin.revisions.push(metadata.revision);
       origin.snapshot = metadata.snapshot;
 
       for (let content of origin.content) {

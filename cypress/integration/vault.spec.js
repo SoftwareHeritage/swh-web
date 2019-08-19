@@ -5,6 +5,14 @@
  * See top-level LICENSE file for more information
  */
 
+let vaultItems = [];
+
+const progressbarColors = {
+  'new': 'rgba(128, 128, 128, 0.5)',
+  'pending': 'rgba(0, 0, 255, 0.5)',
+  'done': 'rgb(92, 184, 92)'
+};
+
 function createVaultCookingTask(objectType) {
   cy.contains('button', 'Actions')
     .click();
@@ -16,10 +24,12 @@ function createVaultCookingTask(objectType) {
     .click();
 
   cy.get('.modal-dialog')
-    .contains('button', 'Ok')
+    .contains('button:visible', 'Ok')
     .click();
 }
 
+// Mocks API response : /api/1/vault/(:objectType)/(:hash)
+// objectType : {'directory', 'revision'}
 function genVaultCookingResponse(objectType, objectId, status, message, fetchUrl) {
   return {
     'obj_type': objectType,
@@ -31,6 +41,25 @@ function genVaultCookingResponse(objectType, objectId, status, message, fetchUrl
   };
 };
 
+// Tests progressbar color, status
+// And status in localStorage
+function testStatus(taskId, color, statusMsg, status) {
+  cy.get(`.swh-vault-table #vault-task-${taskId}`)
+    .should('be.visible')
+    .find('.progress-bar')
+    .should('be.visible')
+    .and('have.css', 'background-color', color)
+    .and('contain', statusMsg)
+    .then(() => {
+      // Vault item with object_id as taskId should exist in localStorage
+      const currentVaultItems = JSON.parse(window.localStorage.getItem('swh-vault-cooking-tasks'));
+      const vaultItem = currentVaultItems.find(obj => obj.object_id === taskId);
+
+      assert.isNotNull(vaultItem);
+      assert.strictEqual(vaultItem.status, status);
+    });
+}
+
 describe('Vault Cooking User Interface Tests', function() {
 
   before(function() {
@@ -38,15 +67,28 @@ describe('Vault Cooking User Interface Tests', function() {
     this.directoryUrl = this.Urls.browse_directory(this.directory);
     this.vaultDirectoryUrl = this.Urls.api_1_vault_cook_directory(this.directory);
     this.vaultFetchDirectoryUrl = this.Urls.api_1_vault_fetch_directory(this.directory);
+
+    this.revision = this.origin[1].revisions[0];
+    this.revisionUrl = this.Urls.browse_revision(this.revision);
+    this.vaultRevisionUrl = this.Urls.api_1_vault_cook_revision_gitfast(this.revision);
+    this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_revision_gitfast(this.revision);
+
+    vaultItems[0] = {
+      'object_type': 'revision',
+      'object_id': this.revision,
+      'email': '',
+      'status': 'done',
+      'fetch_url': `/api/1/vault/revision/${this.revision}/gitfast/raw/`,
+      'progress_message': null
+    };
+  });
+
+  beforeEach(function() {
     this.genVaultDirCookingResponse = (status, message = null) => {
       return genVaultCookingResponse('directory', this.directory, status,
                                      message, this.vaultFetchDirectoryUrl);
     };
 
-    this.revision = this.origin[1].revision[0];
-    this.revisionUrl = this.Urls.browse_revision(this.revision);
-    this.vaultRevisionUrl = this.Urls.api_1_vault_cook_revision_gitfast(this.revision);
-    this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_revision_gitfast(this.revision);
     this.genVaultRevCookingResponse = (status, message = null) => {
       return genVaultCookingResponse('revision', this.revision, status,
                                      message, this.vaultFetchRevisionUrl);
@@ -82,12 +124,9 @@ describe('Vault Cooking User Interface Tests', function() {
     // Check that a redirection to the vault UI has been performed
     cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
 
-    cy.wait('@checkVaultCookingTask');
-
-    // TODO: - check that a row has been created for the task in
-    //         the displayed table
-    //
-    //       - check progress bar state and color
+    cy.wait('@checkVaultCookingTask').then(() => {
+      testStatus(this.directory, progressbarColors['new'], 'new', 'new');
+    });
 
     // Stub response to the vault API indicating the task is processing
     cy.route({
@@ -96,9 +135,9 @@ describe('Vault Cooking User Interface Tests', function() {
       response: this.genVaultDirCookingResponse('pending', 'Processing...')
     }).as('checkVaultCookingTask');
 
-    cy.wait('@checkVaultCookingTask');
-
-    // TODO: check progress bar state and color
+    cy.wait('@checkVaultCookingTask').then(() => {
+      testStatus(this.directory, progressbarColors['pending'], 'Processing...', 'pending');
+    });
 
     // Stub response to the vault API indicating the task is finished
     cy.route({
@@ -107,13 +146,11 @@ describe('Vault Cooking User Interface Tests', function() {
       response: this.genVaultDirCookingResponse('done')
     }).as('checkVaultCookingTask');
 
-    cy.wait('@checkVaultCookingTask');
+    cy.wait('@checkVaultCookingTask').then(() => {
+      testStatus(this.directory, progressbarColors['done'], 'done', 'done');
+    });
 
-    // TODO: check progress bar state and color and that the download
-    //       button appeared
-
-    // Stub response to the vault API indicating to simulate archive
-    // download
+    // Stub response to the vault API to simulate archive download
     cy.route({
       method: 'GET',
       url: this.vaultFetchDirectoryUrl,
@@ -134,18 +171,126 @@ describe('Vault Cooking User Interface Tests', function() {
   });
 
   it('should create a revision cooking task and report its status', function() {
-    // TODO: The above test must be factorized to handle the revision cooking test
+    // Browse a revision
+    cy.visit(this.revisionUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // a task has been created
+    cy.route({
+      method: 'POST',
+      url: this.vaultRevisionUrl,
+      response: this.genVaultRevCookingResponse('new')
+    }).as('createVaultCookingTask');
+
+    cy.route({
+      method: 'GET',
+      url: this.vaultRevisionUrl,
+      response: this.genVaultRevCookingResponse('new')
+    }).as('checkVaultCookingTask');
+
+    // Create a vault cooking task through the GUI
+    createVaultCookingTask('Revision');
+
+    cy.wait('@createVaultCookingTask');
+
+    // Check that a redirection to the vault UI has been performed
+    cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
+
+    cy.wait('@checkVaultCookingTask').then(() => {
+      testStatus(this.revision, progressbarColors['new'], 'new', 'new');
+    });
+
+    // Stub response to the vault API indicating the task is processing
+    cy.route({
+      method: 'GET',
+      url: this.vaultRevisionUrl,
+      response: this.genVaultRevCookingResponse('pending', 'Processing...')
+    }).as('checkVaultCookingTask');
+
+    cy.wait('@checkVaultCookingTask').then(() => {
+      testStatus(this.revision, progressbarColors['pending'], 'Processing...', 'pending');
+    });
+
+    // Stub response to the vault API indicating the task is finished
+    cy.route({
+      method: 'GET',
+      url: this.vaultRevisionUrl,
+      response: this.genVaultRevCookingResponse('done')
+    }).as('checkVaultCookingTask');
+
+    cy.wait('@checkVaultCookingTask').then(() => {
+      testStatus(this.revision, progressbarColors['done'], 'done', 'done');
+    });
+
+    // Stub response to the vault API indicating to simulate archive
+    // download
+    cy.route({
+      method: 'GET',
+      url: this.vaultFetchRevisionUrl,
+      response: `fx:${this.revision}.gitfast.gz,binary`,
+      headers: {
+        'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
+        'Content-Type': 'application/gzip'
+      }
+    }).as('fetchCookedArchive');
+
+    cy.get(`#vault-task-${this.revision} .vault-dl-link button`)
+      .click();
+
+    cy.wait('@fetchCookedArchive').then((xhr) => {
+      assert.isNotNull(xhr.response.body);
+    });
   });
 
   it('should offer to recook an archive if no more available to download', function() {
-    // TODO:
-    //  - Simulate an already executed task by filling the 'swh-vault-cooking-tasks'
-    //    entry in browser localStorage (see vault-ui.js).
-    //
-    //  - Stub the response to the archive fetch url to return a 404 error.
-    //
-    //  - Check that the dialog offering to recook the archive is displayed
-    //    and that the cooking task can be created from it.
+    cy.visit(this.Urls.browse_vault())
+      .then(() => {
+        // Add uncooked task to localStorage
+        // which updates it in vault items list
+        window.localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultItems));
+      });
+
+    // Send 404 when fetching vault item
+    cy.route({
+      method: 'GET',
+      status: 404,
+      url: this.vaultFetchRevisionUrl,
+      response: {
+        'exception': 'NotFoundExc',
+        'reason': `Revision with ID '${this.revision}' not found.`
+      },
+      headers: {
+        'Content-Type': 'json'
+      }
+    }).as('fetchCookedArchive');
+
+    cy.get(`#vault-task-${this.revision} .vault-dl-link button`)
+      .click();
+
+    cy.wait('@fetchCookedArchive').then(() => {
+      cy.route({
+        method: 'POST',
+        url: this.vaultRevisionUrl,
+        response: this.genVaultRevCookingResponse('new')
+      }).as('createVaultCookingTask');
+
+      cy.route({
+        method: 'GET',
+        url: this.vaultRevisionUrl,
+        response: this.genVaultRevCookingResponse('new')
+      }).as('checkVaultCookingTask');
+
+      cy.get('#vault-recook-object-modal > .modal-dialog')
+        .should('be.visible')
+        .contains('button:visible', 'Ok')
+        .click();
+
+      cy.wait('@createVaultCookingTask')
+        .wait('@checkVaultCookingTask')
+        .then(() => {
+          testStatus(this.revision, progressbarColors['new'], 'new', 'new');
+        });
+    });
   });
 
 });

@@ -11,7 +11,7 @@ let diffData;
 describe('Test Diffs View', function() {
   before(function() {
     origin = this.origin[0];
-    const url = this.Urls.browse_revision(origin.revision) + `?origin=${origin.url}`;
+    const url = this.Urls.browse_revision(origin.revisions[0]) + `?origin=${origin.url}`;
 
     cy.visit(url).window().then(win => {
       cy.request(win.diffRevUrl)
@@ -22,7 +22,7 @@ describe('Test Diffs View', function() {
   });
 
   beforeEach(function() {
-    const url = this.Urls.browse_revision(origin.revision) + `?origin=${origin.url}`;
+    const url = this.Urls.browse_revision(origin.revisions[0]) + `?origin=${origin.url}`;
     cy.visit(url);
     cy.get('a[data-toggle="tab"]')
       .contains('Changes')
