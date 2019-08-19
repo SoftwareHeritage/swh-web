@@ -10,20 +10,21 @@ const nonExistentText = 'NoMatchExists';
 let origin;
 let url;
 
-function searchShouldRedirect(searchText, redirectUrl) {
+function doSearch(searchText) {
   cy.get('#origins-url-patterns')
-    .type(searchText);
-  cy.get('.swh-search-icon')
+    .type(searchText)
+    .get('.swh-search-icon')
     .click();
+}
+
+function searchShouldRedirect(searchText, redirectUrl) {
+  doSearch(searchText);
   cy.location('pathname')
     .should('equal', redirectUrl);
 }
 
 function searchShouldShowNotFound(searchText, msg) {
-  cy.get('#origins-url-patterns')
-    .type(searchText);
-  cy.get('.swh-search-icon')
-    .click();
+  doSearch(searchText);
   cy.get('#swh-no-result')
     .should('be.visible')
     .and('contain', msg);
@@ -39,14 +40,9 @@ describe('Test origin-search', function() {
     cy.visit(url);
   });
 
-  it('should show in result for any url substring', function() {
-    // Randomly select substring of origin url
-    const startIndex = Math.floor(Math.random() * origin.url.length);
-    const length = Math.floor(Math.random() * (origin.url.length - startIndex - 1)) + 1;
-    const originSubstring = origin.url.substr(startIndex, length);
-
+  it('should show in result when url is searched', function() {
     cy.get('#origins-url-patterns')
-      .type(originSubstring);
+      .type(origin.url);
     cy.get('.swh-search-icon')
       .click();
 
@@ -64,6 +60,33 @@ describe('Test origin-search', function() {
   it('should show not found message when no repo matches', function() {
     searchShouldShowNotFound(nonExistentText,
                              'No origins matching the search criteria were found.');
+  });
+
+  it('should add appropriate URL parameters', function() {
+    // Check all three checkboxes and check if
+    // correct url params are added
+    cy.get('#swh-search-origins-with-visit')
+      .check()
+      .get('#swh-filter-empty-visits')
+      .check()
+      .get('#swh-search-origin-metadata')
+      .check()
+      .then(() => {
+        const searchText = origin.url;
+        doSearch(searchText);
+        cy.location('search').then(locationSearch => {
+          const urlParams = new URLSearchParams(locationSearch);
+          const query = urlParams.get('q');
+          const withVisit = urlParams.has('with_visit');
+          const withContent = urlParams.has('with_content');
+          const searchMetadata = urlParams.has('search_metadata');
+
+          assert.strictEqual(query, searchText);
+          assert.strictEqual(withVisit, true);
+          assert.strictEqual(withContent, true);
+          assert.strictEqual(searchMetadata, true);
+        });
+      });
   });
 
   context('Test valid persistent ids', function() {
