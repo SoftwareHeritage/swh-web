@@ -26,16 +26,9 @@ class SwhBrowseRevisionTest(WebTestCase):
 
         revision_data = self.revision_get(revision)
 
-        author_id = revision_data['author']['id']
         author_name = revision_data['author']['name']
-        committer_id = revision_data['committer']['id']
         committer_name = revision_data['committer']['name']
         dir_id = revision_data['directory']
-
-        author_url = reverse('browse-person',
-                             url_args={'person_id': author_id})
-        committer_url = reverse('browse-person',
-                                url_args={'person_id': committer_id})
 
         directory_url = reverse('browse-directory',
                                 url_args={'sha1_git': dir_id})
@@ -47,10 +40,8 @@ class SwhBrowseRevisionTest(WebTestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/revision.html')
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (author_url, author_name))
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (committer_url, committer_name))
+        self.assertContains(resp, author_name)
+        self.assertContains(resp, committer_name)
         self.assertContains(resp, directory_url)
         self.assertContains(resp, history_url)
 
