@@ -26,13 +26,9 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
         rv = self.client.get(url)
 
         expected_release = self.release_get(release)
-        author_id = expected_release['author']['id']
         target_revision = expected_release['target']
-        author_url = reverse('api-1-person',
-                             url_args={'person_id': author_id})
         target_url = reverse('api-1-revision',
                              url_args={'sha1_git': target_revision})
-        expected_release['author_url'] = author_url
         expected_release['target_url'] = target_url
 
         self.assertEqual(rv.status_code, 200, rv.data)
@@ -79,10 +75,6 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
 
             expected_release = self.release_get(new_rel_id)
 
-            author_id = expected_release['author']['id']
-            author_url = reverse('api-1-person',
-                                 url_args={'person_id': author_id})
-
             if target_type == 'content':
                 url_args = {'q': 'sha1_git:%s' % target}
             else:
@@ -90,7 +82,6 @@ class ReleaseApiTestCase(WebTestCase, APITestCase):
 
             target_url = reverse('api-1-%s' % target_type,
                                  url_args=url_args)
-            expected_release['author_url'] = author_url
             expected_release['target_url'] = target_url
 
             self.assertEqual(rv.status_code, 200, rv.data)

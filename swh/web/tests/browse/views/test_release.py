@@ -63,11 +63,7 @@ class SwhBrowseReleaseTest(WebTestCase):
 
         release_id = release_data['id']
         release_name = release_data['name']
-        author_id = release_data['author']['id']
         author_name = release_data['author']['name']
-        author_url = reverse('browse-person',
-                             url_args={'person_id': author_id},
-                             query_params=query_params)
 
         release_date = release_data['date']
         message = release_data['message']
@@ -81,8 +77,7 @@ class SwhBrowseReleaseTest(WebTestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('browse/release.html')
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (author_url, author_name))
+        self.assertContains(resp, author_name)
         self.assertContains(resp, format_utc_iso_date(release_date))
         self.assertContains(resp,
                             '<h6>%s</h6>%s' % (message_lines[0] or 'None',

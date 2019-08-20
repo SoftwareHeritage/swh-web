@@ -16,14 +16,8 @@ from swh.web.api.views.utils import api_lookup
 
 DOC_RETURN_REVISION = '''
         :>json object author: information about the author of the revision
-        :>json string author_url: link to
-            :http:get:`/api/1/person/(person_id)/` to get information about the
-            author of the revision
         :>json object committer: information about the committer of the
             revision
-        :>json string committer_url: link to
-            :http:get:`/api/1/person/(person_id)/` to get information about the
-            committer of the revision
         :>json string committer_date: ISO representation of the commit date
             (in UTC)
         :>json string date: ISO representation of the revision date (in UTC)

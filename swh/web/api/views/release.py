@@ -29,9 +29,6 @@ def api_release(request, sha1_git):
         {common_headers}
 
         :>json object author: information about the author of the release
-        :>json string author_url: link to
-            :http:get:`/api/1/person/(person_id)/` to get information about the
-            author of the release
         :>json string date: ISO representation of the release date (in UTC)
         :>json string id: the release unique identifier
         :>json string message: the message associated to the release

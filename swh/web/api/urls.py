@@ -8,7 +8,6 @@ import swh.web.api.views.directory # noqa
 import swh.web.api.views.identifiers # noqa
 import swh.web.api.views.origin # noqa
 import swh.web.api.views.origin_save # noqa
-import swh.web.api.views.person # noqa
 import swh.web.api.views.release # noqa
 import swh.web.api.views.revision # noqa
 import swh.web.api.views.snapshot # noqa

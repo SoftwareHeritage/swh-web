@@ -147,7 +147,3 @@ class WebTestCase(TestCase):
             hash_to_bytes(snapshot_id), branches_from.encode(),
             branches_count, target_types)
         return converters.from_snapshot(snp)
-
-    def person_get(self, person_id):
-        person = next(self.storage.person_get([person_id]))
-        return converters.from_person(person)

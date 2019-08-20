@@ -66,16 +66,6 @@ class SwhBrowseUtilsTestCase(WebTestCase):
             utils.gen_link('https://www.softwareheritage.org/', 'swh'),
             '<a href="https://www.softwareheritage.org/">swh</a>')
 
-    def test_gen_person_link(self):
-        person_id = 8221896
-        person_name = 'Antoine Lambert'
-        person_url = reverse('browse-person',
-                             url_args={'person_id': person_id})
-
-        self.assertEqual(utils.gen_person_link(person_id, person_name,
-                                               link_attrs=None),
-                         '<a href="%s">%s</a>' % (person_url, person_name))
-
     def test_gen_revision_link(self):
         revision_id = '28a0bc4120d38a394499382ba21d6965a67a3703'
         revision_url = reverse('browse-revision',
