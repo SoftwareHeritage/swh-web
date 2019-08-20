@@ -663,15 +663,6 @@ class ServiceTestCase(WebTestCase):
 
         self.assertEqual(actual_content, expected_content)
 
-    @given(revision())
-    def test_lookup_person(self, revision):
-
-        rev_data = self.revision_get(revision)
-
-        actual_person = service.lookup_person(rev_data['author']['id'])
-
-        self.assertEqual(actual_person, rev_data['author'])
-
     def test_lookup_directory_bad_checksum(self):
 
         with self.assertRaises(BadInputExc):

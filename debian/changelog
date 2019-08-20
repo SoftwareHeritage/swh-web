@@ -1,8 +1,11 @@
-swh-web (0.0.207-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.208-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-swh
+  * New upstream release 0.0.208     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2019-08-20 13:52:25 +0200)
+  * Upstream changes:     - v0.0.208     - * Remove "person_get"
+    endpoints     - * Add cypress tests
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 09 Aug 2019 13:12:10 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 20 Aug 2019 12:30:54 +0000
 
 swh-web (0.0.207-1~swh1) unstable-swh; urgency=medium
 

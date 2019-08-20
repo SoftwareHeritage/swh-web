@@ -116,9 +116,6 @@ class UtilsTestCase(WebTestCase):
             if view_name == 'api-1-content':
                 id = url_args['q']
                 return '/api/1/content/%s/' % id
-            elif view_name == 'api-1-person':
-                id = url_args['person_id']
-                return '/api/1/person/%s/' % id
             else:
                 raise ValueError(
                     'This should not happened so fail if it does.')
@@ -141,7 +138,6 @@ class UtilsTestCase(WebTestCase):
             'target': '123',
             'target_type': 'content',
             'target_url': '/api/1/content/sha1_git:123/',
-            'author_url': '/api/1/person/100/',
             'author': {
                 'id': 100,
                 'name': 'author release name',
@@ -151,7 +147,6 @@ class UtilsTestCase(WebTestCase):
 
         mock_django_reverse.assert_has_calls([
                 call('api-1-content', url_args={'q': 'sha1_git:123'}),
-                call('api-1-person', url_args={'person_id': 100})
         ])
 
     @patch('swh.web.api.utils.reverse')
@@ -419,8 +414,6 @@ class UtilsTestCase(WebTestCase):
                 return '/api/revision/' + url_args['sha1_git'] + '/log/'
             elif view_name == 'api-1-directory':
                 return '/api/directory/' + url_args['sha1_git'] + '/'
-            elif view_name == 'api-1-person':
-                return '/api/person/' + url_args['person_id'] + '/'
 
         mock_django_reverse.side_effect = reverse_test
 
@@ -439,9 +432,7 @@ class UtilsTestCase(WebTestCase):
             'history_url': '/api/revision/rev-id/log/',
             'directory_url': '/api/directory/123/',
             'author': {'id': '1'},
-            'author_url': '/api/person/1/',
             'committer': {'id': '2'},
-            'committer_url': '/api/person/2/'
         }
 
         # then
@@ -450,8 +441,6 @@ class UtilsTestCase(WebTestCase):
         mock_django_reverse.assert_has_calls(
             [call('api-1-revision', url_args={'sha1_git': 'rev-id'}),
              call('api-1-revision-log', url_args={'sha1_git': 'rev-id'}),
-             call('api-1-person', url_args={'person_id': '1'}),
-             call('api-1-person', url_args={'person_id': '2'}),
              call('api-1-directory', url_args={'sha1_git': '123'})])
 
     @patch('swh.web.api.utils.reverse')

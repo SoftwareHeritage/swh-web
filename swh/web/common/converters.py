@@ -353,7 +353,7 @@ def from_snapshot(snapshot):
 
 
 def from_directory_entry(dir_entry):
-    """Convert swh person to serializable person dictionary.
+    """Convert swh directory to serializable directory dictionary.
 
     """
     return from_swh(dir_entry,
@@ -367,7 +367,8 @@ def from_directory_entry(dir_entry):
 
 
 def from_filetype(content_entry):
-    """Convert swh person to serializable person dictionary.
+    """Convert swh content to serializable dictionary containing keys
+    'id', 'encoding', and 'mimetype'.
 
     """
     return from_swh(content_entry,

@@ -12,7 +12,7 @@ from swh.web.common.utils import (
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
-    gen_person_link, gen_revision_link, get_snapshot_context, gen_link,
+    gen_revision_link, get_snapshot_context, gen_link,
     gen_snapshot_link, get_swh_persistent_ids, gen_directory_link,
     gen_content_link, gen_release_link
 )
@@ -71,9 +71,7 @@ def release_browse(request, sha1_git):
     if release['author']:
         author_name = release['author']['name'] or \
                       release['author']['fullname']
-        release_data['author'] = \
-            gen_person_link(release['author']['id'], author_name,
-                            snapshot_context)
+        release_data['author'] = author_name,
     release_data['date'] = format_utc_iso_date(release['date'])
     release_data['release'] = sha1_git
     release_data['name'] = release['name']
