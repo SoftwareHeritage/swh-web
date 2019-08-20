@@ -528,28 +528,6 @@ def _snapshot_context_query_params(snapshot_context):
     return query_params
 
 
-def gen_person_link(person_id, person_name, snapshot_context=None,
-                    link_attrs=None):
-    """
-    Utility function for generating a link to a person HTML view
-    to insert in Django templates.
-
-    Args:
-        person_id (int): a person id
-        person_name (str): the associated person name
-        link_attrs (dict): optional attributes (e.g. class)
-            to add to the link
-
-    Returns:
-        An HTML link in the form '<a href="person_view_url">person_name</a>'
-
-    """
-    query_params = _snapshot_context_query_params(snapshot_context)
-    person_url = reverse('browse-person', url_args={'person_id': person_id},
-                         query_params=query_params)
-    return gen_link(person_url, person_name or 'None', link_attrs)
-
-
 def gen_revision_url(revision_id, snapshot_context=None):
     """
     Utility function for generating an url to a revision.

@@ -21,7 +21,7 @@ from swh.web.common.utils import (
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.utils import (
-    gen_link, gen_person_link, gen_revision_link, gen_revision_url,
+    gen_link, gen_revision_link, gen_revision_url,
     get_snapshot_context, get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
     content_display_max_size, gen_snapshot_link, get_readme_to_display,
@@ -326,14 +326,12 @@ def revision_browse(request, sha1_git, extra_path=None):
     if revision['author']:
         author_name = revision['author']['name'] or \
                       revision['author']['fullname']
-        revision_data['author'] = \
-            gen_person_link(revision['author']['id'], author_name,
-                            snapshot_context)
+        revision_data['author'] = author_name,
     revision_data['committer'] = 'None'
     if revision['committer']:
-        revision_data['committer'] = \
-            gen_person_link(revision['committer']['id'],
-                            revision['committer']['name'], snapshot_context)
+        committer_name = revision['committer']['name'] or \
+                         revision['committer']['fullname']
+        revision_data['committer'] = committer_name
     revision_data['committer date'] = \
         format_utc_iso_date(revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])

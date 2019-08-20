@@ -522,14 +522,6 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
             {'sha1_git': '666'}, 'some/other/path', url, with_data=False)
 
     def _enrich_revision(self, revision):
-        author_url = reverse(
-            'api-1-person',
-            url_args={'person_id': revision['author']['id']})
-
-        committer_url = reverse(
-            'api-1-person',
-            url_args={'person_id': revision['committer']['id']})
-
         directory_url = reverse(
             'api-1-directory',
             url_args={'sha1_git': revision['directory']})
@@ -547,8 +539,6 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         revision_url = reverse('api-1-revision',
                                url_args={'sha1_git': revision['id']})
 
-        revision['author_url'] = author_url
-        revision['committer_url'] = committer_url
         revision['directory_url'] = directory_url
         revision['history_url'] = history_url
         revision['url'] = revision_url
