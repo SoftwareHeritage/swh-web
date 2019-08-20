@@ -27,11 +27,7 @@ httpdomain_doc = """
     :resheader Content-Type: this depends on :http:header:`Accept` header of request
 
     :>json object author: information about the author of the revision
-    :>json string author_url: link to :http:get:`/api/1/person/(person_id)/` to get
-        information about the author of the revision
     :>json object committer: information about the committer of the revision
-    :>json string committer_url: link to :http:get:`/api/1/person/(person_id)/` to get
-        information about the committer of the revision
     :>json string committer_date: ISO representation of the commit date (in UTC)
     :>json string date: ISO representation of the revision date (in UTC)
     :>json string directory: the unique identifier that revision points to
@@ -209,19 +205,9 @@ model module for details about how they are computed.'
                 'doc': 'information about the author of the revision'
             },
             {
-                'name': 'author_url',
-                'type': 'string',
-                'doc': 'link to `</api/1/person/>`_ to get information about the author of the revision'
-            },
-            {
                 'name': 'committer',
                 'type': 'object',
                 'doc': 'information about the committer of the revision'
-            },
-            {
-                'name': 'committer_url',
-                'type': 'string',
-                'doc': 'link to `</api/1/person/>`_ to get information about the committer of the revision'
             },
             {
                 'name': 'committer_date',

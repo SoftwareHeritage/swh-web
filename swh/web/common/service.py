@@ -311,25 +311,6 @@ def lookup_origin_intrinsic_metadata(origin_dict):
     return result
 
 
-def lookup_person(person_id):
-    """Return information about the person with id person_id.
-
-    Args:
-        person_id as string
-
-    Returns:
-        person information as dict.
-
-    Raises:
-        NotFoundExc if there is no person with the provided id.
-
-    """
-    person = _first_element(storage.person_get([int(person_id)]))
-    if not person:
-        raise NotFoundExc('Person with id %s not found' % person_id)
-    return converters.from_person(person)
-
-
 def _to_sha1_bin(sha1_hex):
     _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
         sha1_hex,

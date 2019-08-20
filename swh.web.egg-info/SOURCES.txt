@@ -40,7 +40,6 @@ swh/web/api/views/directory.py
 swh/web/api/views/identifiers.py
 swh/web/api/views/origin.py
 swh/web/api/views/origin_save.py
-swh/web/api/views/person.py
 swh/web/api/views/release.py
 swh/web/api/views/revision.py
 swh/web/api/views/snapshot.py
@@ -120,7 +119,6 @@ swh/web/browse/views/__init__.py
 swh/web/browse/views/content.py
 swh/web/browse/views/directory.py
 swh/web/browse/views/origin.py
-swh/web/browse/views/person.py
 swh/web/browse/views/release.py
 swh/web/browse/views/revision.py
 swh/web/browse/views/snapshot.py
@@ -1559,7 +1557,6 @@ swh/web/tests/api/views/test_directory.py
 swh/web/tests/api/views/test_identifiers.py
 swh/web/tests/api/views/test_origin.py
 swh/web/tests/api/views/test_origin_save.py
-swh/web/tests/api/views/test_person.py
 swh/web/tests/api/views/test_release.py
 swh/web/tests/api/views/test_revision.py
 swh/web/tests/api/views/test_snapshot.py
@@ -1572,7 +1569,6 @@ swh/web/tests/browse/views/test_content.py
 swh/web/tests/browse/views/test_directory.py
 swh/web/tests/browse/views/test_identifiers.py
 swh/web/tests/browse/views/test_origin.py
-swh/web/tests/browse/views/test_person.py
 swh/web/tests/browse/views/test_release.py
 swh/web/tests/browse/views/test_revision.py
 swh/web/tests/common/__init__.py

@@ -70,11 +70,6 @@ def enrich_object(object):
                 reverse('api-1-snapshot',
                         url_args={'snapshot_id': obj['target']})
 
-    if 'author' in obj:
-        author = obj['author']
-        obj['author_url'] = reverse('api-1-person',
-                                    url_args={'person_id': author['id']})
-
     return obj
 
 
@@ -171,16 +166,6 @@ def enrich_revision(revision):
                               url_args={'sha1_git': revision['id']})
     revision['history_url'] = reverse('api-1-revision-log',
                                       url_args={'sha1_git': revision['id']})
-
-    if 'author' in revision:
-        author = revision['author']
-        revision['author_url'] = reverse('api-1-person',
-                                         url_args={'person_id': author['id']})
-
-    if 'committer' in revision:
-        committer = revision['committer']
-        revision['committer_url'] = reverse(
-            'api-1-person', url_args={'person_id': committer['id']})
 
     if 'directory' in revision:
         revision['directory_url'] = reverse(
