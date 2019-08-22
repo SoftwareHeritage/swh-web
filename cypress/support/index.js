@@ -16,6 +16,7 @@ Cypress.Screenshot.defaults({
 before(function() {
   this.unarchivedRepo = {
     url: 'https://github.com/SoftwareHeritage/swh-web',
+    type: 'git',
     revision: '7bf1b2f489f16253527807baead7957ca9e8adde',
     snapshot: 'd9829223095de4bb529790de8ba4e4813e38672d',
     rootDirectory: '7d887d96c0047a77e2e8c4ee9bb1528463677663',
@@ -26,6 +27,7 @@ before(function() {
 
   this.origin = [{
     url: 'https://github.com/memononen/libtess2',
+    type: 'git',
     content: [{
       path: 'Source/tess.h'
     }, {
@@ -39,6 +41,7 @@ before(function() {
     invalidSubDir: 'Source1'
   }, {
     url: 'https://github.com/wcoder/highlightjs-line-numbers.js',
+    type: 'git',
     content: [],
     directory: [],
     revisions: ['1c480a4573d2a003fc2630c21c2b25829de49972']
