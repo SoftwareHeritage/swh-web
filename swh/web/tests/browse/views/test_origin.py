@@ -692,9 +692,11 @@ class SwhBrowseOriginTest(WebTestCase):
             if i == 0:
                 snp_dict['branches'][branch] = None
             else:
-                snp_dict['branches'][branch]['target_type'] = 'revision'
-                snp_dict['branches'][branch]['target'] = hash_to_bytes(
-                    revisions[i-1])
+                snp_dict['branches'][branch] = {
+                    'target_type': 'revision',
+                    'target': hash_to_bytes(revisions[i-1]),
+                }
+
         self.storage.snapshot_add([snp_dict])
         visit = self.storage.origin_visit_add(
             new_origin['url'], visit_dates[0])

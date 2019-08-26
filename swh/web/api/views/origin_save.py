@@ -43,7 +43,7 @@ def api_save_origin(request, origin_type, origin_url):
 
             * **not created**: no saving task has been created
             * **not yet scheduled**: saving task has been created but its
-                execution has not yet been scheduled
+              execution has not yet been scheduled
             * **scheduled**: the task execution has been scheduled
             * **succeed**: the saving task has been successfully executed
             * **failed**: the saving task has been executed but it failed
@@ -69,7 +69,7 @@ def api_save_origin(request, origin_type, origin_url):
             **succeed** or **failed**
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-            :http:method:`head`, :http:method:`options`
+        :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid origin type or url has been provided

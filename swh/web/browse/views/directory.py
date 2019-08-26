@@ -32,7 +32,7 @@ def directory_browse(request, sha1_git, path=None):
     by its sha1_git value.
 
     The url that points to it is
-        :http:get:`/browse/directory/(sha1_git)/[(path)/]`
+    :http:get:`/browse/directory/(sha1_git)/[(path)/]`
     """
     root_sha1_git = sha1_git
     try:

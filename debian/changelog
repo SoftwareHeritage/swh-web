@@ -1,8 +1,13 @@
-swh-web (0.0.208-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.209-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-swh
+  * New upstream release 0.0.209     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2019-08-26 18:14:16 +0200)
+  * Upstream changes:     - v0.0.209     - * fix in generated
+    documentation     - * test fixes / new tests     - * remove
+    references to `person['id']` and person_get API/browse     - * fix
+    crash on metadata search results whose `origin_url` is missing
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 20 Aug 2019 12:34:07 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 26 Aug 2019 16:39:53 +0000
 
 swh-web (0.0.208-1~swh1) unstable-swh; urgency=medium
 

@@ -1075,7 +1075,7 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
     Args:
         swh_objects (list): a list of dict with the following keys:
             * type: swh object type
-                (content/directory/release/revision/snapshot)
+              (content/directory/release/revision/snapshot)
             * id: swh object id
         snapshot_context (dict): optional parameter describing the snapshot in
             which the object has been found
@@ -1083,7 +1083,7 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
     Returns:
         list: a list of dict with the following keys:
             * object_type: the swh object type
-                (content/directory/release/revision/snapshot)
+              (content/directory/release/revision/snapshot)
             * object_icon: the swh object icon to use in HTML views
             * swh_id: the computed swh object persistent identifier
             * swh_id_url: the url resolving the persistent identifier

@@ -404,22 +404,6 @@ def unknown_snapshot():
         lambda s: storage.snapshot_get(hash_to_bytes(s)) is None)
 
 
-def person():
-    """
-    Hypothesis strategy returning a random person ingested
-    into the test archive.
-    """
-    return _known_swh_object('persons')
-
-
-def unknown_person():
-    """
-    Hypothesis strategy returning a random person not ingested
-    into the test archive.
-    """
-    return integers(min_value=1000000)
-
-
 def _get_origin_dfs_revisions_walker():
     tests_data = get_tests_data()
     storage = tests_data['storage']

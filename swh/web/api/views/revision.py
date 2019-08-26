@@ -123,7 +123,8 @@ def api_revision_log_by(request, origin_id,
 
         {return_revision_array}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: no revision matching the given criteria could be found in the archive
@@ -273,7 +274,8 @@ def api_revision_with_origin(request, origin_id,
 
         {return_revision}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: no revision matching the given criteria could be found in the archive
@@ -314,7 +316,7 @@ def api_revision(request, sha1_git):
         {return_revision}
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-            :http:method:`options`
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
@@ -374,7 +376,8 @@ def api_revision_directory(request, sha1_git,
         :>json string revision: the unique revision identifier
         :>json string type: the type of the directory
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
@@ -415,7 +418,8 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
 
         {return_revision_array}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
+        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
