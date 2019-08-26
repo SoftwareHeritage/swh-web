@@ -67,9 +67,22 @@ run-django-webpack-memory-storages: build-webpack-dev run-migrations
 test-full:
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
-test-frontend: build-webpack-test run-migrations-test
-	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run && pkill -P $$! && $(YARN) run mochawesome
+.PHONY: test-frontend-cmd
+test-frontend-cmd: build-webpack-test run-migrations-test
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run ; pkill -P $$! ; $(YARN) run mochawesome
 
-test-frontend-ui: build-webpack-test run-migrations-test
+test-frontend: export CYPRESS_SKIP_SLOW_TESTS=1
+test-frontend: test-frontend-cmd
+
+test-frontend-full: export CYPRESS_SKIP_SLOW_TESTS=0
+test-frontend-full: test-frontend-cmd
+
+.PHONY: test-frontend-ui-cmd
+test-frontend-ui-cmd: build-webpack-test run-migrations-test
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT; jobs -p | head -1 | xargs pkill -P' SIGINT SIGTERM ERR EXIT; python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress open"
 
+test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=1
+test-frontend-ui: test-frontend-ui-cmd
+
+test-frontend-full-ui: export CYPRESS_SKIP_SLOW_TESTS=0
+test-frontend-full-ui: test-frontend-ui-cmd

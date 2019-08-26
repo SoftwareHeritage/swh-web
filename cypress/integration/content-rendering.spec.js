@@ -5,9 +5,9 @@
  * See top-level LICENSE file for more information
  */
 
-import {checkLanguageHighlighting} from '../utils';
+import {checkLanguageHighlighting, describeSlowTests} from '../utils';
 
-describe('Code highlighting tests', function() {
+describeSlowTests('Code highlighting tests', function() {
 
   const extensions = require('../fixtures/source-file-extensions.json');
 

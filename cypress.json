@@ -16,5 +16,8 @@
       "html": false,
       "json": true
     }
+  },
+  "env": {
+    "SKIP_SLOW_TESTS": 1
   }
 }

@@ -50,3 +50,5 @@ export function random(start, end) {
   const range = end - start;
   return Math.floor(Math.random() * range) + start;
 }
+
+export const describeSlowTests = Cypress.env('SKIP_SLOW_TESTS') === 1 ? describe.skip : describe;
