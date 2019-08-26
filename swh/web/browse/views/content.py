@@ -35,7 +35,7 @@ def content_raw(request, query_string):
     by its hash value.
 
     The url that points to it is
-        :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
+    :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
     """
     try:
         re_encode = bool(strtobool(request.GET.get('re_encode', 'false')))
@@ -172,7 +172,7 @@ def content_display(request, query_string):
     by its hash value.
 
     The url that points to it is
-        :http:get:`/browse/content/[(algo_hash):](hash)/`
+    :http:get:`/browse/content/[(algo_hash):](hash)/`
     """
     try:
         algo, checksum = query.parse_hash(query_string)

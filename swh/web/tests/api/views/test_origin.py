@@ -477,6 +477,62 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
                 .assert_called_with(conjunction=['Jane Doe'], limit=70)
 
+    @pytest.mark.origin_id
+    @given(origin())
+    def test_api_origin_metadata_search_missing_url(self, origin):
+        """indexer-storage with outdated db will return origin_url: None."""
+        with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
+            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+                .side_effect = lambda conjunction, limit: [{
+                    'id': origin['id'],
+                    'from_revision': (
+                        b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
+                        b'\xf2U\xfa\x05B8'),
+                    'metadata': {'author': 'Jane Doe'},
+                    'origin_url': None,
+                    'tool': {
+                        'configuration': {
+                            'context': ['NpmMapping', 'CodemetaMapping'],
+                            'type': 'local'
+                        },
+                        'id': 3,
+                        'name': 'swh-metadata-detector',
+                        'version': '0.0.1'
+                    }
+                }]
+
+            url = reverse('api-1-origin-metadata-search',
+                          query_params={'fulltext': 'Jane Doe'})
+            rv = self.client.get(url)
+
+            self.assertEqual(rv.status_code, 200, rv.content)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            expected_data = [{
+                'type': origin['type'],
+                'url': origin['url'],
+                'metadata': {
+                    'metadata': {'author': 'Jane Doe'},
+                    'from_revision': (
+                        '7026b7c1a2af56521e951c01ed20f255fa054238'),
+                    'tool': {
+                        'configuration': {
+                            'context': ['NpmMapping', 'CodemetaMapping'],
+                            'type': 'local'
+                        },
+                        'id': 3,
+                        'name': 'swh-metadata-detector',
+                        'version': '0.0.1',
+                    }
+                }
+            }]
+            actual_data = rv.data
+            for d in actual_data:
+                if 'id' in d:
+                    del d['id']
+            self.assertEqual(rv.data, expected_data)
+            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+                .assert_called_with(conjunction=['Jane Doe'], limit=70)
+
     @given(origin())
     def test_api_origin_metadata_search_limit(self, origin):
 
@@ -580,6 +636,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         nb_origins = len(new_origins)
 
         expected_origins = self.storage.origin_add(new_origins)
+        expected_origins.sort(key=lambda orig: orig['id'])
 
         origin_from_idx = random.randint(1, nb_origins-1) - 1
         origin_from = expected_origins[origin_from_idx]['id']

@@ -39,7 +39,7 @@ def snapshot_directory_browse(request, snapshot_id, path=None):
     in a snapshot.
 
     The url that points to it is
-        :http:get:`/browse/snapshot/(snapshot_id)/directory/[(path)/]`
+    :http:get:`/browse/snapshot/(snapshot_id)/directory/[(path)/]`
     """
     origin_type = request.GET.get('origin_type', None)
     origin_url = request.GET.get('origin_url', None)
@@ -58,7 +58,7 @@ def snapshot_content_browse(request, snapshot_id, path):
     collected in a snapshot.
 
     The url that points to it is
-        :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
+    :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
     """
     language = request.GET.get('language', None)
     return browse_snapshot_content(request, snapshot_id=snapshot_id, path=path,
@@ -73,7 +73,7 @@ def snapshot_log_browse(request, snapshot_id):
     the commit log) collected in a snapshot.
 
     The url that points to it is
-        :http:get:`/browse/snapshot/(snapshot_id)/log/`
+    :http:get:`/browse/snapshot/(snapshot_id)/log/`
     """
     return browse_snapshot_log(request, snapshot_id=snapshot_id)
 
@@ -86,7 +86,7 @@ def snapshot_branches_browse(request, snapshot_id):
     collected in a snapshot.
 
     The url that points to it is
-        :http:get:`/browse/snapshot/(snapshot_id)/branches/`
+    :http:get:`/browse/snapshot/(snapshot_id)/branches/`
     """
     return browse_snapshot_branches(request, snapshot_id=snapshot_id)
 
@@ -99,6 +99,6 @@ def snapshot_releases_browse(request, snapshot_id):
     collected in a snapshot.
 
     The url that points to it is
-        :http:get:`/browse/snapshot/(snapshot_id)/releases/`
+    :http:get:`/browse/snapshot/(snapshot_id)/releases/`
     """
     return browse_snapshot_releases(request, snapshot_id=snapshot_id)
