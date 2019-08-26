@@ -226,7 +226,7 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
         dict: a dict with the following keys:
 
             * **swh_id_parsed (swh.model.identifiers.PersistentId)**:
-                the parsed identifier
+              the parsed identifier
             * **browse_url (str)**: the url for browsing the pointed object
 
     Raises:

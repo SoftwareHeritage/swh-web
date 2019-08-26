@@ -53,7 +53,7 @@ def api_vault_cook_directory(request, dir_id):
 
         Once the cooking task has been executed, the resulting archive can
         be downloaded using the dedicated endpoint
-            :http:get:`/api/1/vault/directory/(dir_id)/raw/`.
+        :http:get:`/api/1/vault/directory/(dir_id)/raw/`.
 
         Then to extract the cooked directory in the current one, use::
 
@@ -78,7 +78,7 @@ def api_vault_cook_directory(request, dir_id):
         :>json string obj_id: the identifier of the object to cook
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-            :http:method:`head`, :http:method:`options`
+        :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
@@ -111,7 +111,7 @@ def api_vault_fetch_directory(request, dir_id):
         :resheader Content-Type: application/octet-stream
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-            :http:method:`options`
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
@@ -149,7 +149,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
         Once the cooking task has been executed, the resulting gitfast archive
         can be downloaded using the dedicated endpoint
-            :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
+        :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
 
         Then to import the revision in the current directory, use::
 
@@ -175,7 +175,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         :>json string obj_id: the identifier of the object to cook
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-            :http:method:`head`, :http:method:`options`
+        :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
@@ -208,7 +208,7 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
         :resheader Content-Type: application/octet-stream
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-            :http:method:`options`
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided

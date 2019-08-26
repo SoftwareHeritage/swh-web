@@ -40,7 +40,7 @@ def api_release(request, sha1_git):
             target type
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-            :http:method:`options`
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
