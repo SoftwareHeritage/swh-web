@@ -276,12 +276,25 @@ def search_origin_metadata(fulltext, limit=50):
     matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
         conjunction=[fulltext], limit=limit)
     results = []
+
     for match in matches:
         match['from_revision'] = hashutil.hash_to_hex(match['from_revision'])
-        result = converters.from_origin(
-            storage.origin_get({'url': match.pop('origin_url')}))
-        result['metadata'] = match
-        results.append(result)
+
+        if match['origin_url']:
+            origin = storage.origin_get({'url': match['origin_url']})
+        else:
+            # Fallback to origin-id for idx-storage with outdated db
+            origin = storage.origin_get({'id': match['id']})
+
+        del match['origin_url']
+        if 'id' in match:
+            del match['id']
+
+        result = converters.from_origin(origin)
+        if result:
+            result['metadata'] = match
+            results.append(result)
+
     return results
 
 
