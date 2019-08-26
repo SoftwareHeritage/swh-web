@@ -156,7 +156,7 @@ def origin_visits_browse(request, origin_url, origin_type=None):
     for a swh origin identified by its id or its url.
 
     The url that points to it is
-        :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visits/`.
+    :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visits/`.
     """
     try:
         origin_info = get_origin_info(origin_url, origin_type)

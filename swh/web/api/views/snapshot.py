@@ -55,7 +55,7 @@ def api_snapshot(request, snapshot_id):
         :>json string id: the unique identifier of the snapshot
 
         **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-            :http:method:`options`
+        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid snapshot identifier has been provided

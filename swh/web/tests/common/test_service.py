@@ -863,6 +863,7 @@ class ServiceTestCase(WebTestCase):
 
         nb_origins = len(new_origins)
         expected_origins = self.storage.origin_add(new_origins)
+        expected_origins.sort(key=lambda orig: orig['id'])
 
         origin_from_idx = random.randint(1, nb_origins-1) - 1
         origin_from = expected_origins[origin_from_idx]['id']
