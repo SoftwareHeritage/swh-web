@@ -73,6 +73,20 @@ describe('Test Admin Features', function() {
   });
 
   it('should redirect to correct page after login', function() {
+    // mock calls to deposit list api to avoid possible errors
+    // while running the test
+    cy.server();
+    cy.route({
+      method: 'GET',
+      url: `${this.Urls.admin_deposit_list()}**`,
+      response: {
+        data: [],
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        draw: 1
+      }
+    });
+
     cy.visit(this.Urls.admin_deposit())
       .location('search')
       .should('contain', `next=${this.Urls.admin_deposit()}`);
