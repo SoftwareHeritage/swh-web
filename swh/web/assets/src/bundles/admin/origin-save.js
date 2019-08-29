@@ -17,9 +17,11 @@ function enableRowSelection(tableSel) {
   $(`${tableSel} tbody`).on('click', 'tr', function() {
     if ($(this).hasClass('selected')) {
       $(this).removeClass('selected');
+      $(tableSel).closest('.tab-pane').find('.swh-action-need-selection').prop('disabled', true);
     } else {
       $(`${tableSel} tr.selected`).removeClass('selected');
       $(this).addClass('selected');
+      $(tableSel).closest('.tab-pane').find('.swh-action-need-selection').prop('disabled', false);
     }
   });
 }
