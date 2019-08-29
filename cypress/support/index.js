@@ -76,28 +76,25 @@ before(function() {
 
       for (let content of origin.content) {
 
-        cy.visit(this.Urls.browse_origin_content(origin.url, content.path))
-          .window().then(win => {
-            const contentMetaData = win.swh.webapp.getBrowsedSwhObjectMetadata();
+        const contentPathApiUrl = this.Urls.api_1_directory(origin.rootDirectory, content.path);
+        const contentMetaData = await httpGetJson(contentPathApiUrl);
 
-            content.name = contentMetaData.filename;
-            content.sha1git = contentMetaData.sha1_git;
-            content.directory = contentMetaData.directory;
+        content.name = contentMetaData.name.split('/').slice(-1)[0];
+        content.sha1git = contentMetaData.target;
+        content.directory = contentMetaData.dir_id;
 
-            content.rawFilePath = this.Urls.browse_content_raw(`sha1_git:${content.sha1git}`) +
-                                `?filename=${encodeURIComponent(content.name)}`;
+        content.rawFilePath = this.Urls.browse_content_raw(`sha1_git:${content.sha1git}`) +
+                            `?filename=${encodeURIComponent(content.name)}`;
 
-            cy.request(content.rawFilePath)
-              .then((response) => {
-                const fileText = response.body;
-                const fileLines = fileText.split('\n');
-                content.numberLines = fileLines.length;
+        cy.request(content.rawFilePath)
+          .then((response) => {
+            const fileText = response.body;
+            const fileLines = fileText.split('\n');
+            content.numberLines = fileLines.length;
 
-                // If last line is empty its not shown
-                if (!fileLines[content.numberLines - 1]) content.numberLines -= 1;
-              });
+            // If last line is empty its not shown
+            if (!fileLines[content.numberLines - 1]) content.numberLines -= 1;
           });
-
       }
 
     }
