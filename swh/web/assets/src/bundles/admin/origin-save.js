@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost} from 'utils/functions';
+import {handleFetchError, csrfPost, htmlAlert} from 'utils/functions';
 
 let authorizedOriginTable;
 let unauthorizedOriginTable;
@@ -196,11 +196,14 @@ export function addAuthorizedOriginUrl() {
     .then(handleFetchError)
     .then(() => {
       authorizedOriginTable.row.add({'url': originUrl}).draw();
+      $('.swh-add-authorized-origin-status').html(
+        htmlAlert('success', 'The origin url prefix has been successfully added in the authorized list.', true)
+      );
     })
     .catch(response => {
-      swh.webapp.showModalMessage(
-        'Duplicated origin url prefix',
-        'The provided origin url prefix is already registered in the authorized list.');
+      $('.swh-add-authorized-origin-status').html(
+        htmlAlert('warning', 'The provided origin url prefix is already registered in the authorized list.', true)
+      );
     });
 }
 
@@ -224,11 +227,14 @@ export function addUnauthorizedOriginUrl() {
     .then(handleFetchError)
     .then(() => {
       unauthorizedOriginTable.row.add({'url': originUrl}).draw();
+      $('.swh-add-unauthorized-origin-status').html(
+        htmlAlert('success', 'The origin url prefix has been successfully added in the unauthorized list.', true)
+      );
     })
     .catch(() => {
-      swh.webapp.showModalMessage(
-        'Duplicated origin url prefix',
-        'The provided origin url prefix is already registered in the unauthorized list.');
+      $('.swh-add-unauthorized-origin-status').html(
+        htmlAlert('warning', 'The provided origin url prefix is already registered in the unauthorized list.', true)
+      );
     });
 }
 

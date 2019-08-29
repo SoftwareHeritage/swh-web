@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, isGitRepoUrl, removeUrlFragment} from 'utils/functions';
+import {handleFetchError, csrfPost, isGitRepoUrl, htmlAlert, removeUrlFragment} from 'utils/functions';
 import {validate} from 'validate.js';
 
 let saveRequestsTable;
@@ -33,10 +33,6 @@ function originSaveRequest(originType, originUrl,
       $('.swh-processing-save-request').css('display', 'none');
       errorCallback(response.status);
     });
-}
-
-function htmlAlert(type, message) {
-  return `<div class="alert alert-${type}" role="alert">${message}</div>`;
 }
 
 export function initOriginSave() {
