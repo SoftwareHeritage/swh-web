@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+const $ = Cypress.$;
+
 const username = 'admin';
 const password = 'admin';
 const defaultRedirect = '/admin/origin/save/';
@@ -25,7 +27,7 @@ function logout() {
     .click();
 }
 
-describe('Test Admin Features', function() {
+describe('Test Admin Login/logout', function() {
   before(function() {
     url = this.Urls.admin();
   });
@@ -98,4 +100,114 @@ describe('Test Admin Features', function() {
 
     logout();
   });
+});
+
+const existingRowToSelect = 'https://bitbucket.org/';
+
+const originUrlListTestData = [
+  {
+    listType: 'authorized',
+    originToAdd: 'git://git.archlinux.org/',
+    originToRemove: 'https://github.com/'
+  },
+  {
+    listType: 'unauthorized',
+    originToAdd: 'https://random.org',
+    originToRemove: 'https://gitlab.com'
+  }
+];
+
+const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+describe('Test Admin Origin Save Urls Filtering', function() {
+
+  beforeEach(function() {
+    cy.visit(this.Urls.admin_origin_save());
+
+    login(username, password);
+
+    cy.contains('a', 'Origin urls filtering')
+      .click();
+  });
+
+  it(`should select or unselect a table row by clicking on it`, function() {
+    cy.contains(`#swh-authorized-origin-urls tr`, existingRowToSelect)
+      .click()
+      .should('have.class', 'selected')
+      .click()
+      .should('not.have.class', 'selected');
+  });
+
+  originUrlListTestData.forEach(testData => {
+
+    it(`should add a new origin url prefix in the ${testData.listType} list`, function() {
+
+      const tabName = capitalize(testData.listType) + ' urls';
+
+      cy.contains('a', tabName)
+        .click()
+        .wait(500);
+
+      cy.get(`#swh-${testData.listType}-origin-urls tr`).each(elt => {
+        if ($(elt).text() === testData.originToAdd) {
+          cy.get(elt).click();
+          cy.get(`#swh-remove-${testData.listType}-origin-url`).click();
+        }
+      });
+
+      cy.get(`#swh-${testData.listType}-url-prefix`)
+        .type(testData.originToAdd);
+
+      cy.get(`#swh-add-${testData.listType}-origin-url`)
+        .click();
+
+      cy.contains(`#swh-${testData.listType}-origin-urls tr`, testData.originToAdd)
+        .should('be.visible');
+
+      cy.contains('.alert-success', `The origin url prefix has been successfully added in the ${testData.listType} list.`)
+        .should('be.visible');
+
+      cy.get(`#swh-add-${testData.listType}-origin-url`)
+        .click();
+
+      cy.contains('.alert-warning', `The provided origin url prefix is already registered in the ${testData.listType} list.`)
+        .should('be.visible');
+
+    });
+
+    it(`should remove an origin url prefix from the ${testData.listType} list`, function() {
+
+      const tabName = capitalize(testData.listType) + ' urls';
+
+      cy.contains('a', tabName)
+        .click();
+
+      let originUrlMissing = true;
+      cy.get(`#swh-${testData.listType}-origin-urls tr`).each(elt => {
+        if ($(elt).text() === testData.originToRemove) {
+          originUrlMissing = false;
+        }
+      });
+
+      if (originUrlMissing) {
+        cy.get(`#swh-${testData.listType}-url-prefix`)
+          .type(testData.originToRemove);
+
+        cy.get(`#swh-add-${testData.listType}-origin-url`)
+          .click();
+
+        cy.get('.alert-dismissible button').click();
+      }
+
+      cy.contains(`#swh-${testData.listType}-origin-urls tr`, testData.originToRemove)
+        .click();
+
+      cy.get(`#swh-remove-${testData.listType}-origin-url`).click();
+
+      cy.contains(`#swh-${testData.listType}-origin-urls tr`, testData.originToRemove)
+        .should('not.exist');
+
+    });
+  });
+
 });
