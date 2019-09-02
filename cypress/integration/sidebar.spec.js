@@ -18,43 +18,37 @@ describe('Sidebar tests On Large Screen', function() {
 
   it('should toggle sidebar when swh-push-menu is clicked', function() {
     cy.get('.swh-push-menu')
-      .click()
-      .then(() => {
-        cy.get('body')
-          .should('have.class', 'sidebar-collapse')
-          .get('.nav-link > p')
-          .should('have.css', 'opacity', '0');
-      })
-      .get('.swh-push-menu')
-      .click()
-      .then(() => {
-        cy.get('body')
-          .should('have.class', 'sidebar-open')
-          .get('.nav-link > p')
-          .should('not.have.css', 'opacity', '0');
-      });
+      .click();
+    cy.get('body')
+      .should('have.class', 'sidebar-collapse')
+      .get('.nav-link > p')
+      .should('not.be.visible');
+
+    cy.get('.swh-push-menu')
+      .click();
+    cy.get('body')
+      .should('have.class', 'sidebar-open')
+      .get('.nav-link > p')
+      .should('be.visible');
   });
 
   it('should have less width when collapsed compared to open', function() {
-    let collapsedWidth, expandedWidth;
+    let collapseWidth;
     cy.get('.swh-push-menu')
       .click()
-      .wait(250)
       .get('.swh-sidebar')
-      .should('have.css', 'width')
+      .wait(250)
+      .invoke('width')
       .then((width) => {
-        collapsedWidth = parseInt(width);
+        collapseWidth = width;
       })
       .get('.swh-push-menu')
       .click()
-      .wait(250)
       .get('.swh-sidebar')
-      .should('have.css', 'width')
-      .then((width) => {
-        expandedWidth = parseInt(width);
-      })
-      .then(() => {
-        assert.isBelow(collapsedWidth, expandedWidth);
+      .wait(250)
+      .invoke('width')
+      .then(openWidth => {
+        assert.isBelow(collapseWidth, openWidth);
       });
   });
 });
@@ -73,12 +67,10 @@ describe('Sidebar Tests on small screens', function() {
   it('should toggle sidebar when swh-push-menu is clicked', function() {
     cy.get('.swh-push-menu')
       .click()
-      .wait(250)
       .get('.swh-sidebar')
       .should('be.visible')
       .get('#sidebar-overlay')
       .click({force: true})
-      .wait(250)
       .get('.swh-sidebar')
       .should('not.be.visible');
   });

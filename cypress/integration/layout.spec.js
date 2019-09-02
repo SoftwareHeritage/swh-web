@@ -10,7 +10,7 @@ const url = '/';
 describe('Test top-bar', function() {
   it('should should contain all navigation links', function() {
     cy.visit(url);
-    cy.get('.swh-top-bar > ul > li > a')
+    cy.get('.swh-top-bar a')
       .should('have.length', 5)
       .and('be.visible')
       .and('have.attr', 'href');

@@ -24,9 +24,8 @@ describe('Code highlighting tests', function() {
   it('should highlight source code and add line numbers', function() {
     cy.visit(url);
     cy.get('.hljs-ln-numbers').then(lnNumbers => {
-      cy.get('.hljs-ln-code').then(lnCode => {
-        assert.equal(lnNumbers.length, lnCode.length);
-      });
+      cy.get('.hljs-ln-code')
+        .should('have.length', lnNumbers.length);
     });
   });
 

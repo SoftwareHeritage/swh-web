@@ -27,8 +27,8 @@ describe('Back-to-top button tests', function() {
       .get('#back-to-top')
       .click()
       .window()
-      .then((window) => {
-        assert.equal(window.scrollY, 0);
+      .then(win => {
+        assert.equal(win.scrollY, 0);
       });
   });
 });

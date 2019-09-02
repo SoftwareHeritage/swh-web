@@ -5,8 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-import {httpGetJson} from '../utils';
-
 let origin;
 
 const invalidChecksum = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
