@@ -361,6 +361,8 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
         language = get_hljs_language_from_filename(filename)
         data_dict[key] = {'sha1': sha1,
                           'language': language}
+        del c['path']
+        del c['perms']
     storage = get_tests_data()['storage']
     storage.content_add(objects['content'].values())
 
