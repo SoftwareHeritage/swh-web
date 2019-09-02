@@ -3,8 +3,8 @@
   "video": false,
   "viewportWidth": 1920,
   "viewportHeight": 1080,
-  "defaultCommandTimeout": 10000,
-  "requestTimeout": 10000,
+  "defaultCommandTimeout": 20000,
+  "requestTimeout": 20000,
   "numTestsKeptInMemory": 500,
   "reporter": "cypress-multi-reporters",
   "reporterOptions": {
