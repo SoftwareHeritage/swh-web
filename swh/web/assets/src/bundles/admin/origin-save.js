@@ -41,6 +41,7 @@ export function initOriginSaveAdmin() {
       info: false
     });
     enableRowSelection('#swh-authorized-origin-urls');
+    swh.webapp.addJumpToPagePopoverToDataTable(authorizedOriginTable);
 
     unauthorizedOriginTable = $('#swh-unauthorized-origin-urls').DataTable({
       serverSide: true,
@@ -51,6 +52,7 @@ export function initOriginSaveAdmin() {
       info: false
     });
     enableRowSelection('#swh-unauthorized-origin-urls');
+    swh.webapp.addJumpToPagePopoverToDataTable(unauthorizedOriginTable);
 
     let columnsData = [
       {
@@ -106,6 +108,7 @@ export function initOriginSaveAdmin() {
       }
     });
     enableRowSelection('#swh-origin-save-pending-requests');
+    swh.webapp.addJumpToPagePopoverToDataTable(pendingSaveRequestsTable);
 
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable({
       serverSide: true,
@@ -126,6 +129,7 @@ export function initOriginSaveAdmin() {
       }
     });
     enableRowSelection('#swh-origin-save-rejected-requests');
+    swh.webapp.addJumpToPagePopoverToDataTable(rejectedSaveRequestsTable);
 
     columnsData.push({
       data: 'save_task_status',
@@ -136,6 +140,18 @@ export function initOriginSaveAdmin() {
           return `<a href="${browseOriginUrl}">${data}</a>`;
         }
         return data;
+      }
+    });
+
+    columnsData.push({
+      name: 'info',
+      render: (data, type, row) => {
+        if (row.save_task_status === 'succeed' || row.save_task_status === 'failed') {
+          return '<i class="fa fa-info-circle swh-save-request-info" aria-hidden="true" style="cursor: pointer"' +
+                  `onclick="swh.admin.displaySaveRequestInfo(event, ${row.id})"></i>`;
+        } else {
+          return '';
+        }
       }
     });
 
@@ -158,6 +174,7 @@ export function initOriginSaveAdmin() {
       }
     });
     enableRowSelection('#swh-origin-save-accepted-requests');
+    swh.webapp.addJumpToPagePopoverToDataTable(acceptedSaveRequestsTable);
 
     $('#swh-origin-save-requests-nav-item').on('shown.bs.tab', () => {
       pendingSaveRequestsTable.draw();
@@ -197,6 +214,14 @@ export function initOriginSaveAdmin() {
 
     $('#swh-save-requests-rejected-tab').click(() => {
       rejectedSaveRequestsTable.ajax.reload(null, false);
+    });
+
+    $('body').on('click', e => {
+      if ($(e.target).parents('.popover').length > 0) {
+        event.stopPropagation();
+      } else if ($(e.target).parents('.swh-save-request-info').length === 0) {
+        $('.swh-save-request-info').popover('dispose');
+      }
     });
 
   });
@@ -331,4 +356,94 @@ export function removeAcceptedOriginSaveRequest() {
 
 export function removeRejectedOriginSaveRequest() {
   removeOriginSaveRequest(rejectedSaveRequestsTable);
+}
+
+export function displaySaveRequestInfo(event, saveRequestId) {
+  event.stopPropagation();
+  const saveRequestTaskInfoUrl = Urls.admin_origin_save_task_info(saveRequestId);
+  $('.swh-save-request-info').popover('dispose');
+  $(event.target).popover({
+    'title': 'Save request task information',
+    'content': `<div class="swh-popover">
+                  <div class="text-center">
+                    <img src=${swhSpinnerSrc}></img>
+                    <p>Fetching task information ...</p>
+                  </div>
+                </div>`,
+    'html': true,
+    'placement': 'left',
+    'sanitizeFn': swh.webapp.filterXSS
+  });
+  $(event.target).popover('show');
+  fetch(saveRequestTaskInfoUrl)
+    .then(response => response.json())
+    .then(saveRequestTaskInfo => {
+      let content;
+      if ($.isEmptyObject(saveRequestTaskInfo)) {
+        content = 'Not available';
+      } else {
+        let saveRequestInfo = [];
+        saveRequestInfo.push({
+          key: 'Task type',
+          value: saveRequestTaskInfo.type
+        });
+        if (saveRequestTaskInfo.hasOwnProperty('task_name')) {
+          saveRequestInfo.push({
+            key: 'Task name',
+            value: saveRequestTaskInfo.name
+          });
+        }
+        saveRequestInfo.push({
+          key: 'Task arguments',
+          value: JSON.stringify(saveRequestTaskInfo.arguments, null, 2)
+        });
+        saveRequestInfo.push({
+          key: 'Task id',
+          value: saveRequestTaskInfo.id
+        });
+        saveRequestInfo.push({
+          key: 'Task backend id',
+          value: saveRequestTaskInfo.backend_id
+        });
+        saveRequestInfo.push({
+          key: 'Task scheduling date',
+          value: new Date(saveRequestTaskInfo.scheduled).toLocaleString()
+        });
+        saveRequestInfo.push({
+          key: 'Task termination date',
+          value: new Date(saveRequestTaskInfo.ended).toLocaleString()
+        });
+        if (saveRequestTaskInfo.hasOwnProperty('duration')) {
+          saveRequestInfo.push({
+            key: 'Task duration',
+            value: saveRequestTaskInfo.duration + ' s'
+          });
+        }
+        if (saveRequestTaskInfo.hasOwnProperty('worker')) {
+          saveRequestInfo.push({
+            key: 'Task executor',
+            value: saveRequestTaskInfo.worker
+          });
+        }
+        if (saveRequestTaskInfo.hasOwnProperty('message')) {
+          saveRequestInfo.push({
+            key: 'Task log',
+            value: saveRequestTaskInfo.message
+          });
+        }
+        content = '<table class="table"><tbody>';
+        for (let info of saveRequestInfo) {
+          content +=
+            `<tr>
+              <th class="swh-metadata-table-row swh-metadata-table-key">${info.key}</th>
+              <td class="swh-metadata-table-row swh-metadata-table-value">
+                <pre>${info.value}</pre>
+              </td>
+            </tr>`;
+        }
+        content += '</tbody></table>';
+      }
+      $('.swh-popover').html(content);
+      $(event.target).popover('update');
+    });
 }
