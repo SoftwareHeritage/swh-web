@@ -3,8 +3,13 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
+import logging
+
 from bisect import bisect_right
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+
+import requests
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -26,6 +31,8 @@ from swh.web.common.utils import parse_timestamp
 from swh.scheduler.utils import create_oneshot_task_dict
 
 scheduler = config.scheduler()
+
+logger = logging.getLogger(__name__)
 
 
 def get_origin_save_authorized_urls():
@@ -369,14 +376,14 @@ def get_save_origin_requests_from_queryset(requests_queryset):
     task_ids = []
     for sor in requests_queryset:
         task_ids.append(sor.loading_task_id)
-    requests = []
+    save_requests = []
     if task_ids:
         tasks = scheduler.get_tasks(task_ids)
         tasks = {task['id']: task for task in tasks}
         for sor in requests_queryset:
             sr_dict = _save_request_dict(sor, tasks.get(sor.loading_task_id))
-            requests.append(sr_dict)
-    return requests
+            save_requests.append(sr_dict)
+    return save_requests
 
 
 def get_save_origin_requests(origin_type, origin_url):
@@ -403,3 +410,126 @@ def get_save_origin_requests(origin_type, origin_url):
         raise NotFoundExc(('No save requests found for origin with type '
                            '%s and url %s.') % (origin_type, origin_url))
     return get_save_origin_requests_from_queryset(sors)
+
+
+def get_save_origin_task_info(save_request_id):
+    """
+    Get detailed information about an accepted save origin request
+    and its associated loading task.
+
+    If the associated loading task info is archived and removed
+    from the scheduler database, returns an empty dictionary.
+
+    Args:
+        save_request_id (int): identifier of a save origin request
+
+    Returns:
+        dict: A dictionary with the following keys:
+            - **type**: loading task type
+            - **arguments**: loading task arguments
+            - **id**: loading task database identifier
+            - **backend_id**: loading task celery identifier
+            - **scheduled**: loading task scheduling date
+            - **ended**: loading task termination date
+            - **status**: loading task execution status
+        Depending on the availability of the task logs in the elasticsearch
+        cluster of Software Heritage, the returned dictionary may also
+        contain the following keys:
+            - **name**: associated celery task name
+            - **message**: relevant log message from task execution
+            - **duration**: task execution time (only if it succeeded)
+            - **worker**: name of the worker that executed the task
+    """
+    try:
+        save_request = SaveOriginRequest.objects.get(id=save_request_id)
+    except ObjectDoesNotExist:
+        return {}
+
+    task = scheduler.get_tasks([save_request.loading_task_id])
+    task = task[0] if task else None
+    if task is None:
+        return {}
+
+    task_run = scheduler.get_task_runs([task['id']])
+    task_run = task_run[0] if task_run else None
+    if task_run is None:
+        return {}
+    task_run['type'] = task['type']
+    task_run['arguments'] = task['arguments']
+    task_run['id'] = task_run['task']
+    del task_run['task']
+    del task_run['metadata']
+    del task_run['started']
+
+    es_workers_index_url = config.get_config()['es_workers_index_url']
+    if not es_workers_index_url:
+        return task_run
+    es_workers_index_url += '/_search'
+
+    if save_request.visit_date:
+        min_ts = save_request.visit_date
+        max_ts = min_ts + timedelta(days=7)
+    else:
+        min_ts = save_request.request_date
+        max_ts = min_ts + timedelta(days=30)
+    min_ts = int(min_ts.timestamp()) * 1000
+    max_ts = int(max_ts.timestamp()) * 1000
+
+    save_task_status = _save_task_status[task['status']]
+    priority = '3' if save_task_status == SAVE_TASK_FAILED else '6'
+
+    query = {
+        'bool': {
+            'must': [
+                {
+                    'match_phrase': {
+                        'priority': {
+                            'query': priority
+                        }
+                    }
+                },
+                {
+                    'match_phrase': {
+                        'swh_task_id': {
+                            'query': task_run['backend_id']
+                        }
+                    }
+                },
+                {
+                    'range': {
+                        '@timestamp': {
+                            'gte': min_ts,
+                            'lte': max_ts,
+                            'format': 'epoch_millis'
+                        }
+                    }
+                }
+            ]
+        }
+    }
+
+    try:
+        response = requests.post(es_workers_index_url,
+                                 json={'query': query,
+                                       'sort': ['@timestamp']})
+        results = json.loads(response.text)
+        if results['hits']['total'] >= 1:
+            task_run_info = results['hits']['hits'][-1]['_source']
+            if 'swh_logging_args_runtime' in task_run_info:
+                duration = task_run_info['swh_logging_args_runtime']
+                task_run['duration'] = duration
+            if 'message' in task_run_info:
+                task_run['message'] = task_run_info['message']
+            if 'swh_logging_args_name' in task_run_info:
+                task_run['name'] = task_run_info['swh_logging_args_name']
+            elif 'swh_task_name' in task_run_info:
+                task_run['name'] = task_run_info['swh_task_name']
+            if 'hostname' in task_run_info:
+                task_run['worker'] = task_run_info['hostname']
+            elif 'host' in task_run_info:
+                task_run['worker'] = task_run_info['host']
+    except Exception as e:
+        logger.warning('Request to Elasticsearch failed\n%s' % str(e))
+        pass
+
+    return task_run
