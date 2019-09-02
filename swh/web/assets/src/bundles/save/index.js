@@ -118,6 +118,8 @@ export function initOriginSave() {
         }
       });
 
+    swh.webapp.addJumpToPagePopoverToDataTable(saveRequestsTable);
+
     $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
       saveRequestsTable.draw();
       window.location.hash = '#requests';
