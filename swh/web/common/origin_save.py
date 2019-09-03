@@ -176,6 +176,10 @@ def _save_request_dict(save_request, task=None):
     # save task still in scheduler db
     if task:
         save_task_status = _save_task_status[task['status']]
+        # Consider request from which a visit date has already been found
+        # as succeeded to avoid retrieving it again
+        if save_task_status == SAVE_TASK_SCHEDULED and visit_date:
+            save_task_status = SAVE_TASK_SUCCEED
         if save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEED) \
                 and not visit_date:
             visit_date, _ = _get_visit_info_for_save_request(save_request)
