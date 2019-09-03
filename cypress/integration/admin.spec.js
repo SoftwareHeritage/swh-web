@@ -127,7 +127,8 @@ describe('Test Admin Origin Save Urls Filtering', function() {
     login(username, password);
 
     cy.contains('a', 'Origin urls filtering')
-      .click();
+      .click()
+      .wait(500);
   });
 
   it(`should select or unselect a table row by clicking on it`, function() {
