@@ -44,3 +44,7 @@
 .dataTables_scrollBody .swh-table.dataTable thead {
     border-top: none;
 }
+
+.dataTables_scrollBody {
+    min-height: 300px;
+}

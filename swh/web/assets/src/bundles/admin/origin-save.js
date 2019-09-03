@@ -6,6 +6,7 @@
  */
 
 import {handleFetchError, csrfPost, htmlAlert} from 'utils/functions';
+import {swhSpinnerSrc} from 'utils/constants';
 
 let authorizedOriginTable;
 let unauthorizedOriginTable;
@@ -88,6 +89,10 @@ export function initOriginSaveAdmin() {
 
     pendingSaveRequestsTable = $('#swh-origin-save-pending-requests').DataTable({
       serverSide: true,
+      processing: true,
+      language: {
+        processing: `<img src="${swhSpinnerSrc}"></img>`
+      },
       ajax: Urls.origin_save_requests_list('pending'),
       searchDelay: 1000,
       columns: columnsData,
@@ -104,6 +109,10 @@ export function initOriginSaveAdmin() {
 
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable({
       serverSide: true,
+      processing: true,
+      language: {
+        processing: `<img src="${swhSpinnerSrc}"></img>`
+      },
       ajax: Urls.origin_save_requests_list('rejected'),
       searchDelay: 1000,
       columns: columnsData,
@@ -132,6 +141,10 @@ export function initOriginSaveAdmin() {
 
     acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable({
       serverSide: true,
+      processing: true,
+      language: {
+        processing: `<img src="${swhSpinnerSrc}"></img>`
+      },
       ajax: Urls.origin_save_requests_list('accepted'),
       searchDelay: 1000,
       columns: columnsData,

@@ -6,6 +6,7 @@
  */
 
 import {handleFetchError, csrfPost, isGitRepoUrl, htmlAlert, removeUrlFragment} from 'utils/functions';
+import {swhSpinnerSrc} from 'utils/constants';
 import {validate} from 'validate.js';
 
 let saveRequestsTable;
@@ -56,6 +57,10 @@ export function initOriginSave() {
       })
       .DataTable({
         serverSide: true,
+        processing: true,
+        language: {
+          processing: `<img src="${swhSpinnerSrc}"></img>`
+        },
         ajax: Urls.origin_save_requests_list('all'),
         searchDelay: 1000,
         columns: [
