@@ -189,6 +189,41 @@ export function showModalConfirm(title, message, callback) {
   $('#swh-web-modal-confirm').modal('show');
 }
 
+export function addJumpToPagePopoverToDataTable(dataTableElt) {
+  dataTableElt.on('draw.dt', function() {
+    $('.paginate_button.disabled').css('cursor', 'pointer');
+    $('.paginate_button.disabled').on('click', event => {
+      const pageInfo = dataTableElt.page.info();
+      let content = '<select class="jump-to-page">';
+      for (let i = 1; i <= pageInfo.pages; ++i) {
+        let selected = '';
+        if (i === pageInfo.page + 1) {
+          selected = 'selected';
+        }
+        content += `<option value="${i}" ${selected}>${i}</option>`;
+      }
+      content += `</select><span> / ${pageInfo.pages}</span>`;
+      $(event.target).popover({
+        'title': 'Jump to page',
+        'content': content,
+        'html': true,
+        'placement': 'top',
+        'sanitizeFn': swh.webapp.filterXSS
+      });
+      $(event.target).popover('show');
+      $('.jump-to-page').on('change', function() {
+        $('.paginate_button.disabled').popover('hide');
+        const pageNumber = parseInt($(this).val()) - 1;
+        dataTableElt.page(pageNumber).draw('page');
+      });
+    });
+  });
+
+  dataTableElt.on('preXhr.dt', () => {
+    $('.paginate_button.disabled').popover('hide');
+  });
+}
+
 let swhObjectIcons;
 
 export function setSwhObjectIcons(icons) {

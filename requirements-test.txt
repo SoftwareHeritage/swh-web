@@ -1,5 +1,7 @@
+hypothesis
 pytest
 pytest-django
-hypothesis
+pytest-mock
+requests-mock
 swh.core[http] >= 0.0.61
 swh.loader.git >= 0.0.47

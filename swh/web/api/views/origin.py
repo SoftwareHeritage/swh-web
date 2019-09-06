@@ -33,9 +33,11 @@ DOC_RETURN_ORIGIN_VISIT = '''
         :>json str origin: the origin canonical url
         :>json string origin_url: link to get information about the origin
         :>jsonarr string snapshot: the snapshot identifier of the visit
+            (may be null if status is not **full**).
         :>jsonarr string snapshot_url: link to
             :http:get:`/api/1/snapshot/(snapshot_id)/` in order to get
             information about the snapshot of the visit
+            (may be null if status is not **full**).
         :>json string status: status of the visit (either **full**,
             **partial** or **ongoing**)
         :>json number visit: the unique identifier of the visit

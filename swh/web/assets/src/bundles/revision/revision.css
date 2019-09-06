@@ -31,10 +31,6 @@ span.no-nl-marker svg path {
     fill: currentColor;
 }
 
-tr.swh-revision-log-entry td a {
-    text-decoration: none;
-}
-
 .swh-revision-log-entry-id {
     min-width: 110px;
     max-width: 110px;
