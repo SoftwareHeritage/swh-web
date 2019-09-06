@@ -121,20 +121,20 @@ class WebTestCase(TestCase):
         return list(map(converters.from_revision,
                     self.storage.revision_log([rev_id_bytes], limit=limit)))
 
-    def snapshot_get_latest(self, origin_id):
-        snp = self.storage.snapshot_get_latest(origin_id)
+    def snapshot_get_latest(self, origin_url):
+        snp = self.storage.snapshot_get_latest(origin_url)
         return converters.from_snapshot(snp)
 
     def origin_get(self, origin_info):
         origin = self.storage.origin_get(origin_info)
         return converters.from_origin(origin)
 
-    def origin_visit_get(self, origin_id):
-        visits = self.storage.origin_visit_get(origin_id)
+    def origin_visit_get(self, origin_url):
+        visits = self.storage.origin_visit_get(origin_url)
         return list(map(converters.from_origin_visit, visits))
 
-    def origin_visit_get_by(self, origin_id, visit_id):
-        visit = self.storage.origin_visit_get_by(origin_id, visit_id)
+    def origin_visit_get_by(self, origin_url, visit_id):
+        visit = self.storage.origin_visit_get_by(origin_url, visit_id)
         return converters.from_origin_visit(visit)
 
     def snapshot_get(self, snapshot_id):
