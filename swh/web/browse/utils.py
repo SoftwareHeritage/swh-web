@@ -743,6 +743,34 @@ def gen_revision_log_link(revision_id, snapshot_context=None,
     return gen_link(revision_log_url, link_text, link_attrs)
 
 
+def gen_person_mail_link(person, link_text=None):
+    """
+    Utility function for generating a mail link to a person to insert
+    in Django templates.
+
+    Args:
+        person (dict): dictionary containing person data
+            (*name*, *email*, *fullname*)
+        link_text (str): optional text to use for the generated mail link
+            (the person name will be used by default)
+
+    Returns:
+        str: A mail link to the person or the person name if no email is
+            present in person data
+    """
+    person_name = person['name'] or person['fullname']
+    if link_text is None:
+        link_text = person_name
+    person_email = person['email'] if person['email'] else None
+    if person_email is None and '@' in person_name and ' ' not in person_name:
+        person_email = person_name
+    if person_email:
+        return gen_link(url='mailto:%s' % person_email,
+                        link_text=link_text)
+    else:
+        return person_name
+
+
 def gen_release_link(sha1_git, snapshot_context=None, link_text='Browse',
                      link_attrs={'class': 'btn btn-default btn-sm',
                                  'role': 'button'}):
@@ -797,7 +825,7 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
         author_fullname = 'None'
         committer_fullname = 'None'
         if rev['author']:
-            author_name = rev['author']['name'] or rev['author']['fullname']
+            author_name = gen_person_mail_link(rev['author'])
             author_fullname = rev['author']['fullname']
         if rev['committer']:
             committer_fullname = rev['committer']['fullname']

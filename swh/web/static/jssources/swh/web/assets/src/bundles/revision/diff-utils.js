@@ -7,10 +7,8 @@
 
 import 'waypoints/lib/jquery.waypoints';
 
-import {staticAsset} from 'utils/functions';
+import {swhSpinnerSrc} from 'utils/constants';
 
-// path to static spinner asset
-let swhSpinnerSrc = staticAsset('img/swh-spinner.gif');
 // number of changed files in the revision
 let changes = null;
 let nbChangedFiles = 0;

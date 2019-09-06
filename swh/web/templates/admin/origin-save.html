@@ -58,13 +58,13 @@ See top-level LICENSE file for more information
           <div class="col-md-6">
           </div>
           <div class="col-md-2">
-              <button class="btn btn-default" onclick="swh.admin.acceptOriginSaveRequest()">Accept selected</button>
+            <button id="swh-accept-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.admin.acceptOriginSaveRequest()" disabled>Accept selected</button>
           </div>
           <div class="col-md-2">
-            <button class="btn btn-default" onclick="swh.admin.rejectOriginSaveRequest()">Reject selected</button>
+            <button id="swh-reject-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.admin.rejectOriginSaveRequest()" disabled>Reject selected</button>
           </div>
           <div class="col-md-2">
-              <button class="btn btn-default" onclick="swh.admin.removePendingOriginSaveRequest()">Remove selected</button>
+            <button id="swh-remove-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.admin.removePendingOriginSaveRequest()" disabled>Remove selected</button>
           </div>
         </div>
       </div>
@@ -77,6 +77,7 @@ See top-level LICENSE file for more information
               <th data-priority="4">Type</th>
               <th data-priority="1">Url</th>
               <th data-priority="2">Status</th>
+              <th data-priority="5">Info</th>
             </tr>
           </thead>
         </table>
@@ -84,7 +85,7 @@ See top-level LICENSE file for more information
           <div class="col-md-10">
           </div>
           <div class="col-md-2">
-            <button class="btn btn-default" onclick="swh.admin.removeAcceptedOriginSaveRequest()">Remove selected</button>
+            <button id="swh-remove-accepted-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.admin.removeAcceptedOriginSaveRequest()" disabled>Remove selected</button>
           </div>
         </div>
       </div>
@@ -103,7 +104,7 @@ See top-level LICENSE file for more information
           <div class="col-md-10">
           </div>
           <div class="col-md-2">
-            <button class="btn btn-default" onclick="swh.admin.removeRejectedOriginSaveRequest()">Remove selected</button>
+            <button class="btn btn-default swh-action-need-selection" onclick="swh.admin.removeRejectedOriginSaveRequest()" disabled>Remove selected</button>
           </div>
         </div>
       </div>
@@ -136,13 +137,15 @@ See top-level LICENSE file for more information
             <div class="input-group">
               <input class="form-control" placeholder="Enter authorized origin url prefix to add" type="text" id="swh-authorized-url-prefix"/>
               <div class="input-group-append">
-                <button class="btn btn-default" onclick="swh.admin.addAuthorizedOriginUrl()">Add new</button>
+                <button id="swh-add-authorized-origin-url" class="btn btn-default" onclick="swh.admin.addAuthorizedOriginUrl()">Add new</button>
               </div>
             </div>
           </div>
           <div class="col-md-2">
-            <button class="btn btn-default" onclick="swh.admin.removeAuthorizedOriginUrl()">Remove selected</button>
+            <button id="swh-remove-authorized-origin-url" class="btn btn-default swh-action-need-selection" onclick="swh.admin.removeAuthorizedOriginUrl()" disabled>Remove selected</button>
           </div>
+        </div>
+        <div class="row mt-3 swh-add-authorized-origin-status">
         </div>
       </div>
 
@@ -159,13 +162,15 @@ See top-level LICENSE file for more information
             <div class="input-group">
               <input class="form-control" placeholder="Enter unauthorized origin url prefix to add" type="text" id="swh-unauthorized-url-prefix"/>
               <div class="input-group-append">
-                <button class="btn btn-default" onclick="swh.admin.addUnauthorizedOriginUrl()">Add new</button>
+                <button id="swh-add-unauthorized-origin-url" class="btn btn-default" onclick="swh.admin.addUnauthorizedOriginUrl()">Add new</button>
               </div>
             </div>
           </div>
           <div class="col-md-2">
-            <button class="btn btn-default" onclick="swh.admin.removeUnauthorizedOriginUrl()">Remove selected</button>
+            <button id="swh-remove-unauthorized-origin-url" class="btn btn-default swh-action-need-selection" onclick="swh.admin.removeUnauthorizedOriginUrl()" disabled>Remove selected</button>
           </div>
+        </div>
+        <div class="row mt-3 swh-add-unauthorized-origin-status">
         </div>
       </div>
     </div>

@@ -380,7 +380,7 @@ class ServiceTestCase(WebTestCase):
             'metadata': [],
             'parents': [],
             'synthetic': False,
-            'type': 'file',
+            'type': 'git',
             'id': hash_to_bytes(unknown_revision_),
             'directory': hash_to_bytes(unknown_directory_)
         }
@@ -528,22 +528,6 @@ class ServiceTestCase(WebTestCase):
 
         self.assertEqual(revision_message,
                          {'message': new_revision['message']})
-
-    @given(new_revision())
-    def test_lookup_revision_msg_absent(self, new_revision):
-
-        del new_revision['message']
-        self.storage.revision_add([new_revision])
-
-        new_revision_id = hash_to_hex(new_revision['id'])
-
-        with self.assertRaises(NotFoundExc) as cm:
-            service.lookup_revision_message(new_revision_id)
-
-        self.assertEqual(
-            cm.exception.args[0],
-            'No message for revision with sha1_git %s.' % new_revision_id
-        )
 
     def test_lookup_revision_msg_no_rev(self):
         unknown_revision_ = random_sha1()

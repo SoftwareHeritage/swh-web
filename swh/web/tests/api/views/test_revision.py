@@ -10,14 +10,12 @@ import pytest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from swh.model.hashutil import hash_to_hex
-
 from swh.web.common.exc import NotFoundExc
 
 from swh.web.common.utils import reverse, parse_timestamp
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    revision, new_revision, origin, origin_with_multiple_visits
+    revision, origin, origin_with_multiple_visits
 )
 from swh.web.tests.testcase import WebTestCase
 
@@ -64,26 +62,6 @@ class RevisionApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/octet-stream')
         self.assertEqual(rv.content, expected_message.encode())
-
-    @given(new_revision())
-    def test_api_revision_raw_ok_no_msg(self, new_revision):
-
-        del new_revision['message']
-        self.storage.revision_add([new_revision])
-
-        new_revision_id = hash_to_hex(new_revision['id'])
-
-        url = reverse('api-1-revision-raw-message',
-                      url_args={'sha1_git': new_revision_id})
-
-        rv = self.client.get(url)
-
-        self.assertEqual(rv.status_code, 404, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'No message for revision with sha1_git %s.' %
-            new_revision_id})
 
     def test_api_revision_raw_ko_no_rev(self):
         unknown_revision_ = random_sha1()
