@@ -25,7 +25,7 @@ from swh.web.browse.utils import (
     get_snapshot_context, get_revision_log_url, get_directory_entries,
     gen_directory_link, request_content, prepare_content_for_display,
     content_display_max_size, gen_snapshot_link, get_readme_to_display,
-    get_swh_persistent_ids, format_log_entries
+    get_swh_persistent_ids, format_log_entries, gen_person_mail_link
 )
 
 
@@ -321,17 +321,14 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     revision_data = {}
 
-    author_name = 'None'
     revision_data['author'] = 'None'
     if revision['author']:
-        author_name = revision['author']['name'] or \
-                      revision['author']['fullname']
-        revision_data['author'] = author_name,
+        author_link = gen_person_mail_link(revision['author'])
+        revision_data['author'] = author_link
     revision_data['committer'] = 'None'
     if revision['committer']:
-        committer_name = revision['committer']['name'] or \
-                         revision['committer']['fullname']
-        revision_data['committer'] = committer_name
+        committer_link = gen_person_mail_link(revision['committer'])
+        revision_data['committer'] = committer_link
     revision_data['committer date'] = \
         format_utc_iso_date(revision['committer_date'])
     revision_data['date'] = format_utc_iso_date(revision['date'])

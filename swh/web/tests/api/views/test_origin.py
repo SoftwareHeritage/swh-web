@@ -629,6 +629,9 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 400, rv.content)
         mock_idx_storage.assert_not_called()
 
+    # in-memory storage does not handle different origin types for the
+    # same origin url but hypothesis will generate such kind of examples
+    @pytest.mark.xfail
     @pytest.mark.origin_id
     @given(new_origins(10))
     def test_api_lookup_origins(self, new_origins):

@@ -178,8 +178,12 @@ LOGGING = {
         },
     },
     'formatters': {
+        'simple': {
+            'format': '[%(asctime)s] [%(levelname)s] %(message)s',
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
         'verbose': {
-            'format': '[%(asctime)s] [%(levelname)s] %(request)s %(status_code)s', # noqa
+            'format': '[%(asctime)s] [%(levelname)s] %(name)s.%(funcName)s:%(lineno)s - %(message)s', # noqa
             'datefmt': "%d/%b/%Y %H:%M:%S"
         },
     },
@@ -188,9 +192,23 @@ LOGGING = {
             'level': 'DEBUG',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
+            'formatter': 'simple'
         },
         'file': {
-            'level': 'INFO',
+            'level': 'WARNING',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
+            'formatter': 'simple'
+        },
+        'console_verbose': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file_verbose': {
+            'level': 'WARNING',
             'filters': ['require_debug_false'],
             'class': 'logging.FileHandler',
             'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
@@ -201,20 +219,23 @@ LOGGING = {
         },
     },
     'loggers': {
+        '': {
+            'handlers': ['console_verbose', 'file_verbose'],
+            'level': 'DEBUG' if DEBUG else 'WARNING',
+        },
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': True,
+            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'propagate': False,
         },
         'django.request': {
-            'handlers': ['file'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'handlers': ['null'],
             'propagate': False,
         },
         'django.db.backends': {
             'handlers': ['null'],
             'propagate': False
-        }
+        },
     },
 }
 
