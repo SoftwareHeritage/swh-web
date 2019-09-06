@@ -5,7 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, isGitRepoUrl, removeUrlFragment} from 'utils/functions';
+import {handleFetchError, csrfPost, isGitRepoUrl, htmlAlert, removeUrlFragment} from 'utils/functions';
+import {swhSpinnerSrc} from 'utils/constants';
 import {validate} from 'validate.js';
 
 let saveRequestsTable;
@@ -35,10 +36,6 @@ function originSaveRequest(originType, originUrl,
     });
 }
 
-function htmlAlert(type, message) {
-  return `<div class="alert alert-${type}" role="alert">${message}</div>`;
-}
-
 export function initOriginSave() {
 
   $(document).ready(() => {
@@ -60,6 +57,10 @@ export function initOriginSave() {
       })
       .DataTable({
         serverSide: true,
+        processing: true,
+        language: {
+          processing: `<img src="${swhSpinnerSrc}"></img>`
+        },
         ajax: Urls.origin_save_requests_list('all'),
         searchDelay: 1000,
         columns: [
@@ -117,6 +118,8 @@ export function initOriginSave() {
           }
         }
       });
+
+    swh.webapp.addJumpToPagePopoverToDataTable(saveRequestsTable);
 
     $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
       saveRequestsTable.draw();

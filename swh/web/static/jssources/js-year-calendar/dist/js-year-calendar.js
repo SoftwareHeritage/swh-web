@@ -29,7 +29,7 @@
   function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   /* =========================================================
-   * JS year calendar v0.1.0
+   * JS year calendar v1.0.0
    * Repo: https://github.com/year-calendar/js-year-calendar
    * =========================================================
    * Created by Paul David-Sivelle
@@ -46,10 +46,41 @@
    * See the License for the specific language governing permissions and
    * limitations under the License.
    * ========================================================= */
+  // NodeList forEach() polyfill
+  if (typeof NodeList !== "undefined" && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = function (callback, thisArg) {
+      thisArg = thisArg || window;
 
+      for (var i = 0; i < this.length; i++) {
+        callback.call(thisArg, this[i], i, this);
+      }
+    };
+  } // Element closest() polyfill
+
+
+  if (typeof Element !== "undefined" && !Element.prototype.matches) {
+    var prototype = Element.prototype;
+    Element.prototype.matches = prototype.msMatchesSelector || prototype.webkitMatchesSelector;
+  }
+
+  if (typeof Element !== "undefined" && !Element.prototype.closest) {
+    Element.prototype.closest = function (s) {
+      var el = this;
+      if (!document.documentElement.contains(el)) return null;
+
+      do {
+        if (el.matches(s)) return el;
+        el = el.parentElement || el.parentNode;
+      } while (el !== null && el.nodeType == 1);
+
+      return null;
+    };
+  }
   /**
    * Calendar instance.
    */
+
+
   var Calendar =
   /*#__PURE__*/
   function () {
@@ -114,9 +145,10 @@
      */
 
     /**
-     * @event
      * Fired when a date range is selected.
+     * 
      * Don't forget to enable the `enableRangeSelection` option to be able to use the range selection functionality.
+     * @event
      * @example
      * ```
      * 
@@ -362,7 +394,8 @@
         prevDiv.appendChild(prevIcon);
         headerTable.appendChild(prevDiv);
         var prev2YearDiv = document.createElement('th');
-        prev2YearDiv.classList.add('year-title', 'year-neighbor2', 'hidden-sm', 'hidden-xs');
+        prev2YearDiv.classList.add('year-title');
+        prev2YearDiv.classList.add('year-neighbor2');
         prev2YearDiv.textContent = (this.options.startYear - 2).toString();
 
         if (this.options.minDate != null && this.options.minDate > new Date(this.options.startYear - 2, 11, 31)) {
@@ -371,7 +404,8 @@
 
         headerTable.appendChild(prev2YearDiv);
         var prevYearDiv = document.createElement('th');
-        prevYearDiv.classList.add('year-title', 'year-neighbor', 'hidden-xs');
+        prevYearDiv.classList.add('year-title');
+        prevYearDiv.classList.add('year-neighbor');
         prevYearDiv.textContent = (this.options.startYear - 1).toString();
 
         if (this.options.minDate != null && this.options.minDate > new Date(this.options.startYear - 1, 11, 31)) {
@@ -384,7 +418,8 @@
         yearDiv.textContent = this.options.startYear.toString();
         headerTable.appendChild(yearDiv);
         var nextYearDiv = document.createElement('th');
-        nextYearDiv.classList.add('year-title', 'year-neighbor', 'hidden-xs');
+        nextYearDiv.classList.add('year-title');
+        nextYearDiv.classList.add('year-neighbor');
         nextYearDiv.textContent = (this.options.startYear + 1).toString();
 
         if (this.options.maxDate != null && this.options.maxDate < new Date(this.options.startYear + 1, 0, 1)) {
@@ -393,7 +428,8 @@
 
         headerTable.appendChild(nextYearDiv);
         var next2YearDiv = document.createElement('th');
-        next2YearDiv.classList.add('year-title', 'year-neighbor2', 'hidden-sm', 'hidden-xs');
+        next2YearDiv.classList.add('year-title');
+        next2YearDiv.classList.add('year-neighbor2');
         next2YearDiv.textContent = (this.options.startYear + 2).toString();
 
         if (this.options.maxDate != null && this.options.maxDate < new Date(this.options.startYear + 2, 0, 1)) {
@@ -783,7 +819,7 @@
               if (e.which == 1) {
                 var currentDate = _this2._getDate(e.currentTarget);
 
-                if (_this2.options.allowOverlap || _this2.getEvents(currentDate).length == 0) {
+                if (_this2.options.allowOverlap || _this2.isThereFreeSlot(currentDate)) {
                   _this2._mouseDown = true;
                   _this2._rangeStart = _this2._rangeEnd = currentDate;
 
@@ -802,7 +838,7 @@
                     var nextDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate() + 1);
 
                     while (newDate < currentDate) {
-                      if (_this2.getEvents(nextDate).length > 0) {
+                      if (!_this2.isThereFreeSlot(nextDate, false)) {
                         break;
                       }
 
@@ -813,7 +849,7 @@
                     var nextDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate() - 1);
 
                     while (newDate > currentDate) {
-                      if (_this2.getEvents(nextDate).length > 0) {
+                      if (!_this2.isThereFreeSlot(nextDate, true)) {
                         break;
                       }
 
@@ -909,7 +945,9 @@
 
           _this2.element.querySelectorAll('.month-container').forEach(function (month) {
             if (!month.classList.contains("month-".concat(_this2._nbCols))) {
-              month.classList.remove('month-2', 'month-3', 'month-4', 'month-6', 'month-12');
+              ['month-2', 'month-3', 'month-4', 'month-6', 'month-12'].forEach(function (className) {
+                month.classList.remove(className);
+              });
               month.classList.add("month-".concat(_this2._nbCols));
             }
           });
@@ -1000,11 +1038,15 @@
           eventItem.style.borderLeft = "4px solid ".concat(events[i].color);
           var eventItemContent = document.createElement('div');
           eventItemContent.classList.add('content');
-          eventItemContent.textContent = events[i].name;
-          eventItem.appendChild(eventItemContent);
+          var text = document.createElement('span');
+          text.classList.add('text');
+          text.textContent = events[i].name;
+          eventItemContent.appendChild(text);
           var icon = document.createElement('span');
+          icon.classList.add('arrow');
           icon.innerHTML = "&rsaquo;";
-          eventItem.appendChild(icon);
+          eventItemContent.appendChild(icon);
+          eventItem.appendChild(eventItemContent);
 
           this._renderContextMenuItems(eventItem, this.options.contextMenuItems, events[i]);
 
@@ -1017,8 +1059,10 @@
           contextMenu.style.left = position.left + 25 + 'px';
           contextMenu.style.top = position.top + 25 + 'px';
           contextMenu.style.display = 'block';
-          window.addEventListener('mouseup', function () {
-            contextMenu.style.display = 'none';
+          window.addEventListener('click', function (e) {
+            if (!contextMenu.contains(e.target)) {
+              contextMenu.style.display = 'none';
+            }
           }, {
             once: true
           });
@@ -1039,22 +1083,28 @@
           menuItem.classList.add('item');
           var menuItemContent = document.createElement('div');
           menuItemContent.classList.add('content');
-          menuItemContent.textContent = items[i].text;
-          menuItem.appendChild(menuItemContent);
+          var text = document.createElement('span');
+          text.classList.add('text');
+          text.textContent = items[i].text;
+          menuItemContent.appendChild(text);
 
           if (items[i].click) {
             (function (index) {
-              menuItem.addEventListener('click', function () {
+              menuItemContent.addEventListener('click', function () {
+                document.querySelector('.calendar-context-menu').style.display = 'none';
                 items[index].click(evt);
               });
             })(i);
           }
 
-          var icon = document.createElement('span');
-          icon.innerHTML = "&rsaquo;";
-          menuItem.appendChild(icon);
+          menuItem.appendChild(menuItemContent);
 
           if (items[i].items && items[i].items.length > 0) {
+            var icon = document.createElement('span');
+            icon.classList.add('arrow');
+            icon.innerHTML = "&rsaquo;";
+            menuItemContent.appendChild(icon);
+
             this._renderContextMenuItems(menuItem, items[i].items, evt);
           }
 
@@ -1068,7 +1118,7 @@
     }, {
       key: "_getDate",
       value: function _getDate(elt) {
-        var day = elt.querySelector(':scope > .day-content').textContent;
+        var day = elt.querySelector('.day-content').textContent;
         var month = elt.closest('.month-container').dataset.monthId;
         var year = this.options.startYear;
         return new Date(year, month, day);
@@ -1076,7 +1126,15 @@
     }, {
       key: "_triggerEvent",
       value: function _triggerEvent(eventName, parameters) {
-        var event = new Event(eventName);
+        var event = null;
+
+        if (typeof Event === "function") {
+          event = new Event(eventName);
+        } else {
+          event = document.createEvent('Event');
+          event.initEvent(eventName, false, false);
+        }
+
         event.calendar = this;
 
         for (var i in parameters) {
@@ -1177,6 +1235,35 @@
         return events;
       }
       /**
+          * Check if there is no event on the first part, last part or on the whole specified day.
+          *
+          * @param date The specified day.
+          * @param after Whether to check for a free slot on the first part (if `false`) or the last part (if `true`) of the day. If `null`, this will check on the whole day.
+       * 
+       * Usefull only if using the `alwaysHalfDay` option of the calendar, or the `startHalfDay` or `endHalfDay` option of the datasource.
+          */
+
+    }, {
+      key: "isThereFreeSlot",
+      value: function isThereFreeSlot(date) {
+        var _this4 = this;
+
+        var after = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+        var events = this.getEvents(date);
+
+        if (after === true) {
+          return !events.some(function (evt) {
+            return !_this4.options.alwaysHalfDay && !evt.endHalfDay || evt.endDate > date;
+          });
+        } else if (after === false) {
+          return !events.some(function (evt) {
+            return !_this4.options.alwaysHalfDay && !evt.startHalfDay || evt.startDate < date;
+          });
+        } else {
+          return this.isThereFreeSlot(date, false) || this.isThereFreeSlot(date, true);
+        }
+      }
+      /**
           * Gets the year displayed on the calendar.
           */
 
@@ -1194,7 +1281,7 @@
     }, {
       key: "setYear",
       value: function setYear(year) {
-        var _this4 = this;
+        var _this5 = this;
 
         var parsedYear = parseInt(year);
 
@@ -1218,11 +1305,11 @@
             this.render(true);
 
             this._fetchDataSource(function (dataSource) {
-              _this4._dataSource = dataSource;
+              _this5._dataSource = dataSource;
 
-              _this4._initializeDatasourceColors();
+              _this5._initializeDatasourceColors();
 
-              _this4.render(false);
+              _this5.render(false);
             });
           } else {
             if (!eventResult.preventRendering) {
@@ -1241,7 +1328,9 @@
         return this.options.minDate;
       }
       /**
-          * Sets the minimum date of the calendar. This method causes a refresh of the calendar.
+          * Sets the minimum date of the calendar.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param minDate The minimum date to set.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1270,7 +1359,9 @@
         return this.options.maxDate;
       }
       /**
-          * Sets the maximum date of the calendar. This method causes a refresh of the calendar.
+          * Sets the maximum date of the calendar. 
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param maxDate The maximum date to set.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1299,7 +1390,9 @@
         return this.options.style;
       }
       /**
-          * Sets the style to use for displaying data source. This method causes a refresh of the calendar.
+          * Sets the style to use for displaying data source. 
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param style The style to use for displaying data source ("background", "border" or "custom").
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1345,7 +1438,9 @@
         return this.options.displayWeekNumber;
       }
       /**
-          * Sets a value indicating whether the weeks number are displayed. This method causes a refresh of the calendar.
+          * Sets a value indicating whether the weeks number are displayed.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param  displayWeekNumber Indicates whether the weeks number are displayed.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1371,7 +1466,9 @@
         return this.options.displayHeader;
       }
       /**
-          * Sets a value indicating whether the calendar header is displayed. This method causes a refresh of the calendar.
+          * Sets a value indicating whether the calendar header is displayed.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param displayHeader Indicates whether the calendar header is displayed.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1397,7 +1494,9 @@
         return this.options.displayDisabledDataSource;
       }
       /**
-          * Sets a value indicating whether the data source must be rendered on disabled days. This method causes a refresh of the calendar.
+          * Sets a value indicating whether the data source must be rendered on disabled days.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param displayDisabledDataSource Indicates whether the data source must be rendered on disabled days.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1424,6 +1523,7 @@
       }
       /**
           * Sets a value indicating whether the beginning and the end of each range should be displayed as half selected day.
+       * 
        * This method causes a refresh of the calendar.
           *
           * @param alwaysHalfDay Indicates whether the beginning and the end of each range should be displayed as half selected day.
@@ -1450,7 +1550,9 @@
         return this.options.enableRangeSelection;
       }
       /**
-          * Sets a value indicating whether the user can make range selection. This method causes a refresh of the calendar.
+          * Sets a value indicating whether the user can make range selection.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param enableRangeSelection Indicates whether the user can make range selection.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1476,7 +1578,9 @@
         return this.options.disabledDays;
       }
       /**
-          * Sets the disabled days. This method causes a refresh of the calendar.
+          * Sets the disabled days.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param disableDays The disabled days to set.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1502,7 +1606,9 @@
         return this.options.disabledWeekDays;
       }
       /**
-          * Sets the disabled days of the week. This method causes a refresh of the calendar.
+          * Sets the disabled days of the week.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param disabledWeekDays The disabled days of the week to set.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1528,7 +1634,9 @@
         return this.options.hiddenWeekDays;
       }
       /**
-          * Sets the hidden days of the week. This method causes a refresh of the calendar.
+          * Sets the hidden days of the week.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param hiddenWeekDays The hidden days of the week to set.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1555,6 +1663,7 @@
       }
       /**
           * Sets a value indicating whether the beginning and the end of each range should be displayed as rounded cells.
+       * 
        * This method causes a refresh of the calendar.
           *
           * @param roundRangeLimits Indicates whether the beginning and the end of each range should be displayed as rounded cells. 
@@ -1582,7 +1691,8 @@
       }
       /**
           * Sets a value indicating whether the default context menu must be displayed when right clicking on a day. 
-          * This method causes a refresh of the calendar.
+          * 
+       * This method causes a refresh of the calendar.
           * 
           * @param enableContextMenu Indicates whether the default context menu must be displayed when right clicking on a day.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1608,7 +1718,9 @@
         return this.options.contextMenuItems;
       }
       /**
-          * Sets new context menu items. This method causes a refresh of the calendar.
+          * Sets new context menu items.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param contextMenuItems The new context menu items.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1634,7 +1746,9 @@
         return this.options.customDayRenderer;
       }
       /**
-          * Sets the custom day renderer. This method causes a refresh of the calendar.
+          * Sets the custom day renderer.
+       * 
+       * This method causes a refresh of the calendar.
        *
        * @param handler The function used to render the days. This function is called during render for each day.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1660,7 +1774,9 @@
         return this.options.customDataSourceRenderer;
       }
       /**
-          * Sets the custom data source renderer. Works only with the style set to "custom". This method causes a refresh of the calendar.
+          * Sets the custom data source renderer. Works only with the style set to "custom".
+       * 
+       * This method causes a refresh of the calendar.
        *
        * @param handler The function used to render the data source. This function is called during render for each day containing at least one event.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1686,7 +1802,9 @@
         return this.options.language;
       }
       /**
-          * Sets the language used for calendar rendering. This method causes a refresh of the calendar.
+          * Sets the language used for calendar rendering.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param language The language to use for calendar redering.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1715,7 +1833,9 @@
         return this.options.dataSource;
       }
       /**
-          * Sets a new data source. This method causes a refresh of the calendar.
+          * Sets a new data source.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param dataSource The new data source.
        * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1724,7 +1844,7 @@
     }, {
       key: "setDataSource",
       value: function setDataSource(dataSource) {
-        var _this5 = this;
+        var _this6 = this;
 
         var preventRendering = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         this.options.dataSource = dataSource instanceof Array || typeof dataSource === "function" ? dataSource : [];
@@ -1733,11 +1853,11 @@
           this.render(true);
 
           this._fetchDataSource(function (dataSource) {
-            _this5._dataSource = dataSource;
+            _this6._dataSource = dataSource;
 
-            _this5._initializeDatasourceColors();
+            _this6._initializeDatasourceColors();
 
-            _this5.render(false);
+            _this6.render(false);
           });
         } else {
           this._dataSource = this.options.dataSource;
@@ -1759,7 +1879,9 @@
         return this.options.weekStart ? this.options.weekStart : Calendar.locales[this.options.language].weekStart;
       }
       /**
-          * Sets the starting day of the week. This method causes a refresh of the calendar.
+          * Sets the starting day of the week.
+       * 
+       * This method causes a refresh of the calendar.
           *
           * @param weekStart The starting day of the week. This option overrides the parameter define in the language file.
           * @param preventRedering Indicates whether the rendering should be prevented after the property update.
@@ -1797,7 +1919,9 @@
       }
       /**
        * 
-          * Add a new element to the data source. This method causes a refresh of the calendar.
+          * Add a new element to the data source.
+       * 
+       * This method causes a refresh of the calendar.
           * 
           * @param element The element to add.
        * @param preventRendering Indicates whether the calendar shouldn't be refreshed once the event added.

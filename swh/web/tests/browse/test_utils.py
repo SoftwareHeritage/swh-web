@@ -78,3 +78,46 @@ class SwhBrowseUtilsTestCase(WebTestCase):
             utils.gen_revision_link(revision_id, shorten_id=True,
                                     link_attrs=None),
             '<a href="%s">%s</a>' % (revision_url, revision_id[:7]))
+
+    def test_gen_person_mail_link(self):
+        person_full = {
+            'name': 'John Doe',
+            'email': 'john.doe@swh.org',
+            'fullname': 'John Doe <john.doe@swh.org>'
+        }
+
+        self.assertEqual(
+            utils.gen_person_mail_link(person_full),
+            '<a href="mailto:%s">%s</a>' % (person_full['email'],
+                                            person_full['name'])
+        )
+
+        link_text = 'Mail'
+        self.assertEqual(
+            utils.gen_person_mail_link(person_full, link_text=link_text),
+            '<a href="mailto:%s">%s</a>' % (person_full['email'],
+                                            link_text)
+        )
+
+        person_partial_email = {
+            'name': None,
+            'email': None,
+            'fullname': 'john.doe@swh.org'
+        }
+
+        self.assertEqual(
+            utils.gen_person_mail_link(person_partial_email),
+            '<a href="mailto:%s">%s</a>' % (person_partial_email['fullname'],
+                                            person_partial_email['fullname'])
+        )
+
+        person_partial = {
+            'name': None,
+            'email': None,
+            'fullname': 'John Doe <john.doe@swh.org>'
+        }
+
+        self.assertEqual(
+            utils.gen_person_mail_link(person_partial),
+            person_partial['fullname']
+        )
