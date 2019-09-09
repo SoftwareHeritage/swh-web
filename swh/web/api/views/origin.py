@@ -483,13 +483,13 @@ def api_origin_visits(request, origin_id=None, origin_url=None):
 @api_route(r'/origin/(?P<origin_url>.*)/visit/latest/',
            'api-1-origin-visit-latest',
            throttle_scope='swh_api_origin_visit_latest')
-@api_doc('/origin/visit/')
+@api_doc('/origin/visit/latest/')
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
 def api_origin_visit_latest(request, origin_url=None):
     """
     .. http:get:: /api/1/origin/(origin_url)/visit/latest/
 
-        Get information about a specific visit of a software origin.
+        Get information about the latest visit of a software origin.
 
         :param str origin_url: a software origin URL
         :query boolean require_snapshot: if true, only return a visit
