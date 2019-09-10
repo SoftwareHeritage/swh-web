@@ -17,14 +17,14 @@
   "author": "The Software Heritage developers",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.5.5",
+    "@babel/runtime-corejs3": "^7.6.0",
     "admin-lte": "3.0.0-beta.1",
     "ansi_up": "^4.0.4",
     "bootstrap": "^4.3.1",
     "chosen-js": "^1.8.7",
     "clipboard": "^2.0.4",
     "core-js": "^3.2.1",
-    "d3": "^5.11.0",
+    "d3": "^5.12.0",
     "datatables.net-responsive-bs4": "^2.2.3",
     "dompurify": "^1.0.11",
     "elementsfrompoint-polyfill": "^1.0.0",
@@ -52,10 +52,10 @@
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
+    "@babel/core": "^7.6.0",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
     "@cypress/code-coverage": "^1.10.1",
     "autoprefixer": "^9.6.1",
     "axios": "^0.19.0",
@@ -105,7 +105,7 @@
     "style-loader": "^1.0.0",
     "stylelint": "^10.1.0",
     "stylelint-config-standard": "^18.3.0",
-    "terser-webpack-plugin": "^2.0.0",
+    "terser-webpack-plugin": "^2.0.1",
     "url-loader": "^2.1.0",
     "webpack": "^4.39.3",
     "webpack-bundle-tracker": "^0.4.2-beta",
@@ -128,5 +128,8 @@
       "swh/web/assets/src/bundles/vendors/index.js",
       "swh/web/assets/src/thirdparty/**/*.js"
     ]
+  },
+  "engines": {
+    "node": ">=8.9.0"
   }
 }
