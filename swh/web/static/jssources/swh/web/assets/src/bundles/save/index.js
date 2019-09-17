@@ -229,10 +229,7 @@ export function validateSaveOriginUrl(input) {
       let idx = originUrl.indexOf('/', startIdx);
       if (idx !== -1) {
         let gitlabDomain = originUrl.substr(startIdx, idx - startIdx);
-        // GitLab repo url needs to be suffixed by '.git' in order to be successfully loaded
-        // This is due to a bug in dulwich < 0.19.11.
-        // TODO: remove this check once dulwich >= 0.19.11 is used in production
-        validUrl = isGitRepoUrl(originUrl, gitlabDomain) && originUrl.endsWith('.git');
+        validUrl = isGitRepoUrl(originUrl, gitlabDomain);
       } else {
         validUrl = false;
       }

@@ -11,7 +11,7 @@ from datetime import datetime
 from hypothesis import settings, assume
 from hypothesis.strategies import (
     just, sampled_from, lists, composite, datetimes,
-    integers, binary, text, characters
+    binary, text, characters
 )
 
 from swh.model.hashutil import hash_to_hex, hash_to_bytes
@@ -231,14 +231,6 @@ def origin_with_release():
                 for b in snapshot['branches'].values()]):
             ret.append(origin)
     return sampled_from(ret)
-
-
-def unknown_origin_id():
-    """
-    Hypothesis strategy returning a random origin id not ingested
-    into the test archive.
-    """
-    return integers(min_value=1000000)
 
 
 def new_origin():

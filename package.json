@@ -1,6 +1,6 @@
 {
   "name": "swh-web",
-  "version": "0.0.210",
+  "version": "0.0.211",
   "description": "Static assets management for swh-web",
   "scripts": {
     "build-dev": "NODE_ENV=development webpack --config ./swh/web/assets/config/webpack.config.development.js --colors",
@@ -17,16 +17,16 @@
   "author": "The Software Heritage developers",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.5.5",
+    "@babel/runtime-corejs3": "^7.6.0",
     "admin-lte": "3.0.0-beta.1",
     "ansi_up": "^4.0.4",
     "bootstrap": "^4.3.1",
     "chosen-js": "^1.8.7",
     "clipboard": "^2.0.4",
     "core-js": "^3.2.1",
-    "d3": "^5.11.0",
+    "d3": "^5.12.0",
     "datatables.net-responsive-bs4": "^2.2.3",
-    "dompurify": "^1.0.11",
+    "dompurify": "^2.0.0",
     "elementsfrompoint-polyfill": "^1.0.0",
     "eslint-plugin-cypress": "^2.6.0",
     "font-awesome": "^4.7.0",
@@ -52,10 +52,10 @@
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
+    "@babel/core": "^7.6.0",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
     "@cypress/code-coverage": "^1.10.1",
     "autoprefixer": "^9.6.1",
     "axios": "^0.19.0",
@@ -69,7 +69,7 @@
     "cypress": "^3.4.1",
     "cypress-multi-reporters": "^1.2.1",
     "ejs": "^2.7.1",
-    "eslint": "^6.3.0",
+    "eslint": "^6.4.0",
     "eslint-loader": "^3.0.0",
     "eslint-plugin-chai-friendly": "^0.4.1",
     "eslint-plugin-import": "^2.18.2",
@@ -103,14 +103,14 @@
     "script-loader": "^0.7.2",
     "spdx-expression-parse": "^3.0.0",
     "style-loader": "^1.0.0",
-    "stylelint": "^10.1.0",
-    "stylelint-config-standard": "^18.3.0",
-    "terser-webpack-plugin": "^2.0.0",
+    "stylelint": "^11.0.0",
+    "stylelint-config-standard": "^19.0.0",
+    "terser-webpack-plugin": "^2.1.0",
     "url-loader": "^2.1.0",
-    "webpack": "^4.39.3",
+    "webpack": "^4.40.2",
     "webpack-bundle-tracker": "^0.4.2-beta",
-    "webpack-cli": "^3.3.8",
-    "webpack-dev-server": "^3.8.0"
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.8.1"
   },
   "browserslist": [
     "cover 99.5%",
@@ -128,5 +128,8 @@
       "swh/web/assets/src/bundles/vendors/index.js",
       "swh/web/assets/src/thirdparty/**/*.js"
     ]
+  },
+  "engines": {
+    "node": ">=8.9.0"
   }
 }

@@ -21,6 +21,15 @@ from swh.web.config import get_config
 # TODO: Retrieve that list dynamically instead of hardcoding it
 _code_providers = [
     {
+        'provider_id': 'bitbucket',
+        'provider_url': 'https://bitbucket.org/',
+        'provider_logo': 'img/logos/bitbucket.png',
+        'provider_info': 'public repositories from Bitbucket '
+                         '(continuously archived)',
+        'origin_url_regexp': '^https://bitbucket.org/',
+        'origin_types': 'repositories',
+    },
+    {
         'provider_id': 'debian',
         'provider_url': 'https://www.debian.org/',
         'provider_logo': 'img/logos/debian.png',
