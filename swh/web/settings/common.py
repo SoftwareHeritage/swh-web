@@ -178,6 +178,10 @@ LOGGING = {
         },
     },
     'formatters': {
+        'request': {
+            'format': '[%(asctime)s] [%(levelname)s] %(request)s %(status_code)s', # noqa
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
         'simple': {
             'format': '[%(asctime)s] [%(levelname)s] %(message)s',
             'datefmt': "%d/%b/%Y %H:%M:%S"
@@ -200,6 +204,13 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
             'formatter': 'simple'
+        },
+        'file_request': {
+            'level': 'WARNING',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(swh_web_config['log_dir'], 'swh-web.log'),
+            'formatter': 'request'
         },
         'console_verbose': {
             'level': 'DEBUG',
@@ -224,12 +235,13 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'WARNING',
         },
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'DEBUG' if DEBUG else 'WARNING',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['null'],
+            'handlers': ['file_request'],
+            'level': 'DEBUG' if DEBUG else 'WARNING',
             'propagate': False,
         },
         'django.db.backends': {
