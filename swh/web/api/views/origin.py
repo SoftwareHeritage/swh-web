@@ -134,10 +134,9 @@ def api_origins(request):
 @api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
            'api-1-origin')
 @api_route(r'/origin/(?P<origin_url>.+)/get/', 'api-1-origin')
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/', 'api-1-origin')
 @api_doc('/origin/')
 @format_docstring(return_origin=DOC_RETURN_ORIGIN)
-def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
+def api_origin(request, origin_url, origin_type=None):
     """
     .. http:get:: /api/1/origin/(origin_url)/get/
 
@@ -161,34 +160,6 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
             :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
 
-    .. http:get:: /api/1/origin/(origin_id)/
-
-        Get information about a software origin.
-
-        .. warning::
-
-            All endpoints using an ``origin_id`` or an ``origin_type`` are
-            deprecated and will be removed in the near future. Only those
-            using an ``origin_url`` will remain available.
-            You should use :http:get:`/api/1/origin/(origin_url)/get/` instead.
-
-        :param int origin_id: a software origin identifier
-
-        {return_origin}
-
-        {common_headers}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
-        :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the archive
-
-        **Example:**
-
-        .. parsed-literal::
-
-            :swh_web_api:`origin/1/`
 
     .. http:get:: /api/1/origin/(origin_type)/url/(origin_url)/
 
@@ -196,9 +167,9 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
 
         .. warning::
 
-            All endpoints using an ``origin_id`` or an ``origin_type`` are
+            All endpoints using an ``origin_type`` are
             deprecated and will be removed in the near future. Only those
-            using an ``origin_url`` will remain available.
+            using only an ``origin_url`` will remain available.
             You should use :http:get:`/api/1/origin/(origin_url)/get/` instead.
 
         :param string origin_type: the origin type (possible values are
@@ -223,7 +194,6 @@ def api_origin(request, origin_id=None, origin_type=None, origin_url=None):
             :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
     """
     ori_dict = {
-        'id': int(origin_id) if origin_id else None,
         'type': origin_type,
         'url': origin_url
     }
@@ -351,11 +321,10 @@ def api_origin_metadata_search(request):
 
 
 @api_route(r'/origin/(?P<origin_url>.*)/visits/', 'api-1-origin-visits')
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/visits/', 'api-1-origin-visits')
 @api_doc('/origin/visits/')
 @format_docstring(
     return_origin_visit_array=DOC_RETURN_ORIGIN_VISIT_ARRAY)
-def api_origin_visits(request, origin_id=None, origin_url=None):
+def api_origin_visits(request, origin_url):
     """
     .. http:get:: /api/1/origin/(origin_url)/visits/
 
@@ -386,51 +355,11 @@ def api_origin_visits(request, origin_id=None, origin_url=None):
 
             :swh_web_api:`origin/https://github.com/hylang/hy/visits/`
 
-    .. http:get:: /api/1/origin/(origin_id)/visits/
-
-        Get information about all visits of a software origin.
-        Visits are returned sorted in descending order according
-        to their date.
-
-        .. warning::
-
-            All endpoints using an ``origin_id`` are  deprecated and will be
-            removed in the near future. Only those using an ``origin_url``
-            will remain available.
-            Use :http:get:`/api/1/origin/(origin_url)/visits/` instead.
-
-        :param int origin_id: a software origin identifier
-        :query int per_page: specify the number of visits to list, for
-            pagination purposes
-        :query int last_visit: visit to start listing from, for pagination
-            purposes
-
-        {common_headers}
-        {resheader_link}
-
-        {return_origin_visit_array}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
-        :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the archive
-
-        **Example:**
-
-        .. parsed-literal::
-
-            :swh_web_api:`origin/1/visits/`
     """
     result = {}
-    if origin_url:
-        origin_query = {'url': origin_url}
-        notfound_msg = 'No origin {} found'.format(origin_url)
-        url_args_next = {'origin_url': origin_url}
-    else:
-        origin_query = {'id': int(origin_id)}
-        notfound_msg = 'No origin {} found'.format(origin_id)
-        url_args_next = {'origin_id': origin_id}
+    origin_query = {'url': origin_url}
+    notfound_msg = 'No origin {} found'.format(origin_url)
+    url_args_next = {'origin_url': origin_url}
     per_page = int(request.query_params.get('per_page', '10'))
     last_visit = request.query_params.get('last_visit')
     if last_visit:
@@ -483,13 +412,13 @@ def api_origin_visits(request, origin_id=None, origin_url=None):
 @api_route(r'/origin/(?P<origin_url>.*)/visit/latest/',
            'api-1-origin-visit-latest',
            throttle_scope='swh_api_origin_visit_latest')
-@api_doc('/origin/visit/')
+@api_doc('/origin/visit/latest/')
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
 def api_origin_visit_latest(request, origin_url=None):
     """
     .. http:get:: /api/1/origin/(origin_url)/visit/latest/
 
-        Get information about a specific visit of a software origin.
+        Get information about the latest visit of a software origin.
 
         :param str origin_url: a software origin URL
         :query boolean require_snapshot: if true, only return a visit
@@ -525,11 +454,9 @@ def api_origin_visit_latest(request, origin_url=None):
 
 @api_route(r'/origin/(?P<origin_url>.*)/visit/(?P<visit_id>[0-9]+)/',
            'api-1-origin-visit')
-@api_route(r'/origin/(?P<origin_id>[0-9]+)/visit/(?P<visit_id>[0-9]+)/',
-           'api-1-origin-visit')
 @api_doc('/origin/visit/')
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
-def api_origin_visit(request, visit_id, origin_url=None, origin_id=None):
+def api_origin_visit(request, visit_id, origin_url):
     """
     .. http:get:: /api/1/origin/(origin_url)/visit/(visit_id)/
 
@@ -554,41 +481,7 @@ def api_origin_visit(request, visit_id, origin_url=None, origin_id=None):
         .. parsed-literal::
 
             :swh_web_api:`origin/https://github.com/hylang/hy/visit/1/`
-
-    .. http:get:: /api/1/origin/(origin_id)/visit/(visit_id)/
-
-        Get information about a specific visit of a software origin.
-
-        .. warning::
-
-            All endpoints using an ``origin_id`` are  deprecated and will be
-            removed in the near future. Only those using an ``origin_url``
-            will remain available.
-            Use :http:get:`/api/1/origin/(origin_url)/visit/(visit_id)`
-            instead.
-
-        :param int origin_id: a software origin identifier
-        :param int visit_id: a visit identifier
-
-        {common_headers}
-
-        {return_origin_visit}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
-        :statuscode 200: no error
-        :statuscode 404: requested origin or visit can not be found in the
-            archive
-
-        **Example:**
-
-        .. parsed-literal::
-
-            :swh_web_api:`origin/1500/visit/1/`
     """
-    if not origin_url:
-        origin_url = service.lookup_origin({'id': int(origin_id)})['url']
     return api_lookup(
         service.lookup_origin_visit, origin_url, int(visit_id),
         notfound_msg=('No visit {} for origin {} found'

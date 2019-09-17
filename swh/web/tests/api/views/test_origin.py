@@ -3,10 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import random
-
 from hypothesis import given
-import pytest
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
@@ -15,7 +12,7 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 from swh.web.common.utils import reverse
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.tests.strategies import (
-    origin, new_origin, new_origins, visit_dates, new_snapshots
+    origin, new_origin, visit_dates, new_snapshots
 )
 from swh.web.tests.testcase import WebTestCase
 
@@ -84,13 +81,13 @@ class OriginApiTestCase(WebTestCase, APITestCase):
     def test_api_lookup_origin_visits(self, new_origin, visit_dates,
                                       new_snapshots):
 
-        origin_id = self.storage.origin_add_one(new_origin)
-        new_origin['id'] = origin_id
+        self.storage.origin_add_one(new_origin)
         for i, visit_date in enumerate(visit_dates):
-            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            origin_visit = self.storage.origin_visit_add(
+                new_origin['url'], visit_date)
             self.storage.snapshot_add([new_snapshots[i]])
             self.storage.origin_visit_update(
-                origin_id, origin_visit['visit'],
+                new_origin['url'], origin_visit['visit'],
                 snapshot=new_snapshots[i]['id'])
 
         all_visits = list(reversed(get_origin_visits(new_origin)))
@@ -127,13 +124,13 @@ class OriginApiTestCase(WebTestCase, APITestCase):
     def test_api_lookup_origin_visits_by_id(self, new_origin, visit_dates,
                                             new_snapshots):
 
-        origin_id = self.storage.origin_add_one(new_origin)
-        new_origin['id'] = origin_id
+        self.storage.origin_add_one(new_origin)
         for i, visit_date in enumerate(visit_dates):
-            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            origin_visit = self.storage.origin_visit_add(
+                new_origin['url'], visit_date)
             self.storage.snapshot_add([new_snapshots[i]])
             self.storage.origin_visit_update(
-                origin_id, origin_visit['visit'],
+                new_origin['url'], origin_visit['visit'],
                 snapshot=new_snapshots[i]['id'])
 
         all_visits = list(reversed(get_origin_visits(new_origin)))
@@ -170,14 +167,14 @@ class OriginApiTestCase(WebTestCase, APITestCase):
     def test_api_lookup_origin_visit(self, new_origin, visit_dates,
                                      new_snapshots):
 
-        origin_id = self.storage.origin_add_one(new_origin)
-        new_origin['id'] = origin_id
+        self.storage.origin_add_one(new_origin)
         for i, visit_date in enumerate(visit_dates):
-            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            origin_visit = self.storage.origin_visit_add(
+                new_origin['url'], visit_date)
             visit_id = origin_visit['visit']
             self.storage.snapshot_add([new_snapshots[i]])
             self.storage.origin_visit_update(
-                origin_id, origin_visit['visit'],
+                new_origin['url'], origin_visit['visit'],
                 snapshot=new_snapshots[i]['id'])
             url = reverse('api-1-origin-visit',
                           url_args={'origin_url': new_origin['url'],
@@ -187,7 +184,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             self.assertEqual(rv.status_code, 200, rv.data)
             self.assertEqual(rv['Content-Type'], 'application/json')
 
-            expected_visit = self.origin_visit_get_by(origin_id, visit_id)
+            expected_visit = self.origin_visit_get_by(
+                new_origin['url'], visit_id)
 
             origin_url = reverse('api-1-origin',
                                  url_args={'origin_url': new_origin['url']})
@@ -205,17 +203,17 @@ class OriginApiTestCase(WebTestCase, APITestCase):
     def test_api_lookup_origin_visit_latest(
             self, new_origin, visit_dates, new_snapshots):
 
-        origin_id = self.storage.origin_add_one(new_origin)
-        new_origin['id'] = origin_id
+        self.storage.origin_add_one(new_origin)
         visit_dates.sort()
         visit_ids = []
         for i, visit_date in enumerate(visit_dates):
-            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            origin_visit = self.storage.origin_visit_add(
+                new_origin['url'], visit_date)
             visit_ids.append(origin_visit['visit'])
 
         self.storage.snapshot_add([new_snapshots[0]])
         self.storage.origin_visit_update(
-            origin_id, visit_ids[0],
+            new_origin['url'], visit_ids[0],
             snapshot=new_snapshots[0]['id'])
 
         url = reverse('api-1-origin-visit-latest',
@@ -225,7 +223,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
 
-        expected_visit = self.origin_visit_get_by(origin_id, visit_ids[1])
+        expected_visit = self.origin_visit_get_by(
+            new_origin['url'], visit_ids[1])
 
         origin_url = reverse('api-1-origin',
                              url_args={'origin_url': new_origin['url']})
@@ -239,17 +238,17 @@ class OriginApiTestCase(WebTestCase, APITestCase):
     @given(new_origin(), visit_dates(2), new_snapshots(1))
     def test_api_lookup_origin_visit_latest_with_snapshot(
             self, new_origin, visit_dates, new_snapshots):
-        origin_id = self.storage.origin_add_one(new_origin)
-        new_origin['id'] = origin_id
+        self.storage.origin_add_one(new_origin)
         visit_dates.sort()
         visit_ids = []
         for i, visit_date in enumerate(visit_dates):
-            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
+            origin_visit = self.storage.origin_visit_add(
+                new_origin['url'], visit_date)
             visit_ids.append(origin_visit['visit'])
 
         self.storage.snapshot_add([new_snapshots[0]])
         self.storage.origin_visit_update(
-            origin_id, visit_ids[0],
+            new_origin['url'], visit_ids[0],
             snapshot=new_snapshots[0]['id'])
 
         url = reverse('api-1-origin-visit-latest',
@@ -260,7 +259,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 200, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
 
-        expected_visit = self.origin_visit_get_by(origin_id, visit_ids[0])
+        expected_visit = self.origin_visit_get_by(
+            new_origin['url'], visit_ids[0])
 
         origin_url = reverse('api-1-origin',
                              url_args={'origin_url': new_origin['url']})
@@ -273,42 +273,6 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         expected_visit['snapshot_url'] = snapshot_url
 
         self.assertEqual(rv.data, expected_visit)
-
-    @pytest.mark.origin_id
-    @given(new_origin(), visit_dates(3), new_snapshots(3))
-    def test_api_lookup_origin_visit_by_id(self, new_origin, visit_dates,
-                                           new_snapshots):
-
-        origin_id = self.storage.origin_add_one(new_origin)
-        new_origin['id'] = origin_id
-        for i, visit_date in enumerate(visit_dates):
-            origin_visit = self.storage.origin_visit_add(origin_id, visit_date)
-            visit_id = origin_visit['visit']
-            self.storage.snapshot_add([new_snapshots[i]])
-            self.storage.origin_visit_update(
-                origin_id, origin_visit['visit'],
-                snapshot=new_snapshots[i]['id'])
-            url = reverse('api-1-origin-visit',
-                          url_args={'origin_id': origin_id,
-                                    'visit_id': visit_id})
-
-            rv = self.client.get(url)
-            self.assertEqual(rv.status_code, 200, rv.data)
-            self.assertEqual(rv['Content-Type'], 'application/json')
-
-            expected_visit = self.origin_visit_get_by(origin_id, visit_id)
-
-            origin_url = reverse('api-1-origin',
-                                 url_args={'origin_url': new_origin['url']})
-            snapshot_url = reverse(
-                'api-1-snapshot',
-                url_args={'snapshot_id': expected_visit['snapshot']})
-
-            expected_visit['origin'] = new_origin['url']
-            expected_visit['origin_url'] = origin_url
-            expected_visit['snapshot_url'] = snapshot_url
-
-            self.assertEqual(rv.data, expected_visit)
 
     @given(origin())
     def test_api_lookup_origin_visit_not_found(self, origin):
@@ -330,47 +294,6 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             'reason': 'Origin %s or its visit with id %s not found!' %
             (origin['url'], max_visit_id+1)
         })
-
-    @pytest.mark.origin_id
-    @given(origin())
-    def test_api_lookup_origin_visit_not_found_by_id(self, origin):
-
-        all_visits = list(reversed(get_origin_visits(origin)))
-
-        max_visit_id = max([v['visit'] for v in all_visits])
-
-        url = reverse('api-1-origin-visit',
-                      url_args={'origin_id': origin['id'],
-                                'visit_id': max_visit_id + 1})
-
-        rv = self.client.get(url)
-
-        self.assertEqual(rv.status_code, 404, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Origin %s or its visit with id %s not found!' %
-            (origin['url'], max_visit_id+1)
-        })
-
-    @pytest.mark.origin_id
-    @given(origin())
-    def test_api_origin_by_id(self, origin):
-
-        url = reverse('api-1-origin', url_args={'origin_id': origin['id']})
-
-        rv = self.client.get(url)
-
-        expected_origin = self.origin_get(origin)
-
-        origin_visits_url = reverse('api-1-origin-visits',
-                                    url_args={'origin_url': origin['url']})
-
-        expected_origin['origin_visits_url'] = origin_visits_url
-
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_origin)
 
     @given(origin())
     def test_api_origin_by_url(self, origin):
@@ -477,65 +400,8 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
                 .assert_called_with(conjunction=['Jane Doe'], limit=70)
 
-    @pytest.mark.origin_id
-    @given(origin())
-    def test_api_origin_metadata_search_missing_url(self, origin):
-        """indexer-storage with outdated db will return origin_url: None."""
-        with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
-            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
-                .side_effect = lambda conjunction, limit: [{
-                    'id': origin['id'],
-                    'from_revision': (
-                        b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
-                        b'\xf2U\xfa\x05B8'),
-                    'metadata': {'author': 'Jane Doe'},
-                    'origin_url': None,
-                    'tool': {
-                        'configuration': {
-                            'context': ['NpmMapping', 'CodemetaMapping'],
-                            'type': 'local'
-                        },
-                        'id': 3,
-                        'name': 'swh-metadata-detector',
-                        'version': '0.0.1'
-                    }
-                }]
-
-            url = reverse('api-1-origin-metadata-search',
-                          query_params={'fulltext': 'Jane Doe'})
-            rv = self.client.get(url)
-
-            self.assertEqual(rv.status_code, 200, rv.content)
-            self.assertEqual(rv['Content-Type'], 'application/json')
-            expected_data = [{
-                'type': origin['type'],
-                'url': origin['url'],
-                'metadata': {
-                    'metadata': {'author': 'Jane Doe'},
-                    'from_revision': (
-                        '7026b7c1a2af56521e951c01ed20f255fa054238'),
-                    'tool': {
-                        'configuration': {
-                            'context': ['NpmMapping', 'CodemetaMapping'],
-                            'type': 'local'
-                        },
-                        'id': 3,
-                        'name': 'swh-metadata-detector',
-                        'version': '0.0.1',
-                    }
-                }
-            }]
-            actual_data = rv.data
-            for d in actual_data:
-                if 'id' in d:
-                    del d['id']
-            self.assertEqual(rv.data, expected_data)
-            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
-                .assert_called_with(conjunction=['Jane Doe'], limit=70)
-
     @given(origin())
     def test_api_origin_metadata_search_limit(self, origin):
-
         with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
             mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
                 .side_effect = lambda conjunction, limit: [{
@@ -591,7 +457,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
     def test_api_origin_intrinsic_metadata(self, origin):
         with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
             mock_idx_storage.origin_intrinsic_metadata_get \
-                .side_effect = lambda origin_ids: [{
+                .side_effect = lambda origin_urls: [{
                     'from_revision': (
                         b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
                         b'\xf2U\xfa\x05B8'),
@@ -628,47 +494,3 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         self.assertEqual(rv.status_code, 400, rv.content)
         mock_idx_storage.assert_not_called()
-
-    # in-memory storage does not handle different origin types for the
-    # same origin url but hypothesis will generate such kind of examples
-    @pytest.mark.xfail
-    @pytest.mark.origin_id
-    @given(new_origins(10))
-    def test_api_lookup_origins(self, new_origins):
-
-        nb_origins = len(new_origins)
-
-        expected_origins = self.storage.origin_add(new_origins)
-        expected_origins.sort(key=lambda orig: orig['id'])
-
-        origin_from_idx = random.randint(1, nb_origins-1) - 1
-        origin_from = expected_origins[origin_from_idx]['id']
-        max_origin_id = expected_origins[-1]['id']
-        origin_count = random.randint(1, max_origin_id - origin_from)
-
-        url = reverse('api-1-origins',
-                      query_params={'origin_from': origin_from,
-                                    'origin_count': origin_count})
-
-        rv = self.client.get(url)
-
-        self.assertEqual(rv.status_code, 200, rv.data)
-
-        start = origin_from_idx
-        end = origin_from_idx + origin_count
-        expected_origins = expected_origins[start:end]
-
-        for expected_origin in expected_origins:
-            expected_origin['origin_visits_url'] = reverse(
-                'api-1-origin-visits',
-                url_args={'origin_url': expected_origin['url']})
-
-        self.assertEqual(rv.data, expected_origins)
-
-        next_origin_id = expected_origins[-1]['id']+1
-        if self.storage.origin_get({'id': next_origin_id}):
-            self.assertIn('Link', rv)
-            next_url = reverse('api-1-origins',
-                               query_params={'origin_from': next_origin_id,
-                                             'origin_count': origin_count})
-            self.assertIn(next_url, rv['Link'])
