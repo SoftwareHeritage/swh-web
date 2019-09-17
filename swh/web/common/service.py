@@ -525,7 +525,7 @@ def _lookup_revision_id_by(origin, branch_name, timestamp):
 
     if not rev_id:
         raise NotFoundExc('Revision for origin %s and branch %s not found.'
-                          % (origin.get('url') or origin['id'], branch_name))
+                          % (origin.get('url'), branch_name))
 
     return rev_id
 
@@ -957,8 +957,6 @@ def lookup_revision_through(revision, limit=100):
     Args:
         revision: Dictionary of criterion to lookup the revision with.
         Here are the supported combination of possible values:
-        - origin_id, branch_name, ts, sha1_git
-        - origin_id, branch_name, ts
         - origin_url, branch_name, ts, sha1_git
         - origin_url, branch_name, ts
         - sha1_git_root, sha1_git
@@ -979,27 +977,10 @@ def lookup_revision_through(revision, limit=100):
                                                revision['sha1_git'],
                                                limit)
     if (
-            'origin_id' in revision and
-            'branch_name' in revision and
-            'ts' in revision and
-            'sha1_git' in revision):
-        return lookup_revision_with_context_by(revision['origin_id'],
-                                               revision['branch_name'],
-                                               revision['ts'],
-                                               revision['sha1_git'],
-                                               limit)
-    if (
             'origin_url' in revision and
             'branch_name' in revision and
             'ts' in revision):
         return lookup_revision_by(revision['origin_url'],
-                                  revision['branch_name'],
-                                  revision['ts'])
-    if (
-            'origin_id' in revision and
-            'branch_name' in revision and
-            'ts' in revision):
-        return lookup_revision_by(revision['origin_id'],
                                   revision['branch_name'],
                                   revision['ts'])
     if (

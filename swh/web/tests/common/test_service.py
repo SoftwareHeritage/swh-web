@@ -22,7 +22,7 @@ from swh.web.tests.strategies import (
     release, revision, unknown_revision, revisions,
     ancestor_revisions, non_ancestor_revisions, invalid_sha1, sha256,
     revision_with_submodules, empty_directory,
-    new_revision, new_origins
+    new_revision
 )
 from swh.web.tests.testcase import (
     WebTestCase, ctags_json_missing, fossology_missing
@@ -188,42 +188,38 @@ class ServiceTestCase(WebTestCase):
     @given(new_origin(), visit_dates())
     def test_lookup_origin_visits(self, new_origin, visit_dates):
 
-        origin_id = self.storage.origin_add_one(new_origin)
+        self.storage.origin_add_one(new_origin)
         for ts in visit_dates:
-            self.storage.origin_visit_add(origin_id, ts)
+            self.storage.origin_visit_add(new_origin['url'], ts)
 
         actual_origin_visits = list(
-            service.lookup_origin_visits(origin_id, per_page=100))
+            service.lookup_origin_visits(new_origin['url'], per_page=100))
 
-        expected_visits = self.origin_visit_get(origin_id)
+        expected_visits = self.origin_visit_get(new_origin['url'])
+        for expected_visit in expected_visits:
+            expected_visit['origin'] = new_origin['url']
 
         self.assertEqual(actual_origin_visits, expected_visits)
 
     @given(new_origin(), visit_dates())
     def test_lookup_origin_visit(self, new_origin, visit_dates):
-        origin_id = self.storage.origin_add_one(new_origin)
+        self.storage.origin_add_one(new_origin)
         visits = []
         for ts in visit_dates:
-            visits.append(self.storage.origin_visit_add(origin_id, ts))
+            visits.append(self.storage.origin_visit_add(
+                new_origin['url'], ts))
 
         visit = random.choice(visits)['visit']
-        actual_origin_visit = service.lookup_origin_visit(origin_id, visit)
+        actual_origin_visit = service.lookup_origin_visit(
+            new_origin['url'], visit)
 
-        expected_visit = dict(self.storage.origin_visit_get_by(origin_id,
-                                                               visit))
+        expected_visit = dict(self.storage.origin_visit_get_by(
+            new_origin['url'], visit))
         expected_visit['date'] = expected_visit['date'].isoformat()
         expected_visit['metadata'] = {}
+        expected_visit['origin'] = new_origin['url']
 
         self.assertEqual(actual_origin_visit, expected_visit)
-
-    @pytest.mark.origin_id
-    @given(new_origin())
-    def test_lookup_origin_by_id(self, new_origin):
-        origin_id = self.storage.origin_add_one(new_origin)
-
-        actual_origin = service.lookup_origin({'id': origin_id})
-        expected_origin = self.storage.origin_get({'id': origin_id})
-        self.assertEqual(actual_origin, expected_origin)
 
     @given(new_origin())
     def test_lookup_origin(self, new_origin):
@@ -840,23 +836,3 @@ class ServiceTestCase(WebTestCase):
              service.lookup_directory_with_revision(
                 revision, dir_entry['name'], with_data=True))
         )
-
-    @pytest.mark.origin_id
-    @given(new_origins(20))
-    def test_lookup_origins(self, new_origins):
-
-        nb_origins = len(new_origins)
-        expected_origins = self.storage.origin_add(new_origins)
-        expected_origins.sort(key=lambda orig: orig['id'])
-
-        origin_from_idx = random.randint(1, nb_origins-1) - 1
-        origin_from = expected_origins[origin_from_idx]['id']
-        max_origin_idx = expected_origins[-1]['id']
-        origin_count = random.randint(1, max_origin_idx - origin_from)
-
-        actual_origins = list(service.lookup_origins(origin_from,
-                                                     origin_count))
-        expected_origins = list(self.storage.origin_get_range(origin_from,
-                                                              origin_count))
-
-        self.assertEqual(actual_origins, expected_origins)
