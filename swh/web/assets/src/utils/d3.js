@@ -5,6 +5,10 @@
  * See top-level LICENSE file for more information
  */
 
+// export overridden d3 functions first
+export * from './d3-custom';
+
+// export required d3 modules
 export * from 'd3-array';
 export * from 'd3-axis';
 // export * from 'd3-brush';
@@ -18,7 +22,7 @@ export * from 'd3-collection';
 // export * from 'd3-ease';
 // export * from 'd3-fetch';
 // export * from 'd3-force';
-// export * from 'd3-format';
+export * from 'd3-format';
 // export * from 'd3-geo';
 // export * from 'd3-hierarchy';
 // export * from 'd3-interpolate';

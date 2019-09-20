@@ -11,8 +11,16 @@ const url = '/';
 
 describe('Home Page Tests', function() {
   it('should display positive stats for each category', function() {
+
+    cy.server();
+
+    cy.route({
+      method: 'GET',
+      url: this.Urls.stat_counters()
+    }).as('getStatCounters');
+
     cy.visit(url)
-      .wait(3000) // wait counters request result
+      .wait('@getStatCounters')
       .get('.swh-counter')
       .then((counters) => {
         for (let counter of counters) {
