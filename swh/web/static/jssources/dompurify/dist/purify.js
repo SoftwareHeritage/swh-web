@@ -171,7 +171,7 @@ function createDOMPurify() {
    * Version label, exposed for easier checks
    * if DOMPurify is up to date or not
    */
-  DOMPurify.version = '2.0.0';
+  DOMPurify.version = '2.0.2';
 
   /**
    * Array of elements that DOMPurify removed during sanitation.
@@ -189,6 +189,7 @@ function createDOMPurify() {
 
   var originalDocument = window.document;
   var useDOMParser = false;
+  var removeSVGAttr = false;
   var removeTitle = false;
 
   var document = window.document;
@@ -242,6 +243,7 @@ function createDOMPurify() {
       IS_SCRIPT_OR_DATA$$1 = IS_SCRIPT_OR_DATA,
       ATTR_WHITESPACE$$1 = ATTR_WHITESPACE;
   var IS_ALLOWED_URI$$1 = IS_ALLOWED_URI;
+
   /**
    * We consider the elements and attributes below to be safe. Ideally
    * don't add any new ones but feel free to remove unwanted ones.
@@ -323,7 +325,7 @@ function createDOMPurify() {
   var USE_PROFILES = {};
 
   /* Tags to ignore content of when KEEP_CONTENT is true */
-  var FORBID_CONTENTS = addToSet({}, ['audio', 'head', 'math', 'script', 'style', 'template', 'svg', 'video']);
+  var FORBID_CONTENTS = addToSet({}, ['audio', 'colgroup', 'head', 'math', 'script', 'style', 'template', 'thead', 'svg', 'video']);
 
   /* Tags that are safe for data: URIs */
   var DATA_URI_TAGS = addToSet({}, ['audio', 'video', 'img', 'source', 'image']);
@@ -447,9 +449,10 @@ function createDOMPurify() {
       addToSet(ALLOWED_TAGS, ['html', 'head', 'body']);
     }
 
-    /* Add tbody to ALLOWED_TAGS in case tables are permitted, see #286 */
+    /* Add tbody to ALLOWED_TAGS in case tables are permitted, see #286, #365 */
     if (ALLOWED_TAGS.table) {
       addToSet(ALLOWED_TAGS, ['tbody']);
+      delete FORBID_TAGS.tbody;
     }
 
     // Prevent further manipulation of configuration.
@@ -557,12 +560,12 @@ function createDOMPurify() {
   //
   // So we feature detect the Firefox bug and use the DOMParser if necessary.
   //
-  // MS Edge, in older versions, is affected by an mXSS behavior. The second
-  // check tests for the behavior and fixes it if necessary.
+  // Chrome 77 and other versions ship an mXSS bug that caused a bypass to
+  // happen. We now check for the mXSS trigger and react accordingly.
   if (DOMPurify.isSupported) {
     (function () {
       try {
-        var doc = _initDocument('<svg><p><textarea><img src="</textarea><img src=x onerror=1//">');
+        var doc = _initDocument('<svg><p><textarea><img src="</textarea><img src=x abc=1//">');
         if (doc.querySelector('svg img')) {
           useDOMParser = true;
         }
@@ -574,6 +577,15 @@ function createDOMPurify() {
         var doc = _initDocument('<x/><title>&lt;/title&gt;&lt;img&gt;');
         if (doc.querySelector('title').innerHTML.match(/<\/title/)) {
           removeTitle = true;
+        }
+      } catch (error) {}
+    })();
+
+    (function () {
+      try {
+        var doc = _initDocument('<svg></p></svg>');
+        if (doc.querySelector('svg p')) {
+          removeSVGAttr = true;
         }
       } catch (error) {}
     })();
@@ -694,6 +706,12 @@ function createDOMPurify() {
       return true;
     }
 
+    /* Remove in case an mXSS is suspected */
+    if (currentNode.namespaceURI && currentNode.namespaceURI.match(/svg|math/i) && currentNode.textContent && currentNode.textContent.match(new RegExp('</' + tagName, 'i'))) {
+      _forceRemove(currentNode);
+      return true;
+    }
+
     /* Convert markup to cover jQuery behavior */
     if (SAFE_FOR_JQUERY && !currentNode.firstElementChild && (!currentNode.content || !currentNode.content.firstElementChild) && /</g.test(currentNode.textContent)) {
       DOMPurify.removed.push({ element: currentNode.cloneNode() });
@@ -787,6 +805,7 @@ function createDOMPurify() {
    *
    * @param  {Node} currentNode to sanitize
    */
+  // eslint-disable-next-line complexity
   var _sanitizeAttributes = function _sanitizeAttributes(currentNode) {
     var attr = void 0;
     var value = void 0;
@@ -828,6 +847,11 @@ function createDOMPurify() {
       hookEvent.keepAttr = true;
       _executeHook('uponSanitizeAttribute', currentNode, hookEvent);
       value = hookEvent.attrValue;
+
+      /* Check for possible Chrome mXSS */
+      if (removeSVGAttr && value.match(/<\//)) {
+        _forceRemove(currentNode);
+      }
 
       /* Remove attribute */
       // Safari (iOS + Mac), last tested v8.0.5, crashes if you try to
