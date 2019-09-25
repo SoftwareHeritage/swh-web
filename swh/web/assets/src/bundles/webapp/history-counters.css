@@ -1,0 +1,32 @@
+/**
+ * Copyright (C) 2019  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+.swh-history-counter-line {
+    fill: none;
+    stroke: #ffab00;
+    stroke-width: 3;
+}
+
+.swh-history-counter-overlay {
+    fill: none;
+    pointer-events: all;
+}
+
+.swh-history-counter-focus circle {
+    fill: none;
+    stroke: #ffab00;
+    stroke-width: 3;
+}
+
+.swh-history-counter-focus text {
+    font-size: 14px;
+}
+
+.swh-history-counter-tooltip {
+    fill: white;
+    stroke: #000;
+}

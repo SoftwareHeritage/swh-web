@@ -5,10 +5,14 @@
 
 import json
 
+import requests
+
 from django.conf.urls import url, include
 from django.contrib.staticfiles import finders
+from django.http import HttpResponse
 from django.shortcuts import render
 
+from swh.web.common import service
 from swh.web.config import get_config
 
 
@@ -21,10 +25,23 @@ def _jslicenses(request):
                   {'jslicenses_data': jslicenses_data})
 
 
+def _stat_counters(request):
+    stat = service.stat_counters()
+    url = get_config()['history_counters_url']
+    stat_counters_history = 'null'
+    if url:
+        response = requests.get(url)
+        stat_counters_history = response.text
+    json_data = '{"stat_counters": %s, "stat_counters_history": %s}' % (
+        json.dumps(stat), stat_counters_history)
+    return HttpResponse(json_data, content_type='application/json')
+
+
 urlpatterns = [
     url(r'^', include('swh.web.misc.coverage')),
     url(r'^jslicenses/$', _jslicenses, name='jslicenses'),
     url(r'^', include('swh.web.misc.origin_save')),
+    url(r'^stat_counters', _stat_counters, name='stat-counters'),
 ]
 
 

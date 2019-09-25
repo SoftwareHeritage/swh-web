@@ -23,3 +23,4 @@ export * from './readme-rendering';
 export * from './pdf-rendering';
 export * from './notebook-rendering';
 export * from './xss-filtering';
+export * from './history-counters';
