@@ -48,31 +48,29 @@ See top-level LICENSE file for more information
   of objects:
 
   <div class="row">
-    <div class="col-md-2" align="center">
+    <div class="col-md-4" align="center">
       <h5>Source files</h5>
       <span id="nb-files" class="swh-counter"></span>
+      <div class='d3-wrapper' id="nb-files-history"></div>
     </div>
-    <div class="col-md-2" align="center">
-      <h5>Directories</h5>
-        <span id="nb-dirs" class="swh-counter"></span>
-      </div>
-    <div class="col-md-2" align="center">
+    <div class="col-md-4 swh-counter-container" align="center">
       <h5>Commits</h5>
       <span id="nb-commits" class="swh-counter"></span>
+      <div class='d3-wrapper' id="nb-commits-history"></div>
     </div>
-    <div class="col-md-2" align="center">
-      <h5>Authors</h5>
-      <span id="nb-authors" class="swh-counter"></span>
-    </div>
-    <div class="col-md-2" align="center">
+    <div class="col-md-4 swh-counter-container" align="center">
       <h5>Projects</h5>
       <span id="nb-projects" class="swh-counter"></span>
-    </div>
-    <div class="col-md-2" align="center">
-      <h5>Releases</h5>
-      <span id="nb-releases" class="swh-counter"></span>
+      <div class='d3-wrapper' id="nb-projects-history"></div>
     </div>
   </div>
+
+  <p class="mt-3" style="font-size: 13px">
+    Note: the counters and graphs above are based on heuristics that might not reflect the exact
+    size of the archive. While the long-term trends shown and ballpark figures are reliable,
+    individual point-in-time values might not be.
+  </p>
+
 </p>
 
 <h4>Access</h4>
@@ -99,23 +97,6 @@ See top-level LICENSE file for more information
 </p>
 
 <script>
-  $(document).ready(function() {
-    $.ajax({
-      url: Urls.api_1_stat_counters(),
-      dataType: 'json',
-      success: function (data) {
-        if (data.content) {
-          $('#nb-files').html(data.content.toLocaleString());
-          $('#nb-commits').html(data.revision.toLocaleString());
-          $('#nb-projects').html(data.origin.toLocaleString());
-          $('#nb-dirs').html(data.directory.toLocaleString());
-          $('#nb-authors').html(data.person.toLocaleString());
-          $('#nb-releases').html(data.release.toLocaleString());
-        }
-      }
-    });
-    $('.swh-coverage-list').iFrameResize({heightCalculationMethod: 'taggedElement'});
-  });
-  swh.webapp.initPage('home');
+  swh.webapp.initHomePage();
 </script>
 {% endblock %}

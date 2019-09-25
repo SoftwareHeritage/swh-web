@@ -206,6 +206,10 @@ class GenerateWebLabelsPlugin {
         }
       }
 
+      for (let srcFiles of Object.values(this.chunkJsAssetToSrcFiles)) {
+        srcFiles.sort((a, b) => a.id.localeCompare(b.id));
+      }
+
       if (this.outputType === 'json') {
         // generate the jslicenses.json file
         let weblabelsData = JSON.stringify(this.chunkJsAssetToSrcFiles);

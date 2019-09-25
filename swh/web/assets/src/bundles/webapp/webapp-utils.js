@@ -172,6 +172,27 @@ export function initPage(page) {
   });
 }
 
+export function initHomePage() {
+  $(document).ready(() => {
+    $('.swh-coverage-list').iFrameResize({heightCalculationMethod: 'taggedElement'});
+    fetch(Urls.stat_counters())
+      .then(response => response.json())
+      .then(data => {
+        if (data.stat_counters) {
+          $('#nb-files').html(data.stat_counters.content.toLocaleString());
+          $('#nb-commits').html(data.stat_counters.revision.toLocaleString());
+          $('#nb-projects').html(data.stat_counters.origin.toLocaleString());
+        }
+        if (data.stat_counters_history) {
+          swh.webapp.drawHistoryCounterGraph('#nb-files-history', data.stat_counters_history.content);
+          swh.webapp.drawHistoryCounterGraph('#nb-commits-history', data.stat_counters_history.revision);
+          swh.webapp.drawHistoryCounterGraph('#nb-projects-history', data.stat_counters_history.origin);
+        }
+      });
+  });
+  initPage('home');
+}
+
 export function showModalMessage(title, message) {
   $('#swh-web-modal-message .modal-title').text(title);
   $('#swh-web-modal-message .modal-content p').text(message);
