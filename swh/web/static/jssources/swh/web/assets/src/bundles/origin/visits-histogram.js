@@ -12,9 +12,9 @@
 //  - currentYear: the visits year to display by default
 //  - yearClickCallback: callback when the user selects a year through the histogram
 
-import * as d3 from 'd3';
+export async function createVisitsHistogram(container, visitsData, currentYear, yearClickCallback) {
 
-export function createVisitsHistogram(container, visitsData, currentYear, yearClickCallback) {
+  const d3 = await import(/* webpackChunkName: "d3" */ 'utils/d3');
 
   // remove previously created histogram and tooltip if any
   d3.select(container).select('svg').remove();

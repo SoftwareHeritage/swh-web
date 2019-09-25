@@ -94,6 +94,7 @@ DEFAULT_CONFIG = {
     'coverage_count_origins': ('bool', False),
     'e2e_tests_mode': ('bool', False),
     'es_workers_index_url': ('string', ''),
+    'history_counters_url': ('string', 'https://stats.export.softwareheritage.org/history_counters.json'), # noqa
 }
 
 swhweb_config = {}

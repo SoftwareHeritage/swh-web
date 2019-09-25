@@ -24,6 +24,7 @@ swh_web_config = get_config()
 swh_web_config.update({
     'debug': False,
     'secret_key': 'test',
+    'history_counters_url': '',
     'throttling': {
         'cache_uri': None,
         'scopes': {

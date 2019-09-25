@@ -89,7 +89,7 @@
             "SwitchCase": 1,
             "VariableDeclarator": 1,
             "outerIIFEBody": 1,
-            "MemberExpression": 1,
+            "MemberExpression": "off",
             "FunctionDeclaration": {
                 "parameters": "first",
                 "body": 1
