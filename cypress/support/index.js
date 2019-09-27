@@ -5,8 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-import '@cypress/code-coverage/support';
-
 import {httpGetJson} from '../utils';
 
 Cypress.Screenshot.defaults({
@@ -111,6 +109,10 @@ Cypress.on('window:before:load', win => {
 // page is loaded during a single test execution
 let windowCoverageObjects;
 
+before(() => {
+  cy.task('resetCoverage', { isInteractive: Cypress.config('isInteractive') });
+});
+
 beforeEach(() => {
   windowCoverageObjects = [];
   // save reference to coverage for each app window loaded in the test
@@ -127,6 +129,10 @@ afterEach(() => {
   // save coverage after the test
   // because now the window coverage objects have been updated
   windowCoverageObjects.forEach((coverage) => {
-    cy.task('combineCoverage', coverage);
+    cy.task('combineCoverage', JSON.stringify(coverage));
   });
+});
+
+after(() => {
+  cy.task('coverageReport');
 });
