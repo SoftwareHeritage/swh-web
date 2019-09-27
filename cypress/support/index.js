@@ -109,16 +109,24 @@ Cypress.on('window:before:load', win => {
 
 // Ensure code coverage data do not get lost each time a new
 // page is loaded during a single test execution
-let coverage = {};
+let windowCoverageObjects;
 
-Cypress.on('window:before:unload', e => {
-  coverage = Object.assign(coverage, e.currentTarget.__coverage__);
+beforeEach(() => {
+  windowCoverageObjects = [];
+  // save reference to coverage for each app window loaded in the test
+  cy.on('window:load', (win) => {
+    // if application code has been instrumented, the app iframe "window" has an object
+    const applicationSourceCoverage = win.__coverage__;
+    if (applicationSourceCoverage) {
+      windowCoverageObjects.push(applicationSourceCoverage);
+    }
+  });
 });
 
-beforeEach(function() {
-  coverage = {};
-});
-
-afterEach(function() {
-  cy.task('combineCoverage', coverage);
+afterEach(() => {
+  // save coverage after the test
+  // because now the window coverage objects have been updated
+  windowCoverageObjects.forEach((coverage) => {
+    cy.task('combineCoverage', coverage);
+  });
 });
