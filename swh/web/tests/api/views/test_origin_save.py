@@ -180,7 +180,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                                        scheduler_task_status='next_run_scheduled') # noqa
         self.check_save_request_status(mock_scheduler, origin_url,
                                        SAVE_REQUEST_ACCEPTED,
-                                       SAVE_TASK_SCHEDULED,
+                                       SAVE_TASK_SUCCEED,
                                        scheduler_task_status='completed',
                                        visit_date=None) # noqa
         visit_date = datetime.now(tz=timezone.utc) + timedelta(hours=1)
