@@ -98,11 +98,9 @@ export function initOriginSave() {
             data: 'save_task_status',
             name: 'loading_task_status',
             render: (data, type, row) => {
-              if (data === 'succeed') {
+              if (data === 'succeed' && row.visit_date) {
                 let browseOriginUrl = Urls.browse_origin(row.origin_url);
-                if (row.visit_date) {
-                  browseOriginUrl += `visit/${row.visit_date}/`;
-                }
+                browseOriginUrl += `visit/${row.visit_date}/`;
                 return `<a href="${browseOriginUrl}">${data}</a>`;
               }
               return data;
