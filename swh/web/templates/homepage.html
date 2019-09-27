@@ -33,6 +33,32 @@ See top-level LICENSE file for more information
   about is already present in the archive or not.
 </p>
 
+<p>
+  <div class="row">
+    <div class="col-md-4 swh-web-app-link" align="center">
+      <a href="{% url 'browse-search' %}">
+        <img alt="Browse the Software Heritage archive" src="{% static 'img/swh-browse.png' %}"/>
+        <h5>Browse</h5>
+        <p>Explore the archive using a dedicated web interface.</p>
+      </a>
+    </div>
+    <div class="col-md-4 swh-web-app-link" align="center">
+      <a href="{% url 'api-1-homepage' %}">
+        <img alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
+        <h5>Web API</h5>
+        <p>Query the archive programmatically using a RESTful API.</p>
+      </a>
+    </div>
+    <div class="col-md-4 swh-web-app-link" align="center">
+      <a href="https://softwareheritage.org/support">
+        <img alt="Support Software Heritage" src="{% static 'img/swh-support.png' %}"/>
+        <h5>Support</h5>
+        <p>You can help build the Great Library of Source Code!</p>
+      </a>
+    </div>
+  </div>
+</p>
+
 <h4>Content</h4>
 
 <p>
@@ -71,29 +97,6 @@ See top-level LICENSE file for more information
     individual point-in-time values might not be.
   </p>
 
-</p>
-
-<h4>Access</h4>
-
-<p>
-  <div class="row">
-    <div class="col-md-3" align="center"></div>
-    <div class="col-md-3 swh-web-app-link" align="center">
-      <a href="{% url 'browse-search' %}">
-        <img alt="Browse the Software Heritage archive" src="{% static 'img/swh-browse.png' %}"/>
-        <h5>Browse</h5>
-        <p>Explore the archive using a dedicated web interface.</p>
-      </a>
-    </div>
-    <div class="col-md-3 swh-web-app-link" align="center">
-      <a href="{% url 'api-1-homepage' %}">
-        <img id="swh-web-api-1-img" alt="Software Heritage Web API" src="{% static 'img/swh-api.png' %}"/>
-        <h5>Web API</h5>
-        <p>Query the archive programmatically using a RESTful API.</p>
-      </a>
-    </div>
-    <div class="col-md-3" align="center"></div>
-  </div>
 </p>
 
 <script>
