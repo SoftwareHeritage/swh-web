@@ -176,8 +176,8 @@ swh/web/static/css/vault.5118f692fc3a4e47684d.css
 swh/web/static/css/vault.5118f692fc3a4e47684d.css.map
 swh/web/static/css/vendors.5e5e58b796111d180b09.css
 swh/web/static/css/vendors.5e5e58b796111d180b09.css.map
-swh/web/static/css/webapp.50cbe33d6155a7ba911f.css
-swh/web/static/css/webapp.50cbe33d6155a7ba911f.css.map
+swh/web/static/css/webapp.e0d53becc13cf2edaa13.css
+swh/web/static/css/webapp.e0d53becc13cf2edaa13.css.map
 swh/web/static/fonts/alegreya-latin-400.woff
 swh/web/static/fonts/alegreya-latin-400.woff2
 swh/web/static/fonts/alegreya-latin-400italic.woff
@@ -239,6 +239,7 @@ swh/web/static/img/swh-logo.png
 swh/web/static/img/swh-logo.svg
 swh/web/static/img/swh-spinner-small.gif
 swh/web/static/img/swh-spinner.gif
+swh/web/static/img/swh-support.png
 swh/web/static/img/swh-vault.png
 swh/web/static/img/icons/swh-logo-32x32.png
 swh/web/static/img/icons/swh-logo-archive-180x180.png
@@ -258,8 +259,8 @@ swh/web/static/img/logos/npm.png
 swh/web/static/img/logos/pypi.svg
 swh/web/static/img/thirdParty/chosen-sprite.png
 swh/web/static/img/thirdParty/chosen-sprite@2x.png
-swh/web/static/js/admin.977c00a2d920d394a6c1.js
-swh/web/static/js/admin.977c00a2d920d394a6c1.js.map
+swh/web/static/js/admin.9a35b45d5df25245edd8.js
+swh/web/static/js/admin.9a35b45d5df25245edd8.js.map
 swh/web/static/js/browse.a11c73e9fdea1afeb0e2.js
 swh/web/static/js/browse.a11c73e9fdea1afeb0e2.js.LICENSE
 swh/web/static/js/browse.a11c73e9fdea1afeb0e2.js.map
@@ -277,9 +278,9 @@ swh/web/static/js/pdfjs.9d22fcab498039bf9427.js.map
 swh/web/static/js/revision.eb3c17096d01bb569516.js
 swh/web/static/js/revision.eb3c17096d01bb569516.js.LICENSE
 swh/web/static/js/revision.eb3c17096d01bb569516.js.map
-swh/web/static/js/save.abcb60a69fc8d0835959.js
-swh/web/static/js/save.abcb60a69fc8d0835959.js.LICENSE
-swh/web/static/js/save.abcb60a69fc8d0835959.js.map
+swh/web/static/js/save.a9d5a56f262b938673fc.js
+swh/web/static/js/save.a9d5a56f262b938673fc.js.LICENSE
+swh/web/static/js/save.a9d5a56f262b938673fc.js.map
 swh/web/static/js/showdown.6cd069bc504093904a2f.js
 swh/web/static/js/showdown.6cd069bc504093904a2f.js.LICENSE
 swh/web/static/js/showdown.6cd069bc504093904a2f.js.map
@@ -288,9 +289,9 @@ swh/web/static/js/vault.5118f692fc3a4e47684d.js.map
 swh/web/static/js/vendors.5e5e58b796111d180b09.js
 swh/web/static/js/vendors.5e5e58b796111d180b09.js.LICENSE
 swh/web/static/js/vendors.5e5e58b796111d180b09.js.map
-swh/web/static/js/webapp.50cbe33d6155a7ba911f.js
-swh/web/static/js/webapp.50cbe33d6155a7ba911f.js.LICENSE
-swh/web/static/js/webapp.50cbe33d6155a7ba911f.js.map
+swh/web/static/js/webapp.e0d53becc13cf2edaa13.js
+swh/web/static/js/webapp.e0d53becc13cf2edaa13.js.LICENSE
+swh/web/static/js/webapp.e0d53becc13cf2edaa13.js.map
 swh/web/static/jssources/LICENSE.txt
 swh/web/static/jssources/jslicenses.json
 swh/web/static/jssources/@babel/runtime/LICENSE.txt
