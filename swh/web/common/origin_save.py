@@ -192,10 +192,6 @@ def _save_request_dict(save_request, task=None):
             visit_date, _ = _get_visit_info_for_save_request(save_request)
             save_request.visit_date = visit_date
             must_save = True
-        # Ensure last origin visit is available in database
-        # before reporting the task execution as successful
-        if save_task_status == SAVE_TASK_SUCCEED and not visit_date:
-            save_task_status = SAVE_TASK_SCHEDULED
         # Check tasks still marked as scheduled / not yet scheduled
         if save_task_status in (SAVE_TASK_SCHEDULED,
                                 SAVE_TASK_NOT_YET_SCHEDULED):

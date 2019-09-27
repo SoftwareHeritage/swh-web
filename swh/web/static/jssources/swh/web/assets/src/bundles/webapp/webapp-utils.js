@@ -179,14 +179,17 @@ export function initHomePage() {
       .then(response => response.json())
       .then(data => {
         if (data.stat_counters) {
-          $('#nb-files').html(data.stat_counters.content.toLocaleString());
-          $('#nb-commits').html(data.stat_counters.revision.toLocaleString());
-          $('#nb-projects').html(data.stat_counters.origin.toLocaleString());
+          $('#swh-contents-count').html(data.stat_counters.content.toLocaleString());
+          $('#swh-revisions-count').html(data.stat_counters.revision.toLocaleString());
+          $('#swh-origins-count').html(data.stat_counters.origin.toLocaleString());
+          $('#swh-directories-count').html(data.stat_counters.directory.toLocaleString());
+          $('#swh-persons-count').html(data.stat_counters.person.toLocaleString());
+          $('#swh-releases-count').html(data.stat_counters.release.toLocaleString());
         }
         if (data.stat_counters_history) {
-          swh.webapp.drawHistoryCounterGraph('#nb-files-history', data.stat_counters_history.content);
-          swh.webapp.drawHistoryCounterGraph('#nb-commits-history', data.stat_counters_history.revision);
-          swh.webapp.drawHistoryCounterGraph('#nb-projects-history', data.stat_counters_history.origin);
+          swh.webapp.drawHistoryCounterGraph('#swh-contents-count-history', data.stat_counters_history.content);
+          swh.webapp.drawHistoryCounterGraph('#swh-revisions-count-history', data.stat_counters_history.revision);
+          swh.webapp.drawHistoryCounterGraph('#swh-origins-count-history', data.stat_counters_history.origin);
         }
       });
   });
