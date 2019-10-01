@@ -507,7 +507,8 @@ def get_save_origin_task_info(save_request_id):
     try:
         response = requests.post(es_workers_index_url,
                                  json={'query': query,
-                                       'sort': ['@timestamp']})
+                                       'sort': ['@timestamp']},
+                                 timeout=30)
         results = json.loads(response.text)
         if results['hits']['total'] >= 1:
             task_run_info = results['hits']['hits'][-1]['_source']
