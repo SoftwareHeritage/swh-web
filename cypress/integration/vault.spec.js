@@ -28,6 +28,15 @@ function createVaultCookingTask(objectType) {
     .click();
 }
 
+function updateVaultItemList(vaultUrl, vaultItems) {
+  cy.visit(vaultUrl)
+    .then(() => {
+      // Add uncooked task to localStorage
+      // which updates it in vault items list
+      window.localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultItems));
+    });
+}
+
 // Mocks API response : /api/1/vault/(:objectType)/(:hash)
 // objectType : {'directory', 'revision'}
 function genVaultCookingResponse(objectType, objectId, status, message, fetchUrl) {
@@ -243,12 +252,8 @@ describe('Vault Cooking User Interface Tests', function() {
   });
 
   it('should offer to recook an archive if no more available to download', function() {
-    cy.visit(this.Urls.browse_vault())
-      .then(() => {
-        // Add uncooked task to localStorage
-        // which updates it in vault items list
-        window.localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultItems));
-      });
+
+    updateVaultItemList(this.Urls.browse_vault(), vaultItems);
 
     // Send 404 when fetching vault item
     cy.route({
@@ -293,4 +298,17 @@ describe('Vault Cooking User Interface Tests', function() {
     });
   });
 
+  it('should remove selected vault items', function() {
+
+    updateVaultItemList(this.Urls.browse_vault(), vaultItems);
+
+    cy.get(`#vault-task-${this.revision}`)
+      .find('input[type="checkbox"]')
+      .click();
+    cy.contains('button', 'Remove selected tasks')
+      .click();
+
+    cy.get(`#vault-task-${this.revision}`)
+      .should('not.exist');
+  });
 });
