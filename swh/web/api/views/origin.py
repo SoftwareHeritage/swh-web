@@ -92,10 +92,13 @@ def api_origins(request):
 
         Get list of archived software origins.
 
-        Origins are sorted by ids before returning them.
+        .. warning::
 
-        :query int origin_from: The first origin id that will be included
-            in returned results (default to 1)
+            This endpoint used to provide an `origin_from` query parameter,
+            and guarantee an order on results. This is no longer true,
+            and only the Link header should be used for paginating through
+            results.
+
         :query int origin_count: The maximum number of origins to return
             (default to 100, can not exceed 10000)
 
@@ -113,7 +116,7 @@ def api_origins(request):
 
         .. parsed-literal::
 
-            :swh_web_api:`origins?origin_from=50000&origin_count=500`
+            :swh_web_api:`origins?origin_count=500`
     """
     origin_from = int(request.query_params.get('origin_from', '1'))
     origin_count = int(request.query_params.get('origin_count', '100'))
