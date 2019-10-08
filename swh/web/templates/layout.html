@@ -71,6 +71,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="wrapper">
       <div class="swh-top-bar">
         <ul>
+          {% if oidc_enabled %}
+            <li class="swh-position-left">
+              <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
+            </li>
+          {% endif %}
           <li>
             <a href="https://www.softwareheritage.org">Home</a>
           </li>
@@ -81,9 +86,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               <a href="https://docs.softwareheritage.org/devel/">Documentation</a>
           </li>
           <li class="swh-position-right">
-            {% if user.is_authenticated and user.is_staff %}
+            {% url 'logout' as logout_url %}
+            {% if user.is_authenticated %}
               Logged in as <strong>{{ user.username }}</strong>,
-              <a href="{% url 'logout' %}">logout</a>
+              {% if 'OIDC' in user.backend %}
+                <a href="{% url 'oidc-logout' %}">logout</a>
+              {% else %}
+                <a href="{{ logout_url }}">logout</a>
+              {% endif %}
+            {% elif oidc_enabled %}
+              {% if request.path != logout_url %}
+                <a href="{% url 'oidc-login' %}?next_path={{ request.build_absolute_uri }}">login</a>
+              {% else %}
+                <a href="{% url 'oidc-login' %}">login</a>
+              {% endif %}
             {% else %}
               <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
             {% endif %}
@@ -160,7 +176,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <p>Help</p>
               </a>
             </li>
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated  and user.is_staff %}
               <li class="nav-header">Administration</li>
               <li class="nav-item swh-origin-save-admin-item" title="Save code now administration">
                 <a href="{% url 'admin-origin-save' %}" class="nav-link swh-origin-save-admin-link">

@@ -11,7 +11,7 @@ describe('Test top-bar', function() {
   it('should should contain all navigation links', function() {
     cy.visit(url);
     cy.get('.swh-top-bar a')
-      .should('have.length', 4)
+      .should('have.length.of.at.least', 4)
       .and('be.visible')
       .and('have.attr', 'href');
   });

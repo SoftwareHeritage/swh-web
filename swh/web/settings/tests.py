@@ -80,7 +80,11 @@ swh_web_config.update({
                 'exempted_networks': ['127.0.0.0/8']
             }
         }
-    }
+    },
+    'keycloak': {
+        'server_url': 'http://localhost:8080/auth',
+        'realm_name': 'SoftwareHeritage',
+    },
 })
 
 

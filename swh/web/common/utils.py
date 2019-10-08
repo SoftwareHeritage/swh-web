@@ -343,10 +343,16 @@ def context_processor(request):
     Django context processor used to inject variables
     in all swh-web templates.
     """
+    config = get_config()
+    if request.user.is_authenticated and not hasattr(request.user, 'backend'):
+        # To avoid django.template.base.VariableDoesNotExist errors
+        # when rendering templates when standard Django user is logged in.
+        request.user.backend = 'django.contrib.auth.backends.ModelBackend'
     return {
         'swh_object_icons': swh_object_icons,
         'available_languages': None,
-        'swh_client_config': get_config()['client_config'],
+        'swh_client_config': config['client_config'],
+        'oidc_enabled': bool(config['keycloak']['server_url']),
     }
 
 

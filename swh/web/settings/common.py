@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'swh.web.browse',
     'webpack_loader',
     'django_js_reverse',
-    'corsheaders'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -59,7 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'swh.web.common.middlewares.ThrottlingHeadersMiddleware'
+    'swh.web.common.middlewares.ThrottlingHeadersMiddleware',
 ]
 
 # Compress all assets (static ones and dynamically generated html)
@@ -291,3 +291,10 @@ JS_REVERSE_JS_MINIFY = False
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r'^/badge/.*$'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'swh.web.auth.backends.OIDCAuthorizationCodePKCEBackend',
+]
+
+OIDC_SWH_WEB_CLIENT_ID = 'swh-web'
