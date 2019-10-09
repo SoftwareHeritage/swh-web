@@ -42,7 +42,7 @@ def _get_branch(branches, branch_name, snapshot_id):
     if there is a master branch instead and returns it.
     """
     filtered_branches = \
-        [b for b in branches if b['name'].endswith(branch_name)]
+        [b for b in branches if b['name'] == branch_name]
     if len(filtered_branches) > 0:
         return filtered_branches[0]
     elif branch_name == 'HEAD':
@@ -59,7 +59,7 @@ def _get_branch(branches, branch_name, snapshot_id):
                                       branches_count=1,
                                       target_types=['revision', 'alias'])
         snp_branch, _ = process_snapshot_branches(snp)
-        if snp_branch:
+        if snp_branch and snp_branch[0]['name'] == branch_name:
             branches.append(snp_branch[0])
             return snp_branch[0]
     return None
