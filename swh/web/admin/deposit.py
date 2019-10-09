@@ -39,13 +39,15 @@ def _admin_deposit_list(request):
 
     try:
         nb_deposits = requests.get('%s?page_size=1' % deposits_list_url,
-                                   auth=deposits_list_auth).json()['count']
+                                   auth=deposits_list_auth,
+                                   timeout=30).json()['count']
 
         deposits_data = cache.get('swh-deposit-list')
         if not deposits_data or deposits_data['count'] != nb_deposits:
             deposits_data = requests.get('%s?page_size=%s' %
                                          (deposits_list_url, nb_deposits),
-                                         auth=deposits_list_auth).json()
+                                         auth=deposits_list_auth,
+                                         timeout=30).json()
             cache.set('swh-deposit-list', deposits_data)
 
         deposits = deposits_data['results']

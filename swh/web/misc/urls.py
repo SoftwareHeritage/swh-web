@@ -30,8 +30,11 @@ def _stat_counters(request):
     url = get_config()['history_counters_url']
     stat_counters_history = 'null'
     if url:
-        response = requests.get(url)
-        stat_counters_history = response.text
+        try:
+            response = requests.get(url, timeout=5)
+            stat_counters_history = response.text
+        except Exception:
+            pass
     json_data = '{"stat_counters": %s, "stat_counters_history": %s}' % (
         json.dumps(stat), stat_counters_history)
     return HttpResponse(json_data, content_type='application/json')
