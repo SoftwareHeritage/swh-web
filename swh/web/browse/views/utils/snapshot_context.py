@@ -41,16 +41,15 @@ def _get_branch(branches, branch_name, snapshot_id):
     (e.g those with svn type) does not have it. In that latter case, check
     if there is a master branch instead and returns it.
     """
-    filtered_branches = \
-        [b for b in branches if b['name'].endswith(branch_name)]
-    if len(filtered_branches) > 0:
+    filtered_branches = [b for b in branches if b['name'] == branch_name]
+    if filtered_branches:
         return filtered_branches[0]
     elif branch_name == 'HEAD':
-        filtered_branches = \
-            [b for b in branches if b['name'].endswith('master')]
-        if len(filtered_branches) > 0:
+        filtered_branches = [b for b in branches
+                             if b['name'].endswith('master')]
+        if filtered_branches:
             return filtered_branches[0]
-        elif len(branches) > 0:
+        elif branches:
             return branches[0]
     else:
         # case where a large branches list has been truncated
@@ -59,10 +58,9 @@ def _get_branch(branches, branch_name, snapshot_id):
                                       branches_count=1,
                                       target_types=['revision', 'alias'])
         snp_branch, _ = process_snapshot_branches(snp)
-        if snp_branch:
+        if snp_branch and snp_branch[0]['name'] == branch_name:
             branches.append(snp_branch[0])
             return snp_branch[0]
-    return None
 
 
 def _get_release(releases, release_name):
@@ -70,12 +68,9 @@ def _get_release(releases, release_name):
     Utility function to get a specific release from a releases list.
     Returns None if the release can not be found in the list.
     """
-    filtered_releases = \
-        [r for r in releases if r['name'] == release_name]
-    if len(filtered_releases) > 0:
+    filtered_releases = [r for r in releases if r['name'] == release_name]
+    if filtered_releases:
         return filtered_releases[0]
-    else:
-        return None
 
 
 def _branch_not_found(branch_type, branch, branches, snapshot_id=None,
@@ -91,33 +86,33 @@ def _branch_not_found(branch_type, branch, branches, snapshot_id=None,
         branch_type = 'Release'
         branch_type_plural = 'releases'
 
-    if snapshot_id and len(branches) == 0:
-        msg = 'Snapshot with id %s has an empty list' \
-              ' of %s!' % (snapshot_id, branch_type_plural)
+    if snapshot_id and not branches:
+        msg = ('Snapshot with id %s has an empty list'
+               ' of %s!' % (snapshot_id, branch_type_plural))
     elif snapshot_id:
-        msg = '%s %s for snapshot with id %s' \
-              ' not found!' % (branch_type, branch, snapshot_id)
-    elif visit_id and len(branches) == 0:
-        msg = 'Origin with type %s and url %s' \
-              ' for visit with id %s has an empty list' \
-              ' of %s!' % (origin_info['type'], origin_info['url'], visit_id,
-                           branch_type_plural)
+        msg = ('%s %s for snapshot with id %s'
+               ' not found!' % (branch_type, branch, snapshot_id))
+    elif visit_id and not branches:
+        msg = ('Origin with type %s and url %s'
+               ' for visit with id %s has an empty list'
+               ' of %s!' % (origin_info['type'], origin_info['url'], visit_id,
+                            branch_type_plural))
     elif visit_id:
-        msg = '%s %s associated to visit with' \
-              ' id %s for origin with type %s and url %s' \
-              ' not found!' % (branch_type, branch, visit_id,
-                               origin_info['type'], origin_info['url'])
-    elif len(branches) == 0:
-        msg = 'Origin with type %s and url %s' \
-                ' for visit with timestamp %s has an empty list' \
-                ' of %s!' % (origin_info['type'], origin_info['url'],
-                             timestamp, branch_type_plural)
+        msg = ('%s %s associated to visit with'
+               ' id %s for origin with type %s and url %s'
+               ' not found!' % (branch_type, branch, visit_id,
+                                origin_info['type'], origin_info['url']))
+    elif not branches:
+        msg = ('Origin with type %s and url %s'
+               ' for visit with timestamp %s has an empty list'
+               ' of %s!' % (origin_info['type'], origin_info['url'],
+                            timestamp, branch_type_plural))
     else:
-        msg = '%s %s associated to visit with'  \
-              ' timestamp %s for origin with type %s' \
-              ' and url %s not found!' % (branch_type, branch, timestamp,
-                                          origin_info['type'],
-                                          origin_info['url'])
+        msg = ('%s %s associated to visit with'
+               ' timestamp %s for origin with type %s'
+               ' and url %s not found!' % (branch_type, branch, timestamp,
+                                           origin_info['type'],
+                                           origin_info['url']))
     raise NotFoundExc(escape(msg))
 
 
@@ -144,8 +139,8 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     if snapshot_context['visit_info']:
         timestamp = format_utc_iso_date(snapshot_context['visit_info']['date'],
                                         '%Y-%m-%dT%H:%M:%SZ')
-        snapshot_context['timestamp'] = \
-            format_utc_iso_date(snapshot_context['visit_info']['date'])
+        snapshot_context['timestamp'] = format_utc_iso_date(
+            snapshot_context['visit_info']['date'])
 
     browse_view_name = 'browse-' + swh_type + '-' + browse_context
 
@@ -233,10 +228,9 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     """
     try:
 
-        snapshot_context = _process_snapshot_request(request, snapshot_id,
-                                                     origin_type, origin_url,
-                                                     timestamp, path,
-                                                     browse_context='directory') # noqa
+        snapshot_context = _process_snapshot_request(
+            request, snapshot_id, origin_type, origin_url,
+            timestamp, path, browse_context='directory')
 
         root_sha1_git = snapshot_context['root_sha1_git']
         sha1_git = root_sha1_git
@@ -347,7 +341,8 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     if origin_info:
         dir_metadata['origin type'] = origin_info['type']
         dir_metadata['origin url'] = origin_info['url']
-        dir_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
+        dir_metadata['origin visit date'] = format_utc_iso_date(
+            visit_info['date'])
 
     vault_cooking = {
         'directory_context': True,
@@ -374,8 +369,8 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
     if origin_info:
         context_found = 'origin: %s' % origin_info['url']
-    heading = 'Directory - %s - %s - %s' %\
-        (dir_path, snapshot_context['branch'], context_found)
+    heading = ('Directory - %s - %s - %s' %
+               (dir_path, snapshot_context['branch'], context_found))
 
     return render(request, 'browse/directory.html',
                   {'heading': heading,
@@ -513,14 +508,8 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     error_description = ''
     error_message = ''
     if content_data:
-        content_metadata['sha1'] = \
-            content_data['checksums']['sha1']
-        content_metadata['sha1_git'] = \
-            content_data['checksums']['sha1_git']
-        content_metadata['sha256'] = \
-            content_data['checksums']['sha256']
-        content_metadata['blake2s256'] = \
-            content_data['checksums']['blake2s256']
+        for checksum in content_data['checksums'].keys():
+            content_metadata[checksum] = content_data['checksums'][checksum]
         content_metadata['mimetype'] = content_data['mimetype']
         content_metadata['encoding'] = content_data['encoding']
         content_metadata['size'] = filesizeformat(content_data['length'])
@@ -538,7 +527,8 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     if origin_info:
         content_metadata['origin type'] = origin_info['type']
         content_metadata['origin url'] = origin_info['url']
-        content_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
+        content_metadata['origin visit date'] = format_utc_iso_date(
+            visit_info['date'])
         browse_snapshot_link = gen_snapshot_link(snapshot_id)
         content_metadata['context-independent snapshot'] = browse_snapshot_link
 
@@ -560,8 +550,8 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
     if origin_info:
         context_found = 'origin: %s' % origin_info['url']
-    heading = 'Content - %s - %s - %s' %\
-        (content_path, snapshot_context['branch'], context_found)
+    heading = ('Content - %s - %s - %s' %
+               (content_path, snapshot_context['branch'], context_found))
 
     return render(request, 'browse/content.html',
                   {'heading': heading,
@@ -600,9 +590,9 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     """
     try:
 
-        snapshot_context = _process_snapshot_request(request, snapshot_id,
-                                                     origin_type, origin_url,
-                                                     timestamp, browse_context='log') # noqa
+        snapshot_context = _process_snapshot_request(
+            request, snapshot_id, origin_type, origin_url,
+            timestamp, browse_context='log')
 
         revision_id = snapshot_context['revision_id']
 
@@ -618,11 +608,10 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
             revs_walker_state = rev_log_session['revs_walker_state']
 
         if len(rev_log) < offset+per_page:
-            revs_walker = \
-                service.get_revisions_walker(revs_ordering,
-                                             revision_id,
-                                             max_revs=offset+per_page+1,
-                                             state=revs_walker_state)
+            revs_walker = service.get_revisions_walker(
+                revs_ordering, revision_id,
+                max_revs=offset+per_page+1,
+                state=revs_walker_state)
             rev_log += [rev['id'] for rev in revs_walker]
             revs_walker_state = revs_walker.export_state()
 
@@ -683,7 +672,8 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     if origin_info:
         revision_metadata['origin type'] = origin_info['type']
         revision_metadata['origin url'] = origin_info['url']
-        revision_metadata['origin visit date'] = format_utc_iso_date(visit_info['date']) # noqa
+        revision_metadata['origin visit date'] = format_utc_iso_date(
+            visit_info['date'])
 
     swh_objects = [{'type': 'revision',
                     'id': revision_id},
@@ -700,8 +690,8 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     context_found = 'snapshot: %s' % snapshot_context['snapshot_id']
     if origin_info:
         context_found = 'origin: %s' % origin_info['url']
-    heading = 'Revision history - %s - %s' %\
-        (snapshot_context['branch'], context_found)
+    heading = ('Revision history - %s - %s' %
+               (snapshot_context['branch'], context_found))
 
     return render(request, 'browse/revision-log.html',
                   {'heading': heading,
@@ -731,8 +721,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
                                                      timestamp)
 
         branches_bc = request.GET.get('branches_breadcrumbs', '')
-        branches_bc = \
-            branches_bc.split(',') if branches_bc else []
+        branches_bc = branches_bc.split(',') if branches_bc else []
         branches_from = branches_bc[-1] if branches_bc else ''
 
         swh_type = snapshot_context['swh_type']
@@ -742,10 +731,9 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
 
         browse_view_name = 'browse-' + swh_type + '-directory'
 
-        snapshot = \
-            service.lookup_snapshot(snapshot_context['snapshot_id'],
-                                    branches_from, PER_PAGE+1,
-                                    target_types=['revision', 'alias'])
+        snapshot = service.lookup_snapshot(snapshot_context['snapshot_id'],
+                                           branches_from, PER_PAGE+1,
+                                           target_types=['revision', 'alias'])
 
         displayed_branches, _ = process_snapshot_branches(snapshot)
 
@@ -778,8 +766,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
     if branches_bc:
         query_params_prev = dict(query_params)
 
-        query_params_prev['branches_breadcrumbs'] = \
-            ','.join(branches_bc[:-1])
+        query_params_prev['branches_breadcrumbs'] = ','.join(branches_bc[:-1])
         prev_branches_url = reverse(browse_view_name, url_args=url_args,
                                     query_params=query_params_prev)
     elif branches_from:
@@ -791,8 +778,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
         next_branch = displayed_branches[-1]['name']
         del displayed_branches[-1]
         branches_bc.append(next_branch)
-        query_params_next['branches_breadcrumbs'] = \
-            ','.join(branches_bc)
+        query_params_next['branches_breadcrumbs'] = ','.join(branches_bc)
         next_branches_url = reverse(browse_view_name, url_args=url_args,
                                     query_params=query_params_next)
 
@@ -825,8 +811,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
                                                      timestamp)
 
         rel_bc = request.GET.get('releases_breadcrumbs', '')
-        rel_bc = \
-            rel_bc.split(',') if rel_bc else []
+        rel_bc = rel_bc.split(',') if rel_bc else []
         rel_from = rel_bc[-1] if rel_bc else ''
 
         swh_type = snapshot_context['swh_type']
@@ -834,10 +819,9 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
         url_args = snapshot_context['url_args']
         query_params = snapshot_context['query_params']
 
-        snapshot = \
-            service.lookup_snapshot(snapshot_context['snapshot_id'],
-                                    rel_from, PER_PAGE+1,
-                                    target_types=['release', 'alias'])
+        snapshot = service.lookup_snapshot(snapshot_context['snapshot_id'],
+                                           rel_from, PER_PAGE+1,
+                                           target_types=['release', 'alias'])
 
         _, displayed_releases = process_snapshot_branches(snapshot)
 
@@ -882,8 +866,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
     if rel_bc:
         query_params_prev = dict(query_params)
 
-        query_params_prev['releases_breadcrumbs'] = \
-            ','.join(rel_bc[:-1])
+        query_params_prev['releases_breadcrumbs'] = ','.join(rel_bc[:-1])
         prev_releases_url = reverse(browse_view_name, url_args=url_args,
                                     query_params=query_params_prev)
     elif rel_from:
@@ -895,8 +878,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
         next_rel = displayed_releases[-1]['branch_name']
         del displayed_releases[-1]
         rel_bc.append(next_rel)
-        query_params_next['releases_breadcrumbs'] = \
-            ','.join(rel_bc)
+        query_params_next['releases_breadcrumbs'] = ','.join(rel_bc)
         next_releases_url = reverse(browse_view_name, url_args=url_args,
                                     query_params=query_params_next)
 
