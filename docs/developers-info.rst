@@ -53,8 +53,6 @@ Configuration and settings
     * :mod:`swh.web.manage`: Django management module for developers.
     * :mod:`swh.web.urls`: module that holds the whole URI scheme of all
       the web applications.
-    * :mod:`swh.web.wsgi`: WSGI module to use when deploying the web applications
-      in production.
     * :mod:`swh.web.settings.common`: Common Django settings
     * :mod:`swh.web.settings.development`: Django settings for development
     * :mod:`swh.web.settings.production`: Django settings for production
