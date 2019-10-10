@@ -22,6 +22,31 @@ from swh.web.tests.data import get_tests_data
 
 
 class OriginApiTestCase(WebTestCase, APITestCase):
+    def _scroll_results(self, url):
+        """Iterates through pages of results, and returns them all."""
+        results = []
+
+        while True:
+            rv = self.client.get(url)
+            self.assertEqual(rv.status_code, 200, rv.data)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+
+            results.extend(rv.data)
+
+            if 'Link' in rv:
+                for link in parse_header_links(rv['Link']):
+                    if link['rel'] == 'next':
+                        # Found link to next page of results
+                        url = link['url']
+                        break
+                else:
+                    # No link with 'rel=next'
+                    break
+            else:
+                # No Link header
+                break
+
+        return results
 
     @patch('swh.web.api.views.origin.get_origin_visits')
     def test_api_lookup_origin_visits_raise_error(
@@ -340,27 +365,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         url = reverse('api-1-origins',
                       query_params={'origin_count': origin_count})
 
-        results = []
-
-        while True:
-            rv = self.client.get(url)
-            self.assertEqual(rv.status_code, 200, rv.data)
-            self.assertEqual(rv['Content-Type'], 'application/json')
-
-            results.extend(rv.data)
-
-            if 'Link' in rv:
-                for link in parse_header_links(rv['Link']):
-                    if link['rel'] == 'next':
-                        # Found link to next page of results
-                        url = link['url']
-                        break
-                else:
-                    # No link with 'rel=next'
-                    break
-            else:
-                # No Link header
-                break
+        results = self._scroll_results(url)
 
         self.assertEqual(len(results), len(origins))
         self.assertEqual({origin['url'] for origin in results}, origin_urls)
@@ -416,6 +421,78 @@ class OriginApiTestCase(WebTestCase, APITestCase):
             'exception': 'NotFoundExc',
             'reason': 'Origin %s not found!' % new_origin['url']
         })
+
+    @pytest.mark.origin_id
+    def test_api_origin_search(self):
+        expected_origins = {
+            'https://github.com/wcoder/highlightjs-line-numbers.js',
+            'https://github.com/memononen/libtess2',
+        }
+
+        # Search for 'github.com', get only one
+        url = reverse('api-1-origin-search',
+                      url_args={'url_pattern': 'github.com'},
+                      query_params={'limit': 1})
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(len(rv.data), 1)
+        self.assertLess({origin['url'] for origin in rv.data},
+                        expected_origins)
+
+        # Search for 'github.com', get all
+        url = reverse('api-1-origin-search',
+                      url_args={'url_pattern': 'github.com'},
+                      query_params={'limit': 2})
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual({origin['url'] for origin in rv.data},
+                         expected_origins)
+
+        # Search for 'github.com', get more than available
+        url = reverse('api-1-origin-search',
+                      url_args={'url_pattern': 'github.com'},
+                      query_params={'limit': 10})
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual({origin['url'] for origin in rv.data},
+                         expected_origins)
+
+    @pytest.mark.origin_id
+    def test_api_origin_search_regexp(self):
+        expected_origins = {
+            'https://github.com/memononen/libtess2',
+            'repo_with_submodules'
+        }
+
+        url = reverse('api-1-origin-search',
+                      url_args={'url_pattern': '(repo|libtess)'},
+                      query_params={'limit': 10,
+                                    'regexp': True})
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual({origin['url'] for origin in rv.data},
+                         expected_origins)
+
+    @pytest.mark.origin_id
+    @given(strategies.integers(min_value=1))
+    def test_api_origin_search_scroll(self, limit):
+        expected_origins = {
+            'https://github.com/wcoder/highlightjs-line-numbers.js',
+            'https://github.com/memononen/libtess2',
+        }
+
+        url = reverse('api-1-origin-search',
+                      url_args={'url_pattern': 'github.com'},
+                      query_params={'limit': limit})
+
+        results = self._scroll_results(url)
+
+        self.assertEqual({origin['url'] for origin in results},
+                         expected_origins)
 
     @given(origin())
     def test_api_origin_metadata_search(self, origin):
