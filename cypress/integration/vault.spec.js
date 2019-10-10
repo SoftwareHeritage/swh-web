@@ -13,7 +13,7 @@ const progressbarColors = {
   'done': 'rgb(92, 184, 92)'
 };
 
-function createVaultCookingTask(objectType) {
+function checkVaultCookingTask(objectType) {
   cy.contains('button', 'Actions')
     .click();
 
@@ -23,9 +23,7 @@ function createVaultCookingTask(objectType) {
   cy.contains('.dropdown-item', objectType)
     .click();
 
-  cy.get('.modal-dialog')
-    .contains('button:visible', 'Ok')
-    .click();
+  cy.wait('@checkVaultCookingTask');
 }
 
 function updateVaultItemList(vaultUrl, vaultItems) {
@@ -113,11 +111,20 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub responses when requesting the vault API to simulate
     // a task has been created
+
+    cy.route({
+      method: 'GET',
+      url: this.vaultDirectoryUrl,
+      response: {'exception': 'NotFoundExc'}
+    }).as('checkVaultCookingTask');
+
     cy.route({
       method: 'POST',
       url: this.vaultDirectoryUrl,
       response: this.genVaultDirCookingResponse('new')
     }).as('createVaultCookingTask');
+
+    checkVaultCookingTask('as tarball');
 
     cy.route({
       method: 'GET',
@@ -126,7 +133,9 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('checkVaultCookingTask');
 
     // Create a vault cooking task through the GUI
-    createVaultCookingTask('Directory');
+    cy.get('.modal-dialog')
+      .contains('button:visible', 'Ok')
+      .click();
 
     cy.wait('@createVaultCookingTask');
 
@@ -185,11 +194,21 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub responses when requesting the vault API to simulate
     // a task has been created
+
+    cy.route({
+      method: 'GET',
+      url: this.vaultRevisionUrl,
+      response: {'exception': 'NotFoundExc'}
+    }).as('checkVaultCookingTask');
+
     cy.route({
       method: 'POST',
       url: this.vaultRevisionUrl,
       response: this.genVaultRevCookingResponse('new')
     }).as('createVaultCookingTask');
+
+    // Create a vault cooking task through the GUI
+    checkVaultCookingTask('as git');
 
     cy.route({
       method: 'GET',
@@ -198,7 +217,9 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('checkVaultCookingTask');
 
     // Create a vault cooking task through the GUI
-    createVaultCookingTask('Revision');
+    cy.get('.modal-dialog')
+      .contains('button:visible', 'Ok')
+      .click();
 
     cy.wait('@createVaultCookingTask');
 
@@ -311,4 +332,76 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.get(`#vault-task-${this.revision}`)
       .should('not.exist');
   });
+
+  it('should offer to immediately download a directory tarball if already cooked', function() {
+
+    // Browse a directory
+    cy.visit(this.directoryUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // the directory tarball has already been cooked
+    cy.route({
+      method: 'GET',
+      url: this.vaultDirectoryUrl,
+      response: this.genVaultDirCookingResponse('done')
+    }).as('checkVaultCookingTask');
+
+    // Stub response to the vault API to simulate archive download
+    cy.route({
+      method: 'GET',
+      url: this.vaultFetchDirectoryUrl,
+      response: `fx:${this.directory}.tar.gz,binary`,
+      headers: {
+        'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
+        'Content-Type': 'application/gzip'
+      }
+    }).as('fetchCookedArchive');
+
+    // Create a vault cooking task through the GUI
+    checkVaultCookingTask('as tarball');
+
+    // Start archive download through the GUI
+    cy.get('.modal-dialog')
+      .contains('button:visible', 'Ok')
+      .click();
+
+    cy.wait('@fetchCookedArchive');
+
+  });
+
+  it('should offer to immediately download a revision gitfast archive if already cooked', function() {
+
+    // Browse a directory
+    cy.visit(this.revisionUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // the directory tarball has already been cooked
+    cy.route({
+      method: 'GET',
+      url: this.vaultRevisionUrl,
+      response: this.genVaultRevCookingResponse('done')
+    }).as('checkVaultCookingTask');
+
+    // Stub response to the vault API to simulate archive download
+    cy.route({
+      method: 'GET',
+      url: this.vaultFetchRevisionUrl,
+      response: `fx:${this.revision}.gitfast.gz,binary`,
+      headers: {
+        'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
+        'Content-Type': 'application/gzip'
+      }
+    }).as('fetchCookedArchive');
+
+    checkVaultCookingTask('as git');
+
+    // Start archive download through the GUI
+    cy.get('.modal-dialog')
+      .contains('button:visible', 'Ok')
+      .click();
+
+    cy.wait('@fetchCookedArchive');
+
+  });
+
 });
