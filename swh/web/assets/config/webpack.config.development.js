@@ -45,6 +45,9 @@ fs.readdirSync(bundlesDir).forEach(file => {
 let cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
+    loader: 'cache-loader'
+  },
+  {
     loader: 'css-loader',
     options: {
       sourceMap: !isDevServer
@@ -164,6 +167,9 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: [
+          {
+            loader: 'cache-loader'
+          },
           {
             loader: 'babel-loader',
             options: {
