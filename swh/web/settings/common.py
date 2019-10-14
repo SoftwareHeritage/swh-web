@@ -86,7 +86,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'swh.web.wsgi.application'
 
 DATABASES = {
     'default': {
