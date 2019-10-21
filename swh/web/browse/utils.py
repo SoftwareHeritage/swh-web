@@ -852,44 +852,7 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
     return revision_log_data
 
 
-# list of origin types that can be found in the swh archive
-# TODO: retrieve it dynamically in an efficient way instead
-#       of hardcoding it
-_swh_origin_types = ['git', 'svn', 'deb', 'hg', 'ftp', 'deposit',
-                     'pypi', 'npm']
-
-
-def get_origin_info(origin_url, origin_type=None):
-    """
-    Get info about a software origin.
-    Its main purpose is to automatically find an origin type
-    when it is not provided as parameter.
-
-    Args:
-        origin_url (str): complete url of a software origin
-        origin_type (str): optional origin type
-
-    Returns:
-        A dict with the following entries:
-            * type: the origin type
-            * url: the origin url
-            * id: the internal id of the origin
-    """
-    if origin_type:
-        return service.lookup_origin({'type': origin_type,
-                                      'url': origin_url})
-    else:
-        for origin_type in _swh_origin_types:
-            try:
-                origin_info = service.lookup_origin({'type': origin_type,
-                                                     'url': origin_url})
-                return origin_info
-            except Exception:
-                pass
-    raise NotFoundExc('Origin with url %s not found!' % escape(origin_url))
-
-
-def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
+def get_snapshot_context(snapshot_id=None, origin_url=None,
                          timestamp=None, visit_id=None):
     """
     Utility function to compute relevant information when navigating
@@ -899,7 +862,6 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
     Args:
         snapshot_id (str): hexadecimal representation of a snapshot identifier,
             all other parameters will be ignored if it is provided
-        origin_type (str): the origin type (git, svn, deposit, ...)
         origin_url (str): the origin_url
             (e.g. https://github.com/(user)/(repo)/)
         timestamp (str): a datetime string for retrieving the closest
@@ -939,7 +901,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
     swh_type = 'snapshot'
     if origin_url:
         swh_type = 'origin'
-        origin_info = get_origin_info(origin_url, origin_type)
+        origin_info = service.lookup_origin({'url': origin_url})
 
         visit_info = get_origin_visit(origin_info, timestamp, visit_id,
                                       snapshot_id)
@@ -961,8 +923,7 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
             get_origin_visit_snapshot(origin_info, timestamp, visit_id,
                                       snapshot_id)
 
-        url_args = {'origin_type': origin_type,
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
 
         query_params = {'visit_id': visit_id}
 
@@ -1010,8 +971,6 @@ def get_snapshot_context(snapshot_id=None, origin_type=None, origin_url=None,
         'snapshot_size': snapshot_size,
         'is_empty': is_empty,
         'origin_info': origin_info,
-        # keep track if the origin type was provided as url argument
-        'origin_type': origin_type,
         'visit_info': visit_info,
         'branches': branches,
         'releases': releases,

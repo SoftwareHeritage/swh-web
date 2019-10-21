@@ -36,8 +36,8 @@ function populateOriginSearchResultsTable(origins, offset) {
       let origin = origins[i];
       let browseUrl = Urls.browse_origin(origin.url);
       let tableRow = `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
-      tableRow += `<td style="width: 120px;">${origin.type}</td>`;
       tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
+      tableRow += `<td id="visit-type-origin-${i}" style="width: 120px;"></td>`;
       tableRow += `<td class="swh-visit-status" id="visit-status-origin-${i}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>`;
       tableRow += '</tr>';
       table.append(tableRow);
@@ -47,6 +47,7 @@ function populateOriginSearchResultsTable(origins, offset) {
       fetch(latestSnapshotUrl)
         .then(response => response.json())
         .then(data => {
+          $(`#visit-type-origin-${i}`).text(data.type);
           $(`#visit-status-origin-${i}`).children().remove();
           if (data) {
             $(`#visit-status-origin-${i}`).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');

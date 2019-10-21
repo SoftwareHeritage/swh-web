@@ -39,13 +39,13 @@ Software Heritage crawlers.
 
 Wherever a revision context is expected in a path (i.e., a
 **/browse/revision/(sha1_git)/** path fragment) we can put in its stead a path fragment
-of the form **/origin/(origin_type)/url/(origin_url)/[/visit/(timestamp)/][?branch=(branch)]**.
+of the form **/origin/(origin_url)/[/visit/(timestamp)/][?branch=(branch)]**.
 Such a fragment is resolved, internally by the archive, to a revision **sha1_git** as follows:
 
 - if **timestamp** is absent: look for the most recent crawl of origin
-  identified by **origin_type** and **origin_url**
+  identified by **origin_url**
 - if **timestamp** is given: look for the closest crawl of origin identified
-  by **origin_type** and **origin_url** from timestamp **timestamp**
+  by **origin_url** from timestamp **timestamp**
 - if **branch** is given as a query parameter: look for the branch **branch**
 - if **branch** is absent: look for branch "HEAD" or "master"
 - return the revision **sha1_git** pointed by the chosen branch
@@ -53,17 +53,14 @@ Such a fragment is resolved, internally by the archive, to a revision **sha1_git
 The already mentioned URLs for revision contexts can therefore be alternatively
 specified by users as:
 
-* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/directory/[(path)/]`
-* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/directory/[(path)/]`
-* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/content/(path)/`
-* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/content/(path)/`
-* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/log/`
-* :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/log/`
+* :http:get:`/browse/origin/(origin_url)/directory/[(path)/]`
+* :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/directory/[(path)/]`
+* :http:get:`/browse/origin/(origin_url)/content/(path)/`
+* :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/content/(path)/`
+* :http:get:`/browse/origin/(origin_url)/log/`
+* :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/log/`
 
 Typing:
-
-- **origin_type** corresponds to the type of the archived origin:
-  ``git``, ``svn``,``hg``, ``deb``, ``pypi``, ``ftp`` or ``deposit``
 
 - **origin_url** corresponds to the URL the origin was crawled from,
   for instance https://github.com/(user)/(repo)/

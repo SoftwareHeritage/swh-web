@@ -14,13 +14,11 @@ performed by Software Heritage:
 Origin visits
 """""""""""""
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visits/
+.. http:get:: /browse/origin/(origin_url)/visits/
 
     HTML view that displays a visits reporting for a software origin identified by
     its type and url.
 
-    :param string origin_type: the type of software origin (possible values are ``git``, ``svn``,
-        ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
@@ -29,8 +27,8 @@ Origin visits
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visits/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/visits/`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/visits/`
+        :swh_web_browse:`origin/https://github.com/python/cpython/visits/`
         :swh_web_browse:`origin/deb://Debian-Security/packages/mediawiki/visits/`
         :swh_web_browse:`origin/https://gitorious.org/qt/qtbase.git/visits/`
 
@@ -38,7 +36,7 @@ Origin visits
 Origin directory
 """"""""""""""""
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/directory/[(path)/]
+.. http:get:: /browse/origin/(origin_url)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from the root directory
     (including itself) associated to the latest full visit of a software origin.
@@ -58,8 +56,6 @@ Origin directory
     The origin branch (default to master) from which to retrieve the directory
     content can also be specified by using the branch query parameter.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string path: optional parameter used to specify the path of a directory
         reachable from the origin root one
@@ -79,14 +75,14 @@ Origin directory
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/directory/`
-        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/directory/net/ethernet/`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/directory/`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/directory/net/ethernet/`
         :swh_web_browse:`origin/https://github.com/python/cpython/directory/`
         :swh_web_browse:`origin/https://github.com/python/cpython/directory/Python/`
         :swh_web_browse:`origin/https://github.com/python/cpython/directory/?branch=refs/heads/2.7`
 
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/directory/[(path)/]
+.. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/directory/[(path)/]
 
     HTML view for browsing the content of a directory reachable from
     the root directory (including itself) associated to a visit of a software
@@ -107,8 +103,6 @@ Origin directory
     The origin branch (default to master) from which to retrieve the directory
     content can also be specified by using the branch query parameter.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -132,17 +126,17 @@ Origin directory
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visit/1493926809/directory/`
-        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visit/2016-09-14T10:36:21/directory/net/ethernet/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/visit/1474620651/directory/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/visit/2017-05-05/directory/Python/`
-        :swh_web_browse:`origin/git/url/https://github.com/python/cpython/visit/2015-08/directory/?branch=refs/heads/2.7`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/visit/1493926809/directory/`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/visit/2016-09-14T10:36:21/directory/net/ethernet/`
+        :swh_web_browse:`origin/https://github.com/python/cpython/visit/1474620651/directory/`
+        :swh_web_browse:`origin/https://github.com/python/cpython/visit/2017-05-05/directory/Python/`
+        :swh_web_browse:`origin/https://github.com/python/cpython/visit/2015-08/directory/?branch=refs/heads/2.7`
 
 
 Origin content
 """"""""""""""
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/content/(path)/
+.. http:get:: /browse/origin/(origin_url)/content/(path)/
 
     HTML view that produces a display of a content
     associated to the latest full visit of a software origin.
@@ -168,8 +162,6 @@ Origin content
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string path: path of a content reachable from the origin root directory
     :query string branch: specify the origin branch name from which
@@ -188,12 +180,12 @@ Origin content
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/git/git/content/git.c/`
-        :swh_web_browse:`origin/git/url/https://github.com/git/git/content/git.c/`
+        :swh_web_browse:`origin/https://github.com/git/git/content/git.c/`
+        :swh_web_browse:`origin/https://github.com/git/git/content/git.c/`
         :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content/js/src/json.cpp/`
         :swh_web_browse:`origin/https://github.com/git/git/content/git.c/?branch=refs/heads/next`
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/content/(path)/
+.. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/content/(path)/
 
     HTML view that produces a display of a content associated to a
     visit of a software origin closest to a provided timestamp.
@@ -220,8 +212,6 @@ Origin content
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -243,8 +233,8 @@ Origin content
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/git/git/visit/1473933564/content/git.c/`
-        :swh_web_browse:`origin/git/url/https://github.com/git/git/visit/2016-05-05T00:0:00+00:00/content/git.c/`
+        :swh_web_browse:`origin/https://github.com/git/git/visit/1473933564/content/git.c/`
+        :swh_web_browse:`origin/https://github.com/git/git/visit/2016-05-05T00:0:00+00:00/content/git.c/`
         :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/visit/1490126182/content/js/src/json.cpp/`
         :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/visit/2017-03-21/content/js/src/json.cpp/#L904-L931`
         :swh_web_browse:`origin/https://github.com/git/git/visit/2017-09-15/content/git.c/?branch=refs/heads/next`
@@ -253,7 +243,7 @@ Origin content
 Origin history
 """"""""""""""
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/log/
+.. http:get:: /browse/origin/(origin_url)/log/
 
     HTML view that produces a display of revisions history heading
     to the last revision found during the latest visit of a software origin.
@@ -285,8 +275,6 @@ Origin history
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :query int per_page: the number of log entries to display per page
     :query int offset: the number of revisions to skip before returning those to display
@@ -307,12 +295,12 @@ Origin history
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/videolan/vlc/log/`
+        :swh_web_browse:`origin/https://github.com/videolan/vlc/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release`
 
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/log/
+.. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/log/
 
     HTML view that produces a display of revisions history heading
     to the last revision found during a visit of a software origin closest
@@ -342,8 +330,6 @@ Origin history
     The origin branch (default to master) from which to retrieve the content
     can also be specified by using the branch query parameter.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -369,15 +355,15 @@ Origin history
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/videolan/vlc/visit/1459651262/log/`
-        :swh_web_browse:`origin/git/url/https://github.com/Kitware/CMake/visit/2016-04-01/log/`
+        :swh_web_browse:`origin/https://github.com/videolan/vlc/visit/1459651262/log/`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2016-04-01/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/1438116814/log/?branch=refs/heads/release`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2017-05-05T03:14:23/log/?branch=refs/heads/release`
 
 Origin branches
 """""""""""""""
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/branches/
+.. http:get:: /browse/origin/(origin_url)/branches/
 
     HTML view that produces a display of the list of branches
     found during the latest full visit of a software origin.
@@ -392,8 +378,6 @@ Origin branches
 
     That list of branches is paginated, each page displaying a maximum of 100 branches.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
@@ -402,10 +386,10 @@ Origin branches
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/deb/url/deb://Debian/packages/linux/branches/`
+        :swh_web_browse:`origin/deb://Debian/packages/linux/branches/`
         :swh_web_browse:`origin/https://github.com/webpack/webpack/branches/`
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/branches/
+.. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/branches/
 
     HTML view that produces a display of the list of branches
     found during a visit of a software origin closest to the provided timestamp.
@@ -420,8 +404,6 @@ Origin branches
 
     That list of branches is paginated, each page displaying a maximum of 100 branches.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -432,13 +414,13 @@ Origin branches
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/kripken/emscripten/visit/2017-05-05T12:02:03/branches/`
+        :swh_web_browse:`origin/https://github.com/kripken/emscripten/visit/2017-05-05T12:02:03/branches/`
         :swh_web_browse:`origin/deb://Debian/packages/apache2-mod-xforward/visit/2017-11-15T05:15:09/branches/`
 
 Origin releases
 """""""""""""""
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/releases/
+.. http:get:: /browse/origin/(origin_url)/releases/
 
     HTML view that produces a display of the list of releases
     found during the latest full visit of a software origin.
@@ -453,8 +435,6 @@ Origin releases
 
     That list of releases is paginated, each page displaying a maximum of 100 releases.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
@@ -463,10 +443,10 @@ Origin releases
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/git/git/releases/`
+        :swh_web_browse:`origin/https://github.com/git/git/releases/`
         :swh_web_browse:`origin/https://github.com/webpack/webpack/releases/`
 
-.. http:get:: /browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/releases/
+.. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/releases/
 
     HTML view that produces a display of the list of releases
     found during a visit of a software origin closest to the provided timestamp.
@@ -481,8 +461,6 @@ Origin releases
 
     That list of releases is paginated, each page displaying a maximum of 100 releases.
 
-    :param string origin_type: the type of software origin (possible values are ``git``,
-        ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
@@ -493,7 +471,7 @@ Origin releases
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/git/url/https://github.com/torvalds/linux/visit/2017-11-21T19:37:42/releases/`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/visit/2017-11-21T19:37:42/releases/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2016-09-23T14:06:35/releases/`
 
 .. _highlightjs: https://highlightjs.org/

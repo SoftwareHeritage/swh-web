@@ -42,7 +42,7 @@ Snapshot directory
 
     The features offered by the view are similar to the one for browsing
     a directory in an origin context
-    (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/directory/[(path)/]`).
+    (see :http:get:`/browse/origin/(origin_url)/directory/[(path)/]`).
 
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :param string path: optional parameter used to specify the path of a directory
@@ -76,7 +76,7 @@ Snapshot content
 
     The features offered by the view are similar to the one for browsing
     a content in an origin context
-    (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/content/(path)/`).
+    (see :http:get:`/browse/origin/(origin_url)/content/(path)/`).
 
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :param string path: path of a content reachable from the snapshot root directory
@@ -110,7 +110,7 @@ Snapshot history
 
     The features offered by the view are similar to the one for browsing
     the history in an origin context
-    (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/log/`).
+    (see :http:get:`/browse/origin/(origin_url)/log/`).
 
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :query string revs_breadcrumb: used internally to store
@@ -148,7 +148,7 @@ Snapshot branches
 
     The features offered by the view are similar to the one for browsing
     the list of branches in an origin context
-    (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/branches/`).
+    (see :http:get:`/browse/origin/(origin_url)/branches/`).
 
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :statuscode 200: no error
@@ -172,7 +172,7 @@ Snapshot releases
 
     The features offered by the view are similar to the one for browsing
     the list of releases in an origin context
-    (see :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/releases/`).
+    (see :http:get:`/browse/origin/(origin_url)/releases/`).
 
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :statuscode 200: no error

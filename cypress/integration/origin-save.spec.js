@@ -17,7 +17,7 @@ const saveCodeMsg = {
 };
 
 function makeOriginSaveRequest(originType, originUrl) {
-  cy.get('#swh-input-origin-type')
+  cy.get('#swh-input-visit-type')
     .select(originType)
     .get('#swh-input-origin-url')
     .type(originUrl)
@@ -47,7 +47,7 @@ function stubSaveRequest(requestUrl, objectType, status, originUrl, taskStatus, 
 // object_type : {'git', 'hg', 'svn'}
 function genOriginSaveResponse(objectType, saveRequestStatus, originUrl, saveRequestDate, saveTaskStatus) {
   return {
-    'origin_type': objectType,
+    'visit_type': objectType,
     'save_request_status': saveRequestStatus,
     'origin_url': originUrl,
     'id': 1,

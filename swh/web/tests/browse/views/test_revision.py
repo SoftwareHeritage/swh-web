@@ -224,8 +224,7 @@ class SwhBrowseRevisionTest(WebTestCase):
 
         url = reverse('browse-revision',
                       url_args={'sha1_git': revision},
-                      query_params={'origin_type': new_origin['type'],
-                                    'origin': new_origin['url']})
+                      query_params={'origin': new_origin['url']})
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)

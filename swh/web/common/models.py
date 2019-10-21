@@ -68,7 +68,7 @@ class SaveOriginRequest(models.Model):
     """
     id = models.BigAutoField(primary_key=True)
     request_date = models.DateTimeField(auto_now_add=True)
-    origin_type = models.CharField(max_length=200, null=False)
+    visit_type = models.CharField(max_length=200, null=False)
     origin_url = models.CharField(max_length=200, null=False)
     status = models.TextField(choices=SAVE_REQUEST_STATUS,
                               default=SAVE_REQUEST_PENDING)
@@ -85,7 +85,7 @@ class SaveOriginRequest(models.Model):
     def __str__(self):
         return str({'id': self.id,
                     'request_date': self.request_date,
-                    'origin_type': self.origin_type,
+                    'visit_type': self.visit_type,
                     'origin_url': self.origin_url,
                     'status': self.status,
                     'loading_task_id': self.loading_task_id,

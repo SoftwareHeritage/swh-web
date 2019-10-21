@@ -190,7 +190,7 @@ class ServiceTestCase(WebTestCase):
 
         self.storage.origin_add_one(new_origin)
         for ts in visit_dates:
-            self.storage.origin_visit_add(new_origin['url'], ts)
+            self.storage.origin_visit_add(new_origin['url'], ts, type='git')
 
         actual_origin_visits = list(
             service.lookup_origin_visits(new_origin['url'], per_page=100))
@@ -207,7 +207,7 @@ class ServiceTestCase(WebTestCase):
         visits = []
         for ts in visit_dates:
             visits.append(self.storage.origin_visit_add(
-                new_origin['url'], ts))
+                new_origin['url'], ts, type='git'))
 
         visit = random.choice(visits)['visit']
         actual_origin_visit = service.lookup_origin_visit(
@@ -225,10 +225,8 @@ class ServiceTestCase(WebTestCase):
     def test_lookup_origin(self, new_origin):
         self.storage.origin_add_one(new_origin)
 
-        actual_origin = service.lookup_origin({'type': new_origin['type'],
-                                               'url': new_origin['url']})
-        expected_origin = self.storage.origin_get({'type': new_origin['type'],
-                                                   'url': new_origin['url']})
+        actual_origin = service.lookup_origin({'url': new_origin['url']})
+        expected_origin = self.storage.origin_get({'url': new_origin['url']})
         self.assertEqual(actual_origin, expected_origin)
 
     @given(invalid_sha1())

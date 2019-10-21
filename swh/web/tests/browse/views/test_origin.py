@@ -32,8 +32,7 @@ class SwhBrowseOriginTest(WebTestCase):
     def test_origin_visits_browse(self, origin):
 
         url = reverse('browse-origin-visits',
-                      url_args={'origin_type': origin['type'],
-                                'origin_url': origin['url']})
+                      url_args={'origin_url': origin['url']})
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
@@ -62,8 +61,7 @@ class SwhBrowseOriginTest(WebTestCase):
 
         content_path = '/'.join(content['path'].split('/')[1:])
 
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url'],
+        url_args = {'origin_url': origin_info['url'],
                     'path': content_path}
 
         if not visit_id:
@@ -172,8 +170,6 @@ class SwhBrowseOriginTest(WebTestCase):
                                            query_params=query_params)
 
             self.assertContains(resp, '<a href="%s">' % root_dir_release_url)
-
-        del url_args['origin_type']
 
         url = reverse('browse-origin-content',
                       url_args=url_args,
@@ -556,8 +552,7 @@ class SwhBrowseOriginTest(WebTestCase):
                                           timestamp=visit['date'])
 
     def origin_branches_helper(self, origin_info, origin_snapshot):
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
 
         url = reverse('browse-origin-branches',
                       url_args=url_args)
@@ -590,8 +585,7 @@ class SwhBrowseOriginTest(WebTestCase):
         for branch in origin_branches:
             browse_branch_url = reverse(
                 'browse-origin-directory',
-                url_args={'origin_type': origin_info['type'],
-                          'origin_url': origin_info['url']},
+                url_args={'origin_url': origin_info['url']},
                 query_params={'branch': branch['name']})
             self.assertContains(resp, '<a href="%s">' %
                                       escape(browse_branch_url))
@@ -599,8 +593,7 @@ class SwhBrowseOriginTest(WebTestCase):
             browse_revision_url = reverse(
                 'browse-revision',
                 url_args={'sha1_git': branch['revision']},
-                query_params={'origin_type': origin_info['type'],
-                              'origin': origin_info['url']})
+                query_params={'origin': origin_info['url']})
             self.assertContains(resp, '<a href="%s">' %
                                       escape(browse_revision_url))
 
@@ -621,8 +614,7 @@ class SwhBrowseOriginTest(WebTestCase):
         self.origin_branches_helper(origin, snapshot_content)
 
     def origin_releases_helper(self, origin_info, origin_snapshot):
-        url_args = {'origin_type': origin_info['type'],
-                    'origin_url': origin_info['url']}
+        url_args = {'origin_url': origin_info['url']}
 
         url = reverse('browse-origin-releases',
                       url_args=url_args)
@@ -699,7 +691,7 @@ class SwhBrowseOriginTest(WebTestCase):
 
         self.storage.snapshot_add([snp_dict])
         visit = self.storage.origin_visit_add(
-            new_origin['url'], visit_dates[0])
+            new_origin['url'], visit_dates[0], type='git')
         self.storage.origin_visit_update(new_origin['url'], visit['visit'],
                                          status='partial',
                                          snapshot=snp_dict['id'])
@@ -727,7 +719,7 @@ class SwhBrowseOriginTest(WebTestCase):
 
         self.storage.snapshot_add([snp_dict])
         visit = self.storage.origin_visit_add(
-            new_origin['url'], visit_dates[0])
+            new_origin['url'], visit_dates[0], type='git')
         self.storage.origin_visit_update(new_origin['url'], visit['visit'],
                                          status='full',
                                          snapshot=snp_dict['id'])
@@ -744,8 +736,7 @@ class SwhBrowseOriginTest(WebTestCase):
     @patch('swh.web.browse.utils.service')
     @patch('swh.web.browse.views.origin.service')
     @patch('swh.web.browse.views.utils.snapshot_context.service')
-    @patch('swh.web.browse.views.origin.get_origin_info')
-    def test_origin_request_errors(self, mock_get_origin_info,
+    def test_origin_request_errors(self,
                                    mock_snapshot_service,
                                    mock_origin_service,
                                    mock_utils_service,
@@ -753,24 +744,22 @@ class SwhBrowseOriginTest(WebTestCase):
                                    mock_get_origin_visits,
                                    mock_request_content):
 
-        mock_get_origin_info.side_effect = \
-            NotFoundExc('origin not found')
+        mock_origin_service.lookup_origin.side_effect = NotFoundExc(
+            'origin not found')
         url = reverse('browse-origin-visits',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar'})
+                      url_args={'origin_url': 'bar'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
         self.assertContains(resp, 'origin not found', status_code=404)
 
-        mock_utils_service.lookup_origin.side_effect = None
-        mock_utils_service.lookup_origin.return_value = {'type': 'foo',
-                                                         'url': 'bar',
-                                                         'id': 457}
+        mock_origin_service.lookup_origin.side_effect = None
+        mock_origin_service.lookup_origin.return_value = {'type': 'foo',
+                                                          'url': 'bar',
+                                                          'id': 457}
         mock_get_origin_visits.return_value = []
         url = reverse('browse-origin-directory',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar'})
+                      url_args={'origin_url': 'bar'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
@@ -780,8 +769,7 @@ class SwhBrowseOriginTest(WebTestCase):
         mock_get_origin_visit_snapshot.side_effect = \
             NotFoundExc('visit not found')
         url = reverse('browse-origin-directory',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar'},
+                      url_args={'origin_url': 'bar'},
                       query_params={'visit_id': 2})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
@@ -812,8 +800,7 @@ class SwhBrowseOriginTest(WebTestCase):
         mock_utils_service.lookup_directory.side_effect = \
             NotFoundExc('Directory not found')
         url = reverse('browse-origin-directory',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar'})
+                      url_args={'origin_url': 'bar'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
         self.assertTemplateUsed('error.html')
@@ -824,8 +811,7 @@ class SwhBrowseOriginTest(WebTestCase):
             mock_get_snapshot_context.side_effect = \
                 NotFoundExc('Snapshot not found')
             url = reverse('browse-origin-directory',
-                          url_args={'origin_type': 'foo',
-                                    'origin_url': 'bar'})
+                          url_args={'origin_url': 'bar'})
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 404)
             self.assertTemplateUsed('error.html')
@@ -837,8 +823,7 @@ class SwhBrowseOriginTest(WebTestCase):
                                                           'id': 457}
         mock_get_origin_visits.return_value = []
         url = reverse('browse-origin-content',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar',
+                      url_args={'origin_url': 'bar',
                                 'path': 'foo'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
@@ -849,8 +834,7 @@ class SwhBrowseOriginTest(WebTestCase):
         mock_get_origin_visit_snapshot.side_effect = \
             NotFoundExc('visit not found')
         url = reverse('browse-origin-content',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar',
+                      url_args={'origin_url': 'bar',
                                 'path': 'foo'},
                       query_params={'visit_id': 2})
         resp = self.client.get(url)
@@ -869,8 +853,7 @@ class SwhBrowseOriginTest(WebTestCase):
         mock_get_origin_visit_snapshot.side_effect = None
         mock_get_origin_visit_snapshot.return_value = ([], [])
         url = reverse('browse-origin-content',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar',
+                      url_args={'origin_url': 'bar',
                                 'path': 'baz'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
@@ -891,8 +874,7 @@ class SwhBrowseOriginTest(WebTestCase):
         mock_request_content.side_effect = \
             NotFoundExc('Content not found')
         url = reverse('browse-origin-content',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar',
+                      url_args={'origin_url': 'bar',
                                 'path': 'baz'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
@@ -912,6 +894,7 @@ class SwhBrowseOriginTest(WebTestCase):
             'origin': 457,
             'snapshot': 'bdaf9ac436488a8c6cda927a0f44e172934d3f65',
             'status': 'full',
+            'type': 'git',
             'visit': 1
         }]
         mock_get_origin_visit_snapshot.return_value = ([], [])
@@ -921,12 +904,10 @@ class SwhBrowseOriginTest(WebTestCase):
         }
         mock_utils_service.lookup_origin.return_value = {
             'id': 457,
-            'type': 'git',
             'url': 'https://github.com/foo/bar'
         }
         url = reverse('browse-origin-directory',
-                      url_args={'origin_type': 'foo',
-                                'origin_url': 'bar'})
+                      url_args={'origin_url': 'bar'})
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed('content.html')

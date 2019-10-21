@@ -212,7 +212,7 @@ def lookup_origin(origin):
     """Return information about the origin matching dict origin.
 
     Args:
-        origin: origin's dict with keys either 'id' or 'url'
+        origin: origin's dict with 'url' key
 
     Returns:
         origin information as dict.
@@ -220,8 +220,7 @@ def lookup_origin(origin):
     """
     origin_info = storage.origin_get(origin)
     if not origin_info:
-        msg = 'Origin %s not found!' % \
-            (origin.get('id') or origin['url'])
+        msg = 'Origin with url %s not found!' % origin['url']
         raise NotFoundExc(msg)
     return converters.from_origin(origin_info)
 
@@ -311,8 +310,7 @@ def lookup_origin_intrinsic_metadata(origin_dict):
     """
     origin_info = storage.origin_get(origin_dict)
     if not origin_info:
-        msg = 'Origin with type %s and url %s not found!' % \
-            (origin_dict['type'], origin_dict['url'])
+        msg = 'Origin with url %s not found!' % origin_dict['url']
         raise NotFoundExc(msg)
 
     origins = [origin_info['url']]

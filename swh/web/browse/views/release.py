@@ -33,7 +33,6 @@ def release_browse(request, sha1_git):
         snapshot_context = None
         origin_info = None
         snapshot_id = request.GET.get('snapshot_id', None)
-        origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         if not origin_url:
             origin_url = request.GET.get('origin', None)
@@ -41,10 +40,8 @@ def release_browse(request, sha1_git):
         visit_id = request.GET.get('visit_id', None)
         if origin_url:
             try:
-                snapshot_context = \
-                    get_snapshot_context(snapshot_id, origin_type,
-                                         origin_url, timestamp,
-                                         visit_id)
+                snapshot_context = get_snapshot_context(
+                    snapshot_id, origin_url, timestamp, visit_id)
             except Exception:
                 raw_rel_url = reverse('browse-release',
                                       url_args={'sha1_git': sha1_git})
@@ -142,7 +139,6 @@ def release_browse(request, sha1_git):
     if origin_info:
         release_data['context-independent release'] = \
             gen_release_link(release['id'])
-        release_data['origin type'] = origin_info['type']
         release_data['origin url'] = gen_link(origin_info['url'],
                                               origin_info['url'])
         browse_snapshot_link = \

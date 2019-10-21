@@ -34,7 +34,7 @@ See top-level LICENSE file for more information
       save request. To do so, fill the required info in the form below:
     </p>
     <ul>
-      <li><b>Origin type:</b> the type of version control system the software origin is using.
+      <li><b>Visit type:</b> the type of version control system the software origin is using.
         Currently, the supported types are:
         <ul>
           <li><code>git</code>, for origins using <a href="https://git-scm.com/">Git</a></li>
@@ -69,11 +69,11 @@ See top-level LICENSE file for more information
       <div class="form-row">
         <div class="col-md-1"></div>
         <div class="form-group col-md-2">
-          <label for="swh-input-origin-type">Origin type</label>
-          <select id="swh-input-origin-type" class="form-control" required>
+          <label for="swh-input-visit-type">Visit type</label>
+          <select id="swh-input-visit-type" class="form-control" required>
             {% comment %} <option selected value="">Choose...</option> {% endcomment %}
           </select>
-          <div class="invalid-feedback">The origin type must be specified</div>
+          <div class="invalid-feedback">The visit type must be specified</div>
         </div>
         <div class="form-group col-md-6">
           <label for="swh-input-origin-url">Origin url</label>

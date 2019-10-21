@@ -60,8 +60,7 @@ class SwhBrowseIdTest(WebTestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], revision_browse_url)
 
-        query_params = {'origin_type': 'git',
-                        'origin': 'https://github.com/user/repo'}
+        query_params = {'origin': 'https://github.com/user/repo'}
 
         url = reverse('browse-swh-id',
                       url_args={'swh_id': swh_id},
@@ -89,8 +88,7 @@ class SwhBrowseIdTest(WebTestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], release_browse_url)
 
-        query_params = {'origin_type': 'git',
-                        'origin': 'https://github.com/user/repo'}
+        query_params = {'origin': 'https://github.com/user/repo'}
 
         url = reverse('browse-swh-id',
                       url_args={'swh_id': swh_id},
@@ -118,8 +116,7 @@ class SwhBrowseIdTest(WebTestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], snapshot_browse_url)
 
-        query_params = {'origin_type': 'git',
-                        'origin': 'https://github.com/user/repo'}
+        query_params = {'origin': 'https://github.com/user/repo'}
 
         url = reverse('browse-swh-id',
                       url_args={'swh_id': swh_id},

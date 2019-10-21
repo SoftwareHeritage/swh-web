@@ -73,8 +73,8 @@ export function initOriginSaveAdmin() {
         }
       },
       {
-        data: 'origin_type',
-        name: 'origin_type'
+        data: 'visit_type',
+        name: 'visit_type'
       },
       {
         data: 'origin_url',
@@ -295,7 +295,7 @@ export function acceptOriginSaveRequest() {
   if (selectedRow.length) {
     let acceptOriginSaveRequestCallback = () => {
       let rowData = selectedRow.data();
-      let acceptSaveRequestUrl = Urls.admin_origin_save_request_accept(rowData['origin_type'], rowData['origin_url']);
+      let acceptSaveRequestUrl = Urls.admin_origin_save_request_accept(rowData['visit_type'], rowData['origin_url']);
       csrfPost(acceptSaveRequestUrl)
         .then(() => {
           pendingSaveRequestsTable.ajax.reload(null, false);
@@ -314,7 +314,7 @@ export function rejectOriginSaveRequest() {
   if (selectedRow.length) {
     let rejectOriginSaveRequestCallback = () => {
       let rowData = selectedRow.data();
-      let rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(rowData['origin_type'], rowData['origin_url']);
+      let rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(rowData['visit_type'], rowData['origin_url']);
       csrfPost(rejectSaveRequestUrl)
         .then(() => {
           pendingSaveRequestsTable.ajax.reload(null, false);
