@@ -898,6 +898,20 @@ def lookup_snapshot_size(snapshot_id):
         snapshot_size['revision'] = 0
     if 'release' not in snapshot_size:
         snapshot_size['release'] = 0
+    # adjust revision / release count for display if aliases are defined
+    if 'alias' in snapshot_size:
+        aliases = lookup_snapshot(snapshot_id,
+                                  branches_count=snapshot_size['alias'],
+                                  target_types=['alias'])
+        for alias in aliases['branches'].values():
+            if lookup_snapshot(snapshot_id,
+                               branches_from=alias['target'],
+                               branches_count=1,
+                               target_types=['revision']):
+                snapshot_size['revision'] += 1
+            else:
+                snapshot_size['release'] += 1
+        del snapshot_size['alias']
     return snapshot_size
 
 

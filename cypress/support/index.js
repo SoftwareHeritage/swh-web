@@ -51,7 +51,11 @@ before(function() {
     const lastVisit = originVisits[0];
     const snapshotApiUrl = this.Urls.api_1_snapshot(lastVisit.snapshot);
     const lastOriginSnapshot = await httpGetJson(snapshotApiUrl);
-    const revisionApiUrl = this.Urls.api_1_revision(lastOriginSnapshot.branches.HEAD.target);
+    let revision = lastOriginSnapshot.branches.HEAD.target;
+    if (lastOriginSnapshot.branches.HEAD.target_type === 'alias') {
+      revision = lastOriginSnapshot.branches[revision].target;
+    }
+    const revisionApiUrl = this.Urls.api_1_revision(revision);
     const lastOriginHeadRevision = await httpGetJson(revisionApiUrl);
     return {
       'directory': lastOriginHeadRevision.directory,

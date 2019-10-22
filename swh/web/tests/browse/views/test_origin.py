@@ -194,7 +194,7 @@ class SwhBrowseOriginTest(WebTestCase):
 
         def _get_test_data(visit_idx):
             snapshot = self.snapshot_get(origin_visits[visit_idx]['snapshot'])
-            head_rev_id = snapshot['branches']['HEAD']['target']
+            head_rev_id = self.snapshot_get_head(snapshot)
             head_rev = self.revision_get(head_rev_id)
             dir_content = self.directory_ls(head_rev['directory'])
             dir_files = [e for e in dir_content if e['type'] == 'file']
@@ -398,7 +398,7 @@ class SwhBrowseOriginTest(WebTestCase):
 
         visit = origin_visits[-1]
         snapshot = self.snapshot_get(visit['snapshot'])
-        head_rev_id = snapshot['branches']['HEAD']['target']
+        head_rev_id = self.snapshot_get_head(snapshot)
         head_rev = self.revision_get(head_rev_id)
         root_dir_sha1 = head_rev['directory']
         dir_content = self.directory_ls(root_dir_sha1)
@@ -470,7 +470,7 @@ class SwhBrowseOriginTest(WebTestCase):
 
         visit = origin_visits[-1]
         snapshot = self.snapshot_get(visit['snapshot'])
-        head_rev_id = snapshot['branches']['HEAD']['target']
+        head_rev_id = self.snapshot_get_head(snapshot)
         head_rev = self.revision_get(head_rev_id)
         root_dir_sha1 = head_rev['directory']
         subdirs = [e for e in self.directory_ls(root_dir_sha1)
