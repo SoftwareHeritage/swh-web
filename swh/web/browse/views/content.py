@@ -261,8 +261,11 @@ def content_display(request, query_string):
                             'url': None})
 
     if path and root_dir != path:
-        dir_info = service.lookup_directory_with_path(root_dir, path)
-        directory_id = dir_info['target']
+        try:
+            dir_info = service.lookup_directory_with_path(root_dir, path)
+            directory_id = dir_info['target']
+        except Exception as exc:
+            return handle_view_exception(request, exc)
     elif root_dir != path:
         directory_id = root_dir
 
