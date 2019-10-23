@@ -128,3 +128,14 @@ class SwhBrowseUtilsTestCase(WebTestCase):
             utils.gen_person_mail_link(person_partial),
             person_partial['fullname']
         )
+
+        person_none = {
+            'name': None,
+            'email': None,
+            'fullname': None
+        }
+
+        self.assertEqual(
+            utils.gen_person_mail_link(person_none),
+            'None'
+        )

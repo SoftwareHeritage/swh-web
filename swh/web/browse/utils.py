@@ -758,7 +758,7 @@ def gen_person_mail_link(person, link_text=None):
         str: A mail link to the person or the person name if no email is
             present in person data
     """
-    person_name = person['name'] or person['fullname']
+    person_name = person['name'] or person['fullname'] or 'None'
     if link_text is None:
         link_text = person_name
     person_email = person['email'] if person['email'] else None
