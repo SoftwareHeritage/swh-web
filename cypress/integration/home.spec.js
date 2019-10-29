@@ -21,6 +21,7 @@ describe('Home Page Tests', function() {
 
     cy.visit(url)
       .wait('@getStatCounters')
+      .wait(500)
       .get('.swh-counter')
       .then((counters) => {
         for (let counter of counters) {
