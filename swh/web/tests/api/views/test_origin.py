@@ -474,6 +474,20 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual({origin['url'] for origin in results},
                          expected_origins)
 
+    def test_api_origin_search_limit(self):
+        self.storage.origin_add([
+            {'url': 'http://foobar/{}'.format(i)}
+            for i in range(2000)
+        ])
+
+        url = reverse('api-1-origin-search',
+                      url_args={'url_pattern': 'foobar'},
+                      query_params={'limit': 1050})
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 200, rv.data)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        self.assertEqual(len(rv.data), 1000)
+
     @given(origin())
     def test_api_origin_metadata_search(self, origin):
         with patch('swh.web.common.service.idx_storage') as mock_idx_storage:

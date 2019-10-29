@@ -195,6 +195,7 @@ def api_origin_search(request, url_pattern):
 
         :param string url_pattern: a string pattern or a regular expression
         :query int limit: the maximum number of found origins to return
+            (bounded to 1000)
         :query boolean regexp: if true, consider provided pattern as a regular
             expression and search origins whose urls match it
         :query boolean with_visit: if true, only return origins with at least
@@ -218,7 +219,7 @@ def api_origin_search(request, url_pattern):
     """
     result = {}
     offset = int(request.query_params.get('offset', '0'))
-    limit = int(request.query_params.get('limit', '70'))
+    limit = min(int(request.query_params.get('limit', '70')), 1000)
     regexp = request.query_params.get('regexp', 'false')
     with_visit = request.query_params.get('with_visit', 'false')
 

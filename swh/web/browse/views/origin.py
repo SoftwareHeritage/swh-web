@@ -178,7 +178,7 @@ def _origin_search(request, url_pattern):
     The search is performed in a case insensitive way.
     """
     offset = int(request.GET.get('offset', '0'))
-    limit = int(request.GET.get('limit', '50'))
+    limit = min(int(request.GET.get('limit', '50')), 1000)
     regexp = request.GET.get('regexp', 'false')
     with_visit = request.GET.get('with_visit', 'false')
 
