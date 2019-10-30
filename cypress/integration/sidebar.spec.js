@@ -27,7 +27,7 @@ describe('Sidebar tests On Large Screen', function() {
     cy.get('.swh-push-menu')
       .click();
     cy.get('body')
-      .should('have.class', 'sidebar-open')
+      .should('not.have.class', 'sidebar-collapse')
       .get('.nav-link > p')
       .should('be.visible');
   });
