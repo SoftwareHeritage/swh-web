@@ -9,6 +9,7 @@
     "build": "NODE_ENV=production webpack --config ./swh/web/assets/config/webpack.config.production.js --colors",
     "mochawesome": "mochawesome-merge --reportDir cypress/mochawesome/results > cypress/mochawesome/mochawesome.json && marge -o cypress/mochawesome/report cypress/mochawesome/mochawesome.json",
     "eslint": "eslint -c swh/web/assets/config/.eslintrc --fix swh/web/assets/**",
+    "preinstall": "npm -v || yarn add npm --ignore-scripts --frozen-lockfile",
     "postinstall": "patch-package"
   },
   "repository": {
@@ -39,6 +40,7 @@
     "js-cookie": "^2.2.1",
     "js-year-calendar": "^1.0.0-alpha.7",
     "notebookjs": "^0.4.2",
+    "npm": "^6.12.1",
     "object-fit-images": "^3.2.4",
     "octicons": "^8.5.0",
     "open-iconic": "^1.1.1",
