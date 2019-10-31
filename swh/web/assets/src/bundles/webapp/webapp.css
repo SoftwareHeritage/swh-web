@@ -571,3 +571,7 @@ div.d3-tooltip {
     border-radius: 4px;
     pointer-events: none;
 }
+
+.page-link {
+    cursor: pointer;
+}
