@@ -100,4 +100,4 @@ else:
     ALLOWED_HOSTS += ['testserver']
 
     # Silent DEBUG output when running unit tests
-    LOGGING['handlers']['console']['level'] = 'INFO'
+    LOGGING['handlers']['console']['level'] = 'INFO'  # type: ignore
