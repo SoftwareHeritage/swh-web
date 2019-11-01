@@ -87,3 +87,11 @@ test-frontend-ui: test-frontend-ui-cmd
 
 test-frontend-full-ui: export CYPRESS_SKIP_SLOW_TESTS=0
 test-frontend-full-ui: test-frontend-ui-cmd
+
+
+# Override default rule to make sure DJANGO env var is properly set. It
+# *should* work without any override thanks to the mypy django-stubs plugin,
+# but it currently doesn't; see
+# https://github.com/typeddjango/django-stubs/issues/166
+typecheck:
+	DJANGO_SETTINGS_MODULE=swh.web.settings.tests $(MYPY) $(MYPYFLAGS) swh
