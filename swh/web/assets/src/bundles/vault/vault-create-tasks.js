@@ -7,6 +7,27 @@
 
 import {handleFetchError, csrfPost} from 'utils/functions';
 
+export function vaultRequest(objectType, objectId) {
+  let vaultUrl;
+  if (objectType === 'directory') {
+    vaultUrl = Urls.api_1_vault_cook_directory(objectId);
+  } else {
+    vaultUrl = Urls.api_1_vault_cook_revision_gitfast(objectId);
+  }
+  // check if object has already been cooked
+  fetch(vaultUrl)
+    .then(response => response.json())
+    .then(data => {
+      // object needs to be cooked
+      if (data.exception === 'NotFoundExc') {
+        $(`#vault-cook-${objectType}-modal`).modal('show');
+      // object has been cooked and is in the vault cache
+      } else if (data.status === 'done') {
+        $(`#vault-fetch-${objectType}-modal`).modal('show');
+      }
+    });
+}
+
 function addVaultCookingTask(cookingTask) {
   let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
   if (!vaultCookingTasks) {
@@ -64,6 +85,16 @@ export function cookDirectoryArchive(directoryId) {
   }
 }
 
+export function fetchDirectoryArchive(directoryId) {
+  $('#vault-fetch-directory-modal').modal('hide');
+  const vaultUrl = Urls.api_1_vault_cook_directory(directoryId);
+  fetch(vaultUrl)
+    .then(response => response.json())
+    .then(data => {
+      swh.vault.fetchCookedObject(data.fetch_url);
+    });
+}
+
 export function cookRevisionArchive(revisionId) {
   let email = $('#swh-vault-revision-email').val().trim();
   if (!email || validateEmail(email)) {
@@ -77,4 +108,14 @@ export function cookRevisionArchive(revisionId) {
   } else {
     $('#invalid-email-modal').modal('show');
   }
+}
+
+export function fetchRevisionArchive(revisionId) {
+  $('#vault-fetch-directory-modal').modal('hide');
+  const vaultUrl = Urls.api_1_vault_cook_revision_gitfast(revisionId);
+  fetch(vaultUrl)
+    .then(response => response.json())
+    .then(data => {
+      swh.vault.fetchCookedObject(data.fetch_url);
+    });
 }

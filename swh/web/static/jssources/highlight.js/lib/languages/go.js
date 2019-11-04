@@ -37,7 +37,7 @@ module.exports = function(hljs) {
       },
       {
         className: 'function',
-        beginKeywords: 'func', end: /\s*\{/, excludeEnd: true,
+        beginKeywords: 'func', end: '\\s*(\\{|$)', excludeEnd: true,
         contains: [
           hljs.TITLE_MODE,
           {

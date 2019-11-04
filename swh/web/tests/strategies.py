@@ -401,7 +401,11 @@ def _get_origin_dfs_revisions_walker():
     storage = tests_data['storage']
     origin = random.choice(tests_data['origins'][:-1])
     snapshot = storage.snapshot_get_latest(origin['url'])
-    head = snapshot['branches'][b'HEAD']['target']
+    if snapshot['branches'][b'HEAD']['target_type'] == 'alias':
+        target = snapshot['branches'][b'HEAD']['target']
+        head = snapshot['branches'][target]['target']
+    else:
+        head = snapshot['branches'][b'HEAD']['target']
     return get_revisions_walker('dfs', storage, head)
 
 

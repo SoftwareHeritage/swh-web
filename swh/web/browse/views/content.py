@@ -179,7 +179,6 @@ def content_display(request, query_string):
         checksum = hash_to_hex(checksum)
         content_data = request_content(query_string,
                                        raise_if_unavailable=False)
-        origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         selected_language = request.GET.get('language', None)
 
@@ -188,8 +187,7 @@ def content_display(request, query_string):
         snapshot_context = None
         if origin_url:
             try:
-                snapshot_context = get_snapshot_context(None, origin_type,
-                                                        origin_url)
+                snapshot_context = get_snapshot_context(origin_url=origin_url)
             except Exception:
                 raw_cnt_url = reverse('browse-content',
                                       url_args={'query_string': query_string})
@@ -263,8 +261,11 @@ def content_display(request, query_string):
                             'url': None})
 
     if path and root_dir != path:
-        dir_info = service.lookup_directory_with_path(root_dir, path)
-        directory_id = dir_info['target']
+        try:
+            dir_info = service.lookup_directory_with_path(root_dir, path)
+            directory_id = dir_info['target']
+        except Exception as exc:
+            return handle_view_exception(request, exc)
     elif root_dir != path:
         directory_id = root_dir
 

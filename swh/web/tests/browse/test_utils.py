@@ -29,8 +29,7 @@ class SwhBrowseUtilsTestCase(WebTestCase):
             branches = []
             releases = []
 
-            for branch in sorted(snapshot['branches'].keys()):
-                branch_data = snapshot['branches'][branch]
+            def _process_branch_data(branch, branch_data):
                 if branch_data['target_type'] == 'revision':
                     rev_data = self.revision_get(branch_data['target'])
                     branches.append({
@@ -53,6 +52,14 @@ class SwhBrowseUtilsTestCase(WebTestCase):
                         'target': rel_data['target'],
                         'directory': rev_data['directory']
                     })
+
+            for branch in sorted(snapshot['branches'].keys()):
+                branch_data = snapshot['branches'][branch]
+                if branch_data['target_type'] == 'alias':
+                    target_data = snapshot['branches'][branch_data['target']]
+                    _process_branch_data(branch, target_data)
+                else:
+                    _process_branch_data(branch, branch_data)
 
             assert branches and releases, 'Incomplete test data.'
 
@@ -120,4 +127,15 @@ class SwhBrowseUtilsTestCase(WebTestCase):
         self.assertEqual(
             utils.gen_person_mail_link(person_partial),
             person_partial['fullname']
+        )
+
+        person_none = {
+            'name': None,
+            'email': None,
+            'fullname': None
+        }
+
+        self.assertEqual(
+            utils.gen_person_mail_link(person_none),
+            'None'
         )

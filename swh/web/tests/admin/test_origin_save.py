@@ -121,10 +121,10 @@ class OriginSaveAdminTestCase(WebTestCase):
 
     @patch('swh.web.common.origin_save.scheduler')
     def test_accept_pending_save_request(self, mock_scheduler):
-        origin_type = 'git'
+        visit_type = 'git'
         origin_url = 'https://v2.pikacode.com/bthate/botlib.git'
         save_request_url = reverse('api-1-save-origin',
-                                   url_args={'origin_type': origin_type,
+                                   url_args={'visit_type': visit_type,
                                              'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},
                                     content_type='application/x-www-form-urlencoded') # noqa
@@ -133,7 +133,7 @@ class OriginSaveAdminTestCase(WebTestCase):
                          SAVE_REQUEST_PENDING)
 
         accept_request_url = reverse('admin-origin-save-request-accept',
-                                     url_args={'origin_type': origin_type,
+                                     url_args={'visit_type': visit_type,
                                                'origin_url': origin_url})
 
         self.check_not_login(accept_request_url)
@@ -170,10 +170,10 @@ class OriginSaveAdminTestCase(WebTestCase):
 
     @patch('swh.web.common.origin_save.scheduler')
     def test_reject_pending_save_request(self, mock_scheduler):
-        origin_type = 'git'
+        visit_type = 'git'
         origin_url = 'https://wikipedia.com'
         save_request_url = reverse('api-1-save-origin',
-                                   url_args={'origin_type': origin_type,
+                                   url_args={'visit_type': visit_type,
                                              'origin_url': origin_url})
         response = self.client.post(save_request_url, data={},
                                     content_type='application/x-www-form-urlencoded') # noqa
@@ -182,7 +182,7 @@ class OriginSaveAdminTestCase(WebTestCase):
                          SAVE_REQUEST_PENDING)
 
         reject_request_url = reverse('admin-origin-save-request-reject',
-                                     url_args={'origin_type': origin_type,
+                                     url_args={'visit_type': visit_type,
                                                'origin_url': origin_url})
 
         self.check_not_login(reject_request_url)
@@ -216,7 +216,7 @@ class OriginSaveAdminTestCase(WebTestCase):
                          SAVE_REQUEST_REJECTED)
 
     def test_remove_save_request(self):
-        sor = SaveOriginRequest.objects.create(origin_type='git',
+        sor = SaveOriginRequest.objects.create(visit_type='git',
                                                origin_url='https://wikipedia.com', # noqa
                                                status=SAVE_REQUEST_PENDING)
         self.assertEqual(SaveOriginRequest.objects.count(), 1)

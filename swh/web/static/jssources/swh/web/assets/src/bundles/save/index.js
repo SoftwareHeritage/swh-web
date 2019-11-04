@@ -46,7 +46,7 @@ export function initOriginSave() {
       .then(response => response.json())
       .then(data => {
         for (let originType of data) {
-          $('#swh-input-origin-type').append(`<option value="${originType}">${originType}</option>`);
+          $('#swh-input-visit-type').append(`<option value="${originType}">${originType}</option>`);
         }
       });
 
@@ -76,8 +76,8 @@ export function initOriginSave() {
             }
           },
           {
-            data: 'origin_type',
-            name: 'origin_type'
+            data: 'visit_type',
+            name: 'visit_type'
           },
           {
             data: 'origin_url',
@@ -159,7 +159,7 @@ export function initOriginSave() {
       $('.alert').alert('close');
       if (event.target.checkValidity()) {
         $(event.target).removeClass('was-validated');
-        let originType = $('#swh-input-origin-type').val();
+        let originType = $('#swh-input-visit-type').val();
         let originUrl = $('#swh-input-origin-url').val();
 
         originSaveRequest(originType, originUrl,
@@ -188,7 +188,7 @@ export function initOriginSave() {
     $('#swh-input-origin-url').on('input', function(event) {
       let originUrl = $(this).val().trim();
       $(this).val(originUrl);
-      $('#swh-input-origin-type option').each(function() {
+      $('#swh-input-visit-type option').each(function() {
         let val = $(this).val();
         if (val && originUrl.includes(val)) {
           $(this).prop('selected', true);
@@ -213,7 +213,7 @@ export function validateSaveOriginUrl(input) {
       }
     }
   }) === undefined;
-  let originType = $('#swh-input-origin-type').val();
+  let originType = $('#swh-input-visit-type').val();
   if (originType === 'git' && validUrl) {
     // additional checks for well known code hosting providers
     let githubIdx = originUrl.indexOf('://github.com');
@@ -276,7 +276,7 @@ export function initTakeNewSnapshot() {
       event.preventDefault();
       event.stopPropagation();
 
-      let originType = $('#swh-input-origin-type').val();
+      let originType = $('#swh-input-visit-type').val();
       let originUrl = $('#swh-input-origin-url').val();
 
       originSaveRequest(originType, originUrl,

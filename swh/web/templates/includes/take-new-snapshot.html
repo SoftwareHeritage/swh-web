@@ -8,7 +8,7 @@ See top-level LICENSE file for more information
 {% load static %}
 {% load swh_templatetags %}
 
-{% if snapshot_context and snapshot_context.origin_info and snapshot_context.origin_info.type|origin_type_savable %}
+{% if snapshot_context and snapshot_context.visit_info and snapshot_context.visit_info.type|visit_type_savable %}
 
   <!-- entry in the Actions menu -->
   <div class="dropdown-submenu">
@@ -40,8 +40,8 @@ See top-level LICENSE file for more information
             {% csrf_token %}
             <div class="form-row">
               <div class="form-group col-md-3">
-                <label for="swh-input-origin-type">Origin type</label>
-                <input id="swh-input-origin-type" class="form-control" value="{{ snapshot_context.origin_info.type }}" disabled>
+                <label for="swh-input-visit-type">Visit type</label>
+                <input id="swh-input-visit-type" class="form-control" value="{{ snapshot_context.visit_info.type }}" disabled>
               </div>
               <div class="form-group col-md-9">
                 <label for="swh-input-origin-url">Origin url</label>

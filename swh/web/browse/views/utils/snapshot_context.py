@@ -93,30 +93,29 @@ def _branch_not_found(branch_type, branch, branches, snapshot_id=None,
         msg = ('%s %s for snapshot with id %s'
                ' not found!' % (branch_type, branch, snapshot_id))
     elif visit_id and not branches:
-        msg = ('Origin with type %s and url %s'
+        msg = ('Origin with url %s'
                ' for visit with id %s has an empty list'
-               ' of %s!' % (origin_info['type'], origin_info['url'], visit_id,
+               ' of %s!' % (origin_info['url'], visit_id,
                             branch_type_plural))
     elif visit_id:
         msg = ('%s %s associated to visit with'
-               ' id %s for origin with type %s and url %s'
+               ' id %s for origin with url %s'
                ' not found!' % (branch_type, branch, visit_id,
-                                origin_info['type'], origin_info['url']))
+                                origin_info['url']))
     elif not branches:
-        msg = ('Origin with type %s and url %s'
+        msg = ('Origin with url %s'
                ' for visit with timestamp %s has an empty list'
-               ' of %s!' % (origin_info['type'], origin_info['url'],
+               ' of %s!' % (origin_info['url'],
                             timestamp, branch_type_plural))
     else:
         msg = ('%s %s associated to visit with'
-               ' timestamp %s for origin with type %s'
-               ' and url %s not found!' % (branch_type, branch, timestamp,
-                                           origin_info['type'],
-                                           origin_info['url']))
+               ' timestamp %s for origin with '
+               'url %s not found!' % (branch_type, branch, timestamp,
+                                      origin_info['url']))
     raise NotFoundExc(escape(msg))
 
 
-def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
+def _process_snapshot_request(request, snapshot_id=None,
                               origin_url=None, timestamp=None, path=None,
                               browse_context='directory'):
     """
@@ -126,7 +125,7 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
 
     visit_id = request.GET.get('visit_id', None)
 
-    snapshot_context = get_snapshot_context(snapshot_id, origin_type,
+    snapshot_context = get_snapshot_context(snapshot_id,
                                             origin_url, timestamp, visit_id)
 
     swh_type = snapshot_context['swh_type']
@@ -221,7 +220,7 @@ def _process_snapshot_request(request, snapshot_id=None, origin_type=None,
     return snapshot_context
 
 
-def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
+def browse_snapshot_directory(request, snapshot_id=None,
                               origin_url=None, timestamp=None, path=None):
     """
     Django view implementation for browsing a directory in a snapshot context.
@@ -229,7 +228,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
     try:
 
         snapshot_context = _process_snapshot_request(
-            request, snapshot_id, origin_type, origin_url,
+            request, snapshot_id, origin_url,
             timestamp, path, browse_context='directory')
 
         root_sha1_git = snapshot_context['root_sha1_git']
@@ -339,10 +338,10 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                     'context-independent snapshot': browse_snp_link}
 
     if origin_info:
-        dir_metadata['origin type'] = origin_info['type']
         dir_metadata['origin url'] = origin_info['url']
         dir_metadata['origin visit date'] = format_utc_iso_date(
             visit_info['date'])
+        dir_metadata['origin visit type'] = visit_info['type']
 
     vault_cooking = {
         'directory_context': True,
@@ -393,7 +392,7 @@ def browse_snapshot_directory(request, snapshot_id=None, origin_type=None,
                    'swh_ids': swh_ids})
 
 
-def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
+def browse_snapshot_content(request, snapshot_id=None,
                             origin_url=None, timestamp=None, path=None,
                             selected_language=None):
     """
@@ -402,7 +401,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
     try:
 
         snapshot_context = _process_snapshot_request(request, snapshot_id,
-                                                     origin_type, origin_url,
+                                                     origin_url,
                                                      timestamp, path,
                                                      browse_context='content')
 
@@ -525,10 +524,10 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
         error_description = content_data['error_description']
 
     if origin_info:
-        content_metadata['origin type'] = origin_info['type']
         content_metadata['origin url'] = origin_info['url']
         content_metadata['origin visit date'] = format_utc_iso_date(
             visit_info['date'])
+        content_metadata['origin visit type'] = visit_info['type']
         browse_snapshot_link = gen_snapshot_link(snapshot_id)
         content_metadata['context-independent snapshot'] = browse_snapshot_link
 
@@ -582,7 +581,7 @@ def browse_snapshot_content(request, snapshot_id=None, origin_type=None,
 PER_PAGE = 100
 
 
-def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
+def browse_snapshot_log(request, snapshot_id=None,
                         origin_url=None, timestamp=None):
     """
     Django view implementation for browsing a revision history in a
@@ -591,8 +590,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     try:
 
         snapshot_context = _process_snapshot_request(
-            request, snapshot_id, origin_type, origin_url,
-            timestamp, browse_context='log')
+            request, snapshot_id, origin_url, timestamp, browse_context='log')
 
         revision_id = snapshot_context['revision_id']
 
@@ -670,10 +668,10 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
     }
 
     if origin_info:
-        revision_metadata['origin type'] = origin_info['type']
         revision_metadata['origin url'] = origin_info['url']
         revision_metadata['origin visit date'] = format_utc_iso_date(
             visit_info['date'])
+        revision_metadata['origin visit type'] = visit_info['type']
 
     swh_objects = [{'type': 'revision',
                     'id': revision_id},
@@ -709,7 +707,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_type=None,
                    'swh_ids': swh_ids})
 
 
-def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
+def browse_snapshot_branches(request, snapshot_id=None,
                              origin_url=None, timestamp=None):
     """
     Django view implementation for browsing a list of branches in a snapshot
@@ -717,8 +715,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
     """
     try:
         snapshot_context = _process_snapshot_request(request, snapshot_id,
-                                                     origin_type, origin_url,
-                                                     timestamp)
+                                                     origin_url, timestamp)
 
         branches_bc = request.GET.get('branches_breadcrumbs', '')
         branches_bc = branches_bc.split(',') if branches_bc else []
@@ -748,8 +745,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
         else:
             revision_url = reverse('browse-revision',
                                    url_args={'sha1_git': branch['revision']},
-                                   query_params={'origin_type': origin_type,
-                                                 'origin': origin_info['url']})
+                                   query_params={'origin': origin_info['url']})
         query_params['branch'] = branch['name']
         directory_url = reverse(browse_view_name,
                                 url_args=url_args,
@@ -799,7 +795,7 @@ def browse_snapshot_branches(request, snapshot_id=None, origin_type=None,
                    'snapshot_context': snapshot_context})
 
 
-def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
+def browse_snapshot_releases(request, snapshot_id=None,
                              origin_url=None, timestamp=None):
     """
     Django view implementation for browsing a list of releases in a snapshot
@@ -807,8 +803,7 @@ def browse_snapshot_releases(request, snapshot_id=None, origin_type=None,
     """
     try:
         snapshot_context = _process_snapshot_request(request, snapshot_id,
-                                                     origin_type, origin_url,
-                                                     timestamp)
+                                                     origin_url, timestamp)
 
         rel_bc = request.GET.get('releases_breadcrumbs', '')
         rel_bc = rel_bc.split(',') if rel_bc else []

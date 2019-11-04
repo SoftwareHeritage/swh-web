@@ -6,7 +6,6 @@
  */
 
 import objectFitImages from 'object-fit-images';
-import {Layout} from 'admin-lte';
 import {selectText} from 'utils/functions';
 import {BREAKPOINT_MD} from 'utils/constants';
 
@@ -15,20 +14,6 @@ let previousSidebarState = localStorage.getItem('swh-sidebar-collapsed');
 if (previousSidebarState !== undefined) {
   collapseSidebar = JSON.parse(previousSidebarState);
 }
-
-// adapt implementation of fixLayoutHeight from admin-lte
-Layout.prototype.fixLayoutHeight = () => {
-  let heights = {
-    window: $(window).height(),
-    header: $('.main-header').outerHeight(),
-    footer: $('.footer').outerHeight(),
-    sidebar: $('.main-sidebar').height(),
-    topbar: $('.swh-top-bar').height()
-  };
-  let offset = 10;
-  $('.content-wrapper').css('min-height', heights.window - heights.topbar - heights.header - heights.footer - offset);
-  $('.main-sidebar').css('min-height', heights.window - heights.topbar - heights.header - heights.footer - offset);
-};
 
 $(document).on('DOMContentLoaded', () => {
   // set state to collapsed on smaller devices
