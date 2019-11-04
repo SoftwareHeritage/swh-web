@@ -15,7 +15,7 @@ from rest_framework.decorators import api_view, authentication_classes
 from swh.web.common.exc import ForbiddenExc
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
-    create_save_origin_request, get_savable_origin_types,
+    create_save_origin_request, get_savable_visit_types,
     get_save_origin_requests_from_queryset
 )
 from swh.web.common.throttling import throttle_scope
@@ -31,14 +31,14 @@ def _origin_save_view(request):
 @api_view(['POST'])
 @authentication_classes((EnforceCSRFAuthentication, ))
 @throttle_scope('swh_save_origin')
-def _origin_save_request(request, origin_type, origin_url):
+def _origin_save_request(request, visit_type, origin_url):
     """
     This view is called through AJAX from the save code now form of swh-web.
     We use DRF here as we want to rate limit the number of submitted requests
     per user to avoid being possibly flooded by bots.
     """
     try:
-        response = json.dumps(create_save_origin_request(origin_type,
+        response = json.dumps(create_save_origin_request(visit_type,
                                                          origin_url),
                               separators=(',', ': '))
         return HttpResponse(response, content_type='application/json')
@@ -46,10 +46,10 @@ def _origin_save_request(request, origin_type, origin_url):
         return HttpResponseForbidden(str(exc))
 
 
-def _origin_save_types_list(request):
-    origin_types = json.dumps(get_savable_origin_types(),
-                              separators=(',', ': '))
-    return HttpResponse(origin_types, content_type='application/json')
+def _visit_save_types_list(request):
+    visit_types = json.dumps(get_savable_visit_types(),
+                             separators=(',', ': '))
+    return HttpResponse(visit_types, content_type='application/json')
 
 
 def _origin_save_requests_list(request, status):
@@ -81,7 +81,7 @@ def _origin_save_requests_list(request, status):
             [sr for sr in save_requests
              if search_value.lower() in sr['save_request_status'].lower()
              or search_value.lower() in sr['save_task_status'].lower()
-             or search_value.lower() in sr['origin_type'].lower()
+             or search_value.lower() in sr['visit_type'].lower()
              or search_value.lower() in sr['origin_url'].lower()]
 
     table_data['recordsFiltered'] = len(save_requests)
@@ -93,9 +93,9 @@ def _origin_save_requests_list(request, status):
 
 urlpatterns = [
     url(r'^save/$', _origin_save_view, name='origin-save'),
-    url(r'^save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/$',
+    url(r'^save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/$',
         _origin_save_request, name='origin-save-request'),
-    url(r'^save/types/list/$', _origin_save_types_list,
+    url(r'^save/types/list/$', _visit_save_types_list,
         name='origin-save-types-list'),
     url(r'^save/requests/list/(?P<status>.+)/$', _origin_save_requests_list,
         name='origin-save-requests-list'),

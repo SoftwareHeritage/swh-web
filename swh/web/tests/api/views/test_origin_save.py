@@ -31,9 +31,9 @@ class SaveApiTestCase(WebTestCase, APITestCase):
         SaveUnauthorizedOrigin.objects.create(
             url='https://gitlab.com/user_to_exclude')
 
-    def test_invalid_origin_type(self):
+    def test_invalid_visit_type(self):
         url = reverse('api-1-save-origin',
-                      url_args={'origin_type': 'foo',
+                      url_args={'visit_type': 'foo',
                                 'origin_url': 'https://github.com/torvalds/linux'}) # noqa
 
         response = self.client.post(url)
@@ -41,7 +41,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
 
     def test_invalid_origin_url(self):
         url = reverse('api-1-save-origin',
-                      url_args={'origin_type': 'git',
+                      url_args={'visit_type': 'git',
                                 'origin_url': 'bar'})
 
         response = self.client.post(url)
@@ -87,7 +87,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
              }]
 
         url = reverse('api-1-save-origin',
-                      url_args={'origin_type': 'git',
+                      url_args={'visit_type': 'git',
                                 'origin_url': origin_url})
 
         with patch('swh.web.common.origin_save._get_visit_info_for_save_request') as mock_visit_date: # noqa
@@ -126,7 +126,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
              }]
 
         url = reverse('api-1-save-origin',
-                      url_args={'origin_type': 'git',
+                      url_args={'visit_type': 'git',
                                 'origin_url': origin_url})
 
         with patch('swh.web.common.origin_save._get_visit_info_for_save_request') as mock_visit_date: # noqa
@@ -208,7 +208,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
     @patch('swh.web.common.origin_save.scheduler')
     def test_create_save_request_only_when_needed(self, mock_scheduler):
         origin_url = 'https://github.com/webpack/webpack'
-        SaveOriginRequest.objects.create(origin_type='git',
+        SaveOriginRequest.objects.create(visit_type='git',
                                          origin_url=origin_url,
                                          status=SAVE_REQUEST_ACCEPTED, # noqa
                                          loading_task_id=56)
@@ -217,7 +217,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                                                'next_run_not_scheduled',
                                                SAVE_REQUEST_ACCEPTED,
                                                SAVE_TASK_NOT_YET_SCHEDULED)
-        sors = list(SaveOriginRequest.objects.filter(origin_type='git',
+        sors = list(SaveOriginRequest.objects.filter(visit_type='git',
                                                      origin_url=origin_url))
         self.assertEqual(len(sors), 1)
 
@@ -225,7 +225,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                                                'next_run_scheduled',
                                                SAVE_REQUEST_ACCEPTED,
                                                SAVE_TASK_SCHEDULED)
-        sors = list(SaveOriginRequest.objects.filter(origin_type='git',
+        sors = list(SaveOriginRequest.objects.filter(visit_type='git',
                                                      origin_url=origin_url))
         self.assertEqual(len(sors), 1)
 
@@ -235,7 +235,7 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                                                SAVE_REQUEST_ACCEPTED,
                                                SAVE_TASK_NOT_YET_SCHEDULED,
                                                visit_date=visit_date)
-        sors = list(SaveOriginRequest.objects.filter(origin_type='git',
+        sors = list(SaveOriginRequest.objects.filter(visit_type='git',
                                                      origin_url=origin_url))
         self.assertEqual(len(sors), 2)
 
@@ -243,19 +243,19 @@ class SaveApiTestCase(WebTestCase, APITestCase):
                                                'disabled',
                                                SAVE_REQUEST_ACCEPTED,
                                                SAVE_TASK_NOT_YET_SCHEDULED)
-        sors = list(SaveOriginRequest.objects.filter(origin_type='git',
+        sors = list(SaveOriginRequest.objects.filter(visit_type='git',
                                                      origin_url=origin_url))
         self.assertEqual(len(sors), 3)
 
     def test_get_save_requests_unknown_origin(self):
         unknown_origin_url = 'https://gitlab.com/foo/bar'
         url = reverse('api-1-save-origin',
-                      url_args={'origin_type': 'git',
+                      url_args={'visit_type': 'git',
                                 'origin_url': unknown_origin_url})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data, {
             'exception': 'NotFoundExc',
-            'reason': ('No save requests found for origin with type '
-                       'git and url %s.') % unknown_origin_url
+            'reason': ('No save requests found for visit of type '
+                       'git on origin with url %s.') % unknown_origin_url
         })

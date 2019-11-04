@@ -145,16 +145,14 @@ def _revision_diff(request, sha1_git):
     try:
         revision = service.lookup_revision(sha1_git)
         snapshot_context = None
-        origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         if not origin_url:
             origin_url = request.GET.get('origin', None)
         timestamp = request.GET.get('timestamp', None)
         visit_id = request.GET.get('visit_id', None)
         if origin_url:
-            snapshot_context = get_snapshot_context(None, origin_type,
-                                                    origin_url,
-                                                    timestamp, visit_id)
+            snapshot_context = get_snapshot_context(
+                origin_url=origin_url, timestamp=timestamp, visit_id=visit_id)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -269,7 +267,6 @@ def revision_browse(request, sha1_git, extra_path=None):
         revision = service.lookup_revision(sha1_git)
         origin_info = None
         snapshot_context = None
-        origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         if not origin_url:
             origin_url = request.GET.get('origin', None)
@@ -282,9 +279,9 @@ def revision_browse(request, sha1_git, extra_path=None):
         content_data = None
         if origin_url:
             try:
-                snapshot_context = get_snapshot_context(None, origin_type,
-                                                        origin_url,
-                                                        timestamp, visit_id)
+                snapshot_context = get_snapshot_context(
+                    origin_url=origin_url, timestamp=timestamp,
+                    visit_id=visit_id)
             except Exception:
                 raw_rev_url = reverse('browse-revision',
                                       url_args={'sha1_git': sha1_git})
@@ -348,7 +345,6 @@ def revision_browse(request, sha1_git, extra_path=None):
                                        indent=4, separators=(',', ': ')))
 
     if origin_info:
-        revision_data['origin type'] = origin_info['type']
         revision_data['origin url'] = gen_link(origin_info['url'],
                                                origin_info['url'])
         revision_data['context-independent revision'] = \
@@ -376,7 +372,6 @@ def revision_browse(request, sha1_git, extra_path=None):
     path_info = gen_path_info(path)
 
     query_params = {'snapshot_id': snapshot_id,
-                    'origin_type': origin_type,
                     'origin': origin_url,
                     'timestamp': timestamp,
                     'visit_id': visit_id}
@@ -481,8 +476,7 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     diff_revision_url = reverse('diff-revision',
                                 url_args={'sha1_git': sha1_git},
-                                query_params={'origin_type': origin_type,
-                                              'origin': origin_url,
+                                query_params={'origin': origin_url,
                                               'timestamp': timestamp,
                                               'visit_id': visit_id})
 

@@ -41,13 +41,11 @@ def snapshot_directory_browse(request, snapshot_id, path=None):
     The url that points to it is
     :http:get:`/browse/snapshot/(snapshot_id)/directory/[(path)/]`
     """
-    origin_type = request.GET.get('origin_type', None)
     origin_url = request.GET.get('origin_url', None)
     if not origin_url:
         origin_url = request.GET.get('origin', None)
     return browse_snapshot_directory(request, snapshot_id=snapshot_id,
-                                     path=path, origin_type=origin_type,
-                                     origin_url=origin_url)
+                                     path=path, origin_url=origin_url)
 
 
 @browse_route(r'snapshot/(?P<snapshot_id>[0-9a-f]+)/content/(?P<path>.+)/',

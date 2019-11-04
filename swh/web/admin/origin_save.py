@@ -81,7 +81,7 @@ def _admin_origin_save_add_authorized_url(request, origin_url):
                                              status=SAVE_REQUEST_PENDING)
         # create origin save tasks for previously pending requests
         for psr in pending_save_requests:
-            create_save_origin_request(psr.origin_type, psr.origin_url)
+            create_save_origin_request(psr.visit_type, psr.origin_url)
         status_code = 200
     else:
         status_code = 400
@@ -149,29 +149,29 @@ def _admin_origin_save_remove_unauthorized_url(request, origin_url):
     return HttpResponse(status=status_code)
 
 
-@admin_route(r'origin/save/request/accept/(?P<origin_type>.+)/url/(?P<origin_url>.+)/', # noqa
+@admin_route(r'origin/save/request/accept/(?P<visit_type>.+)/url/(?P<origin_url>.+)/', # noqa
              view_name='admin-origin-save-request-accept')
 @require_POST
 @staff_member_required(login_url=settings.LOGIN_URL)
-def _admin_origin_save_request_accept(request, origin_type, origin_url):
+def _admin_origin_save_request_accept(request, visit_type, origin_url):
     try:
         SaveAuthorizedOrigin.objects.get(url=origin_url)
     except ObjectDoesNotExist:
         SaveAuthorizedOrigin.objects.create(url=origin_url)
-    create_save_origin_request(origin_type, origin_url)
+    create_save_origin_request(visit_type, origin_url)
     return HttpResponse(status=200)
 
 
-@admin_route(r'origin/save/request/reject/(?P<origin_type>.+)/url/(?P<origin_url>.+)/', # noqa
+@admin_route(r'origin/save/request/reject/(?P<visit_type>.+)/url/(?P<origin_url>.+)/', # noqa
              view_name='admin-origin-save-request-reject')
 @require_POST
 @staff_member_required(login_url=settings.LOGIN_URL)
-def _admin_origin_save_request_reject(request, origin_type, origin_url):
+def _admin_origin_save_request_reject(request, visit_type, origin_url):
     try:
         SaveUnauthorizedOrigin.objects.get(url=origin_url)
     except ObjectDoesNotExist:
         SaveUnauthorizedOrigin.objects.create(url=origin_url)
-    sor = SaveOriginRequest.objects.get(origin_type=origin_type,
+    sor = SaveOriginRequest.objects.get(visit_type=visit_type,
                                         origin_url=origin_url,
                                         status=SAVE_REQUEST_PENDING)
     sor.status = SAVE_REQUEST_REJECTED
