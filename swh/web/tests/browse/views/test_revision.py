@@ -65,7 +65,7 @@ class SwhBrowseRevisionTest(WebTestCase):
     def test_revision_origin_browse(self, origin):
 
         snapshot = self.snapshot_get_latest(origin['url'])
-        revision = snapshot['branches']['HEAD']['target']
+        revision = self.snapshot_get_head(snapshot)
         revision_data = self.revision_get(revision)
         dir_id = revision_data['directory']
 
@@ -224,8 +224,7 @@ class SwhBrowseRevisionTest(WebTestCase):
 
         url = reverse('browse-revision',
                       url_args={'sha1_git': revision},
-                      query_params={'origin_type': new_origin['type'],
-                                    'origin': new_origin['url']})
+                      query_params={'origin': new_origin['url']})
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)

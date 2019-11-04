@@ -90,9 +90,9 @@ def can_save_origin(origin_url):
     return SAVE_REQUEST_PENDING
 
 
-# map origin type to scheduler task
+# map visit type to scheduler task
 # TODO: do not hardcode the task name here (T1157)
-_origin_type_task = {
+_visit_type_task = {
     'git': 'load-git',
     'hg': 'load-hg',
     'svn': 'load-svn'
@@ -108,23 +108,23 @@ _save_task_status = {
 }
 
 
-def get_savable_origin_types():
-    return sorted(list(_origin_type_task.keys()))
+def get_savable_visit_types():
+    return sorted(list(_visit_type_task.keys()))
 
 
-def _check_origin_type_savable(origin_type):
+def _check_visit_type_savable(visit_type):
     """
-    Get the list of software origin types that can be loaded
+    Get the list of visit types that can be performed
     through a save request.
 
     Returns:
-        list: the list of saveable origin types
+        list: the list of saveable visit types
     """
-    allowed_origin_types = ', '.join(get_savable_origin_types())
-    if origin_type not in _origin_type_task:
-        raise BadInputExc('Origin of type %s can not be saved! '
+    allowed_visit_types = ', '.join(get_savable_visit_types())
+    if visit_type not in _visit_type_task:
+        raise BadInputExc('Visit of type %s can not be saved! '
                           'Allowed types are the following: %s' %
-                          (origin_type, allowed_origin_types))
+                          (visit_type, allowed_visit_types))
 
 
 _validate_url = URLValidator(schemes=['http', 'https', 'svn', 'git'])
@@ -142,8 +142,7 @@ def _get_visit_info_for_save_request(save_request):
     visit_date = None
     visit_status = None
     try:
-        origin = {'type': save_request.origin_type,
-                  'url': save_request.origin_url}
+        origin = {'url': save_request.origin_url}
         origin_info = service.lookup_origin(origin)
         origin_visits = get_origin_visits(origin_info)
         visit_dates = [parse_timestamp(v['date'])
@@ -217,7 +216,7 @@ def _save_request_dict(save_request, task=None):
         save_request.save()
 
     return {'id': save_request.id,
-            'origin_type': save_request.origin_type,
+            'visit_type': save_request.visit_type,
             'origin_url': save_request.origin_url,
             'save_request_date': save_request.request_date.isoformat(),
             'save_request_status': save_request.status,
@@ -225,14 +224,14 @@ def _save_request_dict(save_request, task=None):
             'visit_date': visit_date.isoformat() if visit_date else None}
 
 
-def create_save_origin_request(origin_type, origin_url):
+def create_save_origin_request(visit_type, origin_url):
     """
     Create a loading task to save a software origin into the archive.
 
     This function aims to create a software origin loading task
     trough the use of the swh-scheduler component.
 
-    First, some checks are performed to see if the origin type and
+    First, some checks are performed to see if the visit type and origin
     url are valid but also if the the save request can be accepted.
     If those checks passed, the loading task is then created.
     Otherwise, the save request is put in pending or rejected state.
@@ -241,18 +240,18 @@ def create_save_origin_request(origin_type, origin_url):
     database to keep track of them.
 
     Args:
-        origin_type (str): the type of origin to save (currently only
+        visit_type (str): the type of visit to perform (currently only
             ``git`` but ``svn`` and ``hg`` will soon be available)
         origin_url (str): the url of the origin to save
 
     Raises:
-        BadInputExc: the origin type or url is invalid
+        BadInputExc: the visit type or origin url is invalid
         ForbiddenExc: the provided origin url is blacklisted
 
     Returns:
         dict: A dict describing the save request with the following keys:
 
-            * **origin_type**: the type of the origin to save
+            * **visit_type**: the type of visit to perform
             * **origin_url**: the url of the origin
             * **save_request_date**: the date the request was submitted
             * **save_request_status**: the request status, either **accepted**,
@@ -263,7 +262,7 @@ def create_save_origin_request(origin_type, origin_url):
 
 
     """
-    _check_origin_type_savable(origin_type)
+    _check_visit_type_savable(visit_type)
     _check_origin_url_valid(origin_url)
     save_request_status = can_save_origin(origin_url)
     task = None
@@ -273,19 +272,19 @@ def create_save_origin_request(origin_type, origin_url):
     if save_request_status == SAVE_REQUEST_ACCEPTED:
         # create a task with high priority
         kwargs = {'priority': 'high'}
-        # set task parameters according to the origin type
-        if origin_type == 'git':
+        # set task parameters according to the visit type
+        if visit_type == 'git':
             kwargs['repo_url'] = origin_url
-        elif origin_type == 'hg':
+        elif visit_type == 'hg':
             kwargs['origin_url'] = origin_url
-        elif origin_type == 'svn':
+        elif visit_type == 'svn':
             kwargs['origin_url'] = origin_url
             kwargs['svn_url'] = origin_url
 
         sor = None
         # get list of previously sumitted save requests
         current_sors = \
-            list(SaveOriginRequest.objects.filter(origin_type=origin_type,
+            list(SaveOriginRequest.objects.filter(visit_type=visit_type,
                                                   origin_url=origin_url))
 
         can_create_task = False
@@ -317,7 +316,7 @@ def create_save_origin_request(origin_type, origin_url):
         if can_create_task:
             # effectively create the scheduler task
             task_dict = create_oneshot_task_dict(
-                _origin_type_task[origin_type], **kwargs)
+                _visit_type_task[visit_type], **kwargs)
             task = scheduler.create_tasks([task_dict])[0]
 
             # pending save request has been accepted
@@ -326,7 +325,7 @@ def create_save_origin_request(origin_type, origin_url):
                 sor.loading_task_id = task['id']
                 sor.save()
             else:
-                sor = SaveOriginRequest.objects.create(origin_type=origin_type,
+                sor = SaveOriginRequest.objects.create(visit_type=visit_type,
                                                        origin_url=origin_url,
                                                        status=save_request_status, # noqa
                                                        loading_task_id=task['id']) # noqa
@@ -335,18 +334,18 @@ def create_save_origin_request(origin_type, origin_url):
         # check if there is already such a save request already submitted,
         # no need to add it to the database in that case
         try:
-            sor = SaveOriginRequest.objects.get(origin_type=origin_type,
+            sor = SaveOriginRequest.objects.get(visit_type=visit_type,
                                                 origin_url=origin_url,
                                                 status=save_request_status)
         # if not add it to the database
         except ObjectDoesNotExist:
-            sor = SaveOriginRequest.objects.create(origin_type=origin_type,
+            sor = SaveOriginRequest.objects.create(visit_type=visit_type,
                                                    origin_url=origin_url,
                                                    status=save_request_status)
     # origin can not be saved as its url is blacklisted,
     # log the request to the database anyway
     else:
-        sor = SaveOriginRequest.objects.create(origin_type=origin_type,
+        sor = SaveOriginRequest.objects.create(visit_type=visit_type,
                                                origin_url=origin_url,
                                                status=save_request_status)
 
@@ -382,29 +381,30 @@ def get_save_origin_requests_from_queryset(requests_queryset):
     return save_requests
 
 
-def get_save_origin_requests(origin_type, origin_url):
+def get_save_origin_requests(visit_type, origin_url):
     """
     Get all save requests for a given software origin.
 
     Args:
-        origin_type (str): the type of the origin
+        visit_type (str): the type of visit
         origin_url (str): the url of the origin
 
     Raises:
-        BadInputExc: the origin type or url is invalid
+        BadInputExc: the visit type or origin url is invalid
         NotFoundExc: no save requests can be found for the given origin
 
     Returns:
         list: A list of save origin requests dict as described in
         :func:`swh.web.common.origin_save.create_save_origin_request`
     """
-    _check_origin_type_savable(origin_type)
+    _check_visit_type_savable(visit_type)
     _check_origin_url_valid(origin_url)
-    sors = SaveOriginRequest.objects.filter(origin_type=origin_type,
+    sors = SaveOriginRequest.objects.filter(visit_type=visit_type,
                                             origin_url=origin_url)
     if sors.count() == 0:
-        raise NotFoundExc(('No save requests found for origin with type '
-                           '%s and url %s.') % (origin_type, origin_url))
+        raise NotFoundExc(('No save requests found for visit of type '
+                           '%s on origin with url %s.')
+                          % (visit_type, origin_url))
     return get_save_origin_requests_from_queryset(sors)
 
 

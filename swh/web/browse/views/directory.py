@@ -41,15 +41,13 @@ def directory_browse(request, sha1_git, path=None):
             sha1_git = dir_info['target']
 
         dirs, files = get_directory_entries(sha1_git)
-        origin_type = request.GET.get('origin_type', None)
         origin_url = request.GET.get('origin_url', None)
         if not origin_url:
             origin_url = request.GET.get('origin', None)
         snapshot_context = None
         if origin_url:
             try:
-                snapshot_context = get_snapshot_context(None, origin_type,
-                                                        origin_url)
+                snapshot_context = get_snapshot_context(origin_url=origin_url)
             except Exception:
                 raw_dir_url = reverse('browse-directory',
                                       url_args={'sha1_git': sha1_git})

@@ -134,12 +134,10 @@ def api_origins(request):
     return response
 
 
-@api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
-           'api-1-origin')
 @api_route(r'/origin/(?P<origin_url>.+)/get/', 'api-1-origin')
 @api_doc('/origin/')
 @format_docstring(return_origin=DOC_RETURN_ORIGIN)
-def api_origin(request, origin_url, origin_type=None):
+def api_origin(request, origin_url):
     """
     .. http:get:: /api/1/origin/(origin_url)/get/
 
@@ -161,48 +159,14 @@ def api_origin(request, origin_url, origin_type=None):
 
         .. parsed-literal::
 
-            :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
+            :swh_web_api:`origin/https://github.com/python/cpython/get/`
 
-
-    .. http:get:: /api/1/origin/(origin_type)/url/(origin_url)/
-
-        Get information about a software origin.
-
-        .. warning::
-
-            All endpoints using an ``origin_type`` are
-            deprecated and will be removed in the near future. Only those
-            using only an ``origin_url`` will remain available.
-            You should use :http:get:`/api/1/origin/(origin_url)/get/` instead.
-
-        :param string origin_type: the origin type (possible values are
-            ``git``, ``svn``, ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or
-            ``deposit``)
-        :param string origin_url: the origin url
-
-        {return_origin}
-
-        {common_headers}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
-        :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the archive
-
-        **Example:**
-
-        .. parsed-literal::
-
-            :swh_web_api:`origin/git/url/https://github.com/python/cpython/`
     """
     ori_dict = {
-        'type': origin_type,
         'url': origin_url
     }
-    ori_dict = {k: v for k, v in ori_dict.items() if ori_dict[k]}
-    error_msg = 'Origin %s not found.' % \
-        (ori_dict.get('id') or ori_dict['url'])
+
+    error_msg = 'Origin with url %s not found.' % ori_dict['url']
 
     return api_lookup(
         service.lookup_origin, ori_dict,
@@ -231,6 +195,7 @@ def api_origin_search(request, url_pattern):
 
         :param string url_pattern: a string pattern or a regular expression
         :query int limit: the maximum number of found origins to return
+            (bounded to 1000)
         :query boolean regexp: if true, consider provided pattern as a regular
             expression and search origins whose urls match it
         :query boolean with_visit: if true, only return origins with at least
@@ -254,7 +219,7 @@ def api_origin_search(request, url_pattern):
     """
     result = {}
     offset = int(request.query_params.get('offset', '0'))
-    limit = int(request.query_params.get('limit', '70'))
+    limit = min(int(request.query_params.get('limit', '70')), 1000)
     regexp = request.query_params.get('regexp', 'false')
     with_visit = request.query_params.get('with_visit', 'false')
 
@@ -500,18 +465,16 @@ def api_origin_visit(request, visit_id, origin_url):
                           with_origin_visit_link=False))
 
 
-@api_route(r'/origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
+@api_route(r'/origin/(?P<origin_url>.+)'
            '/intrinsic-metadata', 'api-origin-intrinsic-metadata')
 @api_doc('/origin/intrinsic-metadata/')
 @format_docstring()
-def api_origin_intrinsic_metadata(request, origin_type, origin_url):
+def api_origin_intrinsic_metadata(request, origin_url):
     """
-    .. http:get:: /api/1/origin/(origin_type)/url/(origin_url)/intrinsic-metadata
+    .. http:get:: /api/1/origin/(origin_url)/intrinsic-metadata
 
         Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
-        :param string origin_type: the origin type (possible values are ``git``, ``svn``,
-            ``hg``, ``deb``, ``pypi``, ``npm``, ``ftp`` or ``deposit``)
         :param string origin_url: the origin url
 
         :>json string ???: intrinsic metadata field of the origin
@@ -528,14 +491,13 @@ def api_origin_intrinsic_metadata(request, origin_type, origin_url):
 
         .. parsed-literal::
 
-            :swh_web_api:`origin/git/url/https://github.com/python/cpython/intrinsic-metadata`
+            :swh_web_api:`origin/https://github.com/python/cpython/intrinsic-metadata`
     """ # noqa
     ori_dict = {
-        'type': origin_type,
         'url': origin_url
     }
 
-    error_msg = 'Origin with URL %s not found' % ori_dict['url']
+    error_msg = 'Origin with url %s not found' % ori_dict['url']
 
     return api_lookup(
         service.lookup_origin_intrinsic_metadata, ori_dict,
