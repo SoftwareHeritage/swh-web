@@ -16,9 +16,7 @@ from swh.web.common.utils import (
     reverse, format_utc_iso_date, parse_timestamp
 )
 from swh.web.common.exc import handle_view_exception
-from swh.web.browse.utils import (
-    get_origin_info, get_snapshot_context
-)
+from swh.web.browse.utils import get_snapshot_context
 from swh.web.browse.browseurls import browse_route
 
 from .utils.snapshot_context import (
@@ -28,56 +26,43 @@ from .utils.snapshot_context import (
 )
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/visit/(?P<timestamp>.+)/directory/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/visit/(?P<timestamp>.+)/directory/(?P<path>.+)/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/directory/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/directory/(?P<path>.+)/',
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/',
+@browse_route(r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/',
               r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)'
               '/directory/(?P<path>.+)/',
               r'origin/(?P<origin_url>.+)/directory/',
               r'origin/(?P<origin_url>.+)/directory/(?P<path>.+)/',
               view_name='browse-origin-directory')
-def origin_directory_browse(request, origin_url, origin_type=None,
+def origin_directory_browse(request, origin_url,
                             timestamp=None, path=None):
     """Django view for browsing the content of a directory associated
     to an origin for a given visit.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/directory/[(path)/]`
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/directory/[(path)/]`
+        * :http:get:`/browse/origin/(origin_url)/directory/[(path)/]`
+        * :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/directory/[(path)/]`
     """ # noqa
-    return browse_snapshot_directory(
-        request, origin_type=origin_type, origin_url=origin_url,
-        timestamp=timestamp, path=path)
+    return browse_snapshot_directory(request, origin_url=origin_url,
+                                     timestamp=timestamp, path=path)
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/visit/(?P<timestamp>.+)/content/(?P<path>.+)/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/content/(?P<path>.+)/',
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)'
+@browse_route(r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)'
               '/content/(?P<path>.+)/',
               r'origin/(?P<origin_url>.+)/content/(?P<path>.+)/',
               view_name='browse-origin-content')
-def origin_content_browse(request, origin_url, origin_type=None, path=None,
+def origin_content_browse(request, origin_url, path=None,
                           timestamp=None):
     """Django view that produces an HTML display of a content
     associated to an origin for a given visit.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/content/(path)/`
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/content/(path)/`
+        * :http:get:`/browse/origin/(origin_url)/content/(path)/`
+        * :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/content/(path)/`
 
     """ # noqa
     language = request.GET.get('language', None)
-    return browse_snapshot_content(request, origin_type=origin_type,
+    return browse_snapshot_content(request,
                                    origin_url=origin_url, timestamp=timestamp,
                                    path=path, selected_language=language)
 
@@ -85,84 +70,69 @@ def origin_content_browse(request, origin_url, origin_type=None, path=None,
 PER_PAGE = 20
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/visit/(?P<timestamp>.+)/log/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/log/',
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/log/',
+@browse_route(r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/log/',
               r'origin/(?P<origin_url>.+)/log/',
               view_name='browse-origin-log')
-def origin_log_browse(request, origin_url, origin_type=None, timestamp=None):
+def origin_log_browse(request, origin_url, timestamp=None):
     """Django view that produces an HTML display of revisions history (aka
     the commit log) associated to a software origin.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/log/`
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/log/`
+        * :http:get:`/browse/origin/(origin_url)/log/`
+        * :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/log/`
     """ # noqa
-    return browse_snapshot_log(request, origin_type=origin_type,
+    return browse_snapshot_log(request,
                                origin_url=origin_url, timestamp=timestamp)
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/visit/(?P<timestamp>.+)/branches/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/branches/',
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/branches/',
+@browse_route(r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/branches/',
               r'origin/(?P<origin_url>.+)/branches/',
               view_name='browse-origin-branches')
-def origin_branches_browse(request, origin_url, origin_type=None,
-                           timestamp=None):
+def origin_branches_browse(request, origin_url, timestamp=None):
     """Django view that produces an HTML display of the list of branches
     associated to an origin for a given visit.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/branches/`
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/branches/`
+        * :http:get:`/browse/origin/(origin_url)/branches/`
+        * :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/branches/`
 
     """ # noqa
-    return browse_snapshot_branches(request, origin_type=origin_type,
+    return browse_snapshot_branches(request,
                                     origin_url=origin_url, timestamp=timestamp)
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/visit/(?P<timestamp>.+)/releases/',
-              r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)'
-              '/releases/',
-              r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/releases/',
+@browse_route(r'origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/releases/',
               r'origin/(?P<origin_url>.+)/releases/',
               view_name='browse-origin-releases')
-def origin_releases_browse(request, origin_url, origin_type=None,
-                           timestamp=None):
+def origin_releases_browse(request, origin_url, timestamp=None):
     """Django view that produces an HTML display of the list of releases
     associated to an origin for a given visit.
 
     The url scheme that points to it is the following:
 
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/releases/`
-        * :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visit/(timestamp)/releases/`
+        * :http:get:`/browse/origin/(origin_url)/releases/`
+        * :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/releases/`
 
     """ # noqa
-    return browse_snapshot_releases(request, origin_type=origin_type,
+    return browse_snapshot_releases(request,
                                     origin_url=origin_url, timestamp=timestamp)
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/visits/',
-              r'origin/(?P<origin_url>.+)/visits/',
+@browse_route(r'origin/(?P<origin_url>.+)/visits/',
               view_name='browse-origin-visits')
-def origin_visits_browse(request, origin_url, origin_type=None):
+def origin_visits_browse(request, origin_url):
     """Django view that produces an HTML display of visits reporting
     for a swh origin identified by its id or its url.
 
     The url that points to it is
-    :http:get:`/browse/origin/[(origin_type)/url/](origin_url)/visits/`.
+    :http:get:`/browse/origin/(origin_url)/visits/`.
     """
     try:
-        origin_info = get_origin_info(origin_url, origin_type)
+        origin_info = service.lookup_origin({'url': origin_url})
         origin_visits = get_origin_visits(origin_info)
-        snapshot_context = get_snapshot_context(origin_type=origin_type,
-                                                origin_url=origin_url)
+        snapshot_context = get_snapshot_context(origin_url=origin_url)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
@@ -180,8 +150,7 @@ def origin_visits_browse(request, origin_url, origin_type=None):
         snapshot = visit['snapshot'] if visit['snapshot'] else ''
 
         visit['browse_url'] = reverse('browse-origin-directory',
-                                      url_args={'origin_type': origin_type,
-                                                'origin_url': origin_url,
+                                      url_args={'origin_url': origin_url,
                                                 'timestamp': url_date},
                                       query_params=query_params)
         if not snapshot:
@@ -209,7 +178,7 @@ def _origin_search(request, url_pattern):
     The search is performed in a case insensitive way.
     """
     offset = int(request.GET.get('offset', '0'))
-    limit = int(request.GET.get('limit', '50'))
+    limit = min(int(request.GET.get('limit', '50')), 1000)
     regexp = request.GET.get('regexp', 'false')
     with_visit = request.GET.get('with_visit', 'false')
 
@@ -228,14 +197,12 @@ def _origin_search(request, url_pattern):
     return HttpResponse(results, content_type='application/json')
 
 
-@browse_route(r'origin/(?P<origin_type>[a-z]+)/url/(?P<origin_url>.+)/',
-              r'origin/(?P<origin_url>.+)/',
+@browse_route(r'origin/(?P<origin_url>.+)/',
               view_name='browse-origin')
-def origin_browse(request, origin_url, origin_type=None):
+def origin_browse(request, origin_url):
     """Django view that redirects to the display of the latest archived
     snapshot for a given software origin.
     """
     last_snapshot_url = reverse('browse-origin-directory',
-                                url_args={'origin_type': origin_type,
-                                          'origin_url': origin_url})
+                                url_args={'origin_url': origin_url})
     return redirect(last_snapshot_url)

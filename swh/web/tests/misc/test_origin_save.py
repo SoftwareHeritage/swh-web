@@ -21,8 +21,8 @@ class SwhOriginSaveTest(WebTestCase, APITestCase):
 
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
+        self.visit_type = 'git'
         self.origin = {
-            'type': 'git',
             'url': 'https://github.com/python/cpython'
         }
 
@@ -33,7 +33,7 @@ class SwhOriginSaveTest(WebTestCase, APITestCase):
         self._mock_create_save_origin_request(mock_create_save_origin_request)
 
         url = reverse('origin-save-request',
-                      url_args={'origin_type': self.origin['type'],
+                      url_args={'visit_type': self.visit_type,
                                 'origin_url':  self.origin['url']})
 
         resp = self.client.post(url)
@@ -50,7 +50,7 @@ class SwhOriginSaveTest(WebTestCase, APITestCase):
         self._mock_create_save_origin_request(mock_create_save_origin_request)
 
         url = reverse('origin-save-request',
-                      url_args={'origin_type': self.origin['type'],
+                      url_args={'visit_type': self.visit_type,
                                 'origin_url':  self.origin['url']})
 
         data = self._get_csrf_token(reverse('origin-save'))
@@ -76,7 +76,7 @@ class SwhOriginSaveTest(WebTestCase, APITestCase):
 
     def _mock_create_save_origin_request(self, mock):
         expected_data = {
-            'origin_type': self.origin['type'],
+            'visit_type': self.visit_type,
             'origin_url': self.origin['url'],
             'save_request_date': datetime.now().isoformat(),
             'save_request_status': SAVE_REQUEST_ACCEPTED,

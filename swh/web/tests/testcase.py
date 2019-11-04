@@ -147,3 +147,11 @@ class WebTestCase(TestCase):
             hash_to_bytes(snapshot_id), branches_from.encode(),
             branches_count, target_types)
         return converters.from_snapshot(snp)
+
+    def snapshot_get_head(self, snapshot):
+        if snapshot['branches']['HEAD']['target_type'] == 'alias':
+            target = snapshot['branches']['HEAD']['target']
+            head = snapshot['branches'][target]['target']
+        else:
+            head = snapshot['branches']['HEAD']['target']
+        return head

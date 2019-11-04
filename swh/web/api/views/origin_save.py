@@ -12,16 +12,16 @@ from swh.web.common.origin_save import (
 )
 
 
-@api_route(r'/origin/save/(?P<origin_type>.+)/url/(?P<origin_url>.+)/',
+@api_route(r'/origin/save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/',
            'api-1-save-origin', methods=['GET', 'POST'],
            throttle_scope='swh_save_origin')
 @never_cache
 @api_doc('/origin/save/')
 @format_docstring()
-def api_save_origin(request, origin_type, origin_url):
+def api_save_origin(request, visit_type, origin_url):
     """
-    .. http:get:: /api/1/origin/save/(origin_type)/url/(origin_url)/
-    .. http:post:: /api/1/origin/save/(origin_type)/url/(origin_url)/
+    .. http:get:: /api/1/origin/save/(visit_type)/url/(origin_url)/
+    .. http:post:: /api/1/origin/save/(visit_type)/url/(origin_url)/
 
         Request the saving of a software origin into the archive
         or check the status of previously created save requests.
@@ -52,14 +52,14 @@ def api_save_origin(request, origin_type, origin_url):
         request will return an array of objects (as multiple save requests
         might have been submitted for the same origin).
 
-        :param string origin_type: the type of origin to save
+        :param string visit_type: the type of visit to perform
             (currently the supported types are ``git``, ``hg`` and ``svn``)
         :param string origin_url: the url of the origin to save
 
         {common_headers}
 
         :>json string origin_url: the url of the origin to save
-        :>json string origin_type: the type of the origin to save
+        :>json string visit_type: the type of visit to perform
         :>json string save_request_date: the date (in iso format) the save
             request was issued
         :>json string save_request_status: the status of the save request,
@@ -72,16 +72,17 @@ def api_save_origin(request, origin_type, origin_url):
         :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
-        :statuscode 400: an invalid origin type or url has been provided
+        :statuscode 400: an invalid visit type or origin url has been provided
         :statuscode 403: the provided origin url is blacklisted
         :statuscode 404: no save requests have been found for a given origin
     """
 
     if request.method == 'POST':
-        sor = create_save_origin_request(origin_type, origin_url)
+        sor = create_save_origin_request(visit_type, origin_url)
         del sor['id']
     else:
-        sor = get_save_origin_requests(origin_type, origin_url)
-        for s in sor: del s['id'] # noqa
+        sor = get_save_origin_requests(visit_type, origin_url)
+        for s in sor:
+            del s['id']
 
     return sor

@@ -38,6 +38,11 @@ export async function drawHistoryCounterGraph(container, historyData) {
   width = width - margin.left - margin.right;
   height = height - margin.top - margin.bottom;
 
+  // Make sure data points are sorted, by x coordinate then y coordinate.
+  historyData.sort(function(a, b) {
+    return a[0] - b[0] !== 0 ? a[0] - b[0] : a[1] - b[1];
+  });
+
   const firstPoint = historyData[0];
   const lastPoint = historyData[historyData.length - 1];
 

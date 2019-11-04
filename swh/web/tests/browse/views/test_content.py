@@ -191,6 +191,13 @@ class SwhBrowseContentTest(WebTestCase):
 
         self.assertNotContains(resp, '<nav class="bread-crumbs')
 
+        invalid_path = '%s/foo/bar/baz' % root_dir_sha1
+        url = reverse('browse-content',
+                      url_args={'query_string': content['sha1']},
+                      query_params={'path': invalid_path})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
     @given(content_text())
     def test_content_raw_text(self, content):
 

@@ -8,6 +8,7 @@
 html {
     height: 100%;
     overflow-x: hidden;
+    scroll-behavior: auto !important;
 }
 
 body {
@@ -570,4 +571,12 @@ div.d3-tooltip {
     border: 1px solid black;
     border-radius: 4px;
     pointer-events: none;
+}
+
+.page-link {
+    cursor: pointer;
+}
+
+.wrapper {
+    overflow: hidden;
 }

@@ -2,7 +2,7 @@
 var $ = require('../internals/export');
 var IS_PURE = require('../internals/is-pure');
 var global = require('../internals/global');
-var path = require('../internals/path');
+var getBuiltIn = require('../internals/get-built-in');
 var NativePromise = require('../internals/native-promise-constructor');
 var redefine = require('../internals/redefine');
 var redefineAll = require('../internals/redefine-all');
@@ -21,10 +21,10 @@ var promiseResolve = require('../internals/promise-resolve');
 var hostReportErrors = require('../internals/host-report-errors');
 var newPromiseCapabilityModule = require('../internals/new-promise-capability');
 var perform = require('../internals/perform');
-var userAgent = require('../internals/user-agent');
 var InternalStateModule = require('../internals/internal-state');
 var isForced = require('../internals/is-forced');
 var wellKnownSymbol = require('../internals/well-known-symbol');
+var V8_VERSION = require('../internals/v8-version');
 
 var SPECIES = wellKnownSymbol('species');
 var PROMISE = 'Promise';
@@ -35,9 +35,7 @@ var PromiseConstructor = NativePromise;
 var TypeError = global.TypeError;
 var document = global.document;
 var process = global.process;
-var $fetch = global.fetch;
-var versions = process && process.versions;
-var v8 = versions && versions.v8 || '';
+var $fetch = getBuiltIn('fetch');
 var newPromiseCapability = newPromiseCapabilityModule.f;
 var newGenericPromiseCapability = newPromiseCapability;
 var IS_NODE = classof(process) == 'process';
@@ -52,21 +50,26 @@ var UNHANDLED = 2;
 var Internal, OwnPromiseCapability, PromiseWrapper, nativeThen;
 
 var FORCED = isForced(PROMISE, function () {
-  // correct subclassing with @@species support
+  // V8 6.6 (Node 10 and Chrome 66) have a bug with resolving custom thenables
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=830565
+  // We can't detect it synchronously, so just check versions
+  if (V8_VERSION === 66) return true;
+  // Unhandled rejections tracking support, NodeJS Promise without it fails @@species test
+  if (!IS_NODE && typeof PromiseRejectionEvent != 'function') return true;
+  // We need Promise#finally in the pure version for preventing prototype pollution
+  if (IS_PURE && !PromiseConstructor.prototype['finally']) return true;
+  // We can't use @@species feature detection in V8 since it causes
+  // deoptimization and performance degradation
+  // https://github.com/zloirock/core-js/issues/679
+  if (V8_VERSION >= 51 && /native code/.test(PromiseConstructor)) return false;
+  // Detect correctness of subclassing with @@species support
   var promise = PromiseConstructor.resolve(1);
-  var empty = function () { /* empty */ };
-  var FakePromise = (promise.constructor = {})[SPECIES] = function (exec) {
-    exec(empty, empty);
+  var FakePromise = function (exec) {
+    exec(function () { /* empty */ }, function () { /* empty */ });
   };
-  // unhandled rejections tracking support, NodeJS Promise without it fails @@species test
-  return !((IS_NODE || typeof PromiseRejectionEvent == 'function')
-    && (!IS_PURE || promise['finally'])
-    && promise.then(empty) instanceof FakePromise
-    // v8 6.6 (Node 10 and Chrome 66) have a bug with resolving custom thenables
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=830565
-    // we can't detect it synchronously, so just check versions
-    && v8.indexOf('6.6') !== 0
-    && userAgent.indexOf('Chrome/66') === -1);
+  var constructor = promise.constructor = {};
+  constructor[SPECIES] = FakePromise;
+  return !(promise.then(function () { /* empty */ }) instanceof FakePromise);
 });
 
 var INCORRECT_ITERATION = FORCED || !checkCorrectnessOfIteration(function (iterable) {
@@ -283,12 +286,13 @@ if (FORCED) {
       return new PromiseConstructor(function (resolve, reject) {
         nativeThen.call(that, resolve, reject);
       }).then(onFulfilled, onRejected);
-    });
+    // https://github.com/zloirock/core-js/issues/640
+    }, { unsafe: true });
 
     // wrap fetch result
     if (typeof $fetch == 'function') $({ global: true, enumerable: true, forced: true }, {
       // eslint-disable-next-line no-unused-vars
-      fetch: function fetch(input) {
+      fetch: function fetch(input /* , init */) {
         return promiseResolve(PromiseConstructor, $fetch.apply(global, arguments));
       }
     });
@@ -302,7 +306,7 @@ $({ global: true, wrap: true, forced: FORCED }, {
 setToStringTag(PromiseConstructor, PROMISE, false, true);
 setSpecies(PROMISE);
 
-PromiseWrapper = path[PROMISE];
+PromiseWrapper = getBuiltIn(PROMISE);
 
 // statics
 $({ target: PROMISE, stat: true, forced: FORCED }, {
