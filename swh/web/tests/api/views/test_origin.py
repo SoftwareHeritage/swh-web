@@ -12,6 +12,7 @@ from rest_framework.test import APITestCase
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
+from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.tests.strategies import (
@@ -55,7 +56,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         err_msg = 'voluntary error to check the bad request middleware.'
 
-        mock_get_origin_visits.side_effect = ValueError(err_msg)
+        mock_get_origin_visits.side_effect = BadInputExc(err_msg)
 
         url = reverse(
             'api-1-origin-visits', url_args={'origin_url': 'http://foo'})
@@ -64,7 +65,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 400, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
-            'exception': 'ValueError',
+            'exception': 'BadInputExc',
             'reason': err_msg})
 
     @patch('swh.web.api.views.origin.get_origin_visits')
