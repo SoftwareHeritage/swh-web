@@ -6,8 +6,11 @@
 from rest_framework.test import APITestCase
 from rest_framework.response import Response
 
+from swh.storage.exc import StorageDBError, StorageAPIError
+
 from swh.web.api.apidoc import api_doc, _parse_httpdomain_doc
 from swh.web.api.apiurls import api_route
+from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.tests.testcase import WebTestCase
 
 # flake8: noqa
@@ -58,6 +61,15 @@ httpdomain_doc = """
 
 class APIDocTestCase(WebTestCase, APITestCase):
 
+    exception_http_code = {
+        BadInputExc: 400,
+        ForbiddenExc: 403,
+        NotFoundExc: 404,
+        Exception: 500,
+        StorageAPIError: 503,
+        StorageDBError: 503,
+    }
+
     def test_apidoc_nodoc_failure(self):
         with self.assertRaises(Exception):
             @api_doc('/my/nodoc/url/')
@@ -89,6 +101,26 @@ class APIDocTestCase(WebTestCase, APITestCase):
 
         # then
         self.assertEqual(rv.status_code, 200, rv.data)
+
+    @staticmethod
+    @api_route(r'/test/error/(?P<exc_name>.+)/',
+               'test-error')
+    @api_doc('/test/error/')
+    def apidoc_test_error_route(request, exc_name):
+        """
+        Sample doc
+        """
+        for e in APIDocTestCase.exception_http_code.keys():
+            if e.__name__ == exc_name:
+                raise e('Error')
+
+    def test_apidoc_error(self):
+        for exc, code in self.exception_http_code.items():
+            # when
+            rv = self.client.get('/api/1/test/error/%s/' % exc.__name__)
+
+            # then
+            self.assertEqual(rv.status_code, code)
 
     @staticmethod
     @api_route(r'/some/full/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',

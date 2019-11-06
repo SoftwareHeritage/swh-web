@@ -12,6 +12,7 @@ from rest_framework.test import APITestCase
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
+from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.tests.strategies import (
@@ -55,7 +56,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         err_msg = 'voluntary error to check the bad request middleware.'
 
-        mock_get_origin_visits.side_effect = ValueError(err_msg)
+        mock_get_origin_visits.side_effect = BadInputExc(err_msg)
 
         url = reverse(
             'api-1-origin-visits', url_args={'origin_url': 'http://foo'})
@@ -64,7 +65,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 400, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
-            'exception': 'ValueError',
+            'exception': 'BadInputExc',
             'reason': err_msg})
 
     @patch('swh.web.api.views.origin.get_origin_visits')
@@ -633,3 +634,33 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         self.assertEqual(rv.status_code, 400, rv.content)
         mock_idx_storage.assert_not_called()
+
+    def test_api_origin_metadata_search_missing_origin_url(self):
+        with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
+            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+                .side_effect = lambda conjunction, limit: [{
+                    'from_revision': (
+                        b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
+                        b'\xf2U\xfa\x05B8'),
+                    'metadata': {'author': 'Jane Doe'},
+                    'origin_url': None,
+                    'tool': {
+                        'configuration': {
+                            'context': ['NpmMapping', 'CodemetaMapping'],
+                            'type': 'local'
+                        },
+                        'id': 3,
+                        'name': 'swh-metadata-detector',
+                        'version': '0.0.1'
+                    }
+                }]
+
+            url = reverse('api-1-origin-metadata-search',
+                          query_params={'fulltext': 'Jane Doe'})
+            rv = self.client.get(url)
+
+            self.assertEqual(rv.status_code, 200, rv.content)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            self.assertEqual(len(rv.data), 0)
+            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
+                .assert_called_with(conjunction=['Jane Doe'], limit=70)

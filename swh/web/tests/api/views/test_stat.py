@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
+from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
 from swh.web.tests.testcase import WebTestCase
 
@@ -16,7 +17,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
     @patch('swh.web.api.views.stat.service')
     def test_api_1_stat_counters_raise_error(self, mock_service):
 
-        mock_service.stat_counters.side_effect = ValueError(
+        mock_service.stat_counters.side_effect = BadInputExc(
             'voluntary error to check the bad request middleware.')
 
         url = reverse('api-1-stat-counters')
@@ -25,7 +26,7 @@ class StatApiTestCase(WebTestCase, APITestCase):
         self.assertEqual(rv.status_code, 400, rv.data)
         self.assertEqual(rv['Content-Type'], 'application/json')
         self.assertEqual(rv.data, {
-            'exception': 'ValueError',
+            'exception': 'BadInputExc',
             'reason': 'voluntary error to check the bad request middleware.'})
 
     @patch('swh.web.api.views.stat.service')
