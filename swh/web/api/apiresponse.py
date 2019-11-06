@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from swh.storage.exc import StorageDBError, StorageAPIError
 
 from swh.web.api import utils
-from swh.web.common.exc import NotFoundExc, ForbiddenExc
+from swh.web.common.exc import NotFoundExc, ForbiddenExc, BadInputExc
 from swh.web.common.utils import shorten_path, gen_path_info
 from swh.web.config import get_config
 
@@ -164,8 +164,10 @@ def error_response(request, error, doc_data):
         doc_data: documentation data for HTML response
 
     """
-    error_code = 400
-    if isinstance(error, NotFoundExc):
+    error_code = 500
+    if isinstance(error, BadInputExc):
+        error_code = 400
+    elif isinstance(error, NotFoundExc):
         error_code = 404
     elif isinstance(error, ForbiddenExc):
         error_code = 403
