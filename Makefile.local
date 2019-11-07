@@ -93,5 +93,5 @@ test-frontend-full-ui: test-frontend-ui-cmd
 # *should* work without any override thanks to the mypy django-stubs plugin,
 # but it currently doesn't; see
 # https://github.com/typeddjango/django-stubs/issues/166
-typecheck:
+check-mypy:
 	DJANGO_SETTINGS_MODULE=swh.web.settings.development $(MYPY) $(MYPYFLAGS) swh
