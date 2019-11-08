@@ -1,3 +1,14 @@
+swh-web (0.0.220-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.220     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2019-11-08 18:00:47 +0100)
+  * Upstream changes:     - v0.0.220     - * typing: minimal changes to
+    make a no-op mypy run pass     - * Makefile.local: port to new swh-
+    environment typecheck naming     - * sphinx: Fix doc generation and
+    warnings     - * Add support for swh-indexer v0.0.157.
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 08 Nov 2019 17:21:30 +0000
+
 swh-web (0.0.219-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.219     - (tagged by Antoine Lambert
