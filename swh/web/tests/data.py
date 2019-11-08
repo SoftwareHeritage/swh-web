@@ -3,10 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from copy import deepcopy
 import os
 import random
 
+from copy import deepcopy
+from typing import Dict
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -326,9 +327,9 @@ def override_storages(storage, idx_storage):
 # Implement some special endpoints used to provide input tests data
 # when executing end to end tests with cypress
 
-_content_code_data_exts = {}
-_content_code_data_filenames = {}
-_content_other_data_exts = {}
+_content_code_data_exts = {}  # type: Dict[str, Dict[str, str]]
+_content_code_data_filenames = {}  # type: Dict[str, Dict[str, str]]
+_content_other_data_exts = {}  # type: Dict[str, Dict[str, str]]
 
 
 def _init_content_tests_data(data_path, data_dict, ext_key):

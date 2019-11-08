@@ -498,7 +498,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                         b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
                         b'\xf2U\xfa\x05B8'),
                     'metadata': {'author': 'Jane Doe'},
-                    'origin_url': origin['url'],
+                    'id': origin['url'],
                     'tool': {
                         'configuration': {
                             'context': ['NpmMapping', 'CodemetaMapping'],
@@ -533,10 +533,6 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                     }
                 }
             }]
-            actual_data = rv.data
-            for d in actual_data:
-                if 'id' in d:
-                    del d['id']
             self.assertEqual(rv.data, expected_data)
             mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
                 .assert_called_with(conjunction=['Jane Doe'], limit=70)
@@ -550,7 +546,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                         b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
                         b'\xf2U\xfa\x05B8'),
                     'metadata': {'author': 'Jane Doe'},
-                    'origin_url': origin['url'],
+                    'id': origin['url'],
                     'tool': {
                         'configuration': {
                             'context': ['NpmMapping', 'CodemetaMapping'],
@@ -603,7 +599,7 @@ class OriginApiTestCase(WebTestCase, APITestCase):
                         b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
                         b'\xf2U\xfa\x05B8'),
                     'metadata': {'author': 'Jane Doe'},
-                    'origin_url': origin['url'],
+                    'id': origin['url'],
                     'tool': {
                         'configuration': {
                             'context': ['NpmMapping', 'CodemetaMapping'],
@@ -634,33 +630,3 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
         self.assertEqual(rv.status_code, 400, rv.content)
         mock_idx_storage.assert_not_called()
-
-    def test_api_origin_metadata_search_missing_origin_url(self):
-        with patch('swh.web.common.service.idx_storage') as mock_idx_storage:
-            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
-                .side_effect = lambda conjunction, limit: [{
-                    'from_revision': (
-                        b'p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed '
-                        b'\xf2U\xfa\x05B8'),
-                    'metadata': {'author': 'Jane Doe'},
-                    'origin_url': None,
-                    'tool': {
-                        'configuration': {
-                            'context': ['NpmMapping', 'CodemetaMapping'],
-                            'type': 'local'
-                        },
-                        'id': 3,
-                        'name': 'swh-metadata-detector',
-                        'version': '0.0.1'
-                    }
-                }]
-
-            url = reverse('api-1-origin-metadata-search',
-                          query_params={'fulltext': 'Jane Doe'})
-            rv = self.client.get(url)
-
-            self.assertEqual(rv.status_code, 200, rv.content)
-            self.assertEqual(rv['Content-Type'], 'application/json')
-            self.assertEqual(len(rv.data), 0)
-            mock_idx_storage.origin_intrinsic_metadata_search_fulltext \
-                .assert_called_with(conjunction=['Jane Doe'], limit=70)

@@ -1061,9 +1061,11 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
 
     Args:
         swh_objects (list): a list of dict with the following keys:
+
             * type: swh object type
               (content/directory/release/revision/snapshot)
             * id: swh object id
+
         snapshot_context (dict): optional parameter describing the snapshot in
             which the object has been found
 
