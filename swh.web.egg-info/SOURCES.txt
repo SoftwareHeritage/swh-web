@@ -20,6 +20,7 @@ swh/web/__init__.py
 swh/web/config.py
 swh/web/doc_config.py
 swh/web/manage.py
+swh/web/py.typed
 swh/web/urls.py
 swh/web/admin/__init__.py
 swh/web/admin/adminurls.py

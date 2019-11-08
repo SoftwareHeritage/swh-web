@@ -1,9 +1,11 @@
-# Copyright (C) 2017-2018  The Software Heritage developers
+# Copyright (C) 2017-2019  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import functools
+
+from typing import Dict
 
 from pygments.lexers import (
     get_all_lexers,
@@ -239,7 +241,7 @@ _hljs_languages_aliases = {
 }
 
 # dictionary mapping pygment lexers to hljs languages
-_pygments_lexer_to_hljs_language = {}
+_pygments_lexer_to_hljs_language = {}  # type: Dict[str, str]
 
 
 # dictionary mapping mime types to hljs languages

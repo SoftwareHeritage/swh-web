@@ -5,6 +5,8 @@
 
 import functools
 
+from typing import Dict
+
 from rest_framework.decorators import api_view
 
 from swh.web.common.urlsindex import UrlsIndex
@@ -20,8 +22,7 @@ class APIUrls(UrlsIndex):
       generating related urls in API documentation
 
     """
-    _apidoc_routes = {}
-    _method_endpoints = {}
+    _apidoc_routes = {}  # type: Dict[str, Dict[str, str]]
     scope = 'api'
 
     @classmethod

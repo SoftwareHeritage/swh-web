@@ -6,6 +6,7 @@ include requirements-swh.txt
 include requirements-test.txt
 include tox.ini
 include version.txt
+recursive-include swh py.typed
 recursive-include swh/web/assets *
 recursive-include swh/web/static *
 recursive-include swh/web/templates *
