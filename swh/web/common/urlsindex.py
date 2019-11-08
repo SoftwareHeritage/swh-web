@@ -3,6 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Dict, List
+
+import django.urls
+
 from django.conf.urls import url
 from django.shortcuts import redirect
 
@@ -16,7 +20,7 @@ class UrlsIndex(object):
     all declared patterns will be grouped under the default one.
     """
 
-    _urlpatterns = {}
+    _urlpatterns = {}  # type: Dict[str, List[django.urls.URLPattern]]
     scope = 'default'
 
     @classmethod

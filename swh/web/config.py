@@ -5,6 +5,8 @@
 
 import os
 
+from typing import Any, Dict
+
 from swh.core import config
 from swh.indexer.storage import get_indexer_storage
 from swh.scheduler import get_scheduler
@@ -97,7 +99,7 @@ DEFAULT_CONFIG = {
     'history_counters_url': ('string', 'https://stats.export.softwareheritage.org/history_counters.json'), # noqa
 }
 
-swhweb_config = {}
+swhweb_config = {}  # type: Dict[str, Any]
 
 
 def get_config(config_file='web/web'):

@@ -26,7 +26,7 @@ from swh.web.common.origin_save import (
 
 
 @admin_route(r'origin/save/', view_name='admin-origin-save')
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save(request):
     return render(request, 'admin/origin-save.html')
 
@@ -68,7 +68,7 @@ def _admin_origin_save_authorized_urls_list(request):
 @admin_route(r'origin/save/authorized_urls/add/(?P<origin_url>.+)/',
              view_name='admin-origin-save-add-authorized-url')
 @require_POST
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_add_authorized_url(request, origin_url):
     try:
         SaveAuthorizedOrigin.objects.get(url=origin_url)
@@ -91,7 +91,7 @@ def _admin_origin_save_add_authorized_url(request, origin_url):
 @admin_route(r'origin/save/authorized_urls/remove/(?P<origin_url>.+)/',
              view_name='admin-origin-save-remove-authorized-url')
 @require_POST
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_remove_authorized_url(request, origin_url):
     try:
         entry = SaveAuthorizedOrigin.objects.get(url=origin_url)
@@ -105,7 +105,7 @@ def _admin_origin_save_remove_authorized_url(request, origin_url):
 
 @admin_route(r'origin/save/unauthorized_urls/list/',
              view_name='admin-origin-save-unauthorized-urls-list')
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_unauthorized_urls_list(request):
     unauthorized_urls = SaveUnauthorizedOrigin.objects.all()
     return _datatables_origin_urls_response(request, unauthorized_urls)
@@ -114,7 +114,7 @@ def _admin_origin_save_unauthorized_urls_list(request):
 @admin_route(r'origin/save/unauthorized_urls/add/(?P<origin_url>.+)/',
              view_name='admin-origin-save-add-unauthorized-url')
 @require_POST
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_add_unauthorized_url(request, origin_url):
     try:
         SaveUnauthorizedOrigin.objects.get(url=origin_url)
@@ -137,7 +137,7 @@ def _admin_origin_save_add_unauthorized_url(request, origin_url):
 @admin_route(r'origin/save/unauthorized_urls/remove/(?P<origin_url>.+)/',
              view_name='admin-origin-save-remove-unauthorized-url')
 @require_POST
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_remove_unauthorized_url(request, origin_url):
     try:
         entry = SaveUnauthorizedOrigin.objects.get(url=origin_url)
@@ -152,7 +152,7 @@ def _admin_origin_save_remove_unauthorized_url(request, origin_url):
 @admin_route(r'origin/save/request/accept/(?P<visit_type>.+)/url/(?P<origin_url>.+)/', # noqa
              view_name='admin-origin-save-request-accept')
 @require_POST
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_request_accept(request, visit_type, origin_url):
     try:
         SaveAuthorizedOrigin.objects.get(url=origin_url)
@@ -165,7 +165,7 @@ def _admin_origin_save_request_accept(request, visit_type, origin_url):
 @admin_route(r'origin/save/request/reject/(?P<visit_type>.+)/url/(?P<origin_url>.+)/', # noqa
              view_name='admin-origin-save-request-reject')
 @require_POST
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_request_reject(request, visit_type, origin_url):
     try:
         SaveUnauthorizedOrigin.objects.get(url=origin_url)
@@ -182,7 +182,7 @@ def _admin_origin_save_request_reject(request, visit_type, origin_url):
 @admin_route(r'origin/save/request/remove/(?P<sor_id>.+)/',
              view_name='admin-origin-save-request-remove')
 @require_POST
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_request_remove(request, sor_id):
     try:
         entry = SaveOriginRequest.objects.get(id=sor_id)
@@ -196,7 +196,7 @@ def _admin_origin_save_request_remove(request, sor_id):
 
 @admin_route(r'origin/save/task/info/(?P<save_request_id>.+)/',
              view_name='admin-origin-save-task-info')
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _save_origin_task_info(request, save_request_id):
     request_info = get_save_origin_task_info(save_request_id)
     for date_field in ('scheduled', 'started', 'ended'):

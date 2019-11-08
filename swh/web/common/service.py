@@ -279,15 +279,8 @@ def search_origin_metadata(fulltext, limit=50):
     for match in matches:
         match['from_revision'] = hashutil.hash_to_hex(match['from_revision'])
 
-        if match['origin_url']:
-            origin = storage.origin_get({'url': match['origin_url']})
-        else:
-            # Fallback to origin-id for idx-storage with outdated db
-            origin = storage.origin_get({'id': match['id']})
-
-        del match['origin_url']
-        if 'id' in match:
-            del match['id']
+        origin = storage.origin_get({'url': match['id']})
+        del match['id']
 
         result = converters.from_origin(origin)
         if result:

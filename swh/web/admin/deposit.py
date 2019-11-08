@@ -22,14 +22,14 @@ config = get_config()['deposit']
 
 
 @admin_route(r'deposit/', view_name='admin-deposit')
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save(request):
     return render(request, 'admin/deposit.html')
 
 
 @admin_route(r'deposit/list/',
              view_name='admin-deposit-list')
-@staff_member_required(login_url=settings.LOGIN_URL)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_deposit_list(request):
     table_data = {}
     table_data['draw'] = int(request.GET['draw'])
