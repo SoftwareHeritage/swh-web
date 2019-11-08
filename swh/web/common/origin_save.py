@@ -421,6 +421,7 @@ def get_save_origin_task_info(save_request_id):
 
     Returns:
         dict: A dictionary with the following keys:
+
             - **type**: loading task type
             - **arguments**: loading task arguments
             - **id**: loading task database identifier
@@ -428,9 +429,11 @@ def get_save_origin_task_info(save_request_id):
             - **scheduled**: loading task scheduling date
             - **ended**: loading task termination date
             - **status**: loading task execution status
+
         Depending on the availability of the task logs in the elasticsearch
         cluster of Software Heritage, the returned dictionary may also
         contain the following keys:
+
             - **name**: associated celery task name
             - **message**: relevant log message from task execution
             - **duration**: task execution time (only if it succeeded)

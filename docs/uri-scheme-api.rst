@@ -11,8 +11,6 @@ swh-web API URLs
 
 .. include:: uri-scheme-api-origin.rst
 
-.. include:: uri-scheme-api-person.rst
-
 .. include:: uri-scheme-api-release.rst
 
 .. include:: uri-scheme-api-revision.rst
