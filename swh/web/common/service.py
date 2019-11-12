@@ -850,9 +850,6 @@ def lookup_origin_visit_latest(origin_url, require_snapshot):
     """
     visit = storage.origin_visit_get_latest(
         origin_url, require_snapshot=require_snapshot)
-    if isinstance(visit['origin'], int):
-        # soon-to-be-legacy origin ids
-        visit['origin'] = storage.origin_get({'id': visit['origin']})['url']
     return converters.from_origin_visit(visit)
 
 

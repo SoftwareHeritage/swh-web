@@ -229,11 +229,27 @@ class OriginApiTestCase(WebTestCase, APITestCase):
 
             self.assertEqual(rv.data, expected_visit)
 
+    @given(new_origin())
+    def test_api_lookup_origin_visit_latest_no_visit(self, new_origin):
+
+        self.storage.origin_add_one(new_origin)
+
+        url = reverse('api-1-origin-visit-latest',
+                      url_args={'origin_url': new_origin['url']})
+
+        rv = self.client.get(url)
+        self.assertEqual(rv.status_code, 404, rv.data)
+        self.assertEqual(rv.data, {
+            'exception': 'NotFoundExc',
+            'reason': 'No visit for origin %s found' % new_origin['url']
+        })
+
     @given(new_origin(), visit_dates(2), new_snapshots(1))
     def test_api_lookup_origin_visit_latest(
             self, new_origin, visit_dates, new_snapshots):
 
         self.storage.origin_add_one(new_origin)
+
         visit_dates.sort()
         visit_ids = []
         for i, visit_date in enumerate(visit_dates):
