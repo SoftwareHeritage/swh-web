@@ -43,12 +43,14 @@ INSTALLED_APPS = [
     'swh.web.api',
     'swh.web.browse',
     'webpack_loader',
-    'django_js_reverse'
+    'django_js_reverse',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -277,3 +279,6 @@ CACHES = {
 }
 
 JS_REVERSE_JS_MINIFY = False
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/badge/.*$'
