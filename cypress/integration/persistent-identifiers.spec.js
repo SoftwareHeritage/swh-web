@@ -5,14 +5,15 @@
  * See top-level LICENSE file for more information
  */
 
-let origin;
-let url;
+let origin, originBadgeUrl, originBrowseUrl;
+let url, urlPrefix;
 let browsedObjectMetadata;
 let cntPid, cntPidWithOrigin, cntPidWithOriginAndLines;
 let dirPid, dirPidWithOrigin;
 let relPid, relPidWithOrigin;
 let revPid, revPidWithOrigin;
 let snpPid, snpPidWithOrigin;
+let testsData;
 const firstSelLine = 6;
 const lastSelLine = 12;
 
@@ -22,10 +23,13 @@ describe('Persistent Identifiers Tests', function() {
     origin = this.origin[1];
     url = this.Urls.browse_origin_content(origin.url, origin.content[0].path);
     url = `${url}?release=${origin.release}#L${firstSelLine}-L${lastSelLine}`;
-  });
-
-  beforeEach(function() {
+    originBadgeUrl = this.Urls.swh_badge('origin', origin.url);
+    originBrowseUrl = this.Urls.browse_origin(origin.url);
     cy.visit(url).window().then(win => {
+      urlPrefix = `${win.location.protocol}//${win.location.hostname}`;
+      if (win.location.port) {
+        urlPrefix += `:${win.location.port}`;
+      }
       browsedObjectMetadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
       cntPid = `swh:1:cnt:${browsedObjectMetadata.sha1_git}`;
       cntPidWithOrigin = `${cntPid};origin=${origin.url}`;
@@ -38,7 +42,50 @@ describe('Persistent Identifiers Tests', function() {
       relPidWithOrigin = `${relPid};origin=${origin.url}`;
       snpPid = `swh:1:snp:${browsedObjectMetadata.snapshot}`;
       snpPidWithOrigin = `${snpPid};origin=${origin.url}`;
+
+      testsData = [
+        {
+          'objectType': 'content',
+          'objectPids': [cntPidWithOriginAndLines, cntPidWithOrigin, cntPid],
+          'badgeUrl': this.Urls.swh_badge('content', browsedObjectMetadata.sha1_git),
+          'badgePidUrl': this.Urls.swh_badge_pid(cntPidWithOriginAndLines),
+          'browseUrl': this.Urls.browse_swh_id(cntPidWithOriginAndLines)
+        },
+        {
+          'objectType': 'directory',
+          'objectPids': [dirPidWithOrigin, dirPid],
+          'badgeUrl': this.Urls.swh_badge('directory', browsedObjectMetadata.directory),
+          'badgePidUrl': this.Urls.swh_badge_pid(dirPidWithOrigin),
+          'browseUrl': this.Urls.browse_swh_id(dirPidWithOrigin)
+        },
+        {
+          'objectType': 'release',
+          'objectPids': [relPidWithOrigin, relPid],
+          'badgeUrl': this.Urls.swh_badge('release', browsedObjectMetadata.release),
+          'badgePidUrl': this.Urls.swh_badge_pid(relPidWithOrigin),
+          'browseUrl': this.Urls.browse_swh_id(relPidWithOrigin)
+        },
+        {
+          'objectType': 'revision',
+          'objectPids': [revPidWithOrigin, revPid],
+          'badgeUrl': this.Urls.swh_badge('revision', browsedObjectMetadata.revision),
+          'badgePidUrl': this.Urls.swh_badge_pid(revPidWithOrigin),
+          'browseUrl': this.Urls.browse_swh_id(revPidWithOrigin)
+        },
+        {
+          'objectType': 'snapshot',
+          'objectPids': [snpPidWithOrigin, snpPid],
+          'badgeUrl': this.Urls.swh_badge('snapshot', browsedObjectMetadata.snapshot),
+          'badgePidUrl': this.Urls.swh_badge_pid(snpPidWithOrigin),
+          'browseUrl': this.Urls.browse_swh_id(snpPidWithOrigin)
+        }
+      ];
+
     });
+  });
+
+  beforeEach(function() {
+    cy.visit(url);
   });
 
   it('should open and close identifiers tab when clicking on handle', function() {
@@ -63,30 +110,7 @@ describe('Persistent Identifiers Tests', function() {
     cy.get('.ui-slideouttab-handle')
       .click();
 
-    const testData = [
-      {
-        'objectType': 'content',
-        'objectPid': cntPidWithOriginAndLines
-      },
-      {
-        'objectType': 'directory',
-        'objectPid': dirPidWithOrigin
-      },
-      {
-        'objectType': 'release',
-        'objectPid': relPidWithOrigin
-      },
-      {
-        'objectType': 'revision',
-        'objectPid': revPidWithOrigin
-      },
-      {
-        'objectType': 'snapshot',
-        'objectPid': snpPidWithOrigin
-      }
-    ];
-
-    for (let td of testData) {
+    for (let td of testsData) {
       cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
         .click();
 
@@ -94,8 +118,8 @@ describe('Persistent Identifiers Tests', function() {
         .should('be.visible');
 
       cy.get(`#swh-id-tab-${td.objectType} .swh-id`)
-        .contains(td.objectPid)
-        .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPid));
+        .contains(td.objectPids[0])
+        .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[0]));
 
     }
 
@@ -143,26 +167,11 @@ describe('Persistent Identifiers Tests', function() {
     cy.get('.ui-slideouttab-handle')
       .click();
 
-    const testData = [
-      {
-        'objectType': 'directory',
-        'objectPids': [dirPidWithOrigin, dirPid]
-      },
-      {
-        'objectType': 'release',
-        'objectPids': [relPidWithOrigin, relPid]
-      },
-      {
-        'objectType': 'revision',
-        'objectPids': [revPidWithOrigin, revPid]
-      },
-      {
-        'objectType': 'snapshot',
-        'objectPids': [snpPidWithOrigin, snpPid]
-      }
-    ];
+    for (let td of testsData) {
 
-    for (let td of testData) {
+      // already tested
+      if (td.objectType === 'content') continue;
+
       cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
         .click();
 
@@ -185,6 +194,66 @@ describe('Persistent Identifiers Tests', function() {
         .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[0]));
     }
 
+  });
+
+  it('should display swh badges in identifiers tab for browsed objects', function() {
+    cy.get('.ui-slideouttab-handle')
+      .click();
+
+    const originBadgeUrl = this.Urls.swh_badge('origin', origin.url);
+
+    for (let td of testsData) {
+      cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
+        .click();
+
+      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-origin`)
+        .should('have.attr', 'src', originBadgeUrl);
+
+      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-${td.objectType}`)
+        .should('have.attr', 'src', td.badgeUrl);
+
+    }
+
+  });
+
+  it('should display badge integration info when clicking on it', function() {
+
+    cy.get('.ui-slideouttab-handle')
+      .click();
+
+    for (let td of testsData) {
+      cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
+        .click();
+
+      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-origin`)
+        .click()
+        .wait(500);
+
+      for (let badgeType of ['html', 'md', 'rst']) {
+        cy.get(`.modal .swh-badge-${badgeType}`)
+          .contains(`${urlPrefix}${originBrowseUrl}`)
+          .contains(`${urlPrefix}${originBadgeUrl}`);
+      }
+
+      cy.get('.modal.show .close')
+        .click()
+        .wait(500);
+
+      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-${td.objectType}`)
+        .click()
+        .wait(500);
+
+      for (let badgeType of ['html', 'md', 'rst']) {
+        cy.get(`.modal .swh-badge-${badgeType}`)
+          .contains(`${urlPrefix}${td.browseUrl}`)
+          .contains(`${urlPrefix}${td.badgePidUrl}`);
+      }
+
+      cy.get('.modal.show .close')
+        .click()
+        .wait(500);
+
+    }
   });
 
 });

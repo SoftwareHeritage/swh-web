@@ -198,6 +198,12 @@ export function showModalConfirm(title, message, callback) {
   $('#swh-web-modal-confirm').modal('show');
 }
 
+export function showModalHtml(title, html) {
+  $('#swh-web-modal-html .modal-title').text(title);
+  $('#swh-web-modal-html .modal-body').html(html);
+  $('#swh-web-modal-html').modal('show');
+}
+
 export function addJumpToPagePopoverToDataTable(dataTableElt) {
   dataTableElt.on('draw.dt', function() {
     $('.paginate_button.disabled').css('cursor', 'pointer');

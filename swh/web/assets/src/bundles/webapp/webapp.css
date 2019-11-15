@@ -182,6 +182,7 @@ pre {
 .modal {
     text-align: center;
     padding: 0 !important;
+    z-index: 50000;
 }
 
 .modal::before {
@@ -579,4 +580,15 @@ div.d3-tooltip {
 
 .wrapper {
     overflow: hidden;
+}
+
+.swh-badge {
+    padding-bottom: 1rem;
+    cursor: pointer;
+}
+
+.swh-badge-html,
+.swh-badge-md,
+.swh-badge-rst {
+    white-space: pre-wrap;
 }

@@ -1091,6 +1091,7 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
 
         swh_ids.append({
             'object_type': swh_object['type'],
+            'object_id': swh_object['id'],
             'object_icon': object_icon,
             'swh_id': swh_id,
             'swh_id_url': reverse('browse-swh-id',
