@@ -12,17 +12,20 @@ from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.from_disk import DentryPerms
+from swh.model.identifiers import (
+    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+)
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.tests.data import random_sha1, random_content
 from swh.web.tests.strategies import (
-    content, contents, unknown_contents,
+    content, unknown_content, contents, unknown_contents,
     contents_with_ctags, origin, new_origin, visit_dates, directory,
-    release, revision, unknown_revision, revisions,
-    ancestor_revisions, non_ancestor_revisions, invalid_sha1, sha256,
-    revision_with_submodules, empty_directory,
-    new_revision
+    unknown_directory, release, unknown_release, revision, unknown_revision,
+    revisions, ancestor_revisions, non_ancestor_revisions, invalid_sha1,
+    sha256, revision_with_submodules, empty_directory, new_revision,
+    snapshot, unknown_snapshot
 )
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 
@@ -800,3 +803,76 @@ def test_lookup_directory_through_revision_ok_with_data(
     ) == (revision,
           service.lookup_directory_with_revision(revision, dir_entry['name'],
                                                  with_data=True))
+
+
+@given(content(), directory(), release(), revision(), snapshot())
+def test_lookup_known_objects(archive_data, content, directory, release,
+                              revision, snapshot):
+    expected = archive_data.content_find(content)
+    assert service.lookup_object(CONTENT, content['sha1_git']) == expected
+
+    expected = archive_data.directory_get(directory)
+    assert service.lookup_object(DIRECTORY, directory) == expected
+
+    expected = archive_data.release_get(release)
+    assert service.lookup_object(RELEASE, release) == expected
+
+    expected = archive_data.revision_get(revision)
+    assert service.lookup_object(REVISION, revision) == expected
+
+    expected = archive_data.snapshot_get(snapshot)
+    assert service.lookup_object(SNAPSHOT, snapshot) == expected
+
+
+@given(unknown_content(), unknown_directory(), unknown_release(),
+       unknown_revision(), unknown_snapshot())
+def test_lookup_unknown_objects(unknown_content, unknown_directory,
+                                unknown_release, unknown_revision,
+                                unknown_snapshot):
+    with pytest.raises(NotFoundExc) as e:
+        service.lookup_object(CONTENT, unknown_content['sha1_git'])
+    assert e.match(r'Content.*not found')
+
+    with pytest.raises(NotFoundExc) as e:
+        service.lookup_object(DIRECTORY, unknown_directory)
+    assert e.match(r'Directory.*not found')
+
+    with pytest.raises(NotFoundExc) as e:
+        service.lookup_object(RELEASE, unknown_release)
+    assert e.match(r'Release.*not found')
+
+    with pytest.raises(NotFoundExc) as e:
+        service.lookup_object(REVISION, unknown_revision)
+    assert e.match(r'Revision.*not found')
+
+    with pytest.raises(NotFoundExc) as e:
+        service.lookup_object(SNAPSHOT, unknown_snapshot)
+    assert e.match(r'Snapshot.*not found')
+
+
+@given(invalid_sha1())
+def test_lookup_invalid_objects(invalid_sha1):
+
+    with pytest.raises(BadInputExc) as e:
+        service.lookup_object('foo', invalid_sha1)
+    assert e.match('Invalid swh object type')
+
+    with pytest.raises(BadInputExc) as e:
+        service.lookup_object(CONTENT, invalid_sha1)
+    assert e.match('Invalid hash')
+
+    with pytest.raises(BadInputExc) as e:
+        service.lookup_object(DIRECTORY, invalid_sha1)
+    assert e.match('Invalid checksum')
+
+    with pytest.raises(BadInputExc) as e:
+        service.lookup_object(RELEASE, invalid_sha1)
+    assert e.match('Invalid checksum')
+
+    with pytest.raises(BadInputExc) as e:
+        service.lookup_object(REVISION, invalid_sha1)
+    assert e.match('Invalid checksum')
+
+    with pytest.raises(BadInputExc) as e:
+        service.lookup_object(SNAPSHOT, invalid_sha1)
+    assert e.match('Invalid checksum')

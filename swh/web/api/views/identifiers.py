@@ -3,11 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-
-from swh.model.identifiers import (
-    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-)
-
 from swh.web.common import service
 from swh.web.common.utils import resolve_swh_persistent_id
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -60,16 +55,7 @@ def api_resolve_swh_pid(request, swh_id):
     swh_id_parsed = swh_id_resolved['swh_id_parsed']
     object_type = swh_id_parsed.object_type
     object_id = swh_id_parsed.object_id
-    if object_type == CONTENT:
-        service.lookup_content('sha1_git:%s' % object_id)
-    elif object_type == DIRECTORY:
-        service.lookup_directory(object_id)
-    elif object_type == RELEASE:
-        service.lookup_release(object_id)
-    elif object_type == REVISION:
-        service.lookup_revision(object_id)
-    elif object_type == SNAPSHOT:
-        service.lookup_snapshot(object_id)
+    service.lookup_object(object_type, object_id)
     # id is well-formed and the pointed object exists
     swh_id_data = swh_id_parsed._asdict()
     swh_id_data['browse_url'] = swh_id_resolved['browse_url']

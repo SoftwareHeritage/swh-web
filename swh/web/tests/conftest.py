@@ -16,7 +16,7 @@ from django.core.cache import cache
 from hypothesis import settings, HealthCheck
 from rest_framework.test import APIClient
 
-from swh.model.hashutil import hash_to_bytes
+from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common import converters
 from swh.web.tests.data import get_tests_data, override_storages
 
@@ -147,6 +147,13 @@ class _ArchiveData:
                     not method_name.startswith('_')):
                 setattr(self, method_name, _call_storage_method(method))
 
+    def content_find(self, content):
+        cnt_ids_bytes = {algo_hash: hash_to_bytes(content[algo_hash])
+                         for algo_hash in ALGORITHMS
+                         if content.get(algo_hash)}
+        cnt = self.storage.content_find(cnt_ids_bytes)
+        return converters.from_content(cnt[0]) if cnt else cnt
+
     def content_get_metadata(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
         metadata = next(self.storage.content_get_metadata([cnt_id_bytes]))
@@ -158,6 +165,12 @@ class _ArchiveData:
         cnt_id_bytes = hash_to_bytes(cnt_id)
         cnt = next(self.storage.content_get([cnt_id_bytes]))
         return converters.from_content(cnt)
+
+    def directory_get(self, dir_id):
+        return {
+            'id': dir_id,
+            'content': self.directory_ls(dir_id)
+        }
 
     def directory_ls(self, dir_id):
         cnt_id_bytes = hash_to_bytes(dir_id)
