@@ -79,7 +79,7 @@ def pytest_configure(config):
 
 # Clear Django cache before each test
 @pytest.fixture(autouse=True)
-def django_clear_cache():
+def django_cache_cleared():
     cache.clear()
 
 
@@ -89,16 +89,26 @@ def api_client():
     return APIClient()
 
 
+# Initialize tests data
+@pytest.fixture(autouse=True)
+def tests_data():
+    data = get_tests_data(reset=True)
+    # Update swh-web configuration to use the in-memory storages
+    # instantiated in the tests.data module
+    override_storages(data['storage'], data['idx_storage'])
+    return data
+
+
 # Fixture to manipulate data from a sample archive used in the tests
-@pytest.fixture(scope='module')
-def archive_data():
-    return _ArchiveData()
+@pytest.fixture
+def archive_data(tests_data):
+    return _ArchiveData(tests_data)
 
 
 # Fixture to manipulate indexer data from a sample archive used in the tests
-@pytest.fixture(scope='module')
-def indexer_data():
-    return _IndexerData()
+@pytest.fixture
+def indexer_data(tests_data):
+    return _IndexerData(tests_data)
 
 
 # Custom data directory for requests_mock
@@ -106,10 +116,6 @@ def indexer_data():
 def datadir():
     return os.path.join(os.path.abspath(os.path.dirname(__file__)),
                         'resources')
-
-
-# Initialize tests data
-_tests_data = get_tests_data(reset=True)
 
 
 class _ArchiveData:
@@ -124,12 +130,8 @@ class _ArchiveData:
     tests implementation.
     """
 
-    def __init__(self):
-        self.storage = _tests_data['storage']
-
-        # Update swh-web configuration to use the in-memory storages
-        # instantiated in the tests.data module
-        override_storages(self.storage, _tests_data['idx_storage'])
+    def __init__(self, tests_data):
+        self.storage = tests_data['storage']
 
         def _call_storage_method(method):
             def call_storage_method(*args, **kwargs):
@@ -227,15 +229,11 @@ class _IndexerData:
 
     """
 
-    def __init__(self):
-        self.idx_storage = _tests_data['idx_storage']
-        self.mimetype_indexer = _tests_data['mimetype_indexer']
-        self.license_indexer = _tests_data['license_indexer']
-        self.ctags_indexer = _tests_data['ctags_indexer']
-
-        # Update swh-web configuration to use the in-memory storages
-        # instantiated in the tests.data module
-        override_storages(_tests_data['storage'], self.idx_storage)
+    def __init__(self, tests_data):
+        self.idx_storage = tests_data['idx_storage']
+        self.mimetype_indexer = tests_data['mimetype_indexer']
+        self.license_indexer = tests_data['license_indexer']
+        self.ctags_indexer = tests_data['ctags_indexer']
 
     def content_add_mimetype(self, cnt_id):
         self.mimetype_indexer.run([hash_to_bytes(cnt_id)],
