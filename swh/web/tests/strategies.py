@@ -172,10 +172,9 @@ def directory_with_subdirs():
     Hypothesis strategy returning a random directory containing
     sub directories ingested into the test archive.
     """
-    storage = get_tests_data()['storage']
     return directory().filter(
-        lambda d: any([e['type'] == 'dir'
-                      for e in list(storage.directory_ls(hash_to_bytes(d)))]))
+        lambda d: any([e['type'] == 'dir' for e in list(
+            get_tests_data()['storage'].directory_ls(hash_to_bytes(d)))]))
 
 
 def empty_directory():
@@ -191,9 +190,9 @@ def unknown_directory():
     Hypothesis strategy returning a random directory not ingested
     into the test archive.
     """
-    storage = get_tests_data()['storage']
     return sha1().filter(
-        lambda s: len(list(storage.directory_missing([hash_to_bytes(s)]))) > 0)
+        lambda s: len(list(get_tests_data()['storage'].directory_missing(
+            [hash_to_bytes(s)]))) > 0)
 
 
 def origin():
@@ -238,9 +237,9 @@ def new_origin():
     Hypothesis strategy returning a random origin not ingested
     into the test archive.
     """
-    storage = get_tests_data()['storage']
     return new_origin_strategy().map(lambda origin: origin.to_dict()).filter(
-        lambda origin: storage.origin_get([origin])[0] is None)
+            lambda origin: get_tests_data()['storage'].origin_get(
+                [origin])[0] is None)
 
 
 def new_origins(nb_origins=None):
@@ -296,9 +295,9 @@ def unknown_revision():
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
-    storage = get_tests_data()['storage']
     return sha1().filter(
-        lambda s: next(storage.revision_get([hash_to_bytes(s)])) is None)
+        lambda s: next(get_tests_data()['storage'].revision_get(
+            [hash_to_bytes(s)])) is None)
 
 
 @composite
@@ -391,9 +390,9 @@ def unknown_snapshot():
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
-    storage = get_tests_data()['storage']
     return sha1().filter(
-        lambda s: storage.snapshot_get(hash_to_bytes(s)) is None)
+        lambda s: get_tests_data()['storage'].snapshot_get(
+            hash_to_bytes(s)) is None)
 
 
 def _get_origin_dfs_revisions_walker():
