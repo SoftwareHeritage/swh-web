@@ -40,9 +40,12 @@ before(function() {
   }, {
     url: 'https://github.com/wcoder/highlightjs-line-numbers.js',
     type: 'git',
-    content: [],
+    content: [{
+      path: 'src/highlightjs-line-numbers.js'
+    }],
     directory: [],
-    revisions: ['1c480a4573d2a003fc2630c21c2b25829de49972']
+    revisions: ['1c480a4573d2a003fc2630c21c2b25829de49972'],
+    release: 'v2.6.0'
   }];
 
   const getMetadataForOrigin = async originUrl => {
