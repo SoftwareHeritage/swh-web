@@ -116,10 +116,6 @@ Cypress.on('window:before:load', win => {
 // page is loaded during a single test execution
 let windowCoverageObjects;
 
-before(() => {
-  cy.task('resetCoverage', { isInteractive: Cypress.config('isInteractive') });
-});
-
 beforeEach(() => {
   windowCoverageObjects = [];
   // save reference to coverage for each app window loaded in the test
@@ -138,8 +134,4 @@ afterEach(() => {
   windowCoverageObjects.forEach((coverage) => {
     cy.task('combineCoverage', JSON.stringify(coverage));
   });
-});
-
-after(() => {
-  cy.task('coverageReport');
 });

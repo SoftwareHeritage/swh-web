@@ -8,20 +8,8 @@
 const axios = require('axios');
 const fs = require('fs');
 
-const coverageTasks = require('@cypress/code-coverage/task');
-
 module.exports = (on, config) => {
-  on('task', {
-    resetCoverage({ isInteractive }) {
-      return coverageTasks.resetCoverage(isInteractive);
-    },
-    combineCoverage(coverage) {
-      return coverageTasks.combineCoverage(JSON.parse(coverage));
-    },
-    coverageReport() {
-      return coverageTasks.coverageReport();
-    }
-  });
+  on('task', require('@cypress/code-coverage/task'));
   // produce JSON files prior launching browser in order to dynamically generate tests
   on('before:browser:launch', function(browser = {}, args) {
     return new Promise((resolve) => {
