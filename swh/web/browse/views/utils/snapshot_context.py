@@ -18,7 +18,7 @@ from swh.web.browse.utils import (
     get_snapshot_context, get_directory_entries, gen_directory_link,
     gen_revision_link, request_content, gen_content_link,
     prepare_content_for_display, content_display_max_size,
-    format_log_entries, gen_revision_log_link,
+    format_log_entries, gen_revision_log_link, gen_release_link,
     get_readme_to_display, get_swh_persistent_ids,
     gen_snapshot_link, process_snapshot_branches
 )
@@ -361,6 +361,9 @@ def browse_snapshot_directory(request, snapshot_id=None,
     if release_id:
         swh_objects.append({'type': 'release',
                             'id': release_id})
+        browse_rel_link = gen_release_link(release_id)
+        dir_metadata['release'] = release_id
+        dir_metadata['context-independent release'] = browse_rel_link
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -533,6 +536,8 @@ def browse_snapshot_content(request, snapshot_id=None,
 
     swh_objects = [{'type': 'content',
                     'id': cnt_sha1_git},
+                   {'type': 'directory',
+                    'id': directory_id},
                    {'type': 'revision',
                     'id': revision_id},
                    {'type': 'snapshot',
@@ -542,6 +547,9 @@ def browse_snapshot_content(request, snapshot_id=None,
     if release_id:
         swh_objects.append({'type': 'release',
                             'id': release_id})
+        browse_rel_link = gen_release_link(release_id)
+        content_metadata['release'] = release_id
+        content_metadata['context-independent release'] = browse_rel_link
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -682,6 +690,9 @@ def browse_snapshot_log(request, snapshot_id=None,
     if release_id:
         swh_objects.append({'type': 'release',
                             'id': release_id})
+        browse_rel_link = gen_release_link(release_id)
+        revision_metadata['release'] = release_id
+        revision_metadata['context-independent release'] = browse_rel_link
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
