@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from hypothesis import given
+import pytest
 from requests.utils import parse_header_links
 
 from swh.storage.exc import StorageDBError, StorageAPIError
@@ -337,6 +338,152 @@ def test_api_lookup_origin_visit_not_found(api_client, origin):
         'reason': 'Origin %s or its visit with id %s not found!' %
         (origin['url'], max_visit_id+1)
     }
+
+
+def test_api_origins(api_client, archive_data):
+    origins = list(archive_data.origin_get_range(0, 10000))
+    origin_urls = {origin['url'] for origin in origins}
+
+    # Get only one
+    url = reverse('api-1-origins',
+                  query_params={'origin_count': 1})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert len(rv.data) == 1
+    assert {origin['url'] for origin in rv.data} <= origin_urls
+
+    # Get all
+    url = reverse('api-1-origins',
+                  query_params={'origin_count': len(origins)})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert len(rv.data) == len(origins)
+    assert {origin['url'] for origin in rv.data} == origin_urls
+
+    # Get "all + 10"
+    url = reverse('api-1-origins',
+                  query_params={'origin_count': len(origins)+10})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert len(rv.data) == len(origins)
+    assert {origin['url'] for origin in rv.data} == origin_urls
+
+
+@pytest.mark.parametrize('origin_count', [1, 2, 10, 100])
+def test_api_origins_scroll(api_client, archive_data, origin_count):
+    origins = list(archive_data.origin_get_range(0, 10000))
+    origin_urls = {origin['url'] for origin in origins}
+
+    url = reverse('api-1-origins',
+                  query_params={'origin_count': origin_count})
+
+    results = _scroll_results(api_client, url)
+
+    assert len(results) == len(origins)
+    assert {origin['url'] for origin in results} == origin_urls
+
+
+@given(origin())
+def test_api_origin_by_url(api_client, archive_data, origin):
+    url = reverse('api-1-origin',
+                  url_args={'origin_url': origin['url']})
+    rv = api_client.get(url)
+
+    expected_origin = archive_data.origin_get(origin)
+
+    origin_visits_url = reverse('api-1-origin-visits',
+                                url_args={'origin_url': origin['url']})
+
+    expected_origin['origin_visits_url'] = origin_visits_url
+
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == expected_origin
+
+
+@given(new_origin())
+def test_api_origin_not_found(api_client, new_origin):
+
+    url = reverse('api-1-origin',
+                  url_args={'origin_url': new_origin['url']})
+    rv = api_client.get(url)
+
+    assert rv.status_code == 404, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'NotFoundExc',
+        'reason': 'Origin with url %s not found!' % new_origin['url']
+    }
+
+
+def test_api_origin_search(api_client):
+    expected_origins = {
+        'https://github.com/wcoder/highlightjs-line-numbers.js',
+        'https://github.com/memononen/libtess2',
+    }
+
+    # Search for 'github.com', get only one
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'github.com'},
+                  query_params={'limit': 1})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert len(rv.data) == 1
+    assert {origin['url'] for origin in rv.data} <= expected_origins
+
+    # Search for 'github.com', get all
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'github.com'},
+                  query_params={'limit': 2})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert {origin['url'] for origin in rv.data} == expected_origins
+
+    # Search for 'github.com', get more than available
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'github.com'},
+                  query_params={'limit': 10})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert {origin['url'] for origin in rv.data} == expected_origins
+
+
+def test_api_origin_search_regexp(api_client):
+    expected_origins = {
+        'https://github.com/memononen/libtess2',
+        'repo_with_submodules'
+    }
+
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': '(repo|libtess)'},
+                  query_params={'limit': 10,
+                                'regexp': True})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert {origin['url'] for origin in rv.data} == expected_origins
+
+
+@pytest.mark.parametrize('limit', [1, 2, 3, 10])
+def test_api_origin_search_scroll(api_client, archive_data, limit):
+    expected_origins = {
+        'https://github.com/wcoder/highlightjs-line-numbers.js',
+        'https://github.com/memononen/libtess2',
+    }
+
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'github.com'},
+                  query_params={'limit': limit})
+
+    results = _scroll_results(api_client, url)
+
+    assert {origin['url'] for origin in results} == expected_origins
 
 
 def test_api_origin_search_limit(api_client, archive_data):
