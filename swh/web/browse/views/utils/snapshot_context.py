@@ -326,16 +326,16 @@ def browse_snapshot_directory(request, snapshot_id=None,
     browse_rev_link = gen_revision_link(revision_id)
     browse_snp_link = gen_snapshot_link(snapshot_id)
 
-    dir_metadata = {'directory': sha1_git,
-                    'context-independent directory': browse_dir_link,
-                    'number of regular files': nb_files,
-                    'number of subdirectories': nb_dirs,
-                    'sum of regular file sizes': sum_file_sizes,
-                    'path': dir_path,
-                    'revision': revision_id,
-                    'context-independent revision': browse_rev_link,
-                    'snapshot': snapshot_id,
-                    'context-independent snapshot': browse_snp_link}
+    dir_metadata = {"directory": sha1_git,
+                    "context-independent directory": browse_dir_link,
+                    "number of regular files": nb_files,
+                    "number of subdirectories": nb_dirs,
+                    "sum of regular file sizes": sum_file_sizes,
+                    "path": dir_path,
+                    "revision": revision_id,
+                    "context-independent revision": browse_rev_link,
+                    "snapshot": snapshot_id,
+                    "context-independent snapshot": browse_snp_link}
 
     if origin_info:
         dir_metadata['origin url'] = origin_info['url']

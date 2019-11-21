@@ -124,7 +124,7 @@ describe('Test Errors', function() {
   });
 
   context('For invalid data', function() {
-    it(`should display 400 for invalid checksum for 
+    it(`should display 400 for invalid checksum for
         directory, snapshot, revision, content`, function() {
       const types = ['directory', 'snapshot', 'revision', 'content'];
       for (let type of types) {

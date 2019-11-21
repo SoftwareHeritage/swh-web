@@ -24,7 +24,7 @@ def api_resolve_swh_pid(request, swh_id):
         identifier is valid, the existence of the object in the archive
         will also be checked.
 
-        :param string swh_id: a Software Heritage presistent identifier
+        :param string swh_id: a Software Heritage persistent identifier
 
         :>json string browse_url: the url for browsing the pointed object
         :>json object metadata: object holding optional parts of the persistent identifier
