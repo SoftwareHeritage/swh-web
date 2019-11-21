@@ -15,7 +15,7 @@ from swh.web.api.apiurls import APIUrls, api_route
 def api_lookup(lookup_fn, *args,
                notfound_msg='Object not found',
                enrich_fn=None):
-    """
+    r"""
     Capture a redundant behavior of:
         - looking up the backend with a criteria (be it an identifier or
           checksum) passed to the function lookup_fn
@@ -39,7 +39,7 @@ def api_lookup(lookup_fn, *args,
     Raises:
         NotFoundExp or whatever `lookup_fn` raises.
 
-    """ # noqa
+    """
     if enrich_fn is None:
         enrich_fn = (lambda x: x)
     res = lookup_fn(*args)
