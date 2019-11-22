@@ -19,7 +19,8 @@ from swh.web.tests.django_asserts import (
 )
 from swh.web.tests.strategies import (
     content, content_text_non_utf8, content_text_no_highlight,
-    content_image_type, content_text, invalid_sha1, unknown_content
+    content_image_type, content_text, invalid_sha1, unknown_content,
+    content_utf8_detected_as_binary
 )
 
 
@@ -356,14 +357,26 @@ def test_content_uppercase(client, content):
     assert resp['location'] == redirect_url
 
 
+@given(content_utf8_detected_as_binary())
+def test_content_utf8_detected_as_binary_display(client, archive_data,
+                                                 content):
+    url = reverse('browse-content',
+                  url_args={'query_string': content['sha1']})
+    resp = client.get(url)
+
+    content_display = _process_content_for_display(archive_data, content)
+
+    assert_contains(resp, escape(content_display['content_data']))
+
+
 def _process_content_for_display(archive_data, content):
     content_data = archive_data.content_get(content['sha1'])
 
     mime_type, encoding = get_mimetype_and_encoding_for_content(
         content_data['data'])
 
-    mime_type, content_data = _re_encode_content(mime_type, encoding,
-                                                 content_data['data'])
+    mime_type, encoding, content_data = _re_encode_content(
+        mime_type, encoding, content_data['data'])
 
     return prepare_content_for_display(content_data, mime_type,
                                        content['path'])

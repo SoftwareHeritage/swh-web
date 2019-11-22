@@ -40,7 +40,8 @@ See top-level LICENSE file for more information
           <canvas id="pdf-canvas"></canvas>
         </div>
       {% elif content %}
-        Content with mime type {{ swh_object_metadata.mimetype }} can not be displayed.
+        Content with mime type {{ swh_object_metadata.mimetype }} and encoding
+        {{ swh_object_metadata.encoding }} cannot be displayed.
       {% else %}
         {% include "includes/http-error.html" %}
       {% endif %}

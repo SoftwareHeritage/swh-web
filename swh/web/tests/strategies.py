@@ -123,6 +123,24 @@ def content_image_type():
     return content().filter(lambda c: c['mimetype'].startswith('image/'))
 
 
+def content_utf8_detected_as_binary():
+    """
+    Hypothesis strategy returning random textual contents detected as binary
+    by libmagic while they are valid UTF-8 encoded files.
+    """
+    def utf8_binary_detected(content):
+        if content['encoding'] != 'binary':
+            return False
+        try:
+            content['data'].decode('utf-8')
+        except Exception:
+            return False
+        else:
+            return True
+
+    return content().filter(utf8_binary_detected)
+
+
 @composite
 def new_content(draw):
     blake2s256_hex = draw(sha256())
