@@ -20,10 +20,8 @@ DEFAULT_CONFIG = {
     'allowed_hosts': ('list', []),
     'storage': ('dict', {
         'cls': 'remote',
-        'args': {
-            'url': 'http://127.0.0.1:5002/',
-            'timeout': 10,
-        },
+        'url': 'http://127.0.0.1:5002/',
+        'timeout': 10,
     }),
     'indexer_storage': ('dict', {
         'cls': 'remote',

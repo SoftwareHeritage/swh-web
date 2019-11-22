@@ -33,8 +33,7 @@ from swh.web.common.highlightjs import get_hljs_language_from_filename
 # Configuration for git loader
 _TEST_LOADER_CONFIG = {
     'storage': {
-        'cls': 'memory',
-        'args': {}
+        'cls': 'memory'
     },
     'send_contents': True,
     'send_directories': True,
@@ -55,8 +54,7 @@ _TEST_LOADER_CONFIG = {
 # Base content indexer configuration
 _TEST_INDEXER_BASE_CONFIG = {
     'storage': {
-        'cls': 'memory',
-        'args': {},
+        'cls': 'memory'
     },
     'objstorage': {
         'cls': 'memory',
