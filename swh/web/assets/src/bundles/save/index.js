@@ -32,7 +32,9 @@ function originSaveRequest(originType, originUrl,
     })
     .catch(response => {
       $('.swh-processing-save-request').css('display', 'none');
-      errorCallback(response.status);
+      response.json().then(errorData => {
+        errorCallback(response.status, errorData);
+      });
     });
 }
 
@@ -138,11 +140,6 @@ export function initOriginSave() {
       'The "save code now" request has been put in pending state and may be accepted for processing after manual review.'
     );
 
-    let saveRequestRejectedAlert = htmlAlert(
-      'danger',
-      'The "save code now" request has been rejected because the provided origin url is blacklisted.'
-    );
-
     let saveRequestRateLimitedAlert = htmlAlert(
       'danger',
       'The rate limit for "save code now" requests has been reached. Please try again later.'
@@ -150,7 +147,7 @@ export function initOriginSave() {
 
     let saveRequestUnknownErrorAlert = htmlAlert(
       'danger',
-      'An unexpected error happened when submitting the "save code now request'
+      'An unexpected error happened when submitting the "save code now request".'
     );
 
     $('#swh-save-origin-form').submit(event => {
@@ -165,10 +162,11 @@ export function initOriginSave() {
         originSaveRequest(originType, originUrl,
                           () => $('#swh-origin-save-request-status').html(saveRequestAcceptedAlert),
                           () => $('#swh-origin-save-request-status').html(saveRequestPendingAlert),
-                          (statusCode) => {
+                          (statusCode, errorData) => {
                             $('#swh-origin-save-request-status').css('color', 'red');
                             if (statusCode === 403) {
-                              $('#swh-origin-save-request-status').html(saveRequestRejectedAlert);
+                              const errorAlert = htmlAlert('danger', `Error: ${errorData['detail']}`);
+                              $('#swh-origin-save-request-status').html(errorAlert);
                             } else if (statusCode === 429) {
                               $('#swh-origin-save-request-status').html(saveRequestRateLimitedAlert);
                             } else {
@@ -256,11 +254,6 @@ export function initTakeNewSnapshot() {
     'The "take new snapshot" request has been put in pending state and may be accepted for processing after manual review.'
   );
 
-  let newSnapshotRequestRejectedAlert = htmlAlert(
-    'danger',
-    'The "take new snapshot" request has been rejected.'
-  );
-
   let newSnapshotRequestRateLimitAlert = htmlAlert(
     'danger',
     'The rate limit for "take new snapshot" requests has been reached. Please try again later.'
@@ -282,10 +275,11 @@ export function initTakeNewSnapshot() {
       originSaveRequest(originType, originUrl,
                         () => $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestAcceptedAlert),
                         () => $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestPendingAlert),
-                        (statusCode) => {
+                        (statusCode, errorData) => {
                           $('#swh-take-new-snapshot-request-status').css('color', 'red');
                           if (statusCode === 403) {
-                            $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestRejectedAlert);
+                            const errorAlert = htmlAlert('danger', `Error: ${errorData['detail']}`);
+                            $('#swh-take-new-snapshot-request-status').html(errorAlert);
                           } else if (statusCode === 429) {
                             $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestRateLimitAlert);
                           } else {

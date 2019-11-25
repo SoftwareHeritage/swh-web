@@ -13,7 +13,8 @@ const saveCodeMsg = {
   'warning': 'The "save code now" request has been put in pending state and may be accepted for processing after manual review.',
   'rejected': 'The "save code now" request has been rejected because the provided origin url is blacklisted.',
   'rateLimit': 'The rate limit for "save code now" requests has been reached. Please try again later.',
-  'unknownErr': 'An unexpected error happened when submitting the "save code now request'
+  'unknownError': 'An unexpected error happened when submitting the "save code now request',
+  'csrfError': 'CSRF Failed: Referrer checking failed - no Referrer.'
 };
 
 function makeOriginSaveRequest(originType, originUrl) {
@@ -34,12 +35,19 @@ function checkAlertVisible(alertType, msg) {
 }
 
 // Stub requests to save an origin
-function stubSaveRequest(requestUrl, objectType, status, originUrl, taskStatus, responseStatus = 200) {
+function stubSaveRequest(requestUrl, objectType, status, originUrl, taskStatus,
+                         responseStatus = 200, errorMessage = '') {
+  let response;
+  if (responseStatus !== 200 && errorMessage) {
+    response = {'detail': errorMessage};
+  } else {
+    response = genOriginSaveResponse(objectType, status, originUrl, Date().toString(), taskStatus);
+  }
   cy.route({
     method: 'POST',
     status: responseStatus,
     url: requestUrl,
-    response: genOriginSaveResponse(objectType, status, originUrl, Date().toString(), taskStatus)
+    response: response
   }).as('saveRequest');
 }
 
@@ -91,9 +99,20 @@ describe('Origin Save Tests', function() {
     });
   });
 
+  it('should show error when csrf validation failed (status: 403)', function() {
+    stubSaveRequest(this.originSaveUrl, origin.type, 'rejected',
+                    origin.url, 'not created', 403, saveCodeMsg['csrfError']);
+
+    makeOriginSaveRequest(origin.type, origin.url);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('danger', saveCodeMsg['csrfError']);
+    });
+  });
+
   it('should show error when origin is rejected (status: 403)', function() {
     stubSaveRequest(this.originSaveUrl, origin.type, 'rejected',
-                    origin.url, 'not created', 403);
+                    origin.url, 'not created', 403, saveCodeMsg['rejected']);
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -121,7 +140,7 @@ describe('Origin Save Tests', function() {
     makeOriginSaveRequest(origin.type, origin.url);
 
     cy.wait('@saveRequest').then(() => {
-      checkAlertVisible('danger', saveCodeMsg['unknownErr']);
+      checkAlertVisible('danger', saveCodeMsg['unknownError']);
     });
   });
 

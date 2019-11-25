@@ -43,7 +43,8 @@ def _origin_save_request(request, visit_type, origin_url):
                               separators=(',', ': '))
         return HttpResponse(response, content_type='application/json')
     except ForbiddenExc as exc:
-        return HttpResponseForbidden(str(exc))
+        return HttpResponseForbidden(json.dumps({'detail': str(exc)}),
+                                     content_type='application/json')
 
 
 def _visit_save_types_list(request):

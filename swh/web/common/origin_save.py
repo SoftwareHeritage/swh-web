@@ -350,8 +350,8 @@ def create_save_origin_request(visit_type, origin_url):
                                                status=save_request_status)
 
     if save_request_status == SAVE_REQUEST_REJECTED:
-        raise ForbiddenExc('The origin url is blacklisted and will not be '
-                           'loaded into the archive.')
+        raise ForbiddenExc(('The "save code now" request has been rejected '
+                            'because the provided origin url is blacklisted.'))
 
     return _save_request_dict(sor, task)
 
