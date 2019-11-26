@@ -12,7 +12,7 @@ from swh.web.common.utils import (
 )
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
-    release, origin_with_release, unknown_release
+    release, origin_with_releases, unknown_release
 )
 
 
@@ -28,7 +28,7 @@ def test_release_browse(client, archive_data, release):
     _release_browse_checks(resp, release_data)
 
 
-@given(origin_with_release())
+@given(origin_with_releases())
 def test_release_browse_with_origin(client, archive_data, origin):
     snapshot = archive_data.snapshot_get_latest(origin['url'])
     release = random.choice([b for b in snapshot['branches'].values()

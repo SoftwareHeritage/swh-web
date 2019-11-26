@@ -6,6 +6,8 @@
 import random
 import re
 
+import swh.web.browse.utils
+
 from django.utils.html import escape
 
 from hypothesis import given
@@ -21,7 +23,7 @@ from swh.web.tests.data import get_content
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
     origin, origin_with_multiple_visits, new_origin,
-    new_snapshot, visit_dates, revisions
+    new_snapshot, visit_dates, revisions, origin_with_releases
 )
 
 
@@ -407,18 +409,25 @@ def test_origin_request_errors(client, archive_data, mocker):
         'origin': 457,
         'snapshot': 'bdaf9ac436488a8c6cda927a0f44e172934d3f65',
         'status': 'full',
+        'type': 'git',
         'visit': 1
     }]
     mock_get_origin_visit_snapshot.side_effect = None
     mock_get_origin_visit_snapshot.return_value = ([], [])
+    mock_utils_service.lookup_snapshot_size.return_value = {
+        'revision': 0,
+        'release': 0
+    }
+    mock_utils_service.lookup_origin.return_value = {'type': 'foo',
+                                                     'url': 'bar',
+                                                     'id': 457}
     url = reverse('browse-origin-content',
                   url_args={'origin_url': 'bar',
                             'path': 'baz'})
     resp = client.get(url)
-    assert resp.status_code == 404
+    assert resp.status_code == 200
     assert_template_used('error.html')
-    assert re.search('Origin.*has an empty list of branches',
-                     resp.content.decode('utf-8'))
+    assert re.search('snapshot.*is empty', resp.content.decode('utf-8'))
 
     mock_get_origin_visit_snapshot.return_value = (
         [{'directory': 'ae59ceecf46367e8e4ad800e231fc76adc3afffb',
@@ -428,6 +437,10 @@ def test_origin_request_errors(client, archive_data, mocker):
             'message': ''}],
         []
     )
+    mock_utils_service.lookup_snapshot_size.return_value = {
+        'revision': 1,
+        'release': 0
+    }
     mock_snapshot_service.lookup_directory_with_path.return_value = {
         'target': '5ecd9f37b7a2d2e9980d201acd6286116f2ba1f1'
     }
@@ -482,6 +495,42 @@ def test_origin_empty_snapshot(client, mocker):
     assert resp.status_code == 200
     assert_template_used('content.html')
     assert re.search('snapshot.*is empty', resp.content.decode('utf-8'))
+
+
+@given(origin_with_releases())
+def test_origin_release_browse(client, archive_data, origin):
+    # for swh.web.browse.utils.get_snapshot_content to only return one branch
+    snapshot_max_size = swh.web.browse.utils.snapshot_content_max_size
+    swh.web.browse.utils.snapshot_content_max_size = 1
+    try:
+        snapshot = archive_data.snapshot_get_latest(origin['url'])
+        release = [b for b in snapshot['branches'].values()
+                   if b['target_type'] == 'release'][-1]
+        release_data = archive_data.release_get(release['target'])
+        url = reverse('browse-origin-directory',
+                      url_args={'origin_url': origin['url']},
+                      query_params={'release': release_data['name']})
+
+        resp = client.get(url)
+        assert resp.status_code == 200
+        assert_contains(resp, release_data['name'])
+        assert_contains(resp, release['target'])
+    finally:
+        swh.web.browse.utils.snapshot_content_max_size = snapshot_max_size
+
+
+@given(origin_with_releases())
+def test_origin_release_browse_not_found(client, archive_data, origin):
+
+    invalid_release_name = 'swh-foo-bar'
+    url = reverse('browse-origin-directory',
+                  url_args={'origin_url': origin['url']},
+                  query_params={'release': invalid_release_name})
+
+    resp = client.get(url)
+    assert resp.status_code == 404
+    assert re.search(f'Release {invalid_release_name}.*not found',
+                     resp.content.decode('utf-8'))
 
 
 def _origin_content_view_test_helper(client, origin_info, origin_visits,

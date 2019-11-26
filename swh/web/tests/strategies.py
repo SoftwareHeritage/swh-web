@@ -235,7 +235,7 @@ def origin_with_multiple_visits():
     return sampled_from(ret)
 
 
-def origin_with_release():
+def origin_with_releases():
     """
     Hypothesis strategy returning a random origin ingested
     into the test archive.
