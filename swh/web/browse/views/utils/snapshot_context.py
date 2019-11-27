@@ -84,7 +84,7 @@ def _get_release(releases, release_name, snapshot_id):
                 return snp_release[0]
 
 
-def _branch_not_found(branch_type, branch, snapshot_id, snapshot_size,
+def _branch_not_found(branch_type, branch, snapshot_id, snapshot_sizes,
                       origin_info, timestamp, visit_id):
     """
     Utility function to raise an exception when a specified branch/release
@@ -99,13 +99,13 @@ def _branch_not_found(branch_type, branch, snapshot_id, snapshot_size,
         branch_type_plural = 'releases'
         target_type = 'release'
 
-    if snapshot_id and snapshot_size[target_type] == 0:
+    if snapshot_id and snapshot_sizes[target_type] == 0:
         msg = ('Snapshot with id %s has an empty list'
                ' of %s!' % (snapshot_id, branch_type_plural))
     elif snapshot_id:
         msg = ('%s %s for snapshot with id %s'
                ' not found!' % (branch_type, branch, snapshot_id))
-    elif visit_id and snapshot_size[target_type] == 0:
+    elif visit_id and snapshot_sizes[target_type] == 0:
         msg = ('Origin with url %s'
                ' for visit with id %s has an empty list'
                ' of %s!' % (origin_info['url'], visit_id,
@@ -115,7 +115,7 @@ def _branch_not_found(branch_type, branch, snapshot_id, snapshot_size,
                ' id %s for origin with url %s'
                ' not found!' % (branch_type, branch, visit_id,
                                 origin_info['url']))
-    elif snapshot_size[target_type] == 0:
+    elif snapshot_sizes[target_type] == 0:
         msg = ('Origin with url %s'
                ' for visit with timestamp %s has an empty list'
                ' of %s!' % (origin_info['url'],
@@ -162,8 +162,8 @@ def _process_snapshot_request(request, snapshot_id=None,
     release_id = None
     branch_name = None
 
-    snapshot_size = snapshot_context['snapshot_size']
-    snapshot_total_size = sum(snapshot_size.values())
+    snapshot_sizes = snapshot_context['snapshot_sizes']
+    snapshot_total_size = sum(snapshot_sizes.values())
 
     if snapshot_total_size and revision_id:
         revision = service.lookup_revision(revision_id)
@@ -184,7 +184,7 @@ def _process_snapshot_request(request, snapshot_id=None,
             query_params['release'] = release_name
         except Exception:
             _branch_not_found('release', release_name, snapshot_id,
-                              snapshot_size, origin_info, timestamp, visit_id)
+                              snapshot_sizes, origin_info, timestamp, visit_id)
     elif snapshot_total_size:
         branch_name = request.GET.get('branch', None)
         if branch_name:
@@ -197,7 +197,7 @@ def _process_snapshot_request(request, snapshot_id=None,
             root_sha1_git = branch['directory']
         except Exception:
             _branch_not_found('branch', branch_name, snapshot_id,
-                              snapshot_size, origin_info, timestamp, visit_id)
+                              snapshot_sizes, origin_info, timestamp, visit_id)
 
     for b in branches:
         branch_url_args = dict(url_args)

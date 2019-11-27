@@ -876,7 +876,7 @@ def lookup_origin_visit(origin_url, visit_id):
     return converters.from_origin_visit(visit)
 
 
-def lookup_snapshot_size(snapshot_id):
+def lookup_snapshot_sizes(snapshot_id):
     """Count the number of branches in the snapshot with the given id
 
     Args:
@@ -887,26 +887,26 @@ def lookup_snapshot_size(snapshot_id):
         values their corresponding amount
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    snapshot_size = storage.snapshot_count_branches(snapshot_id_bin)
-    if 'revision' not in snapshot_size:
-        snapshot_size['revision'] = 0
-    if 'release' not in snapshot_size:
-        snapshot_size['release'] = 0
+    snapshot_sizes = storage.snapshot_count_branches(snapshot_id_bin)
+    if 'revision' not in snapshot_sizes:
+        snapshot_sizes['revision'] = 0
+    if 'release' not in snapshot_sizes:
+        snapshot_sizes['release'] = 0
     # adjust revision / release count for display if aliases are defined
-    if 'alias' in snapshot_size:
+    if 'alias' in snapshot_sizes:
         aliases = lookup_snapshot(snapshot_id,
-                                  branches_count=snapshot_size['alias'],
+                                  branches_count=snapshot_sizes['alias'],
                                   target_types=['alias'])
         for alias in aliases['branches'].values():
             if lookup_snapshot(snapshot_id,
                                branches_from=alias['target'],
                                branches_count=1,
                                target_types=['revision']):
-                snapshot_size['revision'] += 1
+                snapshot_sizes['revision'] += 1
             else:
-                snapshot_size['release'] += 1
-        del snapshot_size['alias']
-    return snapshot_size
+                snapshot_sizes['release'] += 1
+        del snapshot_sizes['alias']
+    return snapshot_sizes
 
 
 def lookup_snapshot(snapshot_id, branches_from='', branches_count=1000,

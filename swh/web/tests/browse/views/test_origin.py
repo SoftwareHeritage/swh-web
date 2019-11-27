@@ -366,7 +366,7 @@ def test_origin_request_errors(client, archive_data, mocker):
             'message': ''}],
         []
     )
-    mock_utils_service.lookup_snapshot_size.return_value = {
+    mock_utils_service.lookup_snapshot_sizes.return_value = {
         'revision': 1,
         'release': 0
     }
@@ -414,7 +414,7 @@ def test_origin_request_errors(client, archive_data, mocker):
     }]
     mock_get_origin_visit_snapshot.side_effect = None
     mock_get_origin_visit_snapshot.return_value = ([], [])
-    mock_utils_service.lookup_snapshot_size.return_value = {
+    mock_utils_service.lookup_snapshot_sizes.return_value = {
         'revision': 0,
         'release': 0
     }
@@ -437,7 +437,7 @@ def test_origin_request_errors(client, archive_data, mocker):
             'message': ''}],
         []
     )
-    mock_utils_service.lookup_snapshot_size.return_value = {
+    mock_utils_service.lookup_snapshot_sizes.return_value = {
         'revision': 1,
         'release': 0
     }
@@ -481,7 +481,7 @@ def test_origin_empty_snapshot(client, mocker):
         'visit': 1
     }]
     mock_get_origin_visit_snapshot.return_value = ([], [])
-    mock_utils_service.lookup_snapshot_size.return_value = {
+    mock_utils_service.lookup_snapshot_sizes.return_value = {
         'revision': 0,
         'release': 0
     }

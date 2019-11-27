@@ -41,11 +41,11 @@ See top-level LICENSE file for more information
                   </a>
                 </li>
               {% endfor %}
-              {% if snapshot_context.branches|length < snapshot_context.snapshot_size.revision %}
+              {% if snapshot_context.branches|length < snapshot_context.snapshot_sizes.revision %}
                 <li>
                   <i class="fa fa-warning fa-fw" aria-hidden="true"></i>
                   Branches list truncated to {{ snapshot_context.branches|length }} entries,
-                  {{ snapshot_context.branches|length|mul:-1|add:snapshot_context.snapshot_size.revision }}
+                  {{ snapshot_context.branches|length|mul:-1|add:snapshot_context.snapshot_sizes.revision }}
                   were omitted.
                 </li>
               {% endif %}
@@ -67,11 +67,11 @@ See top-level LICENSE file for more information
                     </li>
                   {% endif %}
                 {% endfor %}
-                {% if snapshot_context.releases|length < snapshot_context.snapshot_size.release %}
+                {% if snapshot_context.releases|length < snapshot_context.snapshot_sizes.release %}
                 <li>
                   <i class="fa fa-warning fa-fw" aria-hidden="true"></i>
                   Releases list truncated to {{ snapshot_context.releases|length }} entries,
-                  {{ snapshot_context.releases|length|mul:-1|add:snapshot_context.snapshot_size.release }}
+                  {{ snapshot_context.releases|length|mul:-1|add:snapshot_context.snapshot_sizes.release }}
                   were omitted.
                 </li>
               {% endif %}

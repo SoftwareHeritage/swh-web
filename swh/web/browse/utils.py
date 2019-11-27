@@ -958,9 +958,9 @@ def get_snapshot_context(snapshot_id=None, origin_url=None,
 
     releases = list(reversed(releases))
 
-    snapshot_size = service.lookup_snapshot_size(snapshot_id)
+    snapshot_sizes = service.lookup_snapshot_sizes(snapshot_id)
 
-    is_empty = sum(snapshot_size.values()) == 0
+    is_empty = sum(snapshot_sizes.values()) == 0
 
     swh_snp_id = persistent_identifier('snapshot', snapshot_id)
 
@@ -968,7 +968,7 @@ def get_snapshot_context(snapshot_id=None, origin_url=None,
         'swh_type': swh_type,
         'swh_object_id': swh_snp_id,
         'snapshot_id': snapshot_id,
-        'snapshot_size': snapshot_size,
+        'snapshot_sizes': snapshot_sizes,
         'is_empty': is_empty,
         'origin_info': origin_info,
         'visit_info': visit_info,
