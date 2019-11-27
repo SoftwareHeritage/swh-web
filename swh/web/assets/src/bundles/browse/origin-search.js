@@ -84,7 +84,7 @@ function populateOriginSearchResultsTable(origins, offset) {
 
 function escapeStringRegexp(str) {
   let matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
-  return str.replace(matchOperatorsRe, '\\\\\\$&');
+  return str.replace(matchOperatorsRe, '%5C$&');
 }
 
 function searchOrigins(patterns, limit, searchOffset, offset) {
