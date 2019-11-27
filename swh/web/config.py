@@ -49,6 +49,12 @@ DEFAULT_CONFIG = {
                 },
                 'exempted_networks': ['127.0.0.0/8']
             },
+            'swh_api_origin_search': {
+                'limiter_rate': {
+                    'default': '10/m'
+                },
+                'exempted_networks': ['127.0.0.0/8']
+            },
             'swh_vault_cooking': {
                 'limiter_rate': {
                     'default': '120/h',
