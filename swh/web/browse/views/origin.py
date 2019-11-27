@@ -3,11 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-
-from distutils.util import strtobool
-
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from swh.web.common import service
@@ -168,31 +163,6 @@ def origin_visits_browse(request, origin_url):
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': False})
-
-
-@browse_route(r'origin/search/(?P<url_pattern>.+)/',
-              view_name='browse-origin-search')
-def _origin_search(request, url_pattern):
-    """Internal browse endpoint to search for origins whose urls contain
-    a provided string pattern or match a provided regular expression.
-    The search is performed in a case insensitive way.
-    """
-    offset = int(request.GET.get('offset', '0'))
-    limit = min(int(request.GET.get('limit', '50')), 1000)
-    regexp = request.GET.get('regexp', 'false')
-    with_visit = request.GET.get('with_visit', 'false')
-
-    try:
-        results = service.search_origin(url_pattern, offset, limit,
-                                        bool(strtobool(regexp)),
-                                        bool(strtobool(with_visit)))
-
-        results = json.dumps(list(results), sort_keys=True, indent=4,
-                             separators=(',', ': '))
-    except Exception as exc:
-        return handle_view_exception(request, exc, html_response=False)
-
-    return HttpResponse(results, content_type='application/json')
 
 
 @browse_route(r'origin/(?P<origin_url>.+)/',

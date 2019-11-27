@@ -104,9 +104,9 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
       let patternsPermut = [];
       heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
       let regex = patternsPermut.join('|');
-      baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
+      baseSearchUrl = Urls.api_1_origin_search(regex) + `?regexp=true`;
     } else {
-      baseSearchUrl = Urls.browse_origin_search(patternsArray.join('.*')) + `?regexp=true`;
+      baseSearchUrl = Urls.api_1_origin_search(patternsArray.join('.*')) + `?regexp=true`;
     }
   }
 
