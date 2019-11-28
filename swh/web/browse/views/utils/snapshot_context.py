@@ -389,6 +389,14 @@ def browse_snapshot_directory(request, snapshot_id=None,
     heading = ('Directory - %s - %s - %s' %
                (dir_path, snapshot_context['branch'], context_found))
 
+    top_right_link = None
+    if not snapshot_context['is_empty']:
+        top_right_link = {
+            'url': history_url,
+            'icon': swh_object_icons['revisions history'],
+            'text': 'History'
+        }
+
     return render(request, 'browse/directory.html',
                   {'heading': heading,
                    'swh_object_name': 'Directory',
@@ -396,11 +404,7 @@ def browse_snapshot_directory(request, snapshot_id=None,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
-                   'top_right_link': {
-                       'url': history_url,
-                       'icon': swh_object_icons['revisions history'],
-                       'text': 'History'
-                    },
+                   'top_right_link': top_right_link,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
                    'readme_html': readme_html,
@@ -576,6 +580,14 @@ def browse_snapshot_content(request, snapshot_id=None,
     heading = ('Content - %s - %s - %s' %
                (content_path, snapshot_context['branch'], context_found))
 
+    top_right_link = None
+    if not snapshot_context['is_empty']:
+        top_right_link = {
+            'url': content_raw_url,
+            'icon': swh_object_icons['content'],
+            'text': 'Raw File'
+        }
+
     return render(request, 'browse/content.html',
                   {'heading': heading,
                    'swh_object_name': 'Content',
@@ -587,11 +599,7 @@ def browse_snapshot_content(request, snapshot_id=None,
                    'language': language,
                    'available_languages': available_languages,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
-                   'top_right_link': {
-                        'url': content_raw_url,
-                        'icon': swh_object_icons['content'],
-                        'text': 'Raw File'
-                    },
+                   'top_right_link': top_right_link,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,

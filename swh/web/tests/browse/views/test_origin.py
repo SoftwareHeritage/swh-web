@@ -494,7 +494,9 @@ def test_origin_empty_snapshot(client, mocker):
     resp = client.get(url)
     assert resp.status_code == 200
     assert_template_used(resp, 'browse/directory.html')
-    assert re.search('snapshot.*is empty', resp.content.decode('utf-8'))
+    resp_content = resp.content.decode('utf-8')
+    assert re.search('snapshot.*is empty', resp_content)
+    assert not re.search('swh-tr-link', resp_content)
 
 
 @given(origin_with_releases())
