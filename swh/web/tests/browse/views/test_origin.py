@@ -34,14 +34,14 @@ def test_origin_visits_browse(client, archive_data, origin):
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('origin-visits.html')
+    assert_template_used(resp, 'browse/origin-visits.html')
 
     url = reverse('browse-origin-visits',
                   url_args={'origin_url': origin['url']})
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('origin-visits.html')
+    assert_template_used(resp, 'browse/origin-visits.html')
 
     visits = archive_data.origin_visit_get(origin['url'])
 
@@ -324,7 +324,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                   url_args={'origin_url': 'bar'})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp, 'origin not found', status_code=404)
 
     mock_origin_service.lookup_origin.side_effect = None
@@ -336,7 +336,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                   url_args={'origin_url': 'bar'})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp, "No visit", status_code=404)
 
     mock_get_origin_visits.return_value = [{'visit': 1}]
@@ -346,7 +346,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                   query_params={'visit_id': 2})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert re.search('Visit.*not found', resp.content.decode('utf-8'))
 
     mock_get_origin_visits.return_value = [{
@@ -376,7 +376,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                   url_args={'origin_url': 'bar'})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp, 'Directory not found', status_code=404)
 
     mock_origin_service.lookup_origin.side_effect = None
@@ -389,7 +389,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                             'path': 'foo'})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp, "No visit", status_code=404)
 
     mock_get_origin_visits.return_value = [{'visit': 1}]
@@ -400,7 +400,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                   query_params={'visit_id': 2})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert re.search('Visit.*not found', resp.content.decode('utf-8'))
 
     mock_get_origin_visits.return_value = [{
@@ -426,7 +426,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                             'path': 'baz'})
     resp = client.get(url)
     assert resp.status_code == 200
-    assert_template_used('error.html')
+    assert_template_used(resp, 'browse/content.html')
     assert re.search('snapshot.*is empty', resp.content.decode('utf-8'))
 
     mock_get_origin_visit_snapshot.return_value = (
@@ -450,7 +450,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                             'path': 'baz'})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp, 'Content not found', status_code=404)
 
     mock_get_snapshot_context = mocker.patch(
@@ -461,7 +461,7 @@ def test_origin_request_errors(client, archive_data, mocker):
                   url_args={'origin_url': 'bar'})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp, 'Snapshot not found', status_code=404)
 
 
@@ -493,7 +493,7 @@ def test_origin_empty_snapshot(client, mocker):
                   url_args={'origin_url': 'bar'})
     resp = client.get(url)
     assert resp.status_code == 200
-    assert_template_used('content.html')
+    assert_template_used(resp, 'browse/directory.html')
     assert re.search('snapshot.*is empty', resp.content.decode('utf-8'))
 
 
@@ -560,7 +560,7 @@ def _origin_content_view_test_helper(client, origin_info, origin_visits,
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('content.html')
+    assert_template_used(resp, 'browse/content.html')
 
     assert_contains(resp, '<code class="%s">' %
                     content['hljs_language'])
@@ -654,7 +654,7 @@ def _origin_content_view_test_helper(client, origin_info, origin_visits,
 
     resp = client.get(url)
     assert resp.status_code == 200
-    assert_template_used('content.html')
+    assert_template_used(resp, 'browse/content.html')
 
     swh_cnt_id = get_swh_persistent_id('content', content['sha1_git'])
     swh_cnt_id_url = reverse('browse-swh-id',
@@ -697,10 +697,10 @@ def _origin_directory_view_test_helper(client, origin_info, origin_visits,
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('directory.html')
+    assert_template_used(resp, 'browse/directory.html')
 
     assert resp.status_code == 200
-    assert_template_used('directory.html')
+    assert_template_used(resp, 'browse/directory.html')
 
     assert_contains(resp, '<td class="swh-directory">',
                     count=len(dirs))
@@ -816,7 +816,7 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('branches.html')
+    assert_template_used(resp, 'browse/branches.html')
 
     origin_branches = origin_snapshot[0]
     origin_releases = origin_snapshot[1]
@@ -862,7 +862,7 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
 
     resp = client.get(url)
     assert resp.status_code == 200
-    assert_template_used('releases.html')
+    assert_template_used(resp, 'browse/releases.html')
 
     origin_branches = origin_snapshot[0]
     origin_releases = origin_snapshot[1]

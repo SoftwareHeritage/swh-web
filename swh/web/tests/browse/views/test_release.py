@@ -50,7 +50,7 @@ def test_release_browse_not_found(client, archive_data, unknown_release):
                   url_args={'sha1_git': unknown_release})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     err_msg = 'Release with sha1_git %s not found' % unknown_release
     assert_contains(resp, err_msg, status_code=404)
 
@@ -88,7 +88,7 @@ def _release_browse_checks(resp, release_data, origin_info=None):
     message_lines = message.split('\n')
 
     assert resp.status_code == 200
-    assert_template_used('browse/release.html')
+    assert_template_used(resp, 'browse/release.html')
     assert_contains(resp, author_name)
     assert_contains(resp, format_utc_iso_date(release_date))
     assert_contains(resp, '<h6>%s</h6>%s' % (message_lines[0] or 'None',

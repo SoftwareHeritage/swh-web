@@ -36,14 +36,14 @@ def test_directory_request_errors(client, invalid_sha1, unknown_directory):
 
     resp = client.get(dir_url)
     assert resp.status_code == 400
-    assert_template_used('browse/error.html')
+    assert_template_used(resp, 'error.html')
 
     dir_url = reverse('browse-directory',
                       url_args={'sha1_git': unknown_directory})
 
     resp = client.get(dir_url)
     assert resp.status_code == 404
-    assert_template_used('browse/error.html')
+    assert_template_used(resp, 'error.html')
 
 
 @given(directory())
@@ -78,7 +78,7 @@ def _directory_view(client, root_directory_sha1, directory_entries,
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('browse/directory.html')
+    assert_template_used(resp, 'browse/directory.html')
     assert_contains(resp, '<a href="' + root_dir_url + '">' +
                     root_directory_sha1[:7] + '</a>')
     assert_contains(resp, '<td class="swh-directory">',

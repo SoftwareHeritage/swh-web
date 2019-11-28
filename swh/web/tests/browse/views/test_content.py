@@ -41,7 +41,7 @@ def test_content_view_text(client, archive_data, content):
     mimetype = content_display['mimetype']
 
     assert resp.status_code == 200
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
 
     if mimetype.startswith('text/'):
         assert_contains(resp, '<code class="%s">' %
@@ -71,7 +71,7 @@ def test_content_view_text_no_highlight(client, archive_data, content):
     content_display = _process_content_for_display(archive_data, content)
 
     assert resp.status_code == 200
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
 
     assert_contains(resp, '<code class="nohighlight">')
     assert_contains(resp, escape(content_display['content_data']))
@@ -97,7 +97,7 @@ def test_content_view_no_utf8_text(client, archive_data, content):
     content_display = _process_content_for_display(archive_data, content)
 
     assert resp.status_code == 200
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
     swh_cnt_id = get_swh_persistent_id('content', sha1_git)
     swh_cnt_id_url = reverse('browse-swh-id',
                              url_args={'swh_id': swh_cnt_id})
@@ -120,7 +120,7 @@ def test_content_view_image(client, archive_data, content):
     content_data = content_display['content_data']
 
     assert resp.status_code == 200
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
     assert_contains(resp, '<img src="data:%s;base64,%s"/>'
                     % (mimetype, content_data))
     assert_contains(resp, url_raw)
@@ -136,7 +136,7 @@ def test_content_view_text_with_path(client, archive_data, content):
 
     resp = client.get(url)
     assert resp.status_code == 200
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
 
     assert_contains(resp, '<nav class="bread-crumbs')
 
@@ -185,7 +185,7 @@ def test_content_view_text_with_path(client, archive_data, content):
 
     resp = client.get(url)
     assert resp.status_code == 200
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
 
     assert_not_contains(resp, '<nav class="bread-crumbs')
 
@@ -273,13 +273,13 @@ def test_content_request_errors(client, invalid_sha1, unknown_content):
                   url_args={'query_string': invalid_sha1})
     resp = client.get(url)
     assert resp.status_code == 400
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
 
     url = reverse('browse-content',
                   url_args={'query_string': unknown_content['sha1']})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
 
 
 @given(content())
@@ -299,7 +299,7 @@ def test_content_bytes_missing(client, archive_data, mocker, content):
     resp = client.get(url)
 
     assert resp.status_code == 404
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
 
 
 def test_content_too_large(client, mocker):
@@ -338,7 +338,7 @@ def test_content_too_large(client, mocker):
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('browse/content.html')
+    assert_template_used(resp, 'browse/content.html')
 
     assert_contains(resp, 'Content is too large to be displayed')
     assert_contains(resp, url_raw)

@@ -36,7 +36,7 @@ def test_revision_browse(client, archive_data, revision):
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_template_used('browse/revision.html')
+    assert_template_used(resp, 'browse/revision.html')
     assert_contains(resp, author_name)
     assert_contains(resp, committer_name)
     assert_contains(resp, directory_url)
@@ -130,7 +130,7 @@ def test_revision_log_browse(client, archive_data, revision):
         nb_log_entries = len(revision_log_sorted)
 
     assert resp.status_code == 200
-    assert_template_used('browse/revision-log.html')
+    assert_template_used(resp, 'browse/revision-log.html')
     assert_contains(resp, '<tr class="swh-revision-log-entry',
                     count=nb_log_entries)
     assert_contains(resp, '<a class="page-link">Newer</a>')
@@ -167,7 +167,7 @@ def test_revision_log_browse(client, archive_data, revision):
         nb_log_entries = per_page
 
     assert resp.status_code == 200
-    assert_template_used('browse/revision-log.html')
+    assert_template_used(resp, 'browse/revision-log.html')
     assert_contains(resp, '<tr class="swh-revision-log-entry',
                     count=nb_log_entries)
 
@@ -197,7 +197,7 @@ def test_revision_log_browse(client, archive_data, revision):
         nb_log_entries = per_page
 
     assert resp.status_code == 200
-    assert_template_used('browse/revision-log.html')
+    assert_template_used(resp, 'browse/revision-log.html')
     assert_contains(resp, '<tr class="swh-revision-log-entry',
                     count=nb_log_entries)
     assert_contains(resp, '<a class="page-link" href="%s">Newer</a>' %
@@ -215,7 +215,7 @@ def test_revision_request_errors(client, revision, unknown_revision,
                   url_args={'sha1_git': unknown_revision})
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp,
                     'Revision with sha1_git %s not found' %
                     unknown_revision, status_code=404)
@@ -226,7 +226,7 @@ def test_revision_request_errors(client, revision, unknown_revision,
 
     resp = client.get(url)
     assert resp.status_code == 404
-    assert_template_used('error.html')
+    assert_template_used(resp, 'error.html')
     assert_contains(resp, 'the origin mentioned in your request'
                     ' appears broken', status_code=404)
 
