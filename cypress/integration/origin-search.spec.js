@@ -89,6 +89,209 @@ describe('Test origin-search', function() {
       });
   });
 
+  context('Test pagination', function() {
+    it('should not paginate if there are not many results', function() {
+      // Setup search
+      cy.get('#swh-search-origins-with-visit')
+        .uncheck()
+        .get('#swh-filter-empty-visits')
+        .uncheck()
+        .then(() => {
+          const searchText = 'libtess';
+
+          // Get first page of results
+          doSearch(searchText);
+
+          cy.get('.swh-search-result-entry')
+            .should('have.length', 1);
+
+          cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', 'https://github.com/memononen/libtess2');
+
+          cy.get('#origins-prev-results-button')
+            .should('have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('have.class', 'disabled');
+        });
+    });
+
+    it('should paginate forward when there are many results', function() {
+      // Setup search
+      cy.get('#swh-search-origins-with-visit')
+        .uncheck()
+        .get('#swh-filter-empty-visits')
+        .uncheck()
+        .then(() => {
+          const searchText = 'many.origins';
+
+          // Get first page of results
+          doSearch(searchText);
+
+          cy.get('.swh-search-result-entry')
+            .should('have.length', 100);
+
+          cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', 'https://many.origins/1');
+          cy.get('.swh-search-result-entry#origin-99 td a')
+            .should('have.text', 'https://many.origins/100');
+
+          cy.get('#origins-prev-results-button')
+            .should('have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+
+          // Get second page of results
+          cy.get('#origins-next-results-button a')
+            .click();
+
+          cy.get('.swh-search-result-entry')
+            .should('have.length', 100);
+
+          cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', 'https://many.origins/101');
+          cy.get('.swh-search-result-entry#origin-99 td a')
+            .should('have.text', 'https://many.origins/200');
+
+          cy.get('#origins-prev-results-button')
+            .should('not.have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+
+          // Get third (and last) page of results
+          cy.get('#origins-next-results-button a')
+            .click();
+
+          cy.get('.swh-search-result-entry')
+            .should('have.length', 50);
+
+          cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', 'https://many.origins/201');
+          cy.get('.swh-search-result-entry#origin-49 td a')
+            .should('have.text', 'https://many.origins/250');
+
+          cy.get('#origins-prev-results-button')
+            .should('not.have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('have.class', 'disabled');
+        });
+    });
+
+    it('should paginate backward from a middle page', function() {
+      // Setup search
+      cy.get('#swh-search-origins-with-visit')
+        .uncheck()
+        .get('#swh-filter-empty-visits')
+        .uncheck()
+        .then(() => {
+          const searchText = 'many.origins';
+
+          // Get first page of results
+          doSearch(searchText);
+
+          cy.get('#origins-prev-results-button')
+            .should('have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+
+          // Get second page of results
+          cy.get('#origins-next-results-button a')
+            .click();
+          cy.get('#origins-prev-results-button')
+            .should('not.have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+
+          // Get first page of results again
+          cy.get('#origins-prev-results-button a')
+            .click();
+
+          cy.get('.swh-search-result-entry')
+            .should('have.length', 100);
+
+          cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', 'https://many.origins/1');
+          cy.get('.swh-search-result-entry#origin-99 td a')
+            .should('have.text', 'https://many.origins/100');
+
+          cy.get('#origins-prev-results-button')
+            .should('have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+        });
+    });
+
+    it('should paginate backward from the last page', function() {
+      // Setup search
+      cy.get('#swh-search-origins-with-visit')
+        .uncheck()
+        .get('#swh-filter-empty-visits')
+        .uncheck()
+        .then(() => {
+          const searchText = 'many.origins';
+
+          // Get first page of results
+          doSearch(searchText);
+
+          cy.get('#origins-prev-results-button')
+            .should('have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+
+          // Get second page of results
+          cy.get('#origins-next-results-button a')
+            .click();
+
+          cy.get('#origins-prev-results-button')
+            .should('not.have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+
+          // Get third (and last) page of results
+          cy.get('#origins-next-results-button a')
+            .click();
+
+          cy.get('#origins-prev-results-button')
+            .should('not.have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('have.class', 'disabled');
+
+          // Get second page of results again
+          cy.get('#origins-prev-results-button a')
+            .click();
+
+          cy.get('.swh-search-result-entry')
+            .should('have.length', 100);
+
+          cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', 'https://many.origins/101');
+          cy.get('.swh-search-result-entry#origin-99 td a')
+            .should('have.text', 'https://many.origins/200');
+
+          cy.get('#origins-prev-results-button')
+            .should('not.have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+
+          // Get first page of results again
+          cy.get('#origins-prev-results-button a')
+            .click();
+
+          cy.get('.swh-search-result-entry')
+            .should('have.length', 100);
+
+          cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', 'https://many.origins/1');
+          cy.get('.swh-search-result-entry#origin-99 td a')
+            .should('have.text', 'https://many.origins/100');
+
+          cy.get('#origins-prev-results-button')
+            .should('have.class', 'disabled');
+          cy.get('#origins-next-results-button')
+            .should('not.have.class', 'disabled');
+        });
+    });
+  });
+
   context('Test valid persistent ids', function() {
     it('should resolve directory', function() {
       const redirectUrl = this.Urls.browse_directory(origin.content[0].directory);
