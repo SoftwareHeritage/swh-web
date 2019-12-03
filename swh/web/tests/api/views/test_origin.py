@@ -454,6 +454,49 @@ def test_api_origin_search(api_client):
     assert {origin['url'] for origin in rv.data} == expected_origins
 
 
+def test_api_origin_search_words(api_client):
+    expected_origins = {
+        'https://github.com/wcoder/highlightjs-line-numbers.js',
+        'https://github.com/memononen/libtess2',
+    }
+
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'github com'},
+                  query_params={'limit': 2})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert {origin['url'] for origin in rv.data} == expected_origins
+
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'com github'},
+                  query_params={'limit': 2})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert {origin['url'] for origin in rv.data} == expected_origins
+
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'memononen libtess2'},
+                  query_params={'limit': 2})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert len(rv.data) == 1
+    assert {origin['url'] for origin in rv.data} \
+        == {'https://github.com/memononen/libtess2'}
+
+    url = reverse('api-1-origin-search',
+                  url_args={'url_pattern': 'libtess2 memononen'},
+                  query_params={'limit': 2})
+    rv = api_client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert len(rv.data) == 1
+    assert {origin['url'] for origin in rv.data} \
+        == {'https://github.com/memononen/libtess2'}
+
+
 def test_api_origin_search_regexp(api_client):
     expected_origins = {
         'https://github.com/memononen/libtess2',

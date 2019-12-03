@@ -3,7 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import itertools
 import os
+import re
 
 from collections import defaultdict
 from typing import Any, Dict
@@ -259,6 +261,18 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False,
         list of origin information as dict.
 
     """
+    if not regexp:
+        # If the query is not a regexp, rewrite it as a regexp.
+        regexp = True
+        search_words = [re.escape(word) for word in url_pattern.split()]
+        if len(search_words) >= 7:
+            url_pattern = '.*'.join(search_words)
+        else:
+            pattern_parts = []
+            for permut in itertools.permutations(search_words):
+                pattern_parts.append('.*'.join(permut))
+            url_pattern = '|'.join(pattern_parts)
+
     origins = storage.origin_search(url_pattern, offset, limit, regexp,
                                     with_visit)
     return map(converters.from_origin, origins)

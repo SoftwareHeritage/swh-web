@@ -5,7 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-import {heapsPermute} from 'utils/heaps-permute';
 import {handleFetchError} from 'utils/functions';
 
 const limit = 100;
@@ -86,35 +85,17 @@ function populateOriginSearchResultsTable(origins) {
   });
 }
 
-function escapeStringRegexp(str) {
-  let matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
-  return str.replace(matchOperatorsRe, '%5C$&');
-}
-
-function searchOriginsFirst(patterns, limit) {
+function searchOriginsFirst(searchQueryText, limit) {
   let baseSearchUrl;
   let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
   if (searchMetadata) {
-    baseSearchUrl = Urls.api_1_origin_metadata_search() + `?fulltext=${patterns}`;
+    baseSearchUrl = Urls.api_1_origin_metadata_search() + '?fulltext=' + encodeURIComponent(searchQueryText);
   } else {
-    let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
-    for (let i = 0; i < patternsArray.length; ++i) {
-      patternsArray[i] = escapeStringRegexp(patternsArray[i]);
-    }
-    // url length must be less than 4096 for modern browsers
-    // assuming average word length, 6 is max patternArray.length
-    if (patternsArray.length < 7) {
-      let patternsPermut = [];
-      heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
-      let regex = patternsPermut.join('|');
-      baseSearchUrl = Urls.api_1_origin_search(regex) + `?regexp=true`;
-    } else {
-      baseSearchUrl = Urls.api_1_origin_search(patternsArray.join('.*')) + `?regexp=true`;
-    }
+    baseSearchUrl = Urls.api_1_origin_search(searchQueryText);
   }
 
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-  let searchUrl = baseSearchUrl + `&limit=${limit}&with_visit=${withVisit}`;
+  let searchUrl = baseSearchUrl + `?limit=${limit}&with_visit=${withVisit}`;
   searchOrigins(searchUrl);
 }
 
@@ -155,10 +136,10 @@ function searchOrigins(searchUrl) {
 
 function doSearch() {
   $('#swh-no-result').hide();
-  let patterns = $('#origins-url-patterns').val();
+  let searchQueryText = $('#origins-url-patterns').val();
   inSearch = true;
   // first try to resolve a swh persistent identifier
-  let resolvePidUrl = Urls.api_1_resolve_swh_pid(patterns);
+  let resolvePidUrl = Urls.api_1_resolve_swh_pid(searchQueryText);
   fetch(resolvePidUrl)
     .then(handleFetchError)
     .then(response => response.json())
@@ -169,7 +150,7 @@ function doSearch() {
     })
     .catch(response => {
       // pid resolving failed
-      if (patterns.startsWith('swh:')) {
+      if (searchQueryText.startsWith('swh:')) {
         // display a useful error message if the input
         // looks like a swh pid
         response.json().then(data => {
@@ -182,7 +163,7 @@ function doSearch() {
         // otherwise, proceed with origins search
         $('#swh-origin-search-results').show();
         $('.swh-search-pagination').show();
-        searchOriginsFirst(patterns, limit);
+        searchOriginsFirst(searchQueryText, limit);
       }
     });
 }
@@ -191,11 +172,11 @@ export function initOriginSearch() {
   $(document).ready(() => {
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
-      let patterns = $('#origins-url-patterns').val().trim();
+      let searchQueryText = $('#origins-url-patterns').val().trim();
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
       let withContent = $('#swh-filter-empty-visits').prop('checked');
       let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
-      let queryParameters = '?q=' + encodeURIComponent(patterns);
+      let queryParameters = '?q=' + encodeURIComponent(searchQueryText);
       if (withVisit) {
         queryParameters += '&with_visit';
       }
