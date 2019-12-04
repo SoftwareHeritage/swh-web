@@ -175,7 +175,8 @@ def api_origin(request, origin_url):
 
 
 @api_route(r'/origin/search/(?P<url_pattern>.+)/',
-           'api-1-origin-search')
+           'api-1-origin-search',
+           throttle_scope='swh_api_origin_search')
 @api_doc('/origin/search/')
 @format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
 def api_origin_search(request, url_pattern):

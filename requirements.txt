@@ -5,6 +5,7 @@
 # Runtime dependencies
 beautifulsoup4
 Django >= 1.11.0, < 2.0
+django-cors-headers
 djangorestframework >= 3.4.0
 django_webpack_loader
 django_js_reverse
@@ -18,6 +19,7 @@ python-dateutil
 pyyaml
 requests
 python-memcached
+pybadges
 
 # Doc dependencies
 sphinx

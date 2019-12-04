@@ -18,7 +18,7 @@ from swh.web.browse.utils import (
     get_snapshot_context, get_directory_entries, gen_directory_link,
     gen_revision_link, request_content, gen_content_link,
     prepare_content_for_display, content_display_max_size,
-    format_log_entries, gen_revision_log_link,
+    format_log_entries, gen_revision_log_link, gen_release_link,
     get_readme_to_display, get_swh_persistent_ids,
     gen_snapshot_link, process_snapshot_branches
 )
@@ -63,7 +63,7 @@ def _get_branch(branches, branch_name, snapshot_id):
             return snp_branch[0]
 
 
-def _get_release(releases, release_name):
+def _get_release(releases, release_name, snapshot_id):
     """
     Utility function to get a specific release from a releases list.
     Returns None if the release can not be found in the list.
@@ -71,10 +71,21 @@ def _get_release(releases, release_name):
     filtered_releases = [r for r in releases if r['name'] == release_name]
     if filtered_releases:
         return filtered_releases[0]
+    else:
+        # case where a large branches list has been truncated
+        for branch_name in (release_name, f'refs/tags/{release_name}'):
+            snp = service.lookup_snapshot(snapshot_id,
+                                          branches_from=branch_name,
+                                          branches_count=1,
+                                          target_types=['release'])
+            _, snp_release = process_snapshot_branches(snp)
+            if snp_release and snp_release[0]['name'] == release_name:
+                releases.append(snp_release[0])
+                return snp_release[0]
 
 
-def _branch_not_found(branch_type, branch, branches, snapshot_id=None,
-                      origin_info=None, timestamp=None, visit_id=None):
+def _branch_not_found(branch_type, branch, snapshot_id, snapshot_sizes,
+                      origin_info, timestamp, visit_id):
     """
     Utility function to raise an exception when a specified branch/release
     can not be found.
@@ -82,17 +93,19 @@ def _branch_not_found(branch_type, branch, branches, snapshot_id=None,
     if branch_type == 'branch':
         branch_type = 'Branch'
         branch_type_plural = 'branches'
+        target_type = 'revision'
     else:
         branch_type = 'Release'
         branch_type_plural = 'releases'
+        target_type = 'release'
 
-    if snapshot_id and not branches:
+    if snapshot_id and snapshot_sizes[target_type] == 0:
         msg = ('Snapshot with id %s has an empty list'
                ' of %s!' % (snapshot_id, branch_type_plural))
     elif snapshot_id:
         msg = ('%s %s for snapshot with id %s'
                ' not found!' % (branch_type, branch, snapshot_id))
-    elif visit_id and not branches:
+    elif visit_id and snapshot_sizes[target_type] == 0:
         msg = ('Origin with url %s'
                ' for visit with id %s has an empty list'
                ' of %s!' % (origin_info['url'], visit_id,
@@ -102,7 +115,7 @@ def _branch_not_found(branch_type, branch, branches, snapshot_id=None,
                ' id %s for origin with url %s'
                ' not found!' % (branch_type, branch, visit_id,
                                 origin_info['url']))
-    elif not branches:
+    elif snapshot_sizes[target_type] == 0:
         msg = ('Origin with url %s'
                ' for visit with timestamp %s has an empty list'
                ' of %s!' % (origin_info['url'],
@@ -149,7 +162,8 @@ def _process_snapshot_request(request, snapshot_id=None,
     release_id = None
     branch_name = None
 
-    snapshot_total_size = sum(snapshot_context['snapshot_size'].values())
+    snapshot_sizes = snapshot_context['snapshot_sizes']
+    snapshot_total_size = sum(snapshot_sizes.values())
 
     if snapshot_total_size and revision_id:
         revision = service.lookup_revision(revision_id)
@@ -161,15 +175,16 @@ def _process_snapshot_request(request, snapshot_id=None,
         branch_name = revision_id
         query_params['revision'] = revision_id
     elif snapshot_total_size and release_name:
-        release = _get_release(releases, release_name)
+        release = _get_release(releases, release_name,
+                               snapshot_context['snapshot_id'])
         try:
             root_sha1_git = release['directory']
             revision_id = release['target']
             release_id = release['id']
             query_params['release'] = release_name
         except Exception:
-            _branch_not_found("release", release_name, releases, snapshot_id,
-                              origin_info, timestamp, visit_id)
+            _branch_not_found('release', release_name, snapshot_id,
+                              snapshot_sizes, origin_info, timestamp, visit_id)
     elif snapshot_total_size:
         branch_name = request.GET.get('branch', None)
         if branch_name:
@@ -181,8 +196,8 @@ def _process_snapshot_request(request, snapshot_id=None,
             revision_id = branch['revision']
             root_sha1_git = branch['directory']
         except Exception:
-            _branch_not_found("branch", branch_name, branches, snapshot_id,
-                              origin_info, timestamp, visit_id)
+            _branch_not_found('branch', branch_name, snapshot_id,
+                              snapshot_sizes, origin_info, timestamp, visit_id)
 
     for b in branches:
         branch_url_args = dict(url_args)
@@ -326,16 +341,16 @@ def browse_snapshot_directory(request, snapshot_id=None,
     browse_rev_link = gen_revision_link(revision_id)
     browse_snp_link = gen_snapshot_link(snapshot_id)
 
-    dir_metadata = {'directory': sha1_git,
-                    'context-independent directory': browse_dir_link,
-                    'number of regular files': nb_files,
-                    'number of subdirectories': nb_dirs,
-                    'sum of regular file sizes': sum_file_sizes,
-                    'path': dir_path,
-                    'revision': revision_id,
-                    'context-independent revision': browse_rev_link,
-                    'snapshot': snapshot_id,
-                    'context-independent snapshot': browse_snp_link}
+    dir_metadata = {"directory": sha1_git,
+                    "context-independent directory": browse_dir_link,
+                    "number of regular files": nb_files,
+                    "number of subdirectories": nb_dirs,
+                    "sum of regular file sizes": sum_file_sizes,
+                    "path": dir_path,
+                    "revision": revision_id,
+                    "context-independent revision": browse_rev_link,
+                    "snapshot": snapshot_id,
+                    "context-independent snapshot": browse_snp_link}
 
     if origin_info:
         dir_metadata['origin url'] = origin_info['url']
@@ -361,6 +376,9 @@ def browse_snapshot_directory(request, snapshot_id=None,
     if release_id:
         swh_objects.append({'type': 'release',
                             'id': release_id})
+        browse_rel_link = gen_release_link(release_id)
+        dir_metadata['release'] = release_id
+        dir_metadata['context-independent release'] = browse_rel_link
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -371,6 +389,14 @@ def browse_snapshot_directory(request, snapshot_id=None,
     heading = ('Directory - %s - %s - %s' %
                (dir_path, snapshot_context['branch'], context_found))
 
+    top_right_link = None
+    if not snapshot_context['is_empty']:
+        top_right_link = {
+            'url': history_url,
+            'icon': swh_object_icons['revisions history'],
+            'text': 'History'
+        }
+
     return render(request, 'browse/directory.html',
                   {'heading': heading,
                    'swh_object_name': 'Directory',
@@ -378,11 +404,7 @@ def browse_snapshot_directory(request, snapshot_id=None,
                    'dirs': dirs,
                    'files': files,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
-                   'top_right_link': {
-                       'url': history_url,
-                       'icon': swh_object_icons['revisions history'],
-                       'text': 'History'
-                    },
+                   'top_right_link': top_right_link,
                    'readme_name': readme_name,
                    'readme_url': readme_url,
                    'readme_html': readme_html,
@@ -409,6 +431,7 @@ def browse_snapshot_content(request, snapshot_id=None,
         sha1_git = None
         query_string = None
         content_data = None
+        directory_id = None
         split_path = path.split('/')
         filename = split_path[-1]
         filepath = path[:-len(filename)]
@@ -533,6 +556,8 @@ def browse_snapshot_content(request, snapshot_id=None,
 
     swh_objects = [{'type': 'content',
                     'id': cnt_sha1_git},
+                   {'type': 'directory',
+                    'id': directory_id},
                    {'type': 'revision',
                     'id': revision_id},
                    {'type': 'snapshot',
@@ -542,6 +567,9 @@ def browse_snapshot_content(request, snapshot_id=None,
     if release_id:
         swh_objects.append({'type': 'release',
                             'id': release_id})
+        browse_rel_link = gen_release_link(release_id)
+        content_metadata['release'] = release_id
+        content_metadata['context-independent release'] = browse_rel_link
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -551,6 +579,14 @@ def browse_snapshot_content(request, snapshot_id=None,
         context_found = 'origin: %s' % origin_info['url']
     heading = ('Content - %s - %s - %s' %
                (content_path, snapshot_context['branch'], context_found))
+
+    top_right_link = None
+    if not snapshot_context['is_empty']:
+        top_right_link = {
+            'url': content_raw_url,
+            'icon': swh_object_icons['content'],
+            'text': 'Raw File'
+        }
 
     return render(request, 'browse/content.html',
                   {'heading': heading,
@@ -563,11 +599,7 @@ def browse_snapshot_content(request, snapshot_id=None,
                    'language': language,
                    'available_languages': available_languages,
                    'breadcrumbs': breadcrumbs if root_sha1_git else [],
-                   'top_right_link': {
-                        'url': content_raw_url,
-                        'icon': swh_object_icons['content'],
-                        'text': 'Raw File'
-                    },
+                   'top_right_link': top_right_link,
                    'snapshot_context': snapshot_context,
                    'vault_cooking': None,
                    'show_actions_menu': True,
@@ -682,6 +714,9 @@ def browse_snapshot_log(request, snapshot_id=None,
     if release_id:
         swh_objects.append({'type': 'release',
                             'id': release_id})
+        browse_rel_link = gen_release_link(release_id)
+        revision_metadata['release'] = release_id
+        revision_metadata['context-independent release'] = browse_rel_link
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 

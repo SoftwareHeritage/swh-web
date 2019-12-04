@@ -3,17 +3,23 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import itertools
 import os
+import re
 
 from collections import defaultdict
+from typing import Any, Dict
 
 from swh.model import hashutil
 
 from swh.storage.algos import diff, revisions_walker
 
+from swh.model.identifiers import (
+    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+)
 from swh.web.common import converters
 from swh.web.common import query
-from swh.web.common.exc import NotFoundExc
+from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web import config
 
@@ -255,6 +261,18 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False,
         list of origin information as dict.
 
     """
+    if not regexp:
+        # If the query is not a regexp, rewrite it as a regexp.
+        regexp = True
+        search_words = [re.escape(word) for word in url_pattern.split()]
+        if len(search_words) >= 7:
+            url_pattern = '.*'.join(search_words)
+        else:
+            pattern_parts = []
+            for permut in itertools.permutations(search_words):
+                pattern_parts.append('.*'.join(permut))
+            url_pattern = '|'.join(pattern_parts)
+
     origins = storage.origin_search(url_pattern, offset, limit, regexp,
                                     with_visit)
     return map(converters.from_origin, origins)
@@ -850,9 +868,6 @@ def lookup_origin_visit_latest(origin_url, require_snapshot):
     """
     visit = storage.origin_visit_get_latest(
         origin_url, require_snapshot=require_snapshot)
-    if isinstance(visit['origin'], int):
-        # soon-to-be-legacy origin ids
-        visit['origin'] = storage.origin_get({'id': visit['origin']})['url']
     return converters.from_origin_visit(visit)
 
 
@@ -875,7 +890,7 @@ def lookup_origin_visit(origin_url, visit_id):
     return converters.from_origin_visit(visit)
 
 
-def lookup_snapshot_size(snapshot_id):
+def lookup_snapshot_sizes(snapshot_id):
     """Count the number of branches in the snapshot with the given id
 
     Args:
@@ -886,26 +901,26 @@ def lookup_snapshot_size(snapshot_id):
         values their corresponding amount
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    snapshot_size = storage.snapshot_count_branches(snapshot_id_bin)
-    if 'revision' not in snapshot_size:
-        snapshot_size['revision'] = 0
-    if 'release' not in snapshot_size:
-        snapshot_size['release'] = 0
+    snapshot_sizes = storage.snapshot_count_branches(snapshot_id_bin)
+    if 'revision' not in snapshot_sizes:
+        snapshot_sizes['revision'] = 0
+    if 'release' not in snapshot_sizes:
+        snapshot_sizes['release'] = 0
     # adjust revision / release count for display if aliases are defined
-    if 'alias' in snapshot_size:
+    if 'alias' in snapshot_sizes:
         aliases = lookup_snapshot(snapshot_id,
-                                  branches_count=snapshot_size['alias'],
+                                  branches_count=snapshot_sizes['alias'],
                                   target_types=['alias'])
         for alias in aliases['branches'].values():
             if lookup_snapshot(snapshot_id,
                                branches_from=alias['target'],
                                branches_count=1,
                                target_types=['revision']):
-                snapshot_size['revision'] += 1
+                snapshot_sizes['revision'] += 1
             else:
-                snapshot_size['release'] += 1
-        del snapshot_size['alias']
-    return snapshot_size
+                snapshot_sizes['release'] += 1
+        del snapshot_sizes['alias']
+    return snapshot_sizes
 
 
 def lookup_snapshot(snapshot_id, branches_from='', branches_count=1000,
@@ -1106,3 +1121,41 @@ def get_revisions_walker(rev_walker_type, rev_start, *args, **kwargs):
     # first check if the provided revision is valid
     lookup_revision(rev_start)
     return _RevisionsWalkerProxy(rev_walker_type, rev_start, *args, **kwargs)
+
+
+def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
+    """
+    Utility function for looking up an object in the archive by its type
+    and id.
+
+    Args:
+        object_type (str): the type of object to lookup, either *content*,
+            *directory*, *release*, *revision* or *snapshot*
+        object_id (str): the *sha1_git* checksum identifier in hexadecimal
+            form of the object to lookup
+
+    Returns:
+        Dict[str, Any]: A dictionary describing the object or a list of
+        dictionary for the directory object type.
+
+    Raises:
+        NotFoundExc: if the object could not be found in the archive
+        BadInputExc: if the object identifier is invalid
+    """
+    if object_type == CONTENT:
+        return lookup_content(f'sha1_git:{object_id}')
+    elif object_type == DIRECTORY:
+        return {
+            'id': object_id,
+            'content': list(lookup_directory(object_id))
+        }
+    elif object_type == RELEASE:
+        return lookup_release(object_id)
+    elif object_type == REVISION:
+        return lookup_revision(object_id)
+    elif object_type == SNAPSHOT:
+        return lookup_snapshot(object_id)
+
+    raise BadInputExc(('Invalid swh object type! Valid types are '
+                       f'{CONTENT}, {DIRECTORY}, {RELEASE} '
+                       f'{REVISION} or {SNAPSHOT}.'))

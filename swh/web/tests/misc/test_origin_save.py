@@ -3,84 +3,87 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import pytest
 
 from datetime import datetime
-from unittest.mock import patch
 
-from rest_framework.test import APITestCase, APIClient
+from django.test import Client
 
 from swh.web.common.origin_save import (
     SAVE_REQUEST_ACCEPTED, SAVE_TASK_NOT_YET_SCHEDULED
 )
 from swh.web.common.utils import reverse
 from swh.web.settings.tests import save_origin_rate_post
-from swh.web.tests.testcase import WebTestCase
 
 
-class SwhOriginSaveTest(WebTestCase, APITestCase):
+visit_type = 'git'
+origin = {
+    'url': 'https://github.com/python/cpython'
+}
 
-    def setUp(self):
-        self.client = APIClient(enforce_csrf_checks=True)
-        self.visit_type = 'git'
-        self.origin = {
-            'url': 'https://github.com/python/cpython'
-        }
 
-    @patch('swh.web.misc.origin_save.create_save_origin_request')
-    def test_save_request_form_csrf_token(
-            self, mock_create_save_origin_request):
+@pytest.fixture
+def client():
+    return Client(enforce_csrf_checks=True)
 
-        self._mock_create_save_origin_request(mock_create_save_origin_request)
 
-        url = reverse('origin-save-request',
-                      url_args={'visit_type': self.visit_type,
-                                'origin_url':  self.origin['url']})
+def test_save_request_form_csrf_token(client, mocker):
+    mock_create_save_origin_request = mocker.patch(
+        'swh.web.misc.origin_save.create_save_origin_request')
+    _mock_create_save_origin_request(mock_create_save_origin_request)
 
-        resp = self.client.post(url)
-        self.assertEqual(resp.status_code, 403)
+    url = reverse('origin-save-request',
+                  url_args={'visit_type': visit_type,
+                            'origin_url': origin['url']})
 
-        data = self._get_csrf_token(reverse('origin-save'))
-        resp = self.client.post(url, data=data)
-        self.assertEqual(resp.status_code, 200)
+    resp = client.post(url)
+    assert resp.status_code == 403
 
-    @patch('swh.web.misc.origin_save.create_save_origin_request')
-    def test_save_request_form_rate_limit(
-            self, mock_create_save_origin_request):
+    data = _get_csrf_token(client, reverse('origin-save'))
+    resp = client.post(url, data=data)
+    assert resp.status_code == 200
 
-        self._mock_create_save_origin_request(mock_create_save_origin_request)
 
-        url = reverse('origin-save-request',
-                      url_args={'visit_type': self.visit_type,
-                                'origin_url':  self.origin['url']})
+def test_save_request_form_rate_limit(client, mocker):
+    mock_create_save_origin_request = mocker.patch(
+        'swh.web.misc.origin_save.create_save_origin_request')
+    _mock_create_save_origin_request(mock_create_save_origin_request)
 
-        data = self._get_csrf_token(reverse('origin-save'))
-        for _ in range(save_origin_rate_post):
-            resp = self.client.post(url, data=data)
-            self.assertEqual(resp.status_code, 200)
+    url = reverse('origin-save-request',
+                  url_args={'visit_type': visit_type,
+                            'origin_url':  origin['url']})
 
-        resp = self.client.post(url, data=data)
-        self.assertEqual(resp.status_code, 429)
+    data = _get_csrf_token(client, reverse('origin-save'))
+    for _ in range(save_origin_rate_post):
+        resp = client.post(url, data=data)
+        assert resp.status_code == 200
 
-    def test_old_save_url_redirection(self):
-        url = reverse('browse-origin-save')
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 302)
-        redirect_url = reverse('origin-save')
-        self.assertEqual(resp['location'], redirect_url)
+    resp = client.post(url, data=data)
+    assert resp.status_code == 429
 
-    def _get_csrf_token(self, url):
-        resp = self.client.get(url)
-        return {
-            'csrfmiddlewaretoken': resp.cookies['csrftoken'].value
-        }
 
-    def _mock_create_save_origin_request(self, mock):
-        expected_data = {
-            'visit_type': self.visit_type,
-            'origin_url': self.origin['url'],
-            'save_request_date': datetime.now().isoformat(),
-            'save_request_status': SAVE_REQUEST_ACCEPTED,
-            'save_task_status': SAVE_TASK_NOT_YET_SCHEDULED,
-            'visit_date': None
-        }
-        mock.return_value = expected_data
+def test_old_save_url_redirection(client):
+    url = reverse('browse-origin-save')
+    resp = client.get(url)
+    assert resp.status_code == 302
+    redirect_url = reverse('origin-save')
+    assert resp['location'] == redirect_url
+
+
+def _get_csrf_token(client, url):
+    resp = client.get(url)
+    return {
+        'csrfmiddlewaretoken': resp.cookies['csrftoken'].value
+    }
+
+
+def _mock_create_save_origin_request(mock):
+    expected_data = {
+        'visit_type': visit_type,
+        'origin_url': origin['url'],
+        'save_request_date': datetime.now().isoformat(),
+        'save_request_status': SAVE_REQUEST_ACCEPTED,
+        'save_task_status': SAVE_TASK_NOT_YET_SCHEDULED,
+        'visit_date': None
+    }
+    mock.return_value = expected_data

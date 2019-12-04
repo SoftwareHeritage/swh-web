@@ -143,6 +143,7 @@ require('../modules/es.date.to-json');
 require('../modules/es.date.to-iso-string');
 require('../modules/es.date.to-string');
 require('../modules/es.date.to-primitive');
+require('../modules/es.json.stringify');
 require('../modules/es.json.to-string-tag');
 require('../modules/es.promise');
 require('../modules/es.promise.all-settled');
@@ -202,5 +203,6 @@ require('../modules/es.reflect.own-keys');
 require('../modules/es.reflect.prevent-extensions');
 require('../modules/es.reflect.set');
 require('../modules/es.reflect.set-prototype-of');
+var path = require('../internals/path');
 
-module.exports = require('../internals/path');
+module.exports = path;

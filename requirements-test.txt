@@ -2,7 +2,7 @@ hypothesis
 pytest
 pytest-django
 pytest-mock
-django-stubs
+django-stubs < 1.3.0
 requests-mock
 swh.core[http] >= 0.0.61
 swh.loader.git >= 0.0.47

@@ -1,5 +1,6 @@
 beautifulsoup4
 Django<2.0,>=1.11.0
+django-cors-headers
 djangorestframework>=3.4.0
 django_webpack_loader
 django_js_reverse
@@ -13,6 +14,7 @@ python-dateutil
 pyyaml
 requests
 python-memcached
+pybadges
 sphinx
 sphinxcontrib-httpdomain
 swh.model>=0.0.32
@@ -26,7 +28,7 @@ hypothesis
 pytest
 pytest-django
 pytest-mock
-django-stubs
+django-stubs<1.3.0
 requests-mock
 swh.core[http]>=0.0.61
 swh.loader.git>=0.0.47

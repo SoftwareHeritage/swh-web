@@ -129,19 +129,19 @@ def _re_encode_content(mimetype, encoding, content_data):
     elif mimetype.startswith('application/octet-stream'):
         # file may detect a text content as binary
         # so try to decode it for display
-        encodings = ['us-ascii']
+        encodings = ['us-ascii', 'utf-8']
         encodings += ['iso-8859-%s' % i for i in range(1, 17)]
-        for encoding in encodings:
+        for enc in encodings:
             try:
-                content_data = content_data.decode(encoding)\
-                                           .encode('utf-8')
+                content_data = content_data.decode(enc).encode('utf-8')
             except Exception:
                 pass
             else:
                 # ensure display in content view
+                encoding = enc
                 mimetype = 'text/plain'
                 break
-    return mimetype, content_data
+    return mimetype, encoding, content_data
 
 
 def request_content(query_string, max_size=content_display_max_size,
@@ -215,7 +215,7 @@ def request_content(query_string, max_size=content_display_max_size,
                     get_mimetype_and_encoding_for_content(content_data['raw_data']) # noqa
 
             if re_encode:
-                mimetype, raw_data = _re_encode_content(
+                mimetype, encoding, raw_data = _re_encode_content(
                     mimetype, encoding, content_data['raw_data'])
                 content_data['raw_data'] = raw_data
 
@@ -958,9 +958,9 @@ def get_snapshot_context(snapshot_id=None, origin_url=None,
 
     releases = list(reversed(releases))
 
-    snapshot_size = service.lookup_snapshot_size(snapshot_id)
+    snapshot_sizes = service.lookup_snapshot_sizes(snapshot_id)
 
-    is_empty = sum(snapshot_size.values()) == 0
+    is_empty = sum(snapshot_sizes.values()) == 0
 
     swh_snp_id = persistent_identifier('snapshot', snapshot_id)
 
@@ -968,7 +968,7 @@ def get_snapshot_context(snapshot_id=None, origin_url=None,
         'swh_type': swh_type,
         'swh_object_id': swh_snp_id,
         'snapshot_id': snapshot_id,
-        'snapshot_size': snapshot_size,
+        'snapshot_sizes': snapshot_sizes,
         'is_empty': is_empty,
         'origin_info': origin_info,
         'visit_info': visit_info,
@@ -1091,6 +1091,7 @@ def get_swh_persistent_ids(swh_objects, snapshot_context=None):
 
         swh_ids.append({
             'object_type': swh_object['type'],
+            'object_id': swh_object['id'],
             'object_icon': object_icon,
             'swh_id': swh_id,
             'swh_id_url': reverse('browse-swh-id',

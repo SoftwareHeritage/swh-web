@@ -52,6 +52,14 @@ See top-level LICENSE file for more information
           {% endif %}
             <div class="card">
               <div class="card-body swh-id-ui">
+                {% if snapshot_context and snapshot_context.origin_info %}
+                  <img class="swh-badge swh-badge-origin" src="{% url 'swh-badge' 'origin' snapshot_context.origin_info.url %}"
+                       onclick="swh.webapp.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url }}')"
+                       title="Click to display badge integration info">
+                {% endif %}
+                <img class="swh-badge swh-badge-{{ swh_id.object_type }}" src="{% url 'swh-badge' swh_id.object_type swh_id.object_id %}"
+                     onclick="swh.webapp.showBadgeInfoModal('{{ swh_id.object_type }}', $(this).parent().find('.swh-id').text())"
+                     title="Click to display badge integration info">
                 <pre><a class="swh-id" id="{{ swh_id.swh_id }}" href="{{ swh_id.swh_id_url }}">{{ swh_id.swh_id }}</a></pre>
                 {% if swh_id.show_options %}
                   <div class="float-left">
@@ -80,7 +88,6 @@ See top-level LICENSE file for more information
                   <button type="button" class="btn btn-default btn-sm btn-swh-id-copy"
                           title="Copy persistent identifier to clipboard">
                     <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy identifier
-                  </button>
                   <button type="button" class="btn btn-default btn-sm btn-swh-id-url-copy"
                           title="Copy url resolving the persistent identifier to clipboard">
                     <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy permalink
