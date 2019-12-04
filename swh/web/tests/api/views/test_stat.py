@@ -3,74 +3,68 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from rest_framework.test import APITestCase
-from unittest.mock import patch
-
 from swh.storage.exc import StorageDBError, StorageAPIError
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
-from swh.web.tests.testcase import WebTestCase
 
 
-class StatApiTestCase(WebTestCase, APITestCase):
-    @patch('swh.web.api.views.stat.service')
-    def test_api_1_stat_counters_raise_error(self, mock_service):
+def test_api_1_stat_counters_raise_error(api_client, mocker):
+    mock_service = mocker.patch('swh.web.api.views.stat.service')
+    mock_service.stat_counters.side_effect = BadInputExc(
+        'voluntary error to check the bad request middleware.')
 
-        mock_service.stat_counters.side_effect = BadInputExc(
-            'voluntary error to check the bad request middleware.')
+    url = reverse('api-1-stat-counters')
+    rv = api_client.get(url)
 
-        url = reverse('api-1-stat-counters')
-        rv = self.client.get(url)
+    assert rv.status_code == 400, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'BadInputExc',
+        'reason': 'voluntary error to check the bad request middleware.'}
 
-        self.assertEqual(rv.status_code, 400, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'BadInputExc',
-            'reason': 'voluntary error to check the bad request middleware.'})
 
-    @patch('swh.web.api.views.stat.service')
-    def test_api_1_stat_counters_raise_from_db(self, mock_service):
+def test_api_1_stat_counters_raise_from_db(api_client, mocker):
+    mock_service = mocker.patch('swh.web.api.views.stat.service')
+    mock_service.stat_counters.side_effect = StorageDBError(
+        'Storage exploded! Will be back online shortly!')
 
-        mock_service.stat_counters.side_effect = StorageDBError(
-            'Storage exploded! Will be back online shortly!')
+    url = reverse('api-1-stat-counters')
+    rv = api_client.get(url)
 
-        url = reverse('api-1-stat-counters')
-        rv = self.client.get(url)
+    assert rv.status_code == 503, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'StorageDBError',
+        'reason':
+        'An unexpected error occurred in the backend: '
+        'Storage exploded! Will be back online shortly!'}
 
-        self.assertEqual(rv.status_code, 503, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'StorageDBError',
-            'reason':
-            'An unexpected error occurred in the backend: '
-            'Storage exploded! Will be back online shortly!'})
 
-    @patch('swh.web.api.views.stat.service')
-    def test_api_1_stat_counters_raise_from_api(self, mock_service):
+def test_api_1_stat_counters_raise_from_api(api_client, mocker):
+    mock_service = mocker.patch('swh.web.api.views.stat.service')
+    mock_service.stat_counters.side_effect = StorageAPIError(
+        'Storage API dropped dead! Will resurrect from its ashes asap!'
+    )
 
-        mock_service.stat_counters.side_effect = StorageAPIError(
-            'Storage API dropped dead! Will resurrect from its ashes asap!'
-        )
+    url = reverse('api-1-stat-counters')
+    rv = api_client.get(url)
 
-        url = reverse('api-1-stat-counters')
-        rv = self.client.get(url)
+    assert rv.status_code == 503, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'StorageAPIError',
+        'reason':
+        'An unexpected error occurred in the api backend: '
+        'Storage API dropped dead! Will resurrect from its ashes asap!'
+    }
 
-        self.assertEqual(rv.status_code, 503, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'StorageAPIError',
-            'reason':
-            'An unexpected error occurred in the api backend: '
-            'Storage API dropped dead! Will resurrect from its ashes asap!'
-        })
 
-    def test_api_1_stat_counters(self):
+def test_api_1_stat_counters(api_client, archive_data):
+    url = reverse('api-1-stat-counters')
 
-        url = reverse('api-1-stat-counters')
+    rv = api_client.get(url)
 
-        rv = self.client.get(url)
-
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, self.storage.stat_counters())
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == archive_data.stat_counters()

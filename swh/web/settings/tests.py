@@ -34,6 +34,12 @@ swh_web_config.update({
                 },
                 'exempted_networks': ['127.0.0.0/8']
             },
+            'swh_api_origin_search': {
+                'limiter_rate': {
+                    'default': '100/min'
+                },
+                'exempted_networks': ['127.0.0.0/8']
+            },
             'swh_api_origin_visit_latest': {
                 'limiter_rate': {
                     'default': '6000/min'

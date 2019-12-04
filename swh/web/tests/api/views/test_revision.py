@@ -4,266 +4,268 @@
 # See top-level LICENSE file for more information
 
 from hypothesis import given
-from rest_framework.test import APITestCase
-from unittest.mock import patch
 
 from swh.web.common.exc import NotFoundExc
 
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import revision
-from swh.web.tests.testcase import WebTestCase
 
 
-class RevisionApiTestCase(WebTestCase, APITestCase):
+@given(revision())
+def test_api_revision(api_client, archive_data, revision):
+    url = reverse('api-1-revision', url_args={'sha1_git': revision})
+    rv = api_client.get(url)
 
-    @given(revision())
-    def test_api_revision(self, revision):
+    expected_revision = archive_data.revision_get(revision)
 
-        url = reverse('api-1-revision', url_args={'sha1_git': revision})
-        rv = self.client.get(url)
+    _enrich_revision(expected_revision)
 
-        expected_revision = self.revision_get(revision)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == expected_revision
 
-        self._enrich_revision(expected_revision)
 
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_revision)
+def test_api_revision_not_found(api_client):
+    unknown_revision_ = random_sha1()
 
-    def test_api_revision_not_found(self):
-        unknown_revision_ = random_sha1()
+    url = reverse('api-1-revision',
+                  url_args={'sha1_git': unknown_revision_})
+    rv = api_client.get(url)
 
-        url = reverse('api-1-revision',
-                      url_args={'sha1_git': unknown_revision_})
-        rv = self.client.get(url)
+    assert rv.status_code == 404, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'NotFoundExc',
+        'reason': 'Revision with sha1_git %s not found.' % unknown_revision_
+    }
 
-        self.assertEqual(rv.status_code, 404, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Revision with sha1_git %s not found.' %
-            unknown_revision_})
 
-    @given(revision())
-    def test_api_revision_raw_ok(self, revision):
+@given(revision())
+def test_api_revision_raw_ok(api_client, archive_data, revision):
+    url = reverse('api-1-revision-raw-message',
+                  url_args={'sha1_git': revision})
+    rv = api_client.get(url)
 
-        url = reverse('api-1-revision-raw-message',
-                      url_args={'sha1_git': revision})
-        rv = self.client.get(url)
+    expected_message = archive_data.revision_get(revision)['message']
 
-        expected_message = self.revision_get(revision)['message']
+    assert rv.status_code == 200
+    assert rv['Content-Type'] == 'application/octet-stream'
+    assert rv.content == expected_message.encode()
 
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/octet-stream')
-        self.assertEqual(rv.content, expected_message.encode())
 
-    def test_api_revision_raw_ko_no_rev(self):
-        unknown_revision_ = random_sha1()
+def test_api_revision_raw_ko_no_rev(api_client):
+    unknown_revision_ = random_sha1()
 
-        url = reverse('api-1-revision-raw-message',
-                      url_args={'sha1_git': unknown_revision_})
-        rv = self.client.get(url)
+    url = reverse('api-1-revision-raw-message',
+                  url_args={'sha1_git': unknown_revision_})
+    rv = api_client.get(url)
 
-        self.assertEqual(rv.status_code, 404, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Revision with sha1_git %s not found.' %
-            unknown_revision_})
+    assert rv.status_code == 404, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'NotFoundExc',
+        'reason': 'Revision with sha1_git %s not found.' % unknown_revision_
+    }
 
-    @given(revision())
-    def test_api_revision_log(self, revision):
 
-        per_page = 10
+@given(revision())
+def test_api_revision_log(api_client, archive_data, revision):
+    per_page = 10
 
-        url = reverse('api-1-revision-log', url_args={'sha1_git': revision},
-                      query_params={'per_page': per_page})
+    url = reverse('api-1-revision-log', url_args={'sha1_git': revision},
+                  query_params={'per_page': per_page})
 
-        rv = self.client.get(url)
+    rv = api_client.get(url)
 
-        expected_log = self.revision_log(revision, limit=per_page+1)
-        expected_log = list(map(self._enrich_revision, expected_log))
+    expected_log = archive_data.revision_log(revision, limit=per_page+1)
+    expected_log = list(map(_enrich_revision, expected_log))
 
-        has_next = len(expected_log) > per_page
+    has_next = len(expected_log) > per_page
 
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data,
-                         expected_log[:-1] if has_next else expected_log)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == (expected_log[:-1] if has_next else expected_log)
 
-        if has_next:
-            self.assertIn('Link', rv)
-            next_log_url = reverse(
-                'api-1-revision-log',
-                url_args={'sha1_git': expected_log[-1]['id']},
-                query_params={'per_page': per_page})
-            self.assertIn(next_log_url, rv['Link'])
+    if has_next:
+        assert 'Link' in rv
+        next_log_url = reverse(
+            'api-1-revision-log',
+            url_args={'sha1_git': expected_log[-1]['id']},
+            query_params={'per_page': per_page})
+        assert next_log_url in rv['Link']
 
-    def test_api_revision_log_not_found(self):
-        unknown_revision_ = random_sha1()
 
-        url = reverse('api-1-revision-log',
-                      url_args={'sha1_git': unknown_revision_})
+def test_api_revision_log_not_found(api_client):
+    unknown_revision_ = random_sha1()
 
-        rv = self.client.get(url)
+    url = reverse('api-1-revision-log',
+                  url_args={'sha1_git': unknown_revision_})
 
-        self.assertEqual(rv.status_code, 404, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Revision with sha1_git %s not found.' %
-            unknown_revision_})
-        self.assertFalse(rv.has_header('Link'))
+    rv = api_client.get(url)
 
-    @given(revision())
-    def test_api_revision_log_context(self, revision):
+    assert rv.status_code == 404, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'NotFoundExc',
+        'reason': 'Revision with sha1_git %s not found.' % unknown_revision_
+    }
+    assert not rv.has_header('Link')
 
-        revisions = self.revision_log(revision, limit=4)
 
-        prev_rev = revisions[0]['id']
-        rev = revisions[-1]['id']
+@given(revision())
+def test_api_revision_log_context(api_client, archive_data, revision):
+    revisions = archive_data.revision_log(revision, limit=4)
 
-        per_page = 10
+    prev_rev = revisions[0]['id']
+    rev = revisions[-1]['id']
 
-        url = reverse('api-1-revision-log',
-                      url_args={'sha1_git': rev,
-                                'prev_sha1s': prev_rev},
-                      query_params={'per_page': per_page})
+    per_page = 10
 
-        rv = self.client.get(url)
+    url = reverse('api-1-revision-log',
+                  url_args={'sha1_git': rev,
+                            'prev_sha1s': prev_rev},
+                  query_params={'per_page': per_page})
 
-        expected_log = self.revision_log(rev, limit=per_page)
-        prev_revision = self.revision_get(prev_rev)
-        expected_log.insert(0, prev_revision)
-        expected_log = list(map(self._enrich_revision, expected_log))
+    rv = api_client.get(url)
 
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_log)
+    expected_log = archive_data.revision_log(rev, limit=per_page)
+    prev_revision = archive_data.revision_get(prev_rev)
+    expected_log.insert(0, prev_revision)
+    expected_log = list(map(_enrich_revision, expected_log))
 
-    @patch('swh.web.api.views.revision._revision_directory_by')
-    def test_api_revision_directory_ko_not_found(self, mock_rev_dir):
-        # given
-        mock_rev_dir.side_effect = NotFoundExc('Not found')
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == expected_log
 
-        # then
-        rv = self.client.get('/api/1/revision/999/directory/some/path/to/dir/')
 
-        self.assertEqual(rv.status_code, 404, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Not found'})
+def test_api_revision_directory_ko_not_found(api_client, mocker):
+    mock_rev_dir = mocker.patch(
+        'swh.web.api.views.revision._revision_directory_by')
+    mock_rev_dir.side_effect = NotFoundExc('Not found')
 
-        mock_rev_dir.assert_called_once_with(
-            {'sha1_git': '999'},
-            'some/path/to/dir',
-            '/api/1/revision/999/directory/some/path/to/dir/',
-            with_data=False)
+    rv = api_client.get('/api/1/revision/999/directory/some/path/to/dir/')
 
-    @patch('swh.web.api.views.revision._revision_directory_by')
-    def test_api_revision_directory_ok_returns_dir_entries(self, mock_rev_dir):
-        stub_dir = {
-            'type': 'dir',
-            'revision': '999',
-            'content': [
-                {
-                    'sha1_git': '789',
-                    'type': 'file',
-                    'target': '101',
-                    'target_url': '/api/1/content/sha1_git:101/',
-                    'name': 'somefile',
-                    'file_url': '/api/1/revision/999/directory/some/path/'
-                    'somefile/'
-                },
-                {
-                    'sha1_git': '123',
-                    'type': 'dir',
-                    'target': '456',
-                    'target_url': '/api/1/directory/456/',
-                    'name': 'to-subdir',
-                    'dir_url': '/api/1/revision/999/directory/some/path/'
-                    'to-subdir/',
-                }]
-        }
+    assert rv.status_code == 404, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == {
+        'exception': 'NotFoundExc',
+        'reason': 'Not found'
+    }
 
-        # given
-        mock_rev_dir.return_value = stub_dir
+    mock_rev_dir.assert_called_once_with(
+        {'sha1_git': '999'},
+        'some/path/to/dir',
+        '/api/1/revision/999/directory/some/path/to/dir/',
+        with_data=False
+    )
 
-        # then
-        rv = self.client.get('/api/1/revision/999/directory/some/path/')
 
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, stub_dir)
-
-        mock_rev_dir.assert_called_once_with(
-            {'sha1_git': '999'},
-            'some/path',
-            '/api/1/revision/999/directory/some/path/',
-            with_data=False)
-
-    @patch('swh.web.api.views.revision._revision_directory_by')
-    def test_api_revision_directory_ok_returns_content(self, mock_rev_dir):
-        stub_content = {
-            'type': 'file',
-            'revision': '999',
-            'content': {
+def test_api_revision_directory_ok_returns_dir_entries(api_client, mocker):
+    mock_rev_dir = mocker.patch(
+        'swh.web.api.views.revision._revision_directory_by')
+    stub_dir = {
+        'type': 'dir',
+        'revision': '999',
+        'content': [
+            {
                 'sha1_git': '789',
-                'sha1': '101',
-                'data_url': '/api/1/content/101/raw/',
+                'type': 'file',
+                'target': '101',
+                'target_url': '/api/1/content/sha1_git:101/',
+                'name': 'somefile',
+                'file_url': '/api/1/revision/999/directory/some/path/'
+                'somefile/'
+            },
+            {
+                'sha1_git': '123',
+                'type': 'dir',
+                'target': '456',
+                'target_url': '/api/1/directory/456/',
+                'name': 'to-subdir',
+                'dir_url': '/api/1/revision/999/directory/some/path/'
+                'to-subdir/',
             }
+        ]
+    }
+
+    mock_rev_dir.return_value = stub_dir
+
+    rv = api_client.get('/api/1/revision/999/directory/some/path/')
+
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == stub_dir
+
+    mock_rev_dir.assert_called_once_with(
+        {'sha1_git': '999'},
+        'some/path',
+        '/api/1/revision/999/directory/some/path/',
+        with_data=False
+    )
+
+
+def test_api_revision_directory_ok_returns_content(api_client, mocker):
+    mock_rev_dir = mocker.patch(
+        'swh.web.api.views.revision._revision_directory_by')
+    stub_content = {
+        'type': 'file',
+        'revision': '999',
+        'content': {
+            'sha1_git': '789',
+            'sha1': '101',
+            'data_url': '/api/1/content/101/raw/',
         }
+    }
 
-        # given
-        mock_rev_dir.return_value = stub_content
+    mock_rev_dir.return_value = stub_content
 
-        # then
-        url = '/api/1/revision/666/directory/some/other/path/'
-        rv = self.client.get(url)
+    url = '/api/1/revision/666/directory/some/other/path/'
+    rv = api_client.get(url)
 
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, stub_content)
+    assert rv.status_code == 200, rv.data
+    assert rv['Content-Type'] == 'application/json'
+    assert rv.data == stub_content
 
-        mock_rev_dir.assert_called_once_with(
-            {'sha1_git': '666'}, 'some/other/path', url, with_data=False)
+    mock_rev_dir.assert_called_once_with(
+        {'sha1_git': '666'}, 'some/other/path', url, with_data=False)
 
-    def _enrich_revision(self, revision):
-        directory_url = reverse(
-            'api-1-directory',
-            url_args={'sha1_git': revision['directory']})
 
-        history_url = reverse('api-1-revision-log',
-                              url_args={'sha1_git': revision['id']})
+@given(revision())
+def test_api_revision_uppercase(api_client, revision):
+    url = reverse('api-1-revision-uppercase-checksum',
+                  url_args={'sha1_git': revision.upper()})
 
-        parents_id_url = []
-        for p in revision['parents']:
-            parents_id_url.append({
-                'id': p,
-                'url': reverse('api-1-revision', url_args={'sha1_git': p})
-            })
+    resp = api_client.get(url)
+    assert resp.status_code == 302
 
-        revision_url = reverse('api-1-revision',
-                               url_args={'sha1_git': revision['id']})
+    redirect_url = reverse('api-1-revision',
+                           url_args={'sha1_git': revision})
 
-        revision['directory_url'] = directory_url
-        revision['history_url'] = history_url
-        revision['url'] = revision_url
-        revision['parents'] = parents_id_url
+    assert resp['location'] == redirect_url
 
-        return revision
 
-    @given(revision())
-    def test_api_revision_uppercase(self, revision):
-        url = reverse('api-1-revision-uppercase-checksum',
-                      url_args={'sha1_git': revision.upper()})
+def _enrich_revision(revision):
+    directory_url = reverse(
+        'api-1-directory',
+        url_args={'sha1_git': revision['directory']})
 
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 302)
+    history_url = reverse('api-1-revision-log',
+                          url_args={'sha1_git': revision['id']})
 
-        redirect_url = reverse('api-1-revision',
-                               url_args={'sha1_git': revision})
+    parents_id_url = []
+    for p in revision['parents']:
+        parents_id_url.append({
+            'id': p,
+            'url': reverse('api-1-revision', url_args={'sha1_git': p})
+        })
 
-        self.assertEqual(resp['location'], redirect_url)
+    revision_url = reverse('api-1-revision',
+                           url_args={'sha1_git': revision['id']})
+
+    revision['directory_url'] = directory_url
+    revision['history_url'] = history_url
+    revision['url'] = revision_url
+    revision['parents'] = parents_id_url
+
+    return revision

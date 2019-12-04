@@ -5,15 +5,18 @@
  * See top-level LICENSE file for more information
  */
 
-import {heapsPermute} from 'utils/heaps-permute';
 import {handleFetchError} from 'utils/functions';
 
-let originPatterns;
-let perPage = 100;
-let limit = perPage * 2;
-let offset = 0;
-let currentData = null;
+const limit = 100;
+let linksPrev = [];
+let linkNext = null;
+let linkCurrent = null;
 let inSearch = false;
+
+function parseLinkHeader(s) {
+  let re = /<(.+)>; rel="next"/;
+  return s.match(re)[1];
+}
 
 function fixTableRowsStyle() {
   setTimeout(() => {
@@ -25,15 +28,13 @@ function clearOriginSearchResultsTable() {
   $('#origin-search-results tbody tr').remove();
 }
 
-function populateOriginSearchResultsTable(origins, offset) {
-  let localOffset = offset % limit;
+function populateOriginSearchResultsTable(origins) {
   if (origins.length > 0) {
     $('#swh-origin-search-results').show();
     $('#swh-no-result').hide();
     clearOriginSearchResultsTable();
     let table = $('#origin-search-results tbody');
-    for (let i = localOffset; i < localOffset + perPage && i < origins.length; ++i) {
-      let origin = origins[i];
+    for (let [i, origin] of origins.entries()) {
       let browseUrl = Urls.browse_origin(origin.url);
       let tableRow = `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
@@ -65,63 +66,64 @@ function populateOriginSearchResultsTable(origins, offset) {
     $('#swh-no-result').text('No origins matching the search criteria were found.');
     $('#swh-no-result').show();
   }
-  if (origins.length - localOffset < perPage ||
-      (origins.length < limit && (localOffset + perPage) === origins.length)) {
+
+  if (linkNext === null) {
     $('#origins-next-results-button').addClass('disabled');
   } else {
     $('#origins-next-results-button').removeClass('disabled');
   }
-  if (offset > 0) {
-    $('#origins-prev-results-button').removeClass('disabled');
-  } else {
+
+  if (linksPrev.length === 0) {
     $('#origins-prev-results-button').addClass('disabled');
+  } else {
+    $('#origins-prev-results-button').removeClass('disabled');
   }
+
   inSearch = false;
   setTimeout(() => {
     window.scrollTo(0, 0);
   });
 }
 
-function escapeStringRegexp(str) {
-  let matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
-  return str.replace(matchOperatorsRe, '\\\\\\$&');
-}
-
-function searchOrigins(patterns, limit, searchOffset, offset) {
+function searchOriginsFirst(searchQueryText, limit) {
   let baseSearchUrl;
   let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
   if (searchMetadata) {
-    baseSearchUrl = Urls.api_1_origin_metadata_search() + `?fulltext=${patterns}`;
+    baseSearchUrl = Urls.api_1_origin_metadata_search() + '?fulltext=' + encodeURIComponent(searchQueryText);
   } else {
-    originPatterns = patterns;
-    let patternsArray = patterns.trim().replace(/\s+/g, ' ').split(' ');
-    for (let i = 0; i < patternsArray.length; ++i) {
-      patternsArray[i] = escapeStringRegexp(patternsArray[i]);
-    }
-    // url length must be less than 4096 for modern browsers
-    // assuming average word length, 6 is max patternArray.length
-    if (patternsArray.length < 7) {
-      let patternsPermut = [];
-      heapsPermute(patternsArray, p => patternsPermut.push(p.join('.*')));
-      let regex = patternsPermut.join('|');
-      baseSearchUrl = Urls.browse_origin_search(regex) + `?regexp=true`;
-    } else {
-      baseSearchUrl = Urls.browse_origin_search(patternsArray.join('.*')) + `?regexp=true`;
-    }
+    baseSearchUrl = Urls.api_1_origin_search(searchQueryText);
   }
 
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-  let searchUrl = baseSearchUrl + `&limit=${limit}&offset=${searchOffset}&with_visit=${withVisit}`;
+  let searchUrl = baseSearchUrl + `?limit=${limit}&with_visit=${withVisit}`;
+  searchOrigins(searchUrl);
+}
 
+function searchOrigins(searchUrl) {
   clearOriginSearchResultsTable();
   $('.swh-loading').addClass('show');
-  fetch(searchUrl)
+  let response = fetch(searchUrl)
     .then(handleFetchError)
-    .then(response => response.json())
+    .then(resp => {
+      response = resp;
+      return response.json();
+    })
     .then(data => {
-      currentData = data;
+      // Save link to the current results page
+      linkCurrent = searchUrl;
+      // Save link to the next results page.
+      linkNext = null;
+      if (response.headers.has('Link')) {
+        let parsedLink = parseLinkHeader(response.headers.get('Link'));
+        if (parsedLink !== undefined) {
+          linkNext = parsedLink;
+        }
+      }
+      // prevLinks is updated by the caller, which is the one to know if
+      // we're going forward or backward in the pages.
+
       $('.swh-loading').removeClass('show');
-      populateOriginSearchResultsTable(data, offset);
+      populateOriginSearchResultsTable(data);
     })
     .catch(response => {
       $('.swh-loading').removeClass('show');
@@ -134,11 +136,10 @@ function searchOrigins(patterns, limit, searchOffset, offset) {
 
 function doSearch() {
   $('#swh-no-result').hide();
-  let patterns = $('#origins-url-patterns').val();
-  offset = 0;
+  let searchQueryText = $('#origins-url-patterns').val();
   inSearch = true;
   // first try to resolve a swh persistent identifier
-  let resolvePidUrl = Urls.api_1_resolve_swh_pid(patterns);
+  let resolvePidUrl = Urls.api_1_resolve_swh_pid(searchQueryText);
   fetch(resolvePidUrl)
     .then(handleFetchError)
     .then(response => response.json())
@@ -149,7 +150,7 @@ function doSearch() {
     })
     .catch(response => {
       // pid resolving failed
-      if (patterns.startsWith('swh:')) {
+      if (searchQueryText.startsWith('swh:')) {
         // display a useful error message if the input
         // looks like a swh pid
         response.json().then(data => {
@@ -162,7 +163,7 @@ function doSearch() {
         // otherwise, proceed with origins search
         $('#swh-origin-search-results').show();
         $('.swh-search-pagination').show();
-        searchOrigins(patterns, limit, offset, offset);
+        searchOriginsFirst(searchQueryText, limit);
       }
     });
 }
@@ -171,11 +172,11 @@ export function initOriginSearch() {
   $(document).ready(() => {
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
-      let patterns = $('#origins-url-patterns').val().trim();
+      let searchQueryText = $('#origins-url-patterns').val().trim();
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
       let withContent = $('#swh-filter-empty-visits').prop('checked');
       let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
-      let queryParameters = '?q=' + encodeURIComponent(patterns);
+      let queryParameters = '?q=' + encodeURIComponent(searchQueryText);
       if (withVisit) {
         queryParameters += '&with_visit';
       }
@@ -194,12 +195,8 @@ export function initOriginSearch() {
         return;
       }
       inSearch = true;
-      offset += perPage;
-      if (!currentData || (offset >= limit && offset % limit === 0)) {
-        searchOrigins(originPatterns, limit, offset, offset);
-      } else {
-        populateOriginSearchResultsTable(currentData, offset);
-      }
+      linksPrev.push(linkCurrent);
+      searchOrigins(linkNext);
       event.preventDefault();
     });
 
@@ -208,12 +205,7 @@ export function initOriginSearch() {
         return;
       }
       inSearch = true;
-      offset -= perPage;
-      if (!currentData || (offset > 0 && (offset + perPage) % limit === 0)) {
-        searchOrigins(originPatterns, limit, (offset + perPage) - limit, offset);
-      } else {
-        populateOriginSearchResultsTable(currentData, offset);
-      }
+      searchOrigins(linksPrev.pop());
       event.preventDefault();
     });
 

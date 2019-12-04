@@ -10,99 +10,95 @@ from hypothesis import given
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, get_swh_persistent_id
 )
+from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
-    release, origin_with_release, unknown_release
+    release, origin_with_releases, unknown_release
 )
-from swh.web.tests.testcase import WebTestCase
 
 
-class SwhBrowseReleaseTest(WebTestCase):
+@given(release())
+def test_release_browse(client, archive_data, release):
+    url = reverse('browse-release',
+                  url_args={'sha1_git': release})
 
-    @given(release())
-    def test_release_browse(self, release):
+    release_data = archive_data.release_get(release)
 
-        url = reverse('browse-release',
-                      url_args={'sha1_git': release})
+    resp = client.get(url)
 
-        release_data = self.release_get(release)
+    _release_browse_checks(resp, release_data)
 
-        resp = self.client.get(url)
 
-        self._release_browse_checks(resp, release_data)
+@given(origin_with_releases())
+def test_release_browse_with_origin(client, archive_data, origin):
+    snapshot = archive_data.snapshot_get_latest(origin['url'])
+    release = random.choice([b for b in snapshot['branches'].values()
+                             if b['target_type'] == 'release'])
+    url = reverse('browse-release',
+                  url_args={'sha1_git': release['target']},
+                  query_params={'origin': origin['url']})
 
-    @given(origin_with_release())
-    def test_release_browse_with_origin(self, origin):
-        snapshot = self.snapshot_get_latest(origin['url'])
-        release = random.choice([b for b in snapshot['branches'].values()
-                                 if b['target_type'] == 'release'])
-        url = reverse('browse-release',
-                      url_args={'sha1_git': release['target']},
-                      query_params={'origin': origin['url']})
+    release_data = archive_data.release_get(release['target'])
 
-        release_data = self.release_get(release['target'])
+    resp = client.get(url)
 
-        resp = self.client.get(url)
+    _release_browse_checks(resp, release_data, origin)
 
-        self._release_browse_checks(resp, release_data, origin)
 
-    @given(unknown_release())
-    def test_release_browse_not_found(self, unknown_release):
-        url = reverse('browse-release',
-                      url_args={'sha1_git': unknown_release})
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 404)
-        self.assertTemplateUsed('error.html')
-        err_msg = 'Release with sha1_git %s not found' % unknown_release
-        self.assertContains(resp, err_msg, status_code=404)
+@given(unknown_release())
+def test_release_browse_not_found(client, archive_data, unknown_release):
+    url = reverse('browse-release',
+                  url_args={'sha1_git': unknown_release})
+    resp = client.get(url)
+    assert resp.status_code == 404
+    assert_template_used(resp, 'error.html')
+    err_msg = 'Release with sha1_git %s not found' % unknown_release
+    assert_contains(resp, err_msg, status_code=404)
 
-    def _release_browse_checks(self, resp, release_data, origin_info=None):
 
-        query_params = {}
-        if origin_info:
-            query_params['origin'] = origin_info['url']
+@given(release())
+def test_release_uppercase(client, release):
+    url = reverse('browse-release-uppercase-checksum',
+                  url_args={'sha1_git': release.upper()})
 
-        release_id = release_data['id']
-        release_name = release_data['name']
-        author_name = release_data['author']['name']
+    resp = client.get(url)
+    assert resp.status_code == 302
 
-        release_date = release_data['date']
-        message = release_data['message']
-        target_type = release_data['target_type']
-        target = release_data['target']
+    redirect_url = reverse('browse-release',
+                           url_args={'sha1_git': release})
 
-        target_url = reverse('browse-revision',
-                             url_args={'sha1_git': target},
-                             query_params=query_params)
-        message_lines = message.split('\n')
+    assert resp['location'] == redirect_url
 
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed('browse/release.html')
-        self.assertContains(resp, author_name)
-        self.assertContains(resp, format_utc_iso_date(release_date))
-        self.assertContains(resp,
-                            '<h6>%s</h6>%s' % (message_lines[0] or 'None',
-                                               '\n'.join(message_lines[1:])))
-        self.assertContains(resp, release_id)
-        self.assertContains(resp, release_name)
-        self.assertContains(resp, target_type)
-        self.assertContains(resp, '<a href="%s">%s</a>' %
-                                  (target_url, target))
 
-        swh_rel_id = get_swh_persistent_id('release', release_id)
-        swh_rel_id_url = reverse('browse-swh-id',
-                                 url_args={'swh_id': swh_rel_id})
-        self.assertContains(resp, swh_rel_id)
-        self.assertContains(resp, swh_rel_id_url)
+def _release_browse_checks(resp, release_data, origin_info=None):
+    query_params = {}
+    if origin_info:
+        query_params['origin'] = origin_info['url']
 
-    @given(release())
-    def test_release_uppercase(self, release):
-        url = reverse('browse-release-uppercase-checksum',
-                      url_args={'sha1_git': release.upper()})
+    release_id = release_data['id']
+    release_name = release_data['name']
+    author_name = release_data['author']['name']
 
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 302)
+    release_date = release_data['date']
+    message = release_data['message']
+    target_type = release_data['target_type']
+    target = release_data['target']
 
-        redirect_url = reverse('browse-release',
-                               url_args={'sha1_git': release})
+    target_url = reverse('browse-revision', url_args={'sha1_git': target},
+                         query_params=query_params)
+    message_lines = message.split('\n')
 
-        self.assertEqual(resp['location'], redirect_url)
+    assert resp.status_code == 200
+    assert_template_used(resp, 'browse/release.html')
+    assert_contains(resp, author_name)
+    assert_contains(resp, format_utc_iso_date(release_date))
+    assert_contains(resp, '<h6>%s</h6>%s' % (message_lines[0] or 'None',
+                                             '\n'.join(message_lines[1:])))
+    assert_contains(resp, release_id)
+    assert_contains(resp, release_name)
+    assert_contains(resp, target_type)
+    assert_contains(resp, '<a href="%s">%s</a>' % (target_url, target))
+
+    swh_rel_id = get_swh_persistent_id('release', release_id)
+    swh_rel_id_url = reverse('browse-swh-id', url_args={'swh_id': swh_rel_id})
+    assert_contains(resp, swh_rel_id)
+    assert_contains(resp, swh_rel_id_url)

@@ -3,30 +3,52 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-import os
+import re
 
 from datetime import datetime, timedelta, timezone
+from functools import partial
 
 import pytest
-import requests_mock
+import requests
 
-from swh.web.common.models import (
-    SaveOriginRequest
-)
+from swh.core.pytest_plugin import get_response_cb
+
+from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import get_save_origin_task_info
 from swh.web.config import get_config
 
-
-_RESOURCES_PATH = os.path.join(os.path.dirname(__file__), '../resources')
 
 _es_url = 'http://esnode1.internal.softwareheritage.org:9200'
 _es_workers_index_url = '%s/swh_workers-*' % _es_url
 
 
+@pytest.fixture(autouse=True)
+def requests_mock_datadir(datadir, requests_mock_datadir):
+    """Override default behavior to deal with post method
+
+    """
+    cb = partial(get_response_cb, datadir=datadir)
+    requests_mock_datadir.post(re.compile('https?://'), body=cb)
+    return requests_mock_datadir
+
+
+@pytest.mark.django_db
+def test_get_save_origin_archived_task_info(mocker):
+    _get_save_origin_task_info_test(mocker, task_archived=True)
+
+
+@pytest.mark.django_db
+def test_get_save_origin_task_info_with_es(mocker):
+    _get_save_origin_task_info_test(mocker, es_available=True)
+
+
+@pytest.mark.django_db
+def test_get_save_origin_task_info_without_es(mocker):
+    _get_save_origin_task_info_test(mocker, es_available=False)
+
+
 def _get_save_origin_task_info_test(mocker, task_archived=False,
                                     es_available=True):
-
     swh_web_config = get_config()
 
     if es_available:
@@ -79,18 +101,11 @@ def _get_save_origin_task_info_test(mocker, task_archived=False,
     }
     mock_scheduler.get_task_runs.return_value = [task_run]
 
-    es_response = os.path.join(_RESOURCES_PATH,
-                               'json/es_task_info_response.json')
-    with open(es_response) as json_fd:
-        es_response = json.load(json_fd)
+    es_response = requests.post('%s/_search' % _es_workers_index_url).json()
 
     task_exec_data = es_response['hits']['hits'][-1]['_source']
 
-    with requests_mock.Mocker() as requests_mocker:
-        requests_mocker.register_uri('POST', _es_workers_index_url+'/_search',
-                                     json=es_response)
-
-        sor_task_info = get_save_origin_task_info(sor_id)
+    sor_task_info = get_save_origin_task_info(sor_id)
 
     expected_result = {
         'type': task['type'],
@@ -110,18 +125,3 @@ def _get_save_origin_task_info_test(mocker, task_archived=False,
         })
 
     assert sor_task_info == expected_result
-
-
-@pytest.mark.django_db
-def test_get_save_origin_archived_task_info(mocker):
-    _get_save_origin_task_info_test(mocker, task_archived=True)
-
-
-@pytest.mark.django_db
-def test_get_save_origin_task_info_with_es(mocker):
-    _get_save_origin_task_info_test(mocker, es_available=True)
-
-
-@pytest.mark.django_db
-def test_get_save_origin_task_info_without_es(mocker):
-    _get_save_origin_task_info_test(mocker, es_available=False)
