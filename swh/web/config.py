@@ -20,10 +20,8 @@ DEFAULT_CONFIG = {
     'allowed_hosts': ('list', []),
     'storage': ('dict', {
         'cls': 'remote',
-        'args': {
-            'url': 'http://127.0.0.1:5002/',
-            'timeout': 10,
-        },
+        'url': 'http://127.0.0.1:5002/',
+        'timeout': 10,
     }),
     'indexer_storage': ('dict', {
         'cls': 'remote',
@@ -48,6 +46,12 @@ DEFAULT_CONFIG = {
             'swh_api': {
                 'limiter_rate': {
                     'default': '120/h'
+                },
+                'exempted_networks': ['127.0.0.0/8']
+            },
+            'swh_api_origin_search': {
+                'limiter_rate': {
+                    'default': '10/m'
                 },
                 'exempted_networks': ['127.0.0.0/8']
             },

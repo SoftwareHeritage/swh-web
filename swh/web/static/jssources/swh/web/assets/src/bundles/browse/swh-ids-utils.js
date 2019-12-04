@@ -88,6 +88,7 @@ $(document).ready(() => {
 
   let tabSlideOptions = {
     tabLocation: 'right',
+    clickScreenToCloseFilters: ['.ui-slideouttab-panel', '.modal'],
     offset: function() {
       const width = $(window).width();
       if (width < BREAKPOINT_SM) {

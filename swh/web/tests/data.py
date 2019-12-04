@@ -33,8 +33,7 @@ from swh.web.common.highlightjs import get_hljs_language_from_filename
 # Configuration for git loader
 _TEST_LOADER_CONFIG = {
     'storage': {
-        'cls': 'memory',
-        'args': {}
+        'cls': 'memory'
     },
     'send_contents': True,
     'send_directories': True,
@@ -55,8 +54,7 @@ _TEST_LOADER_CONFIG = {
 # Base content indexer configuration
 _TEST_INDEXER_BASE_CONFIG = {
     'storage': {
-        'cls': 'memory',
-        'args': {},
+        'cls': 'memory'
     },
     'objstorage': {
         'cls': 'memory',
@@ -185,6 +183,14 @@ def _init_tests_data():
                         origin['visit_date'][i])
 
         origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
+
+    for i in range(250):
+        url = 'https://many.origins/%d' % (i+1)
+        storage.origin_add([{'url': url}])
+        visit = storage.origin_visit_add(url, '2019-12-03 13:55:05', 'tar')
+        storage.origin_visit_update(
+            url, visit['visit'],
+            snapshot='1a8893e6a86f444e8be8e7bda6cb34fb1735a00e')
 
     contents = set()
     directories = set()
