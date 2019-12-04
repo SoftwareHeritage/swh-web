@@ -23,18 +23,18 @@ from swh.web.common.utils import reverse, resolve_swh_persistent_id
 
 
 _orange = '#f36a24'
-_yellow = '#fac11f'
+_blue = '#0172b2'
 _red = '#cd5741'
 
 _swh_logo_data = None
 
 _badge_config = {
     CONTENT: {
-        'color': _yellow,
+        'color': _blue,
         'title': 'Archived source file',
     },
     DIRECTORY: {
-        'color': _yellow,
+        'color': _blue,
         'title': 'Archived source tree',
     },
     ORIGIN: {
@@ -42,15 +42,15 @@ _badge_config = {
         'title': 'Archived software repository',
     },
     RELEASE: {
-        'color': _yellow,
+        'color': _blue,
         'title': 'Archived software release',
     },
     REVISION: {
-        'color': _yellow,
+        'color': _blue,
         'title': 'Archived commit',
     },
     SNAPSHOT: {
-        'color': _yellow,
+        'color': _blue,
         'title': 'Archived software repository snapshot',
     },
     'error': {
