@@ -6,6 +6,7 @@
 import json
 
 import requests
+import sentry_sdk
 
 from django.conf.urls import url, include
 from django.contrib.staticfiles import finders
@@ -33,8 +34,8 @@ def _stat_counters(request):
         try:
             response = requests.get(url, timeout=5)
             stat_counters_history = response.text
-        except Exception:
-            pass
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
     json_data = '{"stat_counters": %s, "stat_counters_history": %s}' % (
         json.dumps(stat), stat_counters_history)
     return HttpResponse(json_data, content_type='application/json')

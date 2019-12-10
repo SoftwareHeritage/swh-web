@@ -3,18 +3,18 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-import logging
-
 from bisect import bisect_right
 from datetime import datetime, timezone, timedelta
-
-import requests
+import json
+import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.utils.html import escape
+
+import requests
+import sentry_sdk
 
 from swh.web import config
 from swh.web.common import service
@@ -153,8 +153,8 @@ def _get_visit_info_for_save_request(save_request):
             visit_status = origin_visits[i]['status']
             if origin_visits[i]['status'] == 'ongoing':
                 visit_date = None
-    except Exception:
-        pass
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
     return visit_date, visit_status
 
 
@@ -522,8 +522,8 @@ def get_save_origin_task_info(save_request_id):
                 task_run['worker'] = task_run_info['hostname']
             elif 'host' in task_run_info:
                 task_run['worker'] = task_run_info['host']
-    except Exception as e:
-        logger.warning('Request to Elasticsearch failed\n%s' % str(e))
-        pass
+    except Exception as exc:
+        logger.warning('Request to Elasticsearch failed\n%s', exc)
+        sentry_sdk.capture_exception(exc)
 
     return task_run

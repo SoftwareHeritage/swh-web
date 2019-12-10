@@ -5,6 +5,7 @@
 
 from bs4 import BeautifulSoup
 from htmlmin import minify
+import sentry_sdk
 
 
 class HtmlPrettifyMiddleware(object):
@@ -45,8 +46,8 @@ class HtmlMinifyMiddleware(object):
             try:
                 minified_html = minify(response.content.decode('utf-8'))
                 response.content = minified_html.encode('utf-8')
-            except Exception:
-                pass
+            except Exception as exc:
+                sentry_sdk.capture_exception(exc)
         return response
 
 

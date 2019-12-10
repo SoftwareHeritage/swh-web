@@ -11,6 +11,7 @@
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
+import sentry_sdk
 
 from swh.model.identifiers import snapshot_identifier
 
@@ -182,7 +183,8 @@ def _process_snapshot_request(request, snapshot_id=None,
             revision_id = release['target']
             release_id = release['id']
             query_params['release'] = release_name
-        except Exception:
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
             _branch_not_found('release', release_name, snapshot_id,
                               snapshot_sizes, origin_info, timestamp, visit_id)
     elif snapshot_total_size:
@@ -195,7 +197,8 @@ def _process_snapshot_request(request, snapshot_id=None,
             branch_name = branch['name']
             revision_id = branch['revision']
             root_sha1_git = branch['directory']
-        except Exception:
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
             _branch_not_found('branch', branch_name, snapshot_id,
                               snapshot_sizes, origin_info, timestamp, visit_id)
 

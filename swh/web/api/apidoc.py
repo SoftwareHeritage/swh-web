@@ -7,12 +7,13 @@ import docutils.nodes
 import docutils.parsers.rst
 import docutils.utils
 import functools
+from functools import wraps
 import os
 import re
 import textwrap
 
-from functools import wraps
 from rest_framework.decorators import api_view
+import sentry_sdk
 
 from swh.web.common.utils import parse_rst
 from swh.web.api.apiurls import APIUrls
@@ -313,6 +314,7 @@ def api_doc(route, noargs=False, need_params=False, tags=[],
             try:
                 response = f(request, **kwargs)
             except Exception as exc:
+                sentry_sdk.capture_exception(exc)
                 if request.accepted_media_type == 'text/html' and \
                         need_params and not request.query_params:
                     response = None

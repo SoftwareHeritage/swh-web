@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.shortcuts import render
+import sentry_sdk
 
 from swh.web.common import service
 from swh.web.common.utils import (
@@ -42,7 +43,7 @@ def release_browse(request, sha1_git):
             try:
                 snapshot_context = get_snapshot_context(
                     snapshot_id, origin_url, timestamp, visit_id)
-            except Exception:
+            except NotFoundExc:
                 raw_rel_url = reverse('browse-release',
                                       url_args={'sha1_git': sha1_git})
                 error_message = \
@@ -106,8 +107,8 @@ def release_browse(request, sha1_git):
                 'revision_context': True,
                 'revision_id': release['target']
             }
-        except Exception:
-            pass
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
     elif release['target_type'] == 'directory':
         target_link = gen_directory_link(release['target'],
                                          snapshot_context=snapshot_context,
@@ -120,8 +121,8 @@ def release_browse(request, sha1_git):
                 'revision_context': False,
                 'revision_id': None
             }
-        except Exception:
-            pass
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
     elif release['target_type'] == 'content':
         target_link = gen_content_link(release['target'],
                                        snapshot_context=snapshot_context,

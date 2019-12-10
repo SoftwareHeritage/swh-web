@@ -3,3 +3,4 @@ swh.storage >= 0.0.145
 swh.vault >= 0.0.23
 swh.indexer >= 0.0.120
 swh.scheduler >= 0.0.31
+swh.core >= 0.0.81
