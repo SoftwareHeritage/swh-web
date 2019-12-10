@@ -271,16 +271,10 @@ def create_save_origin_request(visit_type, origin_url):
     # task to load it into the archive
     if save_request_status == SAVE_REQUEST_ACCEPTED:
         # create a task with high priority
-        kwargs = {'priority': 'high'}
-        # set task parameters according to the visit type
-        if visit_type == 'git':
-            kwargs['repo_url'] = origin_url
-        elif visit_type == 'hg':
-            kwargs['origin_url'] = origin_url
-        elif visit_type == 'svn':
-            kwargs['origin_url'] = origin_url
-            kwargs['svn_url'] = origin_url
-
+        kwargs = {
+            'priority': 'high',
+            'url': origin_url,
+        }
         sor = None
         # get list of previously sumitted save requests
         current_sors = \
