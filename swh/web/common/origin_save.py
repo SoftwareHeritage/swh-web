@@ -5,6 +5,7 @@
 
 from bisect import bisect_right
 from datetime import datetime, timezone, timedelta
+from itertools import product
 import json
 import logging
 
@@ -12,6 +13,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.utils.html import escape
+
+from prometheus_client import Gauge
 
 import requests
 import sentry_sdk
@@ -23,10 +26,11 @@ from swh.web.common.models import (
     SaveUnauthorizedOrigin, SaveAuthorizedOrigin, SaveOriginRequest,
     SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED, SAVE_REQUEST_PENDING,
     SAVE_TASK_NOT_YET_SCHEDULED, SAVE_TASK_SCHEDULED,
-    SAVE_TASK_SUCCEED, SAVE_TASK_FAILED, SAVE_TASK_RUNNING
+    SAVE_TASK_SUCCEED, SAVE_TASK_FAILED, SAVE_TASK_RUNNING,
+    SAVE_TASK_NOT_CREATED
 )
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import parse_timestamp
+from swh.web.common.utils import parse_timestamp, SWH_WEB_METRICS_REGISTRY
 
 from swh.scheduler.utils import create_oneshot_task_dict
 
@@ -527,3 +531,54 @@ def get_save_origin_task_info(save_request_id):
         sentry_sdk.capture_exception(exc)
 
     return task_run
+
+
+SUBMITTED_SAVE_REQUESTS_METRIC = 'swh_web_submitted_save_requests'
+
+_submitted_save_requests_gauge = Gauge(
+    name=SUBMITTED_SAVE_REQUESTS_METRIC,
+    documentation='Number of submitted origin save requests',
+    labelnames=['status', 'visit_type'],
+    registry=SWH_WEB_METRICS_REGISTRY)
+
+
+ACCEPTED_SAVE_REQUESTS_METRIC = 'swh_web_accepted_save_requests'
+
+_accepted_save_requests_gauge = Gauge(
+    name=ACCEPTED_SAVE_REQUESTS_METRIC,
+    documentation='Number of accepted origin save requests',
+    labelnames=['load_task_status', 'visit_type'],
+    registry=SWH_WEB_METRICS_REGISTRY)
+
+
+def compute_save_requests_metrics():
+    """Compute a couple of Prometheus metrics related to
+    origin save requests"""
+
+    request_statuses = (SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED,
+                        SAVE_REQUEST_PENDING)
+
+    load_task_statuses = (SAVE_TASK_NOT_CREATED, SAVE_TASK_NOT_YET_SCHEDULED,
+                          SAVE_TASK_SCHEDULED, SAVE_TASK_SUCCEED,
+                          SAVE_TASK_FAILED, SAVE_TASK_RUNNING)
+
+    visit_types = get_savable_visit_types()
+
+    labels_set = product(request_statuses, visit_types)
+
+    for labels in labels_set:
+        _submitted_save_requests_gauge.labels(*labels).set(0)
+
+    labels_set = product(load_task_statuses, visit_types)
+
+    for labels in labels_set:
+        _accepted_save_requests_gauge.labels(*labels).set(0)
+
+    for sor in SaveOriginRequest.objects.all():
+        if sor.status == SAVE_REQUEST_ACCEPTED:
+            _accepted_save_requests_gauge.labels(
+                load_task_status=sor.loading_task_status,
+                visit_type=sor.visit_type).inc()
+
+        _submitted_save_requests_gauge.labels(
+                status=sor.status, visit_type=sor.visit_type).inc()

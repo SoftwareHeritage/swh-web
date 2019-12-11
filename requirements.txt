@@ -13,6 +13,7 @@ docutils
 python-magic >= 0.4.0
 htmlmin
 lxml
+prometheus_client
 pygments
 pypandoc
 python-dateutil
