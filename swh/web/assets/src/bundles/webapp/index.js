@@ -25,3 +25,4 @@ export * from './notebook-rendering';
 export * from './xss-filtering';
 export * from './history-counters';
 export * from './badges';
+export * from './sentry';

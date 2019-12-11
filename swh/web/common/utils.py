@@ -25,6 +25,7 @@ from swh.model.identifiers import (
 )
 
 from swh.web.common.exc import BadInputExc
+from swh.web.config import get_config
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
@@ -327,8 +328,11 @@ def context_processor(request):
     Django context processor used to inject variables
     in all swh-web templates.
     """
-    return {'swh_object_icons': swh_object_icons,
-            'available_languages': None}
+    return {
+        'swh_object_icons': swh_object_icons,
+        'available_languages': None,
+        'swh_client_config': get_config()['client_config'],
+    }
 
 
 class EnforceCSRFAuthentication(SessionAuthentication):
