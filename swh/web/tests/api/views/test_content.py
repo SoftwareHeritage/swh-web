@@ -117,10 +117,11 @@ def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
                   query_params={'per_page': 2})
     rv = api_client.get(url)
 
-    next_url = reverse('api-1-content-symbol',
-                       url_args={'q': contents_with_ctags['symbol_name']},
-                       query_params={'last_sha1': rv.data[1]['sha1'],
-                                     'per_page': 2})
+    next_url = rv.wsgi_request.build_absolute_uri(
+        reverse('api-1-content-symbol',
+                url_args={'q': contents_with_ctags['symbol_name']},
+                query_params={'last_sha1': rv.data[1]['sha1'],
+                              'per_page': 2}))
     assert rv['Link'] == '<%s>; rel="next"' % next_url
 
 

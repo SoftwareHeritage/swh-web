@@ -5,42 +5,49 @@
 
 import json
 
-from rest_framework.test import APIRequestFactory
-
 from swh.web.api.apiresponse import (
     compute_link_header, transform, make_api_response,
     filter_by_fields
 )
 
-api_request_factory = APIRequestFactory()
 
-
-def test_compute_link_header():
+def test_compute_link_header(api_request_factory):
+    next_link = '/api/endpoint/next'
+    prev_link = '/api/endpoint/prev'
     rv = {
-        'headers': {'link-next': 'foo', 'link-prev': 'bar'},
+        'headers': {'link-next': next_link, 'link-prev': prev_link},
         'results': [1, 2, 3]
     }
     options = {}
 
-    headers = compute_link_header(rv, options)
+    request = api_request_factory.get('/api/endpoint/')
 
-    assert headers == {'Link': '<foo>; rel="next",<bar>; rel="previous"'}
+    headers = compute_link_header(request, rv, options)
+
+    assert headers == {
+        'Link': (f'<{request.build_absolute_uri(next_link)}>; rel="next",'
+                 f'<{request.build_absolute_uri(prev_link)}>; rel="previous"')
+    }
 
 
-def test_compute_link_header_nothing_changed():
+def test_compute_link_header_nothing_changed(api_request_factory):
     rv = {}
     options = {}
 
-    headers = compute_link_header(rv, options)
+    request = api_request_factory.get('/api/test/path/')
+
+    headers = compute_link_header(request, rv, options)
 
     assert headers == {}
 
 
-def test_compute_link_header_nothing_changed_2():
+def test_compute_link_header_nothing_changed_2(api_request_factory):
     rv = {'headers': {}}
     options = {}
 
-    headers = compute_link_header(rv, options)
+    request = api_request_factory.get('/api/test/path/')
+
+    headers = compute_link_header(request, rv, options)
 
     assert headers == {}
 
@@ -71,7 +78,7 @@ def test_transform_do_nothing():
     assert transform(rv) == {'some-key': 'some-value'}
 
 
-def test_swh_multi_response_mimetype(mocker):
+def test_swh_multi_response_mimetype(mocker, api_request_factory):
     mock_shorten_path = mocker.patch('swh.web.api.apiresponse.shorten_path')
     mock_filter = mocker.patch('swh.web.api.apiresponse.filter_by_fields')
     mock_json = mocker.patch('swh.web.api.apiresponse.json')
@@ -123,7 +130,7 @@ def test_swh_multi_response_mimetype(mocker):
             assert rv.template_name == 'api/apidoc.html'
 
 
-def test_swh_filter_renderer_do_nothing():
+def test_swh_filter_renderer_do_nothing(api_request_factory):
     input_data = {'a': 'some-data'}
 
     request = api_request_factory.get('/api/test/path/', data={})
@@ -134,7 +141,7 @@ def test_swh_filter_renderer_do_nothing():
     assert actual_data == input_data
 
 
-def test_swh_filter_renderer_do_filter(mocker):
+def test_swh_filter_renderer_do_filter(mocker, api_request_factory):
     mock_ffk = mocker.patch('swh.web.api.apiresponse.utils.filter_field_keys')
     mock_ffk.return_value = {'a': 'some-data'}
 

@@ -89,10 +89,10 @@ def test_api_revision_log(api_client, archive_data, revision):
 
     if has_next:
         assert 'Link' in rv
-        next_log_url = reverse(
-            'api-1-revision-log',
-            url_args={'sha1_git': expected_log[-1]['id']},
-            query_params={'per_page': per_page})
+        next_log_url = rv.wsgi_request.build_absolute_uri(
+            reverse('api-1-revision-log',
+                    url_args={'sha1_git': expected_log[-1]['id']},
+                    query_params={'per_page': per_page}))
         assert next_log_url in rv['Link']
 
 
