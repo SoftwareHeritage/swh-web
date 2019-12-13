@@ -18,10 +18,11 @@ from swh.web.common.utils import shorten_path, gen_path_info
 from swh.web.config import get_config
 
 
-def compute_link_header(rv, options):
+def compute_link_header(request, rv, options):
     """Add Link header in returned value results.
 
     Args:
+        request: a DRF Request object
         rv (dict): dictionary with keys:
 
             - headers: potential headers with 'link-next' and 'link-prev'
@@ -43,10 +44,10 @@ def compute_link_header(rv, options):
 
     if 'link-next' in rv_headers:
         link_headers.append('<%s>; rel="next"' % (
-            rv_headers['link-next']))
+            request.build_absolute_uri(rv_headers['link-next'])))
     if 'link-prev' in rv_headers:
         link_headers.append('<%s>; rel="previous"' % (
-            rv_headers['link-prev']))
+            request.build_absolute_uri(rv_headers['link-prev'])))
 
     if link_headers:
         link_header_str = ','.join(link_headers)
@@ -108,7 +109,7 @@ def make_api_response(request, data, doc_data={}, options={}):
 
     """
     if data:
-        options['headers'] = compute_link_header(data, options)
+        options['headers'] = compute_link_header(request, data, options)
         data = transform(data)
         data = filter_by_fields(request, data)
     doc_env = doc_data

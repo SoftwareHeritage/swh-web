@@ -14,7 +14,7 @@ import pytest
 
 from django.core.cache import cache
 from hypothesis import settings, HealthCheck
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common import converters
@@ -87,6 +87,12 @@ def django_cache_cleared():
 @pytest.fixture(scope='module')
 def api_client():
     return APIClient()
+
+
+# Fixture to get API request factory from Django REST Framework
+@pytest.fixture(scope='module')
+def api_request_factory():
+    return APIRequestFactory()
 
 
 # Initialize tests data

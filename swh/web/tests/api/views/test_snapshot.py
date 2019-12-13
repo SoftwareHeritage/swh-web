@@ -72,11 +72,11 @@ def test_api_snapshot_paginated(api_client, archive_data, snapshot):
         whole_snapshot['branches'].update(expected_data['branches'])
 
         if branches_offset < len(snapshot_branches):
-            next_url = reverse(
-                'api-1-snapshot',
-                url_args={'snapshot_id': snapshot},
-                query_params={'branches_from': next_branch,
-                              'branches_count': branches_count})
+            next_url = rv.wsgi_request.build_absolute_uri(
+                reverse('api-1-snapshot',
+                        url_args={'snapshot_id': snapshot},
+                        query_params={'branches_from': next_branch,
+                                      'branches_count': branches_count}))
             assert rv['Link'] == '<%s>; rel="next"' % next_url
         else:
             assert not rv.has_header('Link')

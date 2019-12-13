@@ -71,14 +71,14 @@ def test_badge_errors(client, unknown_content, unknown_directory, new_origin,
         }
         url = reverse('swh-badge', url_args=url_args)
         resp = client.get(url)
-        _check_generated_badge(resp, 404, **url_args)
+        _check_generated_badge(resp, **url_args, error='not found')
 
         if object_type != ORIGIN:
             object_pid = persistent_identifier(object_type, object_id)
             url = reverse('swh-badge-pid',
                           url_args={'object_pid': object_pid})
             resp = client.get(url)
-            _check_generated_badge(resp, 404, **url_args)
+            _check_generated_badge(resp, **url_args, error='not found')
 
     for object_type, object_id in (
         (CONTENT, invalid_sha1),
@@ -93,13 +93,13 @@ def test_badge_errors(client, unknown_content, unknown_directory, new_origin,
         }
         url = reverse('swh-badge', url_args=url_args)
         resp = client.get(url)
-        _check_generated_badge(resp, 400, **url_args)
+        _check_generated_badge(resp, **url_args, error='invalid id')
 
         object_pid = f'swh:1:{object_type[:3]}:{object_id}'
         url = reverse('swh-badge-pid',
                       url_args={'object_pid': object_pid})
         resp = client.get(url)
-        _check_generated_badge(resp, 400, '', '')
+        _check_generated_badge(resp, '', '', error='invalid id')
 
 
 @given(origin(), release())
@@ -122,45 +122,43 @@ def _test_badge_endpoints(client, object_type, object_id):
                 'object_id': object_id}
     url = reverse('swh-badge', url_args=url_args)
     resp = client.get(url)
-    _check_generated_badge(resp, 200, **url_args)
+    _check_generated_badge(resp, **url_args)
     if object_type != ORIGIN:
         pid = persistent_identifier(object_type, object_id)
         url = reverse('swh-badge-pid', url_args={'object_pid': pid})
         resp = client.get(url)
-        _check_generated_badge(resp, 200, **url_args)
+        _check_generated_badge(resp, **url_args)
 
 
-def _check_generated_badge(response, status_code, object_type, object_id):
-    assert response.status_code == status_code, response.content
+def _check_generated_badge(response, object_type, object_id, error=None):
+    assert response.status_code == 200, response.content
     assert response['Content-Type'] == 'image/svg+xml'
 
     if not object_type:
         object_type = 'object'
 
-    if object_type == ORIGIN and status_code == 200:
+    if object_type == ORIGIN and error is None:
         link = reverse('browse-origin', url_args={'origin_url': object_id})
         text = 'repository'
-    elif status_code == 200:
+    elif error is None:
         text = persistent_identifier(object_type, object_id)
         link = resolve_swh_persistent_id(text)['browse_url']
         if object_type == RELEASE:
             release = service.lookup_release(object_id)
             text = release['name']
-    elif status_code == 400:
+    elif error == 'invalid id':
         text = 'error'
         link = f'invalid {object_type} id'
         object_type = 'error'
-    elif status_code == 404:
+    elif error == 'not found':
         text = 'error'
         link = f'{object_type} not found'
         object_type = 'error'
 
-    assert_contains(response, '<svg ', status_code=status_code)
-    assert_contains(response, '</svg>', status_code=status_code)
-    assert_contains(response, _get_logo_data(), status_code=status_code)
-    assert_contains(response, _badge_config[object_type]['color'],
-                    status_code=status_code)
-    assert_contains(response, _badge_config[object_type]['title'],
-                    status_code=status_code)
-    assert_contains(response, text, status_code=status_code)
-    assert_contains(response, link, status_code=status_code)
+    assert_contains(response, '<svg ')
+    assert_contains(response, '</svg>')
+    assert_contains(response, _get_logo_data())
+    assert_contains(response, _badge_config[object_type]['color'])
+    assert_contains(response, _badge_config[object_type]['title'])
+    assert_contains(response, text)
+    assert_contains(response, link)

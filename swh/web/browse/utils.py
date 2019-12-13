@@ -15,6 +15,7 @@ from threading import Lock
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+import sentry_sdk
 
 from swh.model.identifiers import persistent_identifier
 from swh.web.common import highlightjs, service
@@ -134,8 +135,8 @@ def _re_encode_content(mimetype, encoding, content_data):
         for enc in encodings:
             try:
                 content_data = content_data.decode(enc).encode('utf-8')
-            except Exception:
-                pass
+            except Exception as exc:
+                sentry_sdk.capture_exception(exc)
             else:
                 # ensure display in content view
                 encoding = enc
@@ -177,8 +178,8 @@ def request_content(query_string, max_size=content_display_max_size,
         filetype = service.lookup_content_filetype(query_string)
         language = service.lookup_content_language(query_string)
         license = service.lookup_content_license(query_string)
-    except Exception:
-        pass
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
     mimetype = 'unknown'
     encoding = 'unknown'
     if filetype:
@@ -197,10 +198,11 @@ def request_content(query_string, max_size=content_display_max_size,
     if not max_size or content_data['length'] < max_size:
         try:
             content_raw = service.lookup_content_raw(query_string)
-        except Exception as e:
+        except Exception as exc:
             if raise_if_unavailable:
-                raise e
+                raise exc
             else:
+                sentry_sdk.capture_exception(exc)
                 content_data['raw_data'] = None
                 content_data['error_code'] = 404
                 content_data['error_description'] = \
@@ -1048,7 +1050,8 @@ def get_readme_to_display(readmes):
                 readme_html = pypandoc.convert_text(rst_doc['raw_data'],
                                                     'html', format='rst')
                 cache.set(cache_entry_id, readme_html)
-            except Exception:
+            except Exception as exc:
+                sentry_sdk.capture_exception(exc)
                 readme_html = 'Readme bytes are not available'
 
     return readme_name, readme_url, readme_html

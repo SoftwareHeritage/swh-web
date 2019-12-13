@@ -14,6 +14,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from requests.auth import HTTPBasicAuth
+import sentry_sdk
 
 from swh.web.admin.adminurls import admin_route
 from swh.web.config import get_config
@@ -85,7 +86,8 @@ def _admin_deposit_list(request):
             'swh_id_context': d['swh_id_context']
          } for d in data]
 
-    except Exception:
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
         table_data['error'] = ('An error occurred while retrieving '
                                'the list of deposits !')
 

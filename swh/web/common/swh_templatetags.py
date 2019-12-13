@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from inspect import cleandoc
 import json
 import re
 
@@ -12,7 +13,8 @@ from django.utils.safestring import mark_safe
 
 from docutils.core import publish_parts
 from docutils.writers.html4css1 import Writer, HTMLTranslator
-from inspect import cleandoc
+
+import sentry_sdk
 
 from swh.web.common.origin_save import get_savable_visit_types
 
@@ -71,8 +73,8 @@ def urlize_links_and_mails(text):
             return re.sub(r'([^ <>"]+@[^ <>"]+)',
                           r'<a href="mailto:\1">\1</a>',
                           text)
-    except Exception:
-        pass
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
 
     return text
 
