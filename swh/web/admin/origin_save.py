@@ -59,7 +59,7 @@ def _datatables_origin_urls_response(request, urls_query_set):
 
 @admin_route(r'origin/save/authorized_urls/list/',
              view_name='admin-origin-save-authorized-urls-list')
-@staff_member_required
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_authorized_urls_list(request):
     authorized_urls = SaveAuthorizedOrigin.objects.all()
     return _datatables_origin_urls_response(request, authorized_urls)

@@ -5,7 +5,9 @@
 
 import ipaddress
 
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework.throttling import ScopedRateThrottle
+import sentry_sdk
 
 from swh.web.config import get_config
 
@@ -66,31 +68,35 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     def allow_request(self, request, view):
         # class based view case
         if not self.scope:
+
             default_scope = getattr(view, self.scope_attr, None)
-            # check if there is a specific rate limiting associated
-            # to the request type
-            try:
+            request_allowed = None
+            if default_scope is not None:
+                # check if there is a specific rate limiting associated
+                # to the request type
                 request_scope = default_scope + '_' + request.method.lower()
                 setattr(view, self.scope_attr, request_scope)
-                request_allowed = \
-                    super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
-                setattr(view, self.scope_attr, default_scope)
-            # use default rate limiting otherwise
-            except Exception:
-                setattr(view, self.scope_attr, default_scope)
-                request_allowed = \
-                    super(SwhWebRateThrottle, self).allow_request(request, view) # noqa
+                try:
+                    request_allowed = super().allow_request(request, view)
+                # use default rate limiting otherwise
+                except ImproperlyConfigured as exc:
+                    sentry_sdk.capture_exception(exc)
+
+            setattr(view, self.scope_attr, default_scope)
+            if request_allowed is None:
+                request_allowed = super().allow_request(request, view)
 
         # function based view case
         else:
             default_scope = self.scope
             # check if there is a specific rate limiting associated
             # to the request type
+            self.scope = default_scope + '_' + request.method.lower()
             try:
-                self.scope = default_scope + '_' + request.method.lower()
                 self.rate = self.get_rate()
             # use default rate limiting otherwise
-            except Exception:
+            except ImproperlyConfigured as exc:
+                sentry_sdk.capture_exception(exc)
                 self.scope = default_scope
                 self.rate = self.get_rate()
             self.num_requests, self.duration = self.parse_rate(self.rate)

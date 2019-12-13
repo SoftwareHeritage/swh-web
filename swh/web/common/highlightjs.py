@@ -4,13 +4,13 @@
 # See top-level LICENSE file for more information
 
 import functools
-
 from typing import Dict
 
 from pygments.lexers import (
     get_all_lexers,
     get_lexer_for_filename
 )
+import sentry_sdk
 
 # set of languages ids that can be highlighted
 # by highlight.js library
@@ -317,8 +317,8 @@ def get_hljs_language_from_filename(filename):
         # try to find a Pygment lexer
         try:
             lexer = get_lexer_for_filename(filename)
-        except Exception:
-            pass
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
         # if there is a correspondence between the lexer and an hljs
         # language, return it
         if lexer and lexer.name in _pygments_lexer_to_hljs_language:

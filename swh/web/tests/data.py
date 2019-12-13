@@ -35,20 +35,8 @@ _TEST_LOADER_CONFIG = {
     'storage': {
         'cls': 'memory'
     },
-    'send_contents': True,
-    'send_directories': True,
-    'send_revisions': True,
-    'send_releases': True,
-    'send_snapshot': True,
-
-    'content_size_limit': 100 * 1024 * 1024,
-    'content_packet_size': 10,
-    'content_packet_size_bytes': 100 * 1024 * 1024,
-    'directory_packet_size': 10,
-    'revision_packet_size': 10,
-    'release_packet_size': 10,
-
     'save_data': False,
+    'max_content_size': 100 * 1024 * 1024,
 }
 
 # Base content indexer configuration
@@ -168,19 +156,24 @@ _contents = {}
 
 # Tests data initialization
 def _init_tests_data():
+    # To hold reference to the memory storage
+    storage = None
+
     # Load git repositories from archives
-    loader = GitLoaderFromArchive(config=_TEST_LOADER_CONFIG)
-
-    # Get reference to the memory storage
-    storage = loader.storage
-
     for origin in _TEST_ORIGINS:
         for i, archive in enumerate(origin['archives']):
             origin_repo_archive = \
                 os.path.join(os.path.dirname(__file__),
                              'resources/repos/%s' % archive)
-            loader.load(origin['url'], origin_repo_archive,
-                        origin['visit_date'][i])
+            loader = GitLoaderFromArchive(origin['url'],
+                                          archive_path=origin_repo_archive,
+                                          config=_TEST_LOADER_CONFIG,
+                                          visit_date=origin['visit_date'][i])
+            if storage is None:
+                storage = loader.storage
+            else:
+                loader.storage = storage
+            loader.load()
 
         origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
 

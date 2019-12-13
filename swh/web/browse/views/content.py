@@ -11,6 +11,7 @@ from distutils.util import strtobool
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
+import sentry_sdk
 
 from swh.model.hashutil import hash_to_hex
 
@@ -155,8 +156,9 @@ def _contents_diff(request, from_query_string, to_query_string):
                 diff_lines = difflib.unified_diff(content_from_lines,
                                                   content_to_lines)
                 diff_str = ''.join(list(diff_lines)[2:])
-        except Exception as e:
-            diff_str = str(e)
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
+            diff_str = str(exc)
 
     diff_data['diff_str'] = diff_str
     diff_data['language'] = language
@@ -188,7 +190,7 @@ def content_display(request, query_string):
         if origin_url:
             try:
                 snapshot_context = get_snapshot_context(origin_url=origin_url)
-            except Exception:
+            except NotFoundExc:
                 raw_cnt_url = reverse('browse-content',
                                       url_args={'query_string': query_string})
                 error_message = \

@@ -98,7 +98,6 @@ def _swh_badge(request: HttpRequest, object_type: str, object_id: str,
     """
     left_text = 'error'
     whole_link = ''
-    status = 200
 
     try:
         if object_type == ORIGIN:
@@ -129,11 +128,9 @@ def _swh_badge(request: HttpRequest, object_type: str, object_id: str,
         left_text = 'archived'
     except (BadInputExc, ValidationError):
         right_text = f'invalid {object_type if object_type else "object"} id'
-        status = 400
         object_type = 'error'
     except NotFoundExc:
         right_text = f'{object_type if object_type else "object"} not found'
-        status = 404
         object_type = 'error'
 
     badge_data = badge(left_text=left_text,
@@ -144,8 +141,7 @@ def _swh_badge(request: HttpRequest, object_type: str, object_id: str,
                        logo=_get_logo_data(),
                        embed_logo=True)
 
-    return HttpResponse(badge_data, content_type='image/svg+xml',
-                        status=status)
+    return HttpResponse(badge_data, content_type='image/svg+xml')
 
 
 def _swh_badge_pid(request: HttpRequest, object_pid: str) -> HttpResponse:
