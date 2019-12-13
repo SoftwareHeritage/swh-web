@@ -282,7 +282,7 @@ def revision_browse(request, sha1_git, extra_path=None):
                 snapshot_context = get_snapshot_context(
                     origin_url=origin_url, timestamp=timestamp,
                     visit_id=visit_id)
-            except Exception:
+            except NotFoundExc:
                 raw_rev_url = reverse('browse-revision',
                                       url_args={'sha1_git': sha1_git})
                 error_message = \

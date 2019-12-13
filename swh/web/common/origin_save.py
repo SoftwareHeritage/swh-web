@@ -3,18 +3,21 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-import logging
-
 from bisect import bisect_right
 from datetime import datetime, timezone, timedelta
-
-import requests
+from itertools import product
+import json
+import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.utils.html import escape
+
+from prometheus_client import Gauge
+
+import requests
+import sentry_sdk
 
 from swh.web import config
 from swh.web.common import service
@@ -23,10 +26,11 @@ from swh.web.common.models import (
     SaveUnauthorizedOrigin, SaveAuthorizedOrigin, SaveOriginRequest,
     SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED, SAVE_REQUEST_PENDING,
     SAVE_TASK_NOT_YET_SCHEDULED, SAVE_TASK_SCHEDULED,
-    SAVE_TASK_SUCCEED, SAVE_TASK_FAILED, SAVE_TASK_RUNNING
+    SAVE_TASK_SUCCEED, SAVE_TASK_FAILED, SAVE_TASK_RUNNING,
+    SAVE_TASK_NOT_CREATED
 )
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import parse_timestamp
+from swh.web.common.utils import parse_timestamp, SWH_WEB_METRICS_REGISTRY
 
 from swh.scheduler.utils import create_oneshot_task_dict
 
@@ -153,8 +157,8 @@ def _get_visit_info_for_save_request(save_request):
             visit_status = origin_visits[i]['status']
             if origin_visits[i]['status'] == 'ongoing':
                 visit_date = None
-    except Exception:
-        pass
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
     return visit_date, visit_status
 
 
@@ -271,16 +275,10 @@ def create_save_origin_request(visit_type, origin_url):
     # task to load it into the archive
     if save_request_status == SAVE_REQUEST_ACCEPTED:
         # create a task with high priority
-        kwargs = {'priority': 'high'}
-        # set task parameters according to the visit type
-        if visit_type == 'git':
-            kwargs['repo_url'] = origin_url
-        elif visit_type == 'hg':
-            kwargs['origin_url'] = origin_url
-        elif visit_type == 'svn':
-            kwargs['origin_url'] = origin_url
-            kwargs['svn_url'] = origin_url
-
+        kwargs = {
+            'priority': 'high',
+            'url': origin_url,
+        }
         sor = None
         # get list of previously sumitted save requests
         current_sors = \
@@ -528,8 +526,59 @@ def get_save_origin_task_info(save_request_id):
                 task_run['worker'] = task_run_info['hostname']
             elif 'host' in task_run_info:
                 task_run['worker'] = task_run_info['host']
-    except Exception as e:
-        logger.warning('Request to Elasticsearch failed\n%s' % str(e))
-        pass
+    except Exception as exc:
+        logger.warning('Request to Elasticsearch failed\n%s', exc)
+        sentry_sdk.capture_exception(exc)
 
     return task_run
+
+
+SUBMITTED_SAVE_REQUESTS_METRIC = 'swh_web_submitted_save_requests'
+
+_submitted_save_requests_gauge = Gauge(
+    name=SUBMITTED_SAVE_REQUESTS_METRIC,
+    documentation='Number of submitted origin save requests',
+    labelnames=['status', 'visit_type'],
+    registry=SWH_WEB_METRICS_REGISTRY)
+
+
+ACCEPTED_SAVE_REQUESTS_METRIC = 'swh_web_accepted_save_requests'
+
+_accepted_save_requests_gauge = Gauge(
+    name=ACCEPTED_SAVE_REQUESTS_METRIC,
+    documentation='Number of accepted origin save requests',
+    labelnames=['load_task_status', 'visit_type'],
+    registry=SWH_WEB_METRICS_REGISTRY)
+
+
+def compute_save_requests_metrics():
+    """Compute a couple of Prometheus metrics related to
+    origin save requests"""
+
+    request_statuses = (SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED,
+                        SAVE_REQUEST_PENDING)
+
+    load_task_statuses = (SAVE_TASK_NOT_CREATED, SAVE_TASK_NOT_YET_SCHEDULED,
+                          SAVE_TASK_SCHEDULED, SAVE_TASK_SUCCEED,
+                          SAVE_TASK_FAILED, SAVE_TASK_RUNNING)
+
+    visit_types = get_savable_visit_types()
+
+    labels_set = product(request_statuses, visit_types)
+
+    for labels in labels_set:
+        _submitted_save_requests_gauge.labels(*labels).set(0)
+
+    labels_set = product(load_task_statuses, visit_types)
+
+    for labels in labels_set:
+        _accepted_save_requests_gauge.labels(*labels).set(0)
+
+    for sor in SaveOriginRequest.objects.all():
+        if sor.status == SAVE_REQUEST_ACCEPTED:
+            _accepted_save_requests_gauge.labels(
+                load_task_status=sor.loading_task_status,
+                visit_type=sor.visit_type).inc()
+
+        _submitted_save_requests_gauge.labels(
+                status=sor.status, visit_type=sor.visit_type).inc()

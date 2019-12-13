@@ -8,6 +8,7 @@ import os
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
+import sentry_sdk
 
 from swh.web.common import service
 from swh.web.common.utils import (
@@ -48,7 +49,7 @@ def directory_browse(request, sha1_git, path=None):
         if origin_url:
             try:
                 snapshot_context = get_snapshot_context(origin_url=origin_url)
-            except Exception:
+            except NotFoundExc:
                 raw_dir_url = reverse('browse-directory',
                                       url_args={'sha1_git': sha1_git})
                 error_message = \
@@ -171,6 +172,6 @@ def _directory_resolve_content_path(request, sha1_git, path):
                 data_url = reverse('browse-content-raw',
                                    url_args={'query_string': sha1})
                 return redirect(data_url)
-    except Exception:
-        pass
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
     return HttpResponse(status=404)

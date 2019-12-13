@@ -6,6 +6,7 @@
 import json
 
 import requests
+import sentry_sdk
 
 from django.conf.urls import url, include
 from django.contrib.staticfiles import finders
@@ -14,6 +15,7 @@ from django.shortcuts import render
 
 from swh.web.common import service
 from swh.web.config import get_config
+from swh.web.misc.metrics import prometheus_metrics
 
 
 def _jslicenses(request):
@@ -33,8 +35,8 @@ def _stat_counters(request):
         try:
             response = requests.get(url, timeout=5)
             stat_counters_history = response.text
-        except Exception:
-            pass
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
     json_data = '{"stat_counters": %s, "stat_counters_history": %s}' % (
         json.dumps(stat), stat_counters_history)
     return HttpResponse(json_data, content_type='application/json')
@@ -44,8 +46,10 @@ urlpatterns = [
     url(r'^', include('swh.web.misc.coverage')),
     url(r'^jslicenses/$', _jslicenses, name='jslicenses'),
     url(r'^', include('swh.web.misc.origin_save')),
-    url(r'^stat_counters', _stat_counters, name='stat-counters'),
+    url(r'^stat_counters/', _stat_counters, name='stat-counters'),
     url(r'^', include('swh.web.misc.badges')),
+    url(r'^metrics/prometheus/$', prometheus_metrics,
+        name='metrics-prometheus'),
 ]
 
 

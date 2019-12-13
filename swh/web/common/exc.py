@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+import sentry_sdk
 
 from swh.web.config import get_config
 
@@ -106,6 +107,7 @@ def handle_view_exception(request, exc, html_response=True):
     Function used to generate an error page when an exception
     was raised inside a swh-web browse view.
     """
+    sentry_sdk.capture_exception(exc)
     error_code = 500
     error_description = '%s: %s' % (type(exc).__name__, str(exc))
     if get_config()['debug']:

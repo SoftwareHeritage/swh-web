@@ -14,6 +14,8 @@ from dateutil import tz
 from django.urls import reverse as django_reverse
 from django.http import QueryDict
 
+from prometheus_client.registry import CollectorRegistry
+
 from rest_framework.authentication import SessionAuthentication
 
 from swh.model.exceptions import ValidationError
@@ -23,6 +25,8 @@ from swh.model.identifiers import (
 )
 
 from swh.web.common.exc import BadInputExc
+
+SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
 swh_object_icons = {
     'branch': 'fa fa-code-fork',

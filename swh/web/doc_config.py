@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import importlib.util
 import os
 
 from sphinxcontrib import httpdomain
@@ -11,10 +12,8 @@ from sphinx.ext import autodoc
 
 # guard to avoid ImportError when running tests through sbuild
 # as there is no Debian package built for swh-docs
-try:
+if importlib.util.find_spec('swh.docs'):
     from swh.docs.sphinx.conf import setup as orig_setup
-except Exception:
-    pass
 
 
 class SimpleDocumenter(autodoc.FunctionDocumenter):

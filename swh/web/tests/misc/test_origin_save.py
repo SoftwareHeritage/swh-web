@@ -62,6 +62,21 @@ def test_save_request_form_rate_limit(client, mocker):
     assert resp.status_code == 429
 
 
+def test_save_request_form_server_error(client, mocker):
+    mock_create_save_origin_request = mocker.patch(
+        'swh.web.misc.origin_save.create_save_origin_request')
+    mock_create_save_origin_request.side_effect = Exception('Server error')
+
+    url = reverse('origin-save-request',
+                  url_args={'visit_type': visit_type,
+                            'origin_url': origin['url']})
+
+    data = _get_csrf_token(client, reverse('origin-save'))
+
+    resp = client.post(url, data=data)
+    assert resp.status_code == 500
+
+
 def test_old_save_url_redirection(client):
     url = reverse('browse-origin-save')
     resp = client.get(url)

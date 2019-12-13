@@ -7,7 +7,9 @@ import json
 
 from django.conf.urls import url
 from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import (
+    HttpResponse, HttpResponseForbidden, HttpResponseServerError
+)
 from django.shortcuts import render
 
 from rest_framework.decorators import api_view, authentication_classes
@@ -45,6 +47,9 @@ def _origin_save_request(request, visit_type, origin_url):
     except ForbiddenExc as exc:
         return HttpResponseForbidden(json.dumps({'detail': str(exc)}),
                                      content_type='application/json')
+    except Exception as exc:
+        return HttpResponseServerError(json.dumps({'detail': str(exc)}),
+                                       content_type='application/json')
 
 
 def _visit_save_types_list(request):
