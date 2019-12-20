@@ -27,7 +27,7 @@ See top-level LICENSE file for more information
       <tr>
         <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
         <td class="swh-metadata-table-row swh-metadata-table-value">
-          <pre>{{ val | safe | urlize_links_and_mails | safe }}</pre>
+          <pre>{{ val | safe | urlize_links_and_mails:request | safe }}</pre>
         </td>
       </tr>
     {% endfor %}

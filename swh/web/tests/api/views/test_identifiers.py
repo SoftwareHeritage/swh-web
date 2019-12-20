@@ -43,7 +43,8 @@ def test_swh_id_resolve_success(api_client, origin, content, directory,
 
         browse_rev_url = reverse('browse-%s' % obj_type,
                                  url_args=url_args,
-                                 query_params={'origin': origin['url']})
+                                 query_params={'origin': origin['url']},
+                                 request=resp.wsgi_request)
 
         expected_result = {
             'browse_url': browse_rev_url,

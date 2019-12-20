@@ -5,8 +5,8 @@
 
 from hypothesis import given
 
+from swh.web.api.utils import enrich_revision
 from swh.web.common.exc import NotFoundExc
-
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import revision
@@ -19,7 +19,7 @@ def test_api_revision(api_client, archive_data, revision):
 
     expected_revision = archive_data.revision_get(revision)
 
-    _enrich_revision(expected_revision)
+    enrich_revision(expected_revision, rv.wsgi_request)
 
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
@@ -79,7 +79,8 @@ def test_api_revision_log(api_client, archive_data, revision):
     rv = api_client.get(url)
 
     expected_log = archive_data.revision_log(revision, limit=per_page+1)
-    expected_log = list(map(_enrich_revision, expected_log))
+    expected_log = list(map(enrich_revision, expected_log,
+                            [rv.wsgi_request] * len(expected_log)))
 
     has_next = len(expected_log) > per_page
 
@@ -132,7 +133,8 @@ def test_api_revision_log_context(api_client, archive_data, revision):
     expected_log = archive_data.revision_log(rev, limit=per_page)
     prev_revision = archive_data.revision_get(prev_rev)
     expected_log.insert(0, prev_revision)
-    expected_log = list(map(_enrich_revision, expected_log))
+    expected_log = list(map(enrich_revision, expected_log,
+                            [rv.wsgi_request] * len(expected_log)))
 
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
@@ -193,6 +195,15 @@ def test_api_revision_directory_ok_returns_dir_entries(api_client, mocker):
 
     rv = api_client.get('/api/1/revision/999/directory/some/path/')
 
+    stub_dir['content'][0]['target_url'] = rv.wsgi_request.build_absolute_uri(
+        stub_dir['content'][0]['target_url'])
+    stub_dir['content'][0]['file_url'] = rv.wsgi_request.build_absolute_uri(
+        stub_dir['content'][0]['file_url'])
+    stub_dir['content'][1]['target_url'] = rv.wsgi_request.build_absolute_uri(
+        stub_dir['content'][1]['target_url'])
+    stub_dir['content'][1]['dir_url'] = rv.wsgi_request.build_absolute_uri(
+        stub_dir['content'][1]['dir_url'])
+
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
     assert rv.data == stub_dir
@@ -223,6 +234,9 @@ def test_api_revision_directory_ok_returns_content(api_client, mocker):
     url = '/api/1/revision/666/directory/some/other/path/'
     rv = api_client.get(url)
 
+    stub_content['content']['data_url'] = rv.wsgi_request.build_absolute_uri(
+        stub_content['content']['data_url'])
+
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
     assert rv.data == stub_content
@@ -243,29 +257,3 @@ def test_api_revision_uppercase(api_client, revision):
                            url_args={'sha1_git': revision})
 
     assert resp['location'] == redirect_url
-
-
-def _enrich_revision(revision):
-    directory_url = reverse(
-        'api-1-directory',
-        url_args={'sha1_git': revision['directory']})
-
-    history_url = reverse('api-1-revision-log',
-                          url_args={'sha1_git': revision['id']})
-
-    parents_id_url = []
-    for p in revision['parents']:
-        parents_id_url.append({
-            'id': p,
-            'url': reverse('api-1-revision', url_args={'sha1_git': p})
-        })
-
-    revision_url = reverse('api-1-revision',
-                           url_args={'sha1_git': revision['id']})
-
-    revision['directory_url'] = directory_url
-    revision['history_url'] = history_url
-    revision['url'] = revision_url
-    revision['parents'] = parents_id_url
-
-    return revision

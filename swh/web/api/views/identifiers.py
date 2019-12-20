@@ -58,5 +58,6 @@ def api_resolve_swh_pid(request, swh_id):
     service.lookup_object(object_type, object_id)
     # id is well-formed and the pointed object exists
     swh_id_data = swh_id_parsed._asdict()
-    swh_id_data['browse_url'] = swh_id_resolved['browse_url']
+    swh_id_data['browse_url'] = request.build_absolute_uri(
+        swh_id_resolved['browse_url'])
     return swh_id_data

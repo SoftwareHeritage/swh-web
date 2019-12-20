@@ -8,6 +8,7 @@ import random
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_hex
+from swh.web.api.utils import enrich_snapshot
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
@@ -25,7 +26,7 @@ def test_api_snapshot(api_client, archive_data, snapshot):
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
     expected_data = archive_data.snapshot_get(snapshot)
-    expected_data = _enrich_snapshot(archive_data, expected_data)
+    expected_data = enrich_snapshot(expected_data, rv.wsgi_request)
     assert rv.data == expected_data
 
 
@@ -59,7 +60,7 @@ def test_api_snapshot_paginated(api_client, archive_data, snapshot):
         expected_data = archive_data.snapshot_get_branches(
             snapshot, branches_from, branches_count)
 
-        expected_data = _enrich_snapshot(archive_data, expected_data)
+        expected_data = enrich_snapshot(expected_data, rv.wsgi_request)
 
         branches_offset += branches_count
         if branches_offset < len(snapshot_branches):
@@ -112,7 +113,7 @@ def test_api_snapshot_filtered(api_client, archive_data, snapshot):
 
     expected_data = archive_data.snapshot_get_branches(
         snapshot, target_types=target_type)
-    expected_data = _enrich_snapshot(archive_data, expected_data)
+    expected_data = enrich_snapshot(expected_data, rv.wsgi_request)
 
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
@@ -159,36 +160,3 @@ def test_api_snapshot_null_branch(api_client, archive_data, new_snapshot):
                   url_args={'snapshot_id': snp_id})
     rv = api_client.get(url)
     assert rv.status_code == 200, rv.data
-
-
-def _enrich_snapshot(archive_data, snapshot):
-    def _get_branch_url(target_type, target):
-        url = None
-        if target_type == 'revision':
-            url = reverse('api-1-revision', url_args={'sha1_git': target})
-        if target_type == 'release':
-            url = reverse('api-1-release', url_args={'sha1_git': target})
-        return url
-
-    for branch in snapshot['branches'].keys():
-        target = snapshot['branches'][branch]['target']
-        target_type = snapshot['branches'][branch]['target_type']
-        snapshot['branches'][branch]['target_url'] = \
-            _get_branch_url(target_type, target)
-    for branch in snapshot['branches'].keys():
-        target = snapshot['branches'][branch]['target']
-        target_type = snapshot['branches'][branch]['target_type']
-        if target_type == 'alias':
-            if target in snapshot['branches']:
-                snapshot['branches'][branch]['target_url'] = \
-                    snapshot['branches'][target]['target_url']
-            else:
-                snp = archive_data.snapshot_get_branches(snapshot['id'],
-                                                         branches_from=target,
-                                                         branches_count=1)
-                alias_target = snp['branches'][target]['target']
-                alias_target_type = snp['branches'][target]['target_type']
-                snapshot['branches'][branch]['target_url'] = \
-                    _get_branch_url(alias_target_type, alias_target)
-
-    return snapshot

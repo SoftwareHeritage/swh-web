@@ -37,7 +37,7 @@ def test_generic_api_map_are_enriched_and_transformed_to_list():
         'some param 1',
         notfound_msg=('This is not the error message you are looking for. '
                       'Move along.'),
-        enrich_fn=lambda x: x * 2)
+        enrich_fn=lambda x, request: x * 2)
 
     assert actual_result == [4, 6, 8]
 
@@ -52,7 +52,7 @@ def test_generic_api_list_are_enriched_too():
         test_generic_lookup_fn_2, 'something',
         notfound_msg=('Not the error message you are looking for, it is. '
                       'Along, you move!'),
-        enrich_fn=lambda x: ''. join(['=', x, '=']))
+        enrich_fn=lambda x, request: ''. join(['=', x, '=']))
 
     assert actual_result == ['=a=', '=b=', '=c=']
 
@@ -66,7 +66,7 @@ def test_generic_api_generator_are_enriched_and_returned_as_list():
     actual_result = utils.api_lookup(
         test_generic_lookup_fn_3, 'crit',
         notfound_msg='Move!',
-        enrich_fn=lambda x: x - 1)
+        enrich_fn=lambda x, request: x - 1)
 
     assert actual_result == [3, 4, 5]
 
@@ -77,7 +77,7 @@ def test_generic_api_simple_data_are_enriched_and_returned_too():
         assert crit == '123'
         return {'a': 10}
 
-    def test_enrich_data(x):
+    def test_enrich_data(x, request):
         x['a'] = x['a'] * 10
         return x
 

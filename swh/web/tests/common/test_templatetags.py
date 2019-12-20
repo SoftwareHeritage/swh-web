@@ -10,28 +10,30 @@ from swh.web.common.swh_templatetags import (
 )
 
 
-def test_urlize_api_links_api():
-    # update api link with html links content with links
-    content = '{"url": "/api/1/abc/"}'
-    expected_content = ('{"url": "<a href="/api/1/abc/">/api/1/abc/</a>"}')
+def test_urlize_http_link():
+    link = 'https://example.com/api/1/abc/'
+    expected_content = f'<a href="{link}">{link}</a>'
 
-    assert urlize_links_and_mails(content) == expected_content
+    assert urlize_links_and_mails(link) == expected_content
 
 
-def test_urlize_api_links_browse():
-    # update /browse link with html links content with links
-    content = '{"url": "/browse/def/"}'
-    expected_content = ('{"url": "<a href="/browse/def/">'
-                        '/browse/def/</a>"}')
-    assert urlize_links_and_mails(content) == expected_content
+def test_urlize_email():
+    email = 'someone@example.com'
+    expected_content = f'<a href="mailto:{email}">{email}</a>'
+
+    assert urlize_links_and_mails(email) == expected_content
 
 
 def test_urlize_header_links():
-    # update api link with html links content with links
-    content = '</api/1/abc/>; rel="next"\n</api/1/def/>; rel="prev"'
 
-    expected_content = ('<<a href="/api/1/abc/">/api/1/abc/</a>>; rel="next"\n'
-                        '<<a href="/api/1/def/">/api/1/def/</a>>; rel="prev"')
+    next_link = 'https://example.com/api/1/abc/'
+    prev_link = 'https://example.com/api/1/def/'
+
+    content = f'<{next_link}>; rel="next"\n<{prev_link}>; rel="prev"'
+
+    expected_content = (
+        f'<<a href="{next_link}">{next_link}</a>>; rel="next"\n'
+        f'<<a href="{prev_link}">{prev_link}</a>>; rel="prev"')
 
     assert urlize_header_links(content) == expected_content
 

@@ -83,6 +83,11 @@ def django_cache_cleared():
     cache.clear()
 
 
+# Alias rf fixture from pytest-django
+@pytest.fixture
+def request_factory(rf):
+    return rf
+
 # Fixture to get test client from Django REST Framework
 @pytest.fixture(scope='module')
 def api_client():
