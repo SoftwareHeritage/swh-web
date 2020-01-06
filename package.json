@@ -9,7 +9,8 @@
     "build": "NODE_ENV=production webpack --config ./swh/web/assets/config/webpack.config.production.js --colors",
     "mochawesome": "mochawesome-merge cypress/mochawesome/results/*.json > cypress/mochawesome/mochawesome.json && marge -o cypress/mochawesome/report cypress/mochawesome/mochawesome.json",
     "eslint": "eslint -c swh/web/assets/config/.eslintrc --fix swh/web/assets/**",
-    "preinstall": "npm -v || (SWH_WEB=$PWD && cd /tmp && yarn add npm && cd node_modules/npm && yarn link && cd $SWH_WEB && yarn link npm)"
+    "preinstall": "npm -v || (SWH_WEB=$PWD && cd /tmp && yarn add npm && cd node_modules/npm && yarn link && cd $SWH_WEB && yarn link npm)",
+    "nyc-report": "nyc report --reporter=lcov"
   },
   "repository": {
     "type": "git",
