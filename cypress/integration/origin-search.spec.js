@@ -30,6 +30,17 @@ function searchShouldShowNotFound(searchText, msg) {
     .and('contain', msg);
 }
 
+function stubOriginVisitLatestRequests() {
+  cy.server();
+  cy.route({
+    method: 'GET',
+    url: '**/visit/latest/**',
+    response: {
+      type: 'tar'
+    }
+  }).as('originVisitLatest');
+}
+
 describe('Test origin-search', function() {
   before(function() {
     origin = this.origin[0];
@@ -116,6 +127,7 @@ describe('Test origin-search', function() {
     });
 
     it('should paginate forward when there are many results', function() {
+      stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
         .uncheck()
@@ -126,6 +138,7 @@ describe('Test origin-search', function() {
 
           // Get first page of results
           doSearch(searchText);
+          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
@@ -143,6 +156,7 @@ describe('Test origin-search', function() {
           // Get second page of results
           cy.get('#origins-next-results-button a')
             .click();
+          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
@@ -160,6 +174,7 @@ describe('Test origin-search', function() {
           // Get third (and last) page of results
           cy.get('#origins-next-results-button a')
             .click();
+          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 50);
@@ -177,6 +192,7 @@ describe('Test origin-search', function() {
     });
 
     it('should paginate backward from a middle page', function() {
+      stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
         .uncheck()
@@ -187,6 +203,7 @@ describe('Test origin-search', function() {
 
           // Get first page of results
           doSearch(searchText);
+          cy.wait('@originVisitLatest');
 
           cy.get('#origins-prev-results-button')
             .should('have.class', 'disabled');
@@ -196,6 +213,8 @@ describe('Test origin-search', function() {
           // Get second page of results
           cy.get('#origins-next-results-button a')
             .click();
+          cy.wait('@originVisitLatest');
+
           cy.get('#origins-prev-results-button')
             .should('not.have.class', 'disabled');
           cy.get('#origins-next-results-button')
@@ -204,6 +223,7 @@ describe('Test origin-search', function() {
           // Get first page of results again
           cy.get('#origins-prev-results-button a')
             .click();
+          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
@@ -221,6 +241,7 @@ describe('Test origin-search', function() {
     });
 
     it('should paginate backward from the last page', function() {
+      stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
         .uncheck()
@@ -231,6 +252,7 @@ describe('Test origin-search', function() {
 
           // Get first page of results
           doSearch(searchText);
+          cy.wait('@originVisitLatest');
 
           cy.get('#origins-prev-results-button')
             .should('have.class', 'disabled');
@@ -240,6 +262,7 @@ describe('Test origin-search', function() {
           // Get second page of results
           cy.get('#origins-next-results-button a')
             .click();
+          cy.wait('@originVisitLatest');
 
           cy.get('#origins-prev-results-button')
             .should('not.have.class', 'disabled');
@@ -258,6 +281,7 @@ describe('Test origin-search', function() {
           // Get second page of results again
           cy.get('#origins-prev-results-button a')
             .click();
+          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
@@ -275,6 +299,7 @@ describe('Test origin-search', function() {
           // Get first page of results again
           cy.get('#origins-prev-results-button a')
             .click();
+          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
