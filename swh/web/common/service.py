@@ -23,6 +23,7 @@ from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web import config
 
+search = config.search()
 storage = config.storage()
 vault = config.vault()
 idx_storage = config.indexer_storage()
@@ -260,25 +261,33 @@ def search_origin(url_pattern, limit=50, with_visit=False, page_token=None):
         list of origin information as dict.
 
     """
-    offset = int(page_token) if page_token else 0
-    regexp = True
-    search_words = [re.escape(word) for word in url_pattern.split()]
-    if len(search_words) >= 7:
-        url_pattern = '.*'.join(search_words)
+    if search:
+        results = search.origin_search(url_pattern=url_pattern, count=limit,
+                                       page_token=page_token,
+                                       with_visit=with_visit)
+        origins = list(map(converters.from_origin, results['results']))
+        return (origins, results['next_page_token'])
     else:
-        pattern_parts = []
-        for permut in itertools.permutations(search_words):
-            pattern_parts.append('.*'.join(permut))
-        url_pattern = '|'.join(pattern_parts)
+        # Fallback to swh-storage if swh-search is not configured
+        offset = int(page_token) if page_token else 0
+        regexp = True
+        search_words = [re.escape(word) for word in url_pattern.split()]
+        if len(search_words) >= 7:
+            url_pattern = '.*'.join(search_words)
+        else:
+            pattern_parts = []
+            for permut in itertools.permutations(search_words):
+                pattern_parts.append('.*'.join(permut))
+            url_pattern = '|'.join(pattern_parts)
 
-    origins = storage.origin_search(url_pattern, offset, limit, regexp,
-                                    with_visit)
-    origins = list(map(converters.from_origin, origins))
-    if len(origins) >= limit:
-        page_token = str(offset + len(origins))
-    else:
-        page_token = None
-    return (origins, page_token)
+        origins = storage.origin_search(url_pattern, offset, limit, regexp,
+                                        with_visit)
+        origins = list(map(converters.from_origin, origins))
+        if len(origins) >= limit:
+            page_token = str(offset + len(origins))
+        else:
+            page_token = None
+        return (origins, page_token)
 
 
 def search_origin_metadata(fulltext, limit=50):

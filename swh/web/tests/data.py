@@ -20,6 +20,7 @@ from swh.model.from_disk import Directory
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
 from swh.model.identifiers import directory_identifier
 from swh.loader.git.from_disk import GitLoaderFromArchive
+from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.web import config
 from swh.web.browse.utils import (
@@ -159,6 +160,11 @@ def _init_tests_data():
     # To hold reference to the memory storage
     storage = None
 
+    # Create search instance
+    search = get_search('memory', {})
+    search.initialize()
+    search.origin_update({'url': origin['url']} for origin in _TEST_ORIGINS)
+
     # Load git repositories from archives
     for origin in _TEST_ORIGINS:
         for i, archive in enumerate(origin['archives']):
@@ -176,10 +182,12 @@ def _init_tests_data():
             loader.load()
 
         origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
+        search.origin_update([{'url': origin['url'], 'has_visits': True}])
 
     for i in range(250):
         url = 'https://many.origins/%d' % (i+1)
         storage.origin_add([{'url': url}])
+        search.origin_update([{'url': url, 'has_visits': True}])
         visit = storage.origin_visit_add(url, '2019-12-03 13:55:05', 'tar')
         storage.origin_visit_update(
             url, visit['visit'],
@@ -250,6 +258,7 @@ def _init_tests_data():
 
     # Return tests data
     return {
+        'search': search,
         'storage': storage,
         'idx_storage': idx_storage,
         'origins': _TEST_ORIGINS,
@@ -310,17 +319,21 @@ def get_tests_data(reset=False):
     return _current_tests_data
 
 
-def override_storages(storage, idx_storage):
+def override_storages(storage, idx_storage, search):
     """
     Helper function to replace the storages from which archive data
     are fetched.
     """
     swh_config = config.get_config()
-    swh_config.update({'storage': storage})
-    service.storage = storage
+    swh_config.update({
+        'storage': storage,
+        'indexer_storage': idx_storage,
+        'search': search,
+    })
 
-    swh_config.update({'indexer_storage': idx_storage})
+    service.storage = storage
     service.idx_storage = idx_storage
+    service.search = search
 
 
 # Implement some special endpoints used to provide input tests data

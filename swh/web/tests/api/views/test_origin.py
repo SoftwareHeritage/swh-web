@@ -390,7 +390,12 @@ def test_api_origin_not_found(api_client, new_origin):
     }
 
 
-def test_api_origin_search(api_client):
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
+def test_api_origin_search(api_client, mocker, backend):
+    if backend != 'swh-search':
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
     expected_origins = {
         'https://github.com/wcoder/highlightjs-line-numbers.js',
         'https://github.com/memononen/libtess2',
@@ -425,7 +430,12 @@ def test_api_origin_search(api_client):
     assert {origin['url'] for origin in rv.data} == expected_origins
 
 
-def test_api_origin_search_words(api_client):
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
+def test_api_origin_search_words(api_client, mocker, backend):
+    if backend != 'swh-search':
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
     expected_origins = {
         'https://github.com/wcoder/highlightjs-line-numbers.js',
         'https://github.com/memononen/libtess2',
@@ -468,8 +478,15 @@ def test_api_origin_search_words(api_client):
         == {'https://github.com/memononen/libtess2'}
 
 
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
 @pytest.mark.parametrize('limit', [1, 2, 3, 10])
-def test_api_origin_search_scroll(api_client, archive_data, limit):
+def test_api_origin_search_scroll(
+        api_client, archive_data, mocker, limit, backend):
+
+    if backend != 'swh-search':
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
     expected_origins = {
         'https://github.com/wcoder/highlightjs-line-numbers.js',
         'https://github.com/memononen/libtess2',
@@ -484,11 +501,22 @@ def test_api_origin_search_scroll(api_client, archive_data, limit):
     assert {origin['url'] for origin in results} == expected_origins
 
 
-def test_api_origin_search_limit(api_client, archive_data):
-    archive_data.origin_add([
-        {'url': 'http://foobar/{}'.format(i)}
-        for i in range(2000)
-    ])
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
+def test_api_origin_search_limit(
+        api_client, archive_data, tests_data, mocker, backend):
+    if backend == 'swh-search':
+        tests_data['search'].origin_update([
+            {'url': 'http://foobar/{}'.format(i)}
+            for i in range(2000)
+        ])
+    else:
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
+        archive_data.origin_add([
+            {'url': 'http://foobar/{}'.format(i)}
+            for i in range(2000)
+        ])
 
     url = reverse('api-1-origin-search',
                   url_args={'url_pattern': 'foobar'},

@@ -10,6 +10,7 @@ from typing import Any, Dict
 from swh.core import config
 from swh.indexer.storage import get_indexer_storage
 from swh.scheduler import get_scheduler
+from swh.search import get_search
 from swh.storage import get_storage
 from swh.vault import get_vault
 from swh.web import settings
@@ -18,6 +19,13 @@ SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 DEFAULT_CONFIG = {
     'allowed_hosts': ('list', []),
+    'search': ('dict', {
+        'cls': 'remote',
+        'args': {
+            'url': 'http://127.0.0.1:5010/',
+            'timeout': 10,
+        },
+    }),
     'storage': ('dict', {
         'cls': 'remote',
         'url': 'http://127.0.0.1:5002/',
@@ -128,6 +136,10 @@ def get_config(config_file='web/web'):
         cfg = config.load_named_config(config_file, DEFAULT_CONFIG)
         swhweb_config.update(cfg)
         config.prepare_folders(swhweb_config, 'log_dir')
+        if swhweb_config.get('search'):
+            swhweb_config['search'] = get_search(**swhweb_config['search'])
+        else:
+            swhweb_config['search'] = None
         swhweb_config['storage'] = get_storage(**swhweb_config['storage'])
         swhweb_config['vault'] = get_vault(**swhweb_config['vault'])
         swhweb_config['indexer_storage'] = \
@@ -135,6 +147,13 @@ def get_config(config_file='web/web'):
         swhweb_config['scheduler'] = get_scheduler(
             **swhweb_config['scheduler'])
     return swhweb_config
+
+
+def search():
+    """Return the current application's search.
+
+    """
+    return get_config()['search']
 
 
 def storage():
