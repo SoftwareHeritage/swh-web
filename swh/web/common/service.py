@@ -247,8 +247,7 @@ def lookup_origins(origin_from=1, origin_count=100):
     return map(converters.from_origin, origins)
 
 
-def search_origin(url_pattern, offset=0, limit=50, regexp=False,
-                  with_visit=False):
+def search_origin(url_pattern, offset=0, limit=50, with_visit=False):
     """Search for origins whose urls contain a provided string pattern
     or match a provided regular expression.
 
@@ -261,17 +260,15 @@ def search_origin(url_pattern, offset=0, limit=50, regexp=False,
         list of origin information as dict.
 
     """
-    if not regexp:
-        # If the query is not a regexp, rewrite it as a regexp.
-        regexp = True
-        search_words = [re.escape(word) for word in url_pattern.split()]
-        if len(search_words) >= 7:
-            url_pattern = '.*'.join(search_words)
-        else:
-            pattern_parts = []
-            for permut in itertools.permutations(search_words):
-                pattern_parts.append('.*'.join(permut))
-            url_pattern = '|'.join(pattern_parts)
+    regexp = True
+    search_words = [re.escape(word) for word in url_pattern.split()]
+    if len(search_words) >= 7:
+        url_pattern = '.*'.join(search_words)
+    else:
+        pattern_parts = []
+        for permut in itertools.permutations(search_words):
+            pattern_parts.append('.*'.join(permut))
+        url_pattern = '|'.join(pattern_parts)
 
     origins = storage.origin_search(url_pattern, offset, limit, regexp,
                                     with_visit)

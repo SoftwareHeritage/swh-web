@@ -497,22 +497,6 @@ def test_api_origin_search_words(api_client):
         == {'https://github.com/memononen/libtess2'}
 
 
-def test_api_origin_search_regexp(api_client):
-    expected_origins = {
-        'https://github.com/memononen/libtess2',
-        'repo_with_submodules'
-    }
-
-    url = reverse('api-1-origin-search',
-                  url_args={'url_pattern': '(repo|libtess)'},
-                  query_params={'limit': 10,
-                                'regexp': True})
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv['Content-Type'] == 'application/json'
-    assert {origin['url'] for origin in rv.data} == expected_origins
-
-
 @pytest.mark.parametrize('limit', [1, 2, 3, 10])
 def test_api_origin_search_scroll(api_client, archive_data, limit):
     expected_origins = {
