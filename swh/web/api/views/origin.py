@@ -217,19 +217,19 @@ def api_origin_search(request, url_pattern):
             :swh_web_api:`origin/search/python/?limit=2`
     """
     result = {}
-    offset = int(request.query_params.get('offset', '0'))
     limit = min(int(request.query_params.get('limit', '70')), 1000)
+    page_token = request.query_params.get('page_token')
     with_visit = request.query_params.get('with_visit', 'false')
 
-    results = api_lookup(service.search_origin, url_pattern, offset, limit,
-                         bool(strtobool(with_visit)),
-                         enrich_fn=_enrich_origin)
+    (results, page_token) = api_lookup(
+        service.search_origin, url_pattern, limit,
+        bool(strtobool(with_visit)), page_token,
+        enrich_fn=_enrich_origin)
 
-    nb_results = len(results)
-    if nb_results == limit:
+    if page_token is not None:
         query_params = {}
-        query_params['offset'] = offset + limit
         query_params['limit'] = limit
+        query_params['page_token'] = page_token
 
         result['headers'] = {
             'link-next': reverse('api-1-origin-search',

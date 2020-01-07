@@ -247,19 +247,20 @@ def lookup_origins(origin_from=1, origin_count=100):
     return map(converters.from_origin, origins)
 
 
-def search_origin(url_pattern, offset=0, limit=50, with_visit=False):
+def search_origin(url_pattern, limit=50, with_visit=False, page_token=None):
     """Search for origins whose urls contain a provided string pattern
     or match a provided regular expression.
 
     Args:
         url_pattern: the string pattern to search for in origin urls
-        offset: number of found origins to skip before returning results
         limit: the maximum number of found origins to return
+        page_token: opaque string used to get the next results of a search
 
     Returns:
         list of origin information as dict.
 
     """
+    offset = int(page_token) if page_token else 0
     regexp = True
     search_words = [re.escape(word) for word in url_pattern.split()]
     if len(search_words) >= 7:
@@ -272,7 +273,12 @@ def search_origin(url_pattern, offset=0, limit=50, with_visit=False):
 
     origins = storage.origin_search(url_pattern, offset, limit, regexp,
                                     with_visit)
-    return map(converters.from_origin, origins)
+    origins = list(map(converters.from_origin, origins))
+    if len(origins) >= limit:
+        page_token = str(offset + len(origins))
+    else:
+        page_token = None
+    return (origins, page_token)
 
 
 def search_origin_metadata(fulltext, limit=50):
