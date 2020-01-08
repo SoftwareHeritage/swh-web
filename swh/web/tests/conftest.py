@@ -7,6 +7,7 @@ import inspect
 import json
 import os
 import shutil
+import sys
 
 from subprocess import run, PIPE
 
@@ -54,7 +55,12 @@ def pytest_configure(config):
     # So generate a dummy webpack-stats.json file to overcome
     # that issue.
     test_dir = os.path.dirname(__file__)
-    static_dir = os.path.join(test_dir, '../static')
+    # location of the static folder when running tests through tox
+    static_dir = os.path.join(sys.prefix, 'share/swh/web/static')
+
+    if not os.path.exists(static_dir):
+        # location of the static folder when running tests locally with pytest
+        static_dir = os.path.join(test_dir, '../../../static')
     webpack_stats = os.path.join(static_dir, 'webpack-stats.json')
     if os.path.exists(webpack_stats):
         return

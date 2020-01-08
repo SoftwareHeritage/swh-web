@@ -9,6 +9,7 @@ Django common settings for swh-web.
 """
 
 import os
+import sys
 
 from swh.web.config import get_config
 
@@ -132,9 +133,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(PROJECT_DIR, "../static")
-]
+# static folder location when swh-web has been installed with pip
+STATIC_DIR = os.path.join(sys.prefix, 'share/swh/web/static')
+if not os.path.exists(STATIC_DIR):
+    # static folder location when developping swh-web
+    STATIC_DIR = os.path.join(PROJECT_DIR, '../../../static')
+STATICFILES_DIRS = [STATIC_DIR]
 
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -252,14 +256,14 @@ LOGGING = {
     },
 }
 
-WEBPACK_LOADER = { # noqa
+WEBPACK_LOADER = {
     'DEFAULT': {
         'CACHE': False,
         'BUNDLE_DIR_NAME': './',
-        'STATS_FILE': os.path.join(PROJECT_DIR, '../static/webpack-stats.json'), # noqa
+        'STATS_FILE': os.path.join(STATIC_DIR, 'webpack-stats.json'),
         'POLL_INTERVAL': 0.1,
         'TIMEOUT': None,
-        'IGNORE': ['.+\.hot-update.js', '.+\.map']
+        'IGNORE': ['.+\\.hot-update.js', '.+\\.map']
     }
 }
 
