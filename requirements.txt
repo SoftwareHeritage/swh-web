@@ -22,6 +22,7 @@ requests
 python-memcached
 pybadges
 sentry-sdk
+typing-extensions
 
 # Doc dependencies
 sphinx
