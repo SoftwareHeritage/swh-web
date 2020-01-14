@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -23,7 +23,7 @@ from rest_framework.authentication import SessionAuthentication
 from swh.model.exceptions import ValidationError
 from swh.model.identifiers import (
     persistent_identifier, parse_persistent_identifier,
-    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+    CONTENT, DIRECTORY, ORIGIN, RELEASE, REVISION, SNAPSHOT
 )
 
 from swh.web.common.exc import BadInputExc
@@ -286,6 +286,10 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
             browse_url = reverse('browse-snapshot',
                                  url_args={'snapshot_id': object_id},
                                  query_params=query_dict)
+        elif object_type == ORIGIN:
+            raise BadInputExc(('Origin PIDs (Persistent Identifiers) are not '
+                               'publicly resolvable because they are for '
+                               'internal usage only'))
     except ValidationError as ve:
         raise BadInputExc('Error when parsing identifier. %s' %
                           ' '.join(ve.messages))
