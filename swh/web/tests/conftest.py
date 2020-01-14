@@ -173,8 +173,10 @@ class _ArchiveData:
 
     def content_get_metadata(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        metadata = next(self.storage.content_get_metadata([cnt_id_bytes]))
-        return converters.from_swh(metadata,
+        metadata = self.storage.content_get_metadata([cnt_id_bytes])
+        contents = metadata[cnt_id_bytes]
+        content = None if not contents else contents[0]
+        return converters.from_swh(content,
                                    hashess={'sha1', 'sha1_git', 'sha256',
                                             'blake2s256'})
 

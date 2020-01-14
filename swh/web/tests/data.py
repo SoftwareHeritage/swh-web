@@ -229,24 +229,26 @@ def _init_tests_data():
                     directories.add(hash_to_hex(entry['target']))
 
     # Get all checksums for each content
-    contents_metadata = storage.content_get_metadata(contents)
+    result = storage.content_get_metadata(contents)
     contents = []
-    for content_metadata in contents_metadata:
-        contents.append({
-            algo: hash_to_hex(content_metadata[algo])
-            for algo in DEFAULT_ALGORITHMS
-        })
-        path = content_path[content_metadata['sha1']]
-        cnt = next(storage.content_get([content_metadata['sha1']]))
-        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt['data'])
-        content_display_data = prepare_content_for_display(
-            cnt['data'], mimetype, path)
-        contents[-1]['path'] = path
-        contents[-1]['mimetype'] = mimetype
-        contents[-1]['encoding'] = encoding
-        contents[-1]['hljs_language'] = content_display_data['language']
-        contents[-1]['data'] = content_display_data['content_data']
-        _contents[contents[-1]['sha1']] = contents[-1]
+    for sha1, contents_metadata in result.items():
+        for content_metadata in contents_metadata:
+            contents.append({
+                algo: hash_to_hex(content_metadata[algo])
+                for algo in DEFAULT_ALGORITHMS
+            })
+            path = content_path[sha1]
+            cnt = next(storage.content_get([sha1]))
+            mimetype, encoding = get_mimetype_and_encoding_for_content(
+                cnt['data'])
+            content_display_data = prepare_content_for_display(
+                cnt['data'], mimetype, path)
+            contents[-1]['path'] = path
+            contents[-1]['mimetype'] = mimetype
+            contents[-1]['encoding'] = encoding
+            contents[-1]['hljs_language'] = content_display_data['language']
+            contents[-1]['data'] = content_display_data['content_data']
+            _contents[contents[-1]['sha1']] = contents[-1]
 
     # Create indexer storage instance that will be shared by indexers
     idx_storage = get_indexer_storage('memory', {})
