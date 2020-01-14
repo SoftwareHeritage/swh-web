@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -24,7 +24,8 @@ from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.web import config
 from swh.web.browse.utils import (
-    get_mimetype_and_encoding_for_content, prepare_content_for_display
+    get_mimetype_and_encoding_for_content, prepare_content_for_display,
+    _re_encode_content
 )
 from swh.web.common import service
 from swh.web.common.highlightjs import get_hljs_language_from_filename
@@ -241,6 +242,8 @@ def _init_tests_data():
             cnt = next(storage.content_get([sha1]))
             mimetype, encoding = get_mimetype_and_encoding_for_content(
                 cnt['data'])
+            _, _, cnt['data'] = _re_encode_content(
+                mimetype, encoding, cnt['data'])
             content_display_data = prepare_content_for_display(
                 cnt['data'], mimetype, path)
             contents[-1]['path'] = path
