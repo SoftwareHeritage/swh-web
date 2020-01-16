@@ -37,7 +37,8 @@ Build-Depends: curl,
                python3-swh.indexer (>= 0.0.120~),
                python3-swh.vault (>= 0.0.23~),
                python3-swh.scheduler (>= 0.0.31~),
-               python3-swh.loader.git (>= 0.0.47~)
+               python3-swh.loader.git (>= 0.0.47~),
+               python3-swh.search (>= 0.0.3~)
 Standards-Version: 3.9.6
 Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
@@ -49,6 +50,7 @@ Depends: python3-swh.core (>= 0.0.57~),
          python3-swh.indexer.storage (>= 0.0.120~),
          python3-swh.vault (>= 0.0.23~),
          python3-swh.scheduler (>= 0.0.31~),
+         python3-swh.search (>= 0.0.3~),
          ${misc:Depends},
          ${python3:Depends},
          python3-magic (>= 0.3.0~)
