@@ -9,6 +9,7 @@ from requests.utils import parse_header_links
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
+from swh.web.api.utils import enrich_origin_visit, enrich_origin
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
 from swh.web.common.origin_visits import get_origin_visits
@@ -119,7 +120,7 @@ def test_api_lookup_origin_visits(api_client, archive_data, new_origin,
 
     for last_visit, expected_visits in (
             (None, all_visits[:2]),
-            (all_visits[1]['visit'], all_visits[2:4])):
+            (all_visits[1]['visit'], all_visits[2:])):
 
         url = reverse('api-1-origin-visits',
                       url_args={'origin_url': new_origin['url']},
@@ -131,17 +132,10 @@ def test_api_lookup_origin_visits(api_client, archive_data, new_origin,
         assert rv.status_code == 200, rv.data
         assert rv['Content-Type'] == 'application/json'
 
-        for expected_visit in expected_visits:
-            origin_visit_url = reverse(
-                'api-1-origin-visit',
-                url_args={'origin_url': new_origin['url'],
-                          'visit_id': expected_visit['visit']})
-            snapshot_url = reverse(
-                'api-1-snapshot',
-                url_args={'snapshot_id': expected_visit['snapshot']})
-            expected_visit['origin'] = new_origin['url']
-            expected_visit['origin_visit_url'] = origin_visit_url
-            expected_visit['snapshot_url'] = snapshot_url
+        for i in range(len(expected_visits)):
+            expected_visits[i] = enrich_origin_visit(
+                expected_visits[i], with_origin_link=False,
+                with_origin_visit_link=True, request=rv.wsgi_request)
 
         assert rv.data == expected_visits
 
@@ -174,17 +168,10 @@ def test_api_lookup_origin_visits_by_id(api_client, archive_data, new_origin,
         assert rv.status_code == 200, rv.data
         assert rv['Content-Type'] == 'application/json'
 
-        for expected_visit in expected_visits:
-            origin_visit_url = reverse(
-                'api-1-origin-visit',
-                url_args={'origin_url': new_origin['url'],
-                          'visit_id': expected_visit['visit']})
-            snapshot_url = reverse(
-                'api-1-snapshot',
-                url_args={'snapshot_id': expected_visit['snapshot']})
-            expected_visit['origin'] = new_origin['url']
-            expected_visit['origin_visit_url'] = origin_visit_url
-            expected_visit['snapshot_url'] = snapshot_url
+        for i in range(len(expected_visits)):
+            expected_visits[i] = enrich_origin_visit(
+                expected_visits[i], with_origin_link=False,
+                with_origin_visit_link=True, request=rv.wsgi_request)
 
         assert rv.data == expected_visits
 
@@ -212,15 +199,9 @@ def test_api_lookup_origin_visit(api_client, archive_data, new_origin,
         expected_visit = archive_data.origin_visit_get_by(
             new_origin['url'], visit_id)
 
-        origin_url = reverse('api-1-origin',
-                             url_args={'origin_url': new_origin['url']})
-        snapshot_url = reverse(
-            'api-1-snapshot',
-            url_args={'snapshot_id': expected_visit['snapshot']})
-
-        expected_visit['origin'] = new_origin['url']
-        expected_visit['origin_url'] = origin_url
-        expected_visit['snapshot_url'] = snapshot_url
+        expected_visit = enrich_origin_visit(
+            expected_visit, with_origin_link=True,
+            with_origin_visit_link=False, request=rv.wsgi_request)
 
         assert rv.data == expected_visit
 
@@ -261,18 +242,16 @@ def test_api_lookup_origin_visit_latest(api_client, archive_data, new_origin,
                   url_args={'origin_url': new_origin['url']})
 
     rv = api_client.get(url)
+
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
 
     expected_visit = archive_data.origin_visit_get_by(
         new_origin['url'], visit_ids[1])
 
-    origin_url = reverse('api-1-origin',
-                         url_args={'origin_url': new_origin['url']})
-
-    expected_visit['origin'] = new_origin['url']
-    expected_visit['origin_url'] = origin_url
-    expected_visit['snapshot_url'] = None
+    expected_visit = enrich_origin_visit(
+            expected_visit, with_origin_link=True,
+            with_origin_visit_link=False, request=rv.wsgi_request)
 
     assert rv.data == expected_visit
 
@@ -295,25 +274,20 @@ def test_api_lookup_origin_visit_latest_with_snapshot(api_client, archive_data,
         snapshot=new_snapshots[0]['id'])
 
     url = reverse('api-1-origin-visit-latest',
-                  url_args={'origin_url': new_origin['url']})
-    url += '?require_snapshot=true'
+                  url_args={'origin_url': new_origin['url']},
+                  query_params={'require_snapshot': True})
 
     rv = api_client.get(url)
+
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
 
     expected_visit = archive_data.origin_visit_get_by(
         new_origin['url'], visit_ids[0])
 
-    origin_url = reverse('api-1-origin',
-                         url_args={'origin_url': new_origin['url']})
-    snapshot_url = reverse(
-        'api-1-snapshot',
-        url_args={'snapshot_id': expected_visit['snapshot']})
-
-    expected_visit['origin'] = new_origin['url']
-    expected_visit['origin_url'] = origin_url
-    expected_visit['snapshot_url'] = snapshot_url
+    expected_visit = enrich_origin_visit(
+            expected_visit, with_origin_link=True,
+            with_origin_visit_link=False, request=rv.wsgi_request)
 
     assert rv.data == expected_visit
 
@@ -394,10 +368,7 @@ def test_api_origin_by_url(api_client, archive_data, origin):
 
     expected_origin = archive_data.origin_get(origin)
 
-    origin_visits_url = reverse('api-1-origin-visits',
-                                url_args={'origin_url': origin['url']})
-
-    expected_origin['origin_visits_url'] = origin_visits_url
+    expected_origin = enrich_origin(expected_origin, rv.wsgi_request)
 
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
@@ -419,7 +390,12 @@ def test_api_origin_not_found(api_client, new_origin):
     }
 
 
-def test_api_origin_search(api_client):
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
+def test_api_origin_search(api_client, mocker, backend):
+    if backend != 'swh-search':
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
     expected_origins = {
         'https://github.com/wcoder/highlightjs-line-numbers.js',
         'https://github.com/memononen/libtess2',
@@ -454,7 +430,12 @@ def test_api_origin_search(api_client):
     assert {origin['url'] for origin in rv.data} == expected_origins
 
 
-def test_api_origin_search_words(api_client):
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
+def test_api_origin_search_words(api_client, mocker, backend):
+    if backend != 'swh-search':
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
     expected_origins = {
         'https://github.com/wcoder/highlightjs-line-numbers.js',
         'https://github.com/memononen/libtess2',
@@ -497,24 +478,15 @@ def test_api_origin_search_words(api_client):
         == {'https://github.com/memononen/libtess2'}
 
 
-def test_api_origin_search_regexp(api_client):
-    expected_origins = {
-        'https://github.com/memononen/libtess2',
-        'repo_with_submodules'
-    }
-
-    url = reverse('api-1-origin-search',
-                  url_args={'url_pattern': '(repo|libtess)'},
-                  query_params={'limit': 10,
-                                'regexp': True})
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv['Content-Type'] == 'application/json'
-    assert {origin['url'] for origin in rv.data} == expected_origins
-
-
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
 @pytest.mark.parametrize('limit', [1, 2, 3, 10])
-def test_api_origin_search_scroll(api_client, archive_data, limit):
+def test_api_origin_search_scroll(
+        api_client, archive_data, mocker, limit, backend):
+
+    if backend != 'swh-search':
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
     expected_origins = {
         'https://github.com/wcoder/highlightjs-line-numbers.js',
         'https://github.com/memononen/libtess2',
@@ -529,11 +501,22 @@ def test_api_origin_search_scroll(api_client, archive_data, limit):
     assert {origin['url'] for origin in results} == expected_origins
 
 
-def test_api_origin_search_limit(api_client, archive_data):
-    archive_data.origin_add([
-        {'url': 'http://foobar/{}'.format(i)}
-        for i in range(2000)
-    ])
+@pytest.mark.parametrize('backend', ['swh-search', 'swh-storage'])
+def test_api_origin_search_limit(
+        api_client, archive_data, tests_data, mocker, backend):
+    if backend == 'swh-search':
+        tests_data['search'].origin_update([
+            {'url': 'http://foobar/{}'.format(i)}
+            for i in range(2000)
+        ])
+    else:
+        # equivalent to not configuring search in the config
+        mocker.patch('swh.web.common.service.search', None)
+
+        archive_data.origin_add([
+            {'url': 'http://foobar/{}'.format(i)}
+            for i in range(2000)
+        ])
 
     url = reverse('api-1-origin-search',
                   url_args={'url_pattern': 'foobar'},

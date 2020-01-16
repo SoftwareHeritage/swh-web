@@ -3,7 +3,18 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
+
+from hypothesis import given
+
+from swh.model.hashutil import DEFAULT_ALGORITHMS
+
 from swh.web.api import utils
+from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.utils import reverse, resolve_branch_alias
+from swh.web.tests.strategies import (
+    release, directory, content, revision, snapshot, origin
+)
 
 
 url_map = [
@@ -33,15 +44,6 @@ url_map = [
         'endpoint': None
     }
 ]
-
-sample_content_hashes = {
-    'blake2s256': ('791e07fcea240ade6dccd0a9309141673'
-                   'c31242cae9c237cf3855e151abc78e9'),
-    'sha1': 'dc2830a9e72f23c1dfebef4413003221baa5fb62',
-    'sha1_git': 'fe95a46679d128ff167b7c55df5d02356c5a1ae1',
-    'sha256': ('b5c7fe0536f44ef60c8780b6065d30bca74a5cd06'
-               'd78a4a71ba1ad064770f0c9')
-}
 
 
 def test_filter_field_keys_dict_unknown_keys():
@@ -100,446 +102,500 @@ def test_person_to_string():
                                    'email': 'foo@bar'}) == 'raboof <foo@bar>'
 
 
-def test_enrich_release_0():
+def test_enrich_release_empty():
     actual_release = utils.enrich_release({})
 
     assert actual_release == {}
 
 
-def test_enrich_release_1(mocker):
+@given(release())
+def test_enrich_release_content_target(api_request_factory,
+                                       archive_data, release):
 
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
+    release_data = archive_data.release_get(release)
+    release_data['target_type'] = 'content'
 
-    def reverse_test_context(view_name, url_args):
-        if view_name == 'api-1-content':
-            id = url_args['q']
-            return '/api/1/content/%s/' % id
-        else:
-            raise ValueError('This should not happened so fail if it does.')
+    url = reverse('api-1-release', url_args={'sha1_git': release})
+    request = api_request_factory.get(url)
 
-    mock_django_reverse.side_effect = reverse_test_context
+    actual_release = utils.enrich_release(release_data, request)
 
-    actual_release = utils.enrich_release({
-        'target': '123',
-        'target_type': 'content',
-        'author': {
-            'id': 100,
-            'name': 'author release name',
-            'email': 'author@email',
-        },
-    })
+    release_data['target_url'] = reverse(
+        'api-1-content',
+        url_args={'q': f'sha1_git:{release_data["target"]}'},
+        request=request)
 
-    assert actual_release == {
-        'target': '123',
-        'target_type': 'content',
-        'target_url': '/api/1/content/sha1_git:123/',
-        'author': {
-            'id': 100,
-            'name': 'author release name',
-            'email': 'author@email',
-        },
-    }
-
-    mock_django_reverse.assert_has_calls([
-        mocker.call('api-1-content', url_args={'q': 'sha1_git:123'}),
-    ])
+    assert actual_release == release_data
 
 
-def test_enrich_release_2(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.return_value = '/api/1/dir/23/'
+@given(release())
+def test_enrich_release_directory_target(api_request_factory,
+                                         archive_data, release):
 
-    actual_release = utils.enrich_release({'target': '23',
-                                           'target_type': 'directory'})
+    release_data = archive_data.release_get(release)
+    release_data['target_type'] = 'directory'
 
-    assert actual_release == {
-        'target': '23',
-        'target_type': 'directory',
-        'target_url': '/api/1/dir/23/'
-    }
+    url = reverse('api-1-release', url_args={'sha1_git': release})
+    request = api_request_factory.get(url)
 
-    mock_django_reverse.assert_called_once_with('api-1-directory',
-                                                url_args={'sha1_git': '23'})
+    actual_release = utils.enrich_release(release_data, request)
 
+    release_data['target_url'] = reverse(
+        'api-1-directory',
+        url_args={'sha1_git': release_data['target']},
+        request=request)
 
-def test_enrich_release_3(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.return_value = '/api/1/rev/3/'
-
-    actual_release = utils.enrich_release({'target': '3',
-                                           'target_type': 'revision'})
-
-    assert actual_release == {
-        'target': '3',
-        'target_type': 'revision',
-        'target_url': '/api/1/rev/3/'
-    }
-
-    mock_django_reverse.assert_called_once_with('api-1-revision',
-                                                url_args={'sha1_git': '3'})
+    assert actual_release == release_data
 
 
-def test_enrich_release_4(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.return_value = '/api/1/rev/4/'
+@given(release())
+def test_enrich_release_revision_target(api_request_factory,
+                                        archive_data, release):
 
-    actual_release = utils.enrich_release({'target': '4',
-                                           'target_type': 'release'})
+    release_data = archive_data.release_get(release)
+    release_data['target_type'] = 'revision'
 
-    assert actual_release == {
-        'target': '4',
-        'target_type': 'release',
-        'target_url': '/api/1/rev/4/'
-    }
+    url = reverse('api-1-release', url_args={'sha1_git': release})
+    request = api_request_factory.get(url)
 
-    mock_django_reverse.assert_called_once_with('api-1-release',
-                                                url_args={'sha1_git': '4'})
+    actual_release = utils.enrich_release(release_data, request)
+
+    release_data['target_url'] = reverse(
+        'api-1-revision',
+        url_args={'sha1_git': release_data['target']},
+        request=request)
+
+    assert actual_release == release_data
 
 
-def test_enrich_directory_no_type(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
+@given(release())
+def test_enrich_release_release_target(api_request_factory,
+                                       archive_data, release):
+
+    release_data = archive_data.release_get(release)
+    release_data['target_type'] = 'release'
+
+    url = reverse('api-1-release', url_args={'sha1_git': release})
+    request = api_request_factory.get(url)
+
+    actual_release = utils.enrich_release(release_data, request)
+
+    release_data['target_url'] = reverse(
+        'api-1-release',
+        url_args={'sha1_git': release_data['target']},
+        request=request)
+
+    assert actual_release == release_data
+
+
+def test_enrich_directory_no_type():
     assert utils.enrich_directory({'id': 'dir-id'}) == {'id': 'dir-id'}
 
-    mock_django_reverse.return_value = '/api/content/sha1_git:123/'
 
-    actual_directory = utils.enrich_directory({
-        'id': 'dir-id',
-        'type': 'file',
-        'target': '123',
-    })
+@given(directory())
+def test_enrich_directory_with_type(api_request_factory,
+                                    archive_data, directory):
 
-    assert actual_directory == {
-        'id': 'dir-id',
-        'type': 'file',
-        'target': '123',
-        'target_url': '/api/content/sha1_git:123/',
-    }
+    dir_content = archive_data.directory_ls(directory)
 
-    mock_django_reverse.assert_called_once_with(
-        'api-1-content', url_args={'q': 'sha1_git:123'})
+    dir_entry = random.choice(dir_content)
 
+    url = reverse('api-1-directory', url_args={'sha1_git': directory})
+    request = api_request_factory.get(url)
 
-def test_enrich_directory_with_context_and_type_file(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.return_value = '/api/content/sha1_git:123/'
+    actual_directory = utils.enrich_directory(dir_entry, request)
 
-    actual_directory = utils.enrich_directory({
-        'id': 'dir-id',
-        'type': 'file',
-        'name': 'hy',
-        'target': '789',
-    }, context_url='/api/revision/revsha1/directory/prefix/path/')
+    if dir_entry['type'] == 'file':
+        dir_entry['target_url'] = reverse(
+            'api-1-content',
+            url_args={'q': f'sha1_git:{dir_entry["target"]}'},
+            request=request)
 
-    assert actual_directory == {
-        'id': 'dir-id',
-        'type': 'file',
-        'name': 'hy',
-        'target': '789',
-        'target_url': '/api/content/sha1_git:123/',
-        'file_url': '/api/revision/revsha1/directory'
-                    '/prefix/path/hy/'
-    }
+    elif dir_entry['type'] == 'dir':
+        dir_entry['target_url'] = reverse(
+            'api-1-directory',
+            url_args={'sha1_git': dir_entry['target']},
+            request=request)
 
-    mock_django_reverse.assert_called_once_with(
-        'api-1-content', url_args={'q': 'sha1_git:789'})
+    elif dir_entry['type'] == 'rev':
+        dir_entry['target_url'] = reverse(
+            'api-1-revision',
+            url_args={'sha1_git': dir_entry['target']},
+            request=request)
 
-
-def test_enrich_directory_with_context_and_type_dir(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.return_value = '/api/directory/456/'
-
-    actual_directory = utils.enrich_directory({
-        'id': 'dir-id',
-        'type': 'dir',
-        'name': 'emacs-42',
-        'target_type': 'file',
-        'target': '456',
-    }, context_url='/api/revision/origin/2/directory/some/prefix/path/')
-
-    assert actual_directory == {
-        'id': 'dir-id',
-        'type': 'dir',
-        'target_type': 'file',
-        'name': 'emacs-42',
-        'target': '456',
-        'target_url': '/api/directory/456/',
-        'dir_url': '/api/revision/origin/2/directory'
-        '/some/prefix/path/emacs-42/'
-    }
-
-    mock_django_reverse.assert_called_once_with('api-1-directory',
-                                                url_args={'sha1_git': '456'})
+    assert actual_directory == dir_entry
 
 
 def test_enrich_content_without_hashes():
     assert utils.enrich_content({'id': '123'}) == {'id': '123'}
 
 
-def test_enrich_content_with_hashes(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    for algo, hash in sample_content_hashes.items():
+@given(content())
+def test_enrich_content_with_hashes(api_request_factory, content):
 
-        query_string = '%s:%s' % (algo, hash)
+    for algo in DEFAULT_ALGORITHMS:
 
-        mock_django_reverse.side_effect = [
-            '/api/content/%s/raw/' % query_string,
-            '/api/filetype/%s/' % query_string,
-            '/api/language/%s/' % query_string,
-            '/api/license/%s/' % query_string
-        ]
+        content_data = dict(content)
 
-        enriched_content = utils.enrich_content({algo: hash},
-                                                query_string=query_string)
+        query_string = '%s:%s' % (algo, content_data[algo])
 
-        assert enriched_content == {
-            algo: hash,
-            'data_url': '/api/content/%s/raw/' % query_string,
-            'filetype_url': '/api/filetype/%s/' % query_string,
-            'language_url': '/api/language/%s/' % query_string,
-            'license_url': '/api/license/%s/' % query_string,
-        }
+        url = reverse('api-1-content', url_args={'q': query_string})
+        request = api_request_factory.get(url)
 
-        mock_django_reverse.assert_has_calls([
-            mocker.call('api-1-content-raw', url_args={'q': query_string}),
-            mocker.call('api-1-content-filetype',
-                        url_args={'q': query_string}),
-            mocker.call('api-1-content-language',
-                        url_args={'q': query_string}),
-            mocker.call('api-1-content-license',
-                        url_args={'q': query_string}),
-        ])
+        enriched_content = utils.enrich_content(content_data,
+                                                query_string=query_string,
+                                                request=request)
 
-        mock_django_reverse.reset()
+        content_data['data_url'] = reverse('api-1-content-raw',
+                                           url_args={'q': query_string},
+                                           request=request)
+
+        content_data['filetype_url'] = reverse('api-1-content-filetype',
+                                               url_args={'q': query_string},
+                                               request=request)
+
+        content_data['language_url'] = reverse('api-1-content-language',
+                                               url_args={'q': query_string},
+                                               request=request)
+
+        content_data['license_url'] = reverse('api-1-content-license',
+                                              url_args={'q': query_string},
+                                              request=request)
+
+        assert enriched_content == content_data
 
 
-def test_enrich_content_with_hashes_and_top_level_url(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    for algo, hash in sample_content_hashes.items():
+@given(content())
+def test_enrich_content_with_hashes_and_top_level_url(api_request_factory,
+                                                      content):
 
-        query_string = '%s:%s' % (algo, hash)
+    for algo in DEFAULT_ALGORITHMS:
 
-        mock_django_reverse.side_effect = [
-            '/api/content/%s/' % query_string,
-            '/api/content/%s/raw/' % query_string,
-            '/api/filetype/%s/' % query_string,
-            '/api/language/%s/' % query_string,
-            '/api/license/%s/' % query_string,
-        ]
+        content_data = dict(content)
 
-        enriched_content = utils.enrich_content({algo: hash}, top_url=True,
-                                                query_string=query_string)
+        query_string = '%s:%s' % (algo, content_data[algo])
 
-        assert enriched_content == {
-            algo: hash,
-            'content_url': '/api/content/%s/' % query_string,
-            'data_url': '/api/content/%s/raw/' % query_string,
-            'filetype_url': '/api/filetype/%s/' % query_string,
-            'language_url': '/api/language/%s/' % query_string,
-            'license_url': '/api/license/%s/' % query_string,
-        }
+        url = reverse('api-1-content', url_args={'q': query_string})
+        request = api_request_factory.get(url)
 
-        mock_django_reverse.assert_has_calls([
-            mocker.call('api-1-content', url_args={'q': query_string}),
-            mocker.call('api-1-content-raw', url_args={'q': query_string}),
-            mocker.call('api-1-content-filetype',
-                        url_args={'q': query_string}),
-            mocker.call('api-1-content-language',
-                        url_args={'q': query_string}),
-            mocker.call('api-1-content-license', url_args={'q': query_string}),
-        ])
+        enriched_content = utils.enrich_content(content_data,
+                                                query_string=query_string,
+                                                top_url=True,
+                                                request=request)
 
-        mock_django_reverse.reset()
+        content_data['content_url'] = reverse('api-1-content',
+                                              url_args={'q': query_string},
+                                              request=request)
 
+        content_data['data_url'] = reverse('api-1-content-raw',
+                                           url_args={'q': query_string},
+                                           request=request)
 
-def _reverse_context_test(view_name, url_args):
-    if view_name == 'api-1-revision':
-        return '/api/revision/%s/' % url_args['sha1_git']
-    elif view_name == 'api-1-revision-context':
-        return ('/api/revision/%s/prev/%s/' %
-                (url_args['sha1_git'], url_args['context']))
-    elif view_name == 'api-1-revision-log':
-        if 'prev_sha1s' in url_args:
-            return ('/api/revision/%s/prev/%s/log/' %
-                    (url_args['sha1_git'], url_args['prev_sha1s']))
-        else:
-            return '/api/revision/%s/log/' % url_args['sha1_git']
+        content_data['filetype_url'] = reverse('api-1-content-filetype',
+                                               url_args={'q': query_string},
+                                               request=request)
+
+        content_data['language_url'] = reverse('api-1-content-language',
+                                               url_args={'q': query_string},
+                                               request=request)
+
+        content_data['license_url'] = reverse('api-1-content-license',
+                                              url_args={'q': query_string},
+                                              request=request)
+
+        assert enriched_content == content_data
 
 
-def test_enrich_revision_without_children_or_parent(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
+@given(revision())
+def test_enrich_revision_without_children_or_parent(api_request_factory,
+                                                    archive_data, revision):
 
-    def reverse_test(view_name, url_args):
-        if view_name == 'api-1-revision':
-            return '/api/revision/' + url_args['sha1_git'] + '/'
-        elif view_name == 'api-1-revision-log':
-            return '/api/revision/' + url_args['sha1_git'] + '/log/'
-        elif view_name == 'api-1-directory':
-            return '/api/directory/' + url_args['sha1_git'] + '/'
+    revision_data = archive_data.revision_get(revision)
+    del revision_data['parents']
 
-    mock_django_reverse.side_effect = reverse_test
+    url = reverse('api-1-revision', url_args={'sha1_git': revision})
+    request = api_request_factory.get(url)
 
-    actual_revision = utils.enrich_revision({
-        'id': 'rev-id',
-        'directory': '123',
-        'author': {'id': '1'},
-        'committer': {'id': '2'},
-    })
+    actual_revision = utils.enrich_revision(revision_data, request)
 
-    expected_revision = {
-        'id': 'rev-id',
-        'directory': '123',
-        'url': '/api/revision/rev-id/',
-        'history_url': '/api/revision/rev-id/log/',
-        'directory_url': '/api/directory/123/',
-        'author': {'id': '1'},
-        'committer': {'id': '2'},
+    revision_data['url'] = reverse(
+        'api-1-revision',
+        url_args={'sha1_git': revision},
+        request=request)
+
+    revision_data['history_url'] = reverse(
+        'api-1-revision-log',
+        url_args={'sha1_git': revision},
+        request=request)
+
+    revision_data['directory_url'] = reverse(
+        'api-1-directory',
+        url_args={'sha1_git': revision_data['directory']},
+        request=request)
+
+    assert actual_revision == revision_data
+
+
+@given(revision(), revision(), revision())
+def test_enrich_revision_with_children_and_parent_no_dir(api_request_factory,
+                                                         archive_data,
+                                                         revision,
+                                                         parent_revision,
+                                                         child_revision):
+
+    revision_data = archive_data.revision_get(revision)
+    del revision_data['directory']
+    revision_data['parents'].append(parent_revision)
+    revision_data['children'] = child_revision
+
+    url = reverse('api-1-revision', url_args={'sha1_git': revision})
+    request = api_request_factory.get(url)
+
+    actual_revision = utils.enrich_revision(revision_data, request)
+
+    revision_data['url'] = reverse(
+        'api-1-revision',
+        url_args={'sha1_git': revision},
+        request=request)
+
+    revision_data['history_url'] = reverse(
+        'api-1-revision-log',
+        url_args={'sha1_git': revision},
+        request=request)
+
+    revision_data['parents'] = [
+        {'id': p['id'], 'url': reverse('api-1-revision',
+                                       url_args={'sha1_git': p['id']},
+                                       request=request)}
+        for p in revision_data['parents']
+    ]
+
+    revision_data['children_urls'] = [
+        reverse('api-1-revision',
+                url_args={'sha1_git': child_revision},
+                request=request)
+    ]
+
+    assert actual_revision == revision_data
+
+
+@given(revision(), revision(), revision())
+def test_enrich_revision_no_context(api_request_factory,
+                                    revision,
+                                    parent_revision,
+                                    child_revision):
+
+    revision_data = {
+        'id': revision,
+        'parents': [parent_revision],
+        'children': [child_revision]
     }
 
-    assert actual_revision == expected_revision
+    url = reverse('api-1-revision', url_args={'sha1_git': revision})
+    request = api_request_factory.get(url)
 
-    mock_django_reverse.assert_has_calls([
-        mocker.call('api-1-revision', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision-log', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-directory', url_args={'sha1_git': '123'})
-    ])
+    actual_revision = utils.enrich_revision(revision_data, request)
 
+    revision_data['url'] = reverse(
+        'api-1-revision',
+        url_args={'sha1_git': revision},
+        request=request)
 
-def test_enrich_revision_with_children_and_parent_no_dir(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.side_effect = _reverse_context_test
+    revision_data['history_url'] = reverse(
+        'api-1-revision-log',
+        url_args={'sha1_git': revision},
+        request=request)
 
-    actual_revision = utils.enrich_revision({
-        'id': 'rev-id',
-        'parents': ['123'],
-        'children': ['456'],
-    })
+    revision_data['parents'] = [{
+        'id': parent_revision,
+        'url': reverse('api-1-revision',
+                       url_args={'sha1_git': parent_revision},
+                       request=request)
+    }]
 
-    expected_revision = {
-        'id': 'rev-id',
-        'url': '/api/revision/rev-id/',
-        'history_url': '/api/revision/rev-id/log/',
-        'parents': [{'id': '123', 'url': '/api/revision/123/'}],
-        'children': ['456'],
-        'children_urls': ['/api/revision/456/'],
-    }
+    revision_data['children_urls'] = [
+        reverse('api-1-revision',
+                url_args={'sha1_git': child_revision},
+                request=request)
+    ]
 
-    assert actual_revision == expected_revision
-
-    mock_django_reverse.assert_has_calls([
-        mocker.call('api-1-revision', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision-log', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '123'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '456'})
-    ])
+    assert actual_revision == revision_data
 
 
-def test_enrich_revision_no_context(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.side_effect = _reverse_context_test
+@given(revision(), revision(), revision())
+def test_enrich_revision_with_no_message(api_request_factory,
+                                         archive_data,
+                                         revision,
+                                         parent_revision,
+                                         child_revision):
 
-    actual_revision = utils.enrich_revision({
-        'id': 'rev-id',
-        'parents': ['123'],
-        'children': ['456'],
-    })
+    revision_data = archive_data.revision_get(revision)
+    revision_data['message'] = None
+    revision_data['parents'].append(parent_revision)
+    revision_data['children'] = child_revision
 
-    expected_revision = {
-        'id': 'rev-id',
-        'url': '/api/revision/rev-id/',
-        'history_url': '/api/revision/rev-id/log/',
-        'parents': [{'id': '123', 'url': '/api/revision/123/'}],
-        'children': ['456'],
-        'children_urls': ['/api/revision/456/']
-    }
+    url = reverse('api-1-revision', url_args={'sha1_git': revision})
+    request = api_request_factory.get(url)
 
-    assert actual_revision == expected_revision
+    actual_revision = utils.enrich_revision(revision_data, request)
 
-    mock_django_reverse.assert_has_calls([
-        mocker.call('api-1-revision', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision-log', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '123'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '456'})
-    ])
+    revision_data['url'] = reverse(
+        'api-1-revision',
+        url_args={'sha1_git': revision},
+        request=request)
 
+    revision_data['directory_url'] = reverse(
+        'api-1-directory',
+        url_args={'sha1_git': revision_data['directory']},
+        request=request)
 
-def _reverse_rev_message_test(view_name, url_args):
-    if view_name == 'api-1-revision':
-        return '/api/revision/%s/' % url_args['sha1_git']
-    elif view_name == 'api-1-revision-log':
-        if 'prev_sha1s' in url_args and url_args['prev_sha1s'] is not None:
-            return ('/api/revision/%s/prev/%s/log/' %
-                    (url_args['sha1_git'], url_args['prev_sha1s']))
-        else:
-            return '/api/revision/%s/log/' % url_args['sha1_git']
-    elif view_name == 'api-1-revision-raw-message':
-        return '/api/revision/' + url_args['sha1_git'] + '/raw/'
-    else:
-        return ('/api/revision/%s/prev/%s/' %
-                (url_args['sha1_git'], url_args['context']))
+    revision_data['history_url'] = reverse(
+        'api-1-revision-log',
+        url_args={'sha1_git': revision},
+        request=request)
 
+    revision_data['parents'] = [
+        {'id': p['id'], 'url': reverse('api-1-revision',
+                                       url_args={'sha1_git': p['id']},
+                                       request=request)}
+        for p in revision_data['parents']
+    ]
 
-def test_enrich_revision_with_no_message(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.side_effect = _reverse_rev_message_test
+    revision_data['children_urls'] = [
+        reverse('api-1-revision',
+                url_args={'sha1_git': child_revision},
+                request=request)
+    ]
 
-    expected_revision = {
-        'id': 'rev-id',
-        'url': '/api/revision/rev-id/',
-        'history_url': '/api/revision/rev-id/log/',
-        'message': None,
-        'parents': [{'id': '123', 'url': '/api/revision/123/'}],
-        'children': ['456'],
-        'children_urls': ['/api/revision/456/'],
-    }
-
-    actual_revision = utils.enrich_revision({
-        'id': 'rev-id',
-        'message': None,
-        'parents': ['123'],
-        'children': ['456'],
-    })
-
-    assert actual_revision == expected_revision
-
-    mock_django_reverse.assert_has_calls([
-        mocker.call('api-1-revision', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision-log', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '123'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '456'})
-    ])
+    assert actual_revision == revision_data
 
 
-def test_enrich_revision_with_invalid_message(mocker):
-    mock_django_reverse = mocker.patch('swh.web.api.utils.reverse')
-    mock_django_reverse.side_effect = _reverse_rev_message_test
+@given(revision(), revision(), revision())
+def test_enrich_revision_with_invalid_message(api_request_factory,
+                                              archive_data,
+                                              revision,
+                                              parent_revision,
+                                              child_revision):
 
-    actual_revision = utils.enrich_revision({
-        'id': 'rev-id',
-        'message': None,
-        'message_decoding_failed': True,
-        'parents': ['123'],
-        'children': ['456'],
-    })
+    revision_data = archive_data.revision_get(revision)
+    revision_data['message'] = None
+    revision_data['message_decoding_failed'] = True,
+    revision_data['parents'].append(parent_revision)
+    revision_data['children'] = child_revision
 
-    expected_revision = {
-        'id': 'rev-id',
-        'url': '/api/revision/rev-id/',
-        'history_url': '/api/revision/rev-id/log/',
-        'message': None,
-        'message_decoding_failed': True,
-        'message_url': '/api/revision/rev-id/raw/',
-        'parents': [{'id': '123', 'url': '/api/revision/123/'}],
-        'children': ['456'],
-        'children_urls': ['/api/revision/456/'],
-    }
+    url = reverse('api-1-revision', url_args={'sha1_git': revision})
+    request = api_request_factory.get(url)
 
-    assert actual_revision == expected_revision
+    actual_revision = utils.enrich_revision(revision_data, request)
 
-    mock_django_reverse.assert_has_calls([
-        mocker.call('api-1-revision', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision-log', url_args={'sha1_git': 'rev-id'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '123'}),
-        mocker.call('api-1-revision', url_args={'sha1_git': '456'}),
-        mocker.call('api-1-revision-raw-message',
-                    url_args={'sha1_git': 'rev-id'})
-    ])
+    revision_data['url'] = reverse(
+        'api-1-revision',
+        url_args={'sha1_git': revision},
+        request=request)
+
+    revision_data['message_url'] = reverse(
+        'api-1-revision-raw-message',
+        url_args={'sha1_git': revision},
+        request=request)
+
+    revision_data['directory_url'] = reverse(
+        'api-1-directory',
+        url_args={'sha1_git': revision_data['directory']},
+        request=request)
+
+    revision_data['history_url'] = reverse(
+        'api-1-revision-log',
+        url_args={'sha1_git': revision},
+        request=request)
+
+    revision_data['parents'] = [
+        {'id': p['id'], 'url': reverse('api-1-revision',
+                                       url_args={'sha1_git': p['id']},
+                                       request=request)}
+        for p in revision_data['parents']
+    ]
+
+    revision_data['children_urls'] = [
+        reverse('api-1-revision',
+                url_args={'sha1_git': child_revision},
+                request=request)
+    ]
+
+    assert actual_revision == revision_data
+
+
+@given(snapshot())
+def test_enrich_snapshot(api_request_factory, archive_data, snapshot):
+    snapshot_data = archive_data.snapshot_get(snapshot)
+
+    url = reverse('api-1-snapshot', url_args={'snapshot_id': snapshot})
+    request = api_request_factory.get(url)
+
+    actual_snapshot = utils.enrich_snapshot(snapshot_data, request)
+
+    for _, b in snapshot_data['branches'].items():
+        if b['target_type'] in ('directory', 'revision', 'release'):
+            b['target_url'] = reverse(f'api-1-{b["target_type"]}',
+                                      url_args={'sha1_git': b['target']},
+                                      request=request)
+        elif b['target_type'] == 'content':
+            b['target_url'] = reverse(
+                'api-1-content',
+                url_args={'q': f'sha1_git:{b["target"]}'},
+                request=request)
+
+    for _, b in snapshot_data['branches'].items():
+        if b['target_type'] == 'alias':
+            target = resolve_branch_alias(snapshot_data, b)
+            b['target_url'] = target['target_url']
+
+    assert actual_snapshot == snapshot_data
+
+
+@given(origin())
+def test_enrich_origin(api_request_factory, archive_data, origin):
+    url = reverse('api-1-origin', url_args={'origin_url': origin['url']})
+    request = api_request_factory.get(url)
+
+    origin_data = {'url': origin['url']}
+    actual_origin = utils.enrich_origin(origin_data, request)
+
+    origin_data['origin_visits_url'] = reverse(
+        'api-1-origin-visits',
+        url_args={'origin_url': origin['url']},
+        request=request)
+
+    assert actual_origin == origin_data
+
+
+@given(origin())
+def test_enrich_origin_visit(api_request_factory, archive_data, origin):
+
+    origin_visit = random.choice(get_origin_visits(origin))
+
+    url = reverse('api-1-origin-visit',
+                  url_args={'origin_url': origin['url'],
+                            'visit_id': origin_visit['visit']})
+    request = api_request_factory.get(url)
+
+    actual_origin_visit = utils.enrich_origin_visit(
+        origin_visit, with_origin_link=True,
+        with_origin_visit_link=True, request=request)
+
+    origin_visit['origin_url'] = reverse(
+        'api-1-origin',
+        url_args={'origin_url': origin['url']},
+        request=request)
+
+    origin_visit['origin_visit_url'] = reverse(
+        'api-1-origin-visit',
+        url_args={'origin_url': origin['url'],
+                  'visit_id': origin_visit['visit']},
+        request=request)
+
+    origin_visit['snapshot_url'] = reverse(
+        'api-1-snapshot',
+        url_args={'snapshot_id': origin_visit['snapshot']},
+        request=request)
+
+    assert actual_origin_visit == origin_visit

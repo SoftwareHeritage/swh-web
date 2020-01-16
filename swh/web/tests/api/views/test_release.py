@@ -23,7 +23,8 @@ def test_api_release(api_client, archive_data, release):
     expected_release = archive_data.release_get(release)
     target_revision = expected_release['target']
     target_url = reverse('api-1-revision',
-                         url_args={'sha1_git': target_revision})
+                         url_args={'sha1_git': target_revision},
+                         request=rv.wsgi_request)
     expected_release['target_url'] = target_url
 
     assert rv.status_code == 200, rv.data
@@ -77,7 +78,8 @@ def test_api_release_target_type_not_a_revision(api_client, archive_data,
             url_args = {'sha1_git': target}
 
         target_url = reverse('api-1-%s' % target_type,
-                             url_args=url_args)
+                             url_args=url_args,
+                             request=rv.wsgi_request)
         expected_release['target_url'] = target_url
 
         assert rv.status_code == 200, rv.data

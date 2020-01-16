@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -563,6 +563,8 @@ def _origin_content_view_test_helper(client, origin_info, origin_visits,
 
     assert resp.status_code == 200
     assert_template_used(resp, 'browse/content.html')
+
+    assert type(content['data']) == str
 
     assert_contains(resp, '<code class="%s">' %
                     content['hljs_language'])

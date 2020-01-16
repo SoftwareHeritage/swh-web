@@ -41,7 +41,7 @@ See top-level LICENSE file for more information
 {% if response_data is not None %}
   <div>
     <h4>Request</h4>
-    <pre><strong>{{ request.method }}</strong> {{ request.path }}</pre>
+    <pre><strong>{{ request.method }}</strong> {{ request.build_absolute_uri }}</pre>
     <hr/>
     <h4>Response</h4>
     {% if status_code != 200 %}

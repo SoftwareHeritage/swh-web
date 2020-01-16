@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -20,10 +20,12 @@ from swh.model.from_disk import Directory
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
 from swh.model.identifiers import directory_identifier
 from swh.loader.git.from_disk import GitLoaderFromArchive
+from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.web import config
 from swh.web.browse.utils import (
-    get_mimetype_and_encoding_for_content, prepare_content_for_display
+    get_mimetype_and_encoding_for_content, prepare_content_for_display,
+    _re_encode_content
 )
 from swh.web.common import service
 from swh.web.common.highlightjs import get_hljs_language_from_filename
@@ -159,6 +161,11 @@ def _init_tests_data():
     # To hold reference to the memory storage
     storage = None
 
+    # Create search instance
+    search = get_search('memory', {})
+    search.initialize()
+    search.origin_update({'url': origin['url']} for origin in _TEST_ORIGINS)
+
     # Load git repositories from archives
     for origin in _TEST_ORIGINS:
         for i, archive in enumerate(origin['archives']):
@@ -176,10 +183,12 @@ def _init_tests_data():
             loader.load()
 
         origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
+        search.origin_update([{'url': origin['url'], 'has_visits': True}])
 
     for i in range(250):
         url = 'https://many.origins/%d' % (i+1)
         storage.origin_add([{'url': url}])
+        search.origin_update([{'url': url, 'has_visits': True}])
         visit = storage.origin_visit_add(url, '2019-12-03 13:55:05', 'tar')
         storage.origin_visit_update(
             url, visit['visit'],
@@ -221,24 +230,28 @@ def _init_tests_data():
                     directories.add(hash_to_hex(entry['target']))
 
     # Get all checksums for each content
-    contents_metadata = storage.content_get_metadata(contents)
+    result = storage.content_get_metadata(contents)
     contents = []
-    for content_metadata in contents_metadata:
-        contents.append({
-            algo: hash_to_hex(content_metadata[algo])
-            for algo in DEFAULT_ALGORITHMS
-        })
-        path = content_path[content_metadata['sha1']]
-        cnt = next(storage.content_get([content_metadata['sha1']]))
-        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt['data'])
-        content_display_data = prepare_content_for_display(
-            cnt['data'], mimetype, path)
-        contents[-1]['path'] = path
-        contents[-1]['mimetype'] = mimetype
-        contents[-1]['encoding'] = encoding
-        contents[-1]['hljs_language'] = content_display_data['language']
-        contents[-1]['data'] = content_display_data['content_data']
-        _contents[contents[-1]['sha1']] = contents[-1]
+    for sha1, contents_metadata in result.items():
+        for content_metadata in contents_metadata:
+            contents.append({
+                algo: hash_to_hex(content_metadata[algo])
+                for algo in DEFAULT_ALGORITHMS
+            })
+            path = content_path[sha1]
+            cnt = next(storage.content_get([sha1]))
+            mimetype, encoding = get_mimetype_and_encoding_for_content(
+                cnt['data'])
+            _, _, cnt['data'] = _re_encode_content(
+                mimetype, encoding, cnt['data'])
+            content_display_data = prepare_content_for_display(
+                cnt['data'], mimetype, path)
+            contents[-1]['path'] = path
+            contents[-1]['mimetype'] = mimetype
+            contents[-1]['encoding'] = encoding
+            contents[-1]['hljs_language'] = content_display_data['language']
+            contents[-1]['data'] = content_display_data['content_data']
+            _contents[contents[-1]['sha1']] = contents[-1]
 
     # Create indexer storage instance that will be shared by indexers
     idx_storage = get_indexer_storage('memory', {})
@@ -250,6 +263,7 @@ def _init_tests_data():
 
     # Return tests data
     return {
+        'search': search,
         'storage': storage,
         'idx_storage': idx_storage,
         'origins': _TEST_ORIGINS,
@@ -310,17 +324,21 @@ def get_tests_data(reset=False):
     return _current_tests_data
 
 
-def override_storages(storage, idx_storage):
+def override_storages(storage, idx_storage, search):
     """
     Helper function to replace the storages from which archive data
     are fetched.
     """
     swh_config = config.get_config()
-    swh_config.update({'storage': storage})
-    service.storage = storage
+    swh_config.update({
+        'storage': storage,
+        'indexer_storage': idx_storage,
+        'search': search,
+    })
 
-    swh_config.update({'indexer_storage': idx_storage})
+    service.storage = storage
     service.idx_storage = idx_storage
+    service.search = search
 
 
 # Implement some special endpoints used to provide input tests data

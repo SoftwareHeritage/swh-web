@@ -11,7 +11,7 @@ from swh.web.api.apiresponse import (
 )
 
 
-def test_compute_link_header(api_request_factory):
+def test_compute_link_header():
     next_link = '/api/endpoint/next'
     prev_link = '/api/endpoint/prev'
     rv = {
@@ -20,61 +20,51 @@ def test_compute_link_header(api_request_factory):
     }
     options = {}
 
-    request = api_request_factory.get('/api/endpoint/')
-
-    headers = compute_link_header(request, rv, options)
+    headers = compute_link_header(rv, options)
 
     assert headers == {
-        'Link': (f'<{request.build_absolute_uri(next_link)}>; rel="next",'
-                 f'<{request.build_absolute_uri(prev_link)}>; rel="previous"')
+        'Link': (f'<{next_link}>; rel="next",'
+                 f'<{prev_link}>; rel="previous"')
     }
 
 
-def test_compute_link_header_nothing_changed(api_request_factory):
+def test_compute_link_header_nothing_changed():
     rv = {}
     options = {}
 
-    request = api_request_factory.get('/api/test/path/')
-
-    headers = compute_link_header(request, rv, options)
+    headers = compute_link_header(rv, options)
 
     assert headers == {}
 
 
-def test_compute_link_header_nothing_changed_2(api_request_factory):
+def test_compute_link_header_nothing_changed_2():
     rv = {'headers': {}}
     options = {}
 
-    request = api_request_factory.get('/api/test/path/')
-
-    headers = compute_link_header(request, rv, options)
+    headers = compute_link_header(rv, options)
 
     assert headers == {}
 
 
 def test_transform_only_return_results_1():
     rv = {'results': {'some-key': 'some-value'}}
-
     assert transform(rv) == {'some-key': 'some-value'}
 
 
 def test_transform_only_return_results_2():
     rv = {'headers': {'something': 'do changes'},
           'results': {'some-key': 'some-value'}}
-
     assert transform(rv) == {'some-key': 'some-value'}
 
 
 def test_transform_do_remove_headers():
     rv = {'headers': {'something': 'do changes'},
           'some-key': 'some-value'}
-
     assert transform(rv) == {'some-key': 'some-value'}
 
 
 def test_transform_do_nothing():
     rv = {'some-key': 'some-value'}
-
     assert transform(rv) == {'some-key': 'some-value'}
 
 
@@ -106,11 +96,6 @@ def test_swh_multi_response_mimetype(mocker, api_request_factory):
 
             expected_data = {
                 'response_data': json.dumps(data),
-                'request': {
-                    'path': request.path,
-                    'method': request.method,
-                    'absolute_uri': request.build_absolute_uri()
-                },
                 'headers_data': {},
                 'heading': 'my_short_path',
                 'status_code': 200

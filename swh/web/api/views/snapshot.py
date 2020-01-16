@@ -7,8 +7,8 @@ from swh.web.common import service
 from swh.web.common.utils import reverse
 from swh.web.config import get_config
 from swh.web.api.apidoc import api_doc, format_docstring
-from swh.web.api import utils
 from swh.web.api.apiurls import api_route
+from swh.web.api.utils import enrich_snapshot
 from swh.web.api.views.utils import api_lookup
 
 
@@ -68,35 +68,6 @@ def api_snapshot(request, snapshot_id):
             :swh_web_api:`snapshot/6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a/`
     """
 
-    def _resolve_alias(snapshot, branch):
-        while branch and branch['target_type'] == 'alias':
-            if branch['target'] in snapshot['branches']:
-                branch = snapshot['branches'][branch['target']]
-            else:
-                snp = service.lookup_snapshot(
-                    snapshot['id'], branches_from=branch['target'],
-                    branches_count=1)
-                if snp and branch['target'] in snp['branches']:
-                    branch = snp['branches'][branch['target']]
-                else:
-                    branch = None
-        return branch
-
-    def _enrich_snapshot(snapshot):
-        s = snapshot.copy()
-        if 'branches' in s:
-            s['branches'] = {
-                k: utils.enrich_object(v) if v else None
-                for k, v in s['branches'].items()
-            }
-            for k, v in s['branches'].items():
-                if v and v['target_type'] == 'alias':
-                    branch = _resolve_alias(snapshot, v)
-                    if branch:
-                        branch = utils.enrich_object(branch)
-                        v['target_url'] = branch['target_url']
-        return s
-
     snapshot_content_max_size = get_config()['snapshot_content_max_size']
 
     branches_from = request.GET.get('branches_from', '')
@@ -109,16 +80,18 @@ def api_snapshot(request, snapshot_id):
         service.lookup_snapshot, snapshot_id, branches_from,
         branches_count, target_types,
         notfound_msg='Snapshot with id {} not found.'.format(snapshot_id),
-        enrich_fn=_enrich_snapshot)
+        enrich_fn=enrich_snapshot,
+        request=request)
 
     response = {'results': results, 'headers': {}}
 
     if results['next_branch'] is not None:
-        response['headers']['link-next'] = \
-            reverse('api-1-snapshot',
-                    url_args={'snapshot_id': snapshot_id},
-                    query_params={'branches_from': results['next_branch'],
-                                  'branches_count': branches_count,
-                                  'target_types': target_types})
+        response['headers']['link-next'] = reverse(
+            'api-1-snapshot',
+            url_args={'snapshot_id': snapshot_id},
+            query_params={'branches_from': results['next_branch'],
+                          'branches_count': branches_count,
+                          'target_types': target_types},
+            request=request)
 
     return response

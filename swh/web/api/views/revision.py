@@ -110,7 +110,8 @@ def api_revision(request, sha1_git):
     return api_lookup(
         service.lookup_revision, sha1_git,
         notfound_msg='Revision with sha1_git {} not found.'.format(sha1_git),
-        enrich_fn=utils.enrich_revision)
+        enrich_fn=utils.enrich_revision,
+        request=request)
 
 
 @api_route(r'/revision/(?P<sha1_git>[0-9a-f]+)/raw/',
@@ -219,7 +220,8 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
     error_msg = 'Revision with sha1_git %s not found.' % sha1_git
     rev_get = api_lookup(lookup_revision_log_with_limit, sha1_git,
                          notfound_msg=error_msg,
-                         enrich_fn=utils.enrich_revision)
+                         enrich_fn=utils.enrich_revision,
+                         request=request)
 
     nb_rev = len(rev_get)
     if nb_rev == per_page+1:
@@ -233,7 +235,8 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         result['headers'] = {
             'link-next': reverse('api-1-revision-log',
                                  url_args={'sha1_git': new_last_sha1},
-                                 query_params=query_params)
+                                 query_params=query_params,
+                                 request=request)
         }
 
     else:
@@ -247,7 +250,8 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         rev_forward = api_lookup(
             service.lookup_revision_multiple, rev_forward_ids,
             notfound_msg=error_msg,
-            enrich_fn=utils.enrich_revision)
+            enrich_fn=utils.enrich_revision,
+            request=request)
         revisions = rev_forward + rev_backward
 
     result.update({

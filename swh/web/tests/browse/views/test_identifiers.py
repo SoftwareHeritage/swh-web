@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -160,3 +160,12 @@ def test_content_id_optional_parts_browse(client, content):
 
     assert resp.status_code == 302
     assert resp['location'] == content_browse_url
+
+
+@given(release())
+def test_origin_id_not_resolvable(client, release):
+    swh_id = 'swh:1:ori:8068d0075010b590762c6cb5682ed53cb3c13deb'
+    url = reverse('browse-swh-id',
+                  url_args={'swh_id': swh_id})
+    resp = client.get(url)
+    assert resp.status_code == 400

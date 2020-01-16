@@ -67,10 +67,12 @@ def api_directory(request, sha1_git, path=None):
         return api_lookup(
             service.lookup_directory_with_path, sha1_git, path,
             notfound_msg=error_msg_path,
-            enrich_fn=utils.enrich_directory)
+            enrich_fn=utils.enrich_directory,
+            request=request)
     else:
         error_msg_nopath = 'Directory with sha1_git %s not found.' % sha1_git
         return api_lookup(
             service.lookup_directory, sha1_git,
             notfound_msg=error_msg_nopath,
-            enrich_fn=utils.enrich_directory)
+            enrich_fn=utils.enrich_directory,
+            request=request)

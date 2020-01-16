@@ -7,6 +7,7 @@ import inspect
 import json
 import os
 import shutil
+import sys
 
 from subprocess import run, PIPE
 
@@ -54,7 +55,12 @@ def pytest_configure(config):
     # So generate a dummy webpack-stats.json file to overcome
     # that issue.
     test_dir = os.path.dirname(__file__)
-    static_dir = os.path.join(test_dir, '../static')
+    # location of the static folder when running tests through tox
+    static_dir = os.path.join(sys.prefix, 'share/swh/web/static')
+
+    if not os.path.exists(static_dir):
+        # location of the static folder when running tests locally with pytest
+        static_dir = os.path.join(test_dir, '../../../static')
     webpack_stats = os.path.join(static_dir, 'webpack-stats.json')
     if os.path.exists(webpack_stats):
         return
@@ -83,6 +89,11 @@ def django_cache_cleared():
     cache.clear()
 
 
+# Alias rf fixture from pytest-django
+@pytest.fixture
+def request_factory(rf):
+    return rf
+
 # Fixture to get test client from Django REST Framework
 @pytest.fixture(scope='module')
 def api_client():
@@ -101,7 +112,7 @@ def tests_data():
     data = get_tests_data(reset=True)
     # Update swh-web configuration to use the in-memory storages
     # instantiated in the tests.data module
-    override_storages(data['storage'], data['idx_storage'])
+    override_storages(data['storage'], data['idx_storage'], data['search'])
     return data
 
 
@@ -162,8 +173,10 @@ class _ArchiveData:
 
     def content_get_metadata(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        metadata = next(self.storage.content_get_metadata([cnt_id_bytes]))
-        return converters.from_swh(metadata,
+        metadata = self.storage.content_get_metadata([cnt_id_bytes])
+        contents = metadata[cnt_id_bytes]
+        content = None if not contents else contents[0]
+        return converters.from_swh(content,
                                    hashess={'sha1', 'sha1_git', 'sha256',
                                             'blake2s256'})
 

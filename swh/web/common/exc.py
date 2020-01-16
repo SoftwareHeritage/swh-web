@@ -64,31 +64,31 @@ def _generate_error_page(request, error_code, error_description):
                   status=error_code)
 
 
-def swh_handle400(request):
+def swh_handle400(request, exception=None):
     """
     Custom Django HTTP error 400 handler for swh-web.
     """
-    error_description = 'The server cannot process the request to %s due to '\
-                        'something that is perceived to be a client error.' %\
-                        escape(request.META['PATH_INFO'])
+    error_description = ('The server cannot process the request to %s due to '
+                         'something that is perceived to be a client error.' %
+                         escape(request.META['PATH_INFO']))
     return _generate_error_page(request, 400, error_description)
 
 
-def swh_handle403(request):
+def swh_handle403(request, exception=None):
     """
     Custom Django HTTP error 403 handler for swh-web.
     """
-    error_description = 'The resource %s requires an authentication.' %\
-                        escape(request.META['PATH_INFO'])
+    error_description = ('The resource %s requires an authentication.' %
+                         escape(request.META['PATH_INFO']))
     return _generate_error_page(request, 403, error_description)
 
 
-def swh_handle404(request):
+def swh_handle404(request, exception=None):
     """
     Custom Django HTTP error 404 handler for swh-web.
     """
-    error_description = 'The resource %s could not be found on the server.' %\
-                        escape(request.META['PATH_INFO'])
+    error_description = ('The resource %s could not be found on the server.' %
+                         escape(request.META['PATH_INFO']))
     return _generate_error_page(request, 404, error_description)
 
 
@@ -96,9 +96,9 @@ def swh_handle500(request):
     """
     Custom Django HTTP error 500 handler for swh-web.
     """
-    error_description = 'An unexpected condition was encountered when '\
-                        'requesting resource %s.' %\
-                        escape(request.META['PATH_INFO'])
+    error_description = ('An unexpected condition was encountered when '
+                         'requesting resource %s.' %
+                         escape(request.META['PATH_INFO']))
     return _generate_error_page(request, 500, error_description)
 
 

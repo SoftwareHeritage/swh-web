@@ -45,6 +45,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
     </script>
 
+    <script>
+      SWH_CONFIG = {{swh_client_config|jsonify}};
+      swh.webapp.sentryInit(SWH_CONFIG.sentry_dsn);
+    </script>
+
     <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
     <script>

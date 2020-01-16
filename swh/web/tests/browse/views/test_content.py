@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -378,5 +378,9 @@ def _process_content_for_display(archive_data, content):
     mime_type, encoding, content_data = _re_encode_content(
         mime_type, encoding, content_data['data'])
 
-    return prepare_content_for_display(content_data, mime_type,
-                                       content['path'])
+    content_display = prepare_content_for_display(content_data, mime_type,
+                                                  content['path'])
+
+    assert type(content_display['content_data']) == str
+
+    return content_display
