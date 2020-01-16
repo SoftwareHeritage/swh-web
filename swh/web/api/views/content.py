@@ -57,7 +57,8 @@ def api_content_filetype(request, q):
     return api_lookup(
         service.lookup_content_filetype, q,
         notfound_msg='No filetype information found for content {}.'.format(q),
-        enrich_fn=utils.enrich_metadata_endpoint)
+        enrich_fn=utils.enrich_metadata_endpoint,
+        request=request)
 
 
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/language/',
@@ -102,7 +103,8 @@ def api_content_language(request, q):
     return api_lookup(
         service.lookup_content_language, q,
         notfound_msg='No language information found for content {}.'.format(q),
-        enrich_fn=utils.enrich_metadata_endpoint)
+        enrich_fn=utils.enrich_metadata_endpoint,
+        request=request)
 
 
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/license/',
@@ -145,7 +147,8 @@ def api_content_license(request, q):
     return api_lookup(
         service.lookup_content_license, q,
         notfound_msg='No license information found for content {}.'.format(q),
-        enrich_fn=utils.enrich_metadata_endpoint)
+        enrich_fn=utils.enrich_metadata_endpoint,
+        request=request)
 
 
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/ctags/',
@@ -159,7 +162,8 @@ def api_content_ctags(request, q):
     return api_lookup(
         service.lookup_content_ctags, q,
         notfound_msg='No ctags symbol found for content {}.'.format(q),
-        enrich_fn=utils.enrich_metadata_endpoint)
+        enrich_fn=utils.enrich_metadata_endpoint,
+        request=request)
 
 
 @api_route(r'/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/raw/', 'api-1-content-raw',
@@ -228,7 +232,8 @@ def api_content_symbol(request, q=None):
     symbols = api_lookup(
         lookup_exp, q,
         notfound_msg="No indexed raw content match expression '{}'.".format(q),
-        enrich_fn=functools.partial(utils.enrich_content, top_url=True))
+        enrich_fn=functools.partial(utils.enrich_content, top_url=True),
+        request=request)
 
     if symbols:
         nb_symbols = len(symbols)
@@ -242,7 +247,8 @@ def api_content_symbol(request, q=None):
 
             result['headers'] = {
                 'link-next': reverse('api-1-content-symbol', url_args={'q': q},
-                                     query_params=query_params)
+                                     query_params=query_params,
+                                     request=request)
             }
 
     result.update({
@@ -374,4 +380,5 @@ def api_content_metadata(request, q):
     return api_lookup(
         service.lookup_content, q,
         notfound_msg='Content with {} not found.'.format(q),
-        enrich_fn=functools.partial(utils.enrich_content, query_string=q))
+        enrich_fn=functools.partial(utils.enrich_content, query_string=q),
+        request=request)

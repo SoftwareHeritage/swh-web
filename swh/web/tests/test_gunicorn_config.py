@@ -1,8 +1,4 @@
-# Copyright (C) 2019  The Software Heritage developers
-# See the AUTHORS file at the top-level directory of this distribution
-# License: GNU General Public License version 3, or any later version
-# See top-level LICENSE file for more information
-# Copyright (C) 2019  The Software Heritage developers
+# Copyright (C) 2019-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -32,6 +28,7 @@ def test_post_fork_with_dsn_env():
         dsn='test_dsn',
         integrations=[django_integration],
         debug=False,
+        release=None,
     )
 
 
@@ -48,4 +45,5 @@ def test_post_fork_debug():
         dsn='test_dsn',
         integrations=[django_integration],
         debug=True,
+        release=None,
     )

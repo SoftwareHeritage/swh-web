@@ -101,7 +101,8 @@ if 'pytest' not in sys.argv[0]:
     })
     from swh.web.tests.data import get_tests_data, override_storages # noqa
     test_data = get_tests_data()
-    override_storages(test_data['storage'], test_data['idx_storage'])
+    override_storages(test_data['storage'], test_data['idx_storage'],
+                      test_data['search'])
 else:
     ALLOWED_HOSTS += ['testserver']
 

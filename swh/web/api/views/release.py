@@ -56,4 +56,5 @@ def api_release(request, sha1_git):
     return api_lookup(
         service.lookup_release, sha1_git,
         notfound_msg=error_msg,
-        enrich_fn=utils.enrich_release)
+        enrich_fn=utils.enrich_release,
+        request=request)

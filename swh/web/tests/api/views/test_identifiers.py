@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -43,7 +43,8 @@ def test_swh_id_resolve_success(api_client, origin, content, directory,
 
         browse_rev_url = reverse('browse-%s' % obj_type,
                                  url_args=url_args,
-                                 query_params={'origin': origin['url']})
+                                 query_params={'origin': origin['url']},
+                                 request=resp.wsgi_request)
 
         expected_result = {
             'browse_url': browse_rev_url,
@@ -87,3 +88,10 @@ def test_swh_id_resolve_not_found(api_client, unknown_content,
         resp = api_client.get(url)
 
         assert resp.status_code == 404, resp.data
+
+
+def test_swh_origin_id_not_resolvable(api_client):
+    ori_pid = 'swh:1:ori:8068d0075010b590762c6cb5682ed53cb3c13deb'
+    url = reverse('api-1-resolve-swh-pid', url_args={'swh_id': ori_pid})
+    resp = api_client.get(url)
+    assert resp.status_code == 400, resp.data

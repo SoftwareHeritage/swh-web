@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -280,13 +280,15 @@ def prepare_content_for_display(content_data, mime_type, path):
 
     if mime_type.startswith('image/'):
         if mime_type in _browsers_supported_image_mimes:
-            content_data = base64.b64encode(content_data)
-            content_data = content_data.decode('utf-8')
+            content_data = base64.b64encode(content_data).decode('ascii')
         else:
             content_data = None
 
     if mime_type.startswith('image/svg'):
         mime_type = 'image/svg+xml'
+
+    if mime_type.startswith('text/'):
+        content_data = content_data.decode('utf-8', errors='replace')
 
     return {'content_data': content_data,
             'language': language,

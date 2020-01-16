@@ -23,7 +23,8 @@ def test_api_content_filetype(api_client, indexer_data, content):
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
     content_url = reverse('api-1-content',
-                          url_args={'q': 'sha1:%s' % content['sha1']})
+                          url_args={'q': 'sha1:%s' % content['sha1']},
+                          request=rv.wsgi_request)
     expected_data = indexer_data.content_get_mimetype(content['sha1'])
     expected_data['content_url'] = content_url
     assert rv.data == expected_data
@@ -56,7 +57,8 @@ def test_api_content_language(api_client, indexer_data, content):
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
     content_url = reverse('api-1-content',
-                          url_args={'q': 'sha1:%s' % content['sha1']})
+                          url_args={'q': 'sha1:%s' % content['sha1']},
+                          request=rv.wsgi_request)
     expected_data = indexer_data.content_get_language(content['sha1'])
     expected_data['content_url'] = content_url
     assert rv.data == expected_data
@@ -106,7 +108,8 @@ def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
                                ('language_url', 'api-1-content-language'),
                                ('filetype_url', 'api-1-content-filetype')):
             expected_entry[key] = reverse(
-                view_name, url_args={'q': 'sha1:%s' % content_sha1})
+                view_name, url_args={'q': 'sha1:%s' % content_sha1},
+                request=rv.wsgi_request)
         expected_entry['sha1'] = content_sha1
         del expected_entry['id']
         assert entry == expected_entry
@@ -117,11 +120,11 @@ def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
                   query_params={'per_page': 2})
     rv = api_client.get(url)
 
-    next_url = rv.wsgi_request.build_absolute_uri(
-        reverse('api-1-content-symbol',
-                url_args={'q': contents_with_ctags['symbol_name']},
-                query_params={'last_sha1': rv.data[1]['sha1'],
-                              'per_page': 2}))
+    next_url = reverse('api-1-content-symbol',
+                       url_args={'q': contents_with_ctags['symbol_name']},
+                       query_params={'last_sha1': rv.data[1]['sha1'],
+                                     'per_page': 2},
+                       request=rv.wsgi_request),
     assert rv['Link'] == '<%s>; rel="next"' % next_url
 
 
@@ -150,7 +153,8 @@ def test_api_content_ctags(api_client, indexer_data, content):
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
     content_url = reverse('api-1-content',
-                          url_args={'q': 'sha1:%s' % content['sha1']})
+                          url_args={'q': 'sha1:%s' % content['sha1']},
+                          request=rv.wsgi_request)
     expected_data = list(indexer_data.content_get_ctags(content['sha1']))
     for e in expected_data:
         e['content_url'] = content_url
@@ -169,7 +173,8 @@ def test_api_content_license(api_client, indexer_data, content):
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
     content_url = reverse('api-1-content',
-                          url_args={'q': 'sha1:%s' % content['sha1']})
+                          url_args={'q': 'sha1:%s' % content['sha1']},
+                          request=rv.wsgi_request)
     expected_data = indexer_data.content_get_license(content['sha1'])
     expected_data['content_url'] = content_url
     assert rv.data == expected_data
@@ -204,7 +209,8 @@ def test_api_content_metadata(api_client, archive_data, content):
                            ('language_url', 'api-1-content-language'),
                            ('filetype_url', 'api-1-content-filetype')):
         expected_data[key] = reverse(
-            view_name, url_args={'q': 'sha1:%s' % content['sha1']})
+            view_name, url_args={'q': 'sha1:%s' % content['sha1']},
+            request=rv.wsgi_request)
     assert rv.data == expected_data
 
 

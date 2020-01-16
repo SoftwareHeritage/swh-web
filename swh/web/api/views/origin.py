@@ -12,6 +12,7 @@ from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import reverse
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
+from swh.web.api.utils import enrich_origin, enrich_origin_visit
 from swh.web.api.views.utils import api_lookup
 
 
@@ -54,35 +55,6 @@ DOC_RETURN_ORIGIN_VISIT_ARRAY += '''
 '''
 
 
-def _enrich_origin(origin):
-    if 'url' in origin:
-        o = origin.copy()
-        o['origin_visits_url'] = reverse(
-            'api-1-origin-visits', url_args={'origin_url': origin['url']})
-        return o
-
-    return origin
-
-
-def _enrich_origin_visit(origin_visit, *,
-                         with_origin_link, with_origin_visit_link):
-    ov = origin_visit.copy()
-    if with_origin_link:
-        ov['origin_url'] = reverse('api-1-origin',
-                                   url_args={'origin_url': ov['origin']})
-    if with_origin_visit_link:
-        ov['origin_visit_url'] = reverse('api-1-origin-visit',
-                                         url_args={'origin_url': ov['origin'],
-                                                   'visit_id': ov['visit']})
-    snapshot = ov['snapshot']
-    if snapshot:
-        ov['snapshot_url'] = reverse('api-1-snapshot',
-                                     url_args={'snapshot_id': snapshot})
-    else:
-        ov['snapshot_url'] = None
-    return ov
-
-
 @api_route(r'/origins/', 'api-1-origins')
 @api_doc('/origins/', noargs=True)
 @format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
@@ -123,14 +95,16 @@ def api_origins(request):
     origin_count = min(origin_count, 10000)
     results = api_lookup(
         service.lookup_origins, origin_from, origin_count+1,
-        enrich_fn=_enrich_origin)
+        enrich_fn=enrich_origin,
+        request=request)
     response = {'results': results, 'headers': {}}
     if len(results) > origin_count:
         origin_from = results.pop()['id']
         response['headers']['link-next'] = reverse(
             'api-1-origins',
             query_params={'origin_from': origin_from,
-                          'origin_count': origin_count})
+                          'origin_count': origin_count},
+            request=request)
     return response
 
 
@@ -171,7 +145,8 @@ def api_origin(request, origin_url):
     return api_lookup(
         service.lookup_origin, ori_dict,
         notfound_msg=error_msg,
-        enrich_fn=_enrich_origin)
+        enrich_fn=enrich_origin,
+        request=request)
 
 
 @api_route(r'/origin/search/(?P<url_pattern>.+)/',
@@ -194,11 +169,9 @@ def api_origin_search(request, url_pattern):
             and only the Link header should be used for paginating through
             results.
 
-        :param string url_pattern: a string pattern or a regular expression
+        :param string url_pattern: a string pattern
         :query int limit: the maximum number of found origins to return
             (bounded to 1000)
-        :query boolean regexp: if true, consider provided pattern as a regular
-            expression and search origins whose urls match it
         :query boolean with_visit: if true, only return origins with at least
             one visit by Software heritage
 
@@ -219,26 +192,25 @@ def api_origin_search(request, url_pattern):
             :swh_web_api:`origin/search/python/?limit=2`
     """
     result = {}
-    offset = int(request.query_params.get('offset', '0'))
     limit = min(int(request.query_params.get('limit', '70')), 1000)
-    regexp = request.query_params.get('regexp', 'false')
+    page_token = request.query_params.get('page_token')
     with_visit = request.query_params.get('with_visit', 'false')
 
-    results = api_lookup(service.search_origin, url_pattern, offset, limit,
-                         bool(strtobool(regexp)), bool(strtobool(with_visit)),
-                         enrich_fn=_enrich_origin)
+    (results, page_token) = api_lookup(
+        service.search_origin, url_pattern, limit,
+        bool(strtobool(with_visit)), page_token,
+        enrich_fn=enrich_origin, request=request)
 
-    nb_results = len(results)
-    if nb_results == limit:
+    if page_token is not None:
         query_params = {}
-        query_params['offset'] = offset + limit
         query_params['limit'] = limit
-        query_params['regexp'] = regexp
+        query_params['page_token'] = page_token
 
         result['headers'] = {
             'link-next': reverse('api-1-origin-search',
                                  url_args={'url_pattern': url_pattern},
-                                 query_params=query_params)
+                                 query_params=query_params,
+                                 request=request)
         }
 
     result.update({
@@ -288,7 +260,8 @@ def api_origin_metadata_search(request):
         content = '"fulltext" must be provided and non-empty.'
         raise BadInputExc(content)
 
-    results = api_lookup(service.search_origin_metadata, fulltext, limit)
+    results = api_lookup(service.search_origin_metadata, fulltext, limit,
+                         request=request)
 
     return {
         'results': results,
@@ -357,9 +330,10 @@ def api_origin_visits(request, origin_url):
 
     results = api_lookup(_lookup_origin_visits, origin_query,
                          notfound_msg=notfound_msg,
-                         enrich_fn=partial(_enrich_origin_visit,
+                         enrich_fn=partial(enrich_origin_visit,
                                            with_origin_link=False,
-                                           with_origin_visit_link=True))
+                                           with_origin_visit_link=True),
+                         request=request)
 
     if results:
         nb_results = len(results)
@@ -374,7 +348,8 @@ def api_origin_visits(request, origin_url):
             result['headers'] = {
                 'link-next': reverse('api-1-origin-visits',
                                      url_args=url_args_next,
-                                     query_params=query_params)
+                                     query_params=query_params,
+                                     request=request)
             }
 
     result.update({
@@ -422,9 +397,10 @@ def api_origin_visit_latest(request, origin_url=None):
         bool(strtobool(require_snapshot)),
         notfound_msg=('No visit for origin {} found'
                       .format(origin_url)),
-        enrich_fn=partial(_enrich_origin_visit,
+        enrich_fn=partial(enrich_origin_visit,
                           with_origin_link=True,
-                          with_origin_visit_link=False))
+                          with_origin_visit_link=False),
+        request=request)
 
 
 @api_route(r'/origin/(?P<origin_url>.*)/visit/(?P<visit_id>[0-9]+)/',
@@ -461,9 +437,10 @@ def api_origin_visit(request, visit_id, origin_url):
         service.lookup_origin_visit, origin_url, int(visit_id),
         notfound_msg=('No visit {} for origin {} found'
                       .format(visit_id, origin_url)),
-        enrich_fn=partial(_enrich_origin_visit,
+        enrich_fn=partial(enrich_origin_visit,
                           with_origin_link=True,
-                          with_origin_visit_link=False))
+                          with_origin_visit_link=False),
+        request=request)
 
 
 @api_route(r'/origin/(?P<origin_url>.+)'
@@ -503,4 +480,5 @@ def api_origin_intrinsic_metadata(request, origin_url):
     return api_lookup(
         service.lookup_origin_intrinsic_metadata, ori_dict,
         notfound_msg=error_msg,
-        enrich_fn=_enrich_origin)
+        enrich_fn=enrich_origin,
+        request=request)

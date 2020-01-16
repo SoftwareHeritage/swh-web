@@ -98,7 +98,7 @@ module.exports = {
     port: devServerPort,
     publicPath: devServerPublicPath,
     // enable to serve static assets not managed by webpack
-    contentBase: path.resolve('./swh/web/'),
+    contentBase: path.resolve('./'),
     // we do not use hot reloading here (as a framework like React needs to be used in order to fully benefit from that feature)
     // and prefer to fully reload the frontend application in the browser instead
     hot: false,
@@ -118,7 +118,7 @@ module.exports = {
   entry: bundles,
   // assets output configuration
   output: {
-    path: path.resolve('./swh/web/static/'),
+    path: path.resolve('./static/'),
     filename: 'js/[name].[chunkhash].js',
     chunkFilename: 'js/[name].[chunkhash].js',
     publicPath: publicPath,
@@ -332,7 +332,7 @@ module.exports = {
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
-      filename: './swh/web/static/webpack-stats.json'
+      filename: './static/webpack-stats.json'
     }),
     // for generating the robots.txt file
     new RobotstxtPlugin({
@@ -371,7 +371,7 @@ module.exports = {
     new webpack.IgnorePlugin(/^\.\/pdf.worker.js$/),
     new CopyWebpackPlugin([{
       from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
-      to: path.resolve(__dirname, '../../static/js/')
+      to: path.resolve(__dirname, '../../../../static/js/')
     }]),
     new GenerateWebLabelsPlugin({
       outputType: 'json',
