@@ -7,6 +7,7 @@ import random
 
 from hypothesis import given
 
+from swh.web.api.utils import enrich_directory
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import directory
@@ -21,8 +22,10 @@ def test_api_directory(api_client, archive_data, directory):
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
 
-    expected_data = list(map(_enrich_dir_data,
-                             archive_data.directory_ls(directory)))
+    dir_content = list(archive_data.directory_ls(directory))
+    expected_data = list(map(enrich_directory,
+                             dir_content,
+                             [rv.wsgi_request] * len(dir_content)))
 
     assert rv.data == expected_data
 
@@ -54,7 +57,7 @@ def test_api_directory_with_path_found(api_client, archive_data, directory):
 
     assert rv.status_code == 200, rv.data
     assert rv['Content-Type'] == 'application/json'
-    assert rv.data == _enrich_dir_data(path)
+    assert rv.data == enrich_directory(path, rv.wsgi_request)
 
 
 @given(directory())
@@ -85,19 +88,3 @@ def test_api_directory_uppercase(api_client, directory):
     redirect_url = reverse('api-1-directory', url_args={'sha1_git': directory})
 
     assert resp['location'] == redirect_url
-
-
-def _enrich_dir_data(dir_data):
-    if dir_data['type'] == 'file':
-        dir_data['target_url'] = reverse(
-            'api-1-content',
-            url_args={'q': 'sha1_git:%s' % dir_data['target']})
-    elif dir_data['type'] == 'dir':
-        dir_data['target_url'] = reverse(
-            'api-1-directory',
-            url_args={'sha1_git': dir_data['target']})
-    elif dir_data['type'] == 'rev':
-        dir_data['target_url'] = reverse(
-            'api-1-revision',
-            url_args={'sha1_git': dir_data['target']})
-    return dir_data

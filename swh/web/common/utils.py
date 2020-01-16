@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,8 +11,10 @@ from datetime import datetime, timezone
 from dateutil import parser as date_parser
 from dateutil import tz
 
+from typing import Optional, Dict, Any
+
 from django.urls import reverse as django_reverse
-from django.http import QueryDict
+from django.http import QueryDict, HttpRequest
 
 from prometheus_client.registry import CollectorRegistry
 
@@ -21,10 +23,12 @@ from rest_framework.authentication import SessionAuthentication
 from swh.model.exceptions import ValidationError
 from swh.model.identifiers import (
     persistent_identifier, parse_persistent_identifier,
-    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+    CONTENT, DIRECTORY, ORIGIN, RELEASE, REVISION, SNAPSHOT
 )
 
 from swh.web.common.exc import BadInputExc
+from swh.web.config import get_config
+
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
@@ -43,17 +47,22 @@ swh_object_icons = {
 }
 
 
-def reverse(viewname, url_args=None, query_params=None,
-            current_app=None, urlconf=None):
+def reverse(viewname: str,
+            url_args: Optional[Dict[str, Any]] = None,
+            query_params: Optional[Dict[str, Any]] = None,
+            current_app: Optional[str] = None,
+            urlconf: Optional[str] = None,
+            request: Optional[HttpRequest] = None) -> str:
     """An override of django reverse function supporting query parameters.
 
     Args:
-        viewname (str): the name of the django view from which to compute a url
-        url_args (dict): dictionary of url arguments indexed by their names
-        query_params (dict): dictionary of query parameters to append to the
+        viewname: the name of the django view from which to compute a url
+        url_args: dictionary of url arguments indexed by their names
+        query_params: dictionary of query parameters to append to the
             reversed url
-        current_app (str): the name of the django app tighten to the view
-        urlconf (str): url configuration module
+        current_app: the name of the django app tighten to the view
+        urlconf: url configuration module
+        request: build an absolute URI if provided
 
     Returns:
         str: the url of the requested view with processed arguments and
@@ -74,6 +83,9 @@ def reverse(viewname, url_args=None, query_params=None,
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
         url += ('?' + query_dict.urlencode(safe='/;:'))
+
+    if request is not None:
+        url = request.build_absolute_uri(url)
 
     return url
 
@@ -274,6 +286,10 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
             browse_url = reverse('browse-snapshot',
                                  url_args={'snapshot_id': object_id},
                                  query_params=query_dict)
+        elif object_type == ORIGIN:
+            raise BadInputExc(('Origin PIDs (Persistent Identifiers) are not '
+                               'publicly resolvable because they are for '
+                               'internal usage only'))
     except ValidationError as ve:
         raise BadInputExc('Error when parsing identifier. %s' %
                           ' '.join(ve.messages))
@@ -327,8 +343,11 @@ def context_processor(request):
     Django context processor used to inject variables
     in all swh-web templates.
     """
-    return {'swh_object_icons': swh_object_icons,
-            'available_languages': None}
+    return {
+        'swh_object_icons': swh_object_icons,
+        'available_languages': None,
+        'swh_client_config': get_config()['client_config'],
+    }
 
 
 class EnforceCSRFAuthentication(SessionAuthentication):
@@ -340,3 +359,30 @@ class EnforceCSRFAuthentication(SessionAuthentication):
         user = getattr(request._request, 'user', None)
         self.enforce_csrf(request)
         return (user, None)
+
+
+def resolve_branch_alias(snapshot: Dict[str, Any],
+                         branch: Optional[Dict[str, Any]]
+                         ) -> Optional[Dict[str, Any]]:
+    """
+    Resolve branch alias in snapshot content.
+
+    Args:
+        snapshot: a full snapshot content
+        branch: a branch alias contained in the snapshot
+    Returns:
+        The real snapshot branch that got aliased.
+    """
+    while branch and branch['target_type'] == 'alias':
+        if branch['target'] in snapshot['branches']:
+            branch = snapshot['branches'][branch['target']]
+        else:
+            from swh.web.common import service
+            snp = service.lookup_snapshot(
+                snapshot['id'], branches_from=branch['target'],
+                branches_count=1)
+            if snp and branch['target'] in snp['branches']:
+                branch = snp['branches'][branch['target']]
+            else:
+                branch = None
+    return branch

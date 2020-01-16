@@ -23,13 +23,15 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
         return api_lookup(
             service.vault_progress, obj_type, obj_id,
             notfound_msg=("{} '{}' was never requested."
-                          .format(object_name, hex_id)))
+                          .format(object_name, hex_id)),
+            request=request)
     elif request.method == 'POST':
         email = request.POST.get('email', request.GET.get('email', None))
         return api_lookup(
             service.vault_cook, obj_type, obj_id, email,
             notfound_msg=("{} '{}' not found."
-                          .format(object_name, hex_id)))
+                          .format(object_name, hex_id)),
+            request=request)
 
 
 @api_route(r'/vault/directory/(?P<dir_id>[0-9a-f]+)/',
@@ -82,7 +84,9 @@ def api_vault_cook_directory(request, dir_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
-        :statuscode 404: requested directory can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
@@ -115,13 +119,16 @@ def api_vault_fetch_directory(request, dir_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
-        :statuscode 404: requested directory can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(
         service.vault_fetch, 'directory', obj_id,
-        notfound_msg="Directory with ID '{}' not found.".format(dir_id))
+        notfound_msg="Directory with ID '{}' not found.".format(dir_id),
+        request=request)
     fname = '{}.tar.gz'.format(dir_id)
     response = HttpResponse(res, content_type='application/gzip')
     response['Content-disposition'] = 'attachment; filename={}'.format(fname)
@@ -179,7 +186,9 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
-        :statuscode 404: requested revision can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
@@ -212,13 +221,16 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
-        :statuscode 404: requested revision can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ['sha1'], 'Only sha1_git is supported.')
     res = api_lookup(
         service.vault_fetch, 'revision_gitfast', obj_id,
-        notfound_msg="Revision with ID '{}' not found.".format(rev_id))
+        notfound_msg="Revision with ID '{}' not found.".format(rev_id),
+        request=request)
     fname = '{}.gitfast.gz'.format(rev_id)
     response = HttpResponse(res, content_type='application/gzip')
     response['Content-disposition'] = 'attachment; filename={}'.format(fname)
