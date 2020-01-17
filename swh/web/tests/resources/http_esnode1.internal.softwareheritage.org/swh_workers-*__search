@@ -8,7 +8,7 @@
     "failed": 0
   },
   "hits": {
-    "total": 1,
+    "total": {"relation": "eq", "value": 1},
     "max_score": null,
     "hits": [{
       "_index": "swh_workers-2019.08.30",
