@@ -30,6 +30,15 @@ _code_providers = [
         'origin_types': 'repositories',
     },
     {
+        'provider_id': 'cran',
+        'provider_url': 'https://cran.r-project.org/',
+        'provider_logo': 'img/logos/cran.svg',
+        'provider_info': 'source packages from The Comprehensive R Archive '
+                         'Network (continuously archived)',
+        'origin_url_regexp': '^https://cran.r-project.org/',
+        'origin_types': 'packages',
+    },
+    {
         'provider_id': 'debian',
         'provider_url': 'https://www.debian.org/',
         'provider_logo': 'img/logos/debian.png',
