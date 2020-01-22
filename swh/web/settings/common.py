@@ -253,6 +253,9 @@ LOGGING = {
             'handlers': ['null'],
             'propagate': False
         },
+        'django.utils.autoreload': {
+            'level': 'INFO',
+        },
     },
 }
 
