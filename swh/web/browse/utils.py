@@ -5,7 +5,6 @@
 
 import base64
 import magic
-import pypandoc
 import stat
 import textwrap
 
@@ -23,7 +22,7 @@ from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.utils import (
     reverse, format_utc_iso_date, get_swh_persistent_id,
-    swh_object_icons
+    swh_object_icons, rst_to_html
 )
 from swh.web.config import get_config
 
@@ -1049,8 +1048,7 @@ def get_readme_to_display(readmes):
         else:
             try:
                 rst_doc = request_content(readme_sha1)
-                readme_html = pypandoc.convert_text(rst_doc['raw_data'],
-                                                    'html', format='rst')
+                readme_html = rst_to_html(rst_doc['raw_data'])
                 cache.set(cache_entry_id, readme_html)
             except Exception as exc:
                 sentry_sdk.capture_exception(exc)

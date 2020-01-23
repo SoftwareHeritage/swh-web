@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import docutils.parsers.rst
-import docutils.utils
 import re
 
 from datetime import datetime, timezone
@@ -12,6 +10,12 @@ from dateutil import parser as date_parser
 from dateutil import tz
 
 from typing import Optional, Dict, Any
+
+import docutils.parsers.rst
+import docutils.utils
+
+from docutils.core import publish_parts
+from docutils.writers.html5_polyglot import Writer, HTMLTranslator
 
 from django.urls import reverse as django_reverse
 from django.http import QueryDict, HttpRequest
@@ -349,6 +353,7 @@ class EnforceCSRFAuthentication(SessionAuthentication):
     Helper class to enforce CSRF validation on a DRF view
     when a user is not authenticated.
     """
+
     def authenticate(self, request):
         user = getattr(request._request, 'user', None)
         self.enforce_csrf(request)
@@ -424,12 +429,12 @@ def group_swh_persistent_identifiers(persistent_ids):
         not be parsed.
     """
     pids_by_type = {
-            CONTENT: [],
-            DIRECTORY: [],
-            REVISION: [],
-            RELEASE: [],
-            SNAPSHOT: []
-            }
+        CONTENT: [],
+        DIRECTORY: [],
+        REVISION: [],
+        RELEASE: [],
+        SNAPSHOT: []
+    }
 
     for pid in persistent_ids:
         obj_id = pid.object_id
@@ -437,3 +442,38 @@ def group_swh_persistent_identifiers(persistent_ids):
         pids_by_type[obj_type].append(hash_to_bytes(obj_id))
 
     return pids_by_type
+
+
+class _NoHeaderHTMLTranslator(HTMLTranslator):
+    """
+    Docutils translator subclass to customize the generation of HTML
+    from reST-formatted docstrings
+    """
+
+    def __init__(self, document):
+        super().__init__(document)
+        self.body_prefix = []
+        self.body_suffix = []
+
+
+_HTML_WRITER = Writer()
+_HTML_WRITER.translator_class = _NoHeaderHTMLTranslator
+
+
+def rst_to_html(rst: str) -> str:
+    """
+    Convert reStructuredText document into HTML.
+
+    Args:
+        rst: A string containing a reStructuredText document
+
+    Returns:
+        Body content of the produced HTML conversion.
+
+    """
+    settings = {
+        'initial_header_level': 2,
+    }
+    pp = publish_parts(rst, writer=_HTML_WRITER,
+                       settings_overrides=settings)
+    return f'<div class="swh-rst">{pp["html_body"]}</div>'
