@@ -112,3 +112,15 @@ def test_get_swh_persistent_id():
     with pytest.raises(BadInputExc) as e:
         utils.get_swh_persistent_id(swh_object_type, 'not a valid id')
     assert e.match('Invalid object')
+
+
+def test_group_swh_persistent_identifiers_bad_input():
+    sha1_git = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
+    invalid_pid_sha1 = ['swh:1:cnt:aafb16d69fd30ff58afdd69036a26047f3aebdc;']
+    invalid_pid_type = ['swh:1:dri:%s' % sha1_git]
+
+    with pytest.raises(BadInputExc):
+        utils.group_swh_persistent_identifiers(invalid_pid_sha1)
+
+    with pytest.raises(BadInputExc):
+        utils.group_swh_persistent_identifiers(invalid_pid_type)

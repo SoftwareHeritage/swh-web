@@ -21,6 +21,7 @@ from prometheus_client.registry import CollectorRegistry
 from rest_framework.authentication import SessionAuthentication
 
 from swh.model.exceptions import ValidationError
+from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import (
     persistent_identifier, parse_persistent_identifier,
     CONTENT, DIRECTORY, ORIGIN, RELEASE, REVISION, SNAPSHOT
@@ -386,3 +387,41 @@ def resolve_branch_alias(snapshot: Dict[str, Any],
             else:
                 branch = None
     return branch
+
+
+def group_swh_persistent_identifiers(persistent_ids):
+    """
+    Groups many Software Heritage persistent identifiers into a
+    dictionary depending on their type.
+
+    Args:
+        persistent_ids (list): a list of Software Heritage persistent
+        identifier
+
+    Returns:
+        A dictionary with:
+        keys: persistent identifier types
+        values: list(bytes) persistent identifiers id
+
+    Raises:
+        BadInputExc: if one of the provided identifier is not valid
+    """
+    pids_by_type = {
+            CONTENT: [],
+            DIRECTORY: [],
+            REVISION: [],
+            RELEASE: [],
+            SNAPSHOT: []
+            }
+
+    try:
+        for pid in persistent_ids:
+            parsed_pid = parse_persistent_identifier(pid)
+            obj_id = parsed_pid.object_id
+            obj_type = parsed_pid.object_type
+            pids_by_type[obj_type].append(hash_to_bytes(obj_id))
+    except ValidationError as v:
+        raise BadInputExc('Error when parsing identifier: %s' %
+                          ' '.join(v.messages))
+
+    return pids_by_type
