@@ -1171,3 +1171,35 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
     raise BadInputExc(('Invalid swh object type! Valid types are '
                        f'{CONTENT}, {DIRECTORY}, {RELEASE} '
                        f'{REVISION} or {SNAPSHOT}.'))
+
+
+def lookup_missing_hashes(grouped_pids):
+    """Lookup missing Software Heritage persistent identifier hash, using
+    batch processing.
+
+    Args:
+        A dictionary with:
+        keys: persistent identifier type
+        values: list(bytes) persistent identifier hash
+    Returns:
+        A set(hexadecimal) of the hashes not found in the storage
+    """
+    missing_hashes = []
+
+    for obj_type, obj_ids in grouped_pids.items():
+        if obj_type == CONTENT:
+            missing_hashes.append(
+                    storage.content_missing_per_sha1_git(obj_ids))
+        if obj_type == DIRECTORY:
+            missing_hashes.append(storage.directory_missing(obj_ids))
+        if obj_type == REVISION:
+            missing_hashes.append(storage.revision_missing(obj_ids))
+        if obj_type == RELEASE:
+            missing_hashes.append(storage.directory_missing(obj_ids))
+        if obj_type == SNAPSHOT:
+            missing_hashes.append(storage.directory_missing(obj_ids))
+
+    missing = set(map(lambda x: hashutil.hash_to_hex(x),
+                      itertools.chain(*missing_hashes)))
+
+    return missing
