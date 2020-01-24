@@ -8,7 +8,7 @@ import os
 import re
 
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Any, Dict, List, Set
 
 from swh.model import hashutil
 
@@ -1173,7 +1173,7 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
                        f'{REVISION} or {SNAPSHOT}.'))
 
 
-def lookup_missing_hashes(grouped_pids):
+def lookup_missing_hashes(grouped_pids: Dict[str, List[bytes]]) -> Set[str]:
     """Lookup missing Software Heritage persistent identifier hash, using
     batch processing.
 
@@ -1190,13 +1190,13 @@ def lookup_missing_hashes(grouped_pids):
         if obj_type == CONTENT:
             missing_hashes.append(
                     storage.content_missing_per_sha1_git(obj_ids))
-        if obj_type == DIRECTORY:
+        elif obj_type == DIRECTORY:
             missing_hashes.append(storage.directory_missing(obj_ids))
-        if obj_type == REVISION:
+        elif obj_type == REVISION:
             missing_hashes.append(storage.revision_missing(obj_ids))
-        if obj_type == RELEASE:
+        elif obj_type == RELEASE:
             missing_hashes.append(storage.directory_missing(obj_ids))
-        if obj_type == SNAPSHOT:
+        elif obj_type == SNAPSHOT:
             missing_hashes.append(storage.directory_missing(obj_ids))
 
     missing = set(map(lambda x: hashutil.hash_to_hex(x),

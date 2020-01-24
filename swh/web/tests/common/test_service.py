@@ -878,7 +878,7 @@ def test_lookup_invalid_objects(invalid_sha1):
     assert e.match('Invalid checksum')
 
 
-def test_lookup_missing_hashes():
+def test_lookup_missing_hashes_non_present():
     missing_cnt = random_sha1()
     missing_dir = random_sha1()
     missing_rev = random_sha1()
@@ -897,3 +897,22 @@ def test_lookup_missing_hashes():
 
     assert actual_result == {missing_cnt, missing_dir, missing_rev,
                              missing_rel, missing_snp}
+
+
+@given(content(), directory())
+def test_lookup_missing_hashes_some_present(archive_data, content, directory):
+    missing_rev = random_sha1()
+    missing_rel = random_sha1()
+    missing_snp = random_sha1()
+
+    grouped_pids = {
+            CONTENT: [hash_to_bytes(content['sha1_git'])],
+            DIRECTORY: [hash_to_bytes(directory)],
+            REVISION: [hash_to_bytes(missing_rev)],
+            RELEASE: [hash_to_bytes(missing_rel)],
+            SNAPSHOT: [hash_to_bytes(missing_snp)],
+            }
+
+    actual_result = service.lookup_missing_hashes(grouped_pids)
+
+    assert actual_result == {missing_rev, missing_rel, missing_snp}

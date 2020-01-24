@@ -245,58 +245,51 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
             * **swh_id_parsed (swh.model.identifiers.PersistentId)**:
               the parsed identifier
             * **browse_url (str)**: the url for browsing the pointed object
-
-    Raises:
-        BadInputExc: if the provided identifier can not be parsed
     """
-    try:
-        swh_id_parsed = parse_persistent_identifier(swh_id)
-        object_type = swh_id_parsed.object_type
-        object_id = swh_id_parsed.object_id
-        browse_url = None
-        query_dict = QueryDict('', mutable=True)
-        if query_params and len(query_params) > 0:
-            for k in sorted(query_params.keys()):
-                query_dict[k] = query_params[k]
-        if 'origin' in swh_id_parsed.metadata:
-            query_dict['origin'] = swh_id_parsed.metadata['origin']
-        if object_type == CONTENT:
-            query_string = 'sha1_git:' + object_id
-            fragment = ''
-            if 'lines' in swh_id_parsed.metadata:
-                lines = swh_id_parsed.metadata['lines'].split('-')
-                fragment += '#L' + lines[0]
-                if len(lines) > 1:
-                    fragment += '-L' + lines[1]
-            browse_url = reverse('browse-content',
-                                 url_args={'query_string': query_string},
-                                 query_params=query_dict) + fragment
-        elif object_type == DIRECTORY:
-            browse_url = reverse('browse-directory',
-                                 url_args={'sha1_git': object_id},
-                                 query_params=query_dict)
-        elif object_type == RELEASE:
-            browse_url = reverse('browse-release',
-                                 url_args={'sha1_git': object_id},
-                                 query_params=query_dict)
-        elif object_type == REVISION:
-            browse_url = reverse('browse-revision',
-                                 url_args={'sha1_git': object_id},
-                                 query_params=query_dict)
-        elif object_type == SNAPSHOT:
-            browse_url = reverse('browse-snapshot',
-                                 url_args={'snapshot_id': object_id},
-                                 query_params=query_dict)
-        elif object_type == ORIGIN:
-            raise BadInputExc(('Origin PIDs (Persistent Identifiers) are not '
-                               'publicly resolvable because they are for '
-                               'internal usage only'))
-    except ValidationError as ve:
-        raise BadInputExc('Error when parsing identifier. %s' %
-                          ' '.join(ve.messages))
-    else:
-        return {'swh_id_parsed': swh_id_parsed,
-                'browse_url': browse_url}
+    swh_id_parsed = get_persistent_identifier(swh_id)
+    object_type = swh_id_parsed.object_type
+    object_id = swh_id_parsed.object_id
+    browse_url = None
+    query_dict = QueryDict('', mutable=True)
+    if query_params and len(query_params) > 0:
+        for k in sorted(query_params.keys()):
+            query_dict[k] = query_params[k]
+    if 'origin' in swh_id_parsed.metadata:
+        query_dict['origin'] = swh_id_parsed.metadata['origin']
+    if object_type == CONTENT:
+        query_string = 'sha1_git:' + object_id
+        fragment = ''
+        if 'lines' in swh_id_parsed.metadata:
+            lines = swh_id_parsed.metadata['lines'].split('-')
+            fragment += '#L' + lines[0]
+            if len(lines) > 1:
+                fragment += '-L' + lines[1]
+        browse_url = reverse('browse-content',
+                             url_args={'query_string': query_string},
+                             query_params=query_dict) + fragment
+    elif object_type == DIRECTORY:
+        browse_url = reverse('browse-directory',
+                             url_args={'sha1_git': object_id},
+                             query_params=query_dict)
+    elif object_type == RELEASE:
+        browse_url = reverse('browse-release',
+                             url_args={'sha1_git': object_id},
+                             query_params=query_dict)
+    elif object_type == REVISION:
+        browse_url = reverse('browse-revision',
+                             url_args={'sha1_git': object_id},
+                             query_params=query_dict)
+    elif object_type == SNAPSHOT:
+        browse_url = reverse('browse-snapshot',
+                             url_args={'snapshot_id': object_id},
+                             query_params=query_dict)
+    elif object_type == ORIGIN:
+        raise BadInputExc(('Origin PIDs (Persistent Identifiers) are not '
+                           'publicly resolvable because they are for '
+                           'internal usage only'))
+
+    return {'swh_id_parsed': swh_id_parsed,
+            'browse_url': browse_url}
 
 
 def parse_rst(text, report_level=2):
@@ -389,6 +382,29 @@ def resolve_branch_alias(snapshot: Dict[str, Any],
     return branch
 
 
+def get_persistent_identifier(persistent_id):
+    """Check if a persistent identifier is valid.
+
+       Args:
+           persistent_id: A string representing a Software Heritage
+           persistent identifier.
+
+       Raises:
+           BadInputExc: if the provided persistent identifier can
+           not be parsed.
+
+       Return:
+           A persistent identifier object.
+    """
+    try:
+        pid_object = parse_persistent_identifier(persistent_id)
+    except ValidationError as ve:
+        raise BadInputExc('Error when parsing identifier: %s' %
+                          ' '.join(ve.messages))
+    else:
+        return pid_object
+
+
 def group_swh_persistent_identifiers(persistent_ids):
     """
     Groups many Software Heritage persistent identifiers into a
@@ -396,15 +412,16 @@ def group_swh_persistent_identifiers(persistent_ids):
 
     Args:
         persistent_ids (list): a list of Software Heritage persistent
-        identifier
+        identifier objects
 
     Returns:
         A dictionary with:
-        keys: persistent identifier types
-        values: list(bytes) persistent identifiers id
+            keys: persistent identifier types
+            values: list(bytes) persistent identifiers id
 
     Raises:
-        BadInputExc: if one of the provided identifier is not valid
+        BadInputExc: if one of the provided persistent identifier can
+        not be parsed.
     """
     pids_by_type = {
             CONTENT: [],
@@ -414,14 +431,9 @@ def group_swh_persistent_identifiers(persistent_ids):
             SNAPSHOT: []
             }
 
-    try:
-        for pid in persistent_ids:
-            parsed_pid = parse_persistent_identifier(pid)
-            obj_id = parsed_pid.object_id
-            obj_type = parsed_pid.object_type
-            pids_by_type[obj_type].append(hash_to_bytes(obj_id))
-    except ValidationError as v:
-        raise BadInputExc('Error when parsing identifier: %s' %
-                          ' '.join(v.messages))
+    for pid in persistent_ids:
+        obj_id = pid.object_id
+        obj_type = pid.object_type
+        pids_by_type[obj_type].append(hash_to_bytes(obj_id))
 
     return pids_by_type
