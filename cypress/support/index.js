@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import '@cypress/code-coverage/support';
+
 import {httpGetJson} from '../utils';
 
 Cypress.Screenshot.defaults({
@@ -117,28 +119,4 @@ before(function() {
 // in order for cypress to be able to intercept and stub them
 Cypress.on('window:before:load', win => {
   win.fetch = null;
-});
-
-// Ensure code coverage data do not get lost each time a new
-// page is loaded during a single test execution
-let windowCoverageObjects;
-
-beforeEach(() => {
-  windowCoverageObjects = [];
-  // save reference to coverage for each app window loaded in the test
-  cy.on('window:load', (win) => {
-    // if application code has been instrumented, the app iframe "window" has an object
-    const applicationSourceCoverage = win.__coverage__;
-    if (applicationSourceCoverage) {
-      windowCoverageObjects.push(applicationSourceCoverage);
-    }
-  });
-});
-
-afterEach(() => {
-  // save coverage after the test
-  // because now the window coverage objects have been updated
-  windowCoverageObjects.forEach((coverage) => {
-    cy.task('combineCoverage', JSON.stringify(coverage));
-  });
 });

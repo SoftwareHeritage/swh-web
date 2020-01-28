@@ -11,7 +11,7 @@ const fs = require('fs');
 module.exports = (on, config) => {
   on('task', require('@cypress/code-coverage/task'));
   // produce JSON files prior launching browser in order to dynamically generate tests
-  on('before:browser:launch', function(browser = {}, args) {
+  on('before:browser:launch', function(browser, launchOptions) {
     return new Promise((resolve) => {
       let p1 = axios.get(`${config.baseUrl}/tests/data/content/code/extensions/`);
       let p2 = axios.get(`${config.baseUrl}/tests/data/content/code/filenames/`);
@@ -19,7 +19,7 @@ module.exports = (on, config) => {
         .then(function(responses) {
           fs.writeFileSync('cypress/fixtures/source-file-extensions.json', JSON.stringify(responses[0].data));
           fs.writeFileSync('cypress/fixtures/source-file-names.json', JSON.stringify(responses[1].data));
-          resolve(args);
+          resolve();
         });
     });
   });
