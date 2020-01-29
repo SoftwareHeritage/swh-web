@@ -24,10 +24,11 @@ def get_origin_visits(origin_info):
         following keys:
 
             * **date**: UTC visit date in ISO format,
-            * **origin**: the origin id
+            * **origin**: the origin url
             * **status**: the visit status, either **full**, **partial**
               or **ongoing**
             * **visit**: the visit id
+            * **type**: the visit type
 
     Raises:
         NotFoundExc: if the origin is not found
@@ -94,13 +95,12 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
 
     Args:
         origin_info (dict): a dict filled with origin information
-            (id, url, type)
         visit_ts (int or str): an ISO date string or Unix timestamp to parse
 
     Returns:
         A dict containing the visit info as described below::
 
-            {'origin': 2,
+            {'origin': 'https://forge.softwareheritage.org/source/swh-web/',
              'date': '2017-10-08T11:54:25.582463+00:00',
              'metadata': {},
              'visit': 25,
@@ -110,39 +110,23 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
     visits = get_origin_visits(origin_info)
 
     if not visits:
-        if 'url' in origin_info:
-            message = ('No visit associated to origin with'
-                       ' url %s!' % origin_info['url'])
-        else:
-            message = ('No visit associated to origin with'
-                       ' id %s!' % origin_info['id'])
-        raise NotFoundExc(message)
+        raise NotFoundExc(('No visit associated to origin with'
+                           ' url %s!' % origin_info['url']))
 
     if snapshot_id:
         visit = [v for v in visits if v['snapshot'] == snapshot_id]
         if len(visit) == 0:
-            if 'type' in origin_info and 'url' in origin_info:
-                message = ('Visit for snapshot with id %s for origin with type'
-                           ' url %s not found!' %
-                           (snapshot_id, origin_info['url']))
-            else:
-                message = ('Visit for snapshot with id %s for origin with'
-                           ' id %s not found!' %
-                           (snapshot_id, origin_info['id']))
-            raise NotFoundExc(message)
+            raise NotFoundExc(('Visit for snapshot with id %s for origin with'
+                               ' url %s not found!' %
+                               (snapshot_id, origin_info['url'])))
         return visit[0]
 
     if visit_id:
         visit = [v for v in visits if v['visit'] == int(visit_id)]
         if len(visit) == 0:
-            if 'type' in origin_info and 'url' in origin_info:
-                message = ('Visit with id %s for origin with'
-                           ' and url %s not found!' %
-                           (visit_id, origin_info['url']))
-            else:
-                message = ('Visit with id %s for origin with id %s'
-                           ' not found!' % (visit_id, origin_info['id']))
-            raise NotFoundExc(message)
+            raise NotFoundExc(('Visit with id %s for origin with'
+                               ' url %s not found!' %
+                               (visit_id, origin_info['url'])))
         return visit[0]
 
     if not visit_ts:
@@ -170,11 +154,6 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None,
             visit = visits[visit_idx]
         return visit
     else:
-        if 'type' in origin_info and 'url' in origin_info:
-            message = ('Visit with timestamp %s for origin with '
-                       'and url %s not found!' %
-                       (visit_ts, origin_info['url']))
-        else:
-            message = ('Visit with timestamp %s for origin with id %s '
-                       'not found!' % (visit_ts, origin_info['id']))
-        raise NotFoundExc(message)
+        raise NotFoundExc(('Visit with timestamp %s for origin with '
+                           'url %s not found!' %
+                           (visit_ts, origin_info['url'])))
