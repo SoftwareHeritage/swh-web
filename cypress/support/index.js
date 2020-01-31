@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -9,6 +9,13 @@ import {httpGetJson} from '../utils';
 
 Cypress.Screenshot.defaults({
   screenshotOnRunFailure: false
+});
+
+Cypress.Commands.add('xhrShouldBeCalled', (alias, timesCalled) => {
+  expect(
+    cy.state('requests').filter(call => call.alias === alias),
+    `${alias} should have been called ${timesCalled} times`
+  ).to.have.length(timesCalled);
 });
 
 before(function() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -65,12 +65,12 @@ describe('Test origin-search', function() {
       .find('i')
       .should('have.class', 'fa-check')
       .and('have.attr', 'title',
-           'Origin has at least one full visit by Software Heritage');
+        'Origin has at least one full visit by Software Heritage');
   });
 
   it('should show not found message when no repo matches', function() {
     searchShouldShowNotFound(nonExistentText,
-                             'No origins matching the search criteria were found.');
+      'No origins matching the search criteria were found.');
   });
 
   it('should add appropriate URL parameters', function() {
@@ -98,6 +98,30 @@ describe('Test origin-search', function() {
           assert.strictEqual(searchMetadata, true);
         });
       });
+  });
+
+  it('should not send request to the resolve endpoint', function() {
+    cy.server();
+
+    cy.route({
+      method: 'GET',
+      url: `${this.Urls.api_1_resolve()}**`,
+    }).as('resolvePid');
+
+    cy.route({
+      method: 'GET',
+      url: `${this.Urls.api_1_origin_search()}**`,
+    }).as('searchOrigin');
+
+    cy.get('#origins-url-patterns')
+      .type(origin.url);
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.wait('@searchOrigin');
+
+    cy.xhrShouldBeCalled('resolvePid', 0);
+    cy.xhrShouldBeCalled('searchOrigin', 1);
   });
 
   context('Test pagination', function() {
@@ -344,6 +368,31 @@ describe('Test origin-search', function() {
       const persistentId = `swh:1:cnt:${origin.content[0].sha1git}`;
 
       searchShouldRedirect(persistentId, redirectUrl);
+    });
+
+    it('should not send request to the search endpoint', function() {
+      cy.server();
+      const persistentId = `swh:1:rev:${origin.revisions[0]}`;
+
+      cy.route({
+        method: 'GET',
+        url: `${this.Urls.api_1_resolve()}**`,
+      }).as('resolvePid');
+
+      cy.route({
+        method: 'GET',
+        url: `${this.Urls.api_1_origin_search()}**`,
+      }).as('searchOrigin');
+
+      cy.get('#origins-url-patterns')
+        .type(persistentId);
+      cy.get('.swh-search-icon')
+        .click();
+
+      cy.wait('@resolvePid');
+
+      cy.xhrShouldBeCalled('resolvePid', 1);
+      cy.xhrShouldBeCalled('searchOrigin', 0);
     });
   });
 
