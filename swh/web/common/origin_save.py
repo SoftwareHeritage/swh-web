@@ -389,7 +389,8 @@ def get_save_origin_requests(visit_type, origin_url):
 
     Raises:
         BadInputExc: the visit type or origin url is invalid
-        NotFoundExc: no save requests can be found for the given origin
+        swh.web.common.exc.NotFoundExc: no save requests can be found for the
+            given origin
 
     Returns:
         list: A list of save origin requests dict as described in

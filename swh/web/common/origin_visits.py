@@ -31,7 +31,7 @@ def get_origin_visits(origin_info):
             * **type**: the visit type
 
     Raises:
-        NotFoundExc: if the origin is not found
+        swh.web.common.exc.NotFoundExc: if the origin is not found
     """
 
     from swh.web.common import service

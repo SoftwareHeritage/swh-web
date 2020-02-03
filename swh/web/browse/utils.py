@@ -889,7 +889,8 @@ def get_snapshot_context(snapshot_id=None, origin_url=None,
               the context of the origin and its visit
 
     Raises:
-        NotFoundExc: if no snapshot is found for the visit of an origin.
+        swh.web.common.exc.NotFoundExc: if no snapshot is found for the visit
+            of an origin.
     """
     origin_info = None
     visit_info = None

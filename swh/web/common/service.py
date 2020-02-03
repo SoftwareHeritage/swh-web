@@ -587,7 +587,8 @@ def lookup_revision_log(rev_sha1_git, limit):
 
     Raises:
         ValueError: if the identifier provided is not of sha1 nature.
-        NotFoundExc: if there is no revision with the provided sha1_git.
+        swh.web.common.exc.NotFoundExc: if there is no revision with the
+            provided sha1_git.
 
     """
     lookup_revision(rev_sha1_git)
@@ -609,7 +610,8 @@ def lookup_revision_log_by(origin, branch_name, timestamp, limit):
         list: Revision log as list of revision dicts
 
     Raises:
-        NotFoundExc: if no revision corresponds to the criterion
+        swh.web.common.exc.NotFoundExc: if no revision corresponds to the
+            criterion
 
     """
     rev_id = _lookup_revision_id_by(origin, branch_name, timestamp)
@@ -1151,7 +1153,8 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
         dictionary for the directory object type.
 
     Raises:
-        NotFoundExc: if the object could not be found in the archive
+        swh.web.common.exc.NotFoundExc: if the object could not be found in
+            the archive
         BadInputExc: if the object identifier is invalid
     """
     if object_type == CONTENT:
