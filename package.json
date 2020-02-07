@@ -8,7 +8,7 @@
     "start-dev": "NODE_ENV=development nodemon --watch swh/web/api --watch swh/web/browse --watch swh/web/templates --watch swh/web/common --watch swh/web/settings --watch swh/web/assets/config --ext py,html,js --exec \"webpack-dev-server --info=false --config ./swh/web/assets/config/webpack.config.development.js --colors\"",
     "build": "NODE_ENV=production webpack --config ./swh/web/assets/config/webpack.config.production.js --colors",
     "mochawesome": "mochawesome-merge cypress/mochawesome/results/*.json > cypress/mochawesome/mochawesome.json && marge -o cypress/mochawesome/report cypress/mochawesome/mochawesome.json",
-    "eslint": "eslint -c swh/web/assets/config/.eslintrc --fix swh/web/assets/**",
+    "eslint": "eslint -c swh/web/assets/config/.eslintrc --fix swh/web/assets/** cypress/integration/** cypress/plugins/** cypress/support/**",
     "preinstall": "npm -v || (SWH_WEB=$PWD && cd /tmp && yarn add npm && cd node_modules/npm && yarn link && cd $SWH_WEB && yarn link npm)",
     "nyc-report": "nyc report --reporter=lcov"
   },

@@ -65,12 +65,12 @@ describe('Test origin-search', function() {
       .find('i')
       .should('have.class', 'fa-check')
       .and('have.attr', 'title',
-        'Origin has at least one full visit by Software Heritage');
+           'Origin has at least one full visit by Software Heritage');
   });
 
   it('should show not found message when no repo matches', function() {
     searchShouldShowNotFound(nonExistentText,
-      'No origins matching the search criteria were found.');
+                             'No origins matching the search criteria were found.');
   });
 
   it('should add appropriate URL parameters', function() {
@@ -105,12 +105,12 @@ describe('Test origin-search', function() {
 
     cy.route({
       method: 'GET',
-      url: `${this.Urls.api_1_resolve()}**`,
+      url: `${this.Urls.api_1_resolve()}**`
     }).as('resolvePid');
 
     cy.route({
       method: 'GET',
-      url: `${this.Urls.api_1_origin_search()}**`,
+      url: `${this.Urls.api_1_origin_search()}**`
     }).as('searchOrigin');
 
     cy.get('#origins-url-patterns')
@@ -376,12 +376,12 @@ describe('Test origin-search', function() {
 
       cy.route({
         method: 'GET',
-        url: `${this.Urls.api_1_resolve()}**`,
+        url: `${this.Urls.api_1_resolve()}**`
       }).as('resolvePid');
 
       cy.route({
         method: 'GET',
-        url: `${this.Urls.api_1_origin_search()}**`,
+        url: `${this.Urls.api_1_origin_search()}**`
       }).as('searchOrigin');
 
       cy.get('#origins-url-patterns')
