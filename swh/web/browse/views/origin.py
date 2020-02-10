@@ -119,7 +119,7 @@ def origin_releases_browse(request, origin_url, timestamp=None):
               view_name='browse-origin-visits')
 def origin_visits_browse(request, origin_url):
     """Django view that produces an HTML display of visits reporting
-    for a swh origin identified by its id or its url.
+    for a given origin.
 
     The url that points to it is
     :http:get:`/browse/origin/(origin_url)/visits/`.

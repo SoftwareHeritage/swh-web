@@ -1,8 +1,10 @@
-swh-web (0.0.224-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.225-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.225     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-02-10 11:39:19 +0100)
+  * Upstream changes:     - version 0.0.225
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 16 Jan 2020 13:13:47 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 10 Feb 2020 11:35:35 +0000
 
 swh-web (0.0.224-1~swh1) unstable-swh; urgency=medium
 

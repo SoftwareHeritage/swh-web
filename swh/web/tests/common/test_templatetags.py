@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import pytest
-
 from swh.web.common.swh_templatetags import (
     urlize_links_and_mails, urlize_header_links, safe_docstring_display
 )
@@ -38,9 +36,6 @@ def test_urlize_header_links():
     assert urlize_header_links(content) == expected_content
 
 
-# remove deprecation warnings related to docutils
-@pytest.mark.filterwarnings(
-    'ignore:.*U.*mode is deprecated:DeprecationWarning')
 def test_safe_docstring_display():
     # update api link with html links content with links
     docstring = (
@@ -52,13 +47,15 @@ def test_safe_docstring_display():
     )
 
     expected_docstring = (
+        '<div class="swh-rst">'
         '<p>This is my list header:</p>\n'
-        '<ul class="docstring">\n'
-        '<li>Here is item 1, with a continuation\n'
-        'line right here</li>\n'
-        '<li>Here is item 2</li>\n'
+        '<ul class="simple">\n'
+        '<li><p>Here is item 1, with a continuation\n'
+        'line right here</p></li>\n'
+        '<li><p>Here is item 2</p></li>\n'
         '</ul>\n'
         '<p>Here is something that is not part of the list</p>\n'
+        '</div>'
     )
 
     assert safe_docstring_display(docstring) == expected_docstring

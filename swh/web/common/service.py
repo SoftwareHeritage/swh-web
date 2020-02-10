@@ -8,7 +8,7 @@ import os
 import re
 
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Any, Dict, List, Set
 
 from swh.model import hashutil
 
@@ -587,7 +587,8 @@ def lookup_revision_log(rev_sha1_git, limit):
 
     Raises:
         ValueError: if the identifier provided is not of sha1 nature.
-        NotFoundExc: if there is no revision with the provided sha1_git.
+        swh.web.common.exc.NotFoundExc: if there is no revision with the
+            provided sha1_git.
 
     """
     lookup_revision(rev_sha1_git)
@@ -609,7 +610,8 @@ def lookup_revision_log_by(origin, branch_name, timestamp, limit):
         list: Revision log as list of revision dicts
 
     Raises:
-        NotFoundExc: if no revision corresponds to the criterion
+        swh.web.common.exc.NotFoundExc: if no revision corresponds to the
+            criterion
 
     """
     rev_id = _lookup_revision_id_by(origin, branch_name, timestamp)
@@ -1151,7 +1153,8 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
         dictionary for the directory object type.
 
     Raises:
-        NotFoundExc: if the object could not be found in the archive
+        swh.web.common.exc.NotFoundExc: if the object could not be found in
+            the archive
         BadInputExc: if the object identifier is invalid
     """
     if object_type == CONTENT:
@@ -1171,3 +1174,35 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
     raise BadInputExc(('Invalid swh object type! Valid types are '
                        f'{CONTENT}, {DIRECTORY}, {RELEASE} '
                        f'{REVISION} or {SNAPSHOT}.'))
+
+
+def lookup_missing_hashes(grouped_pids: Dict[str, List[bytes]]) -> Set[str]:
+    """Lookup missing Software Heritage persistent identifier hash, using
+    batch processing.
+
+    Args:
+        A dictionary with:
+        keys: persistent identifier type
+        values: list(bytes) persistent identifier hash
+    Returns:
+        A set(hexadecimal) of the hashes not found in the storage
+    """
+    missing_hashes = []
+
+    for obj_type, obj_ids in grouped_pids.items():
+        if obj_type == CONTENT:
+            missing_hashes.append(
+                    storage.content_missing_per_sha1_git(obj_ids))
+        elif obj_type == DIRECTORY:
+            missing_hashes.append(storage.directory_missing(obj_ids))
+        elif obj_type == REVISION:
+            missing_hashes.append(storage.revision_missing(obj_ids))
+        elif obj_type == RELEASE:
+            missing_hashes.append(storage.directory_missing(obj_ids))
+        elif obj_type == SNAPSHOT:
+            missing_hashes.append(storage.directory_missing(obj_ids))
+
+    missing = set(map(lambda x: hashutil.hash_to_hex(x),
+                      itertools.chain(*missing_hashes)))
+
+    return missing

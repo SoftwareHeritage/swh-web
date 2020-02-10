@@ -10,6 +10,7 @@ from swh.model.identifiers import (
 )
 
 from swh.web.common.utils import reverse
+from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
     content, directory, origin, release, revision, snapshot,
     unknown_content, unknown_directory, unknown_release,
@@ -95,3 +96,47 @@ def test_swh_origin_id_not_resolvable(api_client):
     url = reverse('api-1-resolve-swh-pid', url_args={'swh_id': ori_pid})
     resp = api_client.get(url)
     assert resp.status_code == 400, resp.data
+
+
+@given(content(), directory())
+def test_api_known_swhpid_some_present(api_client, content, directory):
+    content_ = 'swh:1:cnt:%s' % content['sha1_git']
+    directory_ = 'swh:1:dir:%s' % directory
+    unknown_revision_ = 'swh:1:rev:%s' % random_sha1()
+    unknown_release_ = 'swh:1:rel:%s' % random_sha1()
+    unknown_snapshot_ = 'swh:1:snp:%s' % random_sha1()
+
+    input_pids = [content_, directory_, unknown_revision_,
+                  unknown_release_, unknown_snapshot_]
+
+    url = reverse('api-1-swh-pid-known')
+
+    resp = api_client.post(url, data=input_pids, format='json',
+                           HTTP_ACCEPT='application/json')
+
+    assert resp.status_code == 200, resp.data
+    assert resp['Content-Type'] == 'application/json'
+    assert resp.data == {
+            content_: {'known': True},
+            directory_: {'known': True},
+            unknown_revision_: {'known': False},
+            unknown_release_: {'known': False},
+            unknown_snapshot_: {'known': False}
+            }
+
+
+def test_api_known_invalid_swhpid(api_client):
+    invalid_pid_sha1 = ['swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13de;']
+    invalid_pid_type = ['swh:1:cnn:8068d0075010b590762c6cb5682ed53cb3c13deb']
+
+    url = reverse('api-1-swh-pid-known')
+
+    resp = api_client.post(url, data=invalid_pid_sha1, format='json',
+                           HTTP_ACCEPT='application/json')
+
+    assert resp.status_code == 400, resp.data
+
+    resp2 = api_client.post(url, data=invalid_pid_type, format='json',
+                            HTTP_ACCEPT='application/json')
+
+    assert resp2.status_code == 400, resp.data

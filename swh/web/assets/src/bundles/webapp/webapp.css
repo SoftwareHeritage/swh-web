@@ -442,6 +442,21 @@ hr.swh-faded-line {
     background-image: linear-gradient(to left, #f0f0f0, #8c8b8b, #f0f0f0);
 }
 
+/* Ensure that section title with link is colored like standard section title */
+.swh-readme h1 a,
+.swh-readme h2 a,
+.swh-readme h3 a,
+.swh-readme h4 a,
+.swh-readme h5 a,
+.swh-readme h6 a {
+    color: #e20026;
+}
+
+/* Make list compact in reStructuredText rendering */
+.swh-rst li p {
+    margin-bottom: 0;
+}
+
 .swh-readme-txt pre {
     background: none;
     border: none;
