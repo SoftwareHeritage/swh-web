@@ -1,7 +1,7 @@
 import * as tslib_1 from "tslib";
 import { API, getCurrentHub } from '@sentry/core';
 import { Severity } from '@sentry/types';
-import { addInstrumentationHandler, getEventDescription, getGlobalObject, htmlTreeAsString, logger, normalize, parseUrl, safeJoin, } from '@sentry/utils';
+import { addInstrumentationHandler, getEventDescription, getGlobalObject, htmlTreeAsString, logger, parseUrl, safeJoin, } from '@sentry/utils';
 /**
  * Default Breadcrumbs instrumentations
  * TODO: Deprecated - with v6, this will be renamed to `Instrument`
@@ -24,9 +24,7 @@ var Breadcrumbs = /** @class */ (function () {
         var breadcrumb = {
             category: 'console',
             data: {
-                extra: {
-                    arguments: normalize(handlerData.args, 3),
-                },
+                arguments: handlerData.args,
                 logger: 'console',
             },
             level: Severity.fromString(handlerData.level),
@@ -35,7 +33,7 @@ var Breadcrumbs = /** @class */ (function () {
         if (handlerData.level === 'assert') {
             if (handlerData.args[0] === false) {
                 breadcrumb.message = "Assertion failed: " + (safeJoin(handlerData.args.slice(1), ' ') || 'console.assert');
-                breadcrumb.data.extra.arguments = normalize(handlerData.args.slice(1), 3);
+                breadcrumb.data.arguments = handlerData.args.slice(1);
             }
             else {
                 // Don't capture a breadcrumb for passed assertions

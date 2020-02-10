@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -138,19 +138,18 @@ function doSearch() {
   $('#swh-no-result').hide();
   let searchQueryText = $('#origins-url-patterns').val();
   inSearch = true;
-  // first try to resolve a swh persistent identifier
-  let resolvePidUrl = Urls.api_1_resolve_swh_pid(searchQueryText);
-  fetch(resolvePidUrl)
-    .then(handleFetchError)
-    .then(response => response.json())
-    .then(data => {
-      // pid has been successfully resolved,
-      // so redirect to browse page
-      window.location = data.browse_url;
-    })
-    .catch(response => {
-      // pid resolving failed
-      if (searchQueryText.startsWith('swh:')) {
+  if (searchQueryText.startsWith('swh:')) {
+    // searchQueryText may be a PID so sending search queries to PID resolve endpoint
+    let resolvePidUrl = Urls.api_1_resolve_swh_pid(searchQueryText);
+    fetch(resolvePidUrl)
+      .then(handleFetchError)
+      .then(response => response.json())
+      .then(data => {
+        // pid has been successfully resolved,
+        // so redirect to browse page
+        window.location = data.browse_url;
+      })
+      .catch(response => {
         // display a useful error message if the input
         // looks like a swh pid
         response.json().then(data => {
@@ -159,13 +158,14 @@ function doSearch() {
           $('#swh-no-result').text(data.reason);
           $('#swh-no-result').show();
         });
-      } else {
-        // otherwise, proceed with origins search
-        $('#swh-origin-search-results').show();
-        $('.swh-search-pagination').show();
-        searchOriginsFirst(searchQueryText, limit);
-      }
-    });
+
+      });
+  } else {
+    // otherwise, proceed with origins search
+    $('#swh-origin-search-results').show();
+    $('.swh-search-pagination').show();
+    searchOriginsFirst(searchQueryText, limit);
+  }
 }
 
 export function initOriginSearch() {

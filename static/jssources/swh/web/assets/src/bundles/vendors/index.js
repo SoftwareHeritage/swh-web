@@ -12,7 +12,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import 'whatwg-fetch/dist/fetch.umd';
-import 'elementsfrompoint-polyfill';
+import './elementsfrompoint-polyfill';
 
 // jquery and bootstrap
 import 'jquery';

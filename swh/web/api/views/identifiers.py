@@ -3,8 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.web.common import service
-from swh.web.common.utils import resolve_swh_persistent_id
+from swh.web.common import service, utils
+from swh.web.common.utils import (
+        resolve_swh_persistent_id,
+        get_persistent_identifier
+)
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 
@@ -61,3 +64,38 @@ def api_resolve_swh_pid(request, swh_id):
     swh_id_data['browse_url'] = request.build_absolute_uri(
         swh_id_resolved['browse_url'])
     return swh_id_data
+
+
+@api_route(r'/known/',
+           'api-1-swh-pid-known', methods=['POST'])
+@api_doc('/known/', noargs=True, tags=['hidden'])
+@format_docstring()
+def api_swh_pid_known(request):
+    """
+    .. http:post:: /api/1/known/
+
+        Check if a list of Software Heritage persistent identifier is present
+        in the archive depending on their id (sha1_git).
+
+        Returns:
+            A dictionary with:
+                keys(str): Persistent identifier
+                values(dict): A dictionary containing the key 'known'. (true if
+                the pid is present, False otherwise)
+
+    """
+    persistent_ids = [get_persistent_identifier(pid)
+                      for pid in request.data]
+
+    response = {str(pid): {'known': False} for pid in persistent_ids}
+
+    # group pids by their type
+    pids_by_type = utils.group_swh_persistent_identifiers(persistent_ids)
+    # search for hashes not present in the storage
+    missing_hashes = service.lookup_missing_hashes(pids_by_type)
+
+    for pid in persistent_ids:
+        if pid.object_id not in missing_hashes:
+            response[str(pid)]['known'] = True
+
+    return response

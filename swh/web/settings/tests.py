@@ -7,6 +7,7 @@
 Django tests settings for swh-web.
 """
 
+import os
 import sys
 
 from swh.web.config import get_config
@@ -94,7 +95,7 @@ DATABASES = {
 }
 
 # when not running unit tests, make the webapp fetch data from memory storages
-if 'pytest' not in sys.argv[0]:
+if 'pytest' not in sys.argv[0] and 'PYTEST_XDIST_WORKER' not in os.environ:
     swh_web_config.update({
         'debug': True,
         'e2e_tests_mode': True

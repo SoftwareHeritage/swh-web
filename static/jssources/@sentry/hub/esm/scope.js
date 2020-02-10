@@ -1,5 +1,5 @@
 import * as tslib_1 from "tslib";
-import { getGlobalObject, isThenable, normalize, SyncPromise, timestampWithMs } from '@sentry/utils';
+import { getGlobalObject, isThenable, SyncPromise, timestampWithMs } from '@sentry/utils';
 /**
  * Holds additional event information. {@link Scope.applyToEvent} will be
  * called by the client before an event will be sent.
@@ -83,7 +83,7 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.setUser = function (user) {
-        this._user = normalize(user);
+        this._user = user || {};
         this._notifyScopeListeners();
         return this;
     };
@@ -91,7 +91,7 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.setTags = function (tags) {
-        this._tags = tslib_1.__assign({}, this._tags, normalize(tags));
+        this._tags = tslib_1.__assign({}, this._tags, tags);
         this._notifyScopeListeners();
         return this;
     };
@@ -100,15 +100,15 @@ var Scope = /** @class */ (function () {
      */
     Scope.prototype.setTag = function (key, value) {
         var _a;
-        this._tags = tslib_1.__assign({}, this._tags, (_a = {}, _a[key] = normalize(value), _a));
+        this._tags = tslib_1.__assign({}, this._tags, (_a = {}, _a[key] = value, _a));
         this._notifyScopeListeners();
         return this;
     };
     /**
      * @inheritDoc
      */
-    Scope.prototype.setExtras = function (extra) {
-        this._extra = tslib_1.__assign({}, this._extra, normalize(extra));
+    Scope.prototype.setExtras = function (extras) {
+        this._extra = tslib_1.__assign({}, this._extra, extras);
         this._notifyScopeListeners();
         return this;
     };
@@ -117,7 +117,7 @@ var Scope = /** @class */ (function () {
      */
     Scope.prototype.setExtra = function (key, extra) {
         var _a;
-        this._extra = tslib_1.__assign({}, this._extra, (_a = {}, _a[key] = normalize(extra), _a));
+        this._extra = tslib_1.__assign({}, this._extra, (_a = {}, _a[key] = extra, _a));
         this._notifyScopeListeners();
         return this;
     };
@@ -125,7 +125,7 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.setFingerprint = function (fingerprint) {
-        this._fingerprint = normalize(fingerprint);
+        this._fingerprint = fingerprint;
         this._notifyScopeListeners();
         return this;
     };
@@ -133,7 +133,7 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.setLevel = function (level) {
-        this._level = normalize(level);
+        this._level = level;
         this._notifyScopeListeners();
         return this;
     };
@@ -142,14 +142,18 @@ var Scope = /** @class */ (function () {
      */
     Scope.prototype.setTransaction = function (transaction) {
         this._transaction = transaction;
+        if (this._span) {
+            this._span.transaction = transaction;
+        }
         this._notifyScopeListeners();
         return this;
     };
     /**
      * @inheritDoc
      */
-    Scope.prototype.setContext = function (name, context) {
-        this._context[name] = context ? normalize(context) : undefined;
+    Scope.prototype.setContext = function (key, context) {
+        var _a;
+        this._context = tslib_1.__assign({}, this._context, (_a = {}, _a[key] = context, _a));
         this._notifyScopeListeners();
         return this;
     };
@@ -208,12 +212,11 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.addBreadcrumb = function (breadcrumb, maxBreadcrumbs) {
-        var timestamp = timestampWithMs();
-        var mergedBreadcrumb = tslib_1.__assign({ timestamp: timestamp }, breadcrumb);
+        var mergedBreadcrumb = tslib_1.__assign({ timestamp: timestampWithMs() }, breadcrumb);
         this._breadcrumbs =
             maxBreadcrumbs !== undefined && maxBreadcrumbs >= 0
-                ? tslib_1.__spread(this._breadcrumbs, [normalize(mergedBreadcrumb)]).slice(-maxBreadcrumbs)
-                : tslib_1.__spread(this._breadcrumbs, [normalize(mergedBreadcrumb)]);
+                ? tslib_1.__spread(this._breadcrumbs, [mergedBreadcrumb]).slice(-maxBreadcrumbs)
+                : tslib_1.__spread(this._breadcrumbs, [mergedBreadcrumb]);
         this._notifyScopeListeners();
         return this;
     };

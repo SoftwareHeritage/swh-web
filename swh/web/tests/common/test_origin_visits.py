@@ -42,7 +42,7 @@ def test_get_origin_visits(mocker):
 
     origin_info = {
         'id': 1,
-        'type': 'git',
+
         'url': 'https://github.com/foo/bar',
     }
 
@@ -55,8 +55,6 @@ def test_get_origin_visit(mocker):
     mock_origin_visits = mocker.patch(
         'swh.web.common.origin_visits.get_origin_visits')
     origin_info = {
-        'id': 2,
-        'type': 'git',
         'url': 'https://github.com/foo/bar',
     }
     visits = [
@@ -64,31 +62,36 @@ def test_get_origin_visit(mocker):
             'status': 'full',
             'date': '2015-07-09T21:09:24+00:00',
             'visit': 1,
-            'origin': origin_info['id']
+            'origin': 'https://github.com/foo/bar',
+            'type': 'git',
         },
         {
             'status': 'full',
             'date': '2016-02-23T18:05:23.312045+00:00',
             'visit': 2,
-            'origin': origin_info['id']
+            'origin': 'https://github.com/foo/bar',
+            'type': 'git',
         },
         {
             'status': 'full',
             'date': '2016-03-28T01:35:06.554111+00:00',
             'visit': 3,
-            'origin': origin_info['id']
+            'origin': 'https://github.com/foo/bar',
+            'type': 'git',
         },
         {
             'status': 'full',
             'date': '2016-06-18T01:22:24.808485+00:00',
             'visit': 4,
-            'origin': origin_info['id']
+            'origin': 'https://github.com/foo/bar',
+            'type': 'git',
         },
         {
             'status': 'full',
             'date': '2016-08-14T12:10:00.536702+00:00',
             'visit': 5,
-            'origin': origin_info['id']
+            'origin': 'https://github.com/foo/bar',
+            'type': 'git',
         }
     ]
     mock_origin_visits.return_value = visits
