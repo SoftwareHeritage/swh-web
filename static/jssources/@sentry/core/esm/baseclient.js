@@ -1,5 +1,5 @@
 import * as tslib_1 from "tslib";
-import { Dsn, isPrimitive, isThenable, logger, SyncPromise, truncate, uuid4 } from '@sentry/utils';
+import { Dsn, isPrimitive, isThenable, logger, normalize, SyncPromise, truncate, uuid4 } from '@sentry/utils';
 import { setupIntegrations } from './integration';
 /**
  * Base implementation for all JavaScript SDK clients.
@@ -220,7 +220,8 @@ var BaseClient = /** @class */ (function () {
      * @returns A new event with more information.
      */
     BaseClient.prototype._prepareEvent = function (event, scope, hint) {
-        var _a = this.getOptions(), environment = _a.environment, release = _a.release, dist = _a.dist, _b = _a.maxValueLength, maxValueLength = _b === void 0 ? 250 : _b;
+        var _this = this;
+        var _a = this.getOptions(), environment = _a.environment, release = _a.release, dist = _a.dist, _b = _a.maxValueLength, maxValueLength = _b === void 0 ? 250 : _b, _c = _a.normalizeDepth, normalizeDepth = _c === void 0 ? 3 : _c;
         var prepared = tslib_1.__assign({}, event);
         if (prepared.environment === undefined && environment !== undefined) {
             prepared.environment = environment;
@@ -243,7 +244,7 @@ var BaseClient = /** @class */ (function () {
             request.url = truncate(request.url, maxValueLength);
         }
         if (prepared.event_id === undefined) {
-            prepared.event_id = uuid4();
+            prepared.event_id = hint && hint.event_id ? hint.event_id : uuid4();
         }
         this._addIntegrations(prepared.sdk);
         // We prepare the result here with a resolved Event.
@@ -254,7 +255,40 @@ var BaseClient = /** @class */ (function () {
             // In case we have a hub we reassign it.
             result = scope.applyToEvent(prepared, hint);
         }
-        return result;
+        return result.then(function (evt) {
+            // tslint:disable-next-line:strict-type-predicates
+            if (typeof normalizeDepth === 'number' && normalizeDepth > 0) {
+                return _this._normalizeEvent(evt, normalizeDepth);
+            }
+            return evt;
+        });
+    };
+    /**
+     * Applies `normalize` function on necessary `Event` attributes to make them safe for serialization.
+     * Normalized keys:
+     * - `breadcrumbs.data`
+     * - `user`
+     * - `contexts`
+     * - `extra`
+     * @param event Event
+     * @returns Normalized event
+     */
+    BaseClient.prototype._normalizeEvent = function (event, depth) {
+        if (!event) {
+            return null;
+        }
+        // tslint:disable:no-unsafe-any
+        return tslib_1.__assign({}, event, (event.breadcrumbs && {
+            breadcrumbs: event.breadcrumbs.map(function (b) { return (tslib_1.__assign({}, b, (b.data && {
+                data: normalize(b.data, depth),
+            }))); }),
+        }), (event.user && {
+            user: normalize(event.user, depth),
+        }), (event.contexts && {
+            contexts: normalize(event.contexts, depth),
+        }), (event.extra && {
+            extra: normalize(event.extra, depth),
+        }));
     };
     /**
      * This function adds all used integrations to the SDK info in the event.

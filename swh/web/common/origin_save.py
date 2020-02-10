@@ -389,7 +389,8 @@ def get_save_origin_requests(visit_type, origin_url):
 
     Raises:
         BadInputExc: the visit type or origin url is invalid
-        NotFoundExc: no save requests can be found for the given origin
+        swh.web.common.exc.NotFoundExc: no save requests can be found for the
+            given origin
 
     Returns:
         list: A list of save origin requests dict as described in
@@ -511,7 +512,7 @@ def get_save_origin_task_info(save_request_id):
                                        'sort': ['@timestamp']},
                                  timeout=30)
         results = json.loads(response.text)
-        if results['hits']['total'] >= 1:
+        if results['hits']['total']['value'] >= 1:
             task_run_info = results['hits']['hits'][-1]['_source']
             if 'swh_logging_args_runtime' in task_run_info:
                 duration = task_run_info['swh_logging_args_runtime']

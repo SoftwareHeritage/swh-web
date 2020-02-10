@@ -26,6 +26,7 @@ def test_post_fork_with_dsn_env():
 
     sentry_sdk_init.assert_called_once_with(
         dsn='test_dsn',
+        environment=None,
         integrations=[django_integration],
         debug=False,
         release=None,
@@ -43,6 +44,7 @@ def test_post_fork_debug():
 
     sentry_sdk_init.assert_called_once_with(
         dsn='test_dsn',
+        environment=None,
         integrations=[django_integration],
         debug=True,
         release=None,

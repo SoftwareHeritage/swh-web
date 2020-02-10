@@ -20,10 +20,6 @@ DOC_RETURN_ORIGIN = '''
         :>json string origin_visits_url: link to in order to get information
             about the visits for that origin
         :>json string url: the origin canonical url
-        :>json string type: the type of software origin (deprecated value;
-            types are now associated to visits instead of origins)
-        :>json number id: the origin unique identifier (deprecated value;
-            you should only refer to origins based on their URL)
 '''
 
 DOC_RETURN_ORIGIN_ARRAY = \
@@ -105,6 +101,9 @@ def api_origins(request):
             query_params={'origin_from': origin_from,
                           'origin_count': origin_count},
             request=request)
+    for result in results:
+        if 'id' in result:
+            del result['id']
     return response
 
 

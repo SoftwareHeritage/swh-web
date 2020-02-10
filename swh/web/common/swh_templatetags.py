@@ -3,43 +3,21 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from inspect import cleandoc
 import json
 import re
+
+from inspect import cleandoc
 
 from django import template
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
 
-from docutils.core import publish_parts
-from docutils.writers.html4css1 import Writer, HTMLTranslator
-
 import sentry_sdk
 
 from swh.web.common.origin_save import get_savable_visit_types
+from swh.web.common.utils import rst_to_html
 
 register = template.Library()
-
-
-class NoHeaderHTMLTranslator(HTMLTranslator):
-    """
-    Docutils translator subclass to customize the generation of HTML
-    from reST-formatted docstrings
-    """
-    def __init__(self, document):
-        super().__init__(document)
-        self.body_prefix = []
-        self.body_suffix = []
-
-    def visit_bullet_list(self, node):
-        self.context.append((self.compact_simple, self.compact_p))
-        self.compact_p = None
-        self.compact_simple = self.is_compactable(node)
-        self.body.append(self.starttag(node, 'ul', CLASS='docstring'))
-
-
-DOCSTRING_WRITER = Writer()
-DOCSTRING_WRITER.translator_class = NoHeaderHTMLTranslator
 
 
 @register.filter
@@ -48,8 +26,7 @@ def safe_docstring_display(docstring):
     Utility function to htmlize reST-formatted documentation in browsable
     api.
     """
-    docstring = cleandoc(docstring)
-    return publish_parts(docstring, writer=DOCSTRING_WRITER)['html_body']
+    return rst_to_html(cleandoc(docstring))
 
 
 @register.filter

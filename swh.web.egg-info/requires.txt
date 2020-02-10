@@ -10,7 +10,6 @@ htmlmin
 lxml
 prometheus_client
 pygments
-pypandoc
 python-dateutil
 pyyaml
 requests

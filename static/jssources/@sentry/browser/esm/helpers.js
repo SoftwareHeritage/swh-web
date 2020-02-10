@@ -1,6 +1,6 @@
 import * as tslib_1 from "tslib";
 import { captureException, withScope } from '@sentry/core';
-import { addExceptionMechanism, addExceptionTypeValue, normalize } from '@sentry/utils';
+import { addExceptionMechanism, addExceptionTypeValue } from '@sentry/utils';
 var ignoreOnError = 0;
 /**
  * @hidden
@@ -80,7 +80,7 @@ export function wrap(fn, options, before) {
                         addExceptionTypeValue(processedEvent, undefined, undefined);
                         addExceptionMechanism(processedEvent, options.mechanism);
                     }
-                    processedEvent.extra = tslib_1.__assign({}, processedEvent.extra, { arguments: normalize(args, 3) });
+                    processedEvent.extra = tslib_1.__assign({}, processedEvent.extra, { arguments: args });
                     return processedEvent;
                 });
                 captureException(ex);

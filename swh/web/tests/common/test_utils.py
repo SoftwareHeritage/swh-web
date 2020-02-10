@@ -112,3 +112,44 @@ def test_get_swh_persistent_id():
     with pytest.raises(BadInputExc) as e:
         utils.get_swh_persistent_id(swh_object_type, 'not a valid id')
     assert e.match('Invalid object')
+
+
+def test_rst_to_html():
+    rst = (
+        'Section\n'
+        '=======\n\n'
+        '**Some strong text**\n\n'
+        'Subsection\n'
+        '----------\n\n'
+        '* This is a bulleted list.\n'
+        '* It has two items, the second\n'
+        '  item uses two lines.\n'
+        '\n'
+        '1. This is a numbered list.\n'
+        '2. It has two items too.\n'
+        '\n'
+        '#. This is a numbered list.\n'
+        '#. It has two items too.\n'
+    )
+
+    expected_html = (
+        '<div class="swh-rst"><h1 class="title">Section</h1>\n'
+        '<p><strong>Some strong text</strong></p>\n'
+        '<div class="section" id="subsection">\n'
+        '<h2>Subsection</h2>\n'
+        '<ul class="simple">\n'
+        '<li><p>This is a bulleted list.</p></li>\n'
+        '<li><p>It has two items, the second\n'
+        'item uses two lines.</p></li>\n'
+        '</ul>\n'
+        '<ol class="arabic simple">\n'
+        '<li><p>This is a numbered list.</p></li>\n'
+        '<li><p>It has two items too.</p></li>\n'
+        '<li><p>This is a numbered list.</p></li>\n'
+        '<li><p>It has two items too.</p></li>\n'
+        '</ol>\n'
+        '</div>\n'
+        '</div>'
+    )
+
+    assert utils.rst_to_html(rst) == expected_html
