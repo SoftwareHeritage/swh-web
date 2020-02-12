@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -58,6 +58,19 @@ def test_directory_uppercase(client, directory):
                            url_args={'sha1_git': directory})
 
     assert resp['location'] == redirect_url
+
+
+@given(directory())
+def test_permalink_box_context(client, tests_data, directory):
+    origin_url = random.choice(tests_data['origins'])['url']
+    url = reverse('browse-directory',
+                  url_args={'sha1_git': directory},
+                  query_params={'origin': origin_url})
+
+    resp = client.get(url)
+
+    assert resp.status_code == 200
+    assert_contains(resp, 'id="swh-id-option-origin-directory"')
 
 
 def _directory_view(client, root_directory_sha1, directory_entries,
