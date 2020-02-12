@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import textwrap
+
 import pytest
 
 from rest_framework.response import Response
@@ -12,8 +14,8 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 from swh.web.api.apidoc import api_doc, _parse_httpdomain_doc
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
-from swh.web.common.utils import reverse
-from swh.web.tests.django_asserts import assert_template_used, assert_contains
+from swh.web.common.utils import reverse, prettify_html
+from swh.web.tests.django_asserts import assert_template_used
 
 
 _httpdomain_doc = """
@@ -229,7 +231,7 @@ def test_api_doc_parse_httpdomain():
 
     expected_reqheaders = [{
         'doc': ('the requested response content type, either '
-                '``application/json``  or ``application/yaml``'),
+                '``application/json`` (default) or ``application/yaml``'),
         'name': 'Accept'
     }]
 
@@ -378,9 +380,10 @@ def apidoc_test_post_endpoint(request):
 
         :<jsonarr string -: Input array of pids
 
-        :>jsonarr string type: swh object type
-        :>jsonarr string sha1_git: swh object sha1_git
-        :>jsonarr boolean found: whether the object was found or not
+        :>json object <swh_pid>: an object whose keys are input persistent
+            identifiers and values objects with the following keys:
+
+                * **known (bool)**: whether the object was found
 
     """
     pass
@@ -392,40 +395,60 @@ def test_apidoc_input_output_doc(client):
     assert rv.status_code == 200, rv.content
     assert_template_used(rv, 'api/apidoc.html')
 
-    input_html_doc = (
-        '   <dl class="row">\n'
-        '      <dt class="col col-md-2 text-right"> array </dt>\n'
-        '      <dd class="col col-md-9">\n'
-        '        <p>\n'
-        '          \n'
-        '            Input array of pids\n'
-        '          \n'
-        '          \n'
-        '        </p>\n'
-        '      </dd>\n'
-        '    </dl>\n'
-    )
+    input_html_doc = textwrap.indent((
+        '<dl class="row">\n'
+        ' <dt class="col col-md-2 text-right">\n'
+        '  array\n'
+        ' </dt>\n'
+        ' <dd class="col col-md-9">\n'
+        '  <p>\n'
+        '   Input array of pids\n'
+        '  </p>\n'
+        ' </dd>\n'
+        '</dl>\n'
+    ), ' '*7)
 
-    output_html_doc = (
-        '    <dl class="row">\n'
-        '      <dt class="col col-md-2 text-right"> array </dt>\n'
-        '      <dd class="col col-md-9">\n'
-        '        <p>\n'
-        '          \n'
-        '            an array of objects containing the following keys:\n'
-        '          \n'
-        '          \n'
-        '            <div class="swh-rst"><ul class="simple">\n'
-        '<li><p><strong>type (string)</strong>: swh object type</p></li>\n'
-        '<li><p><strong>sha1_git (string)</strong>: swh object sha1_git</p></li>\n' # noqa
-        '<li><p><strong>found (boolean)</strong>: whether the object was found or not</p></li>\n' # noqa
-        '</ul>\n'
-        '</div>\n'
-        '          \n'
-        '        </p>\n'
-        '      </dd>\n'
-        '    </dl>'
-    )
+    output_html_doc = textwrap.indent((
+        '<dl class="row">\n'
+        ' <dt class="col col-md-2 text-right">\n'
+        '  object\n'
+        ' </dt>\n'
+        ' <dd class="col col-md-9">\n'
+        '  <p>\n'
+        '   an object containing the following keys:\n'
+        '  </p>\n'
+        '  <div class="swh-rst">\n'
+        '   <blockquote>\n'
+        '    <ul>\n'
+        '     <li>\n'
+        '      <p>\n'
+        '       <strong>\n'
+        '        &lt;swh_pid&gt; (object)\n'
+        '       </strong>\n'
+        '       : an object whose keys are input persistent identifiers'
+        ' and values objects with the following keys:\n'
+        '      </p>\n'
+        '      <blockquote>\n'
+        '       <ul class="simple">\n'
+        '        <li>\n'
+        '         <p>\n'
+        '          <strong>\n'
+        '           known (bool)\n'
+        '          </strong>\n'
+        '          : whether the object was found\n'
+        '         </p>\n'
+        '        </li>\n'
+        '       </ul>\n'
+        '      </blockquote>\n'
+        '     </li>\n'
+        '    </ul>\n'
+        '   </blockquote>\n'
+        '  </div>\n'
+        ' </dd>\n'
+        '</dl>\n'
+    ), ' '*7)
 
-    assert_contains(rv, input_html_doc)
-    assert_contains(rv, output_html_doc)
+    html = prettify_html(rv.content)
+
+    assert input_html_doc in html
+    assert output_html_doc in html

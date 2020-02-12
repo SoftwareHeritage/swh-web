@@ -59,7 +59,7 @@ See top-level LICENSE file for more information
           {% endif %}
           <td class="d-none d-sm-table-cell">
             <a href="{% url doc.route_view_name %}">
-              {{ doc.doc_intro | safe_docstring_display | safe }}
+              {{ doc.doc_intro | docstring_display | safe }}
             </a>
           </td>
         </tr>

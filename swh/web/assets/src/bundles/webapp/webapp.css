@@ -507,6 +507,12 @@ tr.swh-api-doc-route a {
     margin: 10px;
 }
 
+.swh-apidoc .swh-rst blockquote {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
 a.toggle-col {
     text-decoration: none;
 }

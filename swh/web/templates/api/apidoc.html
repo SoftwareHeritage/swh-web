@@ -35,7 +35,7 @@ See top-level LICENSE file for more information
 {% if description %}
   <div>
     <h4> Description </h4>
-    {{ description | safe_docstring_display | safe }}
+    {{ description | docstring_display | safe }}
   </div>
 {% endif %}
 {% if response_data is not None %}
@@ -71,7 +71,7 @@ See top-level LICENSE file for more information
       <tbody>
         {% for url in urls %}
           <tr>
-            <td>{{ url.rule | safe_docstring_display | safe }}</td>
+            <td>{{ url.rule | docstring_display | safe }}</td>
             <td>{{ url.methods | dictsort:0 | join:', ' }}</td>
           </tr>
         {% endfor %}
@@ -86,7 +86,7 @@ See top-level LICENSE file for more information
     {% for arg in args %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ arg.name }} ({{ arg.type }}) </dt>
-        <dd class="col col-md-9"> {{ arg.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ arg.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
@@ -98,7 +98,7 @@ See top-level LICENSE file for more information
     {% for param in params %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ param.name }} ({{ param.type }}) </dt>
-        <dd class="col col-md-9"> {{ param.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ param.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
@@ -110,7 +110,7 @@ See top-level LICENSE file for more information
     {% for header in reqheaders %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ header.name }} </dt>
-        <dd class="col col-md-9"> {{ header.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ header.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
@@ -133,7 +133,7 @@ See top-level LICENSE file for more information
             an object containing the following keys:
           {% endif %}
           {% if inputs_list != '' %}
-            {{ inputs_list | safe_docstring_display | safe }}
+            {{ inputs_list | docstring_display | safe }}
           {% endif %}
         </p>
       </dd>
@@ -147,7 +147,7 @@ See top-level LICENSE file for more information
     {% for header in resheaders %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ header.name }} </dt>
-        <dd class="col col-md-9"> {{ header.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ header.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
@@ -170,7 +170,7 @@ See top-level LICENSE file for more information
             an object containing the following keys:
           {% endif %}
           {% if returns_list != '' %}
-            {{ returns_list | safe_docstring_display | safe }}
+            {{ returns_list | docstring_display | safe }}
           {% endif %}
         </p>
       </dd>
@@ -184,7 +184,7 @@ See top-level LICENSE file for more information
     {% for status in status_codes %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ status.code }} </dt>
-        <dd class="col col-md-9"> {{ status.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ status.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>

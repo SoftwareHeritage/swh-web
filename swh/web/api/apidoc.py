@@ -63,6 +63,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         self.reqheaders_set = set()
         self.resheaders_set = set()
         self.field_list_visited = False
+        self.current_json_obj = None
 
     def process_paragraph(self, par):
         """
@@ -82,8 +83,12 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         # remove parsed document markups
         par = re.sub('<[^<]+?>', '', par)
         # api urls cleanup to generate valid links afterwards
-        par = re.sub(r'\(\w+\)', '', par)
-        par = re.sub(r'\[.*\]', '', par)
+        subs_made = 1
+        while subs_made:
+            (par, subs_made) = re.subn(r'(:http:.*)(\(\w+\))', r'\1', par)
+        subs_made = 1
+        while subs_made:
+            (par, subs_made) = re.subn(r'(:http:.*)(\[.*\])', r'\1', par)
         par = par.replace('//', '/')
         # transform references to api endpoints into valid rst links
         par = re.sub(':http:get:`([^,]*)`', r'`<\1>`_', par)
@@ -135,6 +140,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                                                     'type': field_data[1],
                                                     'doc': text})
                         self.inputs_set.add(field_data[2])
+                        self.current_json_obj = self.data['inputs'][-1]
                 # Response type
                 if (field_data[0] in self.response_json_array_roles or
                         field_data[0] in self.response_json_object_roles):
@@ -150,6 +156,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                                                      'type': field_data[1],
                                                      'doc': text})
                         self.returns_set.add(field_data[2])
+                        self.current_json_obj = self.data['returns'][-1]
                 # Status Codes
                 if field_data[0] in self.status_code_roles:
                     if field_data[1] not in self.status_codes_set:
@@ -218,6 +225,14 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                 if isinstance(child, docutils.nodes.paragraph):
                     line_text = self.process_paragraph(str(child))
                     self.data['description'] += '\t* %s\n' % line_text
+        elif self.current_json_obj:
+            self.current_json_obj['doc'] += '\n\n'
+            for child in node.traverse():
+                # process list item
+                if isinstance(child, docutils.nodes.paragraph):
+                    line_text = self.process_paragraph(str(child))
+                    self.current_json_obj['doc'] += '\t\t* %s\n' % line_text
+            self.current_json_obj = None
 
     def visit_warning(self, node):
         text = self.process_paragraph(str(node))
