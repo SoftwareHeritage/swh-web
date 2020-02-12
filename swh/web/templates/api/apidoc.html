@@ -116,6 +116,31 @@ See top-level LICENSE file for more information
   </div>
 <hr/>
 {% endif %}
+{% if input_type %}
+  <div>
+    <h4> Request data </h4>
+    <dl class="row">
+      <dt class="col col-md-2 text-right"> {{ input_type }} </dt>
+      <dd class="col col-md-9">
+        <p>
+          {% if input_type == 'array' and inputs_list == '' %}
+            {{ inputs.0.doc | safe }}
+          {% elif input_type == 'array' and inputs_list != '' %}
+            an array of objects containing the following keys:
+          {% elif input_type == 'octet stream' %}
+            raw data as an octet stream
+          {% elif input_type == 'object' %}
+            an object containing the following keys:
+          {% endif %}
+          {% if inputs_list != '' %}
+            {{ inputs_list | safe_docstring_display | safe }}
+          {% endif %}
+        </p>
+      </dd>
+    </dl>
+  </div>
+  <hr/>
+{% endif %}
 {% if resheaders and resheaders|length > 0 %}
   <div>
     <h4> Response headers </h4>
@@ -135,14 +160,18 @@ See top-level LICENSE file for more information
       <dt class="col col-md-2 text-right"> {{ return_type }} </dt>
       <dd class="col col-md-9">
         <p>
-          {% if return_type == 'array' %}
+          {% if return_type == 'array' and returns_list == '' %}
+            {{ returns.0.doc | safe }}
+          {% elif return_type == 'array' and returns_list != '' %}
             an array of objects containing the following keys:
           {% elif return_type == 'octet stream' %}
-            the raw data as an octet stream
-          {% else %}
+            raw data as an octet stream
+          {% elif return_type == 'object' %}
             an object containing the following keys:
           {% endif %}
-          {{ returns_list | safe_docstring_display | safe }}
+          {% if returns_list != '' %}
+            {{ returns_list | safe_docstring_display | safe }}
+          {% endif %}
         </p>
       </dd>
     </dl>

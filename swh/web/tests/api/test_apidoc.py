@@ -13,10 +13,10 @@ from swh.web.api.apidoc import api_doc, _parse_httpdomain_doc
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.django_asserts import assert_template_used
+from swh.web.tests.django_asserts import assert_template_used, assert_contains
 
 
-httpdomain_doc = """
+_httpdomain_doc = """
 .. http:get:: /api/1/revision/(sha1_git)/
 
     Get information about a revision in the archive.
@@ -32,6 +32,10 @@ httpdomain_doc = """
         either ``application/json`` (default) or ``application/yaml``
     :resheader Content-Type: this depends on :http:header:`Accept` header
         of request
+
+    :<json int n: sample input integer
+    :<json string s: sample input string
+    :<json array a: sample input array
 
     :>json object author: information about the author of the revision
     :>json object committer: information about the committer of the revision
@@ -67,7 +71,7 @@ httpdomain_doc = """
 """
 
 
-exception_http_code = {
+_exception_http_code = {
     BadInputExc: 400,
     ForbiddenExc: 403,
     NotFoundExc: 404,
@@ -115,13 +119,13 @@ def apidoc_test_error_route(request, exc_name):
     """
     Sample doc
     """
-    for e in exception_http_code.keys():
+    for e in _exception_http_code.keys():
         if e.__name__ == exc_name:
             raise e('Error')
 
 
 def test_apidoc_error(api_client):
-    for exc, code in exception_http_code.items():
+    for exc, code in _exception_http_code.items():
         url = reverse('api-1-test-error',
                       url_args={'exc_name': exc.__name__})
         rv = api_client.get(url)
@@ -181,13 +185,15 @@ def test_api_doc_parse_httpdomain():
         'params': [],
         'resheaders': [],
         'reqheaders': [],
+        'input_type': '',
+        'inputs': [],
         'return_type': '',
         'returns': [],
         'status_codes': [],
         'examples': []
     }
 
-    _parse_httpdomain_doc(httpdomain_doc, doc_data)
+    _parse_httpdomain_doc(_httpdomain_doc, doc_data)
 
     expected_urls = [{
         'rule': '/api/1/revision/ **\\(sha1_git\\)** /',
@@ -256,10 +262,36 @@ def test_api_doc_parse_httpdomain():
     assert 'status_codes' in doc_data
     assert doc_data['status_codes'] == expected_statuscodes
 
+    expected_input_type = 'object'
+
+    assert 'input_type' in doc_data
+    assert doc_data['input_type'] == expected_input_type
+
+    expected_inputs = [
+        {
+            'name': 'n',
+            'type': 'int',
+            'doc': 'sample input integer'
+        },
+        {
+            'name': 's',
+            'type': 'string',
+            'doc': 'sample input string'
+        },
+        {
+            'name': 'a',
+            'type': 'array',
+            'doc': 'sample input array'
+        },
+    ]
+
+    assert 'inputs' in doc_data
+    assert doc_data['inputs'] == expected_inputs
+
     expected_return_type = 'object'
 
     assert 'return_type' in doc_data
-    assert doc_data['return_type'] in expected_return_type
+    assert doc_data['return_type'] == expected_return_type
 
     expected_returns = [
         {
@@ -333,3 +365,67 @@ def test_api_doc_parse_httpdomain():
 
     assert 'examples' in doc_data
     assert doc_data['examples'] == expected_examples
+
+
+@api_route(r'/post/endpoint/', 'api-1-post-endpoint',
+           methods=['POST'])
+@api_doc('/post/endpoint/')
+def apidoc_test_post_endpoint(request):
+    """
+    .. http:post:: /api/1/post/endpoint/
+
+        Endpoint documentation
+
+        :<jsonarr string -: Input array of pids
+
+        :>jsonarr string type: swh object type
+        :>jsonarr string sha1_git: swh object sha1_git
+        :>jsonarr boolean found: whether the object was found or not
+
+    """
+    pass
+
+
+def test_apidoc_input_output_doc(client):
+    url = reverse('api-1-post-endpoint-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
+    assert rv.status_code == 200, rv.content
+    assert_template_used(rv, 'api/apidoc.html')
+
+    input_html_doc = (
+        '   <dl class="row">\n'
+        '      <dt class="col col-md-2 text-right"> array </dt>\n'
+        '      <dd class="col col-md-9">\n'
+        '        <p>\n'
+        '          \n'
+        '            Input array of pids\n'
+        '          \n'
+        '          \n'
+        '        </p>\n'
+        '      </dd>\n'
+        '    </dl>\n'
+    )
+
+    output_html_doc = (
+        '    <dl class="row">\n'
+        '      <dt class="col col-md-2 text-right"> array </dt>\n'
+        '      <dd class="col col-md-9">\n'
+        '        <p>\n'
+        '          \n'
+        '            an array of objects containing the following keys:\n'
+        '          \n'
+        '          \n'
+        '            <div class="swh-rst"><ul class="simple">\n'
+        '<li><p><strong>type (string)</strong>: swh object type</p></li>\n'
+        '<li><p><strong>sha1_git (string)</strong>: swh object sha1_git</p></li>\n' # noqa
+        '<li><p><strong>found (boolean)</strong>: whether the object was found or not</p></li>\n' # noqa
+        '</ul>\n'
+        '</div>\n'
+        '          \n'
+        '        </p>\n'
+        '      </dd>\n'
+        '    </dl>'
+    )
+
+    assert_contains(rv, input_html_doc)
+    assert_contains(rv, output_html_doc)

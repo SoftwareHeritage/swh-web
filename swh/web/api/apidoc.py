@@ -34,6 +34,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     # httpdomain roles we want to parse (based on sphinxcontrib.httpdomain 1.6)
     parameter_roles = ('param', 'parameter', 'arg', 'argument')
 
+    request_json_object_roles = ('reqjsonobj', 'reqjson', '<jsonobj', '<json')
+
+    request_json_array_roles = ('reqjsonarr', '<jsonarr')
+
     response_json_object_roles = ('resjsonobj', 'resjson', '>jsonobj', '>json')
 
     response_json_array_roles = ('resjsonarr', '>jsonarr')
@@ -53,6 +57,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         self.data = data
         self.args_set = set()
         self.params_set = set()
+        self.inputs_set = set()
         self.returns_set = set()
         self.status_codes_set = set()
         self.reqheaders_set = set()
@@ -115,9 +120,24 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                                                     'type': field_data[1],
                                                     'doc': text})
                         self.params_set.add(field_data[2])
+                # Request data type
+                if (field_data[0] in self.request_json_array_roles or
+                        field_data[0] in self.request_json_object_roles):
+                    # array
+                    if field_data[0] in self.request_json_array_roles:
+                        self.data['input_type'] = 'array'
+                    # object
+                    else:
+                        self.data['input_type'] = 'object'
+                    # input object field
+                    if field_data[2] not in self.inputs_set:
+                        self.data['inputs'].append({'name': field_data[2],
+                                                    'type': field_data[1],
+                                                    'doc': text})
+                        self.inputs_set.add(field_data[2])
                 # Response type
-                if field_data[0] in self.response_json_array_roles or \
-                        field_data[0] in self.response_json_object_roles:
+                if (field_data[0] in self.response_json_array_roles or
+                        field_data[0] in self.response_json_object_roles):
                     # array
                     if field_data[0] in self.response_json_array_roles:
                         self.data['return_type'] = 'array'
@@ -347,6 +367,8 @@ def get_doc_data(f, route, noargs):
         'urls': [],
         'args': [],
         'params': [],
+        'input_type': '',
+        'inputs': [],
         'resheaders': [],
         'reqheaders': [],
         'return_type': '',
@@ -371,11 +393,22 @@ def get_doc_data(f, route, noargs):
     # sphinx extension, not needed and raise errors with sphinx >= 1.7)
     elif 'SWH_WEB_DOC_BUILD' not in os.environ:
         _parse_httpdomain_doc(f.__doc__, data)
-        # process returned object info for nicer html display
+        # process input/returned object info for nicer html display
+        inputs_list = ''
         returns_list = ''
+        for inp in data['inputs']:
+            # special case for array of non object type, for instance
+            # :<jsonarr string -: an array of string
+            if inp['name'] != '-':
+                inputs_list += ('\t* **%s (%s)**: %s\n' %
+                                (inp['name'], inp['type'], inp['doc']))
         for ret in data['returns']:
-            returns_list += '\t* **%s (%s)**: %s\n' %\
-                (ret['name'], ret['type'], ret['doc'])
+            # special case for array of non object type, for instance
+            # :>jsonarr string -: an array of string
+            if ret['name'] != '-':
+                returns_list += ('\t* **%s (%s)**: %s\n' %
+                                 (ret['name'], ret['type'], ret['doc']))
+        data['inputs_list'] = inputs_list
         data['returns_list'] = returns_list
 
     return data
