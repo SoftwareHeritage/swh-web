@@ -23,7 +23,8 @@ def api_resolve_swh_pid(request, swh_id):
 
         Resolve a Software Heritage persistent identifier.
 
-        Try to resolve a provided `persistent identifier <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`_
+        Try to resolve a provided `persistent identifier
+        <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`_
         into an url for browsing the pointed archive object. If the provided
         identifier is valid, the existence of the object in the archive
         will also be checked.
@@ -31,11 +32,13 @@ def api_resolve_swh_pid(request, swh_id):
         :param string swh_id: a Software Heritage persistent identifier
 
         :>json string browse_url: the url for browsing the pointed object
-        :>json object metadata: object holding optional parts of the persistent identifier
+        :>json object metadata: object holding optional parts of the
+            persistent identifier
         :>json string namespace: the persistent identifier namespace
         :>json string object_id: the hash identifier of the pointed object
         :>json string object_type: the type of the pointed object
-        :>json number scheme_version: the scheme version of the persistent identifier
+        :>json number scheme_version: the scheme version of the persistent
+            identifier
 
         {common_headers}
 
@@ -48,7 +51,7 @@ def api_resolve_swh_pid(request, swh_id):
         .. parsed-literal::
 
             :swh_web_api:`resolve/swh:1:rev:96db9023b881d7cd9f379b0c154650d6c108e9a3;origin=https://github.com/openssl/openssl/`
-    """  # noqa
+    """
     # try to resolve the provided pid
     swh_id_resolved = resolve_swh_persistent_id(swh_id)
     # id is well-formed, now check that the pointed
@@ -66,21 +69,33 @@ def api_resolve_swh_pid(request, swh_id):
 
 
 @api_route(r'/known/',
-           'api-1-swh-pid-known', methods=['POST'])
-@api_doc('/known/', tags=['hidden'])
+           'api-1-known', methods=['POST'])
+@api_doc('/known/')
 @format_docstring()
 def api_swh_pid_known(request):
     """
     .. http:post:: /api/1/known/
 
-        Check if a list of Software Heritage persistent identifier is present
-        in the archive depending on their id (sha1_git).
+        Check if a list of objects are present in the Software Heritage
+        archive.
 
-        Returns:
-            A dictionary with:
-                keys(str): Persistent identifier
-                values(dict): A dictionary containing the key 'known'. (true if
-                the pid is present, False otherwise)
+        The objects to check existence must be provided using Software Heritage
+        `persistent identifiers
+        <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`_.
+
+        :<jsonarr string -: input array of Software Heritage persistent
+            identifiers, its length can not exceed 1000.
+
+        :>json object <swh_pid>: an object whose keys are input persistent
+            identifiers and values objects with the following keys:
+
+                * **known (bool)**: whether the object was found
+
+        {common_headers}
+
+        :statuscode 200: no error
+        :statuscode 400: an invalid persistent identifier was provided
+        :statuscode 413: the input array of persistent identifiers is too large
 
     """
     limit = 1000

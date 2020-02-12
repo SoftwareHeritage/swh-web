@@ -109,7 +109,7 @@ def test_api_known_swhpid_some_present(api_client, content, directory):
     input_pids = [content_, directory_, unknown_revision_,
                   unknown_release_, unknown_snapshot_]
 
-    url = reverse('api-1-swh-pid-known')
+    url = reverse('api-1-known')
 
     resp = api_client.post(url, data=input_pids, format='json',
                            HTTP_ACCEPT='application/json')
@@ -129,7 +129,7 @@ def test_api_known_invalid_swhpid(api_client):
     invalid_pid_sha1 = ['swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13de;']
     invalid_pid_type = ['swh:1:cnn:8068d0075010b590762c6cb5682ed53cb3c13deb']
 
-    url = reverse('api-1-swh-pid-known')
+    url = reverse('api-1-known')
 
     resp = api_client.post(url, data=invalid_pid_sha1, format='json',
                            HTTP_ACCEPT='application/json')
@@ -149,7 +149,7 @@ def test_api_known_raises_large_payload_error(api_client):
 
     pids = [random_pid for i in range(limit)]
 
-    url = reverse('api-1-swh-pid-known')
+    url = reverse('api-1-known')
     resp = api_client.post(url, data=pids, format='json',
                            HTTP_ACCEPT='application/json')
 
