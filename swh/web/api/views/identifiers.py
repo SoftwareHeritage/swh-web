@@ -10,6 +10,7 @@ from swh.web.common.utils import (
 )
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
+from swh.web.common.exc import LargePayloadExc
 
 
 @api_route(r'/resolve/(?P<swh_id>.*)/',
@@ -84,6 +85,11 @@ def api_swh_pid_known(request):
                 the pid is present, False otherwise)
 
     """
+    limit = 1000
+    if len(request.data) > limit:
+        raise LargePayloadExc('The maximum number of PIDs this endpoint can '
+                              'receive is %s' % limit)
+
     persistent_ids = [get_persistent_identifier(pid)
                       for pid in request.data]
 

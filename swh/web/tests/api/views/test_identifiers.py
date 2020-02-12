@@ -140,3 +140,22 @@ def test_api_known_invalid_swhpid(api_client):
                             HTTP_ACCEPT='application/json')
 
     assert resp2.status_code == 400, resp.data
+
+
+def test_api_known_raises_large_payload_error(api_client):
+    random_pid = 'swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13deb'
+    limit = 10000
+    err_msg = 'The maximum number of PIDs this endpoint can receive is 1000'
+
+    pids = [random_pid for i in range(limit)]
+
+    url = reverse('api-1-swh-pid-known')
+    resp = api_client.post(url, data=pids, format='json',
+                           HTTP_ACCEPT='application/json')
+
+    assert resp.status_code == 413, resp.data
+    assert resp['Content-Type'] == 'application/json'
+    assert resp.data == {
+        'exception': 'LargePayloadExc',
+        'reason': err_msg
+    }

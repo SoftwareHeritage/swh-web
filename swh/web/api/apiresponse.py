@@ -13,7 +13,10 @@ from rest_framework.response import Response
 from swh.storage.exc import StorageDBError, StorageAPIError
 
 from swh.web.api import utils
-from swh.web.common.exc import NotFoundExc, ForbiddenExc, BadInputExc
+from swh.web.common.exc import (
+    NotFoundExc, ForbiddenExc,
+    BadInputExc, LargePayloadExc
+)
 from swh.web.common.utils import shorten_path, gen_path_info
 from swh.web.config import get_config
 
@@ -165,6 +168,8 @@ def error_response(request, error, doc_data):
         error_code = 404
     elif isinstance(error, ForbiddenExc):
         error_code = 403
+    elif isinstance(error, LargePayloadExc):
+        error_code = 413
     elif isinstance(error, StorageDBError):
         error_code = 503
     elif isinstance(error, StorageAPIError):

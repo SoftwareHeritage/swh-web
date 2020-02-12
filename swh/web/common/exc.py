@@ -44,11 +44,21 @@ class ForbiddenExc(Exception):
     pass
 
 
+class LargePayloadExc(Exception):
+    """The input size is too large.
+
+    Example: Asking to resolve 10000 persistent identifier when the limit
+    is 1000.
+    """
+    pass
+
+
 http_status_code_message = {
     400: 'Bad Request',
     401: 'Unauthorized',
     403: 'Access Denied',
     404: 'Resource not found',
+    413: 'Payload Too Large',
     500: 'Internal Server Error',
     501: 'Not Implemented',
     502: 'Bad Gateway',
