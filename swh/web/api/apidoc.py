@@ -3,14 +3,17 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import docutils.nodes
-import docutils.parsers.rst
-import docutils.utils
+
 import functools
 from functools import wraps
 import os
 import re
 import textwrap
+from typing import List
+
+import docutils.nodes
+import docutils.parsers.rst
+import docutils.utils
 
 from rest_framework.decorators import api_view
 import sentry_sdk
@@ -253,59 +256,61 @@ class APIDocException(Exception):
     """
 
 
-def api_doc(route, noargs=False, need_params=False, tags=[],
-            handle_response=False, api_version='1'):
+def api_doc(route: str, noargs: bool = False, need_params: bool = False,
+            tags: List[str] = [], handle_response: bool = False,
+            api_version: str = '1'):
     """
-    Decorate an API function to register it in the API doc route index
-    and create the corresponding DRF route.
+    Decorator for an API endpoint implementation used to generate a dedicated
+    view displaying its HTML documentation.
+
+    The documentation will be generated from the endpoint docstring based on
+    sphinxcontrib-httpdomain format.
 
     Args:
-        route (str): documentation page's route
-        noargs (boolean): set to True if the route has no arguments, and its
+        route: documentation page's route
+        noargs: set to True if the route has no arguments, and its
             result should be displayed anytime its documentation
             is requested. Default to False
-        need_params (boolean): specify the route requires query parameters
+        need_params: specify the route requires query parameters
             otherwise errors will occur. It enables to avoid displaying the
             invalid response in its HTML documentation. Default to False.
-        tags (list): Further information on api endpoints. Two values are
+        tags: Further information on api endpoints. Two values are
             possibly expected:
 
                 * hidden: remove the entry points from the listing
                 * upcoming: display the entry point but it is not followable
 
-        handle_response (boolean): indicate if the decorated function takes
+        handle_response: indicate if the decorated function takes
             care of creating the HTTP response or delegates that task to the
             apiresponse module
-        api_version (str): api version string
-
+        api_version: api version string
     """
-    urlpattern = '^' + api_version + route + '$'
-    tags = set(tags)
+
+    tags_set = set(tags)
 
     # @api_doc() Decorator call
     def decorator(f):
-
-        # If the route is not hidden, add it to the index
-        if 'hidden' not in tags:
+        # if the route is not hidden, add it to the index
+        if 'hidden' not in tags_set:
             doc_data = get_doc_data(f, route, noargs)
             doc_desc = doc_data['description']
             first_dot_pos = doc_desc.find('.')
-            APIUrls.add_route(route, doc_desc[:first_dot_pos+1],
-                              tags=tags)
+            APIUrls.add_doc_route(route, doc_desc[:first_dot_pos+1],
+                                  noargs=noargs, api_version=api_version,
+                                  tags=tags_set)
 
-        # If the decorated route has arguments, we create a specific
-        # documentation view
-        if not noargs:
+        # create a dedicated view to display endpoint HTML doc
+        @api_view(['GET', 'HEAD'])
+        @wraps(f)
+        def doc_view(request):
+            doc_data = get_doc_data(f, route, noargs)
+            return make_api_response(request, None, doc_data)
 
-            @api_view(['GET', 'HEAD'])
-            @wraps(f)
-            def doc_view(request):
-                doc_data = get_doc_data(f, route, noargs)
-                return make_api_response(request, None, doc_data)
+        route_name = '%s-doc' % route[1:-1].replace('/', '-')
+        urlpattern = f'^{api_version}{route}doc/$'
 
-            view_name = 'api-%s-%s' % \
-                (api_version, route[1:-1].replace('/', '-'))
-            APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
+        view_name = 'api-%s-%s' % (api_version, route_name)
+        APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
 
         @wraps(f)
         def documented_view(request, **kwargs):

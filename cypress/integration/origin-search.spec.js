@@ -105,12 +105,12 @@ describe('Test origin-search', function() {
 
     cy.route({
       method: 'GET',
-      url: `${this.Urls.api_1_resolve()}**`
+      url: `${this.Urls.api_1_resolve_swh_pid('').slice(0, -1)}**`
     }).as('resolvePid');
 
     cy.route({
       method: 'GET',
-      url: `${this.Urls.api_1_origin_search()}**`
+      url: `${this.Urls.api_1_origin_search(origin.url)}**`
     }).as('searchOrigin');
 
     cy.get('#origins-url-patterns')
@@ -376,12 +376,12 @@ describe('Test origin-search', function() {
 
       cy.route({
         method: 'GET',
-        url: `${this.Urls.api_1_resolve()}**`
+        url: this.Urls.api_1_resolve_swh_pid(persistentId)
       }).as('resolvePid');
 
       cy.route({
         method: 'GET',
-        url: `${this.Urls.api_1_origin_search()}**`
+        url: `${this.Urls.api_1_origin_search('').slice(0, -1)}**`
       }).as('searchOrigin');
 
       cy.get('#origins-url-patterns')

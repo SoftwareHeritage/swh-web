@@ -12,6 +12,7 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 from swh.web.api.apidoc import api_doc, _parse_httpdomain_doc
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
+from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_template_used
 
 
@@ -84,7 +85,7 @@ def test_apidoc_nodoc_failure():
 
 
 @api_route(r'/some/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',
-           'some-doc-route')
+           'api-1-some-doc-route')
 @api_doc('/some/doc/route/')
 def apidoc_route(request, myarg, myotherarg, akw=0):
     """
@@ -92,23 +93,23 @@ def apidoc_route(request, myarg, myotherarg, akw=0):
     """
     return {'result': int(myarg) + int(myotherarg) + akw}
 
-# remove deprecation warnings related to docutils
-@pytest.mark.filterwarnings(
-    'ignore:.*U.*mode is deprecated:DeprecationWarning')
+
 def test_apidoc_route_doc(client):
-    rv = client.get('/api/1/some/doc/route/', HTTP_ACCEPT='text/html')
+    url = reverse('api-1-some-doc-route-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
 
     assert rv.status_code == 200, rv.content
     assert_template_used(rv, 'api/apidoc.html')
 
 
 def test_apidoc_route_fn(api_client):
-    rv = api_client.get('/api/1/some/1/1/')
-
+    url = reverse('api-1-some-doc-route',
+                  url_args={'myarg': 1, 'myotherarg': 1})
+    rv = api_client.get(url)
     assert rv.status_code == 200, rv.data
 
 
-@api_route(r'/test/error/(?P<exc_name>.+)/', 'test-error')
+@api_route(r'/test/error/(?P<exc_name>.+)/', 'api-1-test-error')
 @api_doc('/test/error/')
 def apidoc_test_error_route(request, exc_name):
     """
@@ -121,13 +122,15 @@ def apidoc_test_error_route(request, exc_name):
 
 def test_apidoc_error(api_client):
     for exc, code in exception_http_code.items():
-        rv = api_client.get('/api/1/test/error/%s/' % exc.__name__)
+        url = reverse('api-1-test-error',
+                      url_args={'exc_name': exc.__name__})
+        rv = api_client.get(url)
 
         assert rv.status_code == code, rv.data
 
 
 @api_route(r'/some/full/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',
-           'some-complete-doc-route')
+           'api-1-some-complete-doc-route')
 @api_doc('/some/complete/doc/route/')
 def apidoc_full_stack(request, myarg, myotherarg, akw=0):
     """
@@ -136,19 +139,38 @@ def apidoc_full_stack(request, myarg, myotherarg, akw=0):
     return {'result': int(myarg) + int(myotherarg) + akw}
 
 
-# remove deprecation warnings related to docutils
-@pytest.mark.filterwarnings(
-    'ignore:.*U.*mode is deprecated:DeprecationWarning')
 def test_apidoc_full_stack_doc(client):
-    rv = client.get('/api/1/some/complete/doc/route/', HTTP_ACCEPT='text/html')
+    url = reverse('api-1-some-complete-doc-route-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
     assert rv.status_code == 200, rv.content
     assert_template_used(rv, 'api/apidoc.html')
 
 
 def test_apidoc_full_stack_fn(api_client):
-    rv = api_client.get('/api/1/some/full/1/1/')
+    url = reverse('api-1-some-complete-doc-route',
+                  url_args={'myarg': 1, 'myotherarg': 1})
+    rv = api_client.get(url)
 
     assert rv.status_code == 200, rv.data
+
+
+@api_route(r'/test/post/only/', 'api-1-test-post-only',
+           methods=['POST'])
+@api_doc('/test/post/only/')
+def apidoc_test_post_only(request, exc_name):
+    """
+    Sample doc
+    """
+    return {'result': 'some data'}
+
+
+def test_apidoc_post_only(client):
+    # a dedicated view accepting GET requests should have
+    # been created to display the HTML documentation
+    url = reverse('api-1-test-post-only-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
+    assert rv.status_code == 200, rv.content
+    assert_template_used(rv, 'api/apidoc.html')
 
 
 def test_api_doc_parse_httpdomain():

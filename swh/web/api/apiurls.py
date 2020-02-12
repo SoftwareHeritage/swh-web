@@ -30,13 +30,18 @@ class APIUrls(UrlsIndex):
         return cls._apidoc_routes
 
     @classmethod
-    def add_route(cls, route, docstring, **kwargs):
+    def add_doc_route(cls, route, docstring, noargs=False,
+                      api_version='1', **kwargs):
         """
         Add a route to the self-documenting API reference
         """
-        route_view_name = 'api-1-%s' % route[1:-1].replace('/', '-')
+        route_name = route[1:-1].replace('/', '-')
+        if not noargs:
+            route_name = '%s-doc' % route_name
+        route_view_name = 'api-%s-%s' % (api_version, route_name)
         if route not in cls._apidoc_routes:
             d = {'docstring': docstring,
+                 'route': '/api/%s%s' % (api_version, route),
                  'route_view_name': route_view_name}
             for k, v in kwargs.items():
                 d[k] = v

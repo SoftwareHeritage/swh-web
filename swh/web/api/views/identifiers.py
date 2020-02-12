@@ -69,7 +69,7 @@ def api_resolve_swh_pid(request, swh_id):
 
 @api_route(r'/known/',
            'api-1-swh-pid-known', methods=['POST'])
-@api_doc('/known/', noargs=True, tags=['hidden'])
+@api_doc('/known/', tags=['hidden'])
 @format_docstring()
 def api_swh_pid_known(request):
     """

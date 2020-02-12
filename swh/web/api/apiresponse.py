@@ -138,8 +138,13 @@ def make_api_response(request, data, doc_data={}, options={}):
         doc_env['response_data'] = data
         doc_env['heading'] = shorten_path(str(request.path))
 
+        # generate breadcrumbs data
         if 'route' in doc_env:
             doc_env['endpoint_path'] = gen_path_info(doc_env['route'])
+            for i in range(len(doc_env['endpoint_path']) - 1):
+                doc_env['endpoint_path'][i]['path'] += '/doc/'
+            if not doc_env['noargs']:
+                doc_env['endpoint_path'][-1]['path'] += '/doc/'
 
         response_args['data'] = doc_env
         response_args['template_name'] = 'api/apidoc.html'
