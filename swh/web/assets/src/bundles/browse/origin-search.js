@@ -95,7 +95,7 @@ function searchOriginsFirst(searchQueryText, limit) {
   }
 
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-  let searchUrl = baseSearchUrl + `?limit=${limit}&with_visit=${withVisit}`;
+  let searchUrl = baseSearchUrl + `&limit=${limit}&with_visit=${withVisit}`;
   searchOrigins(searchUrl);
 }
 
