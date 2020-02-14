@@ -91,7 +91,7 @@ function searchOriginsFirst(searchQueryText, limit) {
   if (searchMetadata) {
     baseSearchUrl = Urls.api_1_origin_metadata_search() + '?fulltext=' + encodeURIComponent(searchQueryText);
   } else {
-    baseSearchUrl = Urls.api_1_origin_search(searchQueryText);
+    baseSearchUrl = Urls.api_1_origin_search(searchQueryText) + '?';
   }
 
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
