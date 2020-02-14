@@ -59,8 +59,6 @@ _httpdomain_doc = """
         about it
     :>json string type: the type of the revision
 
-    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`
-
     :statuscode 200: no error
     :statuscode 400: an invalid **sha1_git** value has been provided
     :statuscode 404: requested revision can not be found in the archive
@@ -199,7 +197,7 @@ def test_api_doc_parse_httpdomain():
 
     expected_urls = [{
         'rule': '/api/1/revision/ **\\(sha1_git\\)** /',
-        'methods': ['GET', 'HEAD']
+        'methods': ['GET', 'HEAD', 'OPTIONS']
     }]
 
     assert 'urls' in doc_data

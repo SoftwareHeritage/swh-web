@@ -94,9 +94,6 @@ def api_revision(request, sha1_git):
 
         {return_revision}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
         :statuscode 404: requested revision can not be found in the archive
@@ -156,9 +153,6 @@ def api_revision_directory(request, sha1_git,
         :>json string revision: the unique revision identifier
         :>json string type: the type of the directory
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
         :statuscode 404: requested revision can not be found in the archive
@@ -197,9 +191,6 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
         {resheader_link}
 
         {return_revision_array}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided

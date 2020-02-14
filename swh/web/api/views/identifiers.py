@@ -39,8 +39,6 @@ def api_resolve_swh_pid(request, swh_id):
 
         {common_headers}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid persistent identifier has been provided
         :statuscode 404: the pointed object does not exist in the archive

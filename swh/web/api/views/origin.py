@@ -75,9 +75,6 @@ def api_origins(request):
         {common_headers}
         {resheader_link}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
 
         **Example:**
@@ -121,9 +118,6 @@ def api_origin(request, origin_url):
         {return_origin}
 
         {common_headers}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: requested origin can not be found in the archive
@@ -178,9 +172,6 @@ def api_origin_search(request, url_pattern):
 
         {common_headers}
         {resheader_link}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
 
@@ -241,9 +232,6 @@ def api_origin_metadata_search(request):
 
         {common_headers}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
 
         **Example:**
@@ -289,9 +277,6 @@ def api_origin_visits(request, origin_url):
         {resheader_link}
 
         {return_origin_visit_array}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: requested origin can not be found in the archive
@@ -377,9 +362,6 @@ def api_origin_visit_latest(request, origin_url=None):
 
         {return_origin_visit}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 404: requested origin or visit can not be found in the
             archive
@@ -419,9 +401,6 @@ def api_origin_visit(request, visit_id, origin_url):
 
         {return_origin_visit}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 404: requested origin or visit can not be found in the
             archive
@@ -457,9 +436,6 @@ def api_origin_intrinsic_metadata(request, origin_url):
         :>json string ???: intrinsic metadata field of the origin
 
         {common_headers}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 404: requested origin can not be found in the archive

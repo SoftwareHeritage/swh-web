@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-
+from collections import defaultdict
 import functools
 from functools import wraps
 import os
@@ -50,10 +50,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 
     status_code_roles = ('statuscode', 'status', 'code')
 
-    def __init__(self, document, urls, data):
+    def __init__(self, document, data):
         super().__init__(document)
-        self.urls = urls
-        self.url_idx = 0
         self.data = data
         self.args_set = set()
         self.params_set = set()
@@ -192,15 +190,6 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                     text not in self.data['description']):
                 self.data['description'] += '\n\n' if self.data['description'] else '' # noqa
                 self.data['description'] += text
-            # http methods
-            elif text.startswith('**Allowed HTTP Methods:**'):
-                text = text.replace('**Allowed HTTP Methods:**', '')
-                http_methods = text.strip().split(',')
-                http_methods = [m[m.find('`')+1:-1].upper()
-                                for m in http_methods]
-                self.data['urls'].append({'rule': self.urls[self.url_idx],
-                                          'methods': http_methods})
-                self.url_idx += 1
 
     def visit_literal_block(self, node):
         """
@@ -243,17 +232,6 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     def unknown_visit(self, node):
         pass
 
-    def depart_document(self, node):
-        """
-        End of parsing extra processing
-        """
-        default_methods = ['GET', 'HEAD', 'OPTIONS']
-        # ensure urls info is present and set default http methods
-        if not self.data['urls']:
-            for url in self.urls:
-                self.data['urls'].append({'rule': url,
-                                          'methods': default_methods})
-
     def unknown_departure(self, node):
         pass
 
@@ -261,7 +239,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 def _parse_httpdomain_doc(doc, data):
     doc_lines = doc.split('\n')
     doc_lines_filtered = []
-    urls = []
+    urls = defaultdict(list)
+    default_http_methods = ['HEAD', 'OPTIONS']
     # httpdomain is a sphinx extension that is unknown to docutils but
     # fortunately we can still parse its directives' content,
     # so remove lines with httpdomain directives before executing the
@@ -273,7 +252,12 @@ def _parse_httpdomain_doc(doc, data):
             url = doc_line[doc_line.find('/'):]
             # emphasize url arguments for html rendering
             url = re.sub(r'\((\w+)\)', r' **\(\1\)** ', url)
-            urls.append(url)
+            method = re.search(r'http:(\w+)::', doc_line).group(1)
+            urls[url].append(method.upper())
+
+    for url, methods in urls.items():
+        data['urls'].append({'rule': url,
+                             'methods': methods + default_http_methods})
     # parse the rst docstring and do not print system messages about
     # unknown httpdomain roles
     document = parse_rst('\n'.join(doc_lines_filtered), report_level=5)
@@ -281,7 +265,7 @@ def _parse_httpdomain_doc(doc, data):
     for node in document.traverse(docutils.nodes.system_message):
         node.parent.remove(node)
     # visit the document nodes to extract relevant endpoint info
-    visitor = _HTTPDomainDocVisitor(document, urls, data)
+    visitor = _HTTPDomainDocVisitor(document, data)
     document.walkabout(visitor)
 
 
