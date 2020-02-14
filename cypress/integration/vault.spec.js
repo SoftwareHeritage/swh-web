@@ -404,4 +404,24 @@ describe('Vault Cooking User Interface Tests', function() {
 
   });
 
+  it('should offer to recook an object if previous vault task failed', function() {
+
+    cy.visit(this.directoryUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // the last cooking of the directory tarball has failed
+    cy.route({
+      method: 'GET',
+      url: this.vaultDirectoryUrl,
+      response: this.genVaultDirCookingResponse('failed')
+    }).as('checkVaultCookingTask');
+
+    checkVaultCookingTask('as tarball');
+
+    // Check that recooking the directory is offered to user
+    cy.get('.modal-dialog')
+      .contains('button:visible', 'Ok')
+      .should('be.visible');
+  });
+
 });
