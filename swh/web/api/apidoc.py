@@ -78,8 +78,12 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         par = par.replace('</strong>', '**')
         par = par.replace('<literal>', '``')
         par = par.replace('</literal>', '``')
-        # remove parsed document markups
-        par = re.sub('<[^<]+?>', '', par)
+        # keep links to web pages
+        if '<reference' in par:
+            par = re.sub(r'<reference name="(.*)" refuri="(.*)".*</reference>',
+                         r'`\1 <\2>`_', par)
+        # remove parsed document markups but keep rst links
+        par = re.sub(r'<[^<]+?>(?!`_)', '', par)
         # api urls cleanup to generate valid links afterwards
         subs_made = 1
         while subs_made:
@@ -88,8 +92,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         while subs_made:
             (par, subs_made) = re.subn(r'(:http:.*)(\[.*\])', r'\1', par)
         par = par.replace('//', '/')
-        # transform references to api endpoints into valid rst links
-        par = re.sub(':http:get:`([^,]*)`', r'`<\1>`_', par)
+        # transform references to api endpoints doc into valid rst links
+        par = re.sub(':http:get:`([^,`]*)`', r'`\1 <\1doc/>`_', par)
         # transform references to some elements into bold text
         par = re.sub(':http:header:`(.*)`', r'**\1**', par)
         par = re.sub(':func:`(.*)`', r'**\1**', par)

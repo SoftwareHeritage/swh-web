@@ -322,8 +322,9 @@ def test_api_doc_parse_httpdomain():
         {
             'name': 'directory_url',
             'type': 'string',
-            'doc': ('link to `</api/1/directory/>`_ to get information about '
-                    'the directory associated to the revision')
+            'doc': ('link to `/api/1/directory/ </api/1/directory/doc/>`_ '
+                    'to get information about the directory associated to '
+                    'the revision')
         },
         {
             'name': 'id',
@@ -346,8 +347,8 @@ def test_api_doc_parse_httpdomain():
             'doc': ('the parents of the revision, i.e. the previous revisions '
                     'that head directly to it, each entry of that array '
                     'contains an unique parent revision identifier but also a '
-                    'link to `</api/1/revision/>`_ to get more information '
-                    'about it')
+                    'link to `/api/1/revision/ </api/1/revision/doc/>`_ '
+                    'to get more information about it')
         },
         {
             'name': 'type',
@@ -450,3 +451,49 @@ def test_apidoc_input_output_doc(client):
 
     assert input_html_doc in html
     assert output_html_doc in html
+
+
+@api_route(r'/endpoint/links/in/doc/', 'api-1-endpoint-links-in-doc')
+@api_doc('/endpoint/links/in/doc/')
+def apidoc_test_endpoint_with_links_in_doc(request):
+    """
+    .. http:get:: /api/1/post/endpoint/
+
+        Endpoint documentation with links to
+        :http:get:`/api/1/content/[(hash_type):](hash)/`,
+        :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
+        and `archive <https://archive.softwareheritage.org>`_.
+    """
+    pass
+
+
+def test_apidoc_with_links(client):
+    url = reverse('api-1-endpoint-links-in-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
+    assert rv.status_code == 200, rv.content
+    assert_template_used(rv, 'api/apidoc.html')
+
+    html = prettify_html(rv.content)
+
+    first_link = textwrap.indent((
+        '<a class="reference external" href="/api/1/content/doc/">\n'
+        ' /api/1/content/\n'
+        '</a>'
+    ), ' '*9)
+
+    second_link = textwrap.indent((
+        '<a class="reference external" href="/api/1/directory/doc/">\n'
+        ' /api/1/directory/\n'
+        '</a>'
+    ), ' '*9)
+
+    third_link = textwrap.indent((
+        '<a class="reference external" '
+        'href="https:/archive.softwareheritage.org">\n'
+        ' archive\n'
+        '</a>'
+    ), ' '*9)
+
+    assert first_link in html
+    assert second_link in html
+    assert third_link in html
