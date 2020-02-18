@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import textwrap
+
 import pytest
 
 from rest_framework.response import Response
@@ -12,10 +14,11 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 from swh.web.api.apidoc import api_doc, _parse_httpdomain_doc
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
+from swh.web.common.utils import reverse, prettify_html
 from swh.web.tests.django_asserts import assert_template_used
 
 
-httpdomain_doc = """
+_httpdomain_doc = """
 .. http:get:: /api/1/revision/(sha1_git)/
 
     Get information about a revision in the archive.
@@ -31,6 +34,10 @@ httpdomain_doc = """
         either ``application/json`` (default) or ``application/yaml``
     :resheader Content-Type: this depends on :http:header:`Accept` header
         of request
+
+    :<json int n: sample input integer
+    :<json string s: sample input string
+    :<json array a: sample input array
 
     :>json object author: information about the author of the revision
     :>json object committer: information about the committer of the revision
@@ -52,8 +59,6 @@ httpdomain_doc = """
         about it
     :>json string type: the type of the revision
 
-    **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`
-
     :statuscode 200: no error
     :statuscode 400: an invalid **sha1_git** value has been provided
     :statuscode 404: requested revision can not be found in the archive
@@ -66,7 +71,7 @@ httpdomain_doc = """
 """
 
 
-exception_http_code = {
+_exception_http_code = {
     BadInputExc: 400,
     ForbiddenExc: 403,
     NotFoundExc: 404,
@@ -84,7 +89,7 @@ def test_apidoc_nodoc_failure():
 
 
 @api_route(r'/some/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',
-           'some-doc-route')
+           'api-1-some-doc-route')
 @api_doc('/some/doc/route/')
 def apidoc_route(request, myarg, myotherarg, akw=0):
     """
@@ -92,42 +97,44 @@ def apidoc_route(request, myarg, myotherarg, akw=0):
     """
     return {'result': int(myarg) + int(myotherarg) + akw}
 
-# remove deprecation warnings related to docutils
-@pytest.mark.filterwarnings(
-    'ignore:.*U.*mode is deprecated:DeprecationWarning')
+
 def test_apidoc_route_doc(client):
-    rv = client.get('/api/1/some/doc/route/', HTTP_ACCEPT='text/html')
+    url = reverse('api-1-some-doc-route-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
 
     assert rv.status_code == 200, rv.content
     assert_template_used(rv, 'api/apidoc.html')
 
 
 def test_apidoc_route_fn(api_client):
-    rv = api_client.get('/api/1/some/1/1/')
-
+    url = reverse('api-1-some-doc-route',
+                  url_args={'myarg': 1, 'myotherarg': 1})
+    rv = api_client.get(url)
     assert rv.status_code == 200, rv.data
 
 
-@api_route(r'/test/error/(?P<exc_name>.+)/', 'test-error')
+@api_route(r'/test/error/(?P<exc_name>.+)/', 'api-1-test-error')
 @api_doc('/test/error/')
 def apidoc_test_error_route(request, exc_name):
     """
     Sample doc
     """
-    for e in exception_http_code.keys():
+    for e in _exception_http_code.keys():
         if e.__name__ == exc_name:
             raise e('Error')
 
 
 def test_apidoc_error(api_client):
-    for exc, code in exception_http_code.items():
-        rv = api_client.get('/api/1/test/error/%s/' % exc.__name__)
+    for exc, code in _exception_http_code.items():
+        url = reverse('api-1-test-error',
+                      url_args={'exc_name': exc.__name__})
+        rv = api_client.get(url)
 
         assert rv.status_code == code, rv.data
 
 
 @api_route(r'/some/full/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/',
-           'some-complete-doc-route')
+           'api-1-some-complete-doc-route')
 @api_doc('/some/complete/doc/route/')
 def apidoc_full_stack(request, myarg, myotherarg, akw=0):
     """
@@ -136,19 +143,38 @@ def apidoc_full_stack(request, myarg, myotherarg, akw=0):
     return {'result': int(myarg) + int(myotherarg) + akw}
 
 
-# remove deprecation warnings related to docutils
-@pytest.mark.filterwarnings(
-    'ignore:.*U.*mode is deprecated:DeprecationWarning')
 def test_apidoc_full_stack_doc(client):
-    rv = client.get('/api/1/some/complete/doc/route/', HTTP_ACCEPT='text/html')
+    url = reverse('api-1-some-complete-doc-route-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
     assert rv.status_code == 200, rv.content
     assert_template_used(rv, 'api/apidoc.html')
 
 
 def test_apidoc_full_stack_fn(api_client):
-    rv = api_client.get('/api/1/some/full/1/1/')
+    url = reverse('api-1-some-complete-doc-route',
+                  url_args={'myarg': 1, 'myotherarg': 1})
+    rv = api_client.get(url)
 
     assert rv.status_code == 200, rv.data
+
+
+@api_route(r'/test/post/only/', 'api-1-test-post-only',
+           methods=['POST'])
+@api_doc('/test/post/only/')
+def apidoc_test_post_only(request, exc_name):
+    """
+    Sample doc
+    """
+    return {'result': 'some data'}
+
+
+def test_apidoc_post_only(client):
+    # a dedicated view accepting GET requests should have
+    # been created to display the HTML documentation
+    url = reverse('api-1-test-post-only-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
+    assert rv.status_code == 200, rv.content
+    assert_template_used(rv, 'api/apidoc.html')
 
 
 def test_api_doc_parse_httpdomain():
@@ -159,17 +185,19 @@ def test_api_doc_parse_httpdomain():
         'params': [],
         'resheaders': [],
         'reqheaders': [],
+        'input_type': '',
+        'inputs': [],
         'return_type': '',
         'returns': [],
         'status_codes': [],
         'examples': []
     }
 
-    _parse_httpdomain_doc(httpdomain_doc, doc_data)
+    _parse_httpdomain_doc(_httpdomain_doc, doc_data)
 
     expected_urls = [{
         'rule': '/api/1/revision/ **\\(sha1_git\\)** /',
-        'methods': ['GET', 'HEAD']
+        'methods': ['GET', 'HEAD', 'OPTIONS']
     }]
 
     assert 'urls' in doc_data
@@ -201,7 +229,7 @@ def test_api_doc_parse_httpdomain():
 
     expected_reqheaders = [{
         'doc': ('the requested response content type, either '
-                '``application/json``  or ``application/yaml``'),
+                '``application/json`` (default) or ``application/yaml``'),
         'name': 'Accept'
     }]
 
@@ -234,10 +262,36 @@ def test_api_doc_parse_httpdomain():
     assert 'status_codes' in doc_data
     assert doc_data['status_codes'] == expected_statuscodes
 
+    expected_input_type = 'object'
+
+    assert 'input_type' in doc_data
+    assert doc_data['input_type'] == expected_input_type
+
+    expected_inputs = [
+        {
+            'name': 'n',
+            'type': 'int',
+            'doc': 'sample input integer'
+        },
+        {
+            'name': 's',
+            'type': 'string',
+            'doc': 'sample input string'
+        },
+        {
+            'name': 'a',
+            'type': 'array',
+            'doc': 'sample input array'
+        },
+    ]
+
+    assert 'inputs' in doc_data
+    assert doc_data['inputs'] == expected_inputs
+
     expected_return_type = 'object'
 
     assert 'return_type' in doc_data
-    assert doc_data['return_type'] in expected_return_type
+    assert doc_data['return_type'] == expected_return_type
 
     expected_returns = [
         {
@@ -268,8 +322,9 @@ def test_api_doc_parse_httpdomain():
         {
             'name': 'directory_url',
             'type': 'string',
-            'doc': ('link to `</api/1/directory/>`_ to get information about '
-                    'the directory associated to the revision')
+            'doc': ('link to `/api/1/directory/ </api/1/directory/doc/>`_ '
+                    'to get information about the directory associated to '
+                    'the revision')
         },
         {
             'name': 'id',
@@ -292,8 +347,8 @@ def test_api_doc_parse_httpdomain():
             'doc': ('the parents of the revision, i.e. the previous revisions '
                     'that head directly to it, each entry of that array '
                     'contains an unique parent revision identifier but also a '
-                    'link to `</api/1/revision/>`_ to get more information '
-                    'about it')
+                    'link to `/api/1/revision/ </api/1/revision/doc/>`_ '
+                    'to get more information about it')
         },
         {
             'name': 'type',
@@ -311,3 +366,134 @@ def test_api_doc_parse_httpdomain():
 
     assert 'examples' in doc_data
     assert doc_data['examples'] == expected_examples
+
+
+@api_route(r'/post/endpoint/', 'api-1-post-endpoint',
+           methods=['POST'])
+@api_doc('/post/endpoint/')
+def apidoc_test_post_endpoint(request):
+    """
+    .. http:post:: /api/1/post/endpoint/
+
+        Endpoint documentation
+
+        :<jsonarr string -: Input array of pids
+
+        :>json object <swh_pid>: an object whose keys are input persistent
+            identifiers and values objects with the following keys:
+
+                * **known (bool)**: whether the object was found
+
+    """
+    pass
+
+
+def test_apidoc_input_output_doc(client):
+    url = reverse('api-1-post-endpoint-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
+    assert rv.status_code == 200, rv.content
+    assert_template_used(rv, 'api/apidoc.html')
+
+    input_html_doc = textwrap.indent((
+        '<dl class="row">\n'
+        ' <dt class="col col-md-2 text-right">\n'
+        '  array\n'
+        ' </dt>\n'
+        ' <dd class="col col-md-9">\n'
+        '  <p>\n'
+        '   Input array of pids\n'
+        '  </p>\n'
+        ' </dd>\n'
+        '</dl>\n'
+    ), ' '*7)
+
+    output_html_doc = textwrap.indent((
+        '<dl class="row">\n'
+        ' <dt class="col col-md-2 text-right">\n'
+        '  object\n'
+        ' </dt>\n'
+        ' <dd class="col col-md-9">\n'
+        '  <p>\n'
+        '   an object containing the following keys:\n'
+        '  </p>\n'
+        '  <div class="swh-rst">\n'
+        '   <blockquote>\n'
+        '    <ul>\n'
+        '     <li>\n'
+        '      <p>\n'
+        '       <strong>\n'
+        '        &lt;swh_pid&gt; (object)\n'
+        '       </strong>\n'
+        '       : an object whose keys are input persistent identifiers'
+        ' and values objects with the following keys:\n'
+        '      </p>\n'
+        '      <blockquote>\n'
+        '       <ul class="simple">\n'
+        '        <li>\n'
+        '         <p>\n'
+        '          <strong>\n'
+        '           known (bool)\n'
+        '          </strong>\n'
+        '          : whether the object was found\n'
+        '         </p>\n'
+        '        </li>\n'
+        '       </ul>\n'
+        '      </blockquote>\n'
+        '     </li>\n'
+        '    </ul>\n'
+        '   </blockquote>\n'
+        '  </div>\n'
+        ' </dd>\n'
+        '</dl>\n'
+    ), ' '*7)
+
+    html = prettify_html(rv.content)
+
+    assert input_html_doc in html
+    assert output_html_doc in html
+
+
+@api_route(r'/endpoint/links/in/doc/', 'api-1-endpoint-links-in-doc')
+@api_doc('/endpoint/links/in/doc/')
+def apidoc_test_endpoint_with_links_in_doc(request):
+    """
+    .. http:get:: /api/1/post/endpoint/
+
+        Endpoint documentation with links to
+        :http:get:`/api/1/content/[(hash_type):](hash)/`,
+        :http:get:`/api/1/directory/(sha1_git)/[(path)/]`
+        and `archive <https://archive.softwareheritage.org>`_.
+    """
+    pass
+
+
+def test_apidoc_with_links(client):
+    url = reverse('api-1-endpoint-links-in-doc')
+    rv = client.get(url, HTTP_ACCEPT='text/html')
+    assert rv.status_code == 200, rv.content
+    assert_template_used(rv, 'api/apidoc.html')
+
+    html = prettify_html(rv.content)
+
+    first_link = textwrap.indent((
+        '<a class="reference external" href="/api/1/content/doc/">\n'
+        ' /api/1/content/\n'
+        '</a>'
+    ), ' '*9)
+
+    second_link = textwrap.indent((
+        '<a class="reference external" href="/api/1/directory/doc/">\n'
+        ' /api/1/directory/\n'
+        '</a>'
+    ), ' '*9)
+
+    third_link = textwrap.indent((
+        '<a class="reference external" '
+        'href="https:/archive.softwareheritage.org">\n'
+        ' archive\n'
+        '</a>'
+    ), ' '*9)
+
+    assert first_link in html
+    assert second_link in html
+    assert third_link in html

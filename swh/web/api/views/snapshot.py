@@ -54,9 +54,6 @@ def api_snapshot(request, snapshot_id):
             given but also a link to get information about that target
         :>json string id: the unique identifier of the snapshot
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid snapshot identifier has been provided
         :statuscode 404: requested snapshot can not be found in the archive

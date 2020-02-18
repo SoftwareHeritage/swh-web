@@ -209,6 +209,17 @@ function checkVaultCookingTasks() {
     .catch(() => {});
 }
 
+export function removeCookingTaskInfo(tasksToRemove) {
+  let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+  if (!vaultCookingTasks) {
+    return;
+  }
+  vaultCookingTasks = $.grep(vaultCookingTasks, task => {
+    return $.inArray(task.object_id, tasksToRemove) === -1;
+  });
+  localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
+}
+
 export function initUi() {
 
   $('#vault-tasks-toggle-selection').change(event => {
@@ -226,11 +237,7 @@ export function initUi() {
         $(row).remove();
       }
     });
-    let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
-    vaultCookingTasks = $.grep(vaultCookingTasks, task => {
-      return $.inArray(task.object_id, tasksToRemove) === -1;
-    });
-    localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
+    removeCookingTaskInfo(tasksToRemove);
     $('#vault-tasks-toggle-selection').prop('checked', false);
     checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
   });

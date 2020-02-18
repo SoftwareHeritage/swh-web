@@ -6,8 +6,6 @@
 import json
 import re
 
-from inspect import cleandoc
-
 from django import template
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
@@ -21,12 +19,12 @@ register = template.Library()
 
 
 @register.filter
-def safe_docstring_display(docstring):
+def docstring_display(docstring):
     """
     Utility function to htmlize reST-formatted documentation in browsable
     api.
     """
-    return rst_to_html(cleandoc(docstring))
+    return rst_to_html(docstring)
 
 
 @register.filter

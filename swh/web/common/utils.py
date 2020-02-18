@@ -14,6 +14,8 @@ from typing import Optional, Dict, Any
 import docutils.parsers.rst
 import docutils.utils
 
+from bs4 import BeautifulSoup
+
 from docutils.core import publish_parts
 from docutils.writers.html5_polyglot import Writer, HTMLTranslator
 
@@ -477,3 +479,16 @@ def rst_to_html(rst: str) -> str:
     pp = publish_parts(rst, writer=_HTML_WRITER,
                        settings_overrides=settings)
     return f'<div class="swh-rst">{pp["html_body"]}</div>'
+
+
+def prettify_html(html: str) -> str:
+    """
+    Prettify an HTML document.
+
+    Args:
+        html: Input HTML document
+
+    Returns:
+        The prettified HTML document
+    """
+    return BeautifulSoup(html, 'lxml').prettify()

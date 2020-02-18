@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import inspect
 import json
 import os
 import shutil
@@ -150,19 +149,12 @@ class _ArchiveData:
     def __init__(self, tests_data):
         self.storage = tests_data['storage']
 
-        def _call_storage_method(method):
-            def call_storage_method(*args, **kwargs):
-                return method(*args, **kwargs)
-
-            return call_storage_method
-
+    def __getattr__(self, key):
+        if key == 'storage':
+            raise AttributeError(key)
         # Forward calls to non overridden Storage methods to wrapped
         # storage instance
-        for method_name, method in inspect.getmembers(
-                self.storage, predicate=inspect.ismethod):
-            if (not hasattr(self, method_name) and
-                    not method_name.startswith('_')):
-                setattr(self, method_name, _call_storage_method(method))
+        return getattr(self.storage, key)
 
     def content_find(self, content):
         cnt_ids_bytes = {algo_hash: hash_to_bytes(content[algo_hash])

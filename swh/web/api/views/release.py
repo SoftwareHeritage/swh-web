@@ -39,9 +39,6 @@ def api_release(request, sha1_git):
         :>json string target_url: a link to the adequate api url based on the
             target type
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
         :statuscode 404: requested release can not be found in the archive

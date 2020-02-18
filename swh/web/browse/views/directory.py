@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -129,8 +129,10 @@ def directory_browse(request, sha1_git, path=None):
         'revision_id': None
     }
 
-    swh_ids = get_swh_persistent_ids([{'type': 'directory',
-                                       'id': sha1_git}])
+    swh_objects = [{'type': 'directory', 'id': sha1_git}]
+
+    swh_ids = get_swh_persistent_ids(
+        swh_objects=swh_objects, snapshot_context=snapshot_context)
 
     heading = 'Directory - %s' % sha1_git
     if breadcrumbs:
@@ -155,7 +157,7 @@ def directory_browse(request, sha1_git, path=None):
                    'swh_ids': swh_ids})
 
 
-@browse_route(r'directory/resolve/content-path/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/', # noqa
+@browse_route(r'directory/resolve/content-path/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/',  # noqa
               view_name='browse-directory-resolve-content-path',
               checksum_args=['sha1_git'])
 def _directory_resolve_content_path(request, sha1_git, path):
