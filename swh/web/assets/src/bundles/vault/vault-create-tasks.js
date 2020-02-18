@@ -19,9 +19,13 @@ export function vaultRequest(objectType, objectId) {
     .then(response => response.json())
     .then(data => {
       // object needs to be cooked
-      if (data.exception === 'NotFoundExc') {
+      if (data.exception === 'NotFoundExc' || data.status === 'failed') {
+        // if last cooking has failed, remove previous task info from localStorage
+        // in order to force the recooking of the object
+        swh.vault.removeCookingTaskInfo([objectId]);
         $(`#vault-cook-${objectType}-modal`).modal('show');
-      // object has been cooked and is in the vault cache
+      // object has been cooked and should be in the vault cache,
+      // it will be asked to cook it again if it is not
       } else if (data.status === 'done') {
         $(`#vault-fetch-${objectType}-modal`).modal('show');
       }

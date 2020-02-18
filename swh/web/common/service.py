@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -215,7 +215,7 @@ def lookup_content_license(q):
                                hashess={'id'})
 
 
-def lookup_origin(origin):
+def lookup_origin(origin: Dict[str, str]) -> Dict[str, str]:
     """Return information about the origin matching dict origin.
 
     Args:
@@ -225,7 +225,21 @@ def lookup_origin(origin):
         origin information as dict.
 
     """
-    origin_info = storage.origin_get(origin)
+    origins = [origin]
+    if origin['url']:
+        # handle case when user provided an origin url with a trailing
+        # slash while the url in storage does not have it (e.g. GitHub)
+        if origin['url'].endswith('/'):
+            origins.append({'url': origin['url'][:-1]})
+        # handle case when user provided an origin url without a trailing
+        # slash while the url in storage have it (e.g. Debian source package)
+        else:
+            origins.append({'url': f"{origin['url']}/"})
+    # Check all possible origin urls
+    for orig in origins:
+        origin_info = storage.origin_get(orig)
+        if origin_info:
+            break
     if not origin_info:
         msg = 'Origin with url %s not found!' % origin['url']
         raise NotFoundExc(msg)

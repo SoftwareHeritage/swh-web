@@ -3,9 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from bs4 import BeautifulSoup
 from htmlmin import minify
 import sentry_sdk
+
+from swh.web.common.utils import prettify_html
 
 
 class HtmlPrettifyMiddleware(object):
@@ -22,11 +23,10 @@ class HtmlPrettifyMiddleware(object):
         if 'text/html' in response.get('Content-Type', ''):
             if hasattr(response, 'content'):
                 content = response.content
-                response.content = BeautifulSoup(content, 'lxml').prettify()
+                response.content = prettify_html(content)
             elif hasattr(response, 'streaming_content'):
                 content = b''.join(response.streaming_content)
-                response.streaming_content = \
-                    BeautifulSoup(content, 'lxml').prettify()
+                response.streaming_content = prettify_html(content)
 
         return response
 

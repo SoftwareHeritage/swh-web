@@ -79,9 +79,6 @@ def api_vault_cook_directory(request, dir_id):
             (either **new**, **pending**, **done** or **failed**)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-        :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
         :statuscode 404: requested directory did not receive any cooking
@@ -113,9 +110,6 @@ def api_vault_fetch_directory(request, dir_id):
         :param string dir_id: the directory's sha1 identifier
 
         :resheader Content-Type: application/octet-stream
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
@@ -181,9 +175,6 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         :>json string status: the cooking task status (new/pending/done/failed)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-        :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
         :statuscode 404: requested directory did not receive any cooking
@@ -215,9 +206,6 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
         :param string rev_id: the revision's sha1 identifier
 
         :resheader Content-Type: application/octet-stream
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
