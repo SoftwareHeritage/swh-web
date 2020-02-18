@@ -39,9 +39,6 @@ def api_stats(request):
 
         {common_headers}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
 
         **Example:**

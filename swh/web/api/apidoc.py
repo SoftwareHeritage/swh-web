@@ -3,14 +3,17 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import docutils.nodes
-import docutils.parsers.rst
-import docutils.utils
+from collections import defaultdict
 import functools
 from functools import wraps
 import os
 import re
 import textwrap
+from typing import List
+
+import docutils.nodes
+import docutils.parsers.rst
+import docutils.utils
 
 from rest_framework.decorators import api_view
 import sentry_sdk
@@ -31,6 +34,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     # httpdomain roles we want to parse (based on sphinxcontrib.httpdomain 1.6)
     parameter_roles = ('param', 'parameter', 'arg', 'argument')
 
+    request_json_object_roles = ('reqjsonobj', 'reqjson', '<jsonobj', '<json')
+
+    request_json_array_roles = ('reqjsonarr', '<jsonarr')
+
     response_json_object_roles = ('resjsonobj', 'resjson', '>jsonobj', '>json')
 
     response_json_array_roles = ('resjsonarr', '>jsonarr')
@@ -43,18 +50,18 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 
     status_code_roles = ('statuscode', 'status', 'code')
 
-    def __init__(self, document, urls, data):
+    def __init__(self, document, data):
         super().__init__(document)
-        self.urls = urls
-        self.url_idx = 0
         self.data = data
         self.args_set = set()
         self.params_set = set()
+        self.inputs_set = set()
         self.returns_set = set()
         self.status_codes_set = set()
         self.reqheaders_set = set()
         self.resheaders_set = set()
         self.field_list_visited = False
+        self.current_json_obj = None
 
     def process_paragraph(self, par):
         """
@@ -71,14 +78,22 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         par = par.replace('</strong>', '**')
         par = par.replace('<literal>', '``')
         par = par.replace('</literal>', '``')
-        # remove parsed document markups
-        par = re.sub('<[^<]+?>', '', par)
+        # keep links to web pages
+        if '<reference' in par:
+            par = re.sub(r'<reference name="(.*)" refuri="(.*)".*</reference>',
+                         r'`\1 <\2>`_', par)
+        # remove parsed document markups but keep rst links
+        par = re.sub(r'<[^<]+?>(?!`_)', '', par)
         # api urls cleanup to generate valid links afterwards
-        par = re.sub(r'\(\w+\)', '', par)
-        par = re.sub(r'\[.*\]', '', par)
+        subs_made = 1
+        while subs_made:
+            (par, subs_made) = re.subn(r'(:http:.*)(\(\w+\))', r'\1', par)
+        subs_made = 1
+        while subs_made:
+            (par, subs_made) = re.subn(r'(:http:.*)(\[.*\])', r'\1', par)
         par = par.replace('//', '/')
-        # transform references to api endpoints into valid rst links
-        par = re.sub(':http:get:`([^,]*)`', r'`<\1>`_', par)
+        # transform references to api endpoints doc into valid rst links
+        par = re.sub(':http:get:`([^,`]*)`', r'`\1 <\1doc/>`_', par)
         # transform references to some elements into bold text
         par = re.sub(':http:header:`(.*)`', r'**\1**', par)
         par = re.sub(':func:`(.*)`', r'**\1**', par)
@@ -112,9 +127,25 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                                                     'type': field_data[1],
                                                     'doc': text})
                         self.params_set.add(field_data[2])
+                # Request data type
+                if (field_data[0] in self.request_json_array_roles or
+                        field_data[0] in self.request_json_object_roles):
+                    # array
+                    if field_data[0] in self.request_json_array_roles:
+                        self.data['input_type'] = 'array'
+                    # object
+                    else:
+                        self.data['input_type'] = 'object'
+                    # input object field
+                    if field_data[2] not in self.inputs_set:
+                        self.data['inputs'].append({'name': field_data[2],
+                                                    'type': field_data[1],
+                                                    'doc': text})
+                        self.inputs_set.add(field_data[2])
+                        self.current_json_obj = self.data['inputs'][-1]
                 # Response type
-                if field_data[0] in self.response_json_array_roles or \
-                        field_data[0] in self.response_json_object_roles:
+                if (field_data[0] in self.response_json_array_roles or
+                        field_data[0] in self.response_json_object_roles):
                     # array
                     if field_data[0] in self.response_json_array_roles:
                         self.data['return_type'] = 'array'
@@ -127,6 +158,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                                                      'type': field_data[1],
                                                      'doc': text})
                         self.returns_set.add(field_data[2])
+                        self.current_json_obj = self.data['returns'][-1]
                 # Status Codes
                 if field_data[0] in self.status_code_roles:
                     if field_data[1] not in self.status_codes_set:
@@ -162,15 +194,6 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                     text not in self.data['description']):
                 self.data['description'] += '\n\n' if self.data['description'] else '' # noqa
                 self.data['description'] += text
-            # http methods
-            elif text.startswith('**Allowed HTTP Methods:**'):
-                text = text.replace('**Allowed HTTP Methods:**', '')
-                http_methods = text.strip().split(',')
-                http_methods = [m[m.find('`')+1:-1].upper()
-                                for m in http_methods]
-                self.data['urls'].append({'rule': self.urls[self.url_idx],
-                                          'methods': http_methods})
-                self.url_idx += 1
 
     def visit_literal_block(self, node):
         """
@@ -195,6 +218,14 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                 if isinstance(child, docutils.nodes.paragraph):
                     line_text = self.process_paragraph(str(child))
                     self.data['description'] += '\t* %s\n' % line_text
+        elif self.current_json_obj:
+            self.current_json_obj['doc'] += '\n\n'
+            for child in node.traverse():
+                # process list item
+                if isinstance(child, docutils.nodes.paragraph):
+                    line_text = self.process_paragraph(str(child))
+                    self.current_json_obj['doc'] += '\t\t* %s\n' % line_text
+            self.current_json_obj = None
 
     def visit_warning(self, node):
         text = self.process_paragraph(str(node))
@@ -205,17 +236,6 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     def unknown_visit(self, node):
         pass
 
-    def depart_document(self, node):
-        """
-        End of parsing extra processing
-        """
-        default_methods = ['GET', 'HEAD', 'OPTIONS']
-        # ensure urls info is present and set default http methods
-        if not self.data['urls']:
-            for url in self.urls:
-                self.data['urls'].append({'rule': url,
-                                          'methods': default_methods})
-
     def unknown_departure(self, node):
         pass
 
@@ -223,7 +243,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 def _parse_httpdomain_doc(doc, data):
     doc_lines = doc.split('\n')
     doc_lines_filtered = []
-    urls = []
+    urls = defaultdict(list)
+    default_http_methods = ['HEAD', 'OPTIONS']
     # httpdomain is a sphinx extension that is unknown to docutils but
     # fortunately we can still parse its directives' content,
     # so remove lines with httpdomain directives before executing the
@@ -235,7 +256,12 @@ def _parse_httpdomain_doc(doc, data):
             url = doc_line[doc_line.find('/'):]
             # emphasize url arguments for html rendering
             url = re.sub(r'\((\w+)\)', r' **\(\1\)** ', url)
-            urls.append(url)
+            method = re.search(r'http:(\w+)::', doc_line).group(1)
+            urls[url].append(method.upper())
+
+    for url, methods in urls.items():
+        data['urls'].append({'rule': url,
+                             'methods': methods + default_http_methods})
     # parse the rst docstring and do not print system messages about
     # unknown httpdomain roles
     document = parse_rst('\n'.join(doc_lines_filtered), report_level=5)
@@ -243,7 +269,7 @@ def _parse_httpdomain_doc(doc, data):
     for node in document.traverse(docutils.nodes.system_message):
         node.parent.remove(node)
     # visit the document nodes to extract relevant endpoint info
-    visitor = _HTTPDomainDocVisitor(document, urls, data)
+    visitor = _HTTPDomainDocVisitor(document, data)
     document.walkabout(visitor)
 
 
@@ -253,59 +279,61 @@ class APIDocException(Exception):
     """
 
 
-def api_doc(route, noargs=False, need_params=False, tags=[],
-            handle_response=False, api_version='1'):
+def api_doc(route: str, noargs: bool = False, need_params: bool = False,
+            tags: List[str] = [], handle_response: bool = False,
+            api_version: str = '1'):
     """
-    Decorate an API function to register it in the API doc route index
-    and create the corresponding DRF route.
+    Decorator for an API endpoint implementation used to generate a dedicated
+    view displaying its HTML documentation.
+
+    The documentation will be generated from the endpoint docstring based on
+    sphinxcontrib-httpdomain format.
 
     Args:
-        route (str): documentation page's route
-        noargs (boolean): set to True if the route has no arguments, and its
+        route: documentation page's route
+        noargs: set to True if the route has no arguments, and its
             result should be displayed anytime its documentation
             is requested. Default to False
-        need_params (boolean): specify the route requires query parameters
+        need_params: specify the route requires query parameters
             otherwise errors will occur. It enables to avoid displaying the
             invalid response in its HTML documentation. Default to False.
-        tags (list): Further information on api endpoints. Two values are
+        tags: Further information on api endpoints. Two values are
             possibly expected:
 
                 * hidden: remove the entry points from the listing
                 * upcoming: display the entry point but it is not followable
 
-        handle_response (boolean): indicate if the decorated function takes
+        handle_response: indicate if the decorated function takes
             care of creating the HTTP response or delegates that task to the
             apiresponse module
-        api_version (str): api version string
-
+        api_version: api version string
     """
-    urlpattern = '^' + api_version + route + '$'
-    tags = set(tags)
+
+    tags_set = set(tags)
 
     # @api_doc() Decorator call
     def decorator(f):
-
-        # If the route is not hidden, add it to the index
-        if 'hidden' not in tags:
+        # if the route is not hidden, add it to the index
+        if 'hidden' not in tags_set:
             doc_data = get_doc_data(f, route, noargs)
             doc_desc = doc_data['description']
             first_dot_pos = doc_desc.find('.')
-            APIUrls.add_route(route, doc_desc[:first_dot_pos+1],
-                              tags=tags)
+            APIUrls.add_doc_route(route, doc_desc[:first_dot_pos+1],
+                                  noargs=noargs, api_version=api_version,
+                                  tags=tags_set)
 
-        # If the decorated route has arguments, we create a specific
-        # documentation view
-        if not noargs:
+        # create a dedicated view to display endpoint HTML doc
+        @api_view(['GET', 'HEAD'])
+        @wraps(f)
+        def doc_view(request):
+            doc_data = get_doc_data(f, route, noargs)
+            return make_api_response(request, None, doc_data)
 
-            @api_view(['GET', 'HEAD'])
-            @wraps(f)
-            def doc_view(request):
-                doc_data = get_doc_data(f, route, noargs)
-                return make_api_response(request, None, doc_data)
+        route_name = '%s-doc' % route[1:-1].replace('/', '-')
+        urlpattern = f'^{api_version}{route}doc/$'
 
-            view_name = 'api-%s-%s' % \
-                (api_version, route[1:-1].replace('/', '-'))
-            APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
+        view_name = 'api-%s-%s' % (api_version, route_name)
+        APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
 
         @wraps(f)
         def documented_view(request, **kwargs):
@@ -342,6 +370,8 @@ def get_doc_data(f, route, noargs):
         'urls': [],
         'args': [],
         'params': [],
+        'input_type': '',
+        'inputs': [],
         'resheaders': [],
         'reqheaders': [],
         'return_type': '',
@@ -366,11 +396,22 @@ def get_doc_data(f, route, noargs):
     # sphinx extension, not needed and raise errors with sphinx >= 1.7)
     elif 'SWH_WEB_DOC_BUILD' not in os.environ:
         _parse_httpdomain_doc(f.__doc__, data)
-        # process returned object info for nicer html display
+        # process input/returned object info for nicer html display
+        inputs_list = ''
         returns_list = ''
+        for inp in data['inputs']:
+            # special case for array of non object type, for instance
+            # :<jsonarr string -: an array of string
+            if inp['name'] != '-':
+                inputs_list += ('\t* **%s (%s)**: %s\n' %
+                                (inp['name'], inp['type'], inp['doc']))
         for ret in data['returns']:
-            returns_list += '\t* **%s (%s)**: %s\n' %\
-                (ret['name'], ret['type'], ret['doc'])
+            # special case for array of non object type, for instance
+            # :>jsonarr string -: an array of string
+            if ret['name'] != '-':
+                returns_list += ('\t* **%s (%s)**: %s\n' %
+                                 (ret['name'], ret['type'], ret['doc']))
+        data['inputs_list'] = inputs_list
         data['returns_list'] = returns_list
 
     return data

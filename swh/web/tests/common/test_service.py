@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -916,3 +916,16 @@ def test_lookup_missing_hashes_some_present(archive_data, content, directory):
     actual_result = service.lookup_missing_hashes(grouped_pids)
 
     assert actual_result == {missing_rev, missing_rel, missing_snp}
+
+
+@given(origin())
+def test_lookup_origin_extra_trailing_slash(origin):
+    origin_info = service.lookup_origin({'url': f"{origin['url']}/"})
+    assert origin_info['url'] == origin['url']
+
+
+def test_lookup_origin_missing_trailing_slash(archive_data):
+    deb_origin = {'url': 'http://snapshot.debian.org/package/r-base/'}
+    archive_data.origin_add_one(deb_origin)
+    origin_info = service.lookup_origin({'url': deb_origin['url'][:-1]})
+    assert origin_info['url'] == deb_origin['url']

@@ -42,8 +42,6 @@ def api_content_filetype(request, q):
 
         {common_headers}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
         :statuscode 404: requested content can not be found in the archive
@@ -88,8 +86,6 @@ def api_content_language(request, q):
 
         {common_headers}
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
         :statuscode 404: requested content can not be found in the archive
@@ -131,8 +127,6 @@ def api_content_license(request, q):
         :>json object tool: information about the tool used to detect the license
 
         {common_headers}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
@@ -184,8 +178,6 @@ def api_content_raw(request, q):
         :query string filename: if provided, the downloaded content will get that filename
 
         :resheader Content-Type: application/octet-stream
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
@@ -279,8 +271,6 @@ def api_check_content_known(request, q=None):
         :>json object search_stats: some statistics regarding the number of **sha1** provided
             and the percentage of those found in the archive
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1** has been provided
 
@@ -364,8 +354,6 @@ def api_content_metadata(request, q):
         :>json number length: length of the content in bytes
         :>json string license_url: link to :http:get:`/api/1/content/[(hash_type):](hash)/license/`
             for getting information about the license of the content
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided

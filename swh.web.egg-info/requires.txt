@@ -20,7 +20,7 @@ typing-extensions
 sphinx
 sphinxcontrib-httpdomain
 swh.model>=0.0.32
-swh.storage>=0.0.145
+swh.storage>=0.0.172
 swh.vault>=0.0.23
 swh.indexer>=0.0.120
 swh.scheduler>=0.0.31

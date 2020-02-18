@@ -68,9 +68,6 @@ def api_save_origin(request, visit_type, origin_url):
             either **not created**, **not yet scheduled**, **scheduled**,
             **succeed** or **failed**
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-        :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided
         :statuscode 403: the provided origin url is blacklisted

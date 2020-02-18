@@ -49,8 +49,6 @@ def api_directory(request, sha1_git, path=None):
             or :http:get:`/api/1/directory/(sha1_git)/[(path)/]` depending on the directory entry type
         :>jsonarr string type: the type of the directory entry, can be either ``dir``, ``file`` or ``rev``
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
         :statuscode 404: requested directory can not be found in the archive

@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from swh.web.common.swh_templatetags import (
-    urlize_links_and_mails, urlize_header_links, safe_docstring_display
+    urlize_links_and_mails, urlize_header_links, docstring_display
 )
 
 
@@ -36,7 +36,7 @@ def test_urlize_header_links():
     assert urlize_header_links(content) == expected_content
 
 
-def test_safe_docstring_display():
+def test_docstring_display():
     # update api link with html links content with links
     docstring = (
         'This is my list header:\n\n'
@@ -49,13 +49,15 @@ def test_safe_docstring_display():
     expected_docstring = (
         '<div class="swh-rst">'
         '<p>This is my list header:</p>\n'
+        '<blockquote>\n'
         '<ul class="simple">\n'
         '<li><p>Here is item 1, with a continuation\n'
         'line right here</p></li>\n'
         '<li><p>Here is item 2</p></li>\n'
         '</ul>\n'
         '<p>Here is something that is not part of the list</p>\n'
+        '</blockquote>\n'
         '</div>'
     )
 
-    assert safe_docstring_display(docstring) == expected_docstring
+    assert docstring_display(docstring) == expected_docstring

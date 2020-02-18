@@ -35,7 +35,10 @@ from swh.web.common.highlightjs import get_hljs_language_from_filename
 # Configuration for git loader
 _TEST_LOADER_CONFIG = {
     'storage': {
-        'cls': 'memory'
+        'cls': 'validate',
+        'storage': {
+            'cls': 'memory'
+        }
     },
     'save_data': False,
     'max_content_size': 100 * 1024 * 1024,
