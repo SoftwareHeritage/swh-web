@@ -29,6 +29,14 @@ repos:
     language: system
     types: [python]
 
+- repo: local
+  hooks:
+  - id: eslint
+    name: eslint
+    entry: node_modules/.bin/eslint -c swh/web/assets/config/.eslintrc
+    language: system
+    types: [javascript]
+
 # unfortunately, we are far from being able to enable this...
 # - repo: https://github.com/PyCQA/pydocstyle.git
 #   rev: 4.0.0
