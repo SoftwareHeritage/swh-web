@@ -16,7 +16,7 @@ from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.from_disk import Directory
+from swh.model.from_disk import Content, Directory
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
 from swh.model.identifiers import directory_identifier
 from swh.loader.git.from_disk import GitLoaderFromArchive
@@ -367,25 +367,26 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
     """
     test_contents_dir = os.path.join(
         os.path.dirname(__file__), data_path).encode('utf-8')
-    directory = Directory.from_disk(path=test_contents_dir, data=True,
-                                    save_path=True)
-    objects = directory.collect()
-    for c in objects['content'].values():
-        c['status'] = 'visible'
-        sha1 = hash_to_hex(c['sha1'])
-        if ext_key:
-            key = c['path'].decode('utf-8').split('.')[-1]
-            filename = 'test.' + key
-        else:
-            filename = c['path'].decode('utf-8').split('/')[-1]
-            key = filename
-        language = get_hljs_language_from_filename(filename)
-        data_dict[key] = {'sha1': sha1,
-                          'language': language}
-        del c['path']
-        del c['perms']
+    directory = Directory.from_disk(path=test_contents_dir)
+
+    contents = []
+    for name, obj in directory.items():
+        if isinstance(obj, Content):
+            c = obj.to_model().with_data().to_dict()
+            c['status'] = 'visible'
+            sha1 = hash_to_hex(c['sha1'])
+            if ext_key:
+                key = name.decode('utf-8').split('.')[-1]
+                filename = 'test.' + key
+            else:
+                filename = name.decode('utf-8').split('/')[-1]
+                key = filename
+            language = get_hljs_language_from_filename(filename)
+            data_dict[key] = {'sha1': sha1,
+                              'language': language}
+            contents.append(c)
     storage = get_tests_data()['storage']
-    storage.content_add(objects['content'].values())
+    storage.content_add(contents)
 
 
 def _init_content_code_data_exts():
