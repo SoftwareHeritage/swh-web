@@ -170,7 +170,11 @@ REST_FRAMEWORK: Dict[str, Any] = {
     'DEFAULT_THROTTLE_CLASSES': (
         'swh.web.common.throttling.SwhWebRateThrottle',
     ),
-    'DEFAULT_THROTTLE_RATES': throttle_rates
+    'DEFAULT_THROTTLE_RATES': throttle_rates,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'swh.web.auth.backends.OIDCBearerTokenAuthentication',
+    ],
 }
 
 LOGGING = {

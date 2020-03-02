@@ -8,6 +8,11 @@ from typing import Any, Dict, Optional, Tuple
 
 from django.core.cache import cache
 from django.http import HttpRequest
+from django.utils import timezone
+
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
 import sentry_sdk
 
 from swh.web.auth.keycloak import KeycloakOpenIDConnect
@@ -116,3 +121,44 @@ class OIDCAuthorizationCodePKCEBackend:
                 return None
         else:
             return None
+
+
+class OIDCBearerTokenAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        if auth_header is None:
+            return None
+
+        try:
+            auth_type, token = auth_header.split(' ', 1)
+        except ValueError:
+            raise AuthenticationFailed(
+                'Invalid HTTP authorization header format')
+
+        if auth_type != 'Bearer':
+            raise AuthenticationFailed(
+                (f'Invalid or unsupported HTTP authorization'
+                 f' type ({auth_type}).'))
+
+        try:
+            # attempt to decode token
+            decoded = _oidc_client.decode_token(token)
+            userinfo = cache.get(decoded['sub'])
+            if userinfo:
+                user = _oidc_user_from_info(userinfo)
+            else:
+                # get OIDC userinfo
+                userinfo = _oidc_client.userinfo(token)
+                # create Django user
+                user = _oidc_user_from_info(userinfo)
+                # cache userinfo until token expires
+                max_ttl = decoded['exp'] - decoded['auth_time'] - 1
+                ttl = decoded['exp'] - int(timezone.now().timestamp()) - 1
+                ttl = max(0, min(ttl, max_ttl))
+                cache.set(decoded['sub'], userinfo, timeout=ttl)
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            raise AuthenticationFailed(str(e))
+
+        return user, None

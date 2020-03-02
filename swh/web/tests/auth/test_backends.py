@@ -11,6 +11,9 @@ import pytest
 
 from django.conf import settings
 
+from rest_framework.exceptions import AuthenticationFailed
+
+from swh.web.auth.backends import OIDCBearerTokenAuthentication
 from swh.web.auth.models import OIDCUser
 from swh.web.common.utils import reverse
 
@@ -79,3 +82,82 @@ def test_oidc_code_pkce_auth_backend_failure(mocker, request_factory):
     user = _authenticate_user(request_factory)
 
     assert user is None
+
+
+@pytest.mark.django_db
+def test_drf_oidc_bearer_token_auth_backend_success(mocker,
+                                                    api_request_factory):
+    url = reverse('api-1-stat-counters')
+    drf_auth_backend = OIDCBearerTokenAuthentication()
+
+    kc_oidc_mock = mock_keycloak(mocker)
+
+    access_token = sample_data.oidc_profile['access_token']
+
+    request = api_request_factory.get(
+        url, HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+    # first authentication
+    user, _ = drf_auth_backend.authenticate(request)
+    _check_authenticated_user(user)
+    # oidc_profile is not filled when authenticating through bearer token
+    assert hasattr(user, 'access_token') and user.access_token is None
+
+    # second authentication, should fetch userinfo from cache
+    # until token expires
+    user, _ = drf_auth_backend.authenticate(request)
+    _check_authenticated_user(user)
+    assert hasattr(user, 'access_token') and user.access_token is None
+
+    # check user request to keycloak has been sent only once
+    kc_oidc_mock.userinfo.assert_called_once_with(access_token)
+
+
+@pytest.mark.django_db
+def test_drf_oidc_bearer_token_auth_backend_failure(mocker,
+                                                    api_request_factory):
+
+    url = reverse('api-1-stat-counters')
+    drf_auth_backend = OIDCBearerTokenAuthentication()
+
+    # simulate a failed authentication with a bearer token in expected format
+    mock_keycloak(mocker, auth_success=False)
+
+    access_token = sample_data.oidc_profile['access_token']
+
+    request = api_request_factory.get(
+        url, HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+    with pytest.raises(AuthenticationFailed):
+        drf_auth_backend.authenticate(request)
+
+    # simulate a failed authentication with an invalid bearer token format
+    mock_keycloak(mocker)
+
+    request = api_request_factory.get(
+        url, HTTP_AUTHORIZATION=f"Bearer invalid-token-format")
+
+    with pytest.raises(AuthenticationFailed):
+        drf_auth_backend.authenticate(request)
+
+
+def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
+
+    url = reverse('api-1-stat-counters')
+    drf_auth_backend = OIDCBearerTokenAuthentication()
+
+    access_token = sample_data.oidc_profile['access_token']
+
+    # Invalid authorization type
+    request = api_request_factory.get(
+        url, HTTP_AUTHORIZATION=f"Foo token")
+
+    with pytest.raises(AuthenticationFailed):
+        drf_auth_backend.authenticate(request)
+
+    # Missing authorization type
+    request = api_request_factory.get(
+        url, HTTP_AUTHORIZATION=f"{access_token}")
+
+    with pytest.raises(AuthenticationFailed):
+        drf_auth_backend.authenticate(request)
