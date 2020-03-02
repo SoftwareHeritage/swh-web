@@ -222,7 +222,7 @@ def test_revision_request_errors(client, revision, unknown_revision,
 
     url = reverse('browse-revision',
                   url_args={'sha1_git': revision},
-                  query_params={'origin': new_origin['url']})
+                  query_params={'origin': new_origin.url})
 
     resp = client.get(url)
     assert resp.status_code == 404

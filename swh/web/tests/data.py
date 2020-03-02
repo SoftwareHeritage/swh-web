@@ -16,9 +16,9 @@ from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.from_disk import Content, Directory
-from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
-from swh.model.identifiers import directory_identifier
+from swh.model import from_disk
+from swh.model.hashutil import hash_to_hex, DEFAULT_ALGORITHMS
+from swh.model.model import Content, Directory, Origin
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
@@ -35,10 +35,7 @@ from swh.web.common.highlightjs import get_hljs_language_from_filename
 # Configuration for git loader
 _TEST_LOADER_CONFIG = {
     'storage': {
-        'cls': 'validate',
-        'storage': {
-            'cls': 'memory'
-        }
+        'cls': 'memory',
     },
     'save_data': False,
     'max_content_size': 100 * 1024 * 1024,
@@ -190,7 +187,8 @@ def _init_tests_data():
 
     for i in range(250):
         url = 'https://many.origins/%d' % (i+1)
-        storage.origin_add([{'url': url}])
+        # storage.origin_add([{'url': url}])
+        storage.origin_add([Origin(url=url)])
         search.origin_update([{'url': url, 'has_visits': True}])
         visit = storage.origin_visit_add(url, '2019-12-03 13:55:05', 'tar')
         storage.origin_visit_update(
@@ -260,9 +258,7 @@ def _init_tests_data():
     idx_storage = get_indexer_storage('memory', {})
 
     # Add the empty directory to the test archive
-    empty_dir_id = directory_identifier({'entries': []})
-    empty_dir_id_bin = hash_to_bytes(empty_dir_id)
-    storage.directory_add([{'id': empty_dir_id_bin, 'entries': []}])
+    storage.directory_add([Directory(entries=[])])
 
     # Return tests data
     return {
@@ -367,11 +363,11 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
     """
     test_contents_dir = os.path.join(
         os.path.dirname(__file__), data_path).encode('utf-8')
-    directory = Directory.from_disk(path=test_contents_dir)
+    directory = from_disk.Directory.from_disk(path=test_contents_dir)
 
     contents = []
     for name, obj in directory.items():
-        if isinstance(obj, Content):
+        if isinstance(obj, from_disk.Content):
             c = obj.to_model().with_data().to_dict()
             c['status'] = 'visible'
             sha1 = hash_to_hex(c['sha1'])
@@ -384,7 +380,7 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
             language = get_hljs_language_from_filename(filename)
             data_dict[key] = {'sha1': sha1,
                               'language': language}
-            contents.append(c)
+            contents.append(Content.from_dict(c))
     storage = get_tests_data()['storage']
     storage.content_add(contents)
 

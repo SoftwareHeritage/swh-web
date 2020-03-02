@@ -16,6 +16,7 @@ from hypothesis.strategies import (
 
 from swh.model.hashutil import hash_to_hex, hash_to_bytes
 from swh.model.identifiers import directory_identifier
+from swh.model.model import Person, Revision, TimestampWithTimezone
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.model.hypothesis_strategies import (
     origins as new_origin_strategy, snapshots as new_snapshot
@@ -255,9 +256,9 @@ def new_origin():
     Hypothesis strategy returning a random origin not ingested
     into the test archive.
     """
-    return new_origin_strategy().map(lambda origin: origin.to_dict()).filter(
+    return new_origin_strategy().filter(
             lambda origin: get_tests_data()['storage'].origin_get(
-                [origin])[0] is None)
+                [origin.to_dict()])[0] is None)
 
 
 def new_origins(nb_origins=None):
@@ -326,11 +327,11 @@ def new_person(draw):
     name = draw(text(min_size=5, max_size=30,
                      alphabet=characters(min_codepoint=0, max_codepoint=255)))
     email = '%s@company.org' % name
-    return {
-        'name': name.encode(),
-        'email': email.encode(),
-        'fullname': ('%s <%s>' % (name, email)).encode()
-    }
+    return Person(
+        name=name.encode(),
+        email=email.encode(),
+        fullname=('%s <%s>' % (name, email)).encode()
+    )
 
 
 @composite
@@ -355,20 +356,18 @@ def new_revision(draw):
     Hypothesis strategy returning random raw swh revision data
     not ingested into the test archive.
     """
-    return {
-        'id': draw(unknown_revision().map(hash_to_bytes)),
-        'directory': draw(sha1().map(hash_to_bytes)),
-        'author': draw(new_person()),
-        'committer': draw(new_person()),
-        'message': draw(
+    return Revision(
+        directory=draw(sha1().map(hash_to_bytes)),
+        author=draw(new_person()),
+        committer=draw(new_person()),
+        message=draw(
             text(min_size=20, max_size=100).map(lambda t: t.encode())),
-        'date': draw(new_swh_date()),
-        'committer_date': draw(new_swh_date()),
-        'synthetic': False,
-        'type': 'git',
-        'parents': [],
-        'metadata': [],
-    }
+        date=TimestampWithTimezone.from_datetime(draw(new_swh_date())),
+        committer_date=TimestampWithTimezone.from_datetime(
+            draw(new_swh_date())),
+        synthetic=False,
+        type='git',
+    )
 
 
 def revisions(min_size=2, max_size=8):
@@ -398,8 +397,7 @@ def snapshot():
 def new_snapshots(nb_snapshots=None):
     min_size = nb_snapshots if nb_snapshots else 2
     max_size = nb_snapshots if nb_snapshots else 8
-    return lists(new_snapshot(min_size=2, max_size=10, only_objects=True)
-                 .map(lambda snp: snp.to_dict()),
+    return lists(new_snapshot(min_size=2, max_size=10, only_objects=True),
                  min_size=min_size, max_size=max_size)
 
 

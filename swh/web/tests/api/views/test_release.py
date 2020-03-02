@@ -6,11 +6,12 @@
 from datetime import datetime
 from hypothesis import given
 
-from swh.model.hashutil import hash_to_bytes
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.model import Person, Release, TimestampWithTimezone
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    release, sha1, content, directory
+    release, content, directory
 )
 
 
@@ -32,45 +33,43 @@ def test_api_release(api_client, archive_data, release):
     assert rv.data == expected_release
 
 
-@given(sha1(), sha1(), sha1(), content(), directory(), release())
+@given(content(), directory(), release())
 def test_api_release_target_type_not_a_revision(api_client, archive_data,
-                                                new_rel1, new_rel2,
-                                                new_rel3, content,
-                                                directory, release):
-    for new_rel_id, target_type, target in (
-            (new_rel1, 'content', content),
-            (new_rel2, 'directory', directory),
-            (new_rel3, 'release', release)):
+                                                content, directory, release):
+    for target_type, target in (('content', content), ('directory', directory),
+                                ('release', release)):
 
         if target_type == 'content':
             target = target['sha1_git']
 
-        sample_release = {
-            'author': {
-                'email': b'author@company.org',
-                'fullname': b'author <author@company.org>',
-                'name': b'author'
-            },
-            'date': {
-                'timestamp': int(datetime.now().timestamp()),
-                'offset': 0,
-                'negative_utc': False,
-            },
-            'id': hash_to_bytes(new_rel_id),
-            'message': b'sample release message',
-            'name': b'sample release',
-            'synthetic': False,
-            'target': hash_to_bytes(target),
-            'target_type': target_type
-        }
+        sample_release = Release(
+            author=Person(
+                email=b'author@company.org',
+                fullname=b'author <author@company.org>',
+                name=b'author'
+            ),
+            date=TimestampWithTimezone(
+                timestamp=int(datetime.now().timestamp()),
+                offset=0,
+                negative_utc=False,
+            ),
+            message=b'sample release message',
+            name=b'sample release',
+            synthetic=False,
+            target=hash_to_bytes(target),
+            target_type=target_type
+        )
 
         archive_data.release_add([sample_release])
 
-        url = reverse('api-1-release', url_args={'sha1_git': new_rel_id})
+        new_release_id = hash_to_hex(sample_release.id)
+
+        url = reverse('api-1-release',
+                      url_args={'sha1_git': new_release_id})
 
         rv = api_client.get(url)
 
-        expected_release = archive_data.release_get(new_rel_id)
+        expected_release = archive_data.release_get(new_release_id)
 
         if target_type == 'content':
             url_args = {'q': 'sha1_git:%s' % target}

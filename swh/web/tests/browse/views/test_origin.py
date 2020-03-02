@@ -13,6 +13,7 @@ from django.utils.html import escape
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
+from swh.model.model import Snapshot
 from swh.web.browse.utils import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
@@ -268,7 +269,7 @@ def test_origin_snapshot_null_branch(client, archive_data, new_origin,
                 'target': hash_to_bytes(revisions[i-1]),
             }
 
-    archive_data.snapshot_add([snp_dict])
+    archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
         new_origin['url'], visit_dates[0], type='git')
     archive_data.origin_visit_update(new_origin['url'], visit['visit'],
@@ -293,7 +294,7 @@ def test_origin_snapshot_invalid_branch(client, archive_data, new_origin,
             'target': hash_to_bytes(revisions[i]),
         }
 
-    archive_data.snapshot_add([snp_dict])
+    archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
         new_origin['url'], visit_dates[0], type='git')
     archive_data.origin_visit_update(new_origin['url'], visit['visit'],

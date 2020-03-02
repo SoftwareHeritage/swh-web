@@ -60,7 +60,7 @@ def test_badge_errors(client, unknown_content, unknown_directory, new_origin,
     for object_type, object_id in (
         (CONTENT, unknown_content['sha1_git']),
         (DIRECTORY, unknown_directory),
-        (ORIGIN, new_origin['url']),
+        (ORIGIN, new_origin.url),
         (RELEASE, unknown_release),
         (REVISION, unknown_revision),
         (SNAPSHOT, unknown_snapshot)
