@@ -116,7 +116,7 @@ def test_api_lookup_origin_visits(api_client, archive_data, new_origin,
             new_origin.url, visit_date, type='git')
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
-            new_origin.url, origin_visit['visit'],
+            new_origin.url, origin_visit.visit,
             snapshot=new_snapshots[i].id)
 
     all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
@@ -152,7 +152,7 @@ def test_api_lookup_origin_visits_by_id(api_client, archive_data, new_origin,
             new_origin.url, visit_date, type='git')
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
-            new_origin.url, origin_visit['visit'],
+            new_origin.url, origin_visit.visit,
             snapshot=new_snapshots[i].id)
 
     all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
@@ -186,10 +186,10 @@ def test_api_lookup_origin_visit(api_client, archive_data, new_origin,
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
             new_origin.url, visit_date, type='git')
-        visit_id = origin_visit['visit']
+        visit_id = origin_visit.visit
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
-            new_origin.url, origin_visit['visit'],
+            new_origin.url, visit_id,
             snapshot=new_snapshots[i].id)
         url = reverse('api-1-origin-visit',
                       url_args={'origin_url': new_origin.url,
@@ -234,7 +234,7 @@ def test_api_lookup_origin_visit_latest(api_client, archive_data, new_origin,
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
             new_origin.url, visit_date, type='git')
-        visit_ids.append(origin_visit['visit'])
+        visit_ids.append(origin_visit.visit)
 
     archive_data.snapshot_add([new_snapshots[0]])
     archive_data.origin_visit_update(
@@ -269,7 +269,7 @@ def test_api_lookup_origin_visit_latest_with_snapshot(api_client, archive_data,
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
             new_origin.url, visit_date, type='git')
-        visit_ids.append(origin_visit['visit'])
+        visit_ids.append(origin_visit.visit)
 
     archive_data.snapshot_add([new_snapshots[0]])
     archive_data.origin_visit_update(

@@ -208,7 +208,7 @@ def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
         visits.append(archive_data.origin_visit_add(
             new_origin.url, ts, type='git'))
 
-    visit = random.choice(visits)['visit']
+    visit = random.choice(visits).visit
     actual_origin_visit = service.lookup_origin_visit(
         new_origin.url, visit)
 

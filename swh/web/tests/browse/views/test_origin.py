@@ -272,7 +272,7 @@ def test_origin_snapshot_null_branch(client, archive_data, new_origin,
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
         new_origin['url'], visit_dates[0], type='git')
-    archive_data.origin_visit_update(new_origin['url'], visit['visit'],
+    archive_data.origin_visit_update(new_origin['url'], visit.visit,
                                      status='partial',
                                      snapshot=snp_dict['id'])
 
@@ -297,7 +297,7 @@ def test_origin_snapshot_invalid_branch(client, archive_data, new_origin,
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
         new_origin['url'], visit_dates[0], type='git')
-    archive_data.origin_visit_update(new_origin['url'], visit['visit'],
+    archive_data.origin_visit_update(new_origin['url'], visit.visit,
                                      status='full',
                                      snapshot=snp_dict['id'])
 
