@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,8 @@ Django common settings for swh-web.
 
 import os
 import sys
+
+from typing import Any, Dict
 
 from swh.web.config import get_config
 
@@ -159,7 +161,7 @@ for limiter_scope, limiter_conf in throttling['scopes'].items():
             throttle_rates[limiter_scope + '_' + http_request.lower()] = \
                 limiter_conf['limiter_rate'][http_request]
 
-REST_FRAMEWORK = {
+REST_FRAMEWORK: Dict[str, Any] = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'swh.web.api.renderers.YAMLRenderer',
