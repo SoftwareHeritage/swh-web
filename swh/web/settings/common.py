@@ -168,7 +168,7 @@ REST_FRAMEWORK: Dict[str, Any] = {
         'rest_framework.renderers.TemplateHTMLRenderer'
     ),
     'DEFAULT_THROTTLE_CLASSES': (
-        'swh.web.common.throttling.SwhWebRateThrottle',
+        'swh.web.api.throttling.SwhWebRateThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': throttle_rates,
     'DEFAULT_AUTHENTICATION_CLASSES': [

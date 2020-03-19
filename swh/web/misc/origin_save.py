@@ -14,13 +14,13 @@ from django.shortcuts import render
 
 from rest_framework.decorators import api_view, authentication_classes
 
+from swh.web.api.throttling import throttle_scope
 from swh.web.common.exc import ForbiddenExc
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
     create_save_origin_request, get_savable_visit_types,
     get_save_origin_requests_from_queryset
 )
-from swh.web.common.throttling import throttle_scope
 from swh.web.common.utils import EnforceCSRFAuthentication
 
 

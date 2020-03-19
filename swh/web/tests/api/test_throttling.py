@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 
-from swh.web.common.throttling import SwhWebRateThrottle, throttle_scope
+from swh.web.api.throttling import SwhWebRateThrottle, throttle_scope
 
 
 class MockViewScope1(APIView):

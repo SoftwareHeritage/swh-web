@@ -73,8 +73,6 @@ Common utilities
       in charge of communication with :mod:`swh.storage` to retrieve information and
       perform conversion for the upper layer.
     * :mod:`swh.web.common.swh_templatetags`: Custom Django template tags library for swh.
-    * :mod:`swh.web.common.throttling`: Custom request rate limiter to use with the `Django REST Framework
-      <http://www.django-rest-framework.org/>`_
     * :mod:`swh.web.common.urlsindex`: Utilities to help the registering of endpoints
       for the web applications
     * :mod:`swh.web.common.utils`: Utility functions used in the web applications implementation
@@ -88,6 +86,8 @@ swh-web API application
     * :mod:`swh.web.api.apiresponse`: Utility module to ease the generation of
       web api responses.
     * :mod:`swh.web.api.apiurls`: Utilities to facilitate the registration of web api endpoints.
+    * :mod:`swh.web.api.throttling`: Custom request rate limiter to use with the `Django REST Framework
+      <http://www.django-rest-framework.org/>`_
     * :mod:`swh.web.api.urls`: Module that defines the whole URI scheme for the api endpoints
     * :mod:`swh.web.api.utils`: Utility functions used in the web api implementation.
     * :mod:`swh.web.api.views.content`: Implementation of API endpoints for getting information
