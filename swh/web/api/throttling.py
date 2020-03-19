@@ -75,6 +75,9 @@ class SwhWebRateThrottle(ScopedRateThrottle):
         return self.exempted_networks
 
     def allow_request(self, request: Request, view: APIView) -> bool:
+        # no throttling for staff users
+        if request.user.is_authenticated and request.user.is_staff:
+            return True
         # class based view case
         if not self.scope:
 
