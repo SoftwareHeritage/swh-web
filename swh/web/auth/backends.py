@@ -152,8 +152,8 @@ class OIDCBearerTokenAuthentication(BaseAuthentication):
                 # create Django user
                 user = _oidc_user_from_info(userinfo)
                 # cache userinfo until token expires
-                max_ttl = decoded['exp'] - decoded['auth_time'] - 1
-                ttl = decoded['exp'] - int(timezone.now().timestamp()) - 1
+                max_ttl = decoded['exp'] - decoded['auth_time']
+                ttl = decoded['exp'] - int(timezone.now().timestamp())
                 ttl = max(0, min(ttl, max_ttl))
                 cache.set(decoded['sub'], userinfo, timeout=ttl)
 
