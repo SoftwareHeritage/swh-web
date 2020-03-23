@@ -9,8 +9,6 @@ import secrets
 from base64 import urlsafe_b64encode
 from typing import Tuple
 
-from django.conf import settings
-
 from swh.web.auth.keycloak import (
     KeycloakOpenIDConnect, get_keycloak_oidc_client
 )
@@ -43,7 +41,11 @@ def gen_oidc_pkce_codes() -> Tuple[str, str]:
     return code_verifier_str, code_challenge_str
 
 
-def get_oidc_client(client_id: str = '') -> KeycloakOpenIDConnect:
+OIDC_SWH_WEB_CLIENT_ID = 'swh-web'
+
+
+def get_oidc_client(client_id: str = OIDC_SWH_WEB_CLIENT_ID
+                    ) -> KeycloakOpenIDConnect:
     """
     Instantiate a KeycloakOpenIDConnect class for a given client in the
     SoftwareHeritage realm.
@@ -54,8 +56,6 @@ def get_oidc_client(client_id: str = '') -> KeycloakOpenIDConnect:
     Returns:
         An object to ease the interaction with the Keycloak server
     """
-    if not client_id:
-        client_id = settings.OIDC_SWH_WEB_CLIENT_ID
     swhweb_config = get_config()
     return get_keycloak_oidc_client(swhweb_config['keycloak']['server_url'],
                                     swhweb_config['keycloak']['realm_name'],

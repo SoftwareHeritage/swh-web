@@ -300,5 +300,3 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'swh.web.auth.backends.OIDCAuthorizationCodePKCEBackend',
 ]
-
-OIDC_SWH_WEB_CLIENT_ID = 'swh-web'

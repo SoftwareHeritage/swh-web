@@ -6,13 +6,13 @@
 from urllib.parse import urljoin, urlparse
 import uuid
 
-from django.conf import settings
 from django.http import QueryDict
 from django.contrib.auth.models import AnonymousUser, User
 
 import pytest
 
 from swh.web.auth.models import OIDCUser
+from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_template_used, assert_contains
 
@@ -47,7 +47,7 @@ def test_oidc_login_views_success(client, mocker):
     # check redirect url is valid
     assert urljoin(response['location'], parsed_url.path) == authorization_url
     assert 'client_id' in query_dict
-    assert query_dict['client_id'] == settings.OIDC_SWH_WEB_CLIENT_ID
+    assert query_dict['client_id'] == OIDC_SWH_WEB_CLIENT_ID
     assert 'response_type' in query_dict
     assert query_dict['response_type'] == 'code'
     assert 'redirect_uri' in query_dict

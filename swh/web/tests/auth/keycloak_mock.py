@@ -6,10 +6,10 @@
 from copy import copy
 from unittest.mock import Mock
 
-from django.conf import settings
 from django.utils import timezone
 
 from swh.web.auth.keycloak import KeycloakOpenIDConnect
+from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.config import get_config
 
 from .sample_data import oidc_profile, realm_public_key, userinfo
@@ -21,7 +21,7 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
         swhweb_config = get_config()
         super().__init__(swhweb_config['keycloak']['server_url'],
                          swhweb_config['keycloak']['realm_name'],
-                         settings.OIDC_SWH_WEB_CLIENT_ID)
+                         OIDC_SWH_WEB_CLIENT_ID)
         self._keycloak.public_key = lambda: realm_public_key
         self._keycloak.well_know = lambda: {
             'issuer': f'{self.server_url}realms/{self.realm_name}',
