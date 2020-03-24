@@ -19,6 +19,7 @@ from swh.web.settings.tests import (
     scope2_limiter_rate, scope2_limiter_rate_post,
     scope3_limiter_rate, scope3_limiter_rate_post
 )
+from swh.web.urls import urlpatterns
 
 
 class MockViewScope1(APIView):
@@ -61,7 +62,7 @@ def mock_view_scope3(request):
         return Response('bar_post')
 
 
-urlpatterns = [
+urlpatterns += [
     url(r'^scope1_class$', MockViewScope1.as_view()),
     url(r'^scope2_func$', mock_view_scope2),
     url(r'^scope3_class$', MockViewScope3.as_view()),

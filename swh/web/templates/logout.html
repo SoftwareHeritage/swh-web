@@ -16,12 +16,27 @@ See top-level LICENSE file for more information
 {% endblock %}
 
 {% block content %}
+{% if 'next_path' in request.GET %}
+<p>Your authenticated session expired so you have been automatically logged out.</p>
+{% else %}
 <p>You have been successfully logged out.</p>
+{% endif %}
 <p>
 {% if oidc_enabled and 'remote_user' in request.GET %}
+{% if 'next_path' in request.GET %}
+<a href="{% url 'oidc-login' %}?next_path={{ request.GET.next_path }}">
+{% else %}
 <a href="{% url 'oidc-login' %}">
+{% endif %}
 {% else %}
 <a href="{% url 'login' %}">
 {% endif %}
-Log in</a> again.</p>
+Log in</a> again ?</p>
+{% if 'next_path' in request.GET %}
+<p>
+Or go back to
+<a href="{{ request.GET.next_path }}">
+previous page</a>.
+</p>
+{% endif %}
 {% endblock %}

@@ -11,7 +11,9 @@ from django.conf.urls import url
 from django.core.cache import cache
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpRequest
-from django.http.response import HttpResponse, HttpResponseRedirect
+from django.http.response import (
+    HttpResponse, HttpResponseRedirect, HttpResponseServerError
+)
 
 from swh.web.auth.models import OIDCUser
 from swh.web.auth.utils import gen_oidc_pkce_codes, get_oidc_client
@@ -33,7 +35,8 @@ def oidc_login(request: HttpRequest) -> HttpResponse:
         'code_verifier': code_verifier,
         'state': state,
         'redirect_uri': redirect_uri,
-        'next_path': request.GET.get('next_path'),
+        'next_path': request.GET.get('next_path', ''),
+        'prompt': request.GET.get('prompt', ''),
     }
 
     authorization_url_params = {
@@ -41,6 +44,7 @@ def oidc_login(request: HttpRequest) -> HttpResponse:
         'code_challenge': code_challenge,
         'code_challenge_method': 'S256',
         'scope': 'openid',
+        'prompt': request.GET.get('prompt', ''),
     }
 
     try:
@@ -61,13 +65,25 @@ def oidc_login_complete(request: HttpRequest) -> HttpResponse:
         if 'login_data' not in request.session:
             raise Exception('Login process has not been initialized.')
 
-        if 'code' not in request.GET and 'state' not in request.GET:
+        login_data = request.session['login_data']
+        next_path = login_data['next_path'] or request.build_absolute_uri('/')
+
+        if 'error' in request.GET:
+            if login_data['prompt'] == 'none':
+                # Silent login failed because OIDC session expired.
+                # Redirect to logout page and inform user.
+                logout(request)
+                logout_url = reverse('logout',
+                                     query_params={'next_path': next_path,
+                                                   'remote_user': 1})
+                return HttpResponseRedirect(logout_url)
+            return HttpResponseServerError(request.GET['error'])
+
+        if 'code' not in request.GET or 'state' not in request.GET:
             raise BadInputExc('Missing query parameters for authentication.')
 
         # get CSRF token returned by OIDC server
         state = request.GET['state']
-
-        login_data = request.session['login_data']
 
         if state != login_data['state']:
             raise BadInputExc('Wrong CSRF token, aborting login process.')
@@ -82,10 +98,7 @@ def oidc_login_complete(request: HttpRequest) -> HttpResponse:
 
         login(request, user)
 
-        redirect_url = (login_data['next_path'] or
-                        request.build_absolute_uri('/'))
-
-        return HttpResponseRedirect(redirect_url)
+        return HttpResponseRedirect(next_path)
     except Exception as e:
         return handle_view_exception(request, e)
 

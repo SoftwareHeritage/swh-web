@@ -17,12 +17,13 @@ from .sample_data import oidc_profile, realm_public_key, userinfo
 
 class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
 
-    def __init__(self, auth_success=True):
+    def __init__(self, auth_success=True, exp=None):
         swhweb_config = get_config()
         super().__init__(swhweb_config['keycloak']['server_url'],
                          swhweb_config['keycloak']['realm_name'],
                          OIDC_SWH_WEB_CLIENT_ID)
         self.auth_success = auth_success
+        self.exp = exp
         self._keycloak.public_key = lambda: realm_public_key
         self._keycloak.well_know = lambda: {
             'issuer': f'{self.server_url}realms/{self.realm_name}',
@@ -66,14 +67,18 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
         decoded = super().decode_token(token, options)
         # tweak auth and exp time for tests
         expire_in = decoded['exp'] - decoded['auth_time']
-        decoded['auth_time'] = int(timezone.now().timestamp())
-        decoded['exp'] = decoded['auth_time'] + expire_in
+        if self.exp is not None:
+            decoded['exp'] = self.exp
+            decoded['auth_time'] = self.exp - expire_in
+        else:
+            decoded['auth_time'] = int(timezone.now().timestamp())
+            decoded['exp'] = decoded['auth_time'] + expire_in
         decoded['groups'] = ['/staff']
         return decoded
 
 
-def mock_keycloak(mocker, auth_success=True):
-    kc_oidc_mock = KeycloackOpenIDConnectMock(auth_success)
+def mock_keycloak(mocker, auth_success=True, exp=None):
+    kc_oidc_mock = KeycloackOpenIDConnectMock(auth_success, exp)
     mock_get_oidc_client = mocker.patch(
         'swh.web.auth.views.get_oidc_client')
     mock_get_oidc_client.return_value = kc_oidc_mock
