@@ -30,18 +30,17 @@ def _authenticate_user(request_factory):
                         redirect_uri='https://localhost:5004')
 
 
-def _check_authenticated_user(user):
-    userinfo = sample_data.userinfo
+def _check_authenticated_user(user, decoded_token):
     assert user is not None
     assert isinstance(user, OIDCUser)
     assert user.id != 0
-    assert user.username == userinfo['preferred_username']
+    assert user.username == decoded_token['preferred_username']
     assert user.password == ''
-    assert user.first_name == userinfo['given_name']
-    assert user.last_name == userinfo['family_name']
-    assert user.email == userinfo['email']
-    assert user.is_staff == ('/staff' in userinfo['groups'])
-    assert user.sub == userinfo['sub']
+    assert user.first_name == decoded_token['given_name']
+    assert user.last_name == decoded_token['family_name']
+    assert user.email == decoded_token['email']
+    assert user.is_staff == ('/staff' in decoded_token['groups'])
+    assert user.sub == decoded_token['sub']
 
 
 @pytest.mark.django_db
@@ -50,22 +49,19 @@ def test_oidc_code_pkce_auth_backend_success(mocker, request_factory):
     oidc_profile = sample_data.oidc_profile
     user = _authenticate_user(request_factory)
 
-    _check_authenticated_user(user)
+    decoded_token = kc_oidc_mock.decode_token(user.access_token)
+    _check_authenticated_user(user, decoded_token)
 
-    decoded_token = kc_oidc_mock.decode_token(
-        sample_data.oidc_profile['access_token'])
     auth_datetime = datetime.fromtimestamp(decoded_token['auth_time'])
-
-    access_expiration = (
-        auth_datetime + timedelta(seconds=oidc_profile['expires_in']))
-    refresh_expiration = (
+    exp_datetime = datetime.fromtimestamp(decoded_token['exp'])
+    refresh_exp_datetime = (
         auth_datetime + timedelta(seconds=oidc_profile['refresh_expires_in']))
 
     assert user.access_token == oidc_profile['access_token']
-    assert user.access_expiration == access_expiration
+    assert user.expires_at == exp_datetime
     assert user.id_token == oidc_profile['id_token']
     assert user.refresh_token == oidc_profile['refresh_token']
-    assert user.refresh_expiration == refresh_expiration
+    assert user.refresh_expires_at == refresh_exp_datetime
     assert user.scope == oidc_profile['scope']
     assert user.session_state == oidc_profile['session_state']
 
@@ -93,24 +89,15 @@ def test_drf_oidc_bearer_token_auth_backend_success(mocker,
     kc_oidc_mock = mock_keycloak(mocker)
 
     access_token = sample_data.oidc_profile['access_token']
+    decoded_token = kc_oidc_mock.decode_token(access_token)
 
     request = api_request_factory.get(
         url, HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
-    # first authentication
     user, _ = drf_auth_backend.authenticate(request)
-    _check_authenticated_user(user)
+    _check_authenticated_user(user, decoded_token)
     # oidc_profile is not filled when authenticating through bearer token
     assert hasattr(user, 'access_token') and user.access_token is None
-
-    # second authentication, should fetch userinfo from cache
-    # until token expires
-    user, _ = drf_auth_backend.authenticate(request)
-    _check_authenticated_user(user)
-    assert hasattr(user, 'access_token') and user.access_token is None
-
-    # check user request to keycloak has been sent only once
-    kc_oidc_mock.userinfo.assert_called_once_with(access_token)
 
 
 @pytest.mark.django_db

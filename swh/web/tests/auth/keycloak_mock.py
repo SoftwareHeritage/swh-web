@@ -22,6 +22,7 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
         super().__init__(swhweb_config['keycloak']['server_url'],
                          swhweb_config['keycloak']['realm_name'],
                          OIDC_SWH_WEB_CLIENT_ID)
+        self.auth_success = auth_success
         self._keycloak.public_key = lambda: realm_public_key
         self._keycloak.well_know = lambda: {
             'issuer': f'{self.server_url}realms/{self.realm_name}',
@@ -57,14 +58,17 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
             self.logout.side_effect = exception
 
     def decode_token(self, token):
-        # skip signature expiration check as we use a static oidc_profile
-        # for the tests with expired tokens in it
-        options = {'verify_exp': False}
+        options = {}
+        if self.auth_success:
+            # skip signature expiration check as we use a static oidc_profile
+            # for the tests with expired tokens in it
+            options['verify_exp'] = False
         decoded = super().decode_token(token, options)
         # tweak auth and exp time for tests
         expire_in = decoded['exp'] - decoded['auth_time']
         decoded['auth_time'] = int(timezone.now().timestamp())
         decoded['exp'] = decoded['auth_time'] + expire_in
+        decoded['groups'] = ['/staff']
         return decoded
 
 

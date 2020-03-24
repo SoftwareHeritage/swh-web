@@ -104,7 +104,7 @@ def oidc_logout(request: HttpRequest) -> HttpResponse:
             # end OpenID Connect session
             oidc_client.logout(refresh_token)
             # remove user data from cache
-            cache.delete(f'user_{user.id}')
+            cache.delete(f'oidc_user_{user.id}')
 
         logout_url = reverse('logout', query_params={'remote_user': 1})
         return HttpResponseRedirect(request.build_absolute_uri(logout_url))
