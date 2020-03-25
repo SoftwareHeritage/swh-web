@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -82,6 +82,19 @@ describe('Origin Save Tests', function() {
                     origin.url, 'not yet scheduled');
 
     makeOriginSaveRequest(origin.type, origin.url);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+  });
+
+  it('should validate gitlab subproject url', function() {
+    const gitlabSubProjectUrl = 'https://gitlab.com/user/project/sub/';
+    const originSaveUrl = this.Urls.origin_save_request('git', gitlabSubProjectUrl);
+    stubSaveRequest(originSaveUrl, 'git', 'accepted',
+                    gitlabSubProjectUrl, 'not yet scheduled');
+
+    makeOriginSaveRequest('git', gitlabSubProjectUrl);
 
     cy.wait('@saveRequest').then(() => {
       checkAlertVisible('success', saveCodeMsg['success']);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -39,7 +39,7 @@ export function csrfPost(url, headers = {}, body = null) {
 
 export function isGitRepoUrl(url, domain) {
   let endOfPattern = '\\/[\\w\\.-]+\\/?(?!=.git)(?:\\.git(?:\\/?|\\#[\\w\\.\\-_]+)?)?$';
-  let pattern = `(?:git|https?|git@)(?:\\:\\/\\/)?${domain}[/|:][A-Za-z0-9-]+?` + endOfPattern;
+  let pattern = `(?:git|https?|git@)(?:\\:\\/\\/)?${domain}[/|:][A-Za-z0-9-/]+?` + endOfPattern;
   let re = new RegExp(pattern);
   return re.test(url);
 };
