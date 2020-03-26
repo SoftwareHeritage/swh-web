@@ -117,6 +117,7 @@ def test_api_lookup_origin_visits(api_client, archive_data, new_origin,
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
             new_origin.url, origin_visit.visit,
+            status='full',
             snapshot=new_snapshots[i].id)
 
     all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
@@ -153,6 +154,7 @@ def test_api_lookup_origin_visits_by_id(api_client, archive_data, new_origin,
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
             new_origin.url, origin_visit.visit,
+            status='full',
             snapshot=new_snapshots[i].id)
 
     all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
@@ -190,6 +192,7 @@ def test_api_lookup_origin_visit(api_client, archive_data, new_origin,
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
             new_origin.url, visit_id,
+            status='full',
             snapshot=new_snapshots[i].id)
         url = reverse('api-1-origin-visit',
                       url_args={'origin_url': new_origin.url,
@@ -239,6 +242,7 @@ def test_api_lookup_origin_visit_latest(api_client, archive_data, new_origin,
     archive_data.snapshot_add([new_snapshots[0]])
     archive_data.origin_visit_update(
         new_origin.url, visit_ids[0],
+        status='full',
         snapshot=new_snapshots[0].id)
 
     url = reverse('api-1-origin-visit-latest',
@@ -274,6 +278,7 @@ def test_api_lookup_origin_visit_latest_with_snapshot(api_client, archive_data,
     archive_data.snapshot_add([new_snapshots[0]])
     archive_data.origin_visit_update(
         new_origin.url, visit_ids[0],
+        status='full',
         snapshot=new_snapshots[0].id)
 
     url = reverse('api-1-origin-visit-latest',

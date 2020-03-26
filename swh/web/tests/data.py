@@ -187,6 +187,7 @@ def _init_tests_data():
         visit = storage.origin_visit_add(url, '2019-12-03 13:55:05', 'tar')
         storage.origin_visit_update(
             url, visit.visit,
+            status='full',
             snapshot='1a8893e6a86f444e8be8e7bda6cb34fb1735a00e')
 
     contents = set()
