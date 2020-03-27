@@ -163,7 +163,7 @@ export function initHomePage() {
     fetch(Urls.stat_counters())
       .then(response => response.json())
       .then(data => {
-        if (data.stat_counters) {
+        if (data.stat_counters.content) {
           $('#swh-contents-count').html(data.stat_counters.content.toLocaleString());
           $('#swh-revisions-count').html(data.stat_counters.revision.toLocaleString());
           $('#swh-origins-count').html(data.stat_counters.origin.toLocaleString());
@@ -171,10 +171,14 @@ export function initHomePage() {
           $('#swh-persons-count').html(data.stat_counters.person.toLocaleString());
           $('#swh-releases-count').html(data.stat_counters.release.toLocaleString());
         }
-        if (data.stat_counters_history) {
+        if (data.stat_counters_history.content) {
           swh.webapp.drawHistoryCounterGraph('#swh-contents-count-history', data.stat_counters_history.content);
           swh.webapp.drawHistoryCounterGraph('#swh-revisions-count-history', data.stat_counters_history.revision);
           swh.webapp.drawHistoryCounterGraph('#swh-origins-count-history', data.stat_counters_history.origin);
+        } else {
+          $('#swh-contents-count-history').hide();
+          $('#swh-revisions-count-history').hide();
+          $('#swh-origins-count-history').hide();
         }
       });
   });
