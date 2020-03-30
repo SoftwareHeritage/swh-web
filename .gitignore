@@ -38,3 +38,4 @@ cypress/mochawesome/
 .nyc_output/
 cypress/coverage/
 cypress/fixtures/source*.json
+cypress/junit/

@@ -8,13 +8,16 @@
   "numTestsKeptInMemory": 500,
   "reporter": "cypress-multi-reporters",
   "reporterOptions": {
-    "reporterEnabled": "mochawesome",
+    "reporterEnabled": "mochawesome, mocha-junit-reporter",
     "mochawesomeReporterOptions": {
       "reportDir": "cypress/mochawesome/results",
       "quiet": true,
       "overwrite": false,
       "html": false,
       "json": true
+    },
+    "mochaJunitReporterReporterOptions": {
+      "mochaFile": "cypress/junit/results/results-[hash].xml"
     }
   },
   "env": {
