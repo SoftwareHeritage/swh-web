@@ -21,5 +21,10 @@ See top-level LICENSE file for more information
 <div style="margin: 4px;">
   <b>Target:</b> <i class="{{ swh_object_icons|key_value:release.target_type }} fa-fw"></i>
   {{ release.target_link}}
+  {% if release.directory_link %}
+    <br/>
+    <b>Directory:</b> <i class="{{ swh_object_icons|key_value:'directory' }} fa-fw"></i>
+    {{ release.directory_link}}
+  {% endif %}
 </div>
 {% endblock %}
