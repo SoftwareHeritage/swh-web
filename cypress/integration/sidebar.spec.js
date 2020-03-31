@@ -36,16 +36,14 @@ describe('Sidebar tests On Large Screen', function() {
     let collapseWidth;
     cy.get('.swh-push-menu')
       .click()
-      .get('.swh-sidebar')
-      .wait(250)
+      .get('.swh-sidebar-collapsed')
       .invoke('width')
       .then((width) => {
         collapseWidth = width;
       })
       .get('.swh-push-menu')
       .click()
-      .get('.swh-sidebar')
-      .wait(250)
+      .get('.swh-sidebar-expanded')
       .invoke('width')
       .then(openWidth => {
         assert.isBelow(collapseWidth, openWidth);

@@ -10,9 +10,9 @@ import {selectText} from 'utils/functions';
 import {BREAKPOINT_MD} from 'utils/constants';
 
 let collapseSidebar = false;
-let previousSidebarState = localStorage.getItem('swh-sidebar-collapsed');
+let previousSidebarState = localStorage.getItem('remember.lte.pushmenu');
 if (previousSidebarState !== undefined) {
-  collapseSidebar = JSON.parse(previousSidebarState);
+  collapseSidebar = previousSidebarState === 'sidebar-collapse';
 }
 
 $(document).on('DOMContentLoaded', () => {
@@ -63,6 +63,36 @@ $(document).ready(() => {
       window.location = lastBrowsePage;
     }
   });
+
+  const mainSideBar = $('.main-sidebar');
+
+  function updateSidebarState() {
+    const body = $('body');
+    if (body.hasClass('sidebar-collapse') &&
+        !mainSideBar.hasClass('swh-sidebar-collapsed')) {
+      mainSideBar.removeClass('swh-sidebar-expanded');
+      mainSideBar.addClass('swh-sidebar-collapsed');
+      $('.swh-words-logo-swh').css('visibility', 'visible');
+    } else if (!body.hasClass('sidebar-collapse') &&
+               !mainSideBar.hasClass('swh-sidebar-expanded')) {
+      mainSideBar.removeClass('swh-sidebar-collapsed');
+      mainSideBar.addClass('swh-sidebar-expanded');
+      $('.swh-words-logo-swh').css('visibility', 'hidden');
+    }
+    // ensure correct sidebar state when loading a page
+    if (body.hasClass('hold-transition')) {
+      setTimeout(() => {
+        updateSidebarState();
+      });
+    }
+  }
+
+  // set sidebar state after collapse / expand animation
+  mainSideBar.on('transitionend', evt => {
+    updateSidebarState();
+  });
+
+  updateSidebarState();
 
   // ensure footer do not overflow main content for mobile devices
   // or after resizing the browser window
@@ -145,9 +175,6 @@ export function initPage(page) {
 
     // triggered when unloading the current page
     $(window).on('unload', () => {
-      // backup sidebar state (collapsed/expanded)
-      let sidebarCollapsed = $('body').hasClass('sidebar-collapse');
-      localStorage.setItem('swh-sidebar-collapsed', JSON.stringify(sidebarCollapsed));
       // backup current browse page
       if (page === 'browse') {
         sessionStorage.setItem('last-browse-page', window.location);
