@@ -110,7 +110,7 @@ def api_request_factory():
 
 
 # Initialize tests data
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope='session', autouse=True)
 def tests_data():
     data = get_tests_data(reset=True)
     # Update swh-web configuration to use the in-memory storages
@@ -120,13 +120,13 @@ def tests_data():
 
 
 # Fixture to manipulate data from a sample archive used in the tests
-@pytest.fixture
+@pytest.fixture(scope='session')
 def archive_data(tests_data):
     return _ArchiveData(tests_data)
 
 
 # Fixture to manipulate indexer data from a sample archive used in the tests
-@pytest.fixture
+@pytest.fixture(scope='session')
 def indexer_data(tests_data):
     return _IndexerData(tests_data)
 
