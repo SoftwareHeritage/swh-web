@@ -12,7 +12,7 @@ from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.hashutil import hash_to_hex, DEFAULT_ALGORITHMS
+from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
 from swh.model.model import Directory, Origin
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
@@ -188,7 +188,7 @@ def _init_tests_data():
         storage.origin_visit_update(
             url, visit.visit,
             status='full',
-            snapshot='1a8893e6a86f444e8be8e7bda6cb34fb1735a00e')
+            snapshot=hash_to_bytes('1a8893e6a86f444e8be8e7bda6cb34fb1735a00e'))
 
     contents = set()
     directories = set()

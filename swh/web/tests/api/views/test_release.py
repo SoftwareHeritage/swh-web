@@ -7,7 +7,9 @@ from datetime import datetime
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.model import Person, Release, TimestampWithTimezone
+from swh.model.model import (
+    ObjectType, Person, Release, Timestamp, TimestampWithTimezone
+)
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
@@ -36,10 +38,11 @@ def test_api_release(api_client, archive_data, release):
 @given(content(), directory(), release())
 def test_api_release_target_type_not_a_revision(api_client, archive_data,
                                                 content, directory, release):
-    for target_type, target in (('content', content), ('directory', directory),
-                                ('release', release)):
+    for target_type, target in ((ObjectType.CONTENT, content),
+                                (ObjectType.DIRECTORY, directory),
+                                (ObjectType.RELEASE, release)):
 
-        if target_type == 'content':
+        if target_type == ObjectType.CONTENT:
             target = target['sha1_git']
 
         sample_release = Release(
@@ -49,7 +52,9 @@ def test_api_release_target_type_not_a_revision(api_client, archive_data,
                 name=b'author'
             ),
             date=TimestampWithTimezone(
-                timestamp=int(datetime.now().timestamp()),
+                timestamp=Timestamp(
+                    seconds=int(datetime.now().timestamp()),
+                    microseconds=0),
                 offset=0,
                 negative_utc=False,
             ),
@@ -71,12 +76,12 @@ def test_api_release_target_type_not_a_revision(api_client, archive_data,
 
         expected_release = archive_data.release_get(new_release_id)
 
-        if target_type == 'content':
+        if target_type == ObjectType.CONTENT:
             url_args = {'q': 'sha1_git:%s' % target}
         else:
             url_args = {'sha1_git': target}
 
-        target_url = reverse('api-1-%s' % target_type,
+        target_url = reverse('api-1-%s' % target_type.value,
                              url_args=url_args,
                              request=rv.wsgi_request)
         expected_release['target_url'] = target_url

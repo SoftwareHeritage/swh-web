@@ -16,7 +16,9 @@ from hypothesis.strategies import (
 
 from swh.model.hashutil import hash_to_hex, hash_to_bytes
 from swh.model.identifiers import directory_identifier
-from swh.model.model import Person, Revision, TimestampWithTimezone
+from swh.model.model import (
+    Person, Revision, RevisionType, TimestampWithTimezone
+)
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.model.hypothesis_strategies import (
     origins as new_origin_strategy, snapshots as new_snapshot
@@ -366,7 +368,7 @@ def new_revision(draw):
         committer_date=TimestampWithTimezone.from_datetime(
             draw(new_swh_date())),
         synthetic=False,
-        type='git',
+        type=RevisionType.GIT,
     )
 
 
