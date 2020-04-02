@@ -163,10 +163,6 @@ def group_swh_persistent_identifiers(persistent_ids: Iterable[PersistentId]
         A dictionary with:
             keys: persistent identifier types
             values: persistent identifiers id
-
-    Raises:
-        BadInputExc: if one of the provided persistent identifier can
-        not be parsed.
     """
     pids_by_type: Dict[str, List[bytes]] = {
         CONTENT: [],
