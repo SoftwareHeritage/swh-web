@@ -17,9 +17,9 @@ from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Snapshot
 from swh.web.browse.utils import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
+from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import (
-    reverse, gen_path_info, format_utc_iso_date,
-    parse_timestamp, get_swh_persistent_id
+    reverse, gen_path_info, format_utc_iso_date, parse_timestamp
 )
 from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_template_used

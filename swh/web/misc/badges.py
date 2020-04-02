@@ -19,7 +19,8 @@ from swh.model.identifiers import (
 )
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.utils import reverse, resolve_swh_persistent_id
+from swh.web.common.identifiers import resolve_swh_persistent_id
+from swh.web.common.utils import reverse
 
 
 _orange = '#f36a24'

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,9 +7,8 @@ import random
 
 from hypothesis import given
 
-from swh.web.common.utils import (
-    reverse, format_utc_iso_date, get_swh_persistent_id
-)
+from swh.web.common.identifiers import get_swh_persistent_id
+from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
     release, origin_with_releases, unknown_release
