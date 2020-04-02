@@ -3,20 +3,26 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Dict, Iterable, List, Optional
+from typing_extensions import TypedDict
+
 from django.http import QueryDict
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import (
     persistent_identifier, parse_persistent_identifier,
-    CONTENT, DIRECTORY, ORIGIN, RELEASE, REVISION, SNAPSHOT
+    CONTENT, DIRECTORY, ORIGIN, RELEASE, REVISION, SNAPSHOT,
+    PersistentId
 )
 
 from swh.web.common.exc import BadInputExc
+from swh.web.common.typing import QueryParameters
 from swh.web.common.utils import reverse
 
 
-def get_swh_persistent_id(object_type, object_id, scheme_version=1):
+def get_swh_persistent_id(object_type: str, object_id: str,
+                          scheme_version: int = 1) -> str:
     """
     Returns the persistent identifier for a swh object based on:
 
@@ -25,15 +31,15 @@ def get_swh_persistent_id(object_type, object_id, scheme_version=1):
         * the swh identifiers scheme version
 
     Args:
-        object_type (str): the swh object type
+        object_type: the swh object type
             (content/directory/release/revision/snapshot)
-        object_id (str): the swh object id (hexadecimal representation
+        object_id: the swh object id (hexadecimal representation
             of its hash value)
-        scheme_version (int): the scheme version of the swh
+        scheme_version: the scheme version of the swh
             persistent identifiers
 
     Returns:
-        str: the swh object persistent identifier
+        the swh object persistent identifier
 
     Raises:
         BadInputExc: if the provided parameters do not enable to
@@ -48,22 +54,29 @@ def get_swh_persistent_id(object_type, object_id, scheme_version=1):
         return swh_id
 
 
-def resolve_swh_persistent_id(swh_id, query_params=None):
+ResolvedPersistentId = TypedDict('ResolvedPersistentId', {
+    'swh_id_parsed': PersistentId,
+    'browse_url': Optional[str]
+})
+
+
+def resolve_swh_persistent_id(swh_id: str,
+                              query_params: Optional[QueryParameters] = None
+                              ) -> ResolvedPersistentId:
     """
     Try to resolve a Software Heritage persistent id into an url for
-    browsing the pointed object.
+    browsing the targeted object.
 
     Args:
-        swh_id (str): a Software Heritage persistent identifier
-        query_params (django.http.QueryDict): optional dict filled with
+        swh_id: a Software Heritage persistent identifier
+        query_params: optional dict filled with
             query parameters to append to the browse url
 
     Returns:
-        dict: a dict with the following keys:
+        a dict with the following keys:
 
-            * **swh_id_parsed (swh.model.identifiers.PersistentId)**:
-              the parsed identifier
-            * **browse_url (str)**: the url for browsing the pointed object
+            * **swh_id_parsed**: the parsed identifier
+            * **browse_url**: the url for browsing the targeted object
     """
     swh_id_parsed = get_persistent_identifier(swh_id)
     object_type = swh_id_parsed.object_type
@@ -107,23 +120,25 @@ def resolve_swh_persistent_id(swh_id, query_params=None):
                            'publicly resolvable because they are for '
                            'internal usage only'))
 
-    return {'swh_id_parsed': swh_id_parsed,
-            'browse_url': browse_url}
+    return {
+        'swh_id_parsed': swh_id_parsed,
+        'browse_url': browse_url
+    }
 
 
-def get_persistent_identifier(persistent_id):
+def get_persistent_identifier(persistent_id: str) -> PersistentId:
     """Check if a persistent identifier is valid.
 
-       Args:
-           persistent_id: A string representing a Software Heritage
-           persistent identifier.
+        Args:
+            persistent_id: A string representing a Software Heritage
+                persistent identifier.
 
-       Raises:
-           BadInputExc: if the provided persistent identifier can
-           not be parsed.
+        Raises:
+            BadInputExc: if the provided persistent identifier can
+            not be parsed.
 
-       Return:
-           A persistent identifier object.
+        Return:
+            A persistent identifier object.
     """
     try:
         pid_object = parse_persistent_identifier(persistent_id)
@@ -134,25 +149,26 @@ def get_persistent_identifier(persistent_id):
         return pid_object
 
 
-def group_swh_persistent_identifiers(persistent_ids):
+def group_swh_persistent_identifiers(persistent_ids: Iterable[PersistentId]
+                                     ) -> Dict[str, List[bytes]]:
     """
     Groups many Software Heritage persistent identifiers into a
     dictionary depending on their type.
 
     Args:
-        persistent_ids (list): a list of Software Heritage persistent
-        identifier objects
+        persistent_ids: an iterable of Software Heritage persistent
+            identifier objects
 
     Returns:
         A dictionary with:
             keys: persistent identifier types
-            values: list(bytes) persistent identifiers id
+            values: persistent identifiers id
 
     Raises:
         BadInputExc: if one of the provided persistent identifier can
         not be parsed.
     """
-    pids_by_type = {
+    pids_by_type: Dict[str, List[bytes]] = {
         CONTENT: [],
         DIRECTORY: [],
         REVISION: [],

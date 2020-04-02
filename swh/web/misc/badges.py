@@ -98,7 +98,7 @@ def _swh_badge(request: HttpRequest, object_type: str, object_id: str,
 
     """
     left_text = 'error'
-    whole_link = ''
+    whole_link = None
 
     try:
         if object_type == ORIGIN:

@@ -27,6 +27,7 @@ from prometheus_client.registry import CollectorRegistry
 from rest_framework.authentication import SessionAuthentication
 
 from swh.web.common.exc import BadInputExc
+from swh.web.common.typing import QueryParameters
 from swh.web.config import get_config
 
 
@@ -49,7 +50,7 @@ swh_object_icons = {
 
 def reverse(viewname: str,
             url_args: Optional[Dict[str, Any]] = None,
-            query_params: Optional[Dict[str, Any]] = None,
+            query_params: Optional[QueryParameters] = None,
             current_app: Optional[str] = None,
             urlconf: Optional[str] = None,
             request: Optional[HttpRequest] = None) -> str:
