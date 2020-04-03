@@ -17,118 +17,19 @@ from swh.web.tests.strategies import origin, revision, unknown_revision, new_ori
 
 @given(revision())
 def test_revision_browse(client, archive_data, revision):
-    url = reverse("browse-revision", url_args={"sha1_git": revision})
-
-    revision_data = archive_data.revision_get(revision)
-
-    author_name = revision_data["author"]["name"]
-    committer_name = revision_data["committer"]["name"]
-    dir_id = revision_data["directory"]
-
-    directory_url = reverse("browse-directory", url_args={"sha1_git": dir_id})
-
-    history_url = reverse("browse-revision-log", url_args={"sha1_git": revision})
-
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/revision.html")
-    assert_contains(resp, author_name)
-    assert_contains(resp, committer_name)
-    assert_contains(resp, directory_url)
-    assert_contains(resp, history_url)
-
-    for parent in revision_data["parents"]:
-        parent_url = reverse("browse-revision", url_args={"sha1_git": parent})
-        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent[:7]))
-
-    author_date = revision_data["date"]
-    committer_date = revision_data["committer_date"]
-
-    message_lines = revision_data["message"].split("\n")
-
-    assert_contains(resp, format_utc_iso_date(author_date))
-    assert_contains(resp, format_utc_iso_date(committer_date))
-    assert_contains(resp, escape(message_lines[0]))
-    assert_contains(resp, escape("\n".join(message_lines[1:])))
-
-    swh_rev_id = get_swh_persistent_id(REVISION, revision)
-    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
-
-    assert_contains(
-        resp,
-        textwrap.indent(
-            (
-                f"Browse archived revision\n"
-                f'<a href="{swh_rev_id_url}">\n'
-                f"  {swh_rev_id}\n"
-                f"</a>"
-            ),
-            " " * 4,
-        ),
-    )
-
-    swhid_context = {"anchor": swh_rev_id, "path": "/"}
-
-    swh_dir_id = get_swh_persistent_id(DIRECTORY, dir_id, metadata=swhid_context)
-    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
-
-    assert_contains(resp, swh_dir_id)
-    assert_contains(resp, swh_dir_id_url)
+    _revision_browse_checks(client, archive_data, revision)
 
 
 @given(origin())
-def test_revision_origin_browse(client, archive_data, origin):
+def test_revision_origin_snapshot_browse(client, archive_data, origin):
     snapshot = archive_data.snapshot_get_latest(origin["url"])
     revision = archive_data.snapshot_get_head(snapshot)
-    revision_data = archive_data.revision_get(revision)
-    dir_id = revision_data["directory"]
 
-    origin_revision_log_url = reverse(
-        "browse-origin-log",
-        query_params={"origin_url": origin["url"], "revision": revision},
+    _revision_browse_checks(client, archive_data, revision, origin_url=origin["url"])
+    _revision_browse_checks(client, archive_data, revision, snapshot=snapshot)
+    _revision_browse_checks(
+        client, archive_data, revision, origin_url=origin["url"], snapshot=snapshot,
     )
-
-    url = reverse(
-        "browse-revision",
-        url_args={"sha1_git": revision},
-        query_params={"origin_url": origin["url"]},
-    )
-
-    resp = client.get(url)
-
-    assert_contains(resp, origin_revision_log_url)
-
-    for parent in revision_data["parents"]:
-        parent_url = reverse(
-            "browse-revision",
-            url_args={"sha1_git": parent},
-            query_params={"origin_url": origin["url"]},
-        )
-        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent[:7]))
-
-    assert_contains(resp, "vault-cook-directory")
-    assert_contains(resp, "vault-cook-revision")
-
-    swhid_context = {
-        "origin": origin["url"],
-        "visit": get_swh_persistent_id(SNAPSHOT, snapshot["id"]),
-    }
-
-    swh_rev_id = get_swh_persistent_id(REVISION, revision, metadata=swhid_context)
-    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
-    assert_contains(resp, swh_rev_id)
-    assert_contains(resp, swh_rev_id_url)
-
-    swhid_context["anchor"] = get_swh_persistent_id(REVISION, revision)
-    swhid_context["path"] = "/"
-
-    swh_dir_id = get_swh_persistent_id(DIRECTORY, dir_id, metadata=swhid_context)
-    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
-    assert_contains(resp, swh_dir_id)
-    assert_contains(resp, swh_dir_id_url)
-
-    assert_contains(resp, "swh-take-new-snapshot")
 
 
 @given(revision())
@@ -297,3 +198,134 @@ def test_revision_uppercase(client, revision):
     redirect_url = reverse("browse-revision", url_args={"sha1_git": revision})
 
     assert resp["location"] == redirect_url
+
+
+def _revision_browse_checks(
+    client, archive_data, revision, origin_url=None, snapshot=None
+):
+
+    query_params = {}
+    if origin_url:
+        query_params["origin_url"] = origin_url
+    if snapshot:
+        query_params["snapshot"] = snapshot["id"]
+
+    url = reverse(
+        "browse-revision", url_args={"sha1_git": revision}, query_params=query_params
+    )
+
+    revision_data = archive_data.revision_get(revision)
+
+    author_name = revision_data["author"]["name"]
+    committer_name = revision_data["committer"]["name"]
+    dir_id = revision_data["directory"]
+
+    if origin_url:
+        snapshot = archive_data.snapshot_get_latest(origin_url)
+        history_url = reverse(
+            "browse-origin-log", query_params={"revision": revision, **query_params},
+        )
+    elif snapshot:
+        history_url = reverse(
+            "browse-snapshot-log",
+            url_args={"snapshot_id": snapshot["id"]},
+            query_params={"revision": revision},
+        )
+    else:
+        history_url = reverse("browse-revision-log", url_args={"sha1_git": revision})
+
+    resp = client.get(url)
+
+    assert resp.status_code == 200
+    assert_template_used(resp, "browse/revision.html")
+    assert_contains(resp, author_name)
+    assert_contains(resp, committer_name)
+    assert_contains(resp, history_url)
+
+    for parent in revision_data["parents"]:
+        parent_url = reverse(
+            "browse-revision", url_args={"sha1_git": parent}, query_params=query_params
+        )
+        assert_contains(resp, '<a href="%s">%s</a>' % (escape(parent_url), parent[:7]))
+
+    author_date = revision_data["date"]
+    committer_date = revision_data["committer_date"]
+
+    message_lines = revision_data["message"].split("\n")
+
+    assert_contains(resp, format_utc_iso_date(author_date))
+    assert_contains(resp, format_utc_iso_date(committer_date))
+    assert_contains(resp, escape(message_lines[0]))
+    assert_contains(resp, escape("\n".join(message_lines[1:])))
+
+    assert_contains(resp, "vault-cook-directory")
+    assert_contains(resp, "vault-cook-revision")
+
+    swh_rev_id = get_swh_persistent_id("revision", revision)
+    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+    assert_contains(resp, swh_rev_id)
+    assert_contains(resp, swh_rev_id_url)
+
+    swh_dir_id = get_swh_persistent_id("directory", dir_id)
+    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
+    assert_contains(resp, swh_dir_id)
+    assert_contains(resp, swh_dir_id_url)
+
+    if origin_url:
+        assert_contains(resp, "swh-take-new-snapshot")
+
+    swh_rev_id = get_swh_persistent_id(REVISION, revision)
+    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+
+    if origin_url:
+        browse_origin_url = reverse(
+            "browse-origin", query_params={"origin_url": origin_url}
+        )
+        title = (
+            f"Browse archived revision for origin\n"
+            f'<a href="{browse_origin_url}">\n'
+            f"  {origin_url}\n"
+            f"</a>"
+        )
+        indent = " " * 6
+    elif snapshot:
+        swh_snp_id = get_swh_persistent_id("snapshot", snapshot["id"])
+        swh_snp_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_snp_id})
+        title = (
+            f"Browse archived revision for snapshot\n"
+            f'<a href="{swh_snp_id_url}">\n'
+            f"  {swh_snp_id}\n"
+            f"</a>"
+        )
+        indent = " " * 6
+    else:
+        title = (
+            f"Browse archived revision\n"
+            f'<a href="{swh_rev_id_url}">\n'
+            f"  {swh_rev_id}\n"
+            f"</a>"
+        )
+        indent = " " * 4
+
+    assert_contains(
+        resp, textwrap.indent(title, indent),
+    )
+
+    swhid_context = {}
+    if origin_url:
+        swhid_context["origin"] = origin_url
+    if snapshot:
+        swhid_context["visit"] = get_swh_persistent_id(SNAPSHOT, snapshot["id"])
+
+    swh_rev_id = get_swh_persistent_id(REVISION, revision, metadata=swhid_context)
+    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+    assert_contains(resp, swh_rev_id)
+    assert_contains(resp, swh_rev_id_url)
+
+    swhid_context["anchor"] = get_swh_persistent_id(REVISION, revision)
+    swhid_context["path"] = "/"
+
+    swh_dir_id = get_swh_persistent_id(DIRECTORY, dir_id, metadata=swhid_context)
+    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
+    assert_contains(resp, swh_dir_id)
+    assert_contains(resp, swh_dir_id_url)

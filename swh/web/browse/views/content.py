@@ -194,36 +194,43 @@ def content_display(request, query_string):
         algo, checksum = query.parse_hash(query_string)
         checksum = hash_to_hex(checksum)
         content_data = request_content(query_string, raise_if_unavailable=False)
-        origin_url = request.GET.get("origin_url", None)
-        selected_language = request.GET.get("language", None)
-
+        origin_url = request.GET.get("origin_url")
+        selected_language = request.GET.get("language")
         if not origin_url:
-            origin_url = request.GET.get("origin", None)
+            origin_url = request.GET.get("origin")
+        snapshot_id = request.GET.get("snapshot")
+        path = request.GET.get("path")
         snapshot_context = None
-        if origin_url:
+        if origin_url is not None or snapshot_id is not None:
             try:
-                snapshot_context = get_snapshot_context(origin_url=origin_url)
-            except NotFoundExc:
-                raw_cnt_url = reverse(
-                    "browse-content", url_args={"query_string": query_string}
+                snapshot_context = get_snapshot_context(
+                    origin_url=origin_url,
+                    snapshot_id=snapshot_id,
+                    branch_name=request.GET.get("branch"),
+                    release_name=request.GET.get("release"),
+                    revision_id=request.GET.get("revision"),
+                    path=path,
+                    browse_context=CONTENT,
                 )
-                error_message = (
-                    "The Software Heritage archive has a content "
-                    "with the hash you provided but the origin "
-                    "mentioned in your request appears broken: %s. "
-                    "Please check the URL and try again.\n\n"
-                    "Nevertheless, you can still browse the content "
-                    "without origin information: %s"
-                    % (gen_link(origin_url), gen_link(raw_cnt_url))
-                )
-
-                raise NotFoundExc(error_message)
-        if snapshot_context:
-            snapshot_context["visit_info"] = None
+            except NotFoundExc as e:
+                if str(e).startswith("Origin"):
+                    raw_cnt_url = reverse(
+                        "browse-content", url_args={"query_string": query_string}
+                    )
+                    error_message = (
+                        "The Software Heritage archive has a content "
+                        "with the hash you provided but the origin "
+                        "mentioned in your request appears broken: %s. "
+                        "Please check the URL and try again.\n\n"
+                        "Nevertheless, you can still browse the content "
+                        "without origin information: %s"
+                        % (gen_link(origin_url), gen_link(raw_cnt_url))
+                    )
+                    raise NotFoundExc(error_message)
+                else:
+                    raise e
     except Exception as exc:
         return handle_view_exception(request, exc)
-
-    path = request.GET.get("path", None)
 
     content = None
     language = None
@@ -245,24 +252,28 @@ def content_display(request, query_string):
     if mimetype and "text/" in mimetype:
         available_languages = highlightjs.get_supported_languages()
 
-    root_dir = None
     filename = None
     path_info = None
     directory_id = None
     directory_url = None
 
-    query_params = {"origin_url": origin_url}
+    root_dir = None
+    if snapshot_context:
+        root_dir = snapshot_context.get("root_directory")
+
+    query_params = snapshot_context["query_params"] if snapshot_context else {}
 
     breadcrumbs = []
 
     if path:
         split_path = path.split("/")
-        root_dir = split_path[0]
+        root_dir = root_dir or split_path[0]
         filename = split_path[-1]
         if root_dir != path:
             path = path.replace(root_dir + "/", "")
             path = path[: -len(filename)]
             path_info = gen_path_info(path)
+            query_params.pop("path", None)
             dir_url = reverse(
                 "browse-directory",
                 url_args={"sha1_git": root_dir},

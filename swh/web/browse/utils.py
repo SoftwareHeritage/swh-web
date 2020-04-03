@@ -315,16 +315,28 @@ def gen_link(url, link_text=None, link_attrs=None):
 
 
 def _snapshot_context_query_params(snapshot_context):
-    query_params = None
+    query_params = {}
+    if not snapshot_context:
+        return query_params
     if snapshot_context and snapshot_context["origin_info"]:
         origin_info = snapshot_context["origin_info"]
+        snp_query_params = snapshot_context["query_params"]
         query_params = {"origin_url": origin_info["url"]}
-        if "timestamp" in snapshot_context["query_params"]:
-            query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
-        if "visit_id" in snapshot_context["query_params"]:
-            query_params["visit_id"] = snapshot_context["query_params"]["visit_id"]
+        if "timestamp" in snp_query_params:
+            query_params["timestamp"] = snp_query_params["timestamp"]
+        if "visit_id" in snp_query_params:
+            query_params["visit_id"] = snp_query_params["visit_id"]
+        if "snapshot" in snp_query_params and "visit_id" not in query_params:
+            query_params["snapshot"] = snp_query_params["snapshot"]
     elif snapshot_context:
-        query_params = {"snapshot_id": snapshot_context["snapshot_id"]}
+        query_params = {"snapshot": snapshot_context["snapshot_id"]}
+
+    if snapshot_context["release"]:
+        query_params["release"] = snapshot_context["release"]
+    elif snapshot_context["branch"] and snapshot_context["branch"] != "HEAD":
+        query_params["branch"] = snapshot_context["branch"]
+    elif snapshot_context["revision_id"]:
+        query_params["revision"] = snapshot_context["revision_id"]
     return query_params
 
 
@@ -342,6 +354,7 @@ def gen_revision_url(revision_id, snapshot_context=None):
 
     """
     query_params = _snapshot_context_query_params(snapshot_context)
+    query_params.pop("revision", None)
 
     return reverse(
         "browse-revision", url_args={"sha1_git": revision_id}, query_params=query_params
@@ -504,17 +517,16 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     Returns:
         The revision log view URL
     """
-    query_params = {"revision": revision_id}
+    query_params = {}
+    if snapshot_context:
+        query_params = _snapshot_context_query_params(snapshot_context)
+
+    query_params["revision"] = revision_id
     if snapshot_context and snapshot_context["origin_info"]:
-        origin_info = snapshot_context["origin_info"]
-        query_params["origin_url"] = origin_info["url"]
-        if "timestamp" in snapshot_context["query_params"]:
-            query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
-        if "visit_id" in snapshot_context["query_params"]:
-            query_params["visit_id"] = snapshot_context["query_params"]["visit_id"]
         revision_log_url = reverse("browse-origin-log", query_params=query_params)
     elif snapshot_context:
         url_args = {"snapshot_id": snapshot_context["snapshot_id"]}
+        del query_params["snapshot"]
         revision_log_url = reverse(
             "browse-snapshot-log", url_args=url_args, query_params=query_params
         )
