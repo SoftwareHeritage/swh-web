@@ -110,6 +110,10 @@ DEFAULT_CONFIG = {
     'es_workers_index_url': ('string', ''),
     'history_counters_url': ('string', 'https://stats.export.softwareheritage.org/history_counters.json'), # noqa
     'client_config': ('dict', {}),
+    'keycloak': ('dict', {
+        'server_url': '',
+        'realm_name': ''
+    }),
 }
 
 swhweb_config = {}  # type: Dict[str, Any]

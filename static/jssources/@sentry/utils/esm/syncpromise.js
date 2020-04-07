@@ -50,22 +50,24 @@ var SyncPromise = /** @class */ (function () {
             if (_this._state === States.PENDING) {
                 return;
             }
-            if (_this._state === States.REJECTED) {
-                _this._handlers.forEach(function (handler) {
+            var cachedHandlers = _this._handlers.slice();
+            _this._handlers = [];
+            cachedHandlers.forEach(function (handler) {
+                if (handler.done) {
+                    return;
+                }
+                if (_this._state === States.RESOLVED) {
+                    if (handler.onfulfilled) {
+                        handler.onfulfilled(_this._value);
+                    }
+                }
+                if (_this._state === States.REJECTED) {
                     if (handler.onrejected) {
                         handler.onrejected(_this._value);
                     }
-                });
-            }
-            else {
-                _this._handlers.forEach(function (handler) {
-                    if (handler.onfulfilled) {
-                        // tslint:disable-next-line:no-unsafe-any
-                        handler.onfulfilled(_this._value);
-                    }
-                });
-            }
-            _this._handlers = [];
+                }
+                handler.done = true;
+            });
         };
         try {
             executor(this._resolve, this._reject);
@@ -122,6 +124,7 @@ var SyncPromise = /** @class */ (function () {
         var _this = this;
         return new SyncPromise(function (resolve, reject) {
             _this._attachHandler({
+                done: false,
                 onfulfilled: function (result) {
                     if (!onfulfilled) {
                         // TODO: ¯\_(ツ)_/¯
@@ -182,7 +185,6 @@ var SyncPromise = /** @class */ (function () {
                     reject(val);
                     return;
                 }
-                // tslint:disable-next-line:no-unsafe-any
                 resolve(val);
             });
         });

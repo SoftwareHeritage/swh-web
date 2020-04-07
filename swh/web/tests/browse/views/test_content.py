@@ -12,8 +12,8 @@ from swh.web.browse.utils import (
     _re_encode_content
 )
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse, get_swh_persistent_id
-from swh.web.common.utils import gen_path_info
+from swh.web.common.identifiers import get_swh_persistent_id
+from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import (
     assert_contains, assert_not_contains, assert_template_used
 )

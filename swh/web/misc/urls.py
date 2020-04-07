@@ -56,7 +56,7 @@ urlpatterns = [
 # when running end to end tests trough cypress, declare some extra
 # endpoints to provide input data for some of those tests
 if get_config()['e2e_tests_mode']:
-    from swh.web.tests.data import (
+    from swh.web.tests.views import (
         get_content_code_data_by_ext,
         get_content_other_data_by_ext,
         get_content_code_data_all_exts,

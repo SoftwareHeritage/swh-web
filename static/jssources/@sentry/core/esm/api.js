@@ -1,4 +1,4 @@
-import { Dsn, timestampWithMs, urlEncode } from '@sentry/utils';
+import { Dsn, urlEncode } from '@sentry/utils';
 var SENTRY_API_VERSION = '7';
 /** Helper class to provide urls to different Sentry endpoints. */
 var API = /** @class */ (function () {
@@ -42,7 +42,6 @@ var API = /** @class */ (function () {
     API.prototype.getRequestHeaders = function (clientName, clientVersion) {
         var dsn = this._dsnObject;
         var header = ["Sentry sentry_version=" + SENTRY_API_VERSION];
-        header.push("sentry_timestamp=" + timestampWithMs()); // TODO: This can be removed
         header.push("sentry_client=" + clientName + "/" + clientVersion);
         header.push("sentry_key=" + dsn.user);
         if (dsn.pass) {

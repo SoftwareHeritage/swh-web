@@ -1,16 +1,16 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.web.common import service, utils
-from swh.web.common.utils import (
-        resolve_swh_persistent_id,
-        get_persistent_identifier
-)
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
+from swh.web.common import service
 from swh.web.common.exc import LargePayloadExc
+from swh.web.common.identifiers import (
+    resolve_swh_persistent_id, get_persistent_identifier,
+    group_swh_persistent_identifiers
+)
 
 
 @api_route(r'/resolve/(?P<swh_id>.*)/',
@@ -109,7 +109,7 @@ def api_swh_pid_known(request):
     response = {str(pid): {'known': False} for pid in persistent_ids}
 
     # group pids by their type
-    pids_by_type = utils.group_swh_persistent_identifiers(persistent_ids)
+    pids_by_type = group_swh_persistent_identifiers(persistent_ids)
     # search for hashes not present in the storage
     missing_hashes = service.lookup_missing_hashes(pids_by_type)
 

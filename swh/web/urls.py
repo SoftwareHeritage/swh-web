@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,9 @@ from django.conf import settings
 from django.conf.urls import (
     url, include, handler400, handler403, handler404, handler500
 )
+from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.views import serve
+
 from django.shortcuts import render
 from django.views.generic.base import RedirectView
 
@@ -40,6 +42,10 @@ urlpatterns = [
     url(r'^(?P<swh_id>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$',
         swh_id_browse, name='browse-swh-id'),
     url(r'^', include('swh.web.misc.urls')),
+    url(r'^', include('swh.web.auth.views')),
+    url(r'^logout/$',
+        LogoutView.as_view(template_name='logout.html'),
+        name='logout'),
 ]
 
 

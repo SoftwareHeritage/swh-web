@@ -18,6 +18,7 @@ pygments
 python-dateutil
 pyyaml
 requests
+python-keycloak >= 0.19.0
 python-memcached
 pybadges
 sentry-sdk
@@ -26,5 +27,3 @@ typing-extensions
 # Doc dependencies
 sphinx
 sphinxcontrib-httpdomain
-
-

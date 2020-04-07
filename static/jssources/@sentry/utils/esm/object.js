@@ -1,4 +1,5 @@
-import { isElement, isError, isEvent, isInstanceOf, isPrimitive, isSyntheticEvent } from './is';
+import * as tslib_1 from "tslib";
+import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive, isSyntheticEvent } from './is';
 import { Memo } from './memo';
 import { getFunctionName, htmlTreeAsString } from './misc';
 import { truncate } from './string';
@@ -281,5 +282,36 @@ export function extractExceptionKeysForMessage(exception, maxLength) {
         return truncate(serialized, maxLength);
     }
     return '';
+}
+/**
+ * Given any object, return the new object with removed keys that value was `undefined`.
+ * Works recursively on objects and arrays.
+ */
+export function dropUndefinedKeys(val) {
+    var e_1, _a;
+    if (isPlainObject(val)) {
+        var obj = val;
+        var rv = {};
+        try {
+            for (var _b = tslib_1.__values(Object.keys(obj)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var key = _c.value;
+                if (typeof obj[key] !== 'undefined') {
+                    rv[key] = dropUndefinedKeys(obj[key]);
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        return rv;
+    }
+    if (Array.isArray(val)) {
+        return val.map(dropUndefinedKeys);
+    }
+    return val;
 }
 //# sourceMappingURL=object.js.map

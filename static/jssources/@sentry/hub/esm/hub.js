@@ -1,5 +1,5 @@
 import * as tslib_1 from "tslib";
-import { consoleSandbox, dynamicRequire, getGlobalObject, isNodeEnv, logger, timestampWithMs, uuid4, } from '@sentry/utils';
+import { consoleSandbox, getGlobalObject, isNodeEnv, logger, timestampWithMs, uuid4 } from '@sentry/utils';
 import { Scope } from './scope';
 /**
  * API compatibility version of this hub.
@@ -69,6 +69,9 @@ var Hub = /** @class */ (function () {
     Hub.prototype.bindClient = function (client) {
         var top = this.getStackTop();
         top.client = client;
+        if (client && client.setupIntegrations) {
+            client.setupIntegrations();
+        }
     };
     /**
      * @inheritDoc
@@ -385,10 +388,14 @@ export function getCurrentHub() {
  */
 function getHubFromActiveDomain(registry) {
     try {
-        // We need to use `dynamicRequire` because `require` on it's own will be optimized by webpack.
-        // We do not want this to happen, we need to try to `require` the domain node module and fail if we are in browser
-        // for example so we do not have to shim it and use `getCurrentHub` universally.
-        var domain = dynamicRequire(module, 'domain');
+        var property = 'domain';
+        var carrier = getMainCarrier();
+        var sentry = carrier.__SENTRY__;
+        // tslint:disable-next-line: strict-type-predicates
+        if (!sentry || !sentry.extensions || !sentry.extensions[property]) {
+            return getHubFromCarrier(registry);
+        }
+        var domain = sentry.extensions[property];
         var activeDomain = domain.active;
         // If there no active domain, just return global hub
         if (!activeDomain) {

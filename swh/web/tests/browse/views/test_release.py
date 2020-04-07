@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,9 +7,8 @@ import random
 
 from hypothesis import given
 
-from swh.web.common.utils import (
-    reverse, format_utc_iso_date, get_swh_persistent_id
-)
+from swh.web.common.identifiers import get_swh_persistent_id
+from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
     release, origin_with_releases, unknown_release
@@ -25,7 +24,7 @@ def test_release_browse(client, archive_data, release):
 
     resp = client.get(url)
 
-    _release_browse_checks(resp, release_data)
+    _release_browse_checks(resp, release_data, archive_data)
 
 
 @given(origin_with_releases())
@@ -41,7 +40,7 @@ def test_release_browse_with_origin(client, archive_data, origin):
 
     resp = client.get(url)
 
-    _release_browse_checks(resp, release_data, origin)
+    _release_browse_checks(resp, release_data, archive_data, origin)
 
 
 @given(unknown_release())
@@ -69,7 +68,7 @@ def test_release_uppercase(client, release):
     assert resp['location'] == redirect_url
 
 
-def _release_browse_checks(resp, release_data, origin_info=None):
+def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
     query_params = {}
     if origin_info:
         query_params['origin'] = origin_info['url']
@@ -102,3 +101,16 @@ def _release_browse_checks(resp, release_data, origin_info=None):
     swh_rel_id_url = reverse('browse-swh-id', url_args={'swh_id': swh_rel_id})
     assert_contains(resp, swh_rel_id)
     assert_contains(resp, swh_rel_id_url)
+
+    if release_data['target_type'] == 'revision':
+        if origin_info:
+            directory_url = reverse(
+                'browse-origin-directory',
+                url_args={'origin_url': origin_info['url']},
+                query_params={'release': release_data['name']})
+        else:
+            rev = archive_data.revision_get(release_data['target'])
+            directory_url = reverse(
+                'browse-directory',
+                url_args={'sha1_git': rev['directory']})
+        assert_contains(resp, directory_url)

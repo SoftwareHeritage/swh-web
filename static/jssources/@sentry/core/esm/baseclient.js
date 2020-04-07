@@ -50,9 +50,6 @@ var BaseClient = /** @class */ (function () {
         if (options.dsn) {
             this._dsn = new Dsn(options.dsn);
         }
-        if (this._isEnabled()) {
-            this._integrations = setupIntegrations(this._options);
-        }
     }
     /**
      * @inheritDoc
@@ -153,10 +150,12 @@ var BaseClient = /** @class */ (function () {
         });
     };
     /**
-     * @inheritDoc
+     * Sets up the integrations
      */
-    BaseClient.prototype.getIntegrations = function () {
-        return this._integrations || {};
+    BaseClient.prototype.setupIntegrations = function () {
+        if (this._isEnabled()) {
+            this._integrations = setupIntegrations(this._options);
+        }
     };
     /**
      * @inheritDoc
@@ -332,45 +331,40 @@ var BaseClient = /** @class */ (function () {
                     return;
                 }
                 var finalEvent = prepared;
-                try {
-                    var isInternalException = hint && hint.data && hint.data.__sentry__ === true;
-                    if (isInternalException || !beforeSend) {
-                        _this._getBackend().sendEvent(finalEvent);
-                        resolve(finalEvent);
+                var isInternalException = hint && hint.data && hint.data.__sentry__ === true;
+                if (isInternalException || !beforeSend) {
+                    _this._getBackend().sendEvent(finalEvent);
+                    resolve(finalEvent);
+                    return;
+                }
+                var beforeSendResult = beforeSend(prepared, hint);
+                // tslint:disable-next-line:strict-type-predicates
+                if (typeof beforeSendResult === 'undefined') {
+                    logger.error('`beforeSend` method has to return `null` or a valid event.');
+                }
+                else if (isThenable(beforeSendResult)) {
+                    _this._handleAsyncBeforeSend(beforeSendResult, resolve, reject);
+                }
+                else {
+                    finalEvent = beforeSendResult;
+                    if (finalEvent === null) {
+                        logger.log('`beforeSend` returned `null`, will not send event.');
+                        resolve(null);
                         return;
                     }
-                    var beforeSendResult = beforeSend(prepared, hint);
-                    // tslint:disable-next-line:strict-type-predicates
-                    if (typeof beforeSendResult === 'undefined') {
-                        logger.error('`beforeSend` method has to return `null` or a valid event.');
-                    }
-                    else if (isThenable(beforeSendResult)) {
-                        _this._handleAsyncBeforeSend(beforeSendResult, resolve, reject);
-                    }
-                    else {
-                        finalEvent = beforeSendResult;
-                        if (finalEvent === null) {
-                            logger.log('`beforeSend` returned `null`, will not send event.');
-                            resolve(null);
-                            return;
-                        }
-                        // From here on we are really async
-                        _this._getBackend().sendEvent(finalEvent);
-                        resolve(finalEvent);
-                    }
-                }
-                catch (exception) {
-                    _this.captureException(exception, {
-                        data: {
-                            __sentry__: true,
-                        },
-                        originalException: exception,
-                    });
-                    reject('`beforeSend` threw an error, will not send event.');
+                    // From here on we are really async
+                    _this._getBackend().sendEvent(finalEvent);
+                    resolve(finalEvent);
                 }
             })
-                .then(null, function () {
-                reject('`beforeSend` threw an error, will not send event.');
+                .then(null, function (reason) {
+                _this.captureException(reason, {
+                    data: {
+                        __sentry__: true,
+                    },
+                    originalException: reason,
+                });
+                reject("Event processing pipeline threw an error, original event will not be sent. Details have been sent as a new event.\nReason: " + reason);
             });
         });
     };

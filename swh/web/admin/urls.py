@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.conf.urls import url
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect
 
 from swh.web.admin.adminurls import AdminUrls
@@ -17,12 +17,11 @@ def _admin_default_view(request):
     return redirect('admin-origin-save')
 
 
-urlpatterns = [url(r'^$', _admin_default_view, name='admin'),
-               url(r'^login/$',
-                   LoginView.as_view(template_name='login.html'),
-                   name='login'),
-               url(r'^logout/$',
-                   LogoutView.as_view(template_name='logout.html'),
-                   name='logout')]
+urlpatterns = [
+    url(r'^$', _admin_default_view, name='admin'),
+    url(r'^login/$',
+        LoginView.as_view(template_name='login.html'),
+        name='login'),
+]
 
 urlpatterns += AdminUrls.get_url_patterns()

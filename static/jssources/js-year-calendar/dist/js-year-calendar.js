@@ -10,15 +10,15 @@
     factory(mod.exports);
     global.jsYearCalendar = mod.exports;
   }
-})(this, function (_exports) {
+})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_exports) {
   "use strict";
 
   Object.defineProperty(_exports, "__esModule", {
     value: true
   });
-  _exports.default = void 0;
+  _exports["default"] = void 0;
 
-  function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+  function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -81,9 +81,7 @@
    */
 
 
-  var Calendar =
-  /*#__PURE__*/
-  function () {
+  var Calendar = /*#__PURE__*/function () {
     /**
      * Fired when a day is clicked.
      * @event
@@ -1014,6 +1012,8 @@
     }, {
       key: "_openContextMenu",
       value: function _openContextMenu(elt) {
+        var _this4 = this;
+
         var contextMenu = document.querySelector('.calendar-context-menu');
 
         if (contextMenu !== null) {
@@ -1035,7 +1035,8 @@
         for (var i = 0; i < events.length; i++) {
           var eventItem = document.createElement('div');
           eventItem.classList.add('item');
-          eventItem.style.borderLeft = "4px solid ".concat(events[i].color);
+          eventItem.style.paddingLeft = '4px';
+          eventItem.style.boxShadow = "inset 4px 0 0 0 ".concat(events[i].color);
           var eventItemContent = document.createElement('div');
           eventItemContent.classList.add('content');
           var text = document.createElement('span');
@@ -1057,15 +1058,32 @@
           var position = this._getElementPosition(elt);
 
           contextMenu.style.left = position.left + 25 + 'px';
+          contextMenu.style.right = '';
           contextMenu.style.top = position.top + 25 + 'px';
           contextMenu.style.display = 'block';
-          window.addEventListener('click', function (e) {
-            if (!contextMenu.contains(e.target)) {
+
+          if (contextMenu.getBoundingClientRect().right > document.body.offsetWidth) {
+            contextMenu.style.left = '';
+            contextMenu.style.right = '0';
+          } // Launch the position check once the whole context menu tree will be rendered
+
+
+          setTimeout(function () {
+            return _this4._checkContextMenuItemsPosition();
+          }, 0);
+
+          var closeContextMenu = function closeContextMenu(event) {
+            if (event.type !== 'click' || !contextMenu.contains(event.target)) {
               contextMenu.style.display = 'none';
+              window.removeEventListener('click', closeContextMenu);
+              window.removeEventListener('resize', closeContextMenu);
+              window.removeEventListener('scroll', closeContextMenu);
             }
-          }, {
-            once: true
-          });
+          };
+
+          window.addEventListener('click', closeContextMenu);
+          window.addEventListener('resize', closeContextMenu);
+          window.addEventListener('scroll', closeContextMenu);
         }
       }
     }, {
@@ -1114,6 +1132,30 @@
         if (subMenu.children.length > 0) {
           parent.appendChild(subMenu);
         }
+      }
+    }, {
+      key: "_checkContextMenuItemsPosition",
+      value: function _checkContextMenuItemsPosition() {
+        var menus = document.querySelectorAll('.calendar-context-menu .submenu');
+        menus.forEach(function (menu) {
+          var htmlMenu = menu;
+          htmlMenu.style.display = 'block';
+          htmlMenu.style.visibility = 'hidden';
+        });
+        menus.forEach(function (menu) {
+          var htmlMenu = menu;
+
+          if (htmlMenu.getBoundingClientRect().right > document.body.offsetWidth) {
+            htmlMenu.classList.add('open-left');
+          } else {
+            htmlMenu.classList.remove('open-left');
+          }
+        });
+        menus.forEach(function (menu) {
+          var htmlMenu = menu;
+          htmlMenu.style.display = '';
+          htmlMenu.style.visibility = '';
+        });
       }
     }, {
       key: "_getDate",
@@ -1246,18 +1288,18 @@
     }, {
       key: "isThereFreeSlot",
       value: function isThereFreeSlot(date) {
-        var _this4 = this;
+        var _this5 = this;
 
         var after = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
         var events = this.getEvents(date);
 
         if (after === true) {
           return !events.some(function (evt) {
-            return !_this4.options.alwaysHalfDay && !evt.endHalfDay || evt.endDate > date;
+            return !_this5.options.alwaysHalfDay && !evt.endHalfDay || evt.endDate > date;
           });
         } else if (after === false) {
           return !events.some(function (evt) {
-            return !_this4.options.alwaysHalfDay && !evt.startHalfDay || evt.startDate < date;
+            return !_this5.options.alwaysHalfDay && !evt.startHalfDay || evt.startDate < date;
           });
         } else {
           return this.isThereFreeSlot(date, false) || this.isThereFreeSlot(date, true);
@@ -1281,7 +1323,7 @@
     }, {
       key: "setYear",
       value: function setYear(year) {
-        var _this5 = this;
+        var _this6 = this;
 
         var parsedYear = parseInt(year);
 
@@ -1305,11 +1347,11 @@
             this.render(true);
 
             this._fetchDataSource(function (dataSource) {
-              _this5._dataSource = dataSource;
+              _this6._dataSource = dataSource;
 
-              _this5._initializeDatasourceColors();
+              _this6._initializeDatasourceColors();
 
-              _this5.render(false);
+              _this6.render(false);
             });
           } else {
             if (!eventResult.preventRendering) {
@@ -1844,7 +1886,7 @@
     }, {
       key: "setDataSource",
       value: function setDataSource(dataSource) {
-        var _this6 = this;
+        var _this7 = this;
 
         var preventRendering = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         this.options.dataSource = dataSource instanceof Array || typeof dataSource === "function" ? dataSource : [];
@@ -1853,11 +1895,11 @@
           this.render(true);
 
           this._fetchDataSource(function (dataSource) {
-            _this6._dataSource = dataSource;
+            _this7._dataSource = dataSource;
 
-            _this6._initializeDatasourceColors();
+            _this7._initializeDatasourceColors();
 
-            _this6.render(false);
+            _this7.render(false);
           });
         } else {
           this._dataSource = this.options.dataSource;
@@ -1943,7 +1985,7 @@
     return Calendar;
   }();
 
-  _exports.default = Calendar;
+  _exports["default"] = Calendar;
 
   _defineProperty(Calendar, "locales", {
     en: {

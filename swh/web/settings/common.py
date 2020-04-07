@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,8 @@ Django common settings for swh-web.
 
 import os
 import sys
+
+from typing import Any, Dict
 
 from swh.web.config import get_config
 
@@ -45,7 +47,7 @@ INSTALLED_APPS = [
     'swh.web.browse',
     'webpack_loader',
     'django_js_reverse',
-    'corsheaders'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -55,9 +57,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'swh.web.auth.middlewares.OIDCSessionRefreshMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'swh.web.common.middlewares.ThrottlingHeadersMiddleware'
+    'swh.web.common.middlewares.ThrottlingHeadersMiddleware',
 ]
 
 # Compress all assets (static ones and dynamically generated html)
@@ -159,16 +162,20 @@ for limiter_scope, limiter_conf in throttling['scopes'].items():
             throttle_rates[limiter_scope + '_' + http_request.lower()] = \
                 limiter_conf['limiter_rate'][http_request]
 
-REST_FRAMEWORK = {
+REST_FRAMEWORK: Dict[str, Any] = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'swh.web.api.renderers.YAMLRenderer',
         'rest_framework.renderers.TemplateHTMLRenderer'
     ),
     'DEFAULT_THROTTLE_CLASSES': (
-        'swh.web.common.throttling.SwhWebRateThrottle',
+        'swh.web.api.throttling.SwhWebRateThrottle',
     ),
-    'DEFAULT_THROTTLE_RATES': throttle_rates
+    'DEFAULT_THROTTLE_RATES': throttle_rates,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'swh.web.auth.backends.OIDCBearerTokenAuthentication',
+    ],
 }
 
 LOGGING = {
@@ -289,3 +296,8 @@ JS_REVERSE_JS_MINIFY = False
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r'^/badge/.*$'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'swh.web.auth.backends.OIDCAuthorizationCodePKCEBackend',
+]
