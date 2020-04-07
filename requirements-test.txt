@@ -7,4 +7,5 @@ djangorestframework-stubs
 requests-mock
 swh.core[http] >= 0.0.81
 swh.loader.git >= 0.0.55
+swh.storage >= 0.0.178
 decorator  # dependency of swh.core[http]

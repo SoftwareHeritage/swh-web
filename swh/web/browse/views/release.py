@@ -94,6 +94,7 @@ def release_browse(request, sha1_git):
 
     vault_cooking = None
 
+    rev_directory = None
     target_link = None
     if release['target_type'] == 'revision':
         target_link = gen_revision_link(release['target'],
@@ -101,9 +102,10 @@ def release_browse(request, sha1_git):
                                         link_text=None, link_attrs=None)
         try:
             revision = service.lookup_revision(release['target'])
+            rev_directory = revision['directory']
             vault_cooking = {
                 'directory_context': True,
-                'directory_id': revision['directory'],
+                'directory_id': rev_directory,
                 'revision_context': True,
                 'revision_id': release['target']
             }
@@ -114,10 +116,11 @@ def release_browse(request, sha1_git):
                                          snapshot_context=snapshot_context,
                                          link_text=None, link_attrs=None)
         try:
-            revision = service.lookup_directory(release['target'])
+            # check directory exists
+            service.lookup_directory(release['target'])
             vault_cooking = {
                 'directory_context': True,
-                'directory_id': revision['directory'],
+                'directory_id': release['target'],
                 'revision_context': False,
                 'revision_id': None
             }
@@ -132,6 +135,27 @@ def release_browse(request, sha1_git):
                                        snapshot_context=snapshot_context,
                                        link_text=None, link_attrs=None)
 
+    rev_directory_url = None
+    if rev_directory is not None:
+        if origin_info:
+            rev_directory_url = reverse(
+                'browse-origin-directory',
+                url_args={'origin_url': origin_info['url']},
+                query_params={'release': release['name']})
+        elif snapshot_id:
+            rev_directory_url = reverse(
+                'browse-snapshot-directory',
+                url_args={'snapshot_id': snapshot_id},
+                query_params={'release': release['name']})
+        else:
+            rev_directory_url = reverse(
+                'browse-directory',
+                url_args={'sha1_git': rev_directory})
+
+    directory_link = None
+    if rev_directory_url is not None:
+        directory_link = gen_link(rev_directory_url, rev_directory)
+    release['directory_link'] = directory_link
     release['target_link'] = target_link
 
     if snapshot_context:

@@ -89,13 +89,16 @@ function searchOriginsFirst(searchQueryText, limit) {
   let baseSearchUrl;
   let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
   if (searchMetadata) {
-    baseSearchUrl = Urls.api_1_origin_metadata_search() + '?fulltext=' + encodeURIComponent(searchQueryText);
+    baseSearchUrl = new URL(Urls.api_1_origin_metadata_search(), window.location);
+    baseSearchUrl.searchParams.append('fulltext', searchQueryText);
   } else {
-    baseSearchUrl = Urls.api_1_origin_search(searchQueryText) + '?';
+    baseSearchUrl = new URL(Urls.api_1_origin_search(searchQueryText), window.location);
   }
 
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-  let searchUrl = baseSearchUrl + `&limit=${limit}&with_visit=${withVisit}`;
+  baseSearchUrl.searchParams.append('limit', limit);
+  baseSearchUrl.searchParams.append('with_visit', withVisit);
+  let searchUrl = baseSearchUrl.toString();
   searchOrigins(searchUrl);
 }
 
@@ -176,18 +179,19 @@ export function initOriginSearch() {
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
       let withContent = $('#swh-filter-empty-visits').prop('checked');
       let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
-      let queryParameters = '?q=' + encodeURIComponent(searchQueryText);
+      let queryParameters = new URLSearchParams();
+      queryParameters.append('q', searchQueryText);
       if (withVisit) {
-        queryParameters += '&with_visit';
+        queryParameters.append('with_visit', withVisit);
       }
       if (withContent) {
-        queryParameters += '&with_content';
+        queryParameters.append('with_content', withContent);
       }
       if (searchMetadata) {
-        queryParameters += '&search_metadata';
+        queryParameters.append('search_metadata', searchMetadata);
       }
       // Update the url, triggering page reload and effective search
-      window.location.search = queryParameters;
+      window.location.search = `?${queryParameters.toString()}`;
     });
 
     $('#origins-next-results-button').click(event => {

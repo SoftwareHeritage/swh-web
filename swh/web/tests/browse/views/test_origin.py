@@ -5,6 +5,7 @@
 
 import random
 import re
+import string
 
 import swh.web.browse.utils
 
@@ -13,17 +14,19 @@ from django.utils.html import escape
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
+from swh.model.model import Snapshot
 from swh.web.browse.utils import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
+from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import (
-    reverse, gen_path_info, format_utc_iso_date,
-    parse_timestamp, get_swh_persistent_id
+    reverse, gen_path_info, format_utc_iso_date, parse_timestamp
 )
-from swh.web.tests.data import get_content
+from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
     origin, origin_with_multiple_visits, new_origin,
-    new_snapshot, visit_dates, revisions, origin_with_releases
+    new_snapshot, visit_dates, revisions, origin_with_releases,
+    release as existing_release
 )
 
 
@@ -268,10 +271,10 @@ def test_origin_snapshot_null_branch(client, archive_data, new_origin,
                 'target': hash_to_bytes(revisions[i-1]),
             }
 
-    archive_data.snapshot_add([snp_dict])
+    archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
         new_origin['url'], visit_dates[0], type='git')
-    archive_data.origin_visit_update(new_origin['url'], visit['visit'],
+    archive_data.origin_visit_update(new_origin['url'], visit.visit,
                                      status='partial',
                                      snapshot=snp_dict['id'])
 
@@ -293,10 +296,10 @@ def test_origin_snapshot_invalid_branch(client, archive_data, new_origin,
             'target': hash_to_bytes(revisions[i]),
         }
 
-    archive_data.snapshot_add([snp_dict])
+    archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
         new_origin['url'], visit_dates[0], type='git')
-    archive_data.origin_visit_update(new_origin['url'], visit['visit'],
+    archive_data.origin_visit_update(new_origin['url'], visit.visit,
                                      status='full',
                                      snapshot=snp_dict['id'])
 
@@ -902,3 +905,46 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
                         escape(browse_release_url))
         assert_contains(resp, '<a href="%s">' %
                         escape(browse_revision_url))
+
+
+@given(new_origin(), visit_dates(), revisions(min_size=10, max_size=10),
+       existing_release())
+def test_origin_branches_pagination_with_alias(client, archive_data, mocker,
+                                               new_origin, visit_dates,
+                                               revisions, existing_release):
+    """
+    When a snapshot contains a branch or a release alias, pagination links
+    in the branches / releases view should be displayed.
+    """
+    mocker.patch('swh.web.browse.views.utils.snapshot_context.PER_PAGE',
+                 len(revisions) / 2)
+    snp_dict = {'branches': {}, 'id': hash_to_bytes(random_sha1())}
+    for i in range(len(revisions)):
+        branch = ''.join(random.choices(string.ascii_lowercase, k=8))
+        snp_dict['branches'][branch.encode()] = {
+            'target_type': 'revision',
+            'target': hash_to_bytes(revisions[i]),
+        }
+    release = ''.join(random.choices(string.ascii_lowercase, k=8))
+    snp_dict['branches'][b'RELEASE_ALIAS'] = {
+        'target_type': 'alias',
+        'target': release.encode()
+    }
+    snp_dict['branches'][release.encode()] = {
+        'target_type': 'release',
+        'target': hash_to_bytes(existing_release)
+    }
+    new_origin = archive_data.origin_add([new_origin])[0]
+    archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
+    visit = archive_data.origin_visit_add(
+        new_origin['url'], visit_dates[0], type='git')
+    archive_data.origin_visit_update(new_origin['url'], visit.visit,
+                                     status='full',
+                                     snapshot=snp_dict['id'])
+
+    url = reverse('browse-origin-branches',
+                  url_args={'origin_url': new_origin['url']})
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert_template_used(resp, 'browse/branches.html')
+    assert_contains(resp, '<ul class="pagination')

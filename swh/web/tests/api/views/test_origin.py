@@ -7,6 +7,8 @@ from hypothesis import given
 import pytest
 from requests.utils import parse_header_links
 
+from swh.model.model import Origin
+
 from swh.storage.exc import StorageDBError, StorageAPIError
 
 from swh.web.api.utils import enrich_origin_visit, enrich_origin
@@ -107,23 +109,25 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_api(api_client,
 @given(new_origin(), visit_dates(3), new_snapshots(3))
 def test_api_lookup_origin_visits(api_client, archive_data, new_origin,
                                   visit_dates, new_snapshots):
+
     archive_data.origin_add_one(new_origin)
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            new_origin['url'], visit_date, type='git')
+            new_origin.url, visit_date, type='git')
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
-            new_origin['url'], origin_visit['visit'],
-            snapshot=new_snapshots[i]['id'])
+            new_origin.url, origin_visit.visit,
+            status='full',
+            snapshot=new_snapshots[i].id)
 
-    all_visits = list(reversed(get_origin_visits(new_origin)))
+    all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
 
     for last_visit, expected_visits in (
             (None, all_visits[:2]),
             (all_visits[1]['visit'], all_visits[2:])):
 
         url = reverse('api-1-origin-visits',
-                      url_args={'origin_url': new_origin['url']},
+                      url_args={'origin_url': new_origin.url},
                       query_params={'per_page': 2,
                                     'last_visit': last_visit})
 
@@ -146,20 +150,21 @@ def test_api_lookup_origin_visits_by_id(api_client, archive_data, new_origin,
     archive_data.origin_add_one(new_origin)
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            new_origin['url'], visit_date, type='git')
+            new_origin.url, visit_date, type='git')
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
-            new_origin['url'], origin_visit['visit'],
-            snapshot=new_snapshots[i]['id'])
+            new_origin.url, origin_visit.visit,
+            status='full',
+            snapshot=new_snapshots[i].id)
 
-    all_visits = list(reversed(get_origin_visits(new_origin)))
+    all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
 
     for last_visit, expected_visits in (
             (None, all_visits[:2]),
             (all_visits[1]['visit'], all_visits[2:4])):
 
         url = reverse('api-1-origin-visits',
-                      url_args={'origin_url': new_origin['url']},
+                      url_args={'origin_url': new_origin.url},
                       query_params={'per_page': 2,
                                     'last_visit': last_visit})
 
@@ -182,14 +187,15 @@ def test_api_lookup_origin_visit(api_client, archive_data, new_origin,
     archive_data.origin_add_one(new_origin)
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            new_origin['url'], visit_date, type='git')
-        visit_id = origin_visit['visit']
+            new_origin.url, visit_date, type='git')
+        visit_id = origin_visit.visit
         archive_data.snapshot_add([new_snapshots[i]])
         archive_data.origin_visit_update(
-            new_origin['url'], origin_visit['visit'],
-            snapshot=new_snapshots[i]['id'])
+            new_origin.url, visit_id,
+            status='full',
+            snapshot=new_snapshots[i].id)
         url = reverse('api-1-origin-visit',
-                      url_args={'origin_url': new_origin['url'],
+                      url_args={'origin_url': new_origin.url,
                                 'visit_id': visit_id})
 
         rv = api_client.get(url)
@@ -197,7 +203,7 @@ def test_api_lookup_origin_visit(api_client, archive_data, new_origin,
         assert rv['Content-Type'] == 'application/json'
 
         expected_visit = archive_data.origin_visit_get_by(
-            new_origin['url'], visit_id)
+            new_origin.url, visit_id)
 
         expected_visit = enrich_origin_visit(
             expected_visit, with_origin_link=True,
@@ -212,13 +218,13 @@ def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data,
     archive_data.origin_add_one(new_origin)
 
     url = reverse('api-1-origin-visit-latest',
-                  url_args={'origin_url': new_origin['url']})
+                  url_args={'origin_url': new_origin.url})
 
     rv = api_client.get(url)
     assert rv.status_code == 404, rv.data
     assert rv.data == {
         'exception': 'NotFoundExc',
-        'reason': 'No visit for origin %s found' % new_origin['url']
+        'reason': 'No visit for origin %s found' % new_origin.url
     }
 
 
@@ -230,16 +236,17 @@ def test_api_lookup_origin_visit_latest(api_client, archive_data, new_origin,
     visit_ids = []
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            new_origin['url'], visit_date, type='git')
-        visit_ids.append(origin_visit['visit'])
+            new_origin.url, visit_date, type='git')
+        visit_ids.append(origin_visit.visit)
 
     archive_data.snapshot_add([new_snapshots[0]])
     archive_data.origin_visit_update(
-        new_origin['url'], visit_ids[0],
-        snapshot=new_snapshots[0]['id'])
+        new_origin.url, visit_ids[0],
+        status='full',
+        snapshot=new_snapshots[0].id)
 
     url = reverse('api-1-origin-visit-latest',
-                  url_args={'origin_url': new_origin['url']})
+                  url_args={'origin_url': new_origin.url})
 
     rv = api_client.get(url)
 
@@ -247,7 +254,7 @@ def test_api_lookup_origin_visit_latest(api_client, archive_data, new_origin,
     assert rv['Content-Type'] == 'application/json'
 
     expected_visit = archive_data.origin_visit_get_by(
-        new_origin['url'], visit_ids[1])
+        new_origin.url, visit_ids[1])
 
     expected_visit = enrich_origin_visit(
             expected_visit, with_origin_link=True,
@@ -265,16 +272,17 @@ def test_api_lookup_origin_visit_latest_with_snapshot(api_client, archive_data,
     visit_ids = []
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            new_origin['url'], visit_date, type='git')
-        visit_ids.append(origin_visit['visit'])
+            new_origin.url, visit_date, type='git')
+        visit_ids.append(origin_visit.visit)
 
     archive_data.snapshot_add([new_snapshots[0]])
     archive_data.origin_visit_update(
-        new_origin['url'], visit_ids[0],
-        snapshot=new_snapshots[0]['id'])
+        new_origin.url, visit_ids[0],
+        status='full',
+        snapshot=new_snapshots[0].id)
 
     url = reverse('api-1-origin-visit-latest',
-                  url_args={'origin_url': new_origin['url']},
+                  url_args={'origin_url': new_origin.url},
                   query_params={'require_snapshot': True})
 
     rv = api_client.get(url)
@@ -283,7 +291,7 @@ def test_api_lookup_origin_visit_latest_with_snapshot(api_client, archive_data,
     assert rv['Content-Type'] == 'application/json'
 
     expected_visit = archive_data.origin_visit_get_by(
-        new_origin['url'], visit_ids[0])
+        new_origin.url, visit_ids[0])
 
     expected_visit = enrich_origin_visit(
             expected_visit, with_origin_link=True,
@@ -379,14 +387,14 @@ def test_api_origin_by_url(api_client, archive_data, origin):
 def test_api_origin_not_found(api_client, new_origin):
 
     url = reverse('api-1-origin',
-                  url_args={'origin_url': new_origin['url']})
+                  url_args={'origin_url': new_origin.url})
     rv = api_client.get(url)
 
     assert rv.status_code == 404, rv.data
     assert rv['Content-Type'] == 'application/json'
     assert rv.data == {
         'exception': 'NotFoundExc',
-        'reason': 'Origin with url %s not found!' % new_origin['url']
+        'reason': 'Origin with url %s not found!' % new_origin.url
     }
 
 
@@ -514,7 +522,7 @@ def test_api_origin_search_limit(
         mocker.patch('swh.web.common.service.search', None)
 
         archive_data.origin_add([
-            {'url': 'http://foobar/{}'.format(i)}
+            Origin(url='http://foobar/{}'.format(i))
             for i in range(2000)
         ])
 

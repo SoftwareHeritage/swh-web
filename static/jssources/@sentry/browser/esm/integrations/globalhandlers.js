@@ -1,7 +1,7 @@
 import * as tslib_1 from "tslib";
 import { getCurrentHub } from '@sentry/core';
 import { Severity } from '@sentry/types';
-import { addExceptionMechanism, getGlobalObject, getLocationHref, isErrorEvent, isPrimitive, isString, logger, } from '@sentry/utils';
+import { addExceptionMechanism, addInstrumentationHandler, getLocationHref, isErrorEvent, isPrimitive, isString, logger, } from '@sentry/utils';
 import { eventFromUnknownInput } from '../eventbuilder';
 import { shouldIgnoreOnError } from '../helpers';
 /** Global handlers */
@@ -12,12 +12,6 @@ var GlobalHandlers = /** @class */ (function () {
          * @inheritDoc
          */
         this.name = GlobalHandlers.id;
-        /** JSDoc */
-        this._global = getGlobalObject();
-        /** JSDoc */
-        this._oldOnErrorHandler = null;
-        /** JSDoc */
-        this._oldOnUnhandledRejectionHandler = null;
         /** JSDoc */
         this._onErrorHandlerInstalled = false;
         /** JSDoc */
@@ -40,86 +34,91 @@ var GlobalHandlers = /** @class */ (function () {
     };
     /** JSDoc */
     GlobalHandlers.prototype._installGlobalOnErrorHandler = function () {
+        var _this = this;
         if (this._onErrorHandlerInstalled) {
             return;
         }
-        var self = this; // tslint:disable-line:no-this-assignment
-        this._oldOnErrorHandler = this._global.onerror;
-        this._global.onerror = function (msg, url, line, column, error) {
-            var currentHub = getCurrentHub();
-            var hasIntegration = currentHub.getIntegration(GlobalHandlers);
-            var isFailedOwnDelivery = error && error.__sentry_own_request__ === true;
-            if (!hasIntegration || shouldIgnoreOnError() || isFailedOwnDelivery) {
-                if (self._oldOnErrorHandler) {
-                    return self._oldOnErrorHandler.apply(this, arguments);
+        addInstrumentationHandler({
+            callback: function (data) {
+                var error = data.error;
+                var currentHub = getCurrentHub();
+                var hasIntegration = currentHub.getIntegration(GlobalHandlers);
+                var isFailedOwnDelivery = error && error.__sentry_own_request__ === true;
+                if (!hasIntegration || shouldIgnoreOnError() || isFailedOwnDelivery) {
+                    return;
                 }
-                return false;
-            }
-            var client = currentHub.getClient();
-            var event = isPrimitive(error)
-                ? self._eventFromIncompleteOnError(msg, url, line, column)
-                : self._enhanceEventWithInitialFrame(eventFromUnknownInput(error, undefined, {
-                    attachStacktrace: client && client.getOptions().attachStacktrace,
-                    rejection: false,
-                }), url, line, column);
-            addExceptionMechanism(event, {
-                handled: false,
-                type: 'onerror',
-            });
-            currentHub.captureEvent(event, {
-                originalException: error,
-            });
-            if (self._oldOnErrorHandler) {
-                return self._oldOnErrorHandler.apply(this, arguments);
-            }
-            return false;
-        };
+                var client = currentHub.getClient();
+                var event = isPrimitive(error)
+                    ? _this._eventFromIncompleteOnError(data.msg, data.url, data.line, data.column)
+                    : _this._enhanceEventWithInitialFrame(eventFromUnknownInput(error, undefined, {
+                        attachStacktrace: client && client.getOptions().attachStacktrace,
+                        rejection: false,
+                    }), data.url, data.line, data.column);
+                addExceptionMechanism(event, {
+                    handled: false,
+                    type: 'onerror',
+                });
+                currentHub.captureEvent(event, {
+                    originalException: error,
+                });
+            },
+            type: 'error',
+        });
         this._onErrorHandlerInstalled = true;
     };
     /** JSDoc */
     GlobalHandlers.prototype._installGlobalOnUnhandledRejectionHandler = function () {
+        var _this = this;
         if (this._onUnhandledRejectionHandlerInstalled) {
             return;
         }
-        var self = this; // tslint:disable-line:no-this-assignment
-        this._oldOnUnhandledRejectionHandler = this._global.onunhandledrejection;
-        this._global.onunhandledrejection = function (e) {
-            var error = e;
-            try {
-                error = e && 'reason' in e ? e.reason : e;
-            }
-            catch (_oO) {
-                // no-empty
-            }
-            var currentHub = getCurrentHub();
-            var hasIntegration = currentHub.getIntegration(GlobalHandlers);
-            var isFailedOwnDelivery = error && error.__sentry_own_request__ === true;
-            if (!hasIntegration || shouldIgnoreOnError() || isFailedOwnDelivery) {
-                if (self._oldOnUnhandledRejectionHandler) {
-                    return self._oldOnUnhandledRejectionHandler.apply(this, arguments);
+        addInstrumentationHandler({
+            callback: function (e) {
+                var error = e;
+                // dig the object of the rejection out of known event types
+                try {
+                    // PromiseRejectionEvents store the object of the rejection under 'reason'
+                    // see https://developer.mozilla.org/en-US/docs/Web/API/PromiseRejectionEvent
+                    if ('reason' in e) {
+                        error = e.reason;
+                    }
+                    // something, somewhere, (likely a browser extension) effectively casts PromiseRejectionEvents
+                    // to CustomEvents, moving the `promise` and `reason` attributes of the PRE into
+                    // the CustomEvent's `detail` attribute, since they're not part of CustomEvent's spec
+                    // see https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent and
+                    // https://github.com/getsentry/sentry-javascript/issues/2380
+                    else if ('detail' in e && 'reason' in e.detail) {
+                        error = e.detail.reason;
+                    }
                 }
-                return true;
-            }
-            var client = currentHub.getClient();
-            var event = isPrimitive(error)
-                ? self._eventFromIncompleteRejection(error)
-                : eventFromUnknownInput(error, undefined, {
-                    attachStacktrace: client && client.getOptions().attachStacktrace,
-                    rejection: true,
+                catch (_oO) {
+                    // no-empty
+                }
+                var currentHub = getCurrentHub();
+                var hasIntegration = currentHub.getIntegration(GlobalHandlers);
+                var isFailedOwnDelivery = error && error.__sentry_own_request__ === true;
+                if (!hasIntegration || shouldIgnoreOnError() || isFailedOwnDelivery) {
+                    return true;
+                }
+                var client = currentHub.getClient();
+                var event = isPrimitive(error)
+                    ? _this._eventFromIncompleteRejection(error)
+                    : eventFromUnknownInput(error, undefined, {
+                        attachStacktrace: client && client.getOptions().attachStacktrace,
+                        rejection: true,
+                    });
+                event.level = Severity.Error;
+                addExceptionMechanism(event, {
+                    handled: false,
+                    type: 'onunhandledrejection',
                 });
-            event.level = Severity.Error;
-            addExceptionMechanism(event, {
-                handled: false,
-                type: 'onunhandledrejection',
-            });
-            currentHub.captureEvent(event, {
-                originalException: error,
-            });
-            if (self._oldOnUnhandledRejectionHandler) {
-                return self._oldOnUnhandledRejectionHandler.apply(this, arguments);
-            }
-            return true;
-        };
+                currentHub.captureEvent(event, {
+                    originalException: error,
+                });
+                return;
+            },
+            type: 'unhandledrejection',
+        });
         this._onUnhandledRejectionHandlerInstalled = true;
     };
     /**

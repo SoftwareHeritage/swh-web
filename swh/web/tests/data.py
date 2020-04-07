@@ -7,18 +7,13 @@ import os
 import random
 
 from copy import deepcopy
-from typing import Dict
-
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.from_disk import Directory
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
-from swh.model.identifiers import directory_identifier
+from swh.model.model import Directory, Origin
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
@@ -28,17 +23,13 @@ from swh.web.browse.utils import (
     _re_encode_content
 )
 from swh.web.common import service
-from swh.web.common.highlightjs import get_hljs_language_from_filename
 
 # Module used to initialize data that will be provided as tests input
 
 # Configuration for git loader
 _TEST_LOADER_CONFIG = {
     'storage': {
-        'cls': 'validate',
-        'storage': {
-            'cls': 'memory'
-        }
+        'cls': 'memory',
     },
     'save_data': False,
     'max_content_size': 100 * 1024 * 1024,
@@ -190,12 +181,14 @@ def _init_tests_data():
 
     for i in range(250):
         url = 'https://many.origins/%d' % (i+1)
-        storage.origin_add([{'url': url}])
+        # storage.origin_add([{'url': url}])
+        storage.origin_add([Origin(url=url)])
         search.origin_update([{'url': url, 'has_visits': True}])
         visit = storage.origin_visit_add(url, '2019-12-03 13:55:05', 'tar')
         storage.origin_visit_update(
-            url, visit['visit'],
-            snapshot='1a8893e6a86f444e8be8e7bda6cb34fb1735a00e')
+            url, visit.visit,
+            status='full',
+            snapshot=hash_to_bytes('1a8893e6a86f444e8be8e7bda6cb34fb1735a00e'))
 
     contents = set()
     directories = set()
@@ -260,9 +253,7 @@ def _init_tests_data():
     idx_storage = get_indexer_storage('memory', {})
 
     # Add the empty directory to the test archive
-    empty_dir_id = directory_identifier({'entries': []})
-    empty_dir_id_bin = hash_to_bytes(empty_dir_id)
-    storage.directory_add([{'id': empty_dir_id_bin, 'entries': []}])
+    storage.directory_add([Directory(entries=[])])
 
     # Return tests data
     return {
@@ -342,146 +333,3 @@ def override_storages(storage, idx_storage, search):
     service.storage = storage
     service.idx_storage = idx_storage
     service.search = search
-
-
-# Implement some special endpoints used to provide input tests data
-# when executing end to end tests with cypress
-
-_content_code_data_exts = {}  # type: Dict[str, Dict[str, str]]
-_content_code_data_filenames = {}  # type: Dict[str, Dict[str, str]]
-_content_other_data_exts = {}  # type: Dict[str, Dict[str, str]]
-
-
-def _init_content_tests_data(data_path, data_dict, ext_key):
-    """
-    Helper function to read the content of a directory, store it
-    into a test archive and add some files metadata (sha1 and/or
-    expected programming language) in a dict.
-
-    Args:
-        data_path (str): path to a directory relative to the tests
-            folder of swh-web
-        data_dict (dict): the dict that will store files metadata
-        ext_key (bool): whether to use file extensions or filenames
-            as dict keys
-    """
-    test_contents_dir = os.path.join(
-        os.path.dirname(__file__), data_path).encode('utf-8')
-    directory = Directory.from_disk(path=test_contents_dir, data=True,
-                                    save_path=True)
-    objects = directory.collect()
-    for c in objects['content'].values():
-        c['status'] = 'visible'
-        sha1 = hash_to_hex(c['sha1'])
-        if ext_key:
-            key = c['path'].decode('utf-8').split('.')[-1]
-            filename = 'test.' + key
-        else:
-            filename = c['path'].decode('utf-8').split('/')[-1]
-            key = filename
-        language = get_hljs_language_from_filename(filename)
-        data_dict[key] = {'sha1': sha1,
-                          'language': language}
-        del c['path']
-        del c['perms']
-    storage = get_tests_data()['storage']
-    storage.content_add(objects['content'].values())
-
-
-def _init_content_code_data_exts():
-    """
-    Fill a global dictionary which maps source file extension to
-    a code content example.
-    """
-    global _content_code_data_exts
-    _init_content_tests_data('resources/contents/code/extensions',
-                             _content_code_data_exts, True)
-
-
-def _init_content_other_data_exts():
-    """
-    Fill a global dictionary which maps a file extension to
-    a content example.
-    """
-    global _content_other_data_exts
-    _init_content_tests_data('resources/contents/other/extensions',
-                             _content_other_data_exts, True)
-
-
-def _init_content_code_data_filenames():
-    """
-    Fill a global dictionary which maps a filename to
-    a content example.
-    """
-    global _content_code_data_filenames
-    _init_content_tests_data('resources/contents/code/filenames',
-                             _content_code_data_filenames, False)
-
-
-if config.get_config()['e2e_tests_mode']:
-    _init_content_code_data_exts()
-    _init_content_other_data_exts()
-    _init_content_code_data_filenames()
-
-
-@api_view(['GET'])
-def get_content_code_data_all_exts(request):
-    """
-    Endpoint implementation returning a list of all source file
-    extensions to test for highlighting using cypress.
-    """
-    return Response(sorted(_content_code_data_exts.keys()),
-                    status=200, content_type='application/json')
-
-
-@api_view(['GET'])
-def get_content_code_data_by_ext(request, ext):
-    """
-    Endpoint implementation returning metadata of a code content example
-    based on the source file extension.
-    """
-    data = None
-    status = 404
-    if ext in _content_code_data_exts:
-        data = _content_code_data_exts[ext]
-        status = 200
-    return Response(data, status=status, content_type='application/json')
-
-
-@api_view(['GET'])
-def get_content_other_data_by_ext(request, ext):
-    """
-    Endpoint implementation returning metadata of a content example
-    based on the file extension.
-    """
-    _init_content_other_data_exts()
-    data = None
-    status = 404
-    if ext in _content_other_data_exts:
-        data = _content_other_data_exts[ext]
-        status = 200
-    return Response(data, status=status, content_type='application/json')
-
-
-@api_view(['GET'])
-def get_content_code_data_all_filenames(request):
-    """
-    Endpoint implementation returning a list of all source filenames
-    to test for highlighting using cypress.
-    """
-    return Response(sorted(_content_code_data_filenames.keys()),
-                    status=200, content_type='application/json')
-
-
-@api_view(['GET'])
-def get_content_code_data_by_filename(request, filename):
-    """
-    Endpoint implementation returning metadata of a code content example
-    based on the source filename.
-    """
-    data = None
-    status = 404
-    if filename in _content_code_data_filenames:
-        data = _content_code_data_filenames[filename]
-        status = 200
-    return Response(data, status=status, content_type='application/json')

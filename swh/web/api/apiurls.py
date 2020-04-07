@@ -10,7 +10,7 @@ from typing import Dict
 from rest_framework.decorators import api_view
 
 from swh.web.common.urlsindex import UrlsIndex
-from swh.web.common import throttling
+from swh.web.api import throttling
 
 
 class APIUrls(UrlsIndex):
