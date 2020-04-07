@@ -9,7 +9,7 @@ const axios = require('axios');
 const fs = require('fs');
 
 module.exports = (on, config) => {
-  on('task', require('@cypress/code-coverage/task'));
+  require('@cypress/code-coverage/task')(on, config);
   // produce JSON files prior launching browser in order to dynamically generate tests
   on('before:browser:launch', function(browser, launchOptions) {
     return new Promise((resolve) => {
@@ -23,4 +23,5 @@ module.exports = (on, config) => {
         });
     });
   });
+  return config;
 };
