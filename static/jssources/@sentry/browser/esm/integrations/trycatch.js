@@ -100,17 +100,16 @@ var TryCatch = /** @class */ (function () {
     /** JSDoc */
     TryCatch.prototype._wrapXHR = function (originalSend) {
         return function () {
-            var _this = this;
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
             var xhr = this; // tslint:disable-line:no-this-assignment
-            var xmlHttpRequestProps = ['onload', 'onerror', 'onprogress'];
+            var xmlHttpRequestProps = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
             xmlHttpRequestProps.forEach(function (prop) {
-                if (prop in _this && typeof _this[prop] === 'function') {
-                    fill(_this, prop, function (original) {
-                        return wrap(original, {
+                if (prop in xhr && typeof xhr[prop] === 'function') {
+                    fill(xhr, prop, function (original) {
+                        var wrapOptions = {
                             mechanism: {
                                 data: {
                                     function: prop,
@@ -119,30 +118,16 @@ var TryCatch = /** @class */ (function () {
                                 handled: true,
                                 type: 'instrument',
                             },
-                        });
+                        };
+                        // If Instrument integration has been called before TryCatch, get the name of original function
+                        if (original.__sentry_original__) {
+                            wrapOptions.mechanism.data.handler = getFunctionName(original.__sentry_original__);
+                        }
+                        // Otherwise wrap directly
+                        return wrap(original, wrapOptions);
                     });
                 }
             });
-            if ('onreadystatechange' in xhr && typeof xhr.onreadystatechange === 'function') {
-                fill(xhr, 'onreadystatechange', function (original) {
-                    var wrapOptions = {
-                        mechanism: {
-                            data: {
-                                function: 'onreadystatechange',
-                                handler: getFunctionName(original),
-                            },
-                            handled: true,
-                            type: 'instrument',
-                        },
-                    };
-                    // If Instrument integration has been called before TryCatch, get the name of original function
-                    if (original.__sentry_original__) {
-                        wrapOptions.mechanism.data.handler = getFunctionName(original.__sentry_original__);
-                    }
-                    // Otherwise wrap directly
-                    return wrap(original, wrapOptions);
-                });
-            }
             return originalSend.apply(this, args);
         };
     };

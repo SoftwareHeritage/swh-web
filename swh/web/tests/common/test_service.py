@@ -15,6 +15,7 @@ from swh.model.from_disk import DentryPerms
 from swh.model.identifiers import (
     CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 )
+from swh.model.model import Directory, DirectoryEntry, Origin, Revision
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
@@ -187,14 +188,14 @@ def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
     archive_data.origin_add_one(new_origin)
     for ts in visit_dates:
         archive_data.origin_visit_add(
-            new_origin['url'], ts, type='git')
+            new_origin.url, ts, type='git')
 
     actual_origin_visits = list(
-        service.lookup_origin_visits(new_origin['url'], per_page=100))
+        service.lookup_origin_visits(new_origin.url, per_page=100))
 
-    expected_visits = archive_data.origin_visit_get(new_origin['url'])
+    expected_visits = archive_data.origin_visit_get(new_origin.url)
     for expected_visit in expected_visits:
-        expected_visit['origin'] = new_origin['url']
+        expected_visit['origin'] = new_origin.url
 
     assert actual_origin_visits == expected_visits
 
@@ -205,14 +206,14 @@ def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
     visits = []
     for ts in visit_dates:
         visits.append(archive_data.origin_visit_add(
-            new_origin['url'], ts, type='git'))
+            new_origin.url, ts, type='git'))
 
-    visit = random.choice(visits)['visit']
+    visit = random.choice(visits).visit
     actual_origin_visit = service.lookup_origin_visit(
-        new_origin['url'], visit)
+        new_origin.url, visit)
 
     expected_visit = dict(archive_data.origin_visit_get_by(
-        new_origin['url'], visit))
+        new_origin.url, visit))
 
     assert actual_origin_visit == expected_visit
 
@@ -221,9 +222,9 @@ def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
 def test_lookup_origin(archive_data, new_origin):
     archive_data.origin_add_one(new_origin)
 
-    actual_origin = service.lookup_origin({'url': new_origin['url']})
+    actual_origin = service.lookup_origin({'url': new_origin.url})
     expected_origin = archive_data.origin_get(
-        {'url': new_origin['url']})
+        {'url': new_origin.url})
     assert actual_origin == expected_origin
 
 
@@ -345,59 +346,37 @@ def test_lookup_directory_with_revision_not_found():
     assert e.match('Revision %s not found' % unknown_revision_)
 
 
-def test_lookup_directory_with_revision_unknown_content(archive_data):
+@given(new_revision())
+def test_lookup_directory_with_revision_unknown_content(archive_data,
+                                                        new_revision):
     unknown_content_ = random_content()
-    unknown_revision_ = random_sha1()
-    unknown_directory_ = random_sha1()
 
     dir_path = 'README.md'
+
+    # A directory that points to unknown content
+    dir = Directory(entries=[
+        DirectoryEntry(
+            name=bytes(dir_path.encode('utf-8')),
+            type='file',
+            target=hash_to_bytes(unknown_content_['sha1_git']),
+            perms=DentryPerms.content
+        )
+    ])
+
     # Create a revision that points to a directory
     # Which points to unknown content
-    revision = {
-        'author': {
-            'name': b'abcd',
-            'email': b'abcd@company.org',
-            'fullname': b'abcd abcd'
-        },
-        'committer': {
-            'email': b'aaaa@company.org',
-            'fullname': b'aaaa aaa',
-            'name': b'aaa'
-        },
-        'committer_date': {
-            'negative_utc': False,
-            'offset': 0,
-            'timestamp': 1437511651
-        },
-        'date': {
-            'negative_utc': False,
-            'offset': 0,
-            'timestamp': 1437511651
-        },
-        'message': b'bleh',
-        'metadata': [],
-        'parents': [],
-        'synthetic': False,
-        'type': 'git',
-        'id': hash_to_bytes(unknown_revision_),
-        'directory': hash_to_bytes(unknown_directory_)
-    }
-    # A directory that points to unknown content
-    dir = {
-        'id': hash_to_bytes(unknown_directory_),
-        'entries': [{
-            'name': bytes(dir_path.encode('utf-8')),
-            'type': 'file',
-            'target': hash_to_bytes(unknown_content_['sha1_git']),
-            'perms': DentryPerms.content
-        }]
-    }
+    new_revision = new_revision.to_dict()
+    new_revision['directory'] = dir.id
+    del new_revision['id']
+    new_revision = Revision.from_dict(new_revision)
+
     # Add the directory and revision in mem
     archive_data.directory_add([dir])
-    archive_data.revision_add([revision])
+    archive_data.revision_add([new_revision])
+    new_revision_id = hash_to_hex(new_revision.id)
     with pytest.raises(NotFoundExc) as e:
-        service.lookup_directory_with_revision(unknown_revision_, dir_path)
-    assert e.match('Content not found for revision %s' % unknown_revision_)
+        service.lookup_directory_with_revision(new_revision_id, dir_path)
+    assert e.match('Content not found for revision %s' % new_revision_id)
 
 
 @given(revision())
@@ -500,8 +479,9 @@ def test_lookup_revision(archive_data, revision):
 
 @given(new_revision())
 def test_lookup_revision_invalid_msg(archive_data, new_revision):
+    new_revision = new_revision.to_dict()
     new_revision['message'] = b'elegant fix for bug \xff'
-    archive_data.revision_add([new_revision])
+    archive_data.revision_add([Revision.from_dict(new_revision)])
 
     revision = service.lookup_revision(hash_to_hex(new_revision['id']))
     assert revision['message'] is None
@@ -513,9 +493,9 @@ def test_lookup_revision_msg_ok(archive_data, new_revision):
     archive_data.revision_add([new_revision])
 
     revision_message = service.lookup_revision_message(
-        hash_to_hex(new_revision['id']))
+        hash_to_hex(new_revision.id))
 
-    assert revision_message == {'message': new_revision['message']}
+    assert revision_message == {'message': new_revision.message}
 
 
 def test_lookup_revision_msg_no_rev():
@@ -925,7 +905,7 @@ def test_lookup_origin_extra_trailing_slash(origin):
 
 
 def test_lookup_origin_missing_trailing_slash(archive_data):
-    deb_origin = {'url': 'http://snapshot.debian.org/package/r-base/'}
+    deb_origin = Origin(url='http://snapshot.debian.org/package/r-base/')
     archive_data.origin_add_one(deb_origin)
-    origin_info = service.lookup_origin({'url': deb_origin['url'][:-1]})
-    assert origin_info['url'] == deb_origin['url']
+    origin_info = service.lookup_origin({'url': deb_origin.url[:-1]})
+    assert origin_info['url'] == deb_origin.url

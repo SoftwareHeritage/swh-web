@@ -1,14 +1,11 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import datetime
 
-import pytest
-
 from swh.web.common import utils
-from swh.web.common.exc import BadInputExc
 
 
 def test_shorten_path_noop():
@@ -94,24 +91,6 @@ def test_gen_path_info():
     input_path = 'home/user/swh-environment/swh-web'
     path_info = utils.gen_path_info(input_path)
     assert path_info == expected_result
-
-
-def test_get_swh_persistent_id():
-    swh_object_type = 'content'
-    sha1_git = 'aafb16d69fd30ff58afdd69036a26047f3aebdc6'
-
-    expected_swh_id = 'swh:1:cnt:' + sha1_git
-
-    assert (utils.get_swh_persistent_id(swh_object_type, sha1_git) ==
-            expected_swh_id)
-
-    with pytest.raises(BadInputExc) as e:
-        utils.get_swh_persistent_id('foo', sha1_git)
-    assert e.match('Invalid object')
-
-    with pytest.raises(BadInputExc) as e:
-        utils.get_swh_persistent_id(swh_object_type, 'not a valid id')
-    assert e.match('Invalid object')
 
 
 def test_rst_to_html():

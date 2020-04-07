@@ -8,6 +8,7 @@ import random
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_hex
+from swh.model.model import Snapshot
 from swh.web.api.utils import enrich_snapshot
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
@@ -155,7 +156,7 @@ def test_api_snapshot_null_branch(api_client, archive_data, new_snapshot):
     for branch in snp_dict['branches'].keys():
         snp_dict['branches'][branch] = None
         break
-    archive_data.snapshot_add([snp_dict])
+    archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     url = reverse('api-1-snapshot',
                   url_args={'snapshot_id': snp_id})
     rv = api_client.get(url)

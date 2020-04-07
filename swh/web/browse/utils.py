@@ -19,10 +19,10 @@ import sentry_sdk
 from swh.model.identifiers import persistent_identifier
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import NotFoundExc, http_status_code_message
+from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, get_swh_persistent_id,
-    swh_object_icons, rst_to_html
+    reverse, format_utc_iso_date, swh_object_icons, rst_to_html
 )
 from swh.web.config import get_config
 

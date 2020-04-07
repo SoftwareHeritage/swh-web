@@ -1,4 +1,4 @@
-# Copyright (C) 2019  The Software Heritage developers
+# Copyright (C) 2019-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,7 +11,8 @@ from swh.model.identifiers import (
     CONTENT, DIRECTORY, ORIGIN, RELEASE, REVISION, SNAPSHOT
 )
 from swh.web.common import service
-from swh.web.common.utils import reverse, resolve_swh_persistent_id
+from swh.web.common.identifiers import resolve_swh_persistent_id
+from swh.web.common.utils import reverse
 from swh.web.misc.badges import _badge_config, _get_logo_data
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
@@ -60,7 +61,7 @@ def test_badge_errors(client, unknown_content, unknown_directory, new_origin,
     for object_type, object_id in (
         (CONTENT, unknown_content['sha1_git']),
         (DIRECTORY, unknown_directory),
-        (ORIGIN, new_origin['url']),
+        (ORIGIN, new_origin.url),
         (RELEASE, unknown_release),
         (REVISION, unknown_revision),
         (SNAPSHOT, unknown_snapshot)

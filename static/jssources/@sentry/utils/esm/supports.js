@@ -101,10 +101,11 @@ export function supportsNativeFetch() {
     // so create a "pure" iframe to see if that has native fetch
     var result = false;
     var doc = global.document;
-    if (doc) {
-        var sandbox = doc.createElement('iframe');
-        sandbox.hidden = true;
+    // tslint:disable-next-line:no-unbound-method deprecation
+    if (doc && typeof doc.createElement === "function") {
         try {
+            var sandbox = doc.createElement('iframe');
+            sandbox.hidden = true;
             doc.head.appendChild(sandbox);
             if (sandbox.contentWindow && sandbox.contentWindow.fetch) {
                 // tslint:disable-next-line:no-unbound-method

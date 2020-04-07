@@ -13,6 +13,8 @@ var global = getGlobalObject();
  *  - XHR API
  *  - History API
  *  - DOM API (click/typing)
+ *  - Error API
+ *  - UnhandledRejection API
  */
 var handlers = {};
 var instrumented = {};
@@ -37,6 +39,12 @@ function instrument(type) {
             break;
         case 'history':
             instrumentHistory();
+            break;
+        case 'error':
+            instrumentError();
+            break;
+        case 'unhandledrejection':
+            instrumentUnhandledRejection();
             break;
         default:
             logger.warn('unknown instrumentation type:', type);
@@ -194,10 +202,7 @@ function instrumentXHR() {
                 xhr: xhr,
             };
             triggerHandlers('xhr', tslib_1.__assign({}, commonHandlerData));
-            /**
-             * @hidden
-             */
-            function onreadystatechangeHandler() {
+            xhr.addEventListener('readystatechange', function () {
                 if (xhr.readyState === 4) {
                     try {
                         // touching statusCode in some platforms throws
@@ -211,24 +216,7 @@ function instrumentXHR() {
                     }
                     triggerHandlers('xhr', tslib_1.__assign({}, commonHandlerData, { endTimestamp: Date.now() }));
                 }
-            }
-            if ('onreadystatechange' in xhr && typeof xhr.onreadystatechange === 'function') {
-                fill(xhr, 'onreadystatechange', function (original) {
-                    return function () {
-                        var readyStateArgs = [];
-                        for (var _i = 0; _i < arguments.length; _i++) {
-                            readyStateArgs[_i] = arguments[_i];
-                        }
-                        onreadystatechangeHandler();
-                        return original.apply(xhr, readyStateArgs);
-                    };
-                });
-            }
-            else {
-                // if onreadystatechange wasn't actually set by the page on this xhr, we
-                // are free to set our own and capture the breadcrumb
-                xhr.onreadystatechange = onreadystatechangeHandler;
-            }
+            });
             return originalSend.apply(this, args);
         };
     });
@@ -417,6 +405,36 @@ function keypressEventHandler(handler) {
         keypressTimeout = setTimeout(function () {
             keypressTimeout = undefined;
         }, debounceDuration);
+    };
+}
+var _oldOnErrorHandler = null;
+/** JSDoc */
+function instrumentError() {
+    _oldOnErrorHandler = global.onerror;
+    global.onerror = function (msg, url, line, column, error) {
+        triggerHandlers('error', {
+            column: column,
+            error: error,
+            line: line,
+            msg: msg,
+            url: url,
+        });
+        if (_oldOnErrorHandler) {
+            return _oldOnErrorHandler.apply(this, arguments);
+        }
+        return false;
+    };
+}
+var _oldOnUnhandledRejectionHandler = null;
+/** JSDoc */
+function instrumentUnhandledRejection() {
+    _oldOnUnhandledRejectionHandler = global.onunhandledrejection;
+    global.onunhandledrejection = function (e) {
+        triggerHandlers('unhandledrejection', e);
+        if (_oldOnUnhandledRejectionHandler) {
+            return _oldOnUnhandledRejectionHandler.apply(this, arguments);
+        }
+        return true;
     };
 }
 //# sourceMappingURL=instrument.js.map

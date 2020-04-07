@@ -807,7 +807,7 @@ def browse_snapshot_branches(request, snapshot_id=None,
         prev_branches_url = reverse(browse_view_name, url_args=url_args,
                                     query_params=query_params)
 
-    if len(displayed_branches) > PER_PAGE:
+    if snapshot['next_branch'] is not None:
         query_params_next = dict(query_params)
         next_branch = displayed_branches[-1]['name']
         del displayed_branches[-1]
@@ -906,7 +906,7 @@ def browse_snapshot_releases(request, snapshot_id=None,
         prev_releases_url = reverse(browse_view_name, url_args=url_args,
                                     query_params=query_params)
 
-    if len(displayed_releases) > PER_PAGE:
+    if snapshot['next_branch'] is not None:
         query_params_next = dict(query_params)
         next_rel = displayed_releases[-1]['branch_name']
         del displayed_releases[-1]

@@ -7,8 +7,8 @@ import random
 
 from hypothesis import given
 
-from swh.web.common.utils import reverse, get_swh_persistent_id
-from swh.web.common.utils import gen_path_info
+from swh.web.common.identifiers import get_swh_persistent_id
+from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
     directory, directory_with_subdirs, invalid_sha1,

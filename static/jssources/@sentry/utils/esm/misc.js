@@ -1,7 +1,7 @@
 import { isString } from './is';
 import { snipLine } from './string';
 /**
- * Requires a module which is protected _against bundler minification.
+ * Requires a module which is protected against bundler minification.
  *
  * @param request The module path to resolve
  */
@@ -259,11 +259,50 @@ function _htmlElementAsString(el) {
     }
     return out.join('');
 }
+var INITIAL_TIME = Date.now();
+var prevNow = 0;
+var performanceFallback = {
+    now: function () {
+        var now = Date.now() - INITIAL_TIME;
+        if (now < prevNow) {
+            now = prevNow;
+        }
+        prevNow = now;
+        return now;
+    },
+    timeOrigin: INITIAL_TIME,
+};
+export var crossPlatformPerformance = (function () {
+    if (isNodeEnv()) {
+        try {
+            var perfHooks = dynamicRequire(module, 'perf_hooks');
+            return perfHooks.performance;
+        }
+        catch (_) {
+            return performanceFallback;
+        }
+    }
+    if (getGlobalObject().performance) {
+        // Polyfill for performance.timeOrigin.
+        //
+        // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
+        // is not as widely supported. Namely, performance.timeOrigin is undefined in Safari as of writing.
+        // tslint:disable-next-line:strict-type-predicates
+        if (performance.timeOrigin === undefined) {
+            // As of writing, performance.timing is not available in Web Workers in mainstream browsers, so it is not always a
+            // valid fallback. In the absence of a initial time provided by the browser, fallback to INITIAL_TIME.
+            // @ts-ignore
+            // tslint:disable-next-line:deprecation
+            performance.timeOrigin = (performance.timing && performance.timing.navigationStart) || INITIAL_TIME;
+        }
+    }
+    return getGlobalObject().performance || performanceFallback;
+})();
 /**
- * Returns a timestamp in seconds with milliseconds precision.
+ * Returns a timestamp in seconds with milliseconds precision since the UNIX epoch calculated with the monotonic clock.
  */
 export function timestampWithMs() {
-    return new Date().getTime() / 1000;
+    return (crossPlatformPerformance.timeOrigin + crossPlatformPerformance.now()) / 1000;
 }
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 var SEMVER_REGEXP = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;

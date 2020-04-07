@@ -66,7 +66,7 @@ var Breadcrumbs = /** @class */ (function () {
             category: "ui." + handlerData.name,
             message: target,
         }, {
-            event: event,
+            event: handlerData.event,
             name: handlerData.name,
         });
     };
@@ -89,7 +89,7 @@ var Breadcrumbs = /** @class */ (function () {
             return;
         }
         // We only capture issued sentry requests
-        if (handlerData.xhr.__sentry_own_request__) {
+        if (this._options.sentry && handlerData.xhr.__sentry_own_request__) {
             addSentryBreadcrumb(handlerData.args[0]);
         }
     };
@@ -103,7 +103,7 @@ var Breadcrumbs = /** @class */ (function () {
         }
         var client = getCurrentHub().getClient();
         var dsn = client && client.getDsn();
-        if (dsn) {
+        if (this._options.sentry && dsn) {
             var filterUrl = new API(dsn).getStoreEndpoint();
             // if Sentry key appears in URL, don't capture it as a request
             // but rather as our own 'sentry' type breadcrumb
@@ -256,7 +256,7 @@ function addSentryBreadcrumb(serializedData) {
     try {
         var event_1 = JSON.parse(serializedData);
         getCurrentHub().addBreadcrumb({
-            category: 'sentry',
+            category: "sentry." + (event_1.type === 'transaction' ? 'transaction' : 'event'),
             event_id: event_1.event_id,
             level: event_1.level || Severity.fromString('error'),
             message: getEventDescription(event_1),

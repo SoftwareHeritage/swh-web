@@ -11,6 +11,8 @@ export function initAndBind(clientClass, options) {
     if (options.debug === true) {
         logger.enable();
     }
-    getCurrentHub().bindClient(new clientClass(options));
+    var hub = getCurrentHub();
+    var client = new clientClass(options);
+    hub.bindClient(client);
 }
 //# sourceMappingURL=sdk.js.map
