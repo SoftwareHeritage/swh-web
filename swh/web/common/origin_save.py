@@ -23,11 +23,18 @@ from swh.web import config
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.common.models import (
-    SaveUnauthorizedOrigin, SaveAuthorizedOrigin, SaveOriginRequest,
-    SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED, SAVE_REQUEST_PENDING,
-    SAVE_TASK_NOT_YET_SCHEDULED, SAVE_TASK_SCHEDULED,
-    SAVE_TASK_SUCCEED, SAVE_TASK_FAILED, SAVE_TASK_RUNNING,
-    SAVE_TASK_NOT_CREATED
+    SaveUnauthorizedOrigin,
+    SaveAuthorizedOrigin,
+    SaveOriginRequest,
+    SAVE_REQUEST_ACCEPTED,
+    SAVE_REQUEST_REJECTED,
+    SAVE_REQUEST_PENDING,
+    SAVE_TASK_NOT_YET_SCHEDULED,
+    SAVE_TASK_SCHEDULED,
+    SAVE_TASK_SUCCEED,
+    SAVE_TASK_FAILED,
+    SAVE_TASK_RUNNING,
+    SAVE_TASK_NOT_CREATED,
 )
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import parse_timestamp, SWH_WEB_METRICS_REGISTRY
@@ -47,8 +54,7 @@ def get_origin_save_authorized_urls():
     Returns:
         list: The list of authorized origin url prefix
     """
-    return [origin.url
-            for origin in SaveAuthorizedOrigin.objects.all()]
+    return [origin.url for origin in SaveAuthorizedOrigin.objects.all()]
 
 
 def get_origin_save_unauthorized_urls():
@@ -59,8 +65,7 @@ def get_origin_save_unauthorized_urls():
     Returns:
         list: the list of unauthorized origin url prefix
     """
-    return [origin.url
-            for origin in SaveUnauthorizedOrigin.objects.all()]
+    return [origin.url for origin in SaveUnauthorizedOrigin.objects.all()]
 
 
 def can_save_origin(origin_url):
@@ -96,19 +101,15 @@ def can_save_origin(origin_url):
 
 # map visit type to scheduler task
 # TODO: do not hardcode the task name here (T1157)
-_visit_type_task = {
-    'git': 'load-git',
-    'hg': 'load-hg',
-    'svn': 'load-svn'
-}
+_visit_type_task = {"git": "load-git", "hg": "load-hg", "svn": "load-svn"}
 
 
 # map scheduler task status to origin save status
 _save_task_status = {
-    'next_run_not_scheduled': SAVE_TASK_NOT_YET_SCHEDULED,
-    'next_run_scheduled': SAVE_TASK_SCHEDULED,
-    'completed': SAVE_TASK_SUCCEED,
-    'disabled': SAVE_TASK_FAILED
+    "next_run_not_scheduled": SAVE_TASK_NOT_YET_SCHEDULED,
+    "next_run_scheduled": SAVE_TASK_SCHEDULED,
+    "completed": SAVE_TASK_SUCCEED,
+    "disabled": SAVE_TASK_FAILED,
 }
 
 
@@ -124,38 +125,39 @@ def _check_visit_type_savable(visit_type):
     Returns:
         list: the list of saveable visit types
     """
-    allowed_visit_types = ', '.join(get_savable_visit_types())
+    allowed_visit_types = ", ".join(get_savable_visit_types())
     if visit_type not in _visit_type_task:
-        raise BadInputExc('Visit of type %s can not be saved! '
-                          'Allowed types are the following: %s' %
-                          (visit_type, allowed_visit_types))
+        raise BadInputExc(
+            "Visit of type %s can not be saved! "
+            "Allowed types are the following: %s" % (visit_type, allowed_visit_types)
+        )
 
 
-_validate_url = URLValidator(schemes=['http', 'https', 'svn', 'git'])
+_validate_url = URLValidator(schemes=["http", "https", "svn", "git"])
 
 
 def _check_origin_url_valid(origin_url):
     try:
         _validate_url(origin_url)
     except ValidationError:
-        raise BadInputExc('The provided origin url (%s) is not valid!' %
-                          escape(origin_url))
+        raise BadInputExc(
+            "The provided origin url (%s) is not valid!" % escape(origin_url)
+        )
 
 
 def _get_visit_info_for_save_request(save_request):
     visit_date = None
     visit_status = None
     try:
-        origin = {'url': save_request.origin_url}
+        origin = {"url": save_request.origin_url}
         origin_info = service.lookup_origin(origin)
         origin_visits = get_origin_visits(origin_info)
-        visit_dates = [parse_timestamp(v['date'])
-                       for v in origin_visits]
+        visit_dates = [parse_timestamp(v["date"]) for v in origin_visits]
         i = bisect_right(visit_dates, save_request.request_date)
         if i != len(visit_dates):
             visit_date = visit_dates[i]
-            visit_status = origin_visits[i]['status']
-            if origin_visits[i]['status'] == 'ongoing':
+            visit_status = origin_visits[i]["status"]
+            if origin_visits[i]["status"] == "ongoing":
                 visit_date = None
     except Exception as exc:
         sentry_sdk.capture_exception(exc)
@@ -168,7 +170,7 @@ def _check_visit_update_status(save_request, save_task_status):
     # visit has been performed, mark the saving task as succeed
     if visit_date and visit_status is not None:
         save_task_status = SAVE_TASK_SUCCEED
-    elif visit_status == 'ongoing':
+    elif visit_status == "ongoing":
         save_task_status = SAVE_TASK_RUNNING
     else:
         time_now = datetime.now(tz=timezone.utc)
@@ -185,29 +187,28 @@ def _save_request_dict(save_request, task=None):
     visit_date = save_request.visit_date
     # save task still in scheduler db
     if task:
-        save_task_status = _save_task_status[task['status']]
+        save_task_status = _save_task_status[task["status"]]
         # Consider request from which a visit date has already been found
         # as succeeded to avoid retrieving it again
         if save_task_status == SAVE_TASK_SCHEDULED and visit_date:
             save_task_status = SAVE_TASK_SUCCEED
-        if save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEED) \
-                and not visit_date:
+        if save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEED) and not visit_date:
             visit_date, _ = _get_visit_info_for_save_request(save_request)
             save_request.visit_date = visit_date
             must_save = True
         # Check tasks still marked as scheduled / not yet scheduled
-        if save_task_status in (SAVE_TASK_SCHEDULED,
-                                SAVE_TASK_NOT_YET_SCHEDULED):
+        if save_task_status in (SAVE_TASK_SCHEDULED, SAVE_TASK_NOT_YET_SCHEDULED):
             visit_date, save_task_status = _check_visit_update_status(
-                save_request, save_task_status)
+                save_request, save_task_status
+            )
 
     # save task may have been archived
     else:
         save_task_status = save_request.loading_task_status
-        if save_task_status in (SAVE_TASK_SCHEDULED,
-                                SAVE_TASK_NOT_YET_SCHEDULED):
+        if save_task_status in (SAVE_TASK_SCHEDULED, SAVE_TASK_NOT_YET_SCHEDULED):
             visit_date, save_task_status = _check_visit_update_status(
-                save_request, save_task_status)
+                save_request, save_task_status
+            )
 
         else:
             save_task_status = save_request.loading_task_status
@@ -219,13 +220,15 @@ def _save_request_dict(save_request, task=None):
     if must_save:
         save_request.save()
 
-    return {'id': save_request.id,
-            'visit_type': save_request.visit_type,
-            'origin_url': save_request.origin_url,
-            'save_request_date': save_request.request_date.isoformat(),
-            'save_request_status': save_request.status,
-            'save_task_status': save_task_status,
-            'visit_date': visit_date.isoformat() if visit_date else None}
+    return {
+        "id": save_request.id,
+        "visit_type": save_request.visit_type,
+        "origin_url": save_request.origin_url,
+        "save_request_date": save_request.request_date.isoformat(),
+        "save_request_status": save_request.status,
+        "save_task_status": save_task_status,
+        "visit_date": visit_date.isoformat() if visit_date else None,
+    }
 
 
 def create_save_origin_request(visit_type, origin_url):
@@ -276,14 +279,16 @@ def create_save_origin_request(visit_type, origin_url):
     if save_request_status == SAVE_REQUEST_ACCEPTED:
         # create a task with high priority
         kwargs = {
-            'priority': 'high',
-            'url': origin_url,
+            "priority": "high",
+            "url": origin_url,
         }
         sor = None
         # get list of previously sumitted save requests
-        current_sors = \
-            list(SaveOriginRequest.objects.filter(visit_type=visit_type,
-                                                  origin_url=origin_url))
+        current_sors = list(
+            SaveOriginRequest.objects.filter(
+                visit_type=visit_type, origin_url=origin_url
+            )
+        )
 
         can_create_task = False
         # if no save requests previously submitted, create the scheduler task
@@ -301,11 +306,10 @@ def create_save_origin_request(visit_type, origin_url):
                 # get the scheduler task and its status
                 tasks = scheduler.get_tasks([sor.loading_task_id])
                 task = tasks[0] if tasks else None
-                task_status = _save_request_dict(sor, task)['save_task_status']
+                task_status = _save_request_dict(sor, task)["save_task_status"]
                 # create a new scheduler task only if the previous one has been
                 # already executed
-                if task_status == SAVE_TASK_FAILED or \
-                   task_status == SAVE_TASK_SUCCEED:
+                if task_status == SAVE_TASK_FAILED or task_status == SAVE_TASK_SUCCEED:
                     can_create_task = True
                     sor = None
                 else:
@@ -313,43 +317,48 @@ def create_save_origin_request(visit_type, origin_url):
 
         if can_create_task:
             # effectively create the scheduler task
-            task_dict = create_oneshot_task_dict(
-                _visit_type_task[visit_type], **kwargs)
+            task_dict = create_oneshot_task_dict(_visit_type_task[visit_type], **kwargs)
             task = scheduler.create_tasks([task_dict])[0]
 
             # pending save request has been accepted
             if sor:
                 sor.status = SAVE_REQUEST_ACCEPTED
-                sor.loading_task_id = task['id']
+                sor.loading_task_id = task["id"]
                 sor.save()
             else:
-                sor = SaveOriginRequest.objects.create(visit_type=visit_type,
-                                                       origin_url=origin_url,
-                                                       status=save_request_status, # noqa
-                                                       loading_task_id=task['id']) # noqa
+                sor = SaveOriginRequest.objects.create(
+                    visit_type=visit_type,
+                    origin_url=origin_url,
+                    status=save_request_status,
+                    loading_task_id=task["id"],
+                )
     # save request must be manually reviewed for acceptation
     elif save_request_status == SAVE_REQUEST_PENDING:
         # check if there is already such a save request already submitted,
         # no need to add it to the database in that case
         try:
-            sor = SaveOriginRequest.objects.get(visit_type=visit_type,
-                                                origin_url=origin_url,
-                                                status=save_request_status)
+            sor = SaveOriginRequest.objects.get(
+                visit_type=visit_type, origin_url=origin_url, status=save_request_status
+            )
         # if not add it to the database
         except ObjectDoesNotExist:
-            sor = SaveOriginRequest.objects.create(visit_type=visit_type,
-                                                   origin_url=origin_url,
-                                                   status=save_request_status)
+            sor = SaveOriginRequest.objects.create(
+                visit_type=visit_type, origin_url=origin_url, status=save_request_status
+            )
     # origin can not be saved as its url is blacklisted,
     # log the request to the database anyway
     else:
-        sor = SaveOriginRequest.objects.create(visit_type=visit_type,
-                                               origin_url=origin_url,
-                                               status=save_request_status)
+        sor = SaveOriginRequest.objects.create(
+            visit_type=visit_type, origin_url=origin_url, status=save_request_status
+        )
 
     if save_request_status == SAVE_REQUEST_REJECTED:
-        raise ForbiddenExc(('The "save code now" request has been rejected '
-                            'because the provided origin url is blacklisted.'))
+        raise ForbiddenExc(
+            (
+                'The "save code now" request has been rejected '
+                "because the provided origin url is blacklisted."
+            )
+        )
 
     return _save_request_dict(sor, task)
 
@@ -372,7 +381,7 @@ def get_save_origin_requests_from_queryset(requests_queryset):
     save_requests = []
     if task_ids:
         tasks = scheduler.get_tasks(task_ids)
-        tasks = {task['id']: task for task in tasks}
+        tasks = {task["id"]: task for task in tasks}
         for sor in requests_queryset:
             sr_dict = _save_request_dict(sor, tasks.get(sor.loading_task_id))
             save_requests.append(sr_dict)
@@ -398,12 +407,14 @@ def get_save_origin_requests(visit_type, origin_url):
     """
     _check_visit_type_savable(visit_type)
     _check_origin_url_valid(origin_url)
-    sors = SaveOriginRequest.objects.filter(visit_type=visit_type,
-                                            origin_url=origin_url)
+    sors = SaveOriginRequest.objects.filter(
+        visit_type=visit_type, origin_url=origin_url
+    )
     if sors.count() == 0:
-        raise NotFoundExc(('No save requests found for visit of type '
-                           '%s on origin with url %s.')
-                          % (visit_type, origin_url))
+        raise NotFoundExc(
+            ("No save requests found for visit of type " "%s on origin with url %s.")
+            % (visit_type, origin_url)
+        )
     return get_save_origin_requests_from_queryset(sors)
 
 
@@ -448,21 +459,21 @@ def get_save_origin_task_info(save_request_id):
     if task is None:
         return {}
 
-    task_run = scheduler.get_task_runs([task['id']])
+    task_run = scheduler.get_task_runs([task["id"]])
     task_run = task_run[0] if task_run else None
     if task_run is None:
         return {}
-    task_run['type'] = task['type']
-    task_run['arguments'] = task['arguments']
-    task_run['id'] = task_run['task']
-    del task_run['task']
-    del task_run['metadata']
-    del task_run['started']
+    task_run["type"] = task["type"]
+    task_run["arguments"] = task["arguments"]
+    task_run["id"] = task_run["task"]
+    del task_run["task"]
+    del task_run["metadata"]
+    del task_run["started"]
 
-    es_workers_index_url = config.get_config()['es_workers_index_url']
+    es_workers_index_url = config.get_config()["es_workers_index_url"]
     if not es_workers_index_url:
         return task_run
-    es_workers_index_url += '/_search'
+    es_workers_index_url += "/_search"
 
     if save_request.visit_date:
         min_ts = save_request.visit_date
@@ -473,95 +484,94 @@ def get_save_origin_task_info(save_request_id):
     min_ts = int(min_ts.timestamp()) * 1000
     max_ts = int(max_ts.timestamp()) * 1000
 
-    save_task_status = _save_task_status[task['status']]
-    priority = '3' if save_task_status == SAVE_TASK_FAILED else '6'
+    save_task_status = _save_task_status[task["status"]]
+    priority = "3" if save_task_status == SAVE_TASK_FAILED else "6"
 
     query = {
-        'bool': {
-            'must': [
+        "bool": {
+            "must": [
+                {"match_phrase": {"priority": {"query": priority}}},
+                {"match_phrase": {"swh_task_id": {"query": task_run["backend_id"]}}},
                 {
-                    'match_phrase': {
-                        'priority': {
-                            'query': priority
+                    "range": {
+                        "@timestamp": {
+                            "gte": min_ts,
+                            "lte": max_ts,
+                            "format": "epoch_millis",
                         }
                     }
                 },
-                {
-                    'match_phrase': {
-                        'swh_task_id': {
-                            'query': task_run['backend_id']
-                        }
-                    }
-                },
-                {
-                    'range': {
-                        '@timestamp': {
-                            'gte': min_ts,
-                            'lte': max_ts,
-                            'format': 'epoch_millis'
-                        }
-                    }
-                }
             ]
         }
     }
 
     try:
-        response = requests.post(es_workers_index_url,
-                                 json={'query': query,
-                                       'sort': ['@timestamp']},
-                                 timeout=30)
+        response = requests.post(
+            es_workers_index_url,
+            json={"query": query, "sort": ["@timestamp"]},
+            timeout=30,
+        )
         results = json.loads(response.text)
-        if results['hits']['total']['value'] >= 1:
-            task_run_info = results['hits']['hits'][-1]['_source']
-            if 'swh_logging_args_runtime' in task_run_info:
-                duration = task_run_info['swh_logging_args_runtime']
-                task_run['duration'] = duration
-            if 'message' in task_run_info:
-                task_run['message'] = task_run_info['message']
-            if 'swh_logging_args_name' in task_run_info:
-                task_run['name'] = task_run_info['swh_logging_args_name']
-            elif 'swh_task_name' in task_run_info:
-                task_run['name'] = task_run_info['swh_task_name']
-            if 'hostname' in task_run_info:
-                task_run['worker'] = task_run_info['hostname']
-            elif 'host' in task_run_info:
-                task_run['worker'] = task_run_info['host']
+        if results["hits"]["total"]["value"] >= 1:
+            task_run_info = results["hits"]["hits"][-1]["_source"]
+            if "swh_logging_args_runtime" in task_run_info:
+                duration = task_run_info["swh_logging_args_runtime"]
+                task_run["duration"] = duration
+            if "message" in task_run_info:
+                task_run["message"] = task_run_info["message"]
+            if "swh_logging_args_name" in task_run_info:
+                task_run["name"] = task_run_info["swh_logging_args_name"]
+            elif "swh_task_name" in task_run_info:
+                task_run["name"] = task_run_info["swh_task_name"]
+            if "hostname" in task_run_info:
+                task_run["worker"] = task_run_info["hostname"]
+            elif "host" in task_run_info:
+                task_run["worker"] = task_run_info["host"]
     except Exception as exc:
-        logger.warning('Request to Elasticsearch failed\n%s', exc)
+        logger.warning("Request to Elasticsearch failed\n%s", exc)
         sentry_sdk.capture_exception(exc)
 
     return task_run
 
 
-SUBMITTED_SAVE_REQUESTS_METRIC = 'swh_web_submitted_save_requests'
+SUBMITTED_SAVE_REQUESTS_METRIC = "swh_web_submitted_save_requests"
 
 _submitted_save_requests_gauge = Gauge(
     name=SUBMITTED_SAVE_REQUESTS_METRIC,
-    documentation='Number of submitted origin save requests',
-    labelnames=['status', 'visit_type'],
-    registry=SWH_WEB_METRICS_REGISTRY)
+    documentation="Number of submitted origin save requests",
+    labelnames=["status", "visit_type"],
+    registry=SWH_WEB_METRICS_REGISTRY,
+)
 
 
-ACCEPTED_SAVE_REQUESTS_METRIC = 'swh_web_accepted_save_requests'
+ACCEPTED_SAVE_REQUESTS_METRIC = "swh_web_accepted_save_requests"
 
 _accepted_save_requests_gauge = Gauge(
     name=ACCEPTED_SAVE_REQUESTS_METRIC,
-    documentation='Number of accepted origin save requests',
-    labelnames=['load_task_status', 'visit_type'],
-    registry=SWH_WEB_METRICS_REGISTRY)
+    documentation="Number of accepted origin save requests",
+    labelnames=["load_task_status", "visit_type"],
+    registry=SWH_WEB_METRICS_REGISTRY,
+)
 
 
 def compute_save_requests_metrics():
     """Compute a couple of Prometheus metrics related to
     origin save requests"""
 
-    request_statuses = (SAVE_REQUEST_ACCEPTED, SAVE_REQUEST_REJECTED,
-                        SAVE_REQUEST_PENDING)
+    request_statuses = (
+        SAVE_REQUEST_ACCEPTED,
+        SAVE_REQUEST_REJECTED,
+        SAVE_REQUEST_PENDING,
+    )
 
-    load_task_statuses = (SAVE_TASK_NOT_CREATED, SAVE_TASK_NOT_YET_SCHEDULED,
-                          SAVE_TASK_SCHEDULED, SAVE_TASK_SUCCEED,
-                          SAVE_TASK_FAILED, SAVE_TASK_RUNNING)
+    load_task_statuses = (
+        SAVE_TASK_NOT_CREATED,
+        SAVE_TASK_NOT_YET_SCHEDULED,
+        SAVE_TASK_SCHEDULED,
+        SAVE_TASK_SUCCEED,
+        SAVE_TASK_FAILED,
+        SAVE_TASK_RUNNING,
+    )
 
     visit_types = get_savable_visit_types()
 
@@ -578,8 +588,9 @@ def compute_save_requests_metrics():
     for sor in SaveOriginRequest.objects.all():
         if sor.status == SAVE_REQUEST_ACCEPTED:
             _accepted_save_requests_gauge.labels(
-                load_task_status=sor.loading_task_status,
-                visit_type=sor.visit_type).inc()
+                load_task_status=sor.loading_task_status, visit_type=sor.visit_type
+            ).inc()
 
         _submitted_save_requests_gauge.labels(
-                status=sor.status, visit_type=sor.visit_type).inc()
+            status=sor.status, visit_type=sor.visit_type
+        ).inc()

@@ -7,5 +7,5 @@ from django.apps import AppConfig
 
 
 class SwhWebCommonConfig(AppConfig):
-    name = 'swh.web.common'
-    label = 'swh.web.common'
+    name = "swh.web.common"
+    label = "swh.web.common"

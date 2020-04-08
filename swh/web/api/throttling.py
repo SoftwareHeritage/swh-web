@@ -3,9 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from ipaddress import (
-    ip_address, ip_network, IPv4Network, IPv6Network
-)
+from ipaddress import ip_address, ip_network, IPv4Network, IPv6Network
 from typing import Callable, List, TypeVar, Union
 
 from django.core.exceptions import ImproperlyConfigured
@@ -16,7 +14,7 @@ import sentry_sdk
 from swh.web.config import get_config
 
 
-APIView = TypeVar('APIView', bound='rest_framework.views.APIView')
+APIView = TypeVar("APIView", bound="rest_framework.views.APIView")
 Request = rest_framework.request.Request
 
 
@@ -62,16 +60,18 @@ class SwhWebRateThrottle(ScopedRateThrottle):
         super().__init__()
         self.exempted_networks = None
 
-    def get_exempted_networks(self, scope_name: str
-                              ) -> List[Union[IPv4Network, IPv6Network]]:
+    def get_exempted_networks(
+        self, scope_name: str
+    ) -> List[Union[IPv4Network, IPv6Network]]:
         if not self.exempted_networks:
-            scopes = get_config()['throttling']['scopes']
+            scopes = get_config()["throttling"]["scopes"]
             scope = scopes.get(scope_name)
             if scope:
-                networks = scope.get('exempted_networks')
+                networks = scope.get("exempted_networks")
                 if networks:
-                    self.exempted_networks = [ip_network(network)
-                                              for network in networks]
+                    self.exempted_networks = [
+                        ip_network(network) for network in networks
+                    ]
         return self.exempted_networks
 
     def allow_request(self, request: Request, view: APIView) -> bool:
@@ -87,7 +87,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                 # check if there is a specific rate limiting associated
                 # to the request type
                 assert request.method is not None
-                request_scope = f'{default_scope}_{request.method.lower()}'
+                request_scope = f"{default_scope}_{request.method.lower()}"
                 setattr(view, self.scope_attr, request_scope)
                 try:
                     request_allowed = super().allow_request(request, view)
@@ -104,7 +104,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
             default_scope = self.scope
             # check if there is a specific rate limiting associated
             # to the request type
-            self.scope = default_scope + '_' + request.method.lower()
+            self.scope = default_scope + "_" + request.method.lower()
             try:
                 self.rate = self.get_rate()
             # use default rate limiting otherwise
@@ -114,8 +114,9 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                 self.rate = self.get_rate()
             self.num_requests, self.duration = self.parse_rate(self.rate)
 
-            request_allowed = \
-                super(ScopedRateThrottle, self).allow_request(request, view)
+            request_allowed = super(ScopedRateThrottle, self).allow_request(
+                request, view
+            )
             self.scope = default_scope
 
         exempted_networks = self.get_exempted_networks(default_scope)
@@ -123,20 +124,21 @@ class SwhWebRateThrottle(ScopedRateThrottle):
 
         if exempted_networks:
             remote_address = ip_address(self.get_ident(request))
-            exempted_ip = any(remote_address in network
-                              for network in exempted_networks)
+            exempted_ip = any(
+                remote_address in network for network in exempted_networks
+            )
             request_allowed = exempted_ip or request_allowed
 
         # set throttling related data in the request metadata
         # in order for the ThrottlingHeadersMiddleware to
         # add X-RateLimit-* headers in the HTTP response
-        if not exempted_ip and hasattr(self, 'history'):
+        if not exempted_ip and hasattr(self, "history"):
             hit_count = len(self.history)
-            request.META['RateLimit-Limit'] = self.num_requests
-            request.META['RateLimit-Remaining'] = self.num_requests - hit_count
+            request.META["RateLimit-Limit"] = self.num_requests
+            request.META["RateLimit-Remaining"] = self.num_requests - hit_count
             wait = self.wait()
             if wait is not None:
-                request.META['RateLimit-Reset'] = int(self.now + wait)
+                request.META["RateLimit-Reset"] = int(self.now + wait)
 
         return request_allowed
 
@@ -151,12 +153,12 @@ def throttle_scope(scope: str) -> Callable[..., APIView]:
             ...
 
     """
+
     def decorator(func: APIView) -> APIView:
         SwhScopeRateThrottle = type(
-            'CustomScopeRateThrottle',
-            (SwhWebRateThrottle,),
-            {'scope': scope}
+            "CustomScopeRateThrottle", (SwhWebRateThrottle,), {"scope": scope}
         )
-        func.throttle_classes = (SwhScopeRateThrottle, )
+        func.throttle_classes = (SwhScopeRateThrottle,)
         return func
+
     return decorator

@@ -7,10 +7,10 @@ from swh.web.common.utils import reverse
 
 
 def test_api_1_ping(api_client):
-    url = reverse('api-1-ping')
+    url = reverse("api-1-ping")
 
     rv = api_client.get(url)
 
     assert rv.status_code == 200, rv.data
-    assert rv['Content-Type'] == 'application/json'
-    assert rv.data == 'pong'
+    assert rv["Content-Type"] == "application/json"
+    assert rv.data == "pong"

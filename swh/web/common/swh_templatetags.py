@@ -42,9 +42,8 @@ def urlize_links_and_mails(text):
     """
     try:
         if 'href="' not in text:
-            text = re.sub(r'(http.*)', r'<a href="\1">\1</a>', text)
-            return re.sub(r'([^ <>"]+@[^ <>"]+)',
-                          r'<a href="mailto:\1">\1</a>', text)
+            text = re.sub(r"(http.*)", r'<a href="\1">\1</a>', text)
+            return re.sub(r'([^ <>"]+@[^ <>"]+)', r'<a href="mailto:\1">\1</a>', text)
     except Exception as exc:
         sentry_sdk.capture_exception(exc)
 
@@ -63,13 +62,13 @@ def urlize_header_links(text):
         The text as is otherwise.
 
     """
-    links = text.split(',')
-    ret = ''
+    links = text.split(",")
+    ret = ""
     for i, link in enumerate(links):
-        ret += re.sub(r'<(http.*)>', r'<<a href="\1">\1</a>>', link)
+        ret += re.sub(r"<(http.*)>", r'<<a href="\1">\1</a>>', link)
         # add one link per line and align them
         if i != len(links) - 1:
-            ret += '\n     '
+            ret += "\n     "
     return ret
 
 

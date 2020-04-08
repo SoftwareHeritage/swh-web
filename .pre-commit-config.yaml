@@ -37,6 +37,11 @@ repos:
     language: system
     types: [javascript]
 
+- repo: https://github.com/python/black
+  rev: 19.10b0
+  hooks:
+  - id: black
+
 # unfortunately, we are far from being able to enable this...
 # - repo: https://github.com/PyCQA/pydocstyle.git
 #   rev: 4.0.0
@@ -47,15 +52,3 @@ repos:
 #     entry: pydocstyle --convention=google
 #     language: python
 #     types: [python]
-
-# black requires py3.6+
-#- repo: https://github.com/python/black
-#  rev: 19.3b0
-#  hooks:
-#  - id: black
-#    language_version: python3
-#- repo: https://github.com/asottile/blacken-docs
-#  rev: v1.0.0-1
-#  hooks:
-#  - id: blacken-docs
-#    additional_dependencies: [black==19.3b0]

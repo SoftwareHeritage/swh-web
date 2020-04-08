@@ -14,7 +14,7 @@ Expose some Django assertions to be used with pytest
 
 from django.test import TestCase
 
-_test_case = TestCase('run')
+_test_case = TestCase("run")
 
 assert_template_used = _test_case.assertTemplateUsed
 assert_contains = _test_case.assertContains
