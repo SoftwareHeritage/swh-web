@@ -1,11 +1,11 @@
+decorator  # dependency of swh.core[http]
+djangorestframework-stubs
+django-stubs
 hypothesis
 pytest
 pytest-django
 pytest-mock
-django-stubs
-djangorestframework-stubs
 requests-mock
-swh.core[http] >= 0.0.81
-swh.loader.git >= 0.0.55
-swh.storage >= 0.0.178
-decorator  # dependency of swh.core[http]
+swh.core[http] >= 0.0.94
+swh.loader.git >= 0.0.59
+swh.storage >= 0.0.182
