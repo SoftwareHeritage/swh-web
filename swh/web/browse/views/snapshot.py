@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from swh.web.browse.browseurls import browse_route
 from swh.web.common.utils import reverse
 
-from .utils.snapshot_context import (
+from swh.web.browse.snapshot_context import (
     browse_snapshot_directory,
     browse_snapshot_content,
     browse_snapshot_log,

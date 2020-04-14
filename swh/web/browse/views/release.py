@@ -6,13 +6,10 @@
 from django.shortcuts import render
 import sentry_sdk
 
-from swh.web.common import service
-from swh.web.common.utils import reverse, format_utc_iso_date
-from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
+from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     gen_revision_link,
-    get_snapshot_context,
     gen_link,
     gen_snapshot_link,
     get_swh_persistent_ids,
@@ -21,6 +18,9 @@ from swh.web.browse.utils import (
     gen_release_link,
     gen_person_mail_link,
 )
+from swh.web.common import service
+from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.utils import reverse, format_utc_iso_date
 
 
 @browse_route(

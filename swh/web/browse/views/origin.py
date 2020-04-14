@@ -5,25 +5,25 @@
 
 from django.shortcuts import render, redirect
 
-from swh.web.common import service
-from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import reverse, format_utc_iso_date, parse_timestamp
-from swh.web.common.exc import handle_view_exception
-from swh.web.browse.utils import get_snapshot_context
-from swh.web.browse.browseurls import browse_route
 
-from .utils.snapshot_context import (
+from swh.web.browse.browseurls import browse_route
+from swh.web.browse.snapshot_context import (
     browse_snapshot_directory,
     browse_snapshot_content,
     browse_snapshot_log,
     browse_snapshot_branches,
     browse_snapshot_releases,
+    get_snapshot_context,
 )
+from swh.web.common import service
+from swh.web.common.exc import handle_view_exception
+from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.utils import reverse, format_utc_iso_date, parse_timestamp
 
 
 @browse_route(
     r"origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/",
-    r"origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)" "/directory/(?P<path>.+)/",
+    r"origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/directory/(?P<path>.+)/",
     r"origin/(?P<origin_url>.+)/directory/",
     r"origin/(?P<origin_url>.+)/directory/(?P<path>.+)/",
     view_name="browse-origin-directory",
@@ -43,7 +43,7 @@ def origin_directory_browse(request, origin_url, timestamp=None, path=None):
 
 
 @browse_route(
-    r"origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)" "/content/(?P<path>.+)/",
+    r"origin/(?P<origin_url>.+)/visit/(?P<timestamp>.+)/content/(?P<path>.+)/",
     r"origin/(?P<origin_url>.+)/content/(?P<path>.+)/",
     view_name="browse-origin-content",
 )

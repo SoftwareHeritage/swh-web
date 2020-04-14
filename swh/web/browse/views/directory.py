@@ -10,18 +10,18 @@ from django.shortcuts import render, redirect
 from django.template.defaultfilters import filesizeformat
 import sentry_sdk
 
-from swh.web.common import service
-from swh.web.common.utils import reverse, gen_path_info
-from swh.web.common.exc import handle_view_exception, NotFoundExc
+
+from swh.web.browse.browseurls import browse_route
+from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     get_directory_entries,
-    get_snapshot_context,
     get_readme_to_display,
     get_swh_persistent_ids,
     gen_link,
 )
-
-from swh.web.browse.browseurls import browse_route
+from swh.web.common import service
+from swh.web.common.exc import handle_view_exception, NotFoundExc
+from swh.web.common.utils import reverse, gen_path_info
 
 
 @browse_route(

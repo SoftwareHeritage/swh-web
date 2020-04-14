@@ -7,15 +7,13 @@ import random
 import re
 import string
 
-import swh.web.browse.utils
-
 from django.utils.html import escape
 
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Snapshot
-from swh.web.browse.utils import process_snapshot_branches
+from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import (
@@ -24,6 +22,7 @@ from swh.web.common.utils import (
     format_utc_iso_date,
     parse_timestamp,
 )
+from swh.web.config import get_config
 from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
@@ -443,19 +442,17 @@ def test_origin_snapshot_invalid_branch(
 
 
 def test_origin_request_errors(client, archive_data, mocker):
-    mock_snapshot_service = mocker.patch(
-        "swh.web.browse.views.utils.snapshot_context.service"
-    )
+    mock_snapshot_service = mocker.patch("swh.web.browse.snapshot_context.service")
     mock_origin_service = mocker.patch("swh.web.browse.views.origin.service")
     mock_utils_service = mocker.patch("swh.web.browse.utils.service")
     mock_get_origin_visit_snapshot = mocker.patch(
-        "swh.web.browse.utils.get_origin_visit_snapshot"
+        "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_visits.get_origin_visits"
     )
     mock_request_content = mocker.patch(
-        "swh.web.browse.views.utils.snapshot_context.request_content"
+        "swh.web.browse.snapshot_context.request_content"
     )
     mock_origin_service.lookup_origin.side_effect = NotFoundExc("origin not found")
     url = reverse("browse-origin-visits", url_args={"origin_url": "bar"})
@@ -512,7 +509,7 @@ def test_origin_request_errors(client, archive_data, mocker):
         ],
         [],
     )
-    mock_utils_service.lookup_snapshot_sizes.return_value = {
+    mock_snapshot_service.lookup_snapshot_sizes.return_value = {
         "revision": 1,
         "release": 0,
     }
@@ -564,11 +561,11 @@ def test_origin_request_errors(client, archive_data, mocker):
     ]
     mock_get_origin_visit_snapshot.side_effect = None
     mock_get_origin_visit_snapshot.return_value = ([], [])
-    mock_utils_service.lookup_snapshot_sizes.return_value = {
+    mock_snapshot_service.lookup_snapshot_sizes.return_value = {
         "revision": 0,
         "release": 0,
     }
-    mock_utils_service.lookup_origin.return_value = {
+    mock_snapshot_service.lookup_origin.return_value = {
         "type": "foo",
         "url": "bar",
         "id": 457,
@@ -593,7 +590,7 @@ def test_origin_request_errors(client, archive_data, mocker):
         ],
         [],
     )
-    mock_utils_service.lookup_snapshot_sizes.return_value = {
+    mock_snapshot_service.lookup_snapshot_sizes.return_value = {
         "revision": 1,
         "release": 0,
     }
@@ -610,7 +607,7 @@ def test_origin_request_errors(client, archive_data, mocker):
     assert_contains(resp, "Content not found", status_code=404)
 
     mock_get_snapshot_context = mocker.patch(
-        "swh.web.browse.views.utils.snapshot_context.get_snapshot_context"
+        "swh.web.browse.snapshot_context.get_snapshot_context"
     )
 
     mock_get_snapshot_context.side_effect = NotFoundExc("Snapshot not found")
@@ -622,9 +619,9 @@ def test_origin_request_errors(client, archive_data, mocker):
 
 
 def test_origin_empty_snapshot(client, mocker):
-    mock_utils_service = mocker.patch("swh.web.browse.utils.service")
+    mock_utils_service = mocker.patch("swh.web.browse.snapshot_context.service")
     mock_get_origin_visit_snapshot = mocker.patch(
-        "swh.web.browse.utils.get_origin_visit_snapshot"
+        "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_visits.get_origin_visits"
@@ -660,9 +657,10 @@ def test_origin_empty_snapshot(client, mocker):
 
 @given(origin_with_releases())
 def test_origin_release_browse(client, archive_data, origin):
-    # for swh.web.browse.utils.get_snapshot_content to only return one branch
-    snapshot_max_size = swh.web.browse.utils.snapshot_content_max_size
-    swh.web.browse.utils.snapshot_content_max_size = 1
+    # for swh.web.browse.snapshot_context.get_snapshot_content to only return one branch
+    config = get_config()
+    snapshot_max_size = int(config["snapshot_content_max_size"])
+    config["snapshot_content_max_size"] = 1
     try:
         snapshot = archive_data.snapshot_get_latest(origin["url"])
         release = [
@@ -680,7 +678,7 @@ def test_origin_release_browse(client, archive_data, origin):
         assert_contains(resp, release_data["name"])
         assert_contains(resp, release["target"])
     finally:
-        swh.web.browse.utils.snapshot_content_max_size = snapshot_max_size
+        config["snapshot_content_max_size"] = snapshot_max_size
 
 
 @given(origin_with_releases())
@@ -1084,9 +1082,7 @@ def test_origin_branches_pagination_with_alias(
     When a snapshot contains a branch or a release alias, pagination links
     in the branches / releases view should be displayed.
     """
-    mocker.patch(
-        "swh.web.browse.views.utils.snapshot_context.PER_PAGE", len(revisions) / 2
-    )
+    mocker.patch("swh.web.browse.snapshot_context.PER_PAGE", len(revisions) / 2)
     snp_dict = {"branches": {}, "id": hash_to_bytes(random_sha1())}
     for i in range(len(revisions)):
         branch = "".join(random.choices(string.ascii_lowercase, k=8))

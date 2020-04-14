@@ -8,7 +8,6 @@ import magic
 import stat
 import textwrap
 
-from collections import defaultdict
 from threading import Lock
 
 from django.core.cache import cache
@@ -16,11 +15,9 @@ from django.utils.safestring import mark_safe
 from django.utils.html import escape
 import sentry_sdk
 
-from swh.model.identifiers import persistent_identifier
 from swh.web.common import highlightjs, service
-from swh.web.common.exc import NotFoundExc, http_status_code_message
+from swh.web.common.exc import http_status_code_message
 from swh.web.common.identifiers import get_swh_persistent_id
-from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.utils import (
     reverse,
     format_utc_iso_date,
@@ -114,8 +111,6 @@ def get_mimetype_and_encoding_for_content(content):
 # maximum authorized content size in bytes for HTML display
 # with code highlighting
 content_display_max_size = get_config()["content_display_max_size"]
-
-snapshot_content_max_size = get_config()["snapshot_content_max_size"]
 
 
 def _re_encode_content(mimetype, encoding, content_data):
@@ -307,197 +302,6 @@ def prepare_content_for_display(content_data, mime_type, path):
         content_data = content_data.decode("utf-8", errors="replace")
 
     return {"content_data": content_data, "language": language, "mimetype": mime_type}
-
-
-def process_snapshot_branches(snapshot):
-    """
-    Process a dictionary describing snapshot branches: extract those
-    targeting revisions and releases, put them in two different lists,
-    then sort those lists in lexicographical order of the branches' names.
-
-    Args:
-        snapshot_branches (dict): A dict describing the branches of a snapshot
-            as returned for instance by
-            :func:`swh.web.common.service.lookup_snapshot`
-
-    Returns:
-        tuple: A tuple whose first member is the sorted list of branches
-            targeting revisions and second member the sorted list of branches
-            targeting releases
-    """
-    snapshot_branches = snapshot["branches"]
-    branches = {}
-    branch_aliases = {}
-    releases = {}
-    revision_to_branch = defaultdict(set)
-    revision_to_release = defaultdict(set)
-    release_to_branch = defaultdict(set)
-    for branch_name, target in snapshot_branches.items():
-        if not target:
-            # FIXME: display branches with an unknown target anyway
-            continue
-        target_id = target["target"]
-        target_type = target["target_type"]
-        if target_type == "revision":
-            branches[branch_name] = {
-                "name": branch_name,
-                "revision": target_id,
-            }
-            revision_to_branch[target_id].add(branch_name)
-        elif target_type == "release":
-            release_to_branch[target_id].add(branch_name)
-        elif target_type == "alias":
-            branch_aliases[branch_name] = target_id
-        # FIXME: handle pointers to other object types
-
-    def _enrich_release_branch(branch, release):
-        releases[branch] = {
-            "name": release["name"],
-            "branch_name": branch,
-            "date": format_utc_iso_date(release["date"]),
-            "id": release["id"],
-            "message": release["message"],
-            "target_type": release["target_type"],
-            "target": release["target"],
-        }
-
-    def _enrich_revision_branch(branch, revision):
-        branches[branch].update(
-            {
-                "revision": revision["id"],
-                "directory": revision["directory"],
-                "date": format_utc_iso_date(revision["date"]),
-                "message": revision["message"],
-            }
-        )
-
-    releases_info = service.lookup_release_multiple(release_to_branch.keys())
-    for release in releases_info:
-        branches_to_update = release_to_branch[release["id"]]
-        for branch in branches_to_update:
-            _enrich_release_branch(branch, release)
-        if release["target_type"] == "revision":
-            revision_to_release[release["target"]].update(branches_to_update)
-
-    revisions = service.lookup_revision_multiple(
-        set(revision_to_branch.keys()) | set(revision_to_release.keys())
-    )
-
-    for revision in revisions:
-        if not revision:
-            continue
-        for branch in revision_to_branch[revision["id"]]:
-            _enrich_revision_branch(branch, revision)
-        for release in revision_to_release[revision["id"]]:
-            releases[release]["directory"] = revision["directory"]
-
-    for branch_alias, branch_target in branch_aliases.items():
-        if branch_target in branches:
-            branches[branch_alias] = dict(branches[branch_target])
-        else:
-            snp = service.lookup_snapshot(
-                snapshot["id"], branches_from=branch_target, branches_count=1
-            )
-            if snp and branch_target in snp["branches"]:
-
-                if snp["branches"][branch_target] is None:
-                    continue
-
-                target_type = snp["branches"][branch_target]["target_type"]
-                target = snp["branches"][branch_target]["target"]
-                if target_type == "revision":
-                    branches[branch_alias] = snp["branches"][branch_target]
-                    revision = service.lookup_revision(target)
-                    _enrich_revision_branch(branch_alias, revision)
-                elif target_type == "release":
-                    release = service.lookup_release(target)
-                    _enrich_release_branch(branch_alias, release)
-
-        if branch_alias in branches:
-            branches[branch_alias]["name"] = branch_alias
-
-    ret_branches = list(sorted(branches.values(), key=lambda b: b["name"]))
-    ret_releases = list(sorted(releases.values(), key=lambda b: b["name"]))
-
-    return ret_branches, ret_releases
-
-
-def get_snapshot_content(snapshot_id):
-    """Returns the lists of branches and releases
-    associated to a swh snapshot.
-    That list is put in  cache in order to speedup the navigation
-    in the swh-web/browse ui.
-
-    .. warning:: At most 1000 branches contained in the snapshot
-        will be returned for performance reasons.
-
-    Args:
-        snapshot_id (str): hexadecimal representation of the snapshot
-            identifier
-
-    Returns:
-        A tuple with two members. The first one is a list of dict describing
-        the snapshot branches. The second one is a list of dict describing the
-        snapshot releases.
-
-    Raises:
-        NotFoundExc if the snapshot does not exist
-    """
-    cache_entry_id = "swh_snapshot_%s" % snapshot_id
-    cache_entry = cache.get(cache_entry_id)
-
-    if cache_entry:
-        return cache_entry["branches"], cache_entry["releases"]
-
-    branches = []
-    releases = []
-
-    if snapshot_id:
-        snapshot = service.lookup_snapshot(
-            snapshot_id, branches_count=snapshot_content_max_size
-        )
-        branches, releases = process_snapshot_branches(snapshot)
-
-    cache.set(cache_entry_id, {"branches": branches, "releases": releases,})
-
-    return branches, releases
-
-
-def get_origin_visit_snapshot(
-    origin_info, visit_ts=None, visit_id=None, snapshot_id=None
-):
-    """Returns the lists of branches and releases
-    associated to a swh origin for a given visit.
-    The visit is expressed by a timestamp. In the latter case,
-    the closest visit from the provided timestamp will be used.
-    If no visit parameter is provided, it returns the list of branches
-    found for the latest visit.
-    That list is put in  cache in order to speedup the navigation
-    in the swh-web/browse ui.
-
-    .. warning:: At most 1000 branches contained in the snapshot
-        will be returned for performance reasons.
-
-    Args:
-        origin_info (dict): a dict filled with origin information
-            (id, url, type)
-        visit_ts (int or str): an ISO date string or Unix timestamp to parse
-        visit_id (int): optional visit id for disambiguation in case
-            several visits have the same timestamp
-
-    Returns:
-        A tuple with two members. The first one is a list of dict describing
-        the origin branches for the given visit.
-        The second one is a list of dict describing the origin releases
-        for the given visit.
-
-    Raises:
-        NotFoundExc if the origin or its visit are not found
-    """
-
-    visit_info = get_origin_visit(origin_info, visit_ts, visit_id, snapshot_id)
-
-    return get_snapshot_content(visit_info["snapshot"])
 
 
 def gen_link(url, link_text=None, link_attrs=None):
@@ -883,136 +687,6 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
             }
         )
     return revision_log_data
-
-
-def get_snapshot_context(
-    snapshot_id=None, origin_url=None, timestamp=None, visit_id=None
-):
-    """
-    Utility function to compute relevant information when navigating
-    the archive in a snapshot context. The snapshot is either
-    referenced by its id or it will be retrieved from an origin visit.
-
-    Args:
-        snapshot_id (str): hexadecimal representation of a snapshot identifier,
-            all other parameters will be ignored if it is provided
-        origin_url (str): the origin_url
-            (e.g. https://github.com/(user)/(repo)/)
-        timestamp (str): a datetime string for retrieving the closest
-            visit of the origin
-        visit_id (int): optional visit id for disambiguation in case
-            of several visits with the same timestamp
-
-    Returns:
-        A dict with the following entries:
-            * origin_info: dict containing origin information
-            * visit_info: dict containing visit information
-            * branches: the list of branches for the origin found
-              during the visit
-            * releases: the list of releases for the origin found
-              during the visit
-            * origin_browse_url: the url to browse the origin
-            * origin_branches_url: the url to browse the origin branches
-            * origin_releases_url': the url to browse the origin releases
-            * origin_visit_url: the url to browse the snapshot of the origin
-              found during the visit
-            * url_args: dict containing url arguments to use when browsing in
-              the context of the origin and its visit
-
-    Raises:
-        swh.web.common.exc.NotFoundExc: if no snapshot is found for the visit
-            of an origin.
-    """
-    origin_info = None
-    visit_info = None
-    url_args = None
-    query_params = {}
-    branches = []
-    releases = []
-    browse_url = None
-    visit_url = None
-    branches_url = None
-    releases_url = None
-    swh_type = "snapshot"
-    if origin_url:
-        swh_type = "origin"
-        origin_info = service.lookup_origin({"url": origin_url})
-
-        visit_info = get_origin_visit(origin_info, timestamp, visit_id, snapshot_id)
-        fmt_date = format_utc_iso_date(visit_info["date"])
-        visit_info["fmt_date"] = fmt_date
-        snapshot_id = visit_info["snapshot"]
-
-        if not snapshot_id:
-            raise NotFoundExc(
-                "No snapshot associated to the visit of origin "
-                "%s on %s" % (escape(origin_url), fmt_date)
-            )
-
-        # provided timestamp is not necessarily equals to the one
-        # of the retrieved visit, so get the exact one in order
-        # use it in the urls generated below
-        if timestamp:
-            timestamp = visit_info["date"]
-
-        branches, releases = get_origin_visit_snapshot(
-            origin_info, timestamp, visit_id, snapshot_id
-        )
-
-        url_args = {"origin_url": origin_info["url"]}
-
-        query_params = {"visit_id": visit_id}
-
-        browse_url = reverse("browse-origin-visits", url_args=url_args)
-
-        if timestamp:
-            url_args["timestamp"] = format_utc_iso_date(timestamp, "%Y-%m-%dT%H:%M:%S")
-        visit_url = reverse(
-            "browse-origin-directory", url_args=url_args, query_params=query_params
-        )
-        visit_info["url"] = visit_url
-
-        branches_url = reverse(
-            "browse-origin-branches", url_args=url_args, query_params=query_params
-        )
-
-        releases_url = reverse(
-            "browse-origin-releases", url_args=url_args, query_params=query_params
-        )
-    elif snapshot_id:
-        branches, releases = get_snapshot_content(snapshot_id)
-        url_args = {"snapshot_id": snapshot_id}
-        browse_url = reverse("browse-snapshot", url_args=url_args)
-        branches_url = reverse("browse-snapshot-branches", url_args=url_args)
-
-        releases_url = reverse("browse-snapshot-releases", url_args=url_args)
-
-    releases = list(reversed(releases))
-
-    snapshot_sizes = service.lookup_snapshot_sizes(snapshot_id)
-
-    is_empty = sum(snapshot_sizes.values()) == 0
-
-    swh_snp_id = persistent_identifier("snapshot", snapshot_id)
-
-    return {
-        "swh_type": swh_type,
-        "swh_object_id": swh_snp_id,
-        "snapshot_id": snapshot_id,
-        "snapshot_sizes": snapshot_sizes,
-        "is_empty": is_empty,
-        "origin_info": origin_info,
-        "visit_info": visit_info,
-        "branches": branches,
-        "releases": releases,
-        "branch": None,
-        "release": None,
-        "browse_url": browse_url,
-        "branches_url": branches_url,
-        "releases_url": releases_url,
-        "url_args": url_args,
-        "query_params": query_params,
-    }
 
 
 # list of common readme names ordered by preference

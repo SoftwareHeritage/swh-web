@@ -14,20 +14,12 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from swh.model.identifiers import persistent_identifier
-from swh.web.common import service
-from swh.web.common.utils import (
-    reverse,
-    format_utc_iso_date,
-    gen_path_info,
-    swh_object_icons,
-)
-from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.browse.browseurls import browse_route
+from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     gen_link,
     gen_revision_link,
     gen_revision_url,
-    get_snapshot_context,
     get_revision_log_url,
     get_directory_entries,
     gen_directory_link,
@@ -39,6 +31,14 @@ from swh.web.browse.utils import (
     get_swh_persistent_ids,
     format_log_entries,
     gen_person_mail_link,
+)
+from swh.web.common import service
+from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.utils import (
+    reverse,
+    format_utc_iso_date,
+    gen_path_info,
+    swh_object_icons,
 )
 
 

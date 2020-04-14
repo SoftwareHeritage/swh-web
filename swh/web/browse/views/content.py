@@ -15,19 +15,19 @@ import sentry_sdk
 
 from swh.model.hashutil import hash_to_hex
 
-from swh.web.common import query, service, highlightjs
-from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
-from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.browse.browseurls import browse_route
+from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     request_content,
     prepare_content_for_display,
     content_display_max_size,
-    get_snapshot_context,
     get_swh_persistent_ids,
     gen_link,
     gen_directory_link,
 )
-from swh.web.browse.browseurls import browse_route
+from swh.web.common import query, service, highlightjs
+from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
 
 
 @browse_route(
