@@ -110,9 +110,9 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
         let content = '<div><h6>' + e.date.toDateString() + '</h6></div>';
         content += '<ul style="list-style-type: none;">';
         for (let i = 0; i < visits.length; ++i) {
-          let visitTime = visits[i].fmt_date.substr(visits[i].fmt_date.indexOf(',') + 2);
+          let visitTime = visits[i].formatted_date.substr(visits[i].formatted_date.indexOf(',') + 2);
           content += '<li><a class="swh-visit-' + visits[i].status + '" title="' + visits[i].status +
-                     ' visit" href="' + visits[i].browse_url + '">' + visitTime + '</a></li>';
+                     ' visit" href="' + visits[i].url + '">' + visitTime + '</a></li>';
         }
         content += '</ul>';
 

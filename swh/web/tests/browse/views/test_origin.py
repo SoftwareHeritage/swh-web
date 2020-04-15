@@ -594,7 +594,7 @@ def test_origin_empty_snapshot(client, mocker, origin):
         "release": 0,
     }
     mock_service.lookup_origin.return_value = origin
-    url = reverse("browse-origin-directory", url_args={"origin_url": "bar"})
+    url = reverse("browse-origin-directory", url_args={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 200
     assert_template_used(resp, "browse/directory.html")
@@ -697,7 +697,7 @@ def _origin_content_view_test_helper(
 
     if timestamp:
         url_args["timestamp"] = format_utc_iso_date(
-            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%S"
+            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
     root_dir_url = reverse(
@@ -831,7 +831,7 @@ def _origin_directory_view_test_helper(
 
     if timestamp:
         url_args["timestamp"] = format_utc_iso_date(
-            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%S"
+            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
     for d in dirs:

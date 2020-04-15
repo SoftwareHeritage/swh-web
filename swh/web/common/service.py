@@ -8,18 +8,20 @@ import os
 import re
 
 from collections import defaultdict
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Iterator, Optional, Tuple
 
 from swh.model import hashutil
 
 from swh.storage.algos import diff, revisions_walker
 
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.web import config
 from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.origin_visits import get_origin_visit
-from swh.web import config
+from swh.web.common.typing import OriginInfo, OriginVisitInfo
+
 
 search = config.search()
 storage = config.storage()
@@ -211,7 +213,7 @@ def lookup_content_license(q):
     return converters.from_swh({"id": sha1, "facts": lic[sha1]}, hashess={"id"})
 
 
-def lookup_origin(origin: Dict[str, str]) -> Dict[str, str]:
+def lookup_origin(origin: OriginInfo) -> OriginInfo:
     """Return information about the origin matching dict origin.
 
     Args:
@@ -242,7 +244,9 @@ def lookup_origin(origin: Dict[str, str]) -> Dict[str, str]:
     return converters.from_origin(origin_info)
 
 
-def lookup_origins(origin_from=1, origin_count=100):
+def lookup_origins(
+    origin_from: int = 1, origin_count: int = 100
+) -> Iterator[OriginInfo]:
     """Get list of archived software origins in a paginated way.
 
     Origins are sorted by id before returning them
@@ -258,7 +262,9 @@ def lookup_origins(origin_from=1, origin_count=100):
     return map(converters.from_origin, origins)
 
 
-def search_origin(url_pattern, limit=50, with_visit=False, page_token=None):
+def search_origin(
+    url_pattern: str, limit: int = 50, with_visit: bool = False, page_token: Any = None
+) -> Tuple[List[OriginInfo], Any]:
     """Search for origins whose urls contain a provided string pattern
     or match a provided regular expression.
 
@@ -293,8 +299,10 @@ def search_origin(url_pattern, limit=50, with_visit=False, page_token=None):
                 pattern_parts.append(".*".join(permut))
             url_pattern = "|".join(pattern_parts)
 
-        origins = storage.origin_search(url_pattern, offset, limit, regexp, with_visit)
-        origins = list(map(converters.from_origin, origins))
+        origins_raw = storage.origin_search(
+            url_pattern, offset, limit, regexp, with_visit
+        )
+        origins = list(map(converters.from_origin, origins_raw))
         if len(origins) >= limit:
             page_token = str(offset + len(origins))
         else:
@@ -490,7 +498,7 @@ def lookup_revision_multiple(sha1_git_list):
         sha1_git_list: A list of revision sha1_git identifiers
 
     Returns:
-        Generator of revisions information as dict.
+        Iterator of revisions information as dict.
 
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
@@ -854,7 +862,9 @@ def stat_counters():
     return storage.stat_counters()
 
 
-def _lookup_origin_visits(origin_url, last_visit=None, limit=10):
+def _lookup_origin_visits(
+    origin_url: str, last_visit: Optional[int] = None, limit: int = 10
+) -> Iterator[Dict[str, Any]]:
     """Yields the origin origins' visits.
 
     Args:
@@ -874,7 +884,9 @@ def _lookup_origin_visits(origin_url, last_visit=None, limit=10):
         yield visit
 
 
-def lookup_origin_visits(origin, last_visit=None, per_page=10):
+def lookup_origin_visits(
+    origin: str, last_visit: Optional[int] = None, per_page: int = 10
+) -> Iterator[OriginVisitInfo]:
     """Yields the origin origins' visits.
 
     Args:
@@ -889,7 +901,9 @@ def lookup_origin_visits(origin, last_visit=None, per_page=10):
         yield converters.from_origin_visit(visit)
 
 
-def lookup_origin_visit_latest(origin_url, require_snapshot):
+def lookup_origin_visit_latest(
+    origin_url: str, require_snapshot: bool
+) -> OriginVisitInfo:
     """Return the origin's latest visit
 
     Args:
@@ -906,7 +920,7 @@ def lookup_origin_visit_latest(origin_url, require_snapshot):
     return converters.from_origin_visit(visit)
 
 
-def lookup_origin_visit(origin_url, visit_id):
+def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
     """Return information about visit visit_id with origin origin.
 
     Args:
