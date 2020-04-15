@@ -441,211 +441,159 @@ def test_origin_snapshot_invalid_branch(
     assert rv.status_code == 404
 
 
-def test_origin_request_errors(client, archive_data, mocker):
-    mock_snapshot_service = mocker.patch("swh.web.browse.snapshot_context.service")
-    mock_origin_service = mocker.patch("swh.web.browse.views.origin.service")
-    mock_utils_service = mocker.patch("swh.web.browse.utils.service")
-    mock_get_origin_visit_snapshot = mocker.patch(
-        "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
+@given(new_origin())
+def test_browse_visits_origin_not_found(client, new_origin):
+    url = reverse("browse-origin-visits", url_args={"origin_url": new_origin.url})
+    resp = client.get(url)
+    assert resp.status_code == 404
+    assert_template_used(resp, "error.html")
+    assert_contains(
+        resp, f"Origin with url {new_origin.url} not found", status_code=404
     )
+
+
+@given(origin())
+def test_browse_origin_directory_no_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_visits.get_origin_visits"
     )
-    mock_request_content = mocker.patch(
-        "swh.web.browse.snapshot_context.request_content"
-    )
-    mock_origin_service.lookup_origin.side_effect = NotFoundExc("origin not found")
-    url = reverse("browse-origin-visits", url_args={"origin_url": "bar"})
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
-    assert_contains(resp, "origin not found", status_code=404)
-
-    mock_origin_service.lookup_origin.side_effect = None
-    mock_origin_service.lookup_origin.return_value = {
-        "type": "foo",
-        "url": "bar",
-        "id": 457,
-    }
     mock_get_origin_visits.return_value = []
-    url = reverse("browse-origin-directory", url_args={"origin_url": "bar"})
+    url = reverse("browse-origin-directory", url_args={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
     assert_contains(resp, "No visit", status_code=404)
+    assert mock_get_origin_visits.called
 
+
+@given(origin())
+def test_browse_origin_directory_unknown_visit(client, mocker, origin):
+    mock_get_origin_visits = mocker.patch(
+        "swh.web.common.origin_visits.get_origin_visits"
+    )
     mock_get_origin_visits.return_value = [{"visit": 1}]
-    mock_get_origin_visit_snapshot.side_effect = NotFoundExc("visit not found")
+
     url = reverse(
         "browse-origin-directory",
-        url_args={"origin_url": "bar"},
+        url_args={"origin_url": origin["url"]},
         query_params={"visit_id": 2},
     )
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
     assert re.search("Visit.*not found", resp.content.decode("utf-8"))
+    assert mock_get_origin_visits.called
 
-    mock_get_origin_visits.return_value = [
-        {
-            "date": "2015-09-26T09:30:52.373449+00:00",
-            "metadata": {},
-            "origin": 457,
-            "snapshot": "bdaf9ac436488a8c6cda927a0f44e172934d3f65",
-            "status": "full",
-            "visit": 1,
-        }
-    ]
-    mock_get_origin_visit_snapshot.side_effect = None
-    mock_get_origin_visit_snapshot.return_value = (
-        [
-            {
-                "directory": "ae59ceecf46367e8e4ad800e231fc76adc3afffb",
-                "name": "HEAD",
-                "revision": "7bc08e1aa0b08cb23e18715a32aa38517ad34672",
-                "date": "04 May 2017, 13:27 UTC",
-                "message": "",
-            }
-        ],
-        [],
+
+@given(origin())
+def test_browse_origin_directory_not_found(client, origin):
+    url = reverse(
+        "browse-origin-directory",
+        url_args={"origin_url": origin["url"], "path": "/invalid/dir/path/"},
     )
-    mock_snapshot_service.lookup_snapshot_sizes.return_value = {
-        "revision": 1,
-        "release": 0,
-    }
-    mock_lookup_directory = mock_utils_service.lookup_directory
-    mock_lookup_directory.side_effect = NotFoundExc("Directory not found")
-    url = reverse("browse-origin-directory", url_args={"origin_url": "bar"})
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
-    assert_contains(resp, "Directory not found", status_code=404)
+    assert re.search("Directory.*not found", resp.content.decode("utf-8"))
 
-    mock_origin_service.lookup_origin.side_effect = None
-    mock_origin_service.lookup_origin.return_value = {
-        "type": "foo",
-        "url": "bar",
-        "id": 457,
-    }
+
+@given(origin())
+def test_browse_origin_content_no_visit(client, mocker, origin):
+    mock_get_origin_visits = mocker.patch(
+        "swh.web.common.origin_visits.get_origin_visits"
+    )
     mock_get_origin_visits.return_value = []
     url = reverse(
-        "browse-origin-content", url_args={"origin_url": "bar", "path": "foo"}
+        "browse-origin-content", url_args={"origin_url": origin["url"], "path": "foo"}
     )
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
     assert_contains(resp, "No visit", status_code=404)
+    assert mock_get_origin_visits.called
 
+
+@given(origin())
+def test_browse_origin_content_unknown_visit(client, mocker, origin):
+    mock_get_origin_visits = mocker.patch(
+        "swh.web.common.origin_visits.get_origin_visits"
+    )
     mock_get_origin_visits.return_value = [{"visit": 1}]
-    mock_get_origin_visit_snapshot.side_effect = NotFoundExc("visit not found")
+
     url = reverse(
         "browse-origin-content",
-        url_args={"origin_url": "bar", "path": "foo"},
+        url_args={"origin_url": origin["url"], "path": "foo"},
         query_params={"visit_id": 2},
     )
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
     assert re.search("Visit.*not found", resp.content.decode("utf-8"))
+    assert mock_get_origin_visits.called
 
-    mock_get_origin_visits.return_value = [
-        {
-            "date": "2015-09-26T09:30:52.373449+00:00",
-            "metadata": {},
-            "origin": 457,
-            "snapshot": "bdaf9ac436488a8c6cda927a0f44e172934d3f65",
-            "status": "full",
-            "type": "git",
-            "visit": 1,
-        }
-    ]
-    mock_get_origin_visit_snapshot.side_effect = None
+
+@given(origin())
+def test_browse_origin_content_empty_snapshot(client, mocker, origin):
+    mock_snapshot_service = mocker.patch("swh.web.browse.snapshot_context.service")
+    mock_get_origin_visit_snapshot = mocker.patch(
+        "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
+    )
     mock_get_origin_visit_snapshot.return_value = ([], [])
+    mock_snapshot_service.lookup_origin.return_value = origin
     mock_snapshot_service.lookup_snapshot_sizes.return_value = {
         "revision": 0,
         "release": 0,
     }
-    mock_snapshot_service.lookup_origin.return_value = {
-        "type": "foo",
-        "url": "bar",
-        "id": 457,
-    }
     url = reverse(
-        "browse-origin-content", url_args={"origin_url": "bar", "path": "baz"}
+        "browse-origin-content", url_args={"origin_url": origin["url"], "path": "baz"}
     )
     resp = client.get(url)
     assert resp.status_code == 200
     assert_template_used(resp, "browse/content.html")
     assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
+    assert mock_get_origin_visit_snapshot.called
+    assert mock_snapshot_service.lookup_origin.called
+    assert mock_snapshot_service.lookup_snapshot_sizes.called
 
-    mock_get_origin_visit_snapshot.return_value = (
-        [
-            {
-                "directory": "ae59ceecf46367e8e4ad800e231fc76adc3afffb",
-                "name": "HEAD",
-                "revision": "7bc08e1aa0b08cb23e18715a32aa38517ad34672",
-                "date": "04 May 2017, 13:27 UTC",
-                "message": "",
-            }
-        ],
-        [],
-    )
-    mock_snapshot_service.lookup_snapshot_sizes.return_value = {
-        "revision": 1,
-        "release": 0,
-    }
-    mock_snapshot_service.lookup_directory_with_path.return_value = {
-        "target": "5ecd9f37b7a2d2e9980d201acd6286116f2ba1f1"
-    }
-    mock_request_content.side_effect = NotFoundExc("Content not found")
+
+@given(origin())
+def test_browse_origin_content_not_found(client, origin):
     url = reverse(
-        "browse-origin-content", url_args={"origin_url": "bar", "path": "baz"}
+        "browse-origin-content",
+        url_args={"origin_url": origin["url"], "path": "/invalid/file/path"},
     )
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
-    assert_contains(resp, "Content not found", status_code=404)
+    assert re.search("Directory entry.*not found", resp.content.decode("utf-8"))
 
+
+@given(origin())
+def test_browse_directory_snapshot_not_found(client, mocker, origin):
     mock_get_snapshot_context = mocker.patch(
         "swh.web.browse.snapshot_context.get_snapshot_context"
     )
-
     mock_get_snapshot_context.side_effect = NotFoundExc("Snapshot not found")
-    url = reverse("browse-origin-directory", url_args={"origin_url": "bar"})
+    url = reverse("browse-origin-directory", url_args={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
     assert_contains(resp, "Snapshot not found", status_code=404)
+    assert mock_get_snapshot_context.called
 
 
-def test_origin_empty_snapshot(client, mocker):
-    mock_utils_service = mocker.patch("swh.web.browse.snapshot_context.service")
+@given(origin())
+def test_origin_empty_snapshot(client, mocker, origin):
+    mock_service = mocker.patch("swh.web.browse.snapshot_context.service")
     mock_get_origin_visit_snapshot = mocker.patch(
         "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
-    mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
-    )
-    mock_get_origin_visits.return_value = [
-        {
-            "date": "2015-09-26T09:30:52.373449+00:00",
-            "metadata": {},
-            "origin": 457,
-            "snapshot": "bdaf9ac436488a8c6cda927a0f44e172934d3f65",
-            "status": "full",
-            "type": "git",
-            "visit": 1,
-        }
-    ]
     mock_get_origin_visit_snapshot.return_value = ([], [])
-    mock_utils_service.lookup_snapshot_sizes.return_value = {
+    mock_service.lookup_snapshot_sizes.return_value = {
         "revision": 0,
         "release": 0,
     }
-    mock_utils_service.lookup_origin.return_value = {
-        "id": 457,
-        "url": "https://github.com/foo/bar",
-    }
+    mock_service.lookup_origin.return_value = origin
     url = reverse("browse-origin-directory", url_args={"origin_url": "bar"})
     resp = client.get(url)
     assert resp.status_code == 200
@@ -653,6 +601,8 @@ def test_origin_empty_snapshot(client, mocker):
     resp_content = resp.content.decode("utf-8")
     assert re.search("snapshot.*is empty", resp_content)
     assert not re.search("swh-tr-link", resp_content)
+    assert mock_get_origin_visit_snapshot.called
+    assert mock_service.lookup_snapshot_sizes.called
 
 
 @given(origin_with_releases())
@@ -682,7 +632,7 @@ def test_origin_release_browse(client, archive_data, origin):
 
 
 @given(origin_with_releases())
-def test_origin_release_browse_not_found(client, archive_data, origin):
+def test_origin_release_browse_not_found(client, origin):
 
     invalid_release_name = "swh-foo-bar"
     url = reverse(
