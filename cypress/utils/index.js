@@ -26,7 +26,7 @@ export function getTime(text) {
   const time = {
     date: date.getUTCDate(),
     month: date.getUTCMonth(),
-    monthName: date.toLocaleString('en', { month: 'long' }),
+    monthName: date.toLocaleString('en', {month: 'long'}),
     year: date.getUTCFullYear(),
     hours: pad(date.getUTCHours()),
     minutes: pad(date.getUTCMinutes())
