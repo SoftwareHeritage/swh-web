@@ -1,3 +1,5 @@
+exclude: '^swh/web/tests/resources/'
+
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.4.0
@@ -14,7 +16,6 @@ repos:
     exclude: >
         (?x)^(
             cypress/integration/directory.spec.js|
-            swh/web/tests/resources/contents/code/extensions/.*|
             yarn.lock|
             package.json
         )$
