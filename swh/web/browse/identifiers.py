@@ -12,7 +12,7 @@ from swh.web.common.exc import handle_view_exception
 def swh_id_browse(request, swh_id):
     """
     Django view enabling to browse the archive using
-    :ref:`persistent-identifiers`.
+    :ref:`SWHIDs <persistent-identifiers>`.
 
     The url that points to it is :http:get:`/(swh_id)/`.
     """

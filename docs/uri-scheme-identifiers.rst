@@ -1,9 +1,10 @@
 URI scheme for Software Heritage identifiers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A subset of Software Heritage objects (contents, directories, releases and revisions)
-can be browsed using :ref:`persistent-identifiers`. Those identifiers
-are guaranteed to remain stable (persistent) over time.
+A subset of Software Heritage objects (contents, directories, releases and
+revisions) can be browsed using :ref:`SWHIDs <persistent-identifiers>`.  Those
+identifiers are guaranteed to remain stable (persistent) over time.
+
 
 .. http:get:: /(swh_id)/
 
@@ -11,9 +12,9 @@ are guaranteed to remain stable (persistent) over time.
     A redirection to the adequate HTML view will be performed when
     reaching it.
 
-    :param string swh_id: a persistent identifier for a Software Heritage object
-        (see the :ref:`persistent-identifiers` section to learn more
-        about its syntax)
+    :param string swh_id: a persistent identifier for a Software Heritage
+        object, or SWHID (see :ref:`persistent identifiers
+        <persistent-identifiers>` to learn more about its syntax)
     :resheader Location: the redirection URL for browsing the Software Heritage object
         associated to the provided identifier
     :statuscode 302: no error
