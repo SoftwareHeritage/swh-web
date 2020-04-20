@@ -247,7 +247,11 @@ def context_processor(request):
     in all swh-web templates.
     """
     config = get_config()
-    if request.user.is_authenticated and not hasattr(request.user, "backend"):
+    if (
+        hasattr(request, "user")
+        and request.user.is_authenticated
+        and not hasattr(request.user, "backend")
+    ):
         # To avoid django.template.base.VariableDoesNotExist errors
         # when rendering templates when standard Django user is logged in.
         request.user.backend = "django.contrib.auth.backends.ModelBackend"

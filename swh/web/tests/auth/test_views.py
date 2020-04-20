@@ -15,6 +15,7 @@ from swh.web.auth.models import OIDCUser
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_template_used, assert_contains
+from swh.web.urls import _default_view as homepage_view
 
 from . import sample_data
 from .keycloak_mock import mock_keycloak
@@ -326,3 +327,12 @@ def test_oidc_silent_refresh_failure(client, mocker):
         "logout", query_params={"next_path": next_path, "remote_user": 1}
     )
     assert response["location"] == logout_url
+
+
+def test_view_rendering_when_user_not_set_in_request(request_factory):
+    request = request_factory.get("/")
+    # Django RequestFactory do not set any user by default
+    assert not hasattr(request, "user")
+
+    response = homepage_view(request)
+    assert response.status_code == 200
