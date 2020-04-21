@@ -19,7 +19,7 @@ def test_gen_oidc_pkce_codes():
     code_verifier, code_challenge = gen_oidc_pkce_codes()
 
     # check the code verifier only contains allowed characters
-    assert re.match(r'[a-zA-Z0-9-\._~]+', code_verifier)
+    assert re.match(r"[a-zA-Z0-9-\._~]+", code_verifier)
 
     # check minimum and maximum authorized length for the
     # code verifier
@@ -27,11 +27,11 @@ def test_gen_oidc_pkce_codes():
     assert len(code_verifier) <= 128
 
     # compute code challenge from code verifier
-    challenge = hashlib.sha256(code_verifier.encode('ascii')).digest()
-    challenge = urlsafe_b64encode(challenge).decode('ascii')
-    challenge = challenge.replace('=', '')
+    challenge = hashlib.sha256(code_verifier.encode("ascii")).digest()
+    challenge = urlsafe_b64encode(challenge).decode("ascii")
+    challenge = challenge.replace("=", "")
 
     # check base64 padding is not present
-    assert not code_challenge[-1].endswith('=')
+    assert not code_challenge[-1].endswith("=")
     # check code challenge is valid
     assert code_challenge == challenge

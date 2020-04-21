@@ -11,7 +11,7 @@ class AdminUrls(UrlsIndex):
     Class to manage swh-web admin urls.
     """
 
-    scope = 'admin'
+    scope = "admin"
 
 
 def admin_route(*url_patterns, view_name=None):
@@ -24,7 +24,7 @@ def admin_route(*url_patterns, view_name=None):
         view_name: the name of the Django view associated to the routes used
             to reverse the url
     """
-    url_patterns = ['^' + url_pattern + '$' for url_pattern in url_patterns]
+    url_patterns = ["^" + url_pattern + "$" for url_pattern in url_patterns]
 
     def decorator(f):
         # register the route and its view in the browse endpoints index

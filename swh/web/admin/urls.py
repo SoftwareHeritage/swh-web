@@ -9,19 +9,17 @@ from django.shortcuts import redirect
 
 from swh.web.admin.adminurls import AdminUrls
 
-import swh.web.admin.origin_save # noqa
-import swh.web.admin.deposit # noqa
+import swh.web.admin.origin_save  # noqa
+import swh.web.admin.deposit  # noqa
 
 
 def _admin_default_view(request):
-    return redirect('admin-origin-save')
+    return redirect("admin-origin-save")
 
 
 urlpatterns = [
-    url(r'^$', _admin_default_view, name='admin'),
-    url(r'^login/$',
-        LoginView.as_view(template_name='login.html'),
-        name='login'),
+    url(r"^$", _admin_default_view, name="admin"),
+    url(r"^login/$", LoginView.as_view(template_name="login.html"), name="login"),
 ]
 
 urlpatterns += AdminUrls.get_url_patterns()

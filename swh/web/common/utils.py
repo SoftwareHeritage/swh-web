@@ -34,26 +34,28 @@ from swh.web.config import get_config
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
 swh_object_icons = {
-    'branch': 'fa fa-code-fork',
-    'branches': 'fa fa-code-fork',
-    'content': 'fa fa-file-text',
-    'directory': 'fa fa-folder',
-    'person': 'fa fa-user',
-    'revisions history': 'fa fa-history',
-    'release': 'fa fa-tag',
-    'releases': 'fa fa-tag',
-    'revision': 'octicon-git-commit',
-    'snapshot': 'fa fa-camera',
-    'visits': 'fa fa-calendar',
+    "branch": "fa fa-code-fork",
+    "branches": "fa fa-code-fork",
+    "content": "fa fa-file-text",
+    "directory": "fa fa-folder",
+    "person": "fa fa-user",
+    "revisions history": "fa fa-history",
+    "release": "fa fa-tag",
+    "releases": "fa fa-tag",
+    "revision": "octicon-git-commit",
+    "snapshot": "fa fa-camera",
+    "visits": "fa fa-calendar",
 }
 
 
-def reverse(viewname: str,
-            url_args: Optional[Dict[str, Any]] = None,
-            query_params: Optional[QueryParameters] = None,
-            current_app: Optional[str] = None,
-            urlconf: Optional[str] = None,
-            request: Optional[HttpRequest] = None) -> str:
+def reverse(
+    viewname: str,
+    url_args: Optional[Dict[str, Any]] = None,
+    query_params: Optional[QueryParameters] = None,
+    current_app: Optional[str] = None,
+    urlconf: Optional[str] = None,
+    request: Optional[HttpRequest] = None,
+) -> str:
     """An override of django reverse function supporting query parameters.
 
     Args:
@@ -73,17 +75,18 @@ def reverse(viewname: str,
     if url_args:
         url_args = {k: v for k, v in url_args.items() if v is not None}
 
-    url = django_reverse(viewname, urlconf=urlconf, kwargs=url_args,
-                         current_app=current_app)
+    url = django_reverse(
+        viewname, urlconf=urlconf, kwargs=url_args, current_app=current_app
+    )
 
     if query_params:
         query_params = {k: v for k, v in query_params.items() if v}
 
     if query_params and len(query_params) > 0:
-        query_dict = QueryDict('', mutable=True)
+        query_dict = QueryDict("", mutable=True)
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
-        url += ('?' + query_dict.urlencode(safe='/;:'))
+        url += "?" + query_dict.urlencode(safe="/;:")
 
     if request is not None:
         url = request.build_absolute_uri(url)
@@ -101,7 +104,7 @@ def datetime_to_utc(date):
         datetime.datetime: datetime in UTC without timezone info
     """
     if date.tzinfo:
-        return date.astimezone(tz.gettz('UTC')).replace(tzinfo=timezone.utc)
+        return date.astimezone(tz.gettz("UTC")).replace(tzinfo=timezone.utc)
     else:
         return date
 
@@ -129,7 +132,8 @@ def parse_timestamp(timestamp):
     except Exception:
         try:
             return datetime.utcfromtimestamp(float(timestamp)).replace(
-                tzinfo=timezone.utc)
+                tzinfo=timezone.utc
+            )
         except (ValueError, OverflowError) as e:
             raise BadInputExc(e)
 
@@ -138,14 +142,14 @@ def shorten_path(path):
     """Shorten the given path: for each hash present, only return the first
     8 characters followed by an ellipsis"""
 
-    sha256_re = r'([0-9a-f]{8})[0-9a-z]{56}'
-    sha1_re = r'([0-9a-f]{8})[0-9a-f]{32}'
+    sha256_re = r"([0-9a-f]{8})[0-9a-z]{56}"
+    sha1_re = r"([0-9a-f]{8})[0-9a-f]{32}"
 
-    ret = re.sub(sha256_re, r'\1...', path)
-    return re.sub(sha1_re, r'\1...', ret)
+    ret = re.sub(sha256_re, r"\1...", path)
+    return re.sub(sha1_re, r"\1...", ret)
 
 
-def format_utc_iso_date(iso_date, fmt='%d %B %Y, %H:%M UTC'):
+def format_utc_iso_date(iso_date, fmt="%d %B %Y, %H:%M UTC"):
     """Turns a string representation of an ISO 8601 date string
     to UTC and format it into a more human readable one.
 
@@ -188,12 +192,11 @@ def gen_path_info(path):
     """
     path_info = []
     if path:
-        sub_paths = path.strip('/').split('/')
-        path_from_root = ''
+        sub_paths = path.strip("/").split("/")
+        path_from_root = ""
         for p in sub_paths:
-            path_from_root += '/' + p
-            path_info.append({'name': p,
-                              'path': path_from_root.strip('/')})
+            path_from_root += "/" + p
+            path_info.append({"name": p, "path": path_from_root.strip("/")})
     return path_info
 
 
@@ -212,9 +215,10 @@ def parse_rst(text, report_level=2):
     parser = docutils.parsers.rst.Parser()
     components = (docutils.parsers.rst.Parser,)
     settings = docutils.frontend.OptionParser(
-        components=components).get_default_values()
+        components=components
+    ).get_default_values()
     settings.report_level = report_level
-    document = docutils.utils.new_document('rst-doc', settings=settings)
+    document = docutils.utils.new_document("rst-doc", settings=settings)
     parser.parse(text, document)
     return document
 
@@ -229,11 +233,11 @@ def get_client_ip(request):
     Returns:
         str: The client IP address
     """
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
+        ip = x_forwarded_for.split(",")[0]
     else:
-        ip = request.META.get('REMOTE_ADDR')
+        ip = request.META.get("REMOTE_ADDR")
     return ip
 
 
@@ -243,15 +247,19 @@ def context_processor(request):
     in all swh-web templates.
     """
     config = get_config()
-    if request.user.is_authenticated and not hasattr(request.user, 'backend'):
+    if (
+        hasattr(request, "user")
+        and request.user.is_authenticated
+        and not hasattr(request.user, "backend")
+    ):
         # To avoid django.template.base.VariableDoesNotExist errors
         # when rendering templates when standard Django user is logged in.
-        request.user.backend = 'django.contrib.auth.backends.ModelBackend'
+        request.user.backend = "django.contrib.auth.backends.ModelBackend"
     return {
-        'swh_object_icons': swh_object_icons,
-        'available_languages': None,
-        'swh_client_config': config['client_config'],
-        'oidc_enabled': bool(config['keycloak']['server_url']),
+        "swh_object_icons": swh_object_icons,
+        "available_languages": None,
+        "swh_client_config": config["client_config"],
+        "oidc_enabled": bool(config["keycloak"]["server_url"]),
     }
 
 
@@ -262,14 +270,14 @@ class EnforceCSRFAuthentication(SessionAuthentication):
     """
 
     def authenticate(self, request):
-        user = getattr(request._request, 'user', None)
+        user = getattr(request._request, "user", None)
         self.enforce_csrf(request)
         return (user, None)
 
 
-def resolve_branch_alias(snapshot: Dict[str, Any],
-                         branch: Optional[Dict[str, Any]]
-                         ) -> Optional[Dict[str, Any]]:
+def resolve_branch_alias(
+    snapshot: Dict[str, Any], branch: Optional[Dict[str, Any]]
+) -> Optional[Dict[str, Any]]:
     """
     Resolve branch alias in snapshot content.
 
@@ -279,16 +287,17 @@ def resolve_branch_alias(snapshot: Dict[str, Any],
     Returns:
         The real snapshot branch that got aliased.
     """
-    while branch and branch['target_type'] == 'alias':
-        if branch['target'] in snapshot['branches']:
-            branch = snapshot['branches'][branch['target']]
+    while branch and branch["target_type"] == "alias":
+        if branch["target"] in snapshot["branches"]:
+            branch = snapshot["branches"][branch["target"]]
         else:
             from swh.web.common import service
+
             snp = service.lookup_snapshot(
-                snapshot['id'], branches_from=branch['target'],
-                branches_count=1)
-            if snp and branch['target'] in snp['branches']:
-                branch = snp['branches'][branch['target']]
+                snapshot["id"], branches_from=branch["target"], branches_count=1
+            )
+            if snp and branch["target"] in snp["branches"]:
+                branch = snp["branches"][branch["target"]]
             else:
                 branch = None
     return branch
@@ -322,10 +331,9 @@ def rst_to_html(rst: str) -> str:
 
     """
     settings = {
-        'initial_header_level': 2,
+        "initial_header_level": 2,
     }
-    pp = publish_parts(rst, writer=_HTML_WRITER,
-                       settings_overrides=settings)
+    pp = publish_parts(rst, writer=_HTML_WRITER, settings_overrides=settings)
     return f'<div class="swh-rst">{pp["html_body"]}</div>'
 
 
@@ -339,4 +347,4 @@ def prettify_html(html: str) -> str:
     Returns:
         The prettified HTML document
     """
-    return BeautifulSoup(html, 'lxml').prettify()
+    return BeautifulSoup(html, "lxml").prettify()

@@ -20,6 +20,7 @@ class BadInputExc(ValueError):
     Example: Asking a content with the wrong identifier format.
 
     """
+
     pass
 
 
@@ -30,6 +31,7 @@ class NotFoundExc(Exception):
     that content does not exist.
 
     """
+
     pass
 
 
@@ -41,6 +43,7 @@ class ForbiddenExc(Exception):
     is not text.
 
     """
+
     pass
 
 
@@ -50,37 +53,45 @@ class LargePayloadExc(Exception):
     Example: Asking to resolve 10000 persistent identifier when the limit
     is 1000.
     """
+
     pass
 
 
 http_status_code_message = {
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    403: 'Access Denied',
-    404: 'Resource not found',
-    413: 'Payload Too Large',
-    500: 'Internal Server Error',
-    501: 'Not Implemented',
-    502: 'Bad Gateway',
-    503: 'Service unavailable'
+    400: "Bad Request",
+    401: "Unauthorized",
+    403: "Access Denied",
+    404: "Resource not found",
+    413: "Payload Too Large",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service unavailable",
 }
 
 
 def _generate_error_page(request, error_code, error_description):
-    return render(request, 'error.html',
-                  {'error_code': error_code,
-                   'error_message': http_status_code_message[error_code],
-                   'error_description': mark_safe(error_description)},
-                  status=error_code)
+    return render(
+        request,
+        "error.html",
+        {
+            "error_code": error_code,
+            "error_message": http_status_code_message[error_code],
+            "error_description": mark_safe(error_description),
+        },
+        status=error_code,
+    )
 
 
 def swh_handle400(request, exception=None):
     """
     Custom Django HTTP error 400 handler for swh-web.
     """
-    error_description = ('The server cannot process the request to %s due to '
-                         'something that is perceived to be a client error.' %
-                         escape(request.META['PATH_INFO']))
+    error_description = (
+        "The server cannot process the request to %s due to "
+        "something that is perceived to be a client error."
+        % escape(request.META["PATH_INFO"])
+    )
     return _generate_error_page(request, 400, error_description)
 
 
@@ -88,8 +99,9 @@ def swh_handle403(request, exception=None):
     """
     Custom Django HTTP error 403 handler for swh-web.
     """
-    error_description = ('The resource %s requires an authentication.' %
-                         escape(request.META['PATH_INFO']))
+    error_description = "The resource %s requires an authentication." % escape(
+        request.META["PATH_INFO"]
+    )
     return _generate_error_page(request, 403, error_description)
 
 
@@ -97,8 +109,9 @@ def swh_handle404(request, exception=None):
     """
     Custom Django HTTP error 404 handler for swh-web.
     """
-    error_description = ('The resource %s could not be found on the server.' %
-                         escape(request.META['PATH_INFO']))
+    error_description = "The resource %s could not be found on the server." % escape(
+        request.META["PATH_INFO"]
+    )
     return _generate_error_page(request, 404, error_description)
 
 
@@ -106,9 +119,10 @@ def swh_handle500(request):
     """
     Custom Django HTTP error 500 handler for swh-web.
     """
-    error_description = ('An unexpected condition was encountered when '
-                         'requesting resource %s.' %
-                         escape(request.META['PATH_INFO']))
+    error_description = (
+        "An unexpected condition was encountered when "
+        "requesting resource %s." % escape(request.META["PATH_INFO"])
+    )
     return _generate_error_page(request, 500, error_description)
 
 
@@ -119,8 +133,8 @@ def handle_view_exception(request, exc, html_response=True):
     """
     sentry_sdk.capture_exception(exc)
     error_code = 500
-    error_description = '%s: %s' % (type(exc).__name__, str(exc))
-    if get_config()['debug']:
+    error_description = "%s: %s" % (type(exc).__name__, str(exc))
+    if get_config()["debug"]:
         error_description = traceback.format_exc()
     if isinstance(exc, BadInputExc):
         error_code = 400
@@ -131,5 +145,6 @@ def handle_view_exception(request, exc, html_response=True):
     if html_response:
         return _generate_error_page(request, error_code, error_description)
     else:
-        return HttpResponse(error_description, content_type='text/plain',
-                            status=error_code)
+        return HttpResponse(
+            error_description, content_type="text/plain", status=error_code
+        )

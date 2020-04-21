@@ -14,9 +14,7 @@ from swh.model import hashutil
 
 from swh.storage.algos import diff, revisions_walker
 
-from swh.model.identifiers import (
-    CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-)
+from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc, NotFoundExc
@@ -49,14 +47,14 @@ def lookup_multiple_hashes(hashes):
         the hash is present in storage, elem['found'] = false if not.
 
     """
-    hashlist = [hashutil.hash_to_bytes(elem['sha1']) for elem in hashes]
+    hashlist = [hashutil.hash_to_bytes(elem["sha1"]) for elem in hashes]
     content_missing = storage.content_missing_per_sha1(hashlist)
     missing = [hashutil.hash_to_hex(x) for x in content_missing]
     for x in hashes:
-        x.update({'found': True})
+        x.update({"found": True})
     for h in hashes:
-        if h['sha1'] in missing:
-            h['found'] = False
+        if h["sha1"] in missing:
+            h["found"] = False
     return hashes
 
 
@@ -75,13 +73,13 @@ def lookup_expression(expression, last_sha1, per_page):
     """
 
     limit = min(per_page, MAX_LIMIT)
-    ctags = idx_storage.content_ctags_search(expression,
-                                             last_sha1=last_sha1,
-                                             limit=limit)
+    ctags = idx_storage.content_ctags_search(
+        expression, last_sha1=last_sha1, limit=limit
+    )
     for ctag in ctags:
-        ctag = converters.from_swh(ctag, hashess={'id'})
-        ctag['sha1'] = ctag['id']
-        ctag.pop('id')
+        ctag = converters.from_swh(ctag, hashess={"id"})
+        ctag["sha1"] = ctag["id"]
+        ctag.pop("id")
         yield ctag
 
 
@@ -96,8 +94,7 @@ def lookup_hash(q):
     """
     algo, hash = query.parse_hash(q)
     found = _first_element(storage.content_find({algo: hash}))
-    return {'found': converters.from_content(found),
-            'algo': algo}
+    return {"found": converters.from_content(found), "algo": algo}
 
 
 def search_hash(q):
@@ -111,7 +108,7 @@ def search_hash(q):
     """
     algo, hash = query.parse_hash(q)
     found = _first_element(storage.content_find({algo: hash}))
-    return {'found': found is not None}
+    return {"found": found is not None}
 
 
 def _lookup_content_sha1(q):
@@ -125,11 +122,11 @@ def _lookup_content_sha1(q):
 
     """
     algo, hash = query.parse_hash(q)
-    if algo != 'sha1':
+    if algo != "sha1":
         hashes = _first_element(storage.content_find({algo: hash}))
         if not hashes:
             return None
-        return hashes['sha1']
+        return hashes["sha1"]
     return hash
 
 
@@ -153,7 +150,7 @@ def lookup_content_ctags(q):
         return None
 
     for ctag in ctags:
-        yield converters.from_swh(ctag, hashess={'id'})
+        yield converters.from_swh(ctag, hashess={"id"})
 
 
 def lookup_content_filetype(q):
@@ -191,7 +188,7 @@ def lookup_content_language(q):
     lang = _first_element(list(idx_storage.content_language_get([sha1])))
     if not lang:
         return None
-    return converters.from_swh(lang, hashess={'id'})
+    return converters.from_swh(lang, hashess={"id"})
 
 
 def lookup_content_license(q):
@@ -211,8 +208,7 @@ def lookup_content_license(q):
 
     if not lic:
         return None
-    return converters.from_swh({'id': sha1, 'facts': lic[sha1]},
-                               hashess={'id'})
+    return converters.from_swh({"id": sha1, "facts": lic[sha1]}, hashess={"id"})
 
 
 def lookup_origin(origin: Dict[str, str]) -> Dict[str, str]:
@@ -226,22 +222,22 @@ def lookup_origin(origin: Dict[str, str]) -> Dict[str, str]:
 
     """
     origins = [origin]
-    if origin['url']:
+    if origin["url"]:
         # handle case when user provided an origin url with a trailing
         # slash while the url in storage does not have it (e.g. GitHub)
-        if origin['url'].endswith('/'):
-            origins.append({'url': origin['url'][:-1]})
+        if origin["url"].endswith("/"):
+            origins.append({"url": origin["url"][:-1]})
         # handle case when user provided an origin url without a trailing
         # slash while the url in storage have it (e.g. Debian source package)
         else:
-            origins.append({'url': f"{origin['url']}/"})
+            origins.append({"url": f"{origin['url']}/"})
     # Check all possible origin urls
     for orig in origins:
         origin_info = storage.origin_get(orig)
         if origin_info:
             break
     if not origin_info:
-        msg = 'Origin with url %s not found!' % origin['url']
+        msg = "Origin with url %s not found!" % origin["url"]
         raise NotFoundExc(msg)
     return converters.from_origin(origin_info)
 
@@ -276,26 +272,28 @@ def search_origin(url_pattern, limit=50, with_visit=False, page_token=None):
 
     """
     if search:
-        results = search.origin_search(url_pattern=url_pattern, count=limit,
-                                       page_token=page_token,
-                                       with_visit=with_visit)
-        origins = list(map(converters.from_origin, results['results']))
-        return (origins, results['next_page_token'])
+        results = search.origin_search(
+            url_pattern=url_pattern,
+            count=limit,
+            page_token=page_token,
+            with_visit=with_visit,
+        )
+        origins = list(map(converters.from_origin, results["results"]))
+        return (origins, results["next_page_token"])
     else:
         # Fallback to swh-storage if swh-search is not configured
         offset = int(page_token) if page_token else 0
         regexp = True
         search_words = [re.escape(word) for word in url_pattern.split()]
         if len(search_words) >= 7:
-            url_pattern = '.*'.join(search_words)
+            url_pattern = ".*".join(search_words)
         else:
             pattern_parts = []
             for permut in itertools.permutations(search_words):
-                pattern_parts.append('.*'.join(permut))
-            url_pattern = '|'.join(pattern_parts)
+                pattern_parts.append(".*".join(permut))
+            url_pattern = "|".join(pattern_parts)
 
-        origins = storage.origin_search(url_pattern, offset, limit, regexp,
-                                        with_visit)
+        origins = storage.origin_search(url_pattern, offset, limit, regexp, with_visit)
         origins = list(map(converters.from_origin, origins))
         if len(origins) >= limit:
             page_token = str(offset + len(origins))
@@ -317,18 +315,19 @@ def search_origin_metadata(fulltext, limit=50):
 
     """
     matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
-        conjunction=[fulltext], limit=limit)
+        conjunction=[fulltext], limit=limit
+    )
     results = []
 
     for match in matches:
-        match['from_revision'] = hashutil.hash_to_hex(match['from_revision'])
+        match["from_revision"] = hashutil.hash_to_hex(match["from_revision"])
 
-        origin = storage.origin_get({'url': match['id']})
-        del match['id']
+        origin = storage.origin_get({"url": match["id"]})
+        del match["id"]
 
         result = converters.from_origin(origin)
         if result:
-            result['metadata'] = match
+            result["metadata"] = match
             results.append(result)
 
     return results
@@ -347,29 +346,27 @@ def lookup_origin_intrinsic_metadata(origin_dict):
     """
     origin_info = storage.origin_get(origin_dict)
     if not origin_info:
-        msg = 'Origin with url %s not found!' % origin_dict['url']
+        msg = "Origin with url %s not found!" % origin_dict["url"]
         raise NotFoundExc(msg)
 
-    origins = [origin_info['url']]
-    match = _first_element(
-        idx_storage.origin_intrinsic_metadata_get(origins))
+    origins = [origin_info["url"]]
+    match = _first_element(idx_storage.origin_intrinsic_metadata_get(origins))
     result = {}
     if match:
-        result = match['metadata']
+        result = match["metadata"]
     return result
 
 
 def _to_sha1_bin(sha1_hex):
     _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        sha1_hex,
-        ['sha1'],  # HACK: sha1_git really
-        'Only sha1_git is supported.')
+        sha1_hex, ["sha1"], "Only sha1_git is supported."  # HACK: sha1_git really
+    )
     return sha1_git_bin
 
 
 def _check_directory_exists(sha1_git, sha1_git_bin):
     if len(list(storage.directory_missing([sha1_git_bin]))):
-        raise NotFoundExc('Directory with sha1_git %s not found' % sha1_git)
+        raise NotFoundExc("Directory with sha1_git %s not found" % sha1_git)
 
 
 def lookup_directory(sha1_git):
@@ -382,7 +379,7 @@ def lookup_directory(sha1_git):
         directory information as dict.
 
     """
-    empty_dir_sha1 = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
+    empty_dir_sha1 = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 
     if sha1_git == empty_dir_sha1:
         return []
@@ -414,11 +411,13 @@ def lookup_directory_with_path(sha1_git, path_string):
 
     paths = path_string.strip(os.path.sep).split(os.path.sep)
     queried_dir = storage.directory_entry_get_by_path(
-        sha1_git_bin, list(map(lambda p: p.encode('utf-8'), paths)))
+        sha1_git_bin, list(map(lambda p: p.encode("utf-8"), paths))
+    )
 
     if not queried_dir:
-        raise NotFoundExc(('Directory entry with path %s from %s not found') %
-                          (path_string, sha1_git))
+        raise NotFoundExc(
+            ("Directory entry with path %s from %s not found") % (path_string, sha1_git)
+        )
 
     return converters.from_directory_entry(queried_dir)
 
@@ -439,8 +438,7 @@ def lookup_release(release_sha1_git):
     sha1_git_bin = _to_sha1_bin(release_sha1_git)
     release = _first_element(storage.release_get([sha1_git_bin]))
     if not release:
-        raise NotFoundExc('Release with sha1_git %s not found.'
-                          % release_sha1_git)
+        raise NotFoundExc("Release with sha1_git %s not found." % release_sha1_git)
     return converters.from_release(release)
 
 
@@ -480,8 +478,7 @@ def lookup_revision(rev_sha1_git):
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
-        raise NotFoundExc('Revision with sha1_git %s not found.'
-                          % rev_sha1_git)
+        raise NotFoundExc("Revision with sha1_git %s not found." % rev_sha1_git)
     return converters.from_revision(revision)
 
 
@@ -522,52 +519,50 @@ def lookup_revision_message(rev_sha1_git):
 
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
-        raise NotFoundExc('Revision with sha1_git %s not found.'
-                          % rev_sha1_git)
-    if 'message' not in revision:
-        raise NotFoundExc('No message for revision with sha1_git %s.'
-                          % rev_sha1_git)
-    res = {'message': revision['message']}
+        raise NotFoundExc("Revision with sha1_git %s not found." % rev_sha1_git)
+    if "message" not in revision:
+        raise NotFoundExc("No message for revision with sha1_git %s." % rev_sha1_git)
+    res = {"message": revision["message"]}
     return res
 
 
 def _lookup_revision_id_by(origin, branch_name, timestamp):
     def _get_snapshot_branch(snapshot, branch_name):
-        snapshot = lookup_snapshot(visit['snapshot'],
-                                   branches_from=branch_name,
-                                   branches_count=10)
+        snapshot = lookup_snapshot(
+            visit["snapshot"], branches_from=branch_name, branches_count=10
+        )
         branch = None
-        if branch_name in snapshot['branches']:
-            branch = snapshot['branches'][branch_name]
+        if branch_name in snapshot["branches"]:
+            branch = snapshot["branches"][branch_name]
         return branch
 
     if isinstance(origin, int):
-        origin = {'id': origin}
+        origin = {"id": origin}
     elif isinstance(origin, str):
-        origin = {'url': origin}
+        origin = {"url": origin}
     else:
         raise TypeError('"origin" must be an int or a string.')
 
     visit = get_origin_visit(origin, visit_ts=timestamp)
-    branch = _get_snapshot_branch(visit['snapshot'], branch_name)
+    branch = _get_snapshot_branch(visit["snapshot"], branch_name)
     rev_id = None
-    if branch and branch['target_type'] == 'revision':
-        rev_id = branch['target']
-    elif branch and branch['target_type'] == 'alias':
-        branch = _get_snapshot_branch(visit['snapshot'], branch['target'])
-        if branch and branch['target_type'] == 'revision':
-            rev_id = branch['target']
+    if branch and branch["target_type"] == "revision":
+        rev_id = branch["target"]
+    elif branch and branch["target_type"] == "alias":
+        branch = _get_snapshot_branch(visit["snapshot"], branch["target"])
+        if branch and branch["target_type"] == "revision":
+            rev_id = branch["target"]
 
     if not rev_id:
-        raise NotFoundExc('Revision for origin %s and branch %s not found.'
-                          % (origin.get('url'), branch_name))
+        raise NotFoundExc(
+            "Revision for origin %s and branch %s not found."
+            % (origin.get("url"), branch_name)
+        )
 
     return rev_id
 
 
-def lookup_revision_by(origin,
-                       branch_name='HEAD',
-                       timestamp=None):
+def lookup_revision_by(origin, branch_name="HEAD", timestamp=None):
     """Lookup revision by origin, snapshot branch name and visit timestamp.
 
     If branch_name is not provided, lookup using 'HEAD' as default.
@@ -632,8 +627,9 @@ def lookup_revision_log_by(origin, branch_name, timestamp, limit):
     return lookup_revision_log(rev_id, limit)
 
 
-def lookup_revision_with_context_by(origin, branch_name, timestamp,
-                                    sha1_git, limit=100):
+def lookup_revision_with_context_by(
+    origin, branch_name, timestamp, sha1_git, limit=100
+):
     """Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
     sha1_git_root being resolved through the lookup of a revision by origin,
@@ -665,8 +661,10 @@ def lookup_revision_with_context_by(origin, branch_name, timestamp,
 
     rev_root = _first_element(storage.revision_get([rev_root_id_bin]))
 
-    return (converters.from_revision(rev_root),
-            lookup_revision_with_context(rev_root, sha1_git, limit))
+    return (
+        converters.from_revision(rev_root),
+        lookup_revision_with_context(rev_root, sha1_git, limit),
+    )
 
 
 def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
@@ -695,16 +693,16 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
 
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
-        raise NotFoundExc('Revision %s not found' % sha1_git)
+        raise NotFoundExc("Revision %s not found" % sha1_git)
 
     if isinstance(sha1_git_root, str):
         sha1_git_root_bin = _to_sha1_bin(sha1_git_root)
 
-        revision_root = _first_element(storage.revision_get([sha1_git_root_bin])) # noqa
+        revision_root = _first_element(storage.revision_get([sha1_git_root_bin]))
         if not revision_root:
-            raise NotFoundExc('Revision root %s not found' % sha1_git_root)
+            raise NotFoundExc("Revision root %s not found" % sha1_git_root)
     else:
-        sha1_git_root_bin = sha1_git_root['id']
+        sha1_git_root_bin = sha1_git_root["id"]
 
     revision_log = storage.revision_log([sha1_git_root_bin], limit)
 
@@ -712,17 +710,18 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     children = defaultdict(list)
 
     for rev in revision_log:
-        rev_id = rev['id']
+        rev_id = rev["id"]
         parents[rev_id] = []
-        for parent_id in rev['parents']:
+        for parent_id in rev["parents"]:
             parents[rev_id].append(parent_id)
             children[parent_id].append(rev_id)
 
-    if revision['id'] not in parents:
-        raise NotFoundExc('Revision %s is not an ancestor of %s' %
-                          (sha1_git, sha1_git_root))
+    if revision["id"] not in parents:
+        raise NotFoundExc(
+            "Revision %s is not an ancestor of %s" % (sha1_git, sha1_git_root)
+        )
 
-    revision['children'] = children[revision['id']]
+    revision["children"] = children[revision["id"]]
 
     return converters.from_revision(revision)
 
@@ -752,47 +751,51 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
     sha1_git_bin = _to_sha1_bin(sha1_git)
     revision = _first_element(storage.revision_get([sha1_git_bin]))
     if not revision:
-        raise NotFoundExc('Revision %s not found' % sha1_git)
-    dir_sha1_git_bin = revision['directory']
+        raise NotFoundExc("Revision %s not found" % sha1_git)
+    dir_sha1_git_bin = revision["directory"]
     if dir_path:
         paths = dir_path.strip(os.path.sep).split(os.path.sep)
         entity = storage.directory_entry_get_by_path(
-            dir_sha1_git_bin, list(map(lambda p: p.encode('utf-8'), paths)))
+            dir_sha1_git_bin, list(map(lambda p: p.encode("utf-8"), paths))
+        )
         if not entity:
             raise NotFoundExc(
                 "Directory or File '%s' pointed to by revision %s not found"
-                % (dir_path, sha1_git))
+                % (dir_path, sha1_git)
+            )
     else:
-        entity = {'type': 'dir', 'target': dir_sha1_git_bin}
-    if entity['type'] == 'dir':
-        directory_entries = storage.directory_ls(entity['target']) or []
-        return {'type': 'dir',
-                'path': '.' if not dir_path else dir_path,
-                'revision': sha1_git,
-                'content': list(map(converters.from_directory_entry,
-                                    directory_entries))}
-    elif entity['type'] == 'file':  # content
-        content = _first_element(
-            storage.content_find({'sha1_git': entity['target']}))
+        entity = {"type": "dir", "target": dir_sha1_git_bin}
+    if entity["type"] == "dir":
+        directory_entries = storage.directory_ls(entity["target"]) or []
+        return {
+            "type": "dir",
+            "path": "." if not dir_path else dir_path,
+            "revision": sha1_git,
+            "content": list(map(converters.from_directory_entry, directory_entries)),
+        }
+    elif entity["type"] == "file":  # content
+        content = _first_element(storage.content_find({"sha1_git": entity["target"]}))
         if not content:
-            raise NotFoundExc('Content not found for revision %s'
-                              % sha1_git)
+            raise NotFoundExc("Content not found for revision %s" % sha1_git)
         if with_data:
-            c = _first_element(storage.content_get([content['sha1']]))
-            content['data'] = c['data']
-        return {'type': 'file',
-                'path': '.' if not dir_path else dir_path,
-                'revision': sha1_git,
-                'content': converters.from_content(content)}
-    elif entity['type'] == 'rev':  # revision
-        revision = next(storage.revision_get([entity['target']]))
-        return {'type': 'rev',
-                'path': '.' if not dir_path else dir_path,
-                'revision': sha1_git,
-                'content': converters.from_revision(revision)}
+            c = _first_element(storage.content_get([content["sha1"]]))
+            content["data"] = c["data"]
+        return {
+            "type": "file",
+            "path": "." if not dir_path else dir_path,
+            "revision": sha1_git,
+            "content": converters.from_content(content),
+        }
+    elif entity["type"] == "rev":  # revision
+        revision = next(storage.revision_get([entity["target"]]))
+        return {
+            "type": "rev",
+            "path": "." if not dir_path else dir_path,
+            "revision": sha1_git,
+            "content": converters.from_revision(revision),
+        }
     else:
-        raise NotImplementedError('Entity of type %s not implemented.'
-                                  % entity['type'])
+        raise NotImplementedError("Entity of type %s not implemented." % entity["type"])
 
 
 def lookup_content(q):
@@ -808,8 +811,10 @@ def lookup_content(q):
     algo, hash = query.parse_hash(q)
     c = _first_element(storage.content_find({algo: hash}))
     if not c:
-        raise NotFoundExc('Content with %s checksum equals to %s not found!' %
-                          (algo, hashutil.hash_to_hex(hash)))
+        raise NotFoundExc(
+            "Content with %s checksum equals to %s not found!"
+            % (algo, hashutil.hash_to_hex(hash))
+        )
     return converters.from_content(c)
 
 
@@ -829,13 +834,14 @@ def lookup_content_raw(q):
 
     """
     c = lookup_content(q)
-    content_sha1_bytes = hashutil.hash_to_bytes(c['checksums']['sha1'])
+    content_sha1_bytes = hashutil.hash_to_bytes(c["checksums"]["sha1"])
     content = _first_element(storage.content_get([content_sha1_bytes]))
     if not content:
         algo, hash = query.parse_hash(q)
-        raise NotFoundExc('Bytes of content with %s checksum equals to %s '
-                          'are not available!' %
-                          (algo, hashutil.hash_to_hex(hash)))
+        raise NotFoundExc(
+            "Bytes of content with %s checksum equals to %s "
+            "are not available!" % (algo, hashutil.hash_to_hex(hash))
+        )
     return converters.from_content(content)
 
 
@@ -862,8 +868,9 @@ def _lookup_origin_visits(origin_url, last_visit=None, limit=10):
     """
     limit = min(limit, MAX_LIMIT)
     for visit in storage.origin_visit_get(
-            origin_url, last_visit=last_visit, limit=limit):
-        visit['origin'] = origin_url
+        origin_url, last_visit=last_visit, limit=limit
+    ):
+        visit["origin"] = origin_url
         yield visit
 
 
@@ -877,8 +884,7 @@ def lookup_origin_visits(origin, last_visit=None, per_page=10):
        Dictionaries of origin_visit for that origin
 
     """
-    visits = _lookup_origin_visits(origin, last_visit=last_visit,
-                                   limit=per_page)
+    visits = _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page)
     for visit in visits:
         yield converters.from_origin_visit(visit)
 
@@ -895,7 +901,8 @@ def lookup_origin_visit_latest(origin_url, require_snapshot):
 
     """
     visit = storage.origin_visit_get_latest(
-        origin_url, require_snapshot=require_snapshot)
+        origin_url, require_snapshot=require_snapshot
+    )
     return converters.from_origin_visit(visit)
 
 
@@ -912,9 +919,10 @@ def lookup_origin_visit(origin_url, visit_id):
     """
     visit = storage.origin_visit_get_by(origin_url, visit_id)
     if not visit:
-        raise NotFoundExc('Origin %s or its visit '
-                          'with id %s not found!' % (origin_url, visit_id))
-    visit['origin'] = origin_url
+        raise NotFoundExc(
+            "Origin %s or its visit " "with id %s not found!" % (origin_url, visit_id)
+        )
+    visit["origin"] = origin_url
     return converters.from_origin_visit(visit)
 
 
@@ -930,29 +938,32 @@ def lookup_snapshot_sizes(snapshot_id):
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
     snapshot_sizes = storage.snapshot_count_branches(snapshot_id_bin)
-    if 'revision' not in snapshot_sizes:
-        snapshot_sizes['revision'] = 0
-    if 'release' not in snapshot_sizes:
-        snapshot_sizes['release'] = 0
+    if "revision" not in snapshot_sizes:
+        snapshot_sizes["revision"] = 0
+    if "release" not in snapshot_sizes:
+        snapshot_sizes["release"] = 0
     # adjust revision / release count for display if aliases are defined
-    if 'alias' in snapshot_sizes:
-        aliases = lookup_snapshot(snapshot_id,
-                                  branches_count=snapshot_sizes['alias'],
-                                  target_types=['alias'])
-        for alias in aliases['branches'].values():
-            if lookup_snapshot(snapshot_id,
-                               branches_from=alias['target'],
-                               branches_count=1,
-                               target_types=['revision']):
-                snapshot_sizes['revision'] += 1
+    if "alias" in snapshot_sizes:
+        aliases = lookup_snapshot(
+            snapshot_id, branches_count=snapshot_sizes["alias"], target_types=["alias"]
+        )
+        for alias in aliases["branches"].values():
+            if lookup_snapshot(
+                snapshot_id,
+                branches_from=alias["target"],
+                branches_count=1,
+                target_types=["revision"],
+            ):
+                snapshot_sizes["revision"] += 1
             else:
-                snapshot_sizes['release'] += 1
-        del snapshot_sizes['alias']
+                snapshot_sizes["release"] += 1
+        del snapshot_sizes["alias"]
     return snapshot_sizes
 
 
-def lookup_snapshot(snapshot_id, branches_from='', branches_count=1000,
-                    target_types=None):
+def lookup_snapshot(
+    snapshot_id, branches_from="", branches_count=1000, target_types=None
+):
     """Return information about a snapshot, aka the list of named
     branches found during a specific visit of an origin.
 
@@ -971,11 +982,11 @@ def lookup_snapshot(snapshot_id, branches_from='', branches_count=1000,
         A dict filled with the snapshot content.
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    snapshot = storage.snapshot_get_branches(snapshot_id_bin,
-                                             branches_from.encode(),
-                                             branches_count, target_types)
+    snapshot = storage.snapshot_get_branches(
+        snapshot_id_bin, branches_from.encode(), branches_count, target_types
+    )
     if not snapshot:
-        raise NotFoundExc('Snapshot with id %s not found!' % snapshot_id)
+        raise NotFoundExc("Snapshot with id %s not found!" % snapshot_id)
     return converters.from_snapshot(snapshot)
 
 
@@ -1015,37 +1026,34 @@ def lookup_revision_through(revision, limit=100):
 
     """
     if (
-            'origin_url' in revision and
-            'branch_name' in revision and
-            'ts' in revision and
-            'sha1_git' in revision):
-        return lookup_revision_with_context_by(revision['origin_url'],
-                                               revision['branch_name'],
-                                               revision['ts'],
-                                               revision['sha1_git'],
-                                               limit)
-    if (
-            'origin_url' in revision and
-            'branch_name' in revision and
-            'ts' in revision):
-        return lookup_revision_by(revision['origin_url'],
-                                  revision['branch_name'],
-                                  revision['ts'])
-    if (
-            'sha1_git_root' in revision and
-            'sha1_git' in revision):
-        return lookup_revision_with_context(revision['sha1_git_root'],
-                                            revision['sha1_git'],
-                                            limit)
-    if 'sha1_git' in revision:
-        return lookup_revision(revision['sha1_git'])
+        "origin_url" in revision
+        and "branch_name" in revision
+        and "ts" in revision
+        and "sha1_git" in revision
+    ):
+        return lookup_revision_with_context_by(
+            revision["origin_url"],
+            revision["branch_name"],
+            revision["ts"],
+            revision["sha1_git"],
+            limit,
+        )
+    if "origin_url" in revision and "branch_name" in revision and "ts" in revision:
+        return lookup_revision_by(
+            revision["origin_url"], revision["branch_name"], revision["ts"]
+        )
+    if "sha1_git_root" in revision and "sha1_git" in revision:
+        return lookup_revision_with_context(
+            revision["sha1_git_root"], revision["sha1_git"], limit
+        )
+    if "sha1_git" in revision:
+        return lookup_revision(revision["sha1_git"])
 
     # this should not happen
-    raise NotImplementedError('Should not happen!')
+    raise NotImplementedError("Should not happen!")
 
 
-def lookup_directory_through_revision(revision, path=None,
-                                      limit=100, with_data=False):
+def lookup_directory_through_revision(revision, path=None, limit=100, with_data=False):
     """Retrieve the directory information from the revision.
 
     Args:
@@ -1064,9 +1072,8 @@ def lookup_directory_through_revision(revision, path=None,
     rev = lookup_revision_through(revision, limit)
 
     if not rev:
-        raise NotFoundExc('Revision with criterion %s not found!' % revision)
-    return (rev['id'],
-            lookup_directory_with_revision(rev['id'], path, with_data))
+        raise NotFoundExc("Revision with criterion %s not found!" % revision)
+    return (rev["id"], lookup_directory_with_revision(rev["id"], path, with_data))
 
 
 def vault_cook(obj_type, obj_id, email=None):
@@ -1093,16 +1100,15 @@ def diff_revision(rev_id):
     """
     rev_sha1_git_bin = _to_sha1_bin(rev_id)
 
-    changes = diff.diff_revision(storage, rev_sha1_git_bin,
-                                 track_renaming=True)
+    changes = diff.diff_revision(storage, rev_sha1_git_bin, track_renaming=True)
 
     for change in changes:
-        change['from'] = converters.from_directory_entry(change['from'])
-        change['to'] = converters.from_directory_entry(change['to'])
-        if change['from_path']:
-            change['from_path'] = change['from_path'].decode('utf-8')
-        if change['to_path']:
-            change['to_path'] = change['to_path'].decode('utf-8')
+        change["from"] = converters.from_directory_entry(change["from"])
+        change["to"] = converters.from_directory_entry(change["to"])
+        if change["from_path"]:
+            change["from_path"] = change["from_path"].decode("utf-8")
+        if change["to_path"]:
+            change["to_path"] = change["to_path"].decode("utf-8")
 
     return changes
 
@@ -1112,13 +1118,12 @@ class _RevisionsWalkerProxy(object):
     Proxy class wrapping a revisions walker iterator from
     swh-storage and performing needed conversions.
     """
+
     def __init__(self, rev_walker_type, rev_start, *args, **kwargs):
         rev_start_bin = hashutil.hash_to_bytes(rev_start)
-        self.revisions_walker = \
-            revisions_walker.get_revisions_walker(rev_walker_type,
-                                                  storage,
-                                                  rev_start_bin,
-                                                  *args, **kwargs)
+        self.revisions_walker = revisions_walker.get_revisions_walker(
+            rev_walker_type, storage, rev_start_bin, *args, **kwargs
+        )
 
     def export_state(self):
         return self.revisions_walker.export_state()
@@ -1172,12 +1177,9 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
         BadInputExc: if the object identifier is invalid
     """
     if object_type == CONTENT:
-        return lookup_content(f'sha1_git:{object_id}')
+        return lookup_content(f"sha1_git:{object_id}")
     elif object_type == DIRECTORY:
-        return {
-            'id': object_id,
-            'content': list(lookup_directory(object_id))
-        }
+        return {"id": object_id, "content": list(lookup_directory(object_id))}
     elif object_type == RELEASE:
         return lookup_release(object_id)
     elif object_type == REVISION:
@@ -1185,9 +1187,13 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
     elif object_type == SNAPSHOT:
         return lookup_snapshot(object_id)
 
-    raise BadInputExc(('Invalid swh object type! Valid types are '
-                       f'{CONTENT}, {DIRECTORY}, {RELEASE} '
-                       f'{REVISION} or {SNAPSHOT}.'))
+    raise BadInputExc(
+        (
+            "Invalid swh object type! Valid types are "
+            f"{CONTENT}, {DIRECTORY}, {RELEASE} "
+            f"{REVISION} or {SNAPSHOT}."
+        )
+    )
 
 
 def lookup_missing_hashes(grouped_pids: Dict[str, List[bytes]]) -> Set[str]:
@@ -1205,8 +1211,7 @@ def lookup_missing_hashes(grouped_pids: Dict[str, List[bytes]]) -> Set[str]:
 
     for obj_type, obj_ids in grouped_pids.items():
         if obj_type == CONTENT:
-            missing_hashes.append(
-                    storage.content_missing_per_sha1_git(obj_ids))
+            missing_hashes.append(storage.content_missing_per_sha1_git(obj_ids))
         elif obj_type == DIRECTORY:
             missing_hashes.append(storage.directory_missing(obj_ids))
         elif obj_type == REVISION:
@@ -1216,7 +1221,8 @@ def lookup_missing_hashes(grouped_pids: Dict[str, List[bytes]]) -> Set[str]:
         elif obj_type == SNAPSHOT:
             missing_hashes.append(storage.directory_missing(obj_ids))
 
-    missing = set(map(lambda x: hashutil.hash_to_hex(x),
-                      itertools.chain(*missing_hashes)))
+    missing = set(
+        map(lambda x: hashutil.hash_to_hex(x), itertools.chain(*missing_hashes))
+    )
 
     return missing

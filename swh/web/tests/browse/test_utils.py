@@ -3,126 +3,73 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from hypothesis import given
-
-from swh.web.browse import utils
-from swh.web.common.utils import reverse, format_utc_iso_date
-from swh.web.tests.strategies import origin_with_multiple_visits
+from swh.web.browse.utils import (
+    get_mimetype_and_encoding_for_content,
+    gen_link,
+    gen_revision_link,
+    gen_person_mail_link,
+)
+from swh.web.common.utils import reverse
 
 
 def test_get_mimetype_and_encoding_for_content():
-    text = b'Hello world!'
-    assert (utils.get_mimetype_and_encoding_for_content(text) ==
-            ('text/plain', 'us-ascii'))
-
-
-@given(origin_with_multiple_visits())
-def test_get_origin_visit_snapshot_simple(archive_data, origin):
-    visits = archive_data.origin_visit_get(origin['url'])
-
-    for visit in visits:
-
-        snapshot = archive_data.snapshot_get(visit['snapshot'])
-        branches = []
-        releases = []
-
-        def _process_branch_data(branch, branch_data):
-            if branch_data['target_type'] == 'revision':
-                rev_data = archive_data.revision_get(branch_data['target'])
-                branches.append({
-                    'name': branch,
-                    'revision': branch_data['target'],
-                    'directory': rev_data['directory'],
-                    'date': format_utc_iso_date(rev_data['date']),
-                    'message': rev_data['message']
-                })
-            elif branch_data['target_type'] == 'release':
-                rel_data = archive_data.release_get(branch_data['target'])
-                rev_data = archive_data.revision_get(rel_data['target'])
-                releases.append({
-                    'name': rel_data['name'],
-                    'branch_name': branch,
-                    'date': format_utc_iso_date(rel_data['date']),
-                    'id': rel_data['id'],
-                    'message': rel_data['message'],
-                    'target_type': rel_data['target_type'],
-                    'target': rel_data['target'],
-                    'directory': rev_data['directory']
-                })
-
-        for branch in sorted(snapshot['branches'].keys()):
-            branch_data = snapshot['branches'][branch]
-            if branch_data['target_type'] == 'alias':
-                target_data = snapshot['branches'][branch_data['target']]
-                _process_branch_data(branch, target_data)
-            else:
-                _process_branch_data(branch, branch_data)
-
-        assert branches and releases, 'Incomplete test data.'
-
-        origin_visit_branches = utils.get_origin_visit_snapshot(
-            origin, visit_id=visit['visit'])
-
-        assert origin_visit_branches == (branches, releases)
+    text = b"Hello world!"
+    assert get_mimetype_and_encoding_for_content(text) == ("text/plain", "us-ascii",)
 
 
 def test_gen_link():
-    assert (utils.gen_link('https://www.softwareheritage.org/', 'swh') ==
-            '<a href="https://www.softwareheritage.org/">swh</a>')
+    assert (
+        gen_link("https://www.softwareheritage.org/", "swh")
+        == '<a href="https://www.softwareheritage.org/">swh</a>'
+    )
 
 
 def test_gen_revision_link():
-    revision_id = '28a0bc4120d38a394499382ba21d6965a67a3703'
-    revision_url = reverse('browse-revision',
-                           url_args={'sha1_git': revision_id})
+    revision_id = "28a0bc4120d38a394499382ba21d6965a67a3703"
+    revision_url = reverse("browse-revision", url_args={"sha1_git": revision_id})
 
-    assert (utils.gen_revision_link(revision_id, link_text=None,
-                                    link_attrs=None) ==
-            '<a href="%s">%s</a>' % (revision_url, revision_id))
-    assert (utils.gen_revision_link(revision_id, shorten_id=True,
-                                    link_attrs=None) ==
-            '<a href="%s">%s</a>' % (revision_url, revision_id[:7]))
+    assert gen_revision_link(
+        revision_id, link_text=None, link_attrs=None
+    ) == '<a href="%s">%s</a>' % (revision_url, revision_id)
+    assert gen_revision_link(
+        revision_id, shorten_id=True, link_attrs=None
+    ) == '<a href="%s">%s</a>' % (revision_url, revision_id[:7])
 
 
 def test_gen_person_mail_link():
     person_full = {
-        'name': 'John Doe',
-        'email': 'john.doe@swh.org',
-        'fullname': 'John Doe <john.doe@swh.org>'
+        "name": "John Doe",
+        "email": "john.doe@swh.org",
+        "fullname": "John Doe <john.doe@swh.org>",
     }
 
-    assert (utils.gen_person_mail_link(person_full) ==
-            '<a href="mailto:%s">%s</a>' % (person_full['email'],
-                                            person_full['name']))
+    assert gen_person_mail_link(person_full) == '<a href="mailto:%s">%s</a>' % (
+        person_full["email"],
+        person_full["name"],
+    )
 
-    link_text = 'Mail'
-    assert (utils.gen_person_mail_link(person_full, link_text=link_text) ==
-            '<a href="mailto:%s">%s</a>' % (person_full['email'],
-                                            link_text))
+    link_text = "Mail"
+    assert gen_person_mail_link(
+        person_full, link_text=link_text
+    ) == '<a href="mailto:%s">%s</a>' % (person_full["email"], link_text)
 
-    person_partial_email = {
-        'name': None,
-        'email': None,
-        'fullname': 'john.doe@swh.org'
-    }
+    person_partial_email = {"name": None, "email": None, "fullname": "john.doe@swh.org"}
 
-    assert (utils.gen_person_mail_link(person_partial_email) ==
-            '<a href="mailto:%s">%s</a>' % (person_partial_email['fullname'],
-                                            person_partial_email['fullname']))
+    assert gen_person_mail_link(
+        person_partial_email
+    ) == '<a href="mailto:%s">%s</a>' % (
+        person_partial_email["fullname"],
+        person_partial_email["fullname"],
+    )
 
     person_partial = {
-        'name': None,
-        'email': None,
-        'fullname': 'John Doe <john.doe@swh.org>'
+        "name": None,
+        "email": None,
+        "fullname": "John Doe <john.doe@swh.org>",
     }
 
-    assert (utils.gen_person_mail_link(person_partial) ==
-            person_partial['fullname'])
+    assert gen_person_mail_link(person_partial) == person_partial["fullname"]
 
-    person_none = {
-        'name': None,
-        'email': None,
-        'fullname': None
-    }
+    person_none = {"name": None, "email": None, "fullname": None}
 
-    assert utils.gen_person_mail_link(person_none) == 'None'
+    assert gen_person_mail_link(person_none) == "None"

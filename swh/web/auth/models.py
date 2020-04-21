@@ -19,7 +19,7 @@ class OIDCUser(User):
     """
 
     # OIDC subject identifier
-    sub: str = ''
+    sub: str = ""
 
     # OIDC tokens and session related data, only relevant when a user
     # authenticates from a web browser
@@ -32,7 +32,7 @@ class OIDCUser(User):
     session_state: Optional[str] = None
 
     class Meta:
-        app_label = 'swh.web.auth'
+        app_label = "swh.web.auth"
         proxy = True
 
     def save(self, **kwargs):

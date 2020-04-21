@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -120,40 +120,6 @@ export async function renderNotebook(nbJsonUrl, domElt) {
   nb.highlighter = highlightCode;
   nb.ansi = renderAnsi;
 
-  function initMathJax() {
-
-    // same config as in nbviewer
-    window.MathJax = {
-      TeX: {
-        equationNumbers: {
-          autoNumber: 'AMS',
-          useLabelIds: true
-        }
-      },
-      tex2jax: {
-        inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
-        displayMath: [ ['$$', '$$'], ['\\[', '\\]'] ],
-        processEscapes: true,
-        processEnvironments: true
-      },
-      displayAlign: 'center',
-      'HTML-CSS': {
-        styles: {'.MathJax_Display': {'margin': 0}},
-        linebreaks: {automatic: true}
-      }
-    };
-
-    // MathJax is not easily webpackable in its current version
-    // (https://github.com/mathjax/MathJax/issues/1629)
-    // and is quite a monster regarding the number of files to distribute.
-    // So we will load it through a CDN for commodity of use here.
-    let head = document.getElementsByTagName('head')[0];
-    let script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML';
-    head.appendChild(script);
-  }
-
   fetch(nbJsonUrl)
     .then(response => response.json())
     .then(nbJson => {
@@ -166,6 +132,6 @@ export async function renderNotebook(nbJsonUrl, domElt) {
       // set light red background color for stderr output cells
       $('pre.nb-stderr').parent().css('background', '#fdd');
       // load MathJax library for math typesetting
-      initMathJax();
+      swh.webapp.typesetMath();
     });
 }

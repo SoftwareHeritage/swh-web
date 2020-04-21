@@ -19,8 +19,9 @@ from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.web import config
 from swh.web.browse.utils import (
-    get_mimetype_and_encoding_for_content, prepare_content_for_display,
-    _re_encode_content
+    get_mimetype_and_encoding_for_content,
+    prepare_content_for_display,
+    _re_encode_content,
 )
 from swh.web.common import service
 
@@ -28,26 +29,16 @@ from swh.web.common import service
 
 # Configuration for git loader
 _TEST_LOADER_CONFIG = {
-    'storage': {
-        'cls': 'memory',
-    },
-    'save_data': False,
-    'max_content_size': 100 * 1024 * 1024,
+    "storage": {"cls": "memory",},
+    "save_data": False,
+    "max_content_size": 100 * 1024 * 1024,
 }
 
 # Base content indexer configuration
 _TEST_INDEXER_BASE_CONFIG = {
-    'storage': {
-        'cls': 'memory'
-    },
-    'objstorage': {
-        'cls': 'memory',
-        'args': {},
-    },
-    'indexer_storage': {
-        'cls': 'memory',
-        'args': {},
-    }
+    "storage": {"cls": "memory"},
+    "objstorage": {"cls": "memory", "args": {},},
+    "indexer_storage": {"cls": "memory", "args": {},},
 }
 
 
@@ -65,10 +56,10 @@ def random_blake2s256():
 
 def random_content():
     return {
-        'sha1': random_sha1(),
-        'sha1_git': random_sha1(),
-        'sha256': random_sha256(),
-        'blake2s256': random_blake2s256(),
+        "sha1": random_sha1(),
+        "sha1_git": random_sha1(),
+        "sha256": random_sha256(),
+        "blake2s256": random_blake2s256(),
     }
 
 
@@ -77,14 +68,11 @@ class _MimetypeIndexer(MimetypeIndexer):
     def parse_config_file(self, *args, **kwargs):
         return {
             **_TEST_INDEXER_BASE_CONFIG,
-            'tools': {
-                'name': 'file',
-                'version': '1:5.30-1+deb9u1',
-                'configuration': {
-                    "type": "library",
-                    "debian-package": "python3-magic"
-                }
-            }
+            "tools": {
+                "name": "file",
+                "version": "1:5.30-1+deb9u1",
+                "configuration": {"type": "library", "debian-package": "python3-magic"},
+            },
         }
 
 
@@ -93,14 +81,12 @@ class _FossologyLicenseIndexer(FossologyLicenseIndexer):
     def parse_config_file(self, *args, **kwargs):
         return {
             **_TEST_INDEXER_BASE_CONFIG,
-            'workdir': '/tmp/swh/indexer.fossology.license',
-            'tools': {
-                'name': 'nomos',
-                'version': '3.1.0rc2-31-ga2cbb8c',
-                'configuration': {
-                    'command_line': 'nomossa <filepath>',
-                },
-            }
+            "workdir": "/tmp/swh/indexer.fossology.license",
+            "tools": {
+                "name": "nomos",
+                "version": "3.1.0rc2-31-ga2cbb8c",
+                "configuration": {"command_line": "nomossa <filepath>",},
+            },
         }
 
 
@@ -109,16 +95,16 @@ class _CtagsIndexer(CtagsIndexer):
     def parse_config_file(self, *args, **kwargs):
         return {
             **_TEST_INDEXER_BASE_CONFIG,
-            'workdir': '/tmp/swh/indexer.ctags',
-            'languages': {'c': 'c'},
-            'tools': {
-                'name': 'universal-ctags',
-                'version': '~git7859817b',
-                'configuration': {
-                    'command_line': '''ctags --fields=+lnz --sort=no --links=no ''' # noqa
-                                    '''--output-format=json <filepath>'''
+            "workdir": "/tmp/swh/indexer.ctags",
+            "languages": {"c": "c"},
+            "tools": {
+                "name": "universal-ctags",
+                "version": "~git7859817b",
+                "configuration": {
+                    "command_line": """ctags --fields=+lnz --sort=no --links=no """
+                    """--output-format=json <filepath>"""
                 },
-            }
+            },
         }
 
 
@@ -126,25 +112,26 @@ class _CtagsIndexer(CtagsIndexer):
 # input data for tests
 _TEST_ORIGINS = [
     {
-        'type': 'git',
-        'url': 'https://github.com/wcoder/highlightjs-line-numbers.js',
-        'archives': ['highlightjs-line-numbers.js.zip',
-                     'highlightjs-line-numbers.js_visit2.zip'],
-        'visit_date': ['Dec 1 2018, 01:00 UTC',
-                       'Jan 20 2019, 15:00 UTC']
+        "type": "git",
+        "url": "https://github.com/wcoder/highlightjs-line-numbers.js",
+        "archives": [
+            "highlightjs-line-numbers.js.zip",
+            "highlightjs-line-numbers.js_visit2.zip",
+        ],
+        "visit_date": ["Dec 1 2018, 01:00 UTC", "Jan 20 2019, 15:00 UTC"],
     },
     {
-        'type': 'git',
-        'url': 'https://github.com/memononen/libtess2',
-        'archives': ['libtess2.zip'],
-        'visit_date': ['May 25 2018, 01:00 UTC']
+        "type": "git",
+        "url": "https://github.com/memononen/libtess2",
+        "archives": ["libtess2.zip"],
+        "visit_date": ["May 25 2018, 01:00 UTC"],
     },
     {
-        'type': 'git',
-        'url': 'repo_with_submodules',
-        'archives': ['repo_with_submodules.tgz'],
-        'visit_date': ['Jan 1 2019, 01:00 UTC']
-    }
+        "type": "git",
+        "url": "repo_with_submodules",
+        "archives": ["repo_with_submodules.tgz"],
+        "visit_date": ["Jan 1 2019, 01:00 UTC"],
+    },
 ]
 
 _contents = {}
@@ -156,20 +143,22 @@ def _init_tests_data():
     storage = None
 
     # Create search instance
-    search = get_search('memory', {})
+    search = get_search("memory", {})
     search.initialize()
-    search.origin_update({'url': origin['url']} for origin in _TEST_ORIGINS)
+    search.origin_update({"url": origin["url"]} for origin in _TEST_ORIGINS)
 
     # Load git repositories from archives
     for origin in _TEST_ORIGINS:
-        for i, archive in enumerate(origin['archives']):
-            origin_repo_archive = \
-                os.path.join(os.path.dirname(__file__),
-                             'resources/repos/%s' % archive)
-            loader = GitLoaderFromArchive(origin['url'],
-                                          archive_path=origin_repo_archive,
-                                          config=_TEST_LOADER_CONFIG,
-                                          visit_date=origin['visit_date'][i])
+        for i, archive in enumerate(origin["archives"]):
+            origin_repo_archive = os.path.join(
+                os.path.dirname(__file__), "resources/repos/%s" % archive
+            )
+            loader = GitLoaderFromArchive(
+                origin["url"],
+                archive_path=origin_repo_archive,
+                config=_TEST_LOADER_CONFIG,
+                visit_date=origin["visit_date"][i],
+            )
             if storage is None:
                 storage = loader.storage
             else:
@@ -177,18 +166,20 @@ def _init_tests_data():
             loader.load()
 
         origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
-        search.origin_update([{'url': origin['url'], 'has_visits': True}])
+        search.origin_update([{"url": origin["url"], "has_visits": True}])
 
     for i in range(250):
-        url = 'https://many.origins/%d' % (i+1)
+        url = "https://many.origins/%d" % (i + 1)
         # storage.origin_add([{'url': url}])
         storage.origin_add([Origin(url=url)])
-        search.origin_update([{'url': url, 'has_visits': True}])
-        visit = storage.origin_visit_add(url, '2019-12-03 13:55:05', 'tar')
+        search.origin_update([{"url": url, "has_visits": True}])
+        visit = storage.origin_visit_add(url, "2019-12-03 13:55:05", "tar")
         storage.origin_visit_update(
-            url, visit.visit,
-            status='full',
-            snapshot=hash_to_bytes('1a8893e6a86f444e8be8e7bda6cb34fb1735a00e'))
+            url,
+            visit.visit,
+            status="full",
+            snapshot=hash_to_bytes("1a8893e6a86f444e8be8e7bda6cb34fb1735a00e"),
+        )
 
     contents = set()
     directories = set()
@@ -200,73 +191,75 @@ def _init_tests_data():
 
     # Get all objects loaded into the test archive
     for origin in _TEST_ORIGINS:
-        snp = storage.snapshot_get_latest(origin['url'])
-        snapshots.add(hash_to_hex(snp['id']))
-        for branch_name, branch_data in snp['branches'].items():
-            if branch_data['target_type'] == 'revision':
-                revisions.add(branch_data['target'])
-            elif branch_data['target_type'] == 'release':
-                release = next(storage.release_get([branch_data['target']]))
-                revisions.add(release['target'])
-                releases.add(hash_to_hex(branch_data['target']))
+        snp = storage.snapshot_get_latest(origin["url"])
+        snapshots.add(hash_to_hex(snp["id"]))
+        for branch_name, branch_data in snp["branches"].items():
+            if branch_data["target_type"] == "revision":
+                revisions.add(branch_data["target"])
+            elif branch_data["target_type"] == "release":
+                release = next(storage.release_get([branch_data["target"]]))
+                revisions.add(release["target"])
+                releases.add(hash_to_hex(branch_data["target"]))
 
         for rev_log in storage.revision_shortlog(set(revisions)):
             rev_id = rev_log[0]
             revisions.add(rev_id)
 
         for rev in storage.revision_get(revisions):
-            dir_id = rev['directory']
+            dir_id = rev["directory"]
             directories.add(hash_to_hex(dir_id))
             for entry in dir_iterator(storage, dir_id):
-                content_path[entry['sha1']] = '/'.join(
-                    [hash_to_hex(dir_id), entry['path'].decode('utf-8')])
-                if entry['type'] == 'file':
-                    contents.add(entry['sha1'])
-                elif entry['type'] == 'dir':
-                    directories.add(hash_to_hex(entry['target']))
+                content_path[entry["sha1"]] = "/".join(
+                    [hash_to_hex(dir_id), entry["path"].decode("utf-8")]
+                )
+                if entry["type"] == "file":
+                    contents.add(entry["sha1"])
+                elif entry["type"] == "dir":
+                    directories.add(hash_to_hex(entry["target"]))
 
     # Get all checksums for each content
     result = storage.content_get_metadata(contents)
     contents = []
     for sha1, contents_metadata in result.items():
         for content_metadata in contents_metadata:
-            contents.append({
-                algo: hash_to_hex(content_metadata[algo])
-                for algo in DEFAULT_ALGORITHMS
-            })
+            contents.append(
+                {
+                    algo: hash_to_hex(content_metadata[algo])
+                    for algo in DEFAULT_ALGORITHMS
+                }
+            )
             path = content_path[sha1]
             cnt = next(storage.content_get([sha1]))
-            mimetype, encoding = get_mimetype_and_encoding_for_content(
-                cnt['data'])
-            _, _, cnt['data'] = _re_encode_content(
-                mimetype, encoding, cnt['data'])
+            mimetype, encoding = get_mimetype_and_encoding_for_content(cnt["data"])
+            _, _, cnt["data"] = _re_encode_content(mimetype, encoding, cnt["data"])
             content_display_data = prepare_content_for_display(
-                cnt['data'], mimetype, path)
-            contents[-1]['path'] = path
-            contents[-1]['mimetype'] = mimetype
-            contents[-1]['encoding'] = encoding
-            contents[-1]['hljs_language'] = content_display_data['language']
-            contents[-1]['data'] = content_display_data['content_data']
-            _contents[contents[-1]['sha1']] = contents[-1]
+                cnt["data"], mimetype, path
+            )
+            contents[-1]["path"] = path
+            contents[-1]["mimetype"] = mimetype
+            contents[-1]["encoding"] = encoding
+            contents[-1]["hljs_language"] = content_display_data["language"]
+            contents[-1]["data"] = content_display_data["content_data"]
+            _contents[contents[-1]["sha1"]] = contents[-1]
 
     # Create indexer storage instance that will be shared by indexers
-    idx_storage = get_indexer_storage('memory', {})
+    idx_storage = get_indexer_storage("memory", {})
 
     # Add the empty directory to the test archive
     storage.directory_add([Directory(entries=[])])
 
     # Return tests data
     return {
-        'search': search,
-        'storage': storage,
-        'idx_storage': idx_storage,
-        'origins': _TEST_ORIGINS,
-        'contents': contents,
-        'directories': list(directories),
-        'releases': list(releases),
-        'revisions': list(map(hash_to_hex, revisions)),
-        'snapshots': list(snapshots),
-        'generated_checksums': set(),
+        "search": search,
+        "storage": storage,
+        "idx_storage": idx_storage,
+        "origins": _TEST_ORIGINS,
+        "contents": contents,
+        "directories": list(directories),
+        "releases": list(releases),
+        "revisions": list(map(hash_to_hex, revisions)),
+        "snapshots": list(snapshots),
+        "generated_checksums": set(),
     }
 
 
@@ -274,14 +267,16 @@ def _init_indexers(tests_data):
     # Instantiate content indexers that will be used in tests
     # and force them to use the memory storages
     indexers = {}
-    for idx_name, idx_class in (('mimetype_indexer', _MimetypeIndexer),
-                                ('license_indexer', _FossologyLicenseIndexer),
-                                ('ctags_indexer', _CtagsIndexer)):
+    for idx_name, idx_class in (
+        ("mimetype_indexer", _MimetypeIndexer),
+        ("license_indexer", _FossologyLicenseIndexer),
+        ("ctags_indexer", _CtagsIndexer),
+    ):
         idx = idx_class()
-        idx.storage = tests_data['storage']
-        idx.objstorage = tests_data['storage'].objstorage
-        idx.idx_storage = tests_data['idx_storage']
-        idx.register_tools(idx.config['tools'])
+        idx.storage = tests_data["storage"]
+        idx.objstorage = tests_data["storage"].objstorage
+        idx.idx_storage = tests_data["idx_storage"]
+        idx.register_tools(idx.config["tools"])
         indexers[idx_name] = idx
 
     return indexers
@@ -324,11 +319,9 @@ def override_storages(storage, idx_storage, search):
     are fetched.
     """
     swh_config = config.get_config()
-    swh_config.update({
-        'storage': storage,
-        'indexer_storage': idx_storage,
-        'search': search,
-    })
+    swh_config.update(
+        {"storage": storage, "indexer_storage": idx_storage, "search": search,}
+    )
 
     service.storage = storage
     service.idx_storage = idx_storage

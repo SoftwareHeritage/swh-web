@@ -7,40 +7,44 @@
 Django production settings for swh-web.
 """
 
-from .common import * # noqa
+from .common import *  # noqa
 from .common import MIDDLEWARE, CACHES, WEBPACK_LOADER
 from .common import swh_web_config
 from .common import REST_FRAMEWORK
 
 # activate per-site caching
-if 'GZip' in MIDDLEWARE[0]:
-    MIDDLEWARE.insert(1, 'django.middleware.cache.UpdateCacheMiddleware')
+if "GZip" in MIDDLEWARE[0]:
+    MIDDLEWARE.insert(1, "django.middleware.cache.UpdateCacheMiddleware")
 else:
-    MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+    MIDDLEWARE.insert(0, "django.middleware.cache.UpdateCacheMiddleware")
 
-MIDDLEWARE += ['swh.web.common.middlewares.HtmlMinifyMiddleware',
-               'django.middleware.cache.FetchFromCacheMiddleware']
+MIDDLEWARE += [
+    "swh.web.common.middlewares.HtmlMinifyMiddleware",
+    "django.middleware.cache.FetchFromCacheMiddleware",
+]
 
-if swh_web_config.get('throttling', {}).get('cache_uri'):
-    CACHES.update({
-        'default': {
-            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': swh_web_config['throttling']['cache_uri'],
+if swh_web_config.get("throttling", {}).get("cache_uri"):
+    CACHES.update(
+        {
+            "default": {
+                "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+                "LOCATION": swh_web_config["throttling"]["cache_uri"],
+            }
         }
-    })
+    )
 
 # Setup support for proxy headers
 USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # We're going through seven (or, in that case, 2) proxies thanks to Varnish
-REST_FRAMEWORK['NUM_PROXIES'] = 2
+REST_FRAMEWORK["NUM_PROXIES"] = 2
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': swh_web_config['production_db'],
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": swh_web_config["production_db"],
     }
 }
 
-WEBPACK_LOADER['DEFAULT']['CACHE'] = True
+WEBPACK_LOADER["DEFAULT"]["CACHE"] = True

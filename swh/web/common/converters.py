@@ -21,7 +21,7 @@ def _group_checksums(data):
                 checksums[hash] = data[hash]
                 del data[hash]
         if len(checksums) > 0:
-            data['checksums'] = checksums
+            data["checksums"] = checksums
 
 
 def fmap(f, data):
@@ -53,9 +53,18 @@ def fmap(f, data):
     return f(data)
 
 
-def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
-             removables_if_empty={}, empty_dict={}, empty_list={},
-             convert={}, convert_fn=lambda x: x):
+def from_swh(
+    dict_swh,
+    hashess={},
+    bytess={},
+    dates={},
+    blacklist={},
+    removables_if_empty={},
+    empty_dict={},
+    empty_list={},
+    convert={},
+    convert_fn=lambda x: x,
+):
     """Convert from a swh dictionary to something reasonably json
     serializable.
 
@@ -78,6 +87,7 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         dictionary equivalent as dict_swh only with its keys converted.
 
     """
+
     def convert_hashes_bytes(v):
         """v is supposedly a hash as bytes, returns it converted in hex.
 
@@ -94,7 +104,7 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
 
         """
         if isinstance(v, bytes):
-            return v.decode('utf-8')
+            return v.decode("utf-8")
         return v
 
     def convert_date(v):
@@ -118,20 +128,18 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         if isinstance(v, datetime.datetime):
             return v.isoformat()
 
-        tz = datetime.timezone(datetime.timedelta(minutes=v['offset']))
-        swh_timestamp = v['timestamp']
+        tz = datetime.timezone(datetime.timedelta(minutes=v["offset"]))
+        swh_timestamp = v["timestamp"]
         if isinstance(swh_timestamp, dict):
-            date = datetime.datetime.fromtimestamp(
-                swh_timestamp['seconds'], tz=tz)
+            date = datetime.datetime.fromtimestamp(swh_timestamp["seconds"], tz=tz)
         else:
-            date = datetime.datetime.fromtimestamp(
-                swh_timestamp, tz=tz)
+            date = datetime.datetime.fromtimestamp(swh_timestamp, tz=tz)
 
         datestr = date.isoformat()
 
-        if v['offset'] == 0 and v['negative_utc']:
+        if v["offset"] == 0 and v["negative_utc"]:
             # remove the rightmost + and replace it with a -
-            return '-'.join(datestr.rsplit('+', 1))
+            return "-".join(datestr.rsplit("+", 1))
 
         return datestr
 
@@ -148,24 +156,28 @@ def from_swh(dict_swh, hashess={}, bytess={}, dates={}, blacklist={},
         elif key in convert:
             new_dict[key] = convert_fn(value)
         elif isinstance(value, dict):
-            new_dict[key] = from_swh(value,
-                                     hashess=hashess, bytess=bytess,
-                                     dates=dates, blacklist=blacklist,
-                                     removables_if_empty=removables_if_empty,
-                                     empty_dict=empty_dict,
-                                     empty_list=empty_list,
-                                     convert=convert,
-                                     convert_fn=convert_fn)
+            new_dict[key] = from_swh(
+                value,
+                hashess=hashess,
+                bytess=bytess,
+                dates=dates,
+                blacklist=blacklist,
+                removables_if_empty=removables_if_empty,
+                empty_dict=empty_dict,
+                empty_list=empty_list,
+                convert=convert,
+                convert_fn=convert_fn,
+            )
         elif key in hashess:
             new_dict[key] = fmap(convert_hashes_bytes, value)
         elif key in bytess:
             try:
                 new_dict[key] = fmap(convert_bytes, value)
             except UnicodeDecodeError:
-                if 'decoding_failures' not in new_dict:
-                    new_dict['decoding_failures'] = [key]
+                if "decoding_failures" not in new_dict:
+                    new_dict["decoding_failures"] = [key]
                 else:
-                    new_dict['decoding_failures'].append(key)
+                    new_dict["decoding_failures"].append(key)
                 new_dict[key] = fmap(decode_with_escape, value)
         elif key in empty_dict and not value:
             new_dict[key] = {}
@@ -214,9 +226,9 @@ def from_release(release):
     """
     return from_swh(
         release,
-        hashess={'id', 'target'},
-        bytess={'message', 'name', 'fullname', 'email'},
-        dates={'date'},
+        hashess={"id", "target"},
+        bytess={"message", "name", "fullname", "email"},
+        dates={"date"},
     )
 
 
@@ -225,10 +237,11 @@ class SWHMetadataEncoder(json.JSONEncoder):
     encoded value.
 
     """
+
     def default(self, obj):
         if isinstance(obj, bytes):
             try:
-                return obj.decode('utf-8')
+                return obj.decode("utf-8")
             except UnicodeDecodeError:
                 # fallback to binary representation to avoid display errors
                 return repr(obj)
@@ -277,22 +290,24 @@ def from_revision(revision):
         Remaining keys are left as is
 
     """
-    revision = from_swh(revision,
-                        hashess={'id', 'directory', 'parents', 'children'},
-                        bytess={'name', 'fullname', 'email'},
-                        convert={'metadata'},
-                        convert_fn=convert_revision_metadata,
-                        dates={'date', 'committer_date'})
+    revision = from_swh(
+        revision,
+        hashess={"id", "directory", "parents", "children"},
+        bytess={"name", "fullname", "email"},
+        convert={"metadata"},
+        convert_fn=convert_revision_metadata,
+        dates={"date", "committer_date"},
+    )
 
     if revision:
-        if 'parents' in revision:
-            revision['merge'] = len(revision['parents']) > 1
-        if 'message' in revision:
+        if "parents" in revision:
+            revision["merge"] = len(revision["parents"]) > 1
+        if "message" in revision:
             try:
-                revision['message'] = revision['message'].decode('utf-8')
+                revision["message"] = revision["message"].decode("utf-8")
             except UnicodeDecodeError:
-                revision['message_decoding_failed'] = True
-                revision['message'] = None
+                revision["message_decoding_failed"] = True
+                revision["message"] = None
 
     return revision
 
@@ -301,30 +316,33 @@ def from_content(content):
     """Convert swh content to serializable content dictionary.
 
     """
-    return from_swh(content,
-                    hashess={'sha1', 'sha1_git', 'sha256', 'blake2s256'},
-                    blacklist={'ctime'},
-                    convert={'status'},
-                    convert_fn=lambda v: 'absent' if v == 'hidden' else v)
+    return from_swh(
+        content,
+        hashess={"sha1", "sha1_git", "sha256", "blake2s256"},
+        blacklist={"ctime"},
+        convert={"status"},
+        convert_fn=lambda v: "absent" if v == "hidden" else v,
+    )
 
 
 def from_person(person):
     """Convert swh person to serializable person dictionary.
 
     """
-    return from_swh(person,
-                    bytess={'name', 'fullname', 'email'})
+    return from_swh(person, bytess={"name", "fullname", "email"})
 
 
 def from_origin_visit(visit):
     """Convert swh origin_visit to serializable origin_visit dictionary.
 
     """
-    ov = from_swh(visit,
-                  hashess={'target', 'snapshot'},
-                  bytess={'branch'},
-                  dates={'date'},
-                  empty_dict={'metadata'})
+    ov = from_swh(
+        visit,
+        hashess={"target", "snapshot"},
+        bytess={"branch"},
+        dates={"date"},
+        empty_dict={"metadata"},
+    )
 
     return ov
 
@@ -333,21 +351,16 @@ def from_snapshot(snapshot):
     """Convert swh snapshot to serializable snapshot dictionary.
 
     """
-    sv = from_swh(snapshot,
-                  hashess={'id', 'target'},
-                  bytess={'next_branch'})
+    sv = from_swh(snapshot, hashess={"id", "target"}, bytess={"next_branch"})
 
-    if sv and 'branches' in sv:
-        sv['branches'] = {
-            decode_with_escape(k): v
-            for k, v in sv['branches'].items()
-        }
-        for k, v in snapshot['branches'].items():
+    if sv and "branches" in sv:
+        sv["branches"] = {decode_with_escape(k): v for k, v in sv["branches"].items()}
+        for k, v in snapshot["branches"].items():
             # alias target existing branch names, not a sha1
-            if v and v['target_type'] == 'alias':
+            if v and v["target_type"] == "alias":
                 branch = decode_with_escape(k)
-                target = decode_with_escape(v['target'])
-                sv['branches'][branch]['target'] = target
+                target = decode_with_escape(v["target"])
+                sv["branches"][branch]["target"] = target
 
     return sv
 
@@ -356,14 +369,14 @@ def from_directory_entry(dir_entry):
     """Convert swh directory to serializable directory dictionary.
 
     """
-    return from_swh(dir_entry,
-                    hashess={'dir_id', 'sha1_git', 'sha1', 'sha256',
-                             'blake2s256', 'target'},
-                    bytess={'name'},
-                    removables_if_empty={
-                        'sha1', 'sha1_git', 'sha256', 'blake2s256', 'status'},
-                    convert={'status'},
-                    convert_fn=lambda v: 'absent' if v == 'hidden' else v)
+    return from_swh(
+        dir_entry,
+        hashess={"dir_id", "sha1_git", "sha1", "sha256", "blake2s256", "target"},
+        bytess={"name"},
+        removables_if_empty={"sha1", "sha1_git", "sha256", "blake2s256", "status"},
+        convert={"status"},
+        convert_fn=lambda v: "absent" if v == "hidden" else v,
+    )
 
 
 def from_filetype(content_entry):
@@ -371,5 +384,4 @@ def from_filetype(content_entry):
     'id', 'encoding', and 'mimetype'.
 
     """
-    return from_swh(content_entry,
-                    hashess={'id'})
+    return from_swh(content_entry, hashess={"id"})
