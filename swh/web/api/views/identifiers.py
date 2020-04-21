@@ -8,14 +8,14 @@ from swh.web.api.apiurls import api_route
 from swh.web.common import service
 from swh.web.common.exc import LargePayloadExc
 from swh.web.common.identifiers import (
-    resolve_swh_persistent_id, get_persistent_identifier,
-    group_swh_persistent_identifiers
+    resolve_swh_persistent_id,
+    get_persistent_identifier,
+    group_swh_persistent_identifiers,
 )
 
 
-@api_route(r'/resolve/(?P<swh_id>.*)/',
-           'api-1-resolve-swh-pid')
-@api_doc('/resolve/')
+@api_route(r"/resolve/(?P<swh_id>.*)/", "api-1-resolve-swh-pid")
+@api_doc("/resolve/")
 @format_docstring()
 def api_resolve_swh_pid(request, swh_id):
     """
@@ -57,20 +57,20 @@ def api_resolve_swh_pid(request, swh_id):
     # id is well-formed, now check that the pointed
     # object is present in the archive, NotFoundExc
     # will be raised otherwise
-    swh_id_parsed = swh_id_resolved['swh_id_parsed']
+    swh_id_parsed = swh_id_resolved["swh_id_parsed"]
     object_type = swh_id_parsed.object_type
     object_id = swh_id_parsed.object_id
     service.lookup_object(object_type, object_id)
     # id is well-formed and the pointed object exists
     swh_id_data = swh_id_parsed._asdict()
-    swh_id_data['browse_url'] = request.build_absolute_uri(
-        swh_id_resolved['browse_url'])
+    swh_id_data["browse_url"] = request.build_absolute_uri(
+        swh_id_resolved["browse_url"]
+    )
     return swh_id_data
 
 
-@api_route(r'/known/',
-           'api-1-known', methods=['POST'])
-@api_doc('/known/')
+@api_route(r"/known/", "api-1-known", methods=["POST"])
+@api_doc("/known/")
 @format_docstring()
 def api_swh_pid_known(request):
     """
@@ -100,13 +100,13 @@ def api_swh_pid_known(request):
     """
     limit = 1000
     if len(request.data) > limit:
-        raise LargePayloadExc('The maximum number of PIDs this endpoint can '
-                              'receive is %s' % limit)
+        raise LargePayloadExc(
+            "The maximum number of PIDs this endpoint can " "receive is %s" % limit
+        )
 
-    persistent_ids = [get_persistent_identifier(pid)
-                      for pid in request.data]
+    persistent_ids = [get_persistent_identifier(pid) for pid in request.data]
 
-    response = {str(pid): {'known': False} for pid in persistent_ids}
+    response = {str(pid): {"known": False} for pid in persistent_ids}
 
     # group pids by their type
     pids_by_type = group_swh_persistent_identifiers(persistent_ids)
@@ -115,6 +115,6 @@ def api_swh_pid_known(request):
 
     for pid in persistent_ids:
         if pid.object_id not in missing_hashes:
-            response[str(pid)]['known'] = True
+            response[str(pid)]["known"] = True
 
     return response

@@ -12,9 +12,12 @@ from swh.web.api.utils import enrich_snapshot
 from swh.web.api.views.utils import api_lookup
 
 
-@api_route(r'/snapshot/(?P<snapshot_id>[0-9a-f]+)/', 'api-1-snapshot',
-           checksum_args=['snapshot_id'])
-@api_doc('/snapshot/')
+@api_route(
+    r"/snapshot/(?P<snapshot_id>[0-9a-f]+)/",
+    "api-1-snapshot",
+    checksum_args=["snapshot_id"],
+)
+@api_doc("/snapshot/")
 @format_docstring()
 def api_snapshot(request, snapshot_id):
     """
@@ -65,30 +68,36 @@ def api_snapshot(request, snapshot_id):
             :swh_web_api:`snapshot/6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a/`
     """
 
-    snapshot_content_max_size = get_config()['snapshot_content_max_size']
+    snapshot_content_max_size = get_config()["snapshot_content_max_size"]
 
-    branches_from = request.GET.get('branches_from', '')
-    branches_count = int(request.GET.get('branches_count',
-                                         snapshot_content_max_size))
-    target_types = request.GET.get('target_types', None)
-    target_types = target_types.split(',') if target_types else None
+    branches_from = request.GET.get("branches_from", "")
+    branches_count = int(request.GET.get("branches_count", snapshot_content_max_size))
+    target_types = request.GET.get("target_types", None)
+    target_types = target_types.split(",") if target_types else None
 
     results = api_lookup(
-        service.lookup_snapshot, snapshot_id, branches_from,
-        branches_count, target_types,
-        notfound_msg='Snapshot with id {} not found.'.format(snapshot_id),
+        service.lookup_snapshot,
+        snapshot_id,
+        branches_from,
+        branches_count,
+        target_types,
+        notfound_msg="Snapshot with id {} not found.".format(snapshot_id),
         enrich_fn=enrich_snapshot,
-        request=request)
+        request=request,
+    )
 
-    response = {'results': results, 'headers': {}}
+    response = {"results": results, "headers": {}}
 
-    if results['next_branch'] is not None:
-        response['headers']['link-next'] = reverse(
-            'api-1-snapshot',
-            url_args={'snapshot_id': snapshot_id},
-            query_params={'branches_from': results['next_branch'],
-                          'branches_count': branches_count,
-                          'target_types': target_types},
-            request=request)
+    if results["next_branch"] is not None:
+        response["headers"]["link-next"] = reverse(
+            "api-1-snapshot",
+            url_args={"snapshot_id": snapshot_id},
+            query_params={
+                "branches_from": results["next_branch"],
+                "branches_count": branches_count,
+                "target_types": target_types,
+            },
+            request=request,
+        )
 
     return response

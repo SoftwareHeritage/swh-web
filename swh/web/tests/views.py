@@ -38,27 +38,27 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
         ext_key (bool): whether to use file extensions or filenames
             as dict keys
     """
-    test_contents_dir = os.path.join(
-        os.path.dirname(__file__), data_path).encode('utf-8')
+    test_contents_dir = os.path.join(os.path.dirname(__file__), data_path).encode(
+        "utf-8"
+    )
     directory = from_disk.Directory.from_disk(path=test_contents_dir)
 
     contents = []
     for name, obj in directory.items():
         if isinstance(obj, from_disk.Content):
             c = obj.to_model().with_data().to_dict()
-            c['status'] = 'visible'
-            sha1 = hash_to_hex(c['sha1'])
+            c["status"] = "visible"
+            sha1 = hash_to_hex(c["sha1"])
             if ext_key:
-                key = name.decode('utf-8').split('.')[-1]
-                filename = 'test.' + key
+                key = name.decode("utf-8").split(".")[-1]
+                filename = "test." + key
             else:
-                filename = name.decode('utf-8').split('/')[-1]
+                filename = name.decode("utf-8").split("/")[-1]
                 key = filename
             language = get_hljs_language_from_filename(filename)
-            data_dict[key] = {'sha1': sha1,
-                              'language': language}
+            data_dict[key] = {"sha1": sha1, "language": language}
             contents.append(Content.from_dict(c))
-    storage = get_tests_data()['storage']
+    storage = get_tests_data()["storage"]
     storage.content_add(contents)
 
 
@@ -68,8 +68,9 @@ def _init_content_code_data_exts():
     a code content example.
     """
     global _content_code_data_exts
-    _init_content_tests_data('resources/contents/code/extensions',
-                             _content_code_data_exts, True)
+    _init_content_tests_data(
+        "resources/contents/code/extensions", _content_code_data_exts, True
+    )
 
 
 def _init_content_other_data_exts():
@@ -78,8 +79,9 @@ def _init_content_other_data_exts():
     a content example.
     """
     global _content_other_data_exts
-    _init_content_tests_data('resources/contents/other/extensions',
-                             _content_other_data_exts, True)
+    _init_content_tests_data(
+        "resources/contents/other/extensions", _content_other_data_exts, True
+    )
 
 
 def _init_content_code_data_filenames():
@@ -88,27 +90,31 @@ def _init_content_code_data_filenames():
     a content example.
     """
     global _content_code_data_filenames
-    _init_content_tests_data('resources/contents/code/filenames',
-                             _content_code_data_filenames, False)
+    _init_content_tests_data(
+        "resources/contents/code/filenames", _content_code_data_filenames, False
+    )
 
 
-if get_config()['e2e_tests_mode']:
+if get_config()["e2e_tests_mode"]:
     _init_content_code_data_exts()
     _init_content_other_data_exts()
     _init_content_code_data_filenames()
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_content_code_data_all_exts(request):
     """
     Endpoint implementation returning a list of all source file
     extensions to test for highlighting using cypress.
     """
-    return Response(sorted(_content_code_data_exts.keys()),
-                    status=200, content_type='application/json')
+    return Response(
+        sorted(_content_code_data_exts.keys()),
+        status=200,
+        content_type="application/json",
+    )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_content_code_data_by_ext(request, ext):
     """
     Endpoint implementation returning metadata of a code content example
@@ -119,10 +125,10 @@ def get_content_code_data_by_ext(request, ext):
     if ext in _content_code_data_exts:
         data = _content_code_data_exts[ext]
         status = 200
-    return Response(data, status=status, content_type='application/json')
+    return Response(data, status=status, content_type="application/json")
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_content_other_data_by_ext(request, ext):
     """
     Endpoint implementation returning metadata of a content example
@@ -134,20 +140,23 @@ def get_content_other_data_by_ext(request, ext):
     if ext in _content_other_data_exts:
         data = _content_other_data_exts[ext]
         status = 200
-    return Response(data, status=status, content_type='application/json')
+    return Response(data, status=status, content_type="application/json")
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_content_code_data_all_filenames(request):
     """
     Endpoint implementation returning a list of all source filenames
     to test for highlighting using cypress.
     """
-    return Response(sorted(_content_code_data_filenames.keys()),
-                    status=200, content_type='application/json')
+    return Response(
+        sorted(_content_code_data_filenames.keys()),
+        status=200,
+        content_type="application/json",
+    )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_content_code_data_by_filename(request, filename):
     """
     Endpoint implementation returning metadata of a code content example
@@ -158,4 +167,4 @@ def get_content_code_data_by_filename(request, filename):
     if filename in _content_code_data_filenames:
         data = _content_code_data_filenames[filename]
         status = 200
-    return Response(data, status=status, content_type='application/json')
+    return Response(data, status=status, content_type="application/json")

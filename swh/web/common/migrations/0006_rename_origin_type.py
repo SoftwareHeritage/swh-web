@@ -11,13 +11,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('swh.web.common', '0005_remove_duplicated_authorized_origins'),
+        ("swh.web.common", "0005_remove_duplicated_authorized_origins"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='saveoriginrequest',
-            old_name='origin_type',
-            new_name='visit_type',
+            model_name="saveoriginrequest",
+            old_name="origin_type",
+            new_name="visit_type",
         ),
     ]

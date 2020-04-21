@@ -14,26 +14,24 @@ if __name__ == "__main__":
     # the serving of static assets in development mode is handled
     # in swh/web/urls.py, we pass the nostatic options to runserver
     # in order to have gzip compression enabled.
-    swh_web_config['serve_assets'] = '--nostatic' in sys.argv
+    swh_web_config["serve_assets"] = "--nostatic" in sys.argv
     # import root urls module for swh-web before running the django dev server
     # in order to ensure it will be automatically reloaded when source files
     # are modified (as django autoreload feature only works if the modules are
     # in sys.modules)
     try:
-        from swh.web import urls # noqa
+        from swh.web import urls  # noqa
     except Exception:
         pass
     try:
-        from django.core.management.commands.runserver import (
-            Command as runserver
-        )
+        from django.core.management.commands.runserver import Command as runserver
         from django.core.management import execute_from_command_line
     except ImportError:
         # The above import may fail for some other reason. Ensure that the
         # issue is really that Django is missing to avoid masking other
         # exceptions on Python 2.
         try:
-            import django # noqa
+            import django  # noqa
         except ImportError:
             raise ImportError(
                 "Couldn't import Django. Are you sure it's installed and "
@@ -41,6 +39,6 @@ if __name__ == "__main__":
                 "forget to activate a virtual environment?"
             )
         raise
-    runserver.default_port = swh_web_config['port']
-    runserver.default_addr = swh_web_config['host']
+    runserver.default_port = swh_web_config["port"]
+    runserver.default_addr = swh_web_config["host"]
     execute_from_command_line(sys.argv)

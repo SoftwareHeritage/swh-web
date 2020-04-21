@@ -17,14 +17,19 @@ from swh.web.api.apiurls import APIUrls, api_route
 
 
 class EnrichFunction(Protocol):
-    def __call__(self, input: Mapping[str, str],
-                 request: Optional[HttpRequest]) -> Dict[str, str]: ...
+    def __call__(
+        self, input: Mapping[str, str], request: Optional[HttpRequest]
+    ) -> Dict[str, str]:
+        ...
 
 
-def api_lookup(lookup_fn: Callable[..., Any], *args: Any,
-               notfound_msg: Optional[str] = 'Object not found',
-               enrich_fn: Optional[EnrichFunction] = None,
-               request: Optional[HttpRequest] = None):
+def api_lookup(
+    lookup_fn: Callable[..., Any],
+    *args: Any,
+    notfound_msg: Optional[str] = "Object not found",
+    enrich_fn: Optional[EnrichFunction] = None,
+    request: Optional[HttpRequest] = None,
+):
     r"""
     Capture a redundant behavior of:
         - looking up the backend with a criteria (be it an identifier or
@@ -53,8 +58,12 @@ def api_lookup(lookup_fn: Callable[..., Any], *args: Any,
         NotFoundExp or whatever `lookup_fn` raises.
 
     """
+
+    def _enrich_fn_noop(x, request):
+        return x
+
     if enrich_fn is None:
-        enrich_fn = (lambda x, request: x)
+        enrich_fn = _enrich_fn_noop
     res = lookup_fn(*args)
     if res is None:
         raise NotFoundExc(notfound_msg)
@@ -63,24 +72,22 @@ def api_lookup(lookup_fn: Callable[..., Any], *args: Any,
     return enrich_fn(res, request=request)
 
 
-@api_view(['GET', 'HEAD'])
+@api_view(["GET", "HEAD"])
 def api_home(request):
-    return Response({}, template_name='api/api.html')
+    return Response({}, template_name="api/api.html")
 
 
-APIUrls.add_url_pattern(r'^$', api_home, view_name='api-1-homepage')
+APIUrls.add_url_pattern(r"^$", api_home, view_name="api-1-homepage")
 
 
-@api_route(r'/', 'api-1-endpoints')
+@api_route(r"/", "api-1-endpoints")
 def api_endpoints(request):
     """Display the list of opened api endpoints.
 
     """
     routes = APIUrls.get_app_endpoints().copy()
     for route, doc in routes.items():
-        doc['doc_intro'] = doc['docstring'].split('\n\n')[0]
+        doc["doc_intro"] = doc["docstring"].split("\n\n")[0]
     # Return a list of routes with consistent ordering
-    env = {
-        'doc_routes': sorted(routes.items())
-    }
+    env = {"doc_routes": sorted(routes.items())}
     return Response(env, template_name="api/endpoints.html")

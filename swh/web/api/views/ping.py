@@ -7,8 +7,8 @@ from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 
 
-@api_route(r'/ping/', 'api-1-ping')
-@api_doc('/ping/', noargs=True)
+@api_route(r"/ping/", "api-1-ping")
+@api_doc("/ping/", noargs=True)
 def ping(request):
     """
     .. http:get:: /api/1/ping/
@@ -18,4 +18,4 @@ def ping(request):
     :statuscode 200: no error
 
     """
-    return 'pong'
+    return "pong"

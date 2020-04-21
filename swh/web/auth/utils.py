@@ -9,9 +9,7 @@ import secrets
 from base64 import urlsafe_b64encode
 from typing import Tuple
 
-from swh.web.auth.keycloak import (
-    KeycloakOpenIDConnect, get_keycloak_oidc_client
-)
+from swh.web.auth.keycloak import KeycloakOpenIDConnect, get_keycloak_oidc_client
 from swh.web.config import get_config
 
 
@@ -34,18 +32,17 @@ def gen_oidc_pkce_codes() -> Tuple[str, str]:
 
     # create the PKCE code challenge by hashing the code verifier with SHA256
     # and encoding the result in URL-safe base64 (without padding)
-    code_challenge = hashlib.sha256(code_verifier_str.encode('ascii')).digest()
-    code_challenge_str = urlsafe_b64encode(code_challenge).decode('ascii')
-    code_challenge_str = code_challenge_str.replace('=', '')
+    code_challenge = hashlib.sha256(code_verifier_str.encode("ascii")).digest()
+    code_challenge_str = urlsafe_b64encode(code_challenge).decode("ascii")
+    code_challenge_str = code_challenge_str.replace("=", "")
 
     return code_verifier_str, code_challenge_str
 
 
-OIDC_SWH_WEB_CLIENT_ID = 'swh-web'
+OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 
 
-def get_oidc_client(client_id: str = OIDC_SWH_WEB_CLIENT_ID
-                    ) -> KeycloakOpenIDConnect:
+def get_oidc_client(client_id: str = OIDC_SWH_WEB_CLIENT_ID) -> KeycloakOpenIDConnect:
     """
     Instantiate a KeycloakOpenIDConnect class for a given client in the
     SoftwareHeritage realm.
@@ -57,6 +54,8 @@ def get_oidc_client(client_id: str = OIDC_SWH_WEB_CLIENT_ID
         An object to ease the interaction with the Keycloak server
     """
     swhweb_config = get_config()
-    return get_keycloak_oidc_client(swhweb_config['keycloak']['server_url'],
-                                    swhweb_config['keycloak']['realm_name'],
-                                    client_id)
+    return get_keycloak_oidc_client(
+        swhweb_config["keycloak"]["server_url"],
+        swhweb_config["keycloak"]["realm_name"],
+        client_id,
+    )

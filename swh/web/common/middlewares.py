@@ -20,12 +20,12 @@ class HtmlPrettifyMiddleware(object):
 
     def __call__(self, request):
         response = self.get_response(request)
-        if 'text/html' in response.get('Content-Type', ''):
-            if hasattr(response, 'content'):
+        if "text/html" in response.get("Content-Type", ""):
+            if hasattr(response, "content"):
                 content = response.content
                 response.content = prettify_html(content)
-            elif hasattr(response, 'streaming_content'):
-                content = b''.join(response.streaming_content)
+            elif hasattr(response, "streaming_content"):
+                content = b"".join(response.streaming_content)
                 response.streaming_content = prettify_html(content)
 
         return response
@@ -42,10 +42,10 @@ class HtmlMinifyMiddleware(object):
 
     def __call__(self, request):
         response = self.get_response(request)
-        if 'text/html' in response.get('Content-Type', ''):
+        if "text/html" in response.get("Content-Type", ""):
             try:
-                minified_html = minify(response.content.decode('utf-8'))
-                response.content = minified_html.encode('utf-8')
+                minified_html = minify(response.content.decode("utf-8"))
+                response.content = minified_html.encode("utf-8")
             except Exception as exc:
                 sentry_sdk.capture_exception(exc)
         return response
@@ -62,10 +62,10 @@ class ThrottlingHeadersMiddleware(object):
 
     def __call__(self, request):
         resp = self.get_response(request)
-        if 'RateLimit-Limit' in request.META:
-            resp['X-RateLimit-Limit'] = request.META['RateLimit-Limit']
-        if 'RateLimit-Remaining' in request.META:
-            resp['X-RateLimit-Remaining'] = request.META['RateLimit-Remaining']
-        if 'RateLimit-Reset' in request.META:
-            resp['X-RateLimit-Reset'] = request.META['RateLimit-Reset']
+        if "RateLimit-Limit" in request.META:
+            resp["X-RateLimit-Limit"] = request.META["RateLimit-Limit"]
+        if "RateLimit-Remaining" in request.META:
+            resp["X-RateLimit-Remaining"] = request.META["RateLimit-Remaining"]
+        if "RateLimit-Reset" in request.META:
+            resp["X-RateLimit-Reset"] = request.META["RateLimit-Reset"]
         return resp

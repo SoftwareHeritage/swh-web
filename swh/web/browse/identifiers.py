@@ -12,14 +12,13 @@ from swh.web.common.exc import handle_view_exception
 def swh_id_browse(request, swh_id):
     """
     Django view enabling to browse the archive using
-    :ref:`persistent-identifiers`.
+    :ref:`SWHIDs <persistent-identifiers>`.
 
     The url that points to it is :http:get:`/(swh_id)/`.
     """
     try:
-        swh_id_resolved = resolve_swh_persistent_id(
-            swh_id, query_params=request.GET)
+        swh_id_resolved = resolve_swh_persistent_id(swh_id, query_params=request.GET)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    return redirect(swh_id_resolved['browse_url'])
+    return redirect(swh_id_resolved["browse_url"])

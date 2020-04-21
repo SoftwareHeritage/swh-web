@@ -11,9 +11,15 @@ from django.http import QueryDict
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import (
-    persistent_identifier, parse_persistent_identifier,
-    CONTENT, DIRECTORY, ORIGIN, RELEASE, REVISION, SNAPSHOT,
-    PersistentId
+    persistent_identifier,
+    parse_persistent_identifier,
+    CONTENT,
+    DIRECTORY,
+    ORIGIN,
+    RELEASE,
+    REVISION,
+    SNAPSHOT,
+    PersistentId,
 )
 
 from swh.web.common.exc import BadInputExc
@@ -21,8 +27,9 @@ from swh.web.common.typing import QueryParameters
 from swh.web.common.utils import reverse
 
 
-def get_swh_persistent_id(object_type: str, object_id: str,
-                          scheme_version: int = 1) -> str:
+def get_swh_persistent_id(
+    object_type: str, object_id: str, scheme_version: int = 1
+) -> str:
     """
     Returns the persistent identifier for a swh object based on:
 
@@ -48,21 +55,21 @@ def get_swh_persistent_id(object_type: str, object_id: str,
     try:
         swh_id = persistent_identifier(object_type, object_id, scheme_version)
     except ValidationError as e:
-        raise BadInputExc('Invalid object (%s) for swh persistent id. %s' %
-                          (object_id, e))
+        raise BadInputExc(
+            "Invalid object (%s) for swh persistent id. %s" % (object_id, e)
+        )
     else:
         return swh_id
 
 
-ResolvedPersistentId = TypedDict('ResolvedPersistentId', {
-    'swh_id_parsed': PersistentId,
-    'browse_url': Optional[str]
-})
+ResolvedPersistentId = TypedDict(
+    "ResolvedPersistentId", {"swh_id_parsed": PersistentId, "browse_url": Optional[str]}
+)
 
 
-def resolve_swh_persistent_id(swh_id: str,
-                              query_params: Optional[QueryParameters] = None
-                              ) -> ResolvedPersistentId:
+def resolve_swh_persistent_id(
+    swh_id: str, query_params: Optional[QueryParameters] = None
+) -> ResolvedPersistentId:
     """
     Try to resolve a Software Heritage persistent id into an url for
     browsing the targeted object.
@@ -82,48 +89,58 @@ def resolve_swh_persistent_id(swh_id: str,
     object_type = swh_id_parsed.object_type
     object_id = swh_id_parsed.object_id
     browse_url = None
-    query_dict = QueryDict('', mutable=True)
+    query_dict = QueryDict("", mutable=True)
     if query_params and len(query_params) > 0:
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
-    if 'origin' in swh_id_parsed.metadata:
-        query_dict['origin'] = swh_id_parsed.metadata['origin']
+    if "origin" in swh_id_parsed.metadata:
+        query_dict["origin"] = swh_id_parsed.metadata["origin"]
     if object_type == CONTENT:
-        query_string = 'sha1_git:' + object_id
-        fragment = ''
-        if 'lines' in swh_id_parsed.metadata:
-            lines = swh_id_parsed.metadata['lines'].split('-')
-            fragment += '#L' + lines[0]
+        query_string = "sha1_git:" + object_id
+        fragment = ""
+        if "lines" in swh_id_parsed.metadata:
+            lines = swh_id_parsed.metadata["lines"].split("-")
+            fragment += "#L" + lines[0]
             if len(lines) > 1:
-                fragment += '-L' + lines[1]
-        browse_url = reverse('browse-content',
-                             url_args={'query_string': query_string},
-                             query_params=query_dict) + fragment
+                fragment += "-L" + lines[1]
+        browse_url = (
+            reverse(
+                "browse-content",
+                url_args={"query_string": query_string},
+                query_params=query_dict,
+            )
+            + fragment
+        )
     elif object_type == DIRECTORY:
-        browse_url = reverse('browse-directory',
-                             url_args={'sha1_git': object_id},
-                             query_params=query_dict)
+        browse_url = reverse(
+            "browse-directory",
+            url_args={"sha1_git": object_id},
+            query_params=query_dict,
+        )
     elif object_type == RELEASE:
-        browse_url = reverse('browse-release',
-                             url_args={'sha1_git': object_id},
-                             query_params=query_dict)
+        browse_url = reverse(
+            "browse-release", url_args={"sha1_git": object_id}, query_params=query_dict
+        )
     elif object_type == REVISION:
-        browse_url = reverse('browse-revision',
-                             url_args={'sha1_git': object_id},
-                             query_params=query_dict)
+        browse_url = reverse(
+            "browse-revision", url_args={"sha1_git": object_id}, query_params=query_dict
+        )
     elif object_type == SNAPSHOT:
-        browse_url = reverse('browse-snapshot',
-                             url_args={'snapshot_id': object_id},
-                             query_params=query_dict)
+        browse_url = reverse(
+            "browse-snapshot",
+            url_args={"snapshot_id": object_id},
+            query_params=query_dict,
+        )
     elif object_type == ORIGIN:
-        raise BadInputExc(('Origin PIDs (Persistent Identifiers) are not '
-                           'publicly resolvable because they are for '
-                           'internal usage only'))
+        raise BadInputExc(
+            (
+                "Origin PIDs (Persistent Identifiers) are not "
+                "publicly resolvable because they are for "
+                "internal usage only"
+            )
+        )
 
-    return {
-        'swh_id_parsed': swh_id_parsed,
-        'browse_url': browse_url
-    }
+    return {"swh_id_parsed": swh_id_parsed, "browse_url": browse_url}
 
 
 def get_persistent_identifier(persistent_id: str) -> PersistentId:
@@ -143,14 +160,14 @@ def get_persistent_identifier(persistent_id: str) -> PersistentId:
     try:
         pid_object = parse_persistent_identifier(persistent_id)
     except ValidationError as ve:
-        raise BadInputExc('Error when parsing identifier: %s' %
-                          ' '.join(ve.messages))
+        raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
     else:
         return pid_object
 
 
-def group_swh_persistent_identifiers(persistent_ids: Iterable[PersistentId]
-                                     ) -> Dict[str, List[bytes]]:
+def group_swh_persistent_identifiers(
+    persistent_ids: Iterable[PersistentId],
+) -> Dict[str, List[bytes]]:
     """
     Groups many Software Heritage persistent identifiers into a
     dictionary depending on their type.
@@ -169,7 +186,7 @@ def group_swh_persistent_identifiers(persistent_ids: Iterable[PersistentId]
         DIRECTORY: [],
         REVISION: [],
         RELEASE: [],
-        SNAPSHOT: []
+        SNAPSHOT: [],
     }
 
     for pid in persistent_ids:
