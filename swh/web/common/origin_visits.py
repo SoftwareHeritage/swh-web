@@ -138,9 +138,9 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None, snapshot_id=None
         return visit[0]
 
     if not visit_ts:
-        # returns the latest full visit when no timestamp is provided
+        # returns the latest visit with a valid snapshot when no timestamp is provided
         for v in reversed(visits):
-            if v["status"] == "full":
+            if v["snapshot"] is not None:
                 return v
         return visits[-1]
 
