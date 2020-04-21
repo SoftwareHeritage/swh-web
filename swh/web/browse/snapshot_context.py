@@ -740,6 +740,13 @@ def browse_snapshot_directory(
     browse_rev_link = gen_revision_link(revision_id)
     browse_snp_link = gen_snapshot_link(snapshot_id)
 
+    revision_found = True
+    if sha1_git is None:
+        try:
+            service.lookup_revision(revision_id)
+        except NotFoundExc:
+            revision_found = False
+
     dir_metadata = {
         "directory": sha1_git,
         "context-independent directory": browse_dir_link,
@@ -748,6 +755,7 @@ def browse_snapshot_directory(
         "sum of regular file sizes": sum_file_sizes,
         "path": dir_path,
         "revision": revision_id,
+        "revision_found": revision_found,
         "context-independent revision": browse_rev_link,
         "snapshot": snapshot_id,
         "context-independent snapshot": browse_snp_link,
