@@ -12,17 +12,14 @@ from swh.web.common.models import SaveAuthorizedOrigin
 
 def _remove_duplicated_urls_in_authorized_list(apps, schema_editor):
     sao = SaveAuthorizedOrigin.objects
-    for url in sao.values_list('url', flat=True).distinct():
-        sao.filter(pk__in=sao.filter(
-            url=url).values_list('id', flat=True)[1:]).delete()
+    for url in sao.values_list("url", flat=True).distinct():
+        sao.filter(pk__in=sao.filter(url=url).values_list("id", flat=True)[1:]).delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('swh.web.common', '0004_auto_20190204_1324'),
+        ("swh.web.common", "0004_auto_20190204_1324"),
     ]
 
-    operations = [
-        migrations.RunPython(_remove_duplicated_urls_in_authorized_list)
-    ]
+    operations = [migrations.RunPython(_remove_duplicated_urls_in_authorized_list)]

@@ -21,7 +21,7 @@ class UrlsIndex(object):
     """
 
     _urlpatterns = {}  # type: Dict[str, List[django.urls.URLPattern]]
-    scope = 'default'
+    scope = "default"
 
     @classmethod
     def add_url_pattern(cls, url_pattern, view, view_name=None):
@@ -36,14 +36,12 @@ class UrlsIndex(object):
         if cls.scope not in cls._urlpatterns:
             cls._urlpatterns[cls.scope] = []
         if view_name:
-            cls._urlpatterns[cls.scope].append(url(url_pattern, view,
-                                                   name=view_name))
+            cls._urlpatterns[cls.scope].append(url(url_pattern, view, name=view_name))
         else:
             cls._urlpatterns[cls.scope].append(url(url_pattern, view))
 
     @classmethod
-    def add_redirect_for_checksum_args(cls, view_name, url_patterns,
-                                       checksum_args):
+    def add_redirect_for_checksum_args(cls, view_name, url_patterns, checksum_args):
         """
         Class method that redirects to view with lowercase checksums
         when upper/mixed case checksums are passed as url arguments.
@@ -54,10 +52,9 @@ class UrlsIndex(object):
             checksum_args (List[str]): url argument names corresponding
                                        to checksum values
         """
-        new_view_name = view_name+'-uppercase-checksum'
+        new_view_name = view_name + "-uppercase-checksum"
         for url_pattern in url_patterns:
-            url_pattern_upper = url_pattern.replace('[0-9a-f]',
-                                                    '[0-9a-fA-F]')
+            url_pattern_upper = url_pattern.replace("[0-9a-f]", "[0-9a-fA-F]")
 
             def view_redirect(request, *args, **kwargs):
                 for checksum_arg in checksum_args:
@@ -65,8 +62,7 @@ class UrlsIndex(object):
                     kwargs[checksum_arg] = checksum_upper.lower()
                 return redirect(view_name, *args, **kwargs)
 
-            cls.add_url_pattern(url_pattern_upper, view_redirect,
-                                new_view_name)
+            cls.add_url_pattern(url_pattern_upper, view_redirect, new_view_name)
 
     @classmethod
     def get_url_patterns(cls):

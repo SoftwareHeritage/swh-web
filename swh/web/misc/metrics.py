@@ -16,4 +16,5 @@ def prometheus_metrics(request):
 
     return HttpResponse(
         content=generate_latest(registry=SWH_WEB_METRICS_REGISTRY),
-        content_type=CONTENT_TYPE_LATEST)
+        content_type=CONTENT_TYPE_LATEST,
+    )

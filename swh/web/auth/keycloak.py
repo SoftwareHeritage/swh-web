@@ -15,8 +15,13 @@ class KeycloakOpenIDConnect:
     for managing authentication and user permissions with OpenID Connect.
     """
 
-    def __init__(self, server_url: str, realm_name: str, client_id: str,
-                 realm_public_key: str = ''):
+    def __init__(
+        self,
+        server_url: str,
+        realm_name: str,
+        client_id: str,
+        realm_public_key: str = "",
+    ):
         """
         Args:
             server_url: URL of the Keycloak server
@@ -26,9 +31,7 @@ class KeycloakOpenIDConnect:
                 retrieved if not provided)
         """
         self._keycloak = KeycloakOpenID(
-            server_url=server_url,
-            client_id=client_id,
-            realm_name=realm_name,
+            server_url=server_url, client_id=client_id, realm_name=realm_name,
         )
 
         self.server_url = server_url
@@ -45,8 +48,7 @@ class KeycloakOpenIDConnect:
         """
         return self._keycloak.well_know()
 
-    def authorization_url(self, redirect_uri: str,
-                          **extra_params: str) -> str:
+    def authorization_url(self, redirect_uri: str, **extra_params: str) -> str:
         """
         Get OpenID Connect authorization URL to authenticate users.
 
@@ -57,11 +59,12 @@ class KeycloakOpenIDConnect:
         """
         auth_url = self._keycloak.auth_url(redirect_uri)
         if extra_params:
-            auth_url += '&%s' % urlencode(extra_params)
+            auth_url += "&%s" % urlencode(extra_params)
         return auth_url
 
-    def authorization_code(self, code: str, redirect_uri: str,
-                           **extra_params: str) -> Dict[str, Any]:
+    def authorization_code(
+        self, code: str, redirect_uri: str, **extra_params: str
+    ) -> Dict[str, Any]:
         """
         Get OpenID Connect authentication tokens using Authorization
         Code flow.
@@ -74,10 +77,11 @@ class KeycloakOpenIDConnect:
                 payload.
         """
         return self._keycloak.token(
-            grant_type='authorization_code',
+            grant_type="authorization_code",
             code=code,
             redirect_uri=redirect_uri,
-            **extra_params)
+            **extra_params,
+        )
 
     def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
         """
@@ -91,9 +95,9 @@ class KeycloakOpenIDConnect:
         """
         return self._keycloak.refresh_token(refresh_token)
 
-    def decode_token(self, token: str,
-                     options: Optional[Dict[str, Any]] = None
-                     ) -> Dict[str, Any]:
+    def decode_token(
+        self, token: str, options: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Try to decode a JWT token.
 
@@ -106,12 +110,13 @@ class KeycloakOpenIDConnect:
         """
         if not self.realm_public_key:
             realm_public_key = self._keycloak.public_key()
-            self.realm_public_key = '-----BEGIN PUBLIC KEY-----\n'
+            self.realm_public_key = "-----BEGIN PUBLIC KEY-----\n"
             self.realm_public_key += realm_public_key
-            self.realm_public_key += '\n-----END PUBLIC KEY-----'
+            self.realm_public_key += "\n-----END PUBLIC KEY-----"
 
-        return self._keycloak.decode_token(token, key=self.realm_public_key,
-                                           options=options)
+        return self._keycloak.decode_token(
+            token, key=self.realm_public_key, options=options
+        )
 
     def logout(self, refresh_token: str) -> None:
         """
@@ -140,8 +145,9 @@ class KeycloakOpenIDConnect:
 _keycloak_oidc: Dict[Tuple[str, str], KeycloakOpenIDConnect] = {}
 
 
-def get_keycloak_oidc_client(server_url: str, realm_name: str,
-                             client_id: str) -> KeycloakOpenIDConnect:
+def get_keycloak_oidc_client(
+    server_url: str, realm_name: str, client_id: str
+) -> KeycloakOpenIDConnect:
     """
     Instantiate a KeycloakOpenIDConnect class for a given client in a
     given realm.
@@ -156,7 +162,7 @@ def get_keycloak_oidc_client(server_url: str, realm_name: str,
     """
     realm_client_key = (realm_name, client_id)
     if realm_client_key not in _keycloak_oidc:
-        _keycloak_oidc[realm_client_key] = KeycloakOpenIDConnect(server_url,
-                                                                 realm_name,
-                                                                 client_id)
+        _keycloak_oidc[realm_client_key] = KeycloakOpenIDConnect(
+            server_url, realm_name, client_id
+        )
     return _keycloak_oidc[realm_client_key]

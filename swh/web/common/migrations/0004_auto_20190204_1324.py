@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-# flake8: noqa
-
 from __future__ import unicode_literals
 
 from django.db import migrations, models
@@ -13,13 +11,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('swh.web.common', '0003_saveoriginrequest_loading_task_status'),
+        ("swh.web.common", "0003_saveoriginrequest_loading_task_status"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='saveoriginrequest',
-            name='loading_task_status',
-            field=models.TextField(choices=[('not created', 'not created'), ('not yet scheduled', 'not yet scheduled'), ('scheduled', 'scheduled'), ('succeed', 'succeed'), ('failed', 'failed'), ('running', 'running')], default='not created'),
+            model_name="saveoriginrequest",
+            name="loading_task_status",
+            field=models.TextField(
+                choices=[
+                    ("not created", "not created"),
+                    ("not yet scheduled", "not yet scheduled"),
+                    ("scheduled", "scheduled"),
+                    ("succeed", "succeed"),
+                    ("failed", "failed"),
+                    ("running", "running"),
+                ],
+                default="not created",
+            ),
         ),
     ]

@@ -11,13 +11,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('swh.web.common', '0001_initial'),
+        ("swh.web.common", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='saveoriginrequest',
-            name='visit_date',
+            model_name="saveoriginrequest",
+            name="visit_date",
             field=models.DateTimeField(null=True),
         ),
     ]

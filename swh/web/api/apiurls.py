@@ -22,37 +22,42 @@ class APIUrls(UrlsIndex):
       generating related urls in API documentation
 
     """
+
     _apidoc_routes = {}  # type: Dict[str, Dict[str, str]]
-    scope = 'api'
+    scope = "api"
 
     @classmethod
     def get_app_endpoints(cls):
         return cls._apidoc_routes
 
     @classmethod
-    def add_doc_route(cls, route, docstring, noargs=False,
-                      api_version='1', **kwargs):
+    def add_doc_route(cls, route, docstring, noargs=False, api_version="1", **kwargs):
         """
         Add a route to the self-documenting API reference
         """
-        route_name = route[1:-1].replace('/', '-')
+        route_name = route[1:-1].replace("/", "-")
         if not noargs:
-            route_name = '%s-doc' % route_name
-        route_view_name = 'api-%s-%s' % (api_version, route_name)
+            route_name = "%s-doc" % route_name
+        route_view_name = "api-%s-%s" % (api_version, route_name)
         if route not in cls._apidoc_routes:
-            d = {'docstring': docstring,
-                 'route': '/api/%s%s' % (api_version, route),
-                 'route_view_name': route_view_name}
+            d = {
+                "docstring": docstring,
+                "route": "/api/%s%s" % (api_version, route),
+                "route_view_name": route_view_name,
+            }
             for k, v in kwargs.items():
                 d[k] = v
             cls._apidoc_routes[route] = d
 
 
-def api_route(url_pattern=None, view_name=None,
-              methods=['GET', 'HEAD', 'OPTIONS'],
-              throttle_scope='swh_api',
-              api_version='1',
-              checksum_args=None):
+def api_route(
+    url_pattern=None,
+    view_name=None,
+    methods=["GET", "HEAD", "OPTIONS"],
+    throttle_scope="swh_api",
+    api_version="1",
+    checksum_args=None,
+):
     """
     Decorator to ease the registration of an API endpoint
     using the Django REST Framework.
@@ -65,7 +70,7 @@ def api_route(url_pattern=None, view_name=None,
 
     """
 
-    url_pattern = '^' + api_version + url_pattern + '$'
+    url_pattern = "^" + api_version + url_pattern + "$"
 
     def decorator(f):
         # create a DRF view from the wrapped function
@@ -74,18 +79,18 @@ def api_route(url_pattern=None, view_name=None,
         @functools.wraps(f)
         def api_view_f(*args, **kwargs):
             return f(*args, **kwargs)
+
         # small hacks for correctly generating API endpoints index doc
         api_view_f.__name__ = f.__name__
         api_view_f.http_method_names = methods
 
         # register the route and its view in the endpoints index
-        APIUrls.add_url_pattern(url_pattern, api_view_f,
-                                view_name)
+        APIUrls.add_url_pattern(url_pattern, api_view_f, view_name)
 
         if checksum_args:
-            APIUrls.add_redirect_for_checksum_args(view_name,
-                                                   [url_pattern],
-                                                   checksum_args)
+            APIUrls.add_redirect_for_checksum_args(
+                view_name, [url_pattern], checksum_args
+            )
         return f
 
     return decorator
