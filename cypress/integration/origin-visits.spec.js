@@ -12,7 +12,9 @@ let origin;
 function checkTimeLink(element) {
   expect(element.text()).not.to.be.empty;
 
-  const timeStringLink = element.attr('href').split('visit/')[1].split('/')[0];
+  const urlParams = new URLSearchParams(element.attr('href').split('?')[1]);
+
+  const timeStringLink = urlParams.get('timestamp');
 
   // time in link should be equal to that in text
   assert.deepEqual(getTime(timeStringLink), getTime(element.text()));

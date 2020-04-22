@@ -67,7 +67,7 @@ describe('Directory Tests', function() {
       .click();
 
     cy.url()
-      .should('include', url + dirs[0]['name']);
+      .should('include', `${url}?path=${dirs[0]['name']}`);
 
     cy.get('.swh-directory-table')
       .should('be.visible');

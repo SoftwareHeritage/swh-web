@@ -35,11 +35,10 @@ from swh.web.browse.utils import (
 )
 
 from swh.web.common import service, highlightjs
-from swh.web.common.exc import handle_view_exception, NotFoundExc
+from swh.web.common.exc import handle_view_exception, NotFoundExc, BadInputExc
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
     OriginInfo,
-    QueryParameters,
     SnapshotBranchInfo,
     SnapshotReleaseInfo,
     SnapshotContext,
@@ -416,8 +415,9 @@ def get_snapshot_context(
     origin_info = None
     visit_info = None
     url_args = {}
-    query_params: QueryParameters = {}
+    query_params: Dict[str, Any] = {}
     origin_visits_url = None
+
     if origin_url:
         origin_info = service.lookup_origin({"url": origin_url})
 
@@ -444,14 +444,16 @@ def get_snapshot_context(
 
         url_args = {"origin_url": origin_info["url"]}
 
-        query_params = {}
         if visit_id is not None:
             query_params["visit_id"] = visit_id
 
         origin_visits_url = reverse("browse-origin-visits", url_args=url_args)
 
-        if timestamp:
-            url_args["timestamp"] = format_utc_iso_date(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+        if timestamp is not None:
+            query_params["timestamp"] = format_utc_iso_date(
+                timestamp, "%Y-%m-%dT%H:%M:%SZ"
+            )
+
         visit_url = reverse(
             "browse-origin-directory", url_args=url_args, query_params=query_params
         )
@@ -492,6 +494,9 @@ def get_snapshot_context(
     root_directory = None
 
     snapshot_total_size = sum(snapshot_sizes.values())
+
+    if path is not None:
+        query_params["path"] = path
 
     if snapshot_total_size and revision_id is not None:
         revision = service.lookup_revision(revision_id)
@@ -547,30 +552,22 @@ def get_snapshot_context(
             )
 
     for b in branches:
-        branch_url_args = dict(url_args)
         branch_query_params = dict(query_params)
         branch_query_params.pop("release", None)
         if b["name"] != b["revision"]:
             branch_query_params.pop("revision", None)
             branch_query_params["branch"] = b["name"]
-        if path:
-            branch_url_args["path"] = path
         b["url"] = reverse(
-            browse_view_name, url_args=branch_url_args, query_params=branch_query_params
+            browse_view_name, url_args=url_args, query_params=branch_query_params
         )
 
     for r in releases:
-        release_url_args = dict(url_args)
         release_query_params = dict(query_params)
         release_query_params.pop("branch", None)
         release_query_params.pop("revision", None)
         release_query_params["release"] = r["name"]
-        if path:
-            release_url_args["path"] = path
         r["url"] = reverse(
-            browse_view_name,
-            url_args=release_url_args,
-            query_params=release_query_params,
+            browse_view_name, url_args=url_args, query_params=release_query_params,
         )
 
     return SnapshotContext(
@@ -598,7 +595,7 @@ def get_snapshot_context(
 def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
     origin_info = snapshot_context["origin_info"]
     url_args = snapshot_context["url_args"]
-    query_params = snapshot_context["query_params"]
+    query_params = dict(snapshot_context["query_params"])
     root_directory = snapshot_context["root_directory"]
 
     path_info = gen_path_info(path)
@@ -610,6 +607,7 @@ def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
 
     breadcrumbs = []
     if root_directory:
+        query_params.pop("path", None)
         breadcrumbs.append(
             {
                 "name": root_directory[:7],
@@ -619,13 +617,12 @@ def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
             }
         )
     for pi in path_info:
-        bc_url_args = dict(url_args)
-        bc_url_args["path"] = pi["path"]
+        query_params["path"] = pi["path"]
         breadcrumbs.append(
             {
                 "name": pi["name"],
                 "url": reverse(
-                    browse_view_name, url_args=bc_url_args, query_params=query_params
+                    browse_view_name, url_args=url_args, query_params=query_params
                 ),
             }
         )
@@ -669,7 +666,7 @@ def browse_snapshot_directory(
     origin_info = snapshot_context["origin_info"]
     visit_info = snapshot_context["visit_info"]
     url_args = snapshot_context["url_args"]
-    query_params = snapshot_context["query_params"]
+    query_params = dict(snapshot_context["query_params"])
     revision_id = snapshot_context["revision_id"]
     snapshot_id = snapshot_context["snapshot_id"]
 
@@ -686,10 +683,9 @@ def browse_snapshot_directory(
         if d["type"] == "rev":
             d["url"] = reverse("browse-revision", url_args={"sha1_git": d["target"]})
         else:
-            bc_url_args = dict(url_args)
-            bc_url_args["path"] = path + d["name"]
+            query_params["path"] = path + d["name"]
             d["url"] = reverse(
-                browse_view_name, url_args=bc_url_args, query_params=query_params
+                browse_view_name, url_args=url_args, query_params=query_params
             )
 
     sum_file_sizes = 0
@@ -702,10 +698,9 @@ def browse_snapshot_directory(
         browse_view_name = "browse-snapshot-content"
 
     for f in files:
-        bc_url_args = dict(url_args)
-        bc_url_args["path"] = path + f["name"]
+        query_params["path"] = path + f["name"]
         f["url"] = reverse(
-            browse_view_name, url_args=bc_url_args, query_params=query_params
+            browse_view_name, url_args=url_args, query_params=query_params
         )
         if f["length"] is not None:
             sum_file_sizes += f["length"]
@@ -840,6 +835,9 @@ def browse_snapshot_content(
     Django view implementation for browsing a content in a snapshot context.
     """
     try:
+
+        if path is None:
+            raise BadInputExc("The path of a content must be given as query parameter.")
 
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,

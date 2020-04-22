@@ -335,8 +335,8 @@ def _snapshot_context_query_params(snapshot_context):
     if snapshot_context and snapshot_context["origin_info"]:
         origin_info = snapshot_context["origin_info"]
         query_params = {"origin": origin_info["url"]}
-        if "timestamp" in snapshot_context["url_args"]:
-            query_params["timestamp"] = snapshot_context["url_args"]["timestamp"]
+        if "timestamp" in snapshot_context["query_params"]:
+            query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
         if "visit_id" in snapshot_context["query_params"]:
             query_params["visit_id"] = snapshot_context["query_params"]["visit_id"]
     elif snapshot_context:
@@ -524,8 +524,8 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     if snapshot_context and snapshot_context["origin_info"]:
         origin_info = snapshot_context["origin_info"]
         url_args = {"origin_url": origin_info["url"]}
-        if "timestamp" in snapshot_context["url_args"]:
-            url_args["timestamp"] = snapshot_context["url_args"]["timestamp"]
+        if "timestamp" in snapshot_context["query_params"]:
+            query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
         if "visit_id" in snapshot_context["query_params"]:
             query_params["visit_id"] = snapshot_context["query_params"]["visit_id"]
         revision_log_url = reverse(

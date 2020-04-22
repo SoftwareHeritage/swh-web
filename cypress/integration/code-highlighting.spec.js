@@ -18,7 +18,7 @@ let url;
 describe('Code highlighting tests', function() {
   before(function() {
     origin = this.origin[0];
-    url = this.Urls.browse_origin_content(origin.url, origin.content[0].path);
+    url = `${this.Urls.browse_origin_content(origin.url)}?path=${origin.content[0].path}`;
   });
 
   it('should highlight source code and add line numbers', function() {

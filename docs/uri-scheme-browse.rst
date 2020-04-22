@@ -39,10 +39,10 @@ Software Heritage crawlers.
 
 Wherever a revision context is expected in a path (i.e., a
 **/browse/revision/(sha1_git)/** path fragment) we can put in its stead a path fragment
-of the form **/origin/(origin_url)/[/visit/(timestamp)/][?branch=(branch)]**.
+of the form **/browse/origin/(origin_url)/?timestamp=(timestamp)&branch=(branch)**.
 Such a fragment is resolved, internally by the archive, to a revision **sha1_git** as follows:
 
-- if **timestamp** is absent: look for the most recent crawl of origin
+- if **timestamp** is not given as query parameter: look for the most recent crawl of origin
   identified by **origin_url**
 - if **timestamp** is given: look for the closest crawl of origin identified
   by **origin_url** from timestamp **timestamp**
@@ -53,12 +53,9 @@ Such a fragment is resolved, internally by the archive, to a revision **sha1_git
 The already mentioned URLs for revision contexts can therefore be alternatively
 specified by users as:
 
-* :http:get:`/browse/origin/(origin_url)/directory/[(path)/]`
-* :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/directory/[(path)/]`
-* :http:get:`/browse/origin/(origin_url)/content/(path)/`
-* :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/content/(path)/`
+* :http:get:`/browse/origin/(origin_url)/directory/`
+* :http:get:`/browse/origin/(origin_url)/content/`
 * :http:get:`/browse/origin/(origin_url)/log/`
-* :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/log/`
 
 Typing:
 

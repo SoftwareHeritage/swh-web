@@ -36,7 +36,64 @@ Origin visits
 Origin directory
 """"""""""""""""
 
-.. http:get:: /browse/origin/(origin_url)/directory/[(path)/]
+.. http:get:: /browse/origin/(origin_url)/directory/
+
+    HTML view for browsing the content of a directory reachable from the root directory
+    (including itself) associated to the latest full visit of a software origin.
+
+    The content of the directory is first sorted in lexicographical order
+    and the sub-directories are displayed before the regular files.
+
+    The view enables to navigate from the requested directory to
+    directories reachable from it in a recursive way but also
+    up to the origin root directory.
+    A breadcrumb located in the top part of the view allows
+    to keep track of the paths navigated so far.
+
+    The view also enables to easily switch between the origin branches
+    and releases through a dropdown menu.
+
+    The origin branch (default to master) from which to retrieve the directory
+    content can also be specified by using the branch query parameter.
+
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
+    :query string path: optional parameter used to specify the path of a directory
+        reachable from the origin root one
+    :query string branch: specify the origin branch name from which
+        to retrieve the root directory
+    :query string release: specify the origin release name from which
+        to retrieve the root directory
+    :query string revision: specify the origin revision, identified by the hexadecimal
+        representation of its **sha1_git** value, from which to retrieve the root directory
+    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
+        or Unix timestamp to parse in order to find the closest visit.
+    :query int visit_id: specify a visit id to retrieve the directory from instead
+        of using the latest full visit by default
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the archive
+        or the provided path does not exist from the origin root directory
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/directory/`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/directory/?path=net/ethernet`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/?path=Python`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/?branch=refs/heads/2.7`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/directory/?timestamp=1493926809`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/directory/?path=net/ethernet&timestamp=2016-09-14T10:36:21`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/?timestamp=1474620651`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/?path=Python&timestamp=2017-05-05`
+        :swh_web_browse:`origin/https://github.com/python/cpython/directory/?branch=refs/heads/2.7&/timestamp=2015-08`
+
+
+.. http:get:: /browse/origin/(origin_url)/directory/(path)/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/origin/(origin_url)/directory/` instead.
 
     HTML view for browsing the content of a directory reachable from the root directory
     (including itself) associated to the latest full visit of a software origin.
@@ -82,7 +139,11 @@ Origin directory
         :swh_web_browse:`origin/https://github.com/python/cpython/directory/?branch=refs/heads/2.7`
 
 
-.. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/directory/[(path)/]
+.. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/directory/(path)/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/origin/(origin_url)/directory/` instead.
 
     HTML view for browsing the content of a directory reachable from
     the root directory (including itself) associated to a visit of a software
@@ -136,7 +197,67 @@ Origin directory
 Origin content
 """"""""""""""
 
+.. http:get:: /browse/origin/(origin_url)/content/
+
+    HTML view that produces a display of a content
+    associated to the latest full visit of a software origin.
+
+    If the content to display is textual, it will be highlighted client-side
+    if possible using highlightjs_. The procedure to perform that task is described
+    in :http:get:`/browse/content/[(algo_hash):](hash)/`.
+
+    It is also possible to highlight specific lines of a textual
+    content (not in terms of syntax highlighting but to emphasize
+    some relevant content part) by either:
+
+        * clicking on line numbers (holding shift to highlight a lines range)
+
+        * using an url fragment in the form '#Ln' or '#Lm-Ln'
+
+    The view displays a breadcrumb on top of the rendered
+    content in order to easily navigate up to the origin root directory.
+
+    The view also enables to easily switch between the origin branches
+    and releases through a dropdown menu.
+
+    The origin branch (default to master) from which to retrieve the content
+    can also be specified by using the branch query parameter.
+
+    :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
+    :query string path: path of a content reachable from the origin root directory
+    :query string branch: specify the origin branch name from which
+        to retrieve the content
+    :query string release: specify the origin release name from which
+        to retrieve the content
+    :query string revision: specify the origin revision, identified by the hexadecimal
+        representation of its **sha1_git** value, from which to retrieve the content
+    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
+        or Unix timestamp to parse in order to find the closest visit.
+    :query int visit_id: specify a visit id to retrieve the content from instead
+        of using the latest full visit by default
+    :statuscode 200: no error
+    :statuscode 404: requested origin can not be found in the archive,
+        or the provided content path does not exist from the origin root directory
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c`
+        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content/?path=js/src/json.cpp`
+        :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c&branch=refs/heads/next`
+        :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c&timestamp=1473933564`
+        :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c&timestamp=2016-05-05T00:0:00+00:00`
+        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content?path=js/src/json.cpp&timestamp=1490126182`
+        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content?path=js/src/json.cpp&timestamp=2017-03-21#L904-L931`
+        :swh_web_browse:`origin/https://github.com/git/git/content/git.c/?branch=refs/heads/next&timestamp=2017-09-15`
+
+
 .. http:get:: /browse/origin/(origin_url)/content/(path)/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/origin/(origin_url)/content/` instead.
 
     HTML view that produces a display of a content
     associated to the latest full visit of a software origin.
@@ -186,6 +307,10 @@ Origin content
         :swh_web_browse:`origin/https://github.com/git/git/content/git.c/?branch=refs/heads/next`
 
 .. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/content/(path)/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/origin/(origin_url)/content/` instead.
 
     HTML view that produces a display of a content associated to a
     visit of a software origin closest to a provided timestamp.
@@ -286,6 +411,8 @@ Origin history
         to retrieve the commit log
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its **sha1_git** value, from which to retrieve the commit log
+    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
+        or Unix timestamp to parse in order to find the closest visit.
     :query int visit_id: specify a visit id to retrieve the history log from instead
         of using the latest visit by default
     :statuscode 200: no error
@@ -298,9 +425,17 @@ Origin history
         :swh_web_browse:`origin/https://github.com/videolan/vlc/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release`
+        :swh_web_browse:`origin/https://github.com/videolan/vlc/log/?visit=1459651262`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?timestamp=2016-04-01`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release&timestamp=1438116814`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release&timestamp=2017-05-05T03:14:23`
 
 
 .. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/log/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/origin/(origin_url)/log/` instead.
 
     HTML view that produces a display of revisions history heading
     to the last revision found during a visit of a software origin closest
@@ -333,11 +468,6 @@ Origin history
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
         or Unix timestamp to parse in order to find the closest visit.
-    :query string revs_breadcrumb: used internally to store
-        the navigation breadcrumbs (i.e. the list of descendant revisions
-        visited so far). It must be a string in the form
-        "(rev_1)[/(rev_2)/.../(rev_n)]" where rev_i corresponds to a
-        revision **sha1_git**.
     :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
     :query string branch: specify the origin branch name from which
@@ -379,6 +509,8 @@ Origin branches
     That list of branches is paginated, each page displaying a maximum of 100 branches.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
+    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
+        or Unix timestamp to parse in order to find the closest visit.
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
 
@@ -388,8 +520,15 @@ Origin branches
 
         :swh_web_browse:`origin/deb://Debian/packages/linux/branches/`
         :swh_web_browse:`origin/https://github.com/webpack/webpack/branches/`
+        :swh_web_browse:`origin/https://github.com/kripken/emscripten/branches/?timestamp=2017-05-05T12:02:03`
+        :swh_web_browse:`origin/deb://Debian/packages/apache2-mod-xforward/branches/?timestamp=2017-11-15T05:15:09`
+
 
 .. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/branches/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/origin/(origin_url)/branches/` instead.
 
     HTML view that produces a display of the list of branches
     found during a visit of a software origin closest to the provided timestamp.
@@ -436,6 +575,8 @@ Origin releases
     That list of releases is paginated, each page displaying a maximum of 100 releases.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
+    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
+        or Unix timestamp to parse in order to find the closest visit.
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
 
@@ -445,8 +586,15 @@ Origin releases
 
         :swh_web_browse:`origin/https://github.com/git/git/releases/`
         :swh_web_browse:`origin/https://github.com/webpack/webpack/releases/`
+        :swh_web_browse:`origin/https://github.com/torvalds/linux/releases/?timestamp=2017-11-21T19:37:42`
+        :swh_web_browse:`origin/https://github.com/Kitware/CMake/releases/?timestamp=2016-09-23T14:06:35`
+
 
 .. http:get:: /browse/origin/(origin_url)/visit/(timestamp)/releases/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/origin/(origin_url)/releases/` instead.
 
     HTML view that produces a display of the list of releases
     found during a visit of a software origin closest to the provided timestamp.
@@ -473,6 +621,7 @@ Origin releases
 
         :swh_web_browse:`origin/https://github.com/torvalds/linux/visit/2017-11-21T19:37:42/releases/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2016-09-23T14:06:35/releases/`
+
 
 .. _highlightjs: https://highlightjs.org/
 .. _dateutil.parser.parse: http://dateutil.readthedocs.io/en/stable/parser.html

@@ -45,8 +45,8 @@ from swh.web.common.utils import (
 def _gen_content_url(revision, query_string, path, snapshot_context):
     if snapshot_context:
         url_args = snapshot_context["url_args"]
-        url_args["path"] = path
         query_params = snapshot_context["query_params"]
+        query_params["path"] = path
         query_params["revision"] = revision["id"]
         content_url = reverse(
             "browse-origin-content", url_args=url_args, query_params=query_params

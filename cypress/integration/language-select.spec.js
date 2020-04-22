@@ -17,7 +17,7 @@ const languageSelect = 'python';
 describe('Test Content Language Select', function() {
   before(function() {
     origin = this.origin[0];
-    contentWithLanguageInfo = this.Urls.browse_origin_content(origin.url, origin.content[1].path);
+    contentWithLanguageInfo = `${this.Urls.browse_origin_content(origin.url)}?path=${origin.content[1].path}`;
     contentWithoutLanguageInfo = this.Urls.browse_content(`sha1_git:${origin.content[1].sha1git}`);
   });
 
@@ -66,7 +66,7 @@ describe('Test Content Language Select', function() {
   });
 
   it('should highlight according to the language passed as argument in url', function() {
-    cy.visit(`${contentWithLanguageInfo}?language=${languageSelect}`);
+    cy.visit(`${contentWithLanguageInfo}&language=${languageSelect}`);
     checkLanguageHighlighting(languageSelect);
   });
 

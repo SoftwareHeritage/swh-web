@@ -91,6 +91,9 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
         url_args = {"snapshot_id": snapshot}
 
+        query_params = dict(kwargs)
+        query_params.pop("snapshot_id")
+
         snapshot_context = get_snapshot_context(**kwargs, browse_context=browse_context)
 
         branches, releases = get_snapshot_content(snapshot)
@@ -103,14 +106,14 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
                 root_directory = branch["directory"]
             branch["url"] = reverse(
                 f"browse-snapshot-{browse_context}",
-                url_args=kwargs,
-                query_params={"branch": branch["name"]},
+                url_args=url_args,
+                query_params={"branch": branch["name"], **query_params},
             )
         for release in releases:
             release["url"] = reverse(
                 f"browse-snapshot-{browse_context}",
-                url_args=kwargs,
-                query_params={"release": release["name"]},
+                url_args=url_args,
+                query_params={"release": release["name"], **query_params},
             )
 
         branches_url = reverse("browse-snapshot-branches", url_args=url_args)
@@ -128,7 +131,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
             origin_visits_url=None,
             release=None,
             release_id=None,
-            query_params={},
+            query_params=query_params,
             releases=releases,
             releases_url=releases_url,
             revision_id=revision_id,
@@ -174,11 +177,12 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
         snapshot_context = get_snapshot_context(**kwargs, browse_context=browse_context)
 
         url_args = dict(kwargs)
+        url_args.pop("path", None)
+        url_args.pop("timestamp", None)
         url_args.pop("visit_id", None)
 
-        query_params = {}
-        if "visit_id" in kwargs:
-            query_params["visit_id"] = kwargs["visit_id"]
+        query_params = dict(kwargs)
+        query_params.pop("origin_url")
 
         branches, releases = get_snapshot_content(snapshot)
         releases = list(reversed(releases))
@@ -200,7 +204,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
                 query_params={"release": release["name"], **query_params},
             )
 
-        url_args.pop("path", None)
+        query_params.pop("path", None)
 
         branches_url = reverse(
             "browse-origin-branches", url_args=url_args, query_params=query_params
@@ -219,6 +223,9 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             "browse-origin-directory", url_args=url_args, query_params=query_params
         )
         visit_info["formatted_date"] = format_utc_iso_date(visit_info["date"])
+
+        if "path" in kwargs:
+            query_params["path"] = kwargs["path"]
 
         expected = SnapshotContext(
             branch="HEAD",
@@ -257,9 +264,14 @@ def _check_branch_release_revision_parameters(
         **kwargs, browse_context=browse_context, branch_name=branch["name"]
     )
 
-    query_params = {}
-    if "visit_id" in kwargs:
-        query_params["visit_id"] = kwargs["visit_id"]
+    url_args = dict(kwargs)
+    url_args.pop("path", None)
+    url_args.pop("timestamp", None)
+    url_args.pop("visit_id", None)
+
+    query_params = dict(kwargs)
+    query_params.pop("origin_url", None)
+    query_params.pop("snapshot_id", None)
 
     expected_branch = dict(base_expected_context)
     expected_branch["branch"] = branch["name"]
@@ -304,7 +316,7 @@ def _check_branch_release_revision_parameters(
 
     revision_browse_url = reverse(
         view_name,
-        url_args=kwargs,
+        url_args=url_args,
         query_params={"revision": revision["id"], **query_params},
     )
 
