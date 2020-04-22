@@ -53,7 +53,7 @@ function updateVisitsList(year) {
     }
     visitsListHtml += '<div class="swh-visits-list-column" style="width: ' + 100 / nbVisitsByRow + '%;">';
     visitsListHtml += '<a class="swh-visit-' + visitsByYear[i].status + '" title="' + visitsByYear[i].status +
-                        ' visit" href="' + visitsByYear[i].browse_url + '">' + visitsByYear[i].fmt_date + '</a>';
+                        ' visit" href="' + visitsByYear[i].url + '">' + visitsByYear[i].formatted_date + '</a>';
     visitsListHtml += '</div>';
     ++visitsCpt;
   }
@@ -114,7 +114,7 @@ export function initVisitsReporting(visits) {
     allVisits.forEach((v, i) => {
       // Turn Unix epoch into Javascript Date object
       v.date = new Date(Math.floor(v.date * 1000));
-      let visitLink = '<a class="swh-visit-' + v.status + '" href="' + v.browse_url + '">' + v.fmt_date + '</a>';
+      let visitLink = '<a class="swh-visit-' + v.status + '" href="' + v.url + '">' + v.formatted_date + '</a>';
       if (v.status === 'full') {
         if (!firstFullVisit) {
           firstFullVisit = v;

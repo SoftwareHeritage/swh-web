@@ -53,6 +53,10 @@ See top-level LICENSE file for more information
     </table>
   </div>
   <hr class="mt-0 mb-2">
+{% elif "revision_found" in swh_object_metadata and swh_object_metadata.revision_found is False %}
+  <i>Revision {{ swh_object_metadata.revision }} could not be found in the archive.</i>
+  <br/>
+  <i>Its associated directory can not be displayed.</i>
 {% elif dirs|length == 0 and files|length == 0 %}
   <i>Directory is empty</i>
 {% endif %}

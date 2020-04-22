@@ -11,10 +11,10 @@ See top-level LICENSE file for more information
 <div class="swh-origin-visit-details">
   <ul>
     {% if snapshot_context.origin_info %}
-      <li><i class="{{ swh_object_icons.visits }} fa-fw"></i><a href="{{ snapshot_context.browse_url }}">Visits</a></li>
+      <li><i class="{{ swh_object_icons.visits }} fa-fw"></i><a href="{{ snapshot_context.origin_visits_url }}">Visits</a></li>
     {% endif %}
     {% if snapshot_context.visit_info %}
-      <li><i class="{{ swh_object_icons.snapshot }} fa-fw"></i> Snapshot date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.fmt_date }}</a></li>
+      <li><i class="{{ swh_object_icons.snapshot }} fa-fw"></i> Snapshot date: <a href="{{ snapshot_context.visit_info.url }}">{{ snapshot_context.visit_info.formatted_date }}</a></li>
     {% endif %}
     {% if not snapshot_context.snapshot_sizes.revision %}
       <li><i class="{{ swh_object_icons.branches }} fa-fw"></i> Branches (0)</li>
