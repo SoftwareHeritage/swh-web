@@ -140,7 +140,7 @@ def origin_visits_browse(request, origin_url):
 
     for i, visit in enumerate(origin_visits):
         url_date = format_utc_iso_date(visit["date"], "%Y-%m-%dT%H:%M:%SZ")
-        visit["fmt_date"] = format_utc_iso_date(visit["date"])
+        visit["formatted_date"] = format_utc_iso_date(visit["date"])
         query_params = {}
         if i < len(origin_visits) - 1:
             if visit["date"] == origin_visits[i + 1]["date"]:
@@ -151,7 +151,7 @@ def origin_visits_browse(request, origin_url):
 
         snapshot = visit["snapshot"] if visit["snapshot"] else ""
 
-        visit["browse_url"] = reverse(
+        visit["url"] = reverse(
             "browse-origin-directory",
             url_args={"origin_url": origin_url, "timestamp": url_date},
             query_params=query_params,

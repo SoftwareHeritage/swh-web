@@ -5,9 +5,11 @@
 
 import datetime
 import json
+from typing import Dict, Any
 
-from swh.model import hashutil
 from swh.core.utils import decode_with_escape
+from swh.model import hashutil
+from swh.web.common.typing import OriginInfo, OriginVisitInfo
 
 
 def _group_checksums(data):
@@ -191,7 +193,7 @@ def from_swh(
     return new_dict
 
 
-def from_origin(origin):
+def from_origin(origin: Dict[str, Any]) -> OriginInfo:
     """Convert from a swh origin to an origin dictionary.
 
     """
@@ -332,7 +334,7 @@ def from_person(person):
     return from_swh(person, bytess={"name", "fullname", "email"})
 
 
-def from_origin_visit(visit):
+def from_origin_visit(visit: Dict[str, Any]) -> OriginVisitInfo:
     """Convert swh origin_visit to serializable origin_visit dictionary.
 
     """
