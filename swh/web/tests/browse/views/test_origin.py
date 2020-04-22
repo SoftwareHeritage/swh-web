@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import datetime
 import random
 import re
 import string
@@ -12,7 +13,11 @@ from django.utils.html import escape
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.model import Snapshot
+from swh.model.model import (
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+)
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import get_swh_persistent_id
@@ -34,6 +39,7 @@ from swh.web.tests.strategies import (
     revisions,
     origin_with_releases,
     release as existing_release,
+    unknown_revision,
 )
 
 
@@ -594,7 +600,7 @@ def test_origin_empty_snapshot(client, mocker, origin):
         "release": 0,
     }
     mock_service.lookup_origin.return_value = origin
-    url = reverse("browse-origin-directory", url_args={"origin_url": "bar"})
+    url = reverse("browse-origin-directory", url_args={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 200
     assert_template_used(resp, "browse/directory.html")
@@ -648,6 +654,39 @@ def test_origin_release_browse_not_found(client, origin):
     )
 
 
+@given(new_origin(), unknown_revision())
+def test_origin_browse_directory_branch_with_non_resolvable_revision(
+    client, archive_data, new_origin, unknown_revision
+):
+    branch_name = "master"
+    snapshot = Snapshot(
+        branches={
+            branch_name.encode(): SnapshotBranch(
+                target=hash_to_bytes(unknown_revision), target_type=TargetType.REVISION,
+            )
+        }
+    )
+    new_origin = archive_data.origin_add([new_origin])[0]
+    archive_data.snapshot_add([snapshot])
+    visit = archive_data.origin_visit_add(new_origin["url"], datetime.now(), type="git")
+    archive_data.origin_visit_update(
+        new_origin["url"], visit.visit, status="full", snapshot=snapshot.id
+    )
+
+    url = reverse(
+        "browse-origin-directory",
+        url_args={"origin_url": new_origin["url"]},
+        query_params={"branch": branch_name},
+    )
+
+    resp = client.get(url)
+
+    assert resp.status_code == 200
+    assert_contains(
+        resp, f"Revision {unknown_revision } could not be found in the archive."
+    )
+
+
 def _origin_content_view_test_helper(
     client,
     origin_info,
@@ -697,7 +736,7 @@ def _origin_content_view_test_helper(
 
     if timestamp:
         url_args["timestamp"] = format_utc_iso_date(
-            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%S"
+            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
     root_dir_url = reverse(
@@ -831,7 +870,7 @@ def _origin_directory_view_test_helper(
 
     if timestamp:
         url_args["timestamp"] = format_utc_iso_date(
-            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%S"
+            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
     for d in dirs:

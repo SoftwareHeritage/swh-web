@@ -28,8 +28,8 @@ See top-level LICENSE file for more information
       {% endif %}
     {% else %}
       for snapshot
-      <a href="{% url 'browse-swh-id' snapshot_context.swh_object_id %}">
-        {{ snapshot_context.swh_object_id }}
+      <a href="{% url 'browse-swh-id' snapshot_context.snapshot_swhid %}">
+        {{ snapshot_context.snapshot_swhid }}
       </a>
     {% endif %}
   </h4>

@@ -4,31 +4,25 @@
 # See top-level LICENSE file for more information
 
 import math
+from typing import List, Optional, Union
 
 from django.core.cache import cache
 
 from swh.web.common.exc import NotFoundExc
+from swh.web.common.typing import OriginInfo, OriginVisitInfo
 from swh.web.common.utils import parse_timestamp
 
 
-def get_origin_visits(origin_info):
+def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
     """Function that returns the list of visits for a swh origin.
     That list is put in cache in order to speedup the navigation
     in the swh web browse ui.
 
     Args:
-        origin_info (dict): dict describing the origin to fetch visits from
+        origin_info: dict describing the origin to fetch visits from
 
     Returns:
-        list: A list of dict describing the origin visits with the
-        following keys:
-
-            * **date**: UTC visit date in ISO format,
-            * **origin**: the origin url
-            * **status**: the visit status, either **full**, **partial**
-              or **ongoing**
-            * **visit**: the visit id
-            * **type**: the visit type
+        A list of dict describing the origin visits
 
     Raises:
         swh.web.common.exc.NotFoundExc: if the origin is not found
@@ -77,10 +71,6 @@ def get_origin_visits(origin_info):
         ts = parse_timestamp(visit["date"]).timestamp()
         return ts + (float(visit["visit"]) / 10e3)
 
-    for v in origin_visits:
-        if "metadata" in v:
-            del v["metadata"]
-    origin_visits = [dict(t) for t in set([tuple(d.items()) for d in origin_visits])]
     origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
 
     cache.set(cache_entry_id, origin_visits)
@@ -88,25 +78,22 @@ def get_origin_visits(origin_info):
     return origin_visits
 
 
-def get_origin_visit(origin_info, visit_ts=None, visit_id=None, snapshot_id=None):
-    """Function that returns information about a visit for
-    a given origin.
+def get_origin_visit(
+    origin_info: OriginInfo,
+    visit_ts: Optional[Union[int, str]] = None,
+    visit_id: Optional[int] = None,
+    snapshot_id: Optional[str] = None,
+) -> OriginVisitInfo:
+    """Function that returns information about a visit for a given origin.
     The visit is retrieved from a provided timestamp.
     The closest visit from that timestamp is selected.
 
     Args:
-        origin_info (dict): a dict filled with origin information
-        visit_ts (int or str): an ISO date string or Unix timestamp to parse
+        origin_info: a dict filled with origin information
+        visit_ts: an ISO date string or Unix timestamp to parse
 
     Returns:
-        A dict containing the visit info as described below::
-
-            {'origin': 'https://forge.softwareheritage.org/source/swh-web/',
-             'date': '2017-10-08T11:54:25.582463+00:00',
-             'metadata': {},
-             'visit': 25,
-             'status': 'full'}
-
+        A dict containing the visit info.
     """
     visits = get_origin_visits(origin_info)
 
@@ -116,26 +103,26 @@ def get_origin_visit(origin_info, visit_ts=None, visit_id=None, snapshot_id=None
         )
 
     if snapshot_id:
-        visit = [v for v in visits if v["snapshot"] == snapshot_id]
-        if len(visit) == 0:
+        visits = [v for v in visits if v["snapshot"] == snapshot_id]
+        if len(visits) == 0:
             raise NotFoundExc(
                 (
                     "Visit for snapshot with id %s for origin with"
                     " url %s not found!" % (snapshot_id, origin_info["url"])
                 )
             )
-        return visit[0]
+        return visits[0]
 
     if visit_id:
-        visit = [v for v in visits if v["visit"] == int(visit_id)]
-        if len(visit) == 0:
+        visits = [v for v in visits if v["visit"] == int(visit_id)]
+        if len(visits) == 0:
             raise NotFoundExc(
                 (
                     "Visit with id %s for origin with"
                     " url %s not found!" % (visit_id, origin_info["url"])
                 )
             )
-        return visit[0]
+        return visits[0]
 
     if not visit_ts:
         # returns the latest visit with a valid snapshot when no timestamp is provided
