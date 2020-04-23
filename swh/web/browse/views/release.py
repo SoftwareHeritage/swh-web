@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -163,8 +163,10 @@ def release_browse(request, sha1_git):
         if origin_info:
             rev_directory_url = reverse(
                 "browse-origin-directory",
-                url_args={"origin_url": origin_info["url"]},
-                query_params={"release": release["name"]},
+                query_params={
+                    "origin_url": origin_info["url"],
+                    "release": release["name"],
+                },
             )
         elif snapshot_id:
             rev_directory_url = reverse(

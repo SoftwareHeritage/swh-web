@@ -42,7 +42,7 @@ Snapshot directory
 
     The features offered by the view are similar to the one for browsing
     a directory in an origin context
-    (see :http:get:`/browse/origin/(origin_url)/directory/`).
+    (see :http:get:`/browse/origin/(origin_url)/directory/[(path)/]`).
 
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :query string path: optional parameter used to specify the path of a directory
@@ -78,7 +78,7 @@ Snapshot directory
 
     The features offered by the view are similar to the one for browsing
     a directory in an origin context
-    (see :http:get:`/browse/origin/(origin_url)/directory/(path)/`).
+    (see :http:get:`/browse/origin/(origin_url)/directory/[(path)/]`).
 
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :param string path: optional parameter used to specify the path of a directory

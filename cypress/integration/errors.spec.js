@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -40,7 +40,7 @@ describe('Test Errors', function() {
 
   context('For unarchived repositories', function() {
     it('should display NotFoundExc for unarchived repo', function() {
-      const url = this.Urls.browse_origin_directory(this.unarchivedRepo.url);
+      const url = `${this.Urls.browse_origin_directory()}?origin_url=${this.unarchivedRepo.url}`;
 
       urlShouldShowError(url, {
         code: '404',
@@ -88,13 +88,12 @@ describe('Test Errors', function() {
 
   context('For archived repositories', function() {
     before(function() {
-      const url = this.Urls.browse_origin_directory(origin.url);
+      const url = `${this.Urls.browse_origin_directory()}?origin_url=${origin.url}`;
       cy.visit(url);
     });
 
     it('should display NotFoundExc for invalid directory from archived repo', function() {
-      const rootDir = this.Urls.browse_origin_directory(origin.url);
-      const subDir = rootDir + origin.invalidSubDir;
+      const subDir = `${this.Urls.browse_origin_directory()}?origin_url=${origin.url}&path=${origin.invalidSubDir}`;
 
       urlShouldShowError(subDir, {
         code: '404',

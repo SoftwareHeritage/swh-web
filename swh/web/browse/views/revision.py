@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -44,13 +44,10 @@ from swh.web.common.utils import (
 
 def _gen_content_url(revision, query_string, path, snapshot_context):
     if snapshot_context:
-        url_args = snapshot_context["url_args"]
         query_params = snapshot_context["query_params"]
         query_params["path"] = path
         query_params["revision"] = revision["id"]
-        content_url = reverse(
-            "browse-origin-content", url_args=url_args, query_params=query_params
-        )
+        content_url = reverse("browse-origin-content", query_params=query_params)
     else:
         content_path = "%s/%s" % (revision["directory"], path)
         content_url = reverse(

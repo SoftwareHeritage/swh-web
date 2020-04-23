@@ -1,4 +1,4 @@
-# Copyright (C) 2019  The Software Heritage developers
+# Copyright (C) 2019-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -94,7 +94,9 @@ def _swh_badge(
         if object_type == ORIGIN:
             service.lookup_origin({"url": object_id})
             right_text = "repository"
-            whole_link = reverse("browse-origin", url_args={"origin_url": object_id})
+            whole_link = reverse(
+                "browse-origin", query_params={"origin_url": object_id}
+            )
         else:
             # when pid is provided, object type and id will be parsed
             # from it

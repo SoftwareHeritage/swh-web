@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -21,10 +21,10 @@ describe('Persistent Identifiers Tests', function() {
 
   before(function() {
     origin = this.origin[1];
-    url = `${this.Urls.browse_origin_content(origin.url)}?path=${origin.content[0].path}`;
+    url = `${this.Urls.browse_origin_content()}?origin_url=${origin.url}&path=${origin.content[0].path}`;
     url = `${url}&release=${origin.release}#L${firstSelLine}-L${lastSelLine}`;
     originBadgeUrl = this.Urls.swh_badge('origin', origin.url);
-    originBrowseUrl = this.Urls.browse_origin(origin.url);
+    originBrowseUrl = `${this.Urls.browse_origin()}?origin_url=${origin.url}`;
     cy.visit(url).window().then(win => {
       urlPrefix = `${win.location.protocol}//${win.location.hostname}`;
       if (win.location.port) {

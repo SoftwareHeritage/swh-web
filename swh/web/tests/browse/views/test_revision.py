@@ -59,8 +59,7 @@ def test_revision_origin_browse(client, archive_data, origin):
 
     origin_revision_log_url = reverse(
         "browse-origin-log",
-        url_args={"origin_url": origin["url"]},
-        query_params={"revision": revision},
+        query_params={"origin_url": origin["url"], "revision": revision},
     )
 
     url = reverse(

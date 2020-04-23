@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -442,30 +442,24 @@ def get_snapshot_context(
             origin_info, timestamp, visit_id, snapshot_id
         )
 
-        url_args = {"origin_url": origin_info["url"]}
+        query_params["origin_url"] = origin_info["url"]
+
+        origin_visits_url = reverse("browse-origin-visits", query_params=query_params)
 
         if visit_id is not None:
             query_params["visit_id"] = visit_id
-
-        origin_visits_url = reverse("browse-origin-visits", url_args=url_args)
 
         if timestamp is not None:
             query_params["timestamp"] = format_utc_iso_date(
                 timestamp, "%Y-%m-%dT%H:%M:%SZ"
             )
 
-        visit_url = reverse(
-            "browse-origin-directory", url_args=url_args, query_params=query_params
-        )
+        visit_url = reverse("browse-origin-directory", query_params=query_params)
         visit_info["url"] = visit_url
 
-        branches_url = reverse(
-            "browse-origin-branches", url_args=url_args, query_params=query_params
-        )
+        branches_url = reverse("browse-origin-branches", query_params=query_params)
 
-        releases_url = reverse(
-            "browse-origin-releases", url_args=url_args, query_params=query_params
-        )
+        releases_url = reverse("browse-origin-releases", query_params=query_params)
     else:
         assert snapshot_id is not None
         branches, releases = get_snapshot_content(snapshot_id)
@@ -629,6 +623,11 @@ def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
     return breadcrumbs
 
 
+def _check_origin_url(snapshot_id, origin_url):
+    if snapshot_id is None and origin_url is None:
+        raise BadInputExc("An origin URL must be provided as query parameter.")
+
+
 def browse_snapshot_directory(
     request, snapshot_id=None, origin_url=None, timestamp=None, path=None
 ):
@@ -636,6 +635,8 @@ def browse_snapshot_directory(
     Django view implementation for browsing a directory in a snapshot context.
     """
     try:
+
+        _check_origin_url(snapshot_id, origin_url)
 
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
@@ -836,6 +837,8 @@ def browse_snapshot_content(
     """
     try:
 
+        _check_origin_url(snapshot_id, origin_url)
+
         if path is None:
             raise BadInputExc("The path of a content must be given as query parameter.")
 
@@ -1028,6 +1031,8 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
     """
     try:
 
+        _check_origin_url(snapshot_id, origin_url)
+
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
             origin_url=origin_url,
@@ -1171,6 +1176,8 @@ def browse_snapshot_branches(
     """
     try:
 
+        _check_origin_url(snapshot_id, origin_url)
+
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
             origin_url=origin_url,
@@ -1284,6 +1291,9 @@ def browse_snapshot_releases(
     context.
     """
     try:
+
+        _check_origin_url(snapshot_id, origin_url)
+
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
             origin_url=origin_url,

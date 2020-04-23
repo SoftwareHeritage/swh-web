@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -40,7 +40,7 @@ describe('Visits tests', function() {
   });
 
   beforeEach(function() {
-    cy.visit(this.Urls.browse_origin_visits(origin.url));
+    cy.visit(`${this.Urls.browse_origin_visits()}?origin_url=${origin.url}`);
   });
 
   it('should display first full visit time', function() {

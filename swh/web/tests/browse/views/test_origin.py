@@ -45,13 +45,13 @@ from swh.web.tests.strategies import (
 
 @given(origin_with_multiple_visits())
 def test_origin_visits_browse(client, archive_data, origin):
-    url = reverse("browse-origin-visits", url_args={"origin_url": origin["url"]})
+    url = reverse("browse-origin-visits", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
 
     assert resp.status_code == 200
     assert_template_used(resp, "browse/origin-visits.html")
 
-    url = reverse("browse-origin-visits", url_args={"origin_url": origin["url"]})
+    url = reverse("browse-origin-visits", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
 
     assert resp.status_code == 200
@@ -63,8 +63,7 @@ def test_origin_visits_browse(client, archive_data, origin):
         vdate = format_utc_iso_date(v["date"], "%Y-%m-%dT%H:%M:%SZ")
         browse_dir_url = reverse(
             "browse-origin-directory",
-            url_args={"origin_url": origin["url"]},
-            query_params={"timestamp": vdate},
+            query_params={"origin_url": origin["url"], "timestamp": vdate},
         )
         assert_contains(resp, browse_dir_url)
 
@@ -411,7 +410,9 @@ def test_origin_snapshot_null_branch(
         new_origin["url"], visit.visit, status="partial", snapshot=snp_dict["id"]
     )
 
-    url = reverse("browse-origin-directory", url_args={"origin_url": new_origin["url"]})
+    url = reverse(
+        "browse-origin-directory", query_params={"origin_url": new_origin["url"]}
+    )
     rv = client.get(url)
     assert rv.status_code == 200
 
@@ -441,8 +442,7 @@ def test_origin_snapshot_invalid_branch(
 
     url = reverse(
         "browse-origin-directory",
-        url_args={"origin_url": new_origin["url"]},
-        query_params={"branch": "invalid_branch"},
+        query_params={"origin_url": new_origin["url"], "branch": "invalid_branch"},
     )
     rv = client.get(url)
     assert rv.status_code == 404
@@ -450,7 +450,7 @@ def test_origin_snapshot_invalid_branch(
 
 @given(new_origin())
 def test_browse_visits_origin_not_found(client, new_origin):
-    url = reverse("browse-origin-visits", url_args={"origin_url": new_origin.url})
+    url = reverse("browse-origin-visits", query_params={"origin_url": new_origin.url})
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
@@ -465,7 +465,7 @@ def test_browse_origin_directory_no_visit(client, mocker, origin):
         "swh.web.common.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
-    url = reverse("browse-origin-directory", url_args={"origin_url": origin["url"]})
+    url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
@@ -482,8 +482,7 @@ def test_browse_origin_directory_unknown_visit(client, mocker, origin):
 
     url = reverse(
         "browse-origin-directory",
-        url_args={"origin_url": origin["url"]},
-        query_params={"visit_id": 2},
+        query_params={"origin_url": origin["url"], "visit_id": 2},
     )
     resp = client.get(url)
     assert resp.status_code == 404
@@ -496,8 +495,7 @@ def test_browse_origin_directory_unknown_visit(client, mocker, origin):
 def test_browse_origin_directory_not_found(client, origin):
     url = reverse(
         "browse-origin-directory",
-        url_args={"origin_url": origin["url"]},
-        query_params={"path": "/invalid/dir/path/"},
+        query_params={"origin_url": origin["url"], "path": "/invalid/dir/path/"},
     )
     resp = client.get(url)
     assert resp.status_code == 404
@@ -513,8 +511,7 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
     mock_get_origin_visits.return_value = []
     url = reverse(
         "browse-origin-content",
-        url_args={"origin_url": origin["url"]},
-        query_params={"path": "foo"},
+        query_params={"origin_url": origin["url"], "path": "foo"},
     )
     resp = client.get(url)
     assert resp.status_code == 404
@@ -532,8 +529,7 @@ def test_browse_origin_content_unknown_visit(client, mocker, origin):
 
     url = reverse(
         "browse-origin-content",
-        url_args={"origin_url": origin["url"]},
-        query_params={"path": "foo", "visit_id": 2},
+        query_params={"origin_url": origin["url"], "path": "foo", "visit_id": 2},
     )
     resp = client.get(url)
     assert resp.status_code == 404
@@ -559,8 +555,7 @@ def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
 
         url = reverse(
             f"browse-origin-{browse_context}",
-            url_args={"origin_url": origin["url"]},
-            query_params={"path": "baz"},
+            query_params={"origin_url": origin["url"], "path": "baz"},
         )
         resp = client.get(url)
         assert resp.status_code == 200
@@ -575,8 +570,7 @@ def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
 def test_browse_origin_content_not_found(client, origin):
     url = reverse(
         "browse-origin-content",
-        url_args={"origin_url": origin["url"]},
-        query_params={"path": "/invalid/file/path"},
+        query_params={"origin_url": origin["url"], "path": "/invalid/file/path"},
     )
     resp = client.get(url)
     assert resp.status_code == 404
@@ -590,7 +584,7 @@ def test_browse_directory_snapshot_not_found(client, mocker, origin):
         "swh.web.browse.snapshot_context.get_snapshot_context"
     )
     mock_get_snapshot_context.side_effect = NotFoundExc("Snapshot not found")
-    url = reverse("browse-origin-directory", url_args={"origin_url": origin["url"]})
+    url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
@@ -610,7 +604,7 @@ def test_origin_empty_snapshot(client, mocker, origin):
         "release": 0,
     }
     mock_service.lookup_origin.return_value = origin
-    url = reverse("browse-origin-directory", url_args={"origin_url": origin["url"]})
+    url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 200
     assert_template_used(resp, "browse/directory.html")
@@ -635,8 +629,7 @@ def test_origin_release_browse(client, archive_data, origin):
         release_data = archive_data.release_get(release["target"])
         url = reverse(
             "browse-origin-directory",
-            url_args={"origin_url": origin["url"]},
-            query_params={"release": release_data["name"]},
+            query_params={"origin_url": origin["url"], "release": release_data["name"]},
         )
 
         resp = client.get(url)
@@ -653,8 +646,7 @@ def test_origin_release_browse_not_found(client, origin):
     invalid_release_name = "swh-foo-bar"
     url = reverse(
         "browse-origin-directory",
-        url_args={"origin_url": origin["url"]},
-        query_params={"release": invalid_release_name},
+        query_params={"origin_url": origin["url"], "release": invalid_release_name},
     )
 
     resp = client.get(url)
@@ -685,8 +677,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
 
     url = reverse(
         "browse-origin-directory",
-        url_args={"origin_url": new_origin["url"]},
-        query_params={"branch": branch_name},
+        query_params={"origin_url": new_origin["url"], "branch": branch_name},
     )
 
     resp = client.get(url)
@@ -699,7 +690,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
 
 @given(origin())
 def test_origin_content_no_path(client, origin):
-    url = reverse("browse-origin-content", url_args={"origin_url": origin["url"]})
+    url = reverse("browse-origin-content", query_params={"origin_url": origin["url"]})
 
     resp = client.get(url)
 
@@ -707,6 +698,23 @@ def test_origin_content_no_path(client, origin):
     assert_contains(
         resp, "The path of a content must be given as query parameter.", status_code=400
     )
+
+
+def test_origin_views_no_url_query_parameter(client):
+    for browse_context in (
+        "content",
+        "directory",
+        "log",
+        "branches",
+        "releases",
+        "visits",
+    ):
+        url = reverse(f"browse-origin-{browse_context}")
+        resp = client.get(url)
+        assert resp.status_code == 400
+        assert_contains(
+            resp, "An origin URL must be provided as query parameter.", status_code=400
+        )
 
 
 def _origin_content_view_test_helper(
@@ -722,12 +730,10 @@ def _origin_content_view_test_helper(
 ):
     content_path = "/".join(content["path"].split("/")[1:])
 
-    url_args = {"origin_url": origin_info["url"]}
-
     if not visit_id:
         visit_id = origin_visits[-1]["visit"]
 
-    query_params = {"path": content_path}
+    query_params = {"origin_url": origin_info["url"], "path": content_path}
 
     if timestamp:
         query_params["timestamp"] = timestamp
@@ -735,7 +741,7 @@ def _origin_content_view_test_helper(
     if visit_id:
         query_params["visit_id"] = visit_id
 
-    url = reverse("browse-origin-content", url_args=url_args, query_params=query_params)
+    url = reverse("browse-origin-content", query_params=query_params)
 
     resp = client.get(url)
 
@@ -761,9 +767,7 @@ def _origin_content_view_test_helper(
             parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
-    root_dir_url = reverse(
-        "browse-origin-directory", url_args=url_args, query_params=query_params
-    )
+    root_dir_url = reverse("browse-origin-directory", query_params=query_params)
 
     assert_contains(resp, '<li class="swh-path">', count=len(path_info) + 1)
 
@@ -771,9 +775,7 @@ def _origin_content_view_test_helper(
 
     for p in path_info:
         query_params["path"] = p["path"]
-        dir_url = reverse(
-            "browse-origin-directory", url_args=url_args, query_params=query_params
-        )
+        dir_url = reverse("browse-origin-directory", query_params=query_params)
         assert_contains(resp, '<a href="%s">%s</a>' % (dir_url, p["name"]))
 
     assert_contains(resp, "<li>%s</li>" % filename)
@@ -790,9 +792,7 @@ def _origin_content_view_test_helper(
     if "path" in query_params:
         del query_params["path"]
 
-    origin_branches_url = reverse(
-        "browse-origin-branches", url_args=url_args, query_params=query_params
-    )
+    origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(
         resp,
@@ -800,9 +800,7 @@ def _origin_content_view_test_helper(
         % (escape(origin_branches_url), len(origin_branches)),
     )
 
-    origin_releases_url = reverse(
-        "browse-origin-releases", url_args=url_args, query_params=query_params
-    )
+    origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     assert_contains(
         resp,
@@ -817,7 +815,7 @@ def _origin_content_view_test_helper(
     for branch in origin_branches:
         query_params["branch"] = branch["name"]
         root_dir_branch_url = reverse(
-            "browse-origin-content", url_args=url_args, query_params=query_params
+            "browse-origin-content", query_params=query_params
         )
 
         assert_contains(resp, '<a href="%s">' % root_dir_branch_url)
@@ -828,12 +826,12 @@ def _origin_content_view_test_helper(
     for release in origin_releases:
         query_params["release"] = release["name"]
         root_dir_release_url = reverse(
-            "browse-origin-content", url_args=url_args, query_params=query_params
+            "browse-origin-content", query_params=query_params
         )
 
         assert_contains(resp, '<a href="%s">' % root_dir_release_url)
 
-    url = reverse("browse-origin-content", url_args=url_args, query_params=query_params)
+    url = reverse("browse-origin-content", query_params=query_params)
 
     resp = client.get(url)
     assert resp.status_code == 200
@@ -865,9 +863,7 @@ def _origin_directory_view_test_helper(
     if not visit_id:
         visit_id = origin_visits[-1]["visit"]
 
-    url_args = {"origin_url": origin_info["url"]}
-
-    query_params = {}
+    query_params = {"origin_url": origin_info["url"]}
 
     if timestamp:
         query_params["timestamp"] = timestamp
@@ -877,9 +873,7 @@ def _origin_directory_view_test_helper(
     if path:
         query_params["path"] = path
 
-    url = reverse(
-        "browse-origin-directory", url_args=url_args, query_params=query_params
-    )
+    url = reverse("browse-origin-directory", query_params=query_params)
 
     resp = client.get(url)
 
@@ -905,9 +899,7 @@ def _origin_directory_view_test_helper(
             if path:
                 dir_path = "%s/%s" % (path, d["name"])
             query_params["path"] = dir_path
-            dir_url = reverse(
-                "browse-origin-directory", url_args=url_args, query_params=query_params,
-            )
+            dir_url = reverse("browse-origin-directory", query_params=query_params,)
         assert_contains(resp, dir_url)
 
     for f in files:
@@ -915,17 +907,13 @@ def _origin_directory_view_test_helper(
         if path:
             file_path = "%s/%s" % (path, f["name"])
         query_params["path"] = file_path
-        file_url = reverse(
-            "browse-origin-content", url_args=url_args, query_params=query_params
-        )
+        file_url = reverse("browse-origin-content", query_params=query_params)
         assert_contains(resp, file_url)
 
     if "path" in query_params:
         del query_params["path"]
 
-    root_dir_branch_url = reverse(
-        "browse-origin-directory", url_args=url_args, query_params=query_params
-    )
+    root_dir_branch_url = reverse("browse-origin-directory", query_params=query_params)
 
     nb_bc_paths = 1
     if path:
@@ -936,23 +924,22 @@ def _origin_directory_view_test_helper(
         resp, '<a href="%s">%s</a>' % (root_dir_branch_url, root_directory_sha1[:7])
     )
 
-    origin_branches_url = reverse(
-        "browse-origin-branches", url_args=url_args, query_params=query_params
-    )
+    origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(
         resp,
-        '<a href="%s">Branches (%s)</a>' % (origin_branches_url, len(origin_branches)),
+        '<a href="%s">Branches (%s)</a>'
+        % (escape(origin_branches_url), len(origin_branches)),
     )
 
-    origin_releases_url = reverse(
-        "browse-origin-releases", url_args=url_args, query_params=query_params
-    )
+    origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
         assert_contains(
-            resp, '<a href="%s">Releases (%s)</a>' % (origin_releases_url, nb_releases)
+            resp,
+            '<a href="%s">Releases (%s)</a>'
+            % (escape(origin_releases_url), nb_releases),
         )
 
     if path:
@@ -963,7 +950,7 @@ def _origin_directory_view_test_helper(
     for branch in origin_branches:
         query_params["branch"] = branch["name"]
         root_dir_branch_url = reverse(
-            "browse-origin-directory", url_args=url_args, query_params=query_params
+            "browse-origin-directory", query_params=query_params
         )
 
         assert_contains(resp, '<a href="%s">' % root_dir_branch_url)
@@ -974,7 +961,7 @@ def _origin_directory_view_test_helper(
     for release in origin_releases:
         query_params["release"] = release["name"]
         root_dir_release_url = reverse(
-            "browse-origin-directory", url_args=url_args, query_params=query_params
+            "browse-origin-directory", query_params=query_params
         )
 
         assert_contains(resp, '<a href="%s">' % root_dir_release_url)
@@ -991,9 +978,9 @@ def _origin_directory_view_test_helper(
 
 
 def _origin_branches_test_helper(client, origin_info, origin_snapshot):
-    url_args = {"origin_url": origin_info["url"]}
+    query_params = {"origin_url": origin_info["url"]}
 
-    url = reverse("browse-origin-branches", url_args=url_args)
+    url = reverse("browse-origin-branches", query_params=query_params)
 
     resp = client.get(url)
 
@@ -1003,14 +990,14 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
     origin_branches = origin_snapshot[0]
     origin_releases = origin_snapshot[1]
 
-    origin_branches_url = reverse("browse-origin-branches", url_args=url_args)
+    origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(
         resp,
         '<a href="%s">Branches (%s)</a>' % (origin_branches_url, len(origin_branches)),
     )
 
-    origin_releases_url = reverse("browse-origin-releases", url_args=url_args)
+    origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
@@ -1023,8 +1010,7 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
     for branch in origin_branches:
         browse_branch_url = reverse(
             "browse-origin-directory",
-            url_args={"origin_url": origin_info["url"]},
-            query_params={"branch": branch["name"]},
+            query_params={"origin_url": origin_info["url"], "branch": branch["name"]},
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_branch_url))
 
@@ -1037,9 +1023,9 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
 
 
 def _origin_releases_test_helper(client, origin_info, origin_snapshot):
-    url_args = {"origin_url": origin_info["url"]}
+    query_params = {"origin_url": origin_info["url"]}
 
-    url = reverse("browse-origin-releases", url_args=url_args)
+    url = reverse("browse-origin-releases", query_params=query_params)
 
     resp = client.get(url)
     assert resp.status_code == 200
@@ -1048,14 +1034,14 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
     origin_branches = origin_snapshot[0]
     origin_releases = origin_snapshot[1]
 
-    origin_branches_url = reverse("browse-origin-branches", url_args=url_args)
+    origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(
         resp,
         '<a href="%s">Branches (%s)</a>' % (origin_branches_url, len(origin_branches)),
     )
 
-    origin_releases_url = reverse("browse-origin-releases", url_args=url_args)
+    origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
@@ -1115,7 +1101,9 @@ def test_origin_branches_pagination_with_alias(
         new_origin["url"], visit.visit, status="full", snapshot=snp_dict["id"]
     )
 
-    url = reverse("browse-origin-branches", url_args={"origin_url": new_origin["url"]})
+    url = reverse(
+        "browse-origin-branches", query_params={"origin_url": new_origin["url"]}
+    )
     resp = client.get(url)
     assert resp.status_code == 200
     assert_template_used(resp, "browse/branches.html")

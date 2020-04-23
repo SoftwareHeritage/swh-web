@@ -1,7 +1,7 @@
 {% extends "./layout.html" %}
 
 {% comment %}
-Copyright (C) 2017-2018  The Software Heritage developers
+Copyright (C) 2017-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -118,14 +118,14 @@ See top-level LICENSE file for more information
     <ul>
 
       <li>
-        <a href="{% url 'browse-origin-visits' 'https://github.com/torvalds/linux' %}">
-          {% url 'browse-origin-visits' 'https://github.com/torvalds/linux' %}
+        <a href="{% url 'browse-origin-visits' %}?origin_url=https://github.com/torvalds/linux">
+          {% url 'browse-origin-visits' %}?origin_url=https://github.com/torvalds/linux
         </a>
       </li>
 
       <li>
-        <a href="{% url 'browse-origin-visits' 'https://github.com/python/cpython' %}">
-          {% url 'browse-origin-visits' 'https://github.com/python/cpython' %}
+        <a href="{% url 'browse-origin-visits' %}?origin_url=https://github.com/python/cpython">
+          {% url 'browse-origin-visits' %}?origin_url=https://github.com/python/cpython
         </a>
       </li>
     </ul>
@@ -137,14 +137,14 @@ See top-level LICENSE file for more information
     <ul>
 
       <li>
-        <a href="{% url 'browse-origin' 'https://github.com/torvalds/linux' %}">
-          {% url 'browse-origin' 'https://github.com/torvalds/linux' %}
+        <a href="{% url 'browse-origin' %}?origin_url=https://github.com/torvalds/linux">
+          {% url 'browse-origin' %}?origin_url=https://github.com/torvalds/linux
         </a>
       </li>
 
       <li>
-        <a href="{% url 'browse-origin' 'https://github.com/python/cpython' %}">
-          {% url 'browse-origin' 'https://github.com/python/cpython' %}
+        <a href="{% url 'browse-origin' %}?origin_url=https://github.com/python/cpython">
+          {% url 'browse-origin' %}?origin_url=https://github.com/python/cpython
         </a>
       </li>
     </ul>
@@ -153,8 +153,8 @@ See top-level LICENSE file for more information
     Display a
     <b>content</b> from an
     <b>origin</b>:
-    <a href="{% url 'browse-origin-content' origin_url='https://github.com/git/git'%}?path=git.c">
-      {% url 'browse-origin-content' origin_url='https://github.com/git/git'%}?path=git.c
+    <a href="{% url 'browse-origin-content' %}?origin_url=https://github.com/git/git&path=git.c">
+      {% url 'browse-origin-content' %}?origin_url=https://github.com/git/git&path=git.c
     </a>
   </li>
   <li>
@@ -162,8 +162,8 @@ See top-level LICENSE file for more information
     <b>directory</b> from an
     <b>origin</b>:
 
-    <a href="{% url 'browse-origin-directory' origin_url='https://github.com/torvalds/linux'%}?path=net/ethernet">
-      {% url 'browse-origin-directory' origin_url='https://github.com/torvalds/linux'%}?path=net/ethernet
+    <a href="{% url 'browse-origin-directory' %}?origin_url=https://github.com/torvalds/linux&path=net/ethernet">
+      {% url 'browse-origin-directory' %}?origin_url=https://github.com/torvalds/linux&path=net/ethernet
     </a>
   </li>
   <li>
@@ -171,8 +171,8 @@ See top-level LICENSE file for more information
     <b>revision history</b> (aka the commit log) from an
     <b>origin</b>:
 
-    <a href="{% url 'browse-origin-log' origin_url='https://github.com/Kitware/CMake' %}">
-      {% url 'browse-origin-log' origin_url='https://github.com/Kitware/CMake' %}
+    <a href="{% url 'browse-origin-log' %}?origin_url=https://github.com/Kitware/CMake">
+      {% url 'browse-origin-log' %}?origin_url=https://github.com/Kitware/CMake
     </a>
   </li>
 </ul>

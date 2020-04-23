@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -11,7 +11,7 @@ let url;
 describe('Test File Rendering', function() {
   before(function() {
     origin = this.origin[0];
-    url = `${this.Urls.browse_origin_content(origin.url)}?path=${origin.content[0].path}`;
+    url = `${this.Urls.browse_origin_content()}?origin_url=${origin.url}&path=${origin.content[0].path}`;
   });
 
   beforeEach(function() {
@@ -43,7 +43,7 @@ describe('Test File Rendering', function() {
   });
 
   it('should have links to all ancestor directories', function() {
-    const rootDirUrl = this.Urls.browse_origin_directory(origin.url);
+    const rootDirUrl = `${this.Urls.browse_origin_directory()}?origin_url=${origin.url}`;
     cy.get(`a[href='${rootDirUrl}']`)
       .should('be.visible');
 
@@ -51,7 +51,7 @@ describe('Test File Rendering', function() {
     for (let i = 2; i < splittedPath.length; ++i) {
 
       const subDirPath = splittedPath.slice(1, i).join('/');
-      const subDirUrl = `${this.Urls.browse_origin_directory(origin.url)}?path=${subDirPath}`;
+      const subDirUrl = `${this.Urls.browse_origin_directory()}?origin_url=${origin.url}&path=${subDirPath}`;
 
       cy.get(`a[href='${subDirUrl}']`)
         .should('be.visible');

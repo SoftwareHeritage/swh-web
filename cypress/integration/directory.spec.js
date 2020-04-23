@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -17,7 +17,7 @@ describe('Directory Tests', function() {
   before(function() {
     origin = this.origin[0];
 
-    url = this.Urls.browse_origin_directory(origin.url);
+    url = `${this.Urls.browse_origin_directory()}?origin_url=${origin.url}`;
 
     for (let entry of origin.dirContent) {
       if (entry.type === 'file') {
@@ -67,7 +67,7 @@ describe('Directory Tests', function() {
       .click();
 
     cy.url()
-      .should('include', `${url}?path=${dirs[0]['name']}`);
+      .should('include', `${url}&path=${dirs[0]['name']}`);
 
     cy.get('.swh-directory-table')
       .should('be.visible');

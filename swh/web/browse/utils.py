@@ -523,14 +523,12 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     query_params = {"revision": revision_id}
     if snapshot_context and snapshot_context["origin_info"]:
         origin_info = snapshot_context["origin_info"]
-        url_args = {"origin_url": origin_info["url"]}
+        query_params["origin_url"] = origin_info["url"]
         if "timestamp" in snapshot_context["query_params"]:
             query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
         if "visit_id" in snapshot_context["query_params"]:
             query_params["visit_id"] = snapshot_context["query_params"]["visit_id"]
-        revision_log_url = reverse(
-            "browse-origin-log", url_args=url_args, query_params=query_params
-        )
+        revision_log_url = reverse("browse-origin-log", query_params=query_params)
     elif snapshot_context:
         url_args = {"snapshot_id": snapshot_context["snapshot_id"]}
         revision_log_url = reverse(

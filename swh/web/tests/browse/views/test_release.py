@@ -108,8 +108,10 @@ def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
         if origin_info:
             directory_url = reverse(
                 "browse-origin-directory",
-                url_args={"origin_url": origin_info["url"]},
-                query_params={"release": release_data["name"]},
+                query_params={
+                    "origin_url": origin_info["url"],
+                    "release": release_data["name"],
+                },
             )
         else:
             rev = archive_data.revision_get(release_data["target"])
