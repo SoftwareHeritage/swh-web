@@ -1017,7 +1017,7 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
         browse_revision_url = reverse(
             "browse-revision",
             url_args={"sha1_git": branch["revision"]},
-            query_params={"origin": origin_info["url"]},
+            query_params={"origin_url": origin_info["url"]},
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
 
@@ -1055,12 +1055,12 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
         browse_release_url = reverse(
             "browse-release",
             url_args={"sha1_git": release["id"]},
-            query_params={"origin": origin_info["url"]},
+            query_params={"origin_url": origin_info["url"]},
         )
         browse_revision_url = reverse(
             "browse-revision",
             url_args={"sha1_git": release["target"]},
-            query_params={"origin": origin_info["url"]},
+            query_params={"origin_url": origin_info["url"]},
         )
 
         assert_contains(resp, '<a href="%s">' % escape(browse_release_url))

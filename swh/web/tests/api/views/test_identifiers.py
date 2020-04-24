@@ -52,7 +52,7 @@ def test_swh_id_resolve_success(
         browse_rev_url = reverse(
             "browse-%s" % obj_type,
             url_args=url_args,
-            query_params={"origin": origin["url"]},
+            query_params={"origin_url": origin["url"]},
             request=resp.wsgi_request,
         )
 

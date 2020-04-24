@@ -73,7 +73,7 @@ def directory_browse(request, sha1_git, path=None):
 
     path_info = gen_path_info(path)
 
-    query_params = {"origin": origin_url}
+    query_params = {"origin_url": origin_url}
 
     breadcrumbs = []
     breadcrumbs.append(
@@ -125,7 +125,7 @@ def directory_browse(request, sha1_git, path=None):
             url_args={"query_string": query_string},
             query_params={
                 "path": root_sha1_git + "/" + path + f["name"],
-                "origin": origin_url,
+                "origin_url": origin_url,
             },
         )
         if f["length"] is not None:

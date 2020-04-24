@@ -94,7 +94,7 @@ def resolve_swh_persistent_id(
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
     if "origin" in swh_id_parsed.metadata:
-        query_dict["origin"] = swh_id_parsed.metadata["origin"]
+        query_dict["origin_url"] = swh_id_parsed.metadata["origin"]
     if object_type == CONTENT:
         query_string = "sha1_git:" + object_id
         fragment = ""

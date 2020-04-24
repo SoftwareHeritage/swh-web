@@ -334,7 +334,7 @@ def _snapshot_context_query_params(snapshot_context):
     query_params = None
     if snapshot_context and snapshot_context["origin_info"]:
         origin_info = snapshot_context["origin_info"]
-        query_params = {"origin": origin_info["url"]}
+        query_params = {"origin_url": origin_info["url"]}
         if "timestamp" in snapshot_context["query_params"]:
             query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
         if "visit_id" in snapshot_context["query_params"]:

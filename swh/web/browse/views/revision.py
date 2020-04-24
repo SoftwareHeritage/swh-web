@@ -409,7 +409,7 @@ def revision_browse(request, sha1_git, extra_path=None):
 
     query_params = {
         "snapshot_id": snapshot_id,
-        "origin": origin_url,
+        "origin_url": origin_url,
         "timestamp": timestamp,
         "visit_id": visit_id,
     }
@@ -533,7 +533,7 @@ def revision_browse(request, sha1_git, extra_path=None):
         "diff-revision",
         url_args={"sha1_git": sha1_git},
         query_params={
-            "origin": origin_url,
+            "origin_url": origin_url,
             "timestamp": timestamp,
             "visit_id": visit_id,
         },

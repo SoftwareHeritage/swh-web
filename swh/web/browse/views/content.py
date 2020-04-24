@@ -249,7 +249,7 @@ def content_display(request, query_string):
     directory_id = None
     directory_url = None
 
-    query_params = {"origin": origin_url}
+    query_params = {"origin_url": origin_url}
 
     breadcrumbs = []
 

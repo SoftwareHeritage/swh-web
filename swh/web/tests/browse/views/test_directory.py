@@ -66,7 +66,7 @@ def test_permalink_box_context(client, tests_data, directory):
     url = reverse(
         "browse-directory",
         url_args={"sha1_git": directory},
-        query_params={"origin": origin_url},
+        query_params={"origin_url": origin_url},
     )
 
     resp = client.get(url)

@@ -33,7 +33,7 @@ def test_release_browse_with_origin(client, archive_data, origin):
     url = reverse(
         "browse-release",
         url_args={"sha1_git": release["target"]},
-        query_params={"origin": origin["url"]},
+        query_params={"origin_url": origin["url"]},
     )
 
     release_data = archive_data.release_get(release["target"])
@@ -70,7 +70,7 @@ def test_release_uppercase(client, release):
 def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
     query_params = {}
     if origin_info:
-        query_params["origin"] = origin_info["url"]
+        query_params["origin_url"] = origin_info["url"]
 
     release_id = release_data["id"]
     release_name = release_data["name"]

@@ -65,7 +65,7 @@ def test_revision_origin_browse(client, archive_data, origin):
     url = reverse(
         "browse-revision",
         url_args={"sha1_git": revision},
-        query_params={"origin": origin["url"]},
+        query_params={"origin_url": origin["url"]},
     )
 
     resp = client.get(url)
@@ -76,7 +76,7 @@ def test_revision_origin_browse(client, archive_data, origin):
         parent_url = reverse(
             "browse-revision",
             url_args={"sha1_git": parent},
-            query_params={"origin": origin["url"]},
+            query_params={"origin_url": origin["url"]},
         )
         assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent))
 
@@ -223,7 +223,7 @@ def test_revision_request_errors(client, revision, unknown_revision, new_origin)
     url = reverse(
         "browse-revision",
         url_args={"sha1_git": revision},
-        query_params={"origin": new_origin.url},
+        query_params={"origin_url": new_origin.url},
     )
 
     resp = client.get(url)

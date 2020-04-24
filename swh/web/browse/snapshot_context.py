@@ -1221,7 +1221,7 @@ def browse_snapshot_branches(
             revision_url = reverse(
                 "browse-revision",
                 url_args={"sha1_git": branch["revision"]},
-                query_params={"origin": origin_info["url"]},
+                query_params={"origin_url": origin_info["url"]},
             )
         query_params["branch"] = branch["name"]
         directory_url = reverse(
@@ -1325,7 +1325,7 @@ def browse_snapshot_releases(
         if snapshot_id:
             query_params_tgt = {"snapshot_id": snapshot_id}
         else:
-            query_params_tgt = {"origin": origin_info["url"]}
+            query_params_tgt = {"origin_url": origin_info["url"]}
         release_url = reverse(
             "browse-release",
             url_args={"sha1_git": release["id"]},
