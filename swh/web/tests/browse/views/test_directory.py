@@ -80,10 +80,11 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
     files = [e for e in directory_entries if e["type"] == "file"]
 
     url_args = {"sha1_git": root_directory_sha1}
+    query_params = {}
     if path:
-        url_args["path"] = path
+        query_params["path"] = path
 
-    url = reverse("browse-directory", url_args=url_args)
+    url = reverse("browse-directory", url_args=url_args, query_params=query_params)
 
     root_dir_url = reverse(
         "browse-directory", url_args={"sha1_git": root_directory_sha1}
@@ -108,7 +109,8 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
                 dir_path = "%s/%s" % (path, d["name"])
             dir_url = reverse(
                 "browse-directory",
-                url_args={"sha1_git": root_directory_sha1, "path": dir_path},
+                url_args={"sha1_git": root_directory_sha1},
+                query_params={"path": dir_path},
             )
         assert_contains(resp, dir_url)
 
@@ -134,7 +136,8 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
     for p in path_info:
         dir_url = reverse(
             "browse-directory",
-            url_args={"sha1_git": root_directory_sha1, "path": p["path"]},
+            url_args={"sha1_git": root_directory_sha1},
+            query_params={"path": p["path"]},
         )
         assert_contains(resp, '<a href="%s">%s</a>' % (dir_url, p["name"]))
 

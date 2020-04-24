@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -268,9 +268,10 @@ def content_display(request, query_string):
             )
             breadcrumbs.append({"name": root_dir[:7], "url": dir_url})
             for pi in path_info:
+                query_params["path"] = pi["path"]
                 dir_url = reverse(
                     "browse-directory",
-                    url_args={"sha1_git": root_dir, "path": pi["path"]},
+                    url_args={"sha1_git": root_dir},
                     query_params=query_params,
                 )
                 breadcrumbs.append({"name": pi["name"], "url": dir_url})

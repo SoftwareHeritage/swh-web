@@ -24,19 +24,7 @@ from swh.web.common.exc import handle_view_exception, NotFoundExc
 from swh.web.common.utils import reverse, gen_path_info
 
 
-@browse_route(
-    r"directory/(?P<sha1_git>[0-9a-f]+)/",
-    r"directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/",
-    view_name="browse-directory",
-    checksum_args=["sha1_git"],
-)
-def directory_browse(request, sha1_git, path=None):
-    """Django view for browsing the content of a directory identified
-    by its sha1_git value.
-
-    The url that points to it is
-    :http:get:`/browse/directory/(sha1_git)/[(path)/]`
-    """
+def _directory_browse(request, sha1_git, path=None):
     root_sha1_git = sha1_git
     try:
         if path:
@@ -92,8 +80,8 @@ def directory_browse(request, sha1_git, path=None):
                 "name": pi["name"],
                 "url": reverse(
                     "browse-directory",
-                    url_args={"sha1_git": root_sha1_git, "path": pi["path"]},
-                    query_params=query_params,
+                    url_args={"sha1_git": root_sha1_git},
+                    query_params={"path": pi["path"], **query_params},
                 ),
             }
         )
@@ -110,8 +98,8 @@ def directory_browse(request, sha1_git, path=None):
         else:
             d["url"] = reverse(
                 "browse-directory",
-                url_args={"sha1_git": root_sha1_git, "path": path + d["name"]},
-                query_params=query_params,
+                url_args={"sha1_git": root_sha1_git},
+                query_params={"path": path + d["name"], **query_params},
             )
 
     sum_file_sizes = 0
@@ -187,17 +175,47 @@ def directory_browse(request, sha1_git, path=None):
 
 
 @browse_route(
-    r"directory/resolve/content-path/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/",
+    r"directory/(?P<sha1_git>[0-9a-f]+)/",
+    view_name="browse-directory",
+    checksum_args=["sha1_git"],
+)
+def directory_browse(request, sha1_git):
+    """Django view for browsing the content of a directory identified
+    by its sha1_git value.
+
+    The url that points to it is
+    :http:get:`/browse/directory/(sha1_git)/`
+    """
+    return _directory_browse(request, sha1_git, request.GET.get("path"))
+
+
+@browse_route(
+    r"directory/(?P<sha1_git>[0-9a-f]+)/(?P<path>.+)/",
+    view_name="browse-directory-legacy",
+    checksum_args=["sha1_git"],
+)
+def directory_browse_legacy(request, sha1_git, path):
+    """Django view for browsing the content of a directory identified
+    by its sha1_git value.
+
+    The url that points to it is
+    :http:get:`/browse/directory/(sha1_git)/(path)/`
+    """
+    return _directory_browse(request, sha1_git, path)
+
+
+@browse_route(
+    r"directory/resolve/content-path/(?P<sha1_git>[0-9a-f]+)/",
     view_name="browse-directory-resolve-content-path",
     checksum_args=["sha1_git"],
 )
-def _directory_resolve_content_path(request, sha1_git, path):
+def _directory_resolve_content_path(request, sha1_git):
     """
     Internal endpoint redirecting to data url for a specific file path
     relative to a root directory.
     """
     try:
-        path = os.path.normpath(path)
+        path = os.path.normpath(request.GET.get("path"))
         if not path.startswith("../"):
             dir_info = service.lookup_directory_with_path(sha1_git, path)
             if dir_info["type"] == "file":

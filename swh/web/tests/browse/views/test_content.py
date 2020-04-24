@@ -167,7 +167,9 @@ def test_content_view_text_with_path(client, archive_data, content):
 
     for p in path_info:
         dir_url = reverse(
-            "browse-directory", url_args={"sha1_git": root_dir_sha1, "path": p["path"]}
+            "browse-directory",
+            url_args={"sha1_git": root_dir_sha1},
+            query_params={"path": p["path"]},
         )
         assert_contains(resp, '<a href="' + dir_url + '">' + p["name"] + "</a>")
 

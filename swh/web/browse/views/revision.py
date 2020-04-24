@@ -288,11 +288,10 @@ def revision_log_browse(request, sha1_git):
 
 @browse_route(
     r"revision/(?P<sha1_git>[0-9a-f]+)/",
-    r"revision/(?P<sha1_git>[0-9a-f]+)/(?P<extra_path>.+)/",
     view_name="browse-revision",
     checksum_args=["sha1_git"],
 )
-def revision_browse(request, sha1_git, extra_path=None):
+def revision_browse(request, sha1_git):
     """
     Django view that produces an HTML display of a revision
     identified by its id.
