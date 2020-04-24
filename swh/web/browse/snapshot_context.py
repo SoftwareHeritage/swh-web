@@ -736,7 +736,7 @@ def browse_snapshot_directory(
     browse_snp_link = gen_snapshot_link(snapshot_id)
 
     revision_found = True
-    if sha1_git is None:
+    if sha1_git is None and revision_id is not None:
         try:
             service.lookup_revision(revision_id)
         except NotFoundExc:
