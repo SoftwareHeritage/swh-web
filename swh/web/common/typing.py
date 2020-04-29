@@ -152,3 +152,16 @@ class DirectoryMetadata(SWHObjectMetadata):
     revision_found: Optional[bool]
     release: Optional[str]
     snapshot: Optional[str]
+
+
+class ReleaseMetadata(SWHObjectMetadata):
+    release: str
+    author: str
+    author_url: str
+    date: str
+    name: str
+    synthetic: bool
+    target: str
+    target_type: str
+    target_url: str
+    snapshot: Optional[str]
