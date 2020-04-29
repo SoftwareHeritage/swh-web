@@ -11,9 +11,9 @@ See top-level LICENSE file for more information
   {% include "includes/empty-snapshot.html" %}
 {% else %}
   <div class="card">
-    {% if swh_object_metadata.filename %}
+    {% if filename %}
       <div class="swh-content-filename card-header bg-gray-light swh-heading-color">
-        {{ swh_object_metadata.filename }}
+        {{ filename }}
       </div>
     {% endif %}
     <div class="swh-content">
@@ -21,10 +21,10 @@ See top-level LICENSE file for more information
         Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
       {% elif "inode/x-empty" == mimetype %}
         <i>File is empty</i>
-      {% elif swh_object_metadata.filename and swh_object_metadata.filename|default:""|slice:"-5:" == "ipynb" %}
+      {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
         <div class="swh-ipynb">
         </div>
-      {% elif "text/" in mimetype and swh_object_metadata.encoding != "binary" %}
+      {% elif "text/" in mimetype and encoding != "binary" %}
         <div class="highlightjs">
           <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>
@@ -40,8 +40,8 @@ See top-level LICENSE file for more information
           <canvas id="pdf-canvas"></canvas>
         </div>
       {% elif content %}
-        Content with mime type {{ swh_object_metadata.mimetype }} and encoding
-        {{ swh_object_metadata.encoding }} cannot be displayed.
+        Content with mime type {{ mimetype }} and encoding
+        {{ encoding }} cannot be displayed.
       {% else %}
         {% include "includes/http-error.html" %}
       {% endif %}
@@ -51,7 +51,7 @@ See top-level LICENSE file for more information
   <script>
     {% if "application/pdf" == mimetype %}
       swh.webapp.renderPdf({{ top_right_link.url|jsonify }});
-    {% elif swh_object_metadata.filename and swh_object_metadata.filename|default:""|slice:"-5:" == "ipynb" %}
+    {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
       swh.webapp.renderNotebook({{ top_right_link.url|jsonify }}, '.swh-ipynb');
     {% elif content %}
       let codeContainer = $('code');

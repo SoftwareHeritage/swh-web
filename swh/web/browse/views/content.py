@@ -348,6 +348,8 @@ def content_display(request, query_string):
             "content": content,
             "content_size": content_data["length"],
             "max_content_size": content_display_max_size,
+            "filename": filename,
+            "encoding": content_data["encoding"],
             "mimetype": mimetype,
             "language": language,
             "available_languages": available_languages,

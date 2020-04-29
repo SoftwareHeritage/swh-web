@@ -10,10 +10,9 @@ import textwrap
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
-from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from swh.model.identifiers import persistent_identifier
+from swh.model.identifiers import persistent_identifier, REVISION
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -34,6 +33,7 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.typing import RevisionMetadata
 from swh.web.common.utils import (
     reverse,
     format_utc_iso_date,
@@ -311,7 +311,7 @@ def revision_browse(request, sha1_git):
         path = request.GET.get("path", None)
         dir_id = None
         dirs, files = None, None
-        content_data = None
+        content_data = {}
         if origin_url:
             try:
                 snapshot_context = get_snapshot_context(
@@ -351,49 +351,35 @@ def revision_browse(request, sha1_git):
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    revision_data = {}
-
-    revision_data["author"] = "None"
-    if revision["author"]:
-        author_link = gen_person_mail_link(revision["author"])
-        revision_data["author"] = author_link
-    revision_data["committer"] = "None"
-    if revision["committer"]:
-        committer_link = gen_person_mail_link(revision["committer"])
-        revision_data["committer"] = committer_link
-    revision_data["committer date"] = format_utc_iso_date(revision["committer_date"])
-    revision_data["date"] = format_utc_iso_date(revision["date"])
-    revision_data["directory"] = revision["directory"]
-    if snapshot_context:
-        revision_data["snapshot"] = snapshot_id
-        browse_snapshot_link = gen_snapshot_link(snapshot_id)
-        revision_data["context-independent snapshot"] = browse_snapshot_link
-
-    revision_data["context-independent directory"] = gen_directory_link(
-        revision["directory"]
-    )
-    revision_data["revision"] = sha1_git
-    revision_data["merge"] = revision["merge"]
-    revision_data["metadata"] = escape(
-        json.dumps(
+    revision_metadata = RevisionMetadata(
+        object_type=REVISION,
+        revision=sha1_git,
+        revision_url=gen_revision_link(sha1_git),
+        author=revision["author"]["fullname"] if revision["author"] else "None",
+        author_url=gen_person_mail_link(revision["author"])
+        if revision["author"]
+        else "None",
+        committer=revision["committer"]["fullname"]
+        if revision["committer"]
+        else "None",
+        committer_url=gen_person_mail_link(revision["committer"])
+        if revision["committer"]
+        else "None",
+        committer_date=format_utc_iso_date(revision["committer_date"]),
+        date=format_utc_iso_date(revision["date"]),
+        directory=revision["directory"],
+        directory_url=gen_directory_link(revision["directory"]),
+        merge=revision["merge"],
+        metadata=json.dumps(
             revision["metadata"], sort_keys=True, indent=4, separators=(",", ": ")
-        )
+        ),
+        parents=revision["parents"],
+        synthetic=revision["synthetic"],
+        type=revision["type"],
+        snapshot=snapshot_id,
+        snapshot_url=gen_snapshot_link(snapshot_id) if snapshot_id else None,
+        origin_url=origin_url,
     )
-
-    if origin_info:
-        revision_data["origin url"] = gen_link(origin_info["url"], origin_info["url"])
-        revision_data["context-independent revision"] = gen_revision_link(sha1_git)
-
-    parents = ""
-    for p in revision["parents"]:
-        parent_link = gen_revision_link(
-            p, link_text=None, link_attrs=None, snapshot_context=snapshot_context
-        )
-        parents += parent_link + "<br/>"
-
-    revision_data["parents"] = mark_safe(parents)
-    revision_data["synthetic"] = revision["synthetic"]
-    revision_data["type"] = revision["type"]
 
     message_lines = ["None"]
     if revision["message"]:
@@ -448,6 +434,7 @@ def revision_browse(request, sha1_git):
 
     content = None
     content_size = None
+    filename = None
     mimetype = None
     language = None
     readme_name = None
@@ -472,8 +459,7 @@ def revision_browse(request, sha1_git):
         query_params = {}
         if path:
             filename = path_info[-1]["name"]
-            query_params["filename"] = path_info[-1]["name"]
-            revision_data["filename"] = filename
+            query_params["filename"] = filename
 
         top_right_link = {
             "url": reverse(
@@ -560,7 +546,7 @@ def revision_browse(request, sha1_git):
             "heading": heading,
             "swh_object_id": swh_ids[0]["swh_id"],
             "swh_object_name": "Revision",
-            "swh_object_metadata": revision_data,
+            "swh_object_metadata": revision_metadata,
             "message_header": message_lines[0],
             "message_body": "\n".join(message_lines[1:]),
             "parents": parents,
@@ -570,6 +556,8 @@ def revision_browse(request, sha1_git):
             "content": content,
             "content_size": content_size,
             "max_content_size": content_display_max_size,
+            "filename": filename,
+            "encoding": content_data.get("encoding"),
             "mimetype": mimetype,
             "language": language,
             "readme_name": readme_name,

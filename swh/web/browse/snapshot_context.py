@@ -1006,6 +1006,8 @@ def browse_snapshot_content(
             "content": content_data.get("content_data"),
             "content_size": content_data.get("length"),
             "max_content_size": content_display_max_size,
+            "filename": filename,
+            "encoding": content_data.get("encoding"),
             "mimetype": content_data.get("mimetype"),
             "language": content_data.get("language"),
             "available_languages": available_languages,

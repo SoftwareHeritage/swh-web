@@ -165,3 +165,20 @@ class ReleaseMetadata(SWHObjectMetadata):
     target_type: str
     target_url: str
     snapshot: Optional[str]
+
+
+class RevisionMetadata(SWHObjectMetadata):
+    revision: str
+    author: str
+    author_url: str
+    committer: str
+    committer_url: str
+    date: str
+    committer_date: str
+    directory: str
+    merge: bool
+    metadata: str
+    parents: List[str]
+    synthetic: bool
+    type: str
+    snapshot: Optional[str]

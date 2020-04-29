@@ -39,7 +39,7 @@ def test_revision_browse(client, archive_data, revision):
 
     for parent in revision_data["parents"]:
         parent_url = reverse("browse-revision", url_args={"sha1_git": parent})
-        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent))
+        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent[:7]))
 
     author_date = revision_data["date"]
     committer_date = revision_data["committer_date"]
@@ -96,7 +96,7 @@ def test_revision_origin_browse(client, archive_data, origin):
             url_args={"sha1_git": parent},
             query_params={"origin_url": origin["url"]},
         )
-        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent))
+        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent[:7]))
 
     assert_contains(resp, "vault-cook-directory")
     assert_contains(resp, "vault-cook-revision")
