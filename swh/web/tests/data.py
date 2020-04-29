@@ -173,7 +173,7 @@ def _init_tests_data():
         # storage.origin_add([{'url': url}])
         storage.origin_add([Origin(url=url)])
         search.origin_update([{"url": url, "has_visits": True}])
-        visit = storage.origin_visit_add(url, "2019-12-03 13:55:05", "tar")
+        visit = storage.origin_visit_add(url, "2019-12-03 13:55:05Z", "tar")
         storage.origin_visit_update(
             url,
             visit.visit,
