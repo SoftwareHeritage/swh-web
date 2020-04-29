@@ -256,4 +256,15 @@ describe('Persistent Identifiers Tests', function() {
     }
   });
 
+  it('should be possible to retrieve SWHIDs context from JavaScript', function() {
+    cy.window().then(win => {
+      const swhIdsContext = win.swh.webapp.getSwhIdsContext();
+      for (let testData of testsData) {
+        assert.isTrue(swhIdsContext.hasOwnProperty(testData.objectType));
+        assert.equal(swhIdsContext[testData.objectType].swh_id,
+                     testData.objectPids.slice(-1)[0]);
+      }
+    });
+  });
+
 });
