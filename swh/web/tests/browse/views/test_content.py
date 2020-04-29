@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import textwrap
+
 from django.utils.html import escape
 
 from hypothesis import given
@@ -61,6 +63,18 @@ def test_content_view_text(client, archive_data, content):
     swh_cnt_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
     assert_contains(resp, swh_cnt_id_url)
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                f"Browse archived content\n"
+                f'<a href="{swh_cnt_id_url}">\n'
+                f"  {swh_cnt_id}\n"
+                f"</a>"
+            ),
+            " " * 4,
+        ),
+    )
 
 
 @given(content_text_no_highlight())

@@ -7,6 +7,7 @@ from datetime import datetime
 import random
 import re
 import string
+import textwrap
 
 from django.utils.html import escape
 
@@ -66,6 +67,8 @@ def test_origin_visits_browse(client, archive_data, origin):
             query_params={"origin_url": origin["url"], "timestamp": vdate},
         )
         assert_contains(resp, browse_dir_url)
+
+    _check_origin_view_title(resp, origin["url"], "visits")
 
 
 @given(origin_with_multiple_visits())
@@ -844,6 +847,8 @@ def _origin_content_view_test_helper(
 
     assert_contains(resp, "swh-take-new-snapshot")
 
+    _check_origin_view_title(resp, origin_info["url"], "content")
+
 
 def _origin_directory_view_test_helper(
     client,
@@ -976,6 +981,8 @@ def _origin_directory_view_test_helper(
 
     assert_contains(resp, "swh-take-new-snapshot")
 
+    _check_origin_view_title(resp, origin_info["url"], "directory")
+
 
 def _origin_branches_test_helper(client, origin_info, origin_snapshot):
     query_params = {"origin_url": origin_info["url"]}
@@ -1020,6 +1027,8 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
             query_params={"origin_url": origin_info["url"]},
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
+
+    _check_origin_view_title(resp, origin_info["url"], "branches")
 
 
 def _origin_releases_test_helper(client, origin_info, origin_snapshot):
@@ -1066,6 +1075,8 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
         assert_contains(resp, '<a href="%s">' % escape(browse_release_url))
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
 
+    _check_origin_view_title(resp, origin_info["url"], "releases")
+
 
 @given(
     new_origin(), visit_dates(), revisions(min_size=10, max_size=10), existing_release()
@@ -1108,3 +1119,22 @@ def test_origin_branches_pagination_with_alias(
     assert resp.status_code == 200
     assert_template_used(resp, "browse/branches.html")
     assert_contains(resp, '<ul class="pagination')
+
+
+def _check_origin_view_title(resp, origin_url, object_type):
+    browse_origin_url = reverse(
+        "browse-origin", query_params={"origin_url": origin_url}
+    )
+
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                f"Browse archived {object_type} for origin\n"
+                f'<a href="{browse_origin_url}">\n'
+                f"  {origin_url}\n"
+                f"</a>"
+            ),
+            " " * 6,
+        ),
+    )

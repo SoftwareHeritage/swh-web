@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import random
+import textwrap
 
 from hypothesis import given
 
@@ -147,3 +148,16 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
     swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
+
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                f"Browse archived directory\n"
+                f'<a href="{swh_dir_id_url}">\n'
+                f"  {swh_dir_id}\n"
+                f"</a>"
+            ),
+            " " * 4,
+        ),
+    )

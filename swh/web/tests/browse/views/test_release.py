@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import random
+import textwrap
 
 from hypothesis import given
 
@@ -103,6 +104,30 @@ def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
     swh_rel_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rel_id})
     assert_contains(resp, swh_rel_id)
     assert_contains(resp, swh_rel_id_url)
+
+    if origin_info:
+        browse_origin_url = reverse(
+            "browse-origin", query_params={"origin_url": origin_info["url"]}
+        )
+        title = (
+            f"Browse archived release for origin\n"
+            f'<a href="{browse_origin_url}">\n'
+            f'  {origin_info["url"]}\n'
+            f"</a>"
+        )
+        indent = " " * 6
+    else:
+        title = (
+            f"Browse archived release\n"
+            f'<a href="{swh_rel_id_url}">\n'
+            f"  {swh_rel_id}\n"
+            f"</a>"
+        )
+        indent = " " * 4
+
+    assert_contains(
+        resp, textwrap.indent(title, indent),
+    )
 
     if release_data["target_type"] == "revision":
         if origin_info:
