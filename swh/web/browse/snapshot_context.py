@@ -16,7 +16,11 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 import sentry_sdk
 
-from swh.model.identifiers import persistent_identifier, snapshot_identifier
+from swh.model.identifiers import (
+    persistent_identifier,
+    snapshot_identifier,
+    CONTENT,
+)
 
 from swh.web.browse.utils import (
     get_directory_entries,
@@ -42,6 +46,7 @@ from swh.web.common.typing import (
     SnapshotBranchInfo,
     SnapshotReleaseInfo,
     SnapshotContext,
+    ContentMetadata,
 )
 from swh.web.common.utils import (
     reverse,
@@ -857,7 +862,7 @@ def browse_snapshot_content(
         root_directory = snapshot_context["root_directory"]
         sha1_git = None
         query_string = None
-        content_data = None
+        content_data = {}
         directory_id = None
         split_path = path.split("/")
         filename = split_path[-1]
@@ -882,24 +887,19 @@ def browse_snapshot_content(
     visit_info = snapshot_context["visit_info"]
     snapshot_id = snapshot_context["snapshot_id"]
 
-    content = None
-    language = None
-    mimetype = None
-    if content_data and content_data["raw_data"] is not None:
+    if content_data.get("raw_data") is not None:
         content_display_data = prepare_content_for_display(
             content_data["raw_data"], content_data["mimetype"], path
         )
-        content = content_display_data["content_data"]
-        language = content_display_data["language"]
-        mimetype = content_display_data["mimetype"]
+        content_data.update(content_display_data)
 
     # Override language with user-selected language
     if selected_language is not None:
-        language = selected_language
+        content_data["language"] = selected_language
 
     available_languages = None
 
-    if mimetype and "text/" in mimetype:
+    if content_data.get("mimetype") is not None and "text/" in content_data["mimetype"]:
         available_languages = highlightjs.get_supported_languages()
 
     breadcrumbs = _build_breadcrumbs(snapshot_context, filepath)
@@ -920,59 +920,53 @@ def browse_snapshot_content(
 
     browse_dir_link = gen_directory_link(directory_id)
 
-    content_metadata = {
-        "context-independent content": browse_content_link,
-        "path": None,
-        "filename": None,
-        "directory": directory_id,
-        "context-independent directory": browse_dir_link,
-        "revision": revision_id,
-        "context-independent revision": browse_rev_link,
-        "snapshot": snapshot_id,
-    }
-
-    cnt_sha1_git = None
-    content_size = None
-    error_code = 200
-    error_description = ""
-    error_message = ""
-    if content_data:
-        for checksum in content_data["checksums"].keys():
-            content_metadata[checksum] = content_data["checksums"][checksum]
-        content_metadata["mimetype"] = content_data["mimetype"]
-        content_metadata["encoding"] = content_data["encoding"]
-        content_metadata["size"] = filesizeformat(content_data["length"])
-        content_metadata["language"] = content_data["language"]
-        content_metadata["licenses"] = content_data["licenses"]
-        content_metadata["path"] = "/" + filepath
-        content_metadata["filename"] = filename
-
-        cnt_sha1_git = content_data["checksums"]["sha1_git"]
-        content_size = content_data["length"]
-        error_code = content_data["error_code"]
-        error_message = content_data["error_message"]
-        error_description = content_data["error_description"]
-
-    if origin_info:
-        content_metadata["origin url"] = origin_info["url"]
-        content_metadata["origin visit date"] = format_utc_iso_date(visit_info["date"])
-        content_metadata["origin visit type"] = visit_info["type"]
-        browse_snapshot_link = gen_snapshot_link(snapshot_id)
-        content_metadata["context-independent snapshot"] = browse_snapshot_link
+    content_checksums = content_data.get("checksums", {})
 
     swh_objects = [
-        {"type": "content", "id": cnt_sha1_git},
+        {"type": "content", "id": content_checksums.get("sha1_git")},
         {"type": "directory", "id": directory_id},
         {"type": "revision", "id": revision_id},
         {"type": "snapshot", "id": snapshot_id},
     ]
 
+    visit_date = None
+    visit_type = None
+    if visit_info:
+        visit_date = format_utc_iso_date(visit_info["date"])
+        visit_type = visit_info["type"]
+
     release_id = snapshot_context["release_id"]
+    browse_rel_link = None
     if release_id:
         swh_objects.append({"type": "release", "id": release_id})
         browse_rel_link = gen_release_link(release_id)
-        content_metadata["release"] = release_id
-        content_metadata["context-independent release"] = browse_rel_link
+
+    content_metadata = ContentMetadata(
+        object_type=CONTENT,
+        sha1=content_checksums.get("sha1"),
+        sha1_git=content_checksums.get("sha1_git"),
+        sha256=content_checksums.get("sha256"),
+        blake2s256=content_checksums.get("blake2s256"),
+        content_url=browse_content_link,
+        mimetype=content_data.get("mimetype"),
+        encoding=content_data.get("encoding"),
+        size=filesizeformat(content_data.get("length", 0)),
+        language=content_data.get("language"),
+        licenses=content_data.get("licenses"),
+        path=f"/{filepath}",
+        filename=filename,
+        directory=directory_id,
+        directory_url=browse_dir_link,
+        revision=revision_id,
+        revision_url=browse_rev_link,
+        release=release_id,
+        release_url=browse_rel_link,
+        snapshot=snapshot_id,
+        snapshot_url=gen_snapshot_link(snapshot_id),
+        origin_url=origin_url,
+        visit_date=visit_date,
+        visit_type=visit_type,
+    )
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -1001,11 +995,11 @@ def browse_snapshot_content(
             "heading": heading,
             "swh_object_name": "Content",
             "swh_object_metadata": content_metadata,
-            "content": content,
-            "content_size": content_size,
+            "content": content_data.get("content_data"),
+            "content_size": content_data.get("length"),
             "max_content_size": content_display_max_size,
-            "mimetype": mimetype,
-            "language": language,
+            "mimetype": content_data.get("mimetype"),
+            "language": content_data.get("language"),
             "available_languages": available_languages,
             "breadcrumbs": breadcrumbs if root_directory else [],
             "top_right_link": top_right_link,
@@ -1013,11 +1007,11 @@ def browse_snapshot_content(
             "vault_cooking": None,
             "show_actions_menu": True,
             "swh_ids": swh_ids,
-            "error_code": error_code,
-            "error_message": error_message,
-            "error_description": error_description,
+            "error_code": content_data.get("error_code"),
+            "error_message": content_data.get("error_message"),
+            "error_description": content_data.get("error_description"),
         },
-        status=error_code,
+        status=content_data.get("error_code", 200),
     )
 
 

@@ -110,3 +110,33 @@ class SnapshotContext(TypedDict):
     """common URL arguments when browsing snapshot content"""
     visit_info: Optional[OriginVisitInfo]
     """optional origin visit info associated to the snapshot"""
+
+
+class SWHObjectMetadata(TypedDict, total=False):
+    object_type: str
+    origin_url: Optional[str]
+    visit_date: Optional[str]
+    visit_type: Optional[str]
+    directory_url: Optional[str]
+    revision_url: Optional[str]
+    release_url: Optional[str]
+    snapshot_url: Optional[str]
+
+
+class ContentMetadata(SWHObjectMetadata):
+    sha1: str
+    sha1_git: str
+    sha256: str
+    blake2s256: str
+    content_url: str
+    mimetype: str
+    encoding: str
+    size: str
+    language: str
+    licenses: str
+    path: Optional[str]
+    filename: Optional[str]
+    directory: Optional[str]
+    revision: Optional[str]
+    release: Optional[str]
+    snapshot: Optional[str]

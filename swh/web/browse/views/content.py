@@ -14,6 +14,7 @@ from django.template.defaultfilters import filesizeformat
 import sentry_sdk
 
 from swh.model.hashutil import hash_to_hex
+from swh.model.identifiers import CONTENT
 
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -27,6 +28,7 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import query, service, highlightjs
 from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.typing import ContentMetadata
 from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
 
 
@@ -291,34 +293,46 @@ def content_display(request, query_string):
 
     query_params = {"filename": filename}
 
+    content_checksums = content_data["checksums"]
+
+    content_url = reverse(
+        "browse-content",
+        url_args={"query_string": f'sha1_git:{content_checksums["sha1_git"]}'},
+    )
+
     content_raw_url = reverse(
         "browse-content-raw",
         url_args={"query_string": query_string},
         query_params=query_params,
     )
 
-    content_metadata = {
-        "sha1": content_data["checksums"]["sha1"],
-        "sha1_git": content_data["checksums"]["sha1_git"],
-        "sha256": content_data["checksums"]["sha256"],
-        "blake2s256": content_data["checksums"]["blake2s256"],
-        "mimetype": content_data["mimetype"],
-        "encoding": content_data["encoding"],
-        "size": filesizeformat(content_data["length"]),
-        "language": content_data["language"],
-        "licenses": content_data["licenses"],
-        "filename": filename,
-        "directory": directory_id,
-        "context-independent directory": directory_url,
-    }
+    content_metadata = ContentMetadata(
+        object_type=CONTENT,
+        sha1=content_checksums["sha1"],
+        sha1_git=content_checksums["sha1_git"],
+        sha256=content_checksums["sha256"],
+        blake2s256=content_checksums["blake2s256"],
+        content_url=content_url,
+        mimetype=content_data["mimetype"],
+        encoding=content_data["encoding"],
+        size=filesizeformat(content_data["length"]),
+        language=content_data["language"],
+        licenses=content_data["licenses"],
+        path=path,
+        filename=filename,
+        directory=directory_id,
+        directory_url=directory_url,
+        revision=None,
+        release=None,
+        snapshot=None,
+        origin_url=origin_url,
+    )
 
-    if filename:
-        content_metadata["filename"] = filename
+    swh_ids = get_swh_persistent_ids(
+        [{"type": "content", "id": content_checksums["sha1_git"]}]
+    )
 
-    sha1_git = content_data["checksums"]["sha1_git"]
-    swh_ids = get_swh_persistent_ids([{"type": "content", "id": sha1_git}])
-
-    heading = "Content - %s" % sha1_git
+    heading = "Content - %s" % content_checksums["sha1_git"]
     if breadcrumbs:
         content_path = "/".join([bc["name"] for bc in breadcrumbs])
         heading += " - %s" % content_path
