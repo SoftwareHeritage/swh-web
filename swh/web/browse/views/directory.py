@@ -11,6 +11,7 @@ from django.template.defaultfilters import filesizeformat
 import sentry_sdk
 
 
+from swh.model.identifiers import DIRECTORY
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -21,6 +22,7 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import service
 from swh.web.common.exc import handle_view_exception, NotFoundExc
+from swh.web.common.typing import DirectoryMetadata
 from swh.web.common.utils import reverse, gen_path_info
 
 
@@ -126,12 +128,18 @@ def _directory_browse(request, sha1_git, path=None):
 
     sum_file_sizes = filesizeformat(sum_file_sizes)
 
-    dir_metadata = {
-        "directory": sha1_git,
-        "number of regular files": len(files),
-        "number of subdirectories": len(dirs),
-        "sum of regular file sizes": sum_file_sizes,
-    }
+    dir_metadata = DirectoryMetadata(
+        object_type=DIRECTORY,
+        directory=sha1_git,
+        nb_files=len(files),
+        nb_dirs=len(dirs),
+        sum_file_sizes=sum_file_sizes,
+        path=path or None,
+        revision=None,
+        revision_found=None,
+        release=None,
+        snapshot=None,
+    )
 
     vault_cooking = {
         "directory_context": True,

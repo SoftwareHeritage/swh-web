@@ -140,3 +140,15 @@ class ContentMetadata(SWHObjectMetadata):
     revision: Optional[str]
     release: Optional[str]
     snapshot: Optional[str]
+
+
+class DirectoryMetadata(SWHObjectMetadata):
+    directory: str
+    nb_files: int
+    nb_dirs: int
+    sum_file_sizes: str
+    path: str
+    revision: Optional[str]
+    revision_found: Optional[bool]
+    release: Optional[str]
+    snapshot: Optional[str]

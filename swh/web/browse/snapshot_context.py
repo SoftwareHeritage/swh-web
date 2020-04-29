@@ -20,6 +20,7 @@ from swh.model.identifiers import (
     persistent_identifier,
     snapshot_identifier,
     CONTENT,
+    DIRECTORY,
 )
 
 from swh.web.browse.utils import (
@@ -47,6 +48,7 @@ from swh.web.common.typing import (
     SnapshotReleaseInfo,
     SnapshotContext,
     ContentMetadata,
+    DirectoryMetadata,
 )
 from swh.web.common.utils import (
     reverse,
@@ -748,24 +750,43 @@ def browse_snapshot_directory(
         except NotFoundExc:
             revision_found = False
 
-    dir_metadata = {
-        "directory": sha1_git,
-        "context-independent directory": browse_dir_link,
-        "number of regular files": nb_files,
-        "number of subdirectories": nb_dirs,
-        "sum of regular file sizes": sum_file_sizes,
-        "path": dir_path,
-        "revision": revision_id,
-        "revision_found": revision_found,
-        "context-independent revision": browse_rev_link,
-        "snapshot": snapshot_id,
-        "context-independent snapshot": browse_snp_link,
-    }
+    swh_objects = [
+        {"type": "directory", "id": sha1_git},
+        {"type": "revision", "id": revision_id},
+        {"type": "snapshot", "id": snapshot_id},
+    ]
 
-    if origin_info:
-        dir_metadata["origin url"] = origin_info["url"]
-        dir_metadata["origin visit date"] = format_utc_iso_date(visit_info["date"])
-        dir_metadata["origin visit type"] = visit_info["type"]
+    visit_date = None
+    visit_type = None
+    if visit_info:
+        visit_date = format_utc_iso_date(visit_info["date"])
+        visit_type = visit_info["type"]
+
+    release_id = snapshot_context["release_id"]
+    browse_rel_link = None
+    if release_id:
+        swh_objects.append({"type": "release", "id": release_id})
+        browse_rel_link = gen_release_link(release_id)
+
+    dir_metadata = DirectoryMetadata(
+        object_type=DIRECTORY,
+        directory=sha1_git,
+        directory_url=browse_dir_link,
+        nb_files=nb_files,
+        nb_dirs=nb_dirs,
+        sum_file_sizes=sum_file_sizes,
+        path=dir_path,
+        revision=revision_id,
+        revision_found=revision_found,
+        revision_url=browse_rev_link,
+        release=release_id,
+        release_url=browse_rel_link,
+        snapshot=snapshot_id,
+        snapshot_url=browse_snp_link,
+        origin_url=origin_url,
+        visit_date=visit_date,
+        visit_type=visit_type,
+    )
 
     vault_cooking = {
         "directory_context": True,
@@ -773,19 +794,6 @@ def browse_snapshot_directory(
         "revision_context": True,
         "revision_id": revision_id,
     }
-
-    swh_objects = [
-        {"type": "directory", "id": sha1_git},
-        {"type": "revision", "id": revision_id},
-        {"type": "snapshot", "id": snapshot_id},
-    ]
-
-    release_id = snapshot_context["release_id"]
-    if release_id:
-        swh_objects.append({"type": "release", "id": release_id})
-        browse_rel_link = gen_release_link(release_id)
-        dir_metadata["release"] = release_id
-        dir_metadata["context-independent release"] = browse_rel_link
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
