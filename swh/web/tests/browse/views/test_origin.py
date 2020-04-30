@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from datetime import datetime
+from datetime import datetime, timezone
 import random
 import re
 import string
@@ -673,7 +673,9 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
     )
     new_origin = archive_data.origin_add([new_origin])[0]
     archive_data.snapshot_add([snapshot])
-    visit = archive_data.origin_visit_add(new_origin["url"], datetime.now(), type="git")
+    visit = archive_data.origin_visit_add(
+        new_origin["url"], datetime.now(tz=timezone.utc), type="git"
+    )
     archive_data.origin_visit_update(
         new_origin["url"], visit.visit, status="full", snapshot=snapshot.id
     )

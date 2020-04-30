@@ -9,6 +9,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from hypothesis import settings, assume
+from hypothesis.extra.dateutil import timezones
 from hypothesis.strategies import (
     just,
     sampled_from,
@@ -306,7 +307,9 @@ def visit_dates(nb_dates=None):
     max_size = nb_dates if nb_dates else 8
     return lists(
         datetimes(
-            min_value=datetime(2015, 1, 1, 0, 0), max_value=datetime(2018, 12, 31, 0, 0)
+            min_value=datetime(2015, 1, 1, 0, 0),
+            max_value=datetime(2018, 12, 31, 0, 0),
+            timezones=timezones(),
         ),
         min_size=min_size,
         max_size=max_size,
