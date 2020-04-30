@@ -17,11 +17,11 @@ from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     get_directory_entries,
     get_readme_to_display,
-    get_swh_persistent_ids,
     gen_link,
 )
 from swh.web.common import service
 from swh.web.common.exc import handle_view_exception, NotFoundExc
+from swh.web.common.identifiers import get_swh_persistent_ids
 from swh.web.common.typing import DirectoryMetadata
 from swh.web.common.utils import reverse, gen_path_info
 

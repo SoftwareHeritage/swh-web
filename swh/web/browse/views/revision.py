@@ -27,12 +27,12 @@ from swh.web.browse.utils import (
     content_display_max_size,
     gen_snapshot_link,
     get_readme_to_display,
-    get_swh_persistent_ids,
     format_log_entries,
     gen_person_mail_link,
 )
 from swh.web.common import service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.identifiers import get_swh_persistent_ids
 from swh.web.common.typing import RevisionMetadata
 from swh.web.common.utils import (
     reverse,

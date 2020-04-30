@@ -35,12 +35,12 @@ from swh.web.browse.utils import (
     gen_revision_log_link,
     gen_release_link,
     get_readme_to_display,
-    get_swh_persistent_ids,
     gen_snapshot_link,
 )
 
 from swh.web.common import service, highlightjs
 from swh.web.common.exc import handle_view_exception, NotFoundExc, BadInputExc
+from swh.web.common.identifiers import get_swh_persistent_ids
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
     OriginInfo,

@@ -17,11 +17,9 @@ import sentry_sdk
 
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import http_status_code_message
-from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import (
     reverse,
     format_utc_iso_date,
-    swh_object_icons,
     rst_to_html,
 )
 from swh.web.config import get_config
@@ -758,52 +756,3 @@ def get_readme_to_display(readmes):
                 readme_html = "Readme bytes are not available"
 
     return readme_name, readme_url, readme_html
-
-
-def get_swh_persistent_ids(swh_objects, snapshot_context=None):
-    """
-    Returns a list of dict containing info related to persistent
-    identifiers of swh objects.
-
-    Args:
-        swh_objects (list): a list of dict with the following keys:
-
-            * type: swh object type
-              (content/directory/release/revision/snapshot)
-            * id: swh object id
-
-        snapshot_context (dict): optional parameter describing the snapshot in
-            which the object has been found
-
-    Returns:
-        list: a list of dict with the following keys:
-            * object_type: the swh object type
-              (content/directory/release/revision/snapshot)
-            * object_icon: the swh object icon to use in HTML views
-            * swh_id: the computed swh object persistent identifier
-            * swh_id_url: the url resolving the persistent identifier
-            * show_options: boolean indicating if the persistent id options
-                must be displayed in persistent ids HTML view
-    """
-    swh_ids = []
-    for swh_object in swh_objects:
-        if not swh_object["id"]:
-            continue
-        swh_id = get_swh_persistent_id(swh_object["type"], swh_object["id"])
-        show_options = swh_object["type"] == "content" or (
-            snapshot_context and snapshot_context["origin_info"] is not None
-        )
-
-        object_icon = swh_object_icons[swh_object["type"]]
-
-        swh_ids.append(
-            {
-                "object_type": swh_object["type"],
-                "object_id": swh_object["id"],
-                "object_icon": object_icon,
-                "swh_id": swh_id,
-                "swh_id_url": reverse("browse-swh-id", url_args={"swh_id": swh_id}),
-                "show_options": show_options,
-            }
-        )
-    return swh_ids

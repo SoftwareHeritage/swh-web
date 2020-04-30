@@ -13,7 +13,6 @@ from swh.web.browse.utils import (
     gen_revision_link,
     gen_link,
     gen_snapshot_link,
-    get_swh_persistent_ids,
     gen_directory_link,
     gen_content_link,
     gen_release_link,
@@ -21,6 +20,7 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.identifiers import get_swh_persistent_ids
 from swh.web.common.typing import ReleaseMetadata
 from swh.web.common.utils import reverse, format_utc_iso_date
 

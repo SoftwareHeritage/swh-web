@@ -22,12 +22,12 @@ from swh.web.browse.utils import (
     request_content,
     prepare_content_for_display,
     content_display_max_size,
-    get_swh_persistent_ids,
     gen_link,
     gen_directory_link,
 )
 from swh.web.common import query, service, highlightjs
 from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.identifiers import get_swh_persistent_ids
 from swh.web.common.typing import ContentMetadata
 from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
 
