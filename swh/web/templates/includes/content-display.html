@@ -28,7 +28,7 @@ See top-level LICENSE file for more information
         <div class="highlightjs">
           <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>
-      {% elif "image/" in mimetype and content %}
+      {% elif mimetype in browsers_supported_image_mimes and content %}
         <img src="data:{{ mimetype }};base64,{{ content }}"/>
       {% elif "application/pdf" == mimetype %}
         <div class="text-center">
@@ -40,8 +40,7 @@ See top-level LICENSE file for more information
           <canvas id="pdf-canvas"></canvas>
         </div>
       {% elif content %}
-        Content with mime type {{ mimetype }} and encoding
-        {{ encoding }} cannot be displayed.
+        Content with mime type {{ mimetype }} and encoding {{ encoding }} cannot be displayed.
       {% else %}
         {% include "includes/http-error.html" %}
       {% endif %}

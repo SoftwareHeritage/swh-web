@@ -27,6 +27,7 @@ from swh.web.tests.strategies import (
     content_text_non_utf8,
     content_text_no_highlight,
     content_image_type,
+    content_unsupported_image_type_rendering,
     content_text,
     invalid_sha1,
     unknown_content,
@@ -137,6 +138,26 @@ def test_content_view_image(client, archive_data, content):
     assert_template_used(resp, "browse/content.html")
     assert_contains(resp, '<img src="data:%s;base64,%s"/>' % (mimetype, content_data))
     assert_contains(resp, url_raw)
+
+
+@given(content_unsupported_image_type_rendering())
+def test_content_view_image_no_rendering(client, archive_data, content):
+    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+
+    resp = client.get(url)
+
+    mimetype = content["mimetype"]
+    encoding = content["encoding"]
+
+    assert resp.status_code == 200
+    assert_template_used(resp, "browse/content.html")
+    assert_contains(
+        resp,
+        (
+            f"Content with mime type {mimetype} and encoding {encoding} "
+            "cannot be displayed."
+        ),
+    )
 
 
 @given(content_text())

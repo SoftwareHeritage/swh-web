@@ -29,6 +29,7 @@ from swh.model.hypothesis_strategies import (
     origins as new_origin_strategy,
     snapshots as new_snapshot,
 )
+from swh.web.common.utils import browsers_supported_image_mimes
 from swh.web.tests.data import get_tests_data
 
 # Module dedicated to the generation of input data for tests through
@@ -129,7 +130,18 @@ def content_image_type():
     Hypothesis strategy returning random image contents ingested
     into the test archive.
     """
-    return content().filter(lambda c: c["mimetype"].startswith("image/"))
+    return content().filter(lambda c: c["mimetype"] in browsers_supported_image_mimes)
+
+
+def content_unsupported_image_type_rendering():
+    """
+    Hypothesis strategy returning random image contents ingested
+    into the test archive that can not be rendered by browsers.
+    """
+    return content().filter(
+        lambda c: c["mimetype"].startswith("image/")
+        and c["mimetype"] not in browsers_supported_image_mimes
+    )
 
 
 def content_utf8_detected_as_binary():

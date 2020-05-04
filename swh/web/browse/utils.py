@@ -21,6 +21,7 @@ from swh.web.common.utils import (
     reverse,
     format_utc_iso_date,
     rst_to_html,
+    browsers_supported_image_mimes,
 )
 from swh.web.config import get_config
 
@@ -241,19 +242,6 @@ def request_content(
     return content_data
 
 
-_browsers_supported_image_mimes = set(
-    [
-        "image/gif",
-        "image/png",
-        "image/jpeg",
-        "image/bmp",
-        "image/webp",
-        "image/svg",
-        "image/svg+xml",
-    ]
-)
-
-
 def prepare_content_for_display(content_data, mime_type, path):
     """Function that prepares a content for HTML display.
 
@@ -288,10 +276,8 @@ def prepare_content_for_display(content_data, mime_type, path):
         mime_type = mime_type.replace("application/", "text/")
 
     if mime_type.startswith("image/"):
-        if mime_type in _browsers_supported_image_mimes:
+        if mime_type in browsers_supported_image_mimes:
             content_data = base64.b64encode(content_data).decode("ascii")
-        else:
-            content_data = None
 
     if mime_type.startswith("image/svg"):
         mime_type = "image/svg+xml"
