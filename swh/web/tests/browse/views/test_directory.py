@@ -8,6 +8,7 @@ import textwrap
 
 from hypothesis import given
 
+from swh.model.identifiers import DIRECTORY
 from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
@@ -20,16 +21,16 @@ from swh.web.tests.strategies import (
 
 
 @given(directory())
-def test_root_directory_view(client, archive_data, directory):
-    _directory_view(client, directory, archive_data.directory_ls(directory))
+def test_root_directory_view_checks(client, archive_data, directory):
+    _directory_view_checks(client, directory, archive_data.directory_ls(directory))
 
 
 @given(directory_with_subdirs())
-def test_sub_directory_view(client, archive_data, directory):
+def test_sub_directory_view_checks(client, archive_data, directory):
     dir_content = archive_data.directory_ls(directory)
     subdir = random.choice([e for e in dir_content if e["type"] == "dir"])
     subdir_content = archive_data.directory_ls(subdir["target"])
-    _directory_view(client, directory, subdir_content, subdir["name"])
+    _directory_view_checks(client, directory, subdir_content, subdir["name"])
 
 
 @given(invalid_sha1(), unknown_directory())
@@ -73,10 +74,10 @@ def test_permalink_box_context(client, tests_data, directory):
     resp = client.get(url)
 
     assert resp.status_code == 200
-    assert_contains(resp, 'id="swh-id-option-origin-directory"')
+    assert_contains(resp, 'id="swh-id-context-option-directory"')
 
 
-def _directory_view(client, root_directory_sha1, directory_entries, path=None):
+def _directory_view_checks(client, root_directory_sha1, directory_entries, path=None):
     dirs = [e for e in directory_entries if e["type"] in ("dir", "rev")]
     files = [e for e in directory_entries if e["type"] == "file"]
 
@@ -144,10 +145,8 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
 
     assert_contains(resp, "vault-cook-directory")
 
-    swh_dir_id = get_swh_persistent_id("directory", directory_entries[0]["dir_id"])
+    swh_dir_id = get_swh_persistent_id(DIRECTORY, directory_entries[0]["dir_id"])
     swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
-    assert_contains(resp, swh_dir_id)
-    assert_contains(resp, swh_dir_id_url)
 
     assert_contains(
         resp,
@@ -161,3 +160,19 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
             " " * 4,
         ),
     )
+
+    swhid_context = {}
+    if root_directory_sha1 != directory_entries[0]["dir_id"]:
+        swhid_context["anchor"] = get_swh_persistent_id(DIRECTORY, root_directory_sha1)
+
+    swhid_context["path"] = f"/{path}/" if path else "/"
+
+    if root_directory_sha1 != directory_entries[0]["dir_id"]:
+        swhid_context["anchor"] = get_swh_persistent_id(DIRECTORY, root_directory_sha1)
+
+    swh_dir_id = get_swh_persistent_id(
+        DIRECTORY, directory_entries[0]["dir_id"], metadata=swhid_context
+    )
+    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
+    assert_contains(resp, swh_dir_id)
+    assert_contains(resp, swh_dir_id_url)

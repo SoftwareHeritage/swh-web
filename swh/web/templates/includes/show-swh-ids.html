@@ -66,23 +66,13 @@ See top-level LICENSE file for more information
                 {% if swhid_info.swhid_with_context is not None %}
                   <div class="float-left">
                     <form id="swh-id-options">
-                      {% if snapshot_context and snapshot_context.origin_info %}
-                        <div class="form-check swh-id-option">
-                          <input class="form-check-input swh-id-option-origin" value="option-origin" type="checkbox"
-                                id="swh-id-option-origin-{{ swhid_info.object_type }}"
-                                data-swh-origin="{{ snapshot_context.origin_info.url }}"
-                                onclick="swh.browse.swhIdOptionOriginToggled(event)">
-                          <label class="form-check-label" for="swh-id-option-origin-{{ swhid_info.object_type }}">Add origin info</label>
-                        </div>
-                      {% endif %}
-                      {% if swhid_info.object_type == 'content' %}
-                        <div class="form-check swh-id-option">
-                          <input class="form-check-input swh-id-option-lines" value="option-lines" type="checkbox"
-                                id="swh-id-option-lines-{{ swhid_info.object_type }}"
-                                onclick="swh.browse.swhIdOptionLinesToggled(event)">
-                          <label class="form-check-label" for="swh-id-option-lines-{{ swhid_info.object_type }}">Add selected lines info</label>
-                        </div>
-                      {% endif %}
+                      <div class="form-check swh-id-option">
+                        <input class="form-check-input swh-id-context-option" value="option-origin" type="checkbox"
+                              id="swh-id-context-option-{{ swhid_info.object_type }}"
+                              data-swhid-with-context="{{ swhid_info.swhid_with_context }}"
+                              onclick="swh.browse.swhIdContextOptionToggled(event)">
+                        <label class="form-check-label" for="swh-id-context-option-{{ swhid_info.object_type }}">Add contextual information</label>
+                      </div>
                     </form>
                   </div>
                 {% endif %}

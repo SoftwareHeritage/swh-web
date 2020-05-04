@@ -322,7 +322,7 @@ def content_display(request, query_string):
         language=content_data["language"],
         licenses=content_data["licenses"],
         root_directory=root_dir,
-        path=f"/{path}" if path else "",
+        path=f"/{path}" if path else "/",
         filename=filename or "",
         directory=directory_id,
         directory_url=directory_url,

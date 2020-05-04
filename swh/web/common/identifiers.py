@@ -254,7 +254,7 @@ def get_swhids_info(
                 swhid_context["visit"] = get_swh_persistent_id(
                     SNAPSHOT, snapshot_context["snapshot_id"]
                 )
-            if object_type not in (RELEASE, REVISION, SNAPSHOT):
+            if object_type in (CONTENT, DIRECTORY):
                 if snapshot_context["release_id"] is not None:
                     swhid_context["anchor"] = get_swh_persistent_id(
                         RELEASE, snapshot_context["release_id"]
@@ -269,6 +269,7 @@ def get_swhids_info(
                 extra_context
                 and "revision" in extra_context
                 and extra_context["revision"]
+                and "anchor" not in swhid_context
             ):
                 swhid_context["anchor"] = get_swh_persistent_id(
                     REVISION, extra_context["revision"]
@@ -277,6 +278,7 @@ def get_swhids_info(
                 extra_context
                 and "root_directory" in extra_context
                 and extra_context["root_directory"]
+                and "anchor" not in swhid_context
                 and (
                     object_type != DIRECTORY
                     or extra_context["root_directory"] != object_id

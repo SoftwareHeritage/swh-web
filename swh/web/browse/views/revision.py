@@ -453,8 +453,7 @@ def revision_browse(request, sha1_git):
     error_description = ""
 
     extra_context = dict(revision_metadata)
-    if path:
-        extra_context["path"] = f"/{path}"
+    extra_context["path"] = f"/{path}" if path else "/"
 
     if content_data:
         breadcrumbs[-1]["url"] = None

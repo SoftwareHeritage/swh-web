@@ -12,7 +12,12 @@ export function showBadgeInfoModal(objectType, objectPid) {
     badgeImageUrl = Urls.swh_badge(objectType, objectPid);
     badgeLinkUrl = `${Urls.browse_origin()}?origin_url=${objectPid}`;
   } else {
-    badgeImageUrl = Urls.swh_badge_pid(objectPid);
+    const pos = objectPid.indexOf(';');
+    if (pos !== -1) {
+      badgeImageUrl = Urls.swh_badge_pid(objectPid.slice(0, pos));
+    } else {
+      badgeImageUrl = Urls.swh_badge_pid(objectPid);
+    }
     badgeLinkUrl = Urls.browse_swh_id(objectPid);
   }
   let urlPrefix = `${window.location.protocol}//${window.location.hostname}`;
