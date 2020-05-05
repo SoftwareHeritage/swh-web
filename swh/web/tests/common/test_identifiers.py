@@ -66,7 +66,7 @@ def test_resolve_swh_persistent_id(content, directory, release, revision, snapsh
             url_args["snapshot_id"] = obj_id
         else:
             url_args["sha1_git"] = obj_id
-        query_params = {"origin": "some-origin"}
+        query_params = {"origin_url": "some-origin"}
         browse_url = reverse(
             f"browse-{obj_type}", url_args=url_args, query_params=query_params
         )

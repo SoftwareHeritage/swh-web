@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -31,8 +31,8 @@ DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
 
     // used internal endpoint as image url to possibly get the image data
     // from the archive content
-    let url = Urls.browse_directory_resolve_content_path(swhObjectMetadata.directory,
-                                                         data.attrValue);
+    let url = Urls.browse_directory_resolve_content_path(swhObjectMetadata.directory);
+    url += `?path=${data.attrValue}`;
     data.attrValue = url;
   }
 });

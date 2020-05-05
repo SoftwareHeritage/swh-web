@@ -289,3 +289,24 @@ export function setBrowsedSwhObjectMetadata(metadata) {
 export function getBrowsedSwhObjectMetadata() {
   return browsedSwhObjectMetadata;
 }
+
+// This will contain a mapping between an archived object type
+// and its related SWHID metadata for each object reachable from
+// the current browse view.
+// SWHID metadata contain the following keys:
+//   * object_type: type of archived object
+//   * object_id: sha1 object identifier
+//   * swh_id: SWH persistent identifier without contextual info
+//   * swh_id_url: URL to resolve SWH persistent identifier without contextual info
+let swhidsContext_ = {};
+
+export function setSwhIdsContext(swhidsContext) {
+  swhidsContext_ = {};
+  for (let swhidContext of swhidsContext) {
+    swhidsContext_[swhidContext.object_type] = swhidContext;
+  }
+}
+
+export function getSwhIdsContext() {
+  return swhidsContext_;
+}

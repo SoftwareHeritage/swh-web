@@ -9,6 +9,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from hypothesis import settings, assume
+from hypothesis.extra.dateutil import timezones
 from hypothesis.strategies import (
     just,
     sampled_from,
@@ -28,6 +29,7 @@ from swh.model.hypothesis_strategies import (
     origins as new_origin_strategy,
     snapshots as new_snapshot,
 )
+from swh.web.common.utils import browsers_supported_image_mimes
 from swh.web.tests.data import get_tests_data
 
 # Module dedicated to the generation of input data for tests through
@@ -128,7 +130,18 @@ def content_image_type():
     Hypothesis strategy returning random image contents ingested
     into the test archive.
     """
-    return content().filter(lambda c: c["mimetype"].startswith("image/"))
+    return content().filter(lambda c: c["mimetype"] in browsers_supported_image_mimes)
+
+
+def content_unsupported_image_type_rendering():
+    """
+    Hypothesis strategy returning random image contents ingested
+    into the test archive that can not be rendered by browsers.
+    """
+    return content().filter(
+        lambda c: c["mimetype"].startswith("image/")
+        and c["mimetype"] not in browsers_supported_image_mimes
+    )
 
 
 def content_utf8_detected_as_binary():
@@ -306,7 +319,9 @@ def visit_dates(nb_dates=None):
     max_size = nb_dates if nb_dates else 8
     return lists(
         datetimes(
-            min_value=datetime(2015, 1, 1, 0, 0), max_value=datetime(2018, 12, 31, 0, 0)
+            min_value=datetime(2015, 1, 1, 0, 0),
+            max_value=datetime(2018, 12, 31, 0, 0),
+            timezones=timezones(),
         ),
         min_size=min_size,
         max_size=max_size,

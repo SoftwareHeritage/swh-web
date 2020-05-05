@@ -159,7 +159,7 @@ def _check_generated_badge(response, object_type, object_id, error=None):
         object_type = "object"
 
     if object_type == ORIGIN and error is None:
-        link = reverse("browse-origin", url_args={"origin_url": object_id})
+        link = reverse("browse-origin", query_params={"origin_url": object_id})
         text = "repository"
     elif error is None:
         text = persistent_identifier(object_type, object_id)

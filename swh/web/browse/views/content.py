@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,6 +14,7 @@ from django.template.defaultfilters import filesizeformat
 import sentry_sdk
 
 from swh.model.hashutil import hash_to_hex
+from swh.model.identifiers import CONTENT
 
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -21,12 +22,13 @@ from swh.web.browse.utils import (
     request_content,
     prepare_content_for_display,
     content_display_max_size,
-    get_swh_persistent_ids,
     gen_link,
     gen_directory_link,
 )
 from swh.web.common import query, service, highlightjs
 from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.identifiers import get_swh_persistent_ids
+from swh.web.common.typing import ContentMetadata
 from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
 
 
@@ -249,7 +251,7 @@ def content_display(request, query_string):
     directory_id = None
     directory_url = None
 
-    query_params = {"origin": origin_url}
+    query_params = {"origin_url": origin_url}
 
     breadcrumbs = []
 
@@ -268,9 +270,10 @@ def content_display(request, query_string):
             )
             breadcrumbs.append({"name": root_dir[:7], "url": dir_url})
             for pi in path_info:
+                query_params["path"] = pi["path"]
                 dir_url = reverse(
                     "browse-directory",
-                    url_args={"sha1_git": root_dir, "path": pi["path"]},
+                    url_args={"sha1_git": root_dir},
                     query_params=query_params,
                 )
                 breadcrumbs.append({"name": pi["name"], "url": dir_url})
@@ -290,34 +293,46 @@ def content_display(request, query_string):
 
     query_params = {"filename": filename}
 
+    content_checksums = content_data["checksums"]
+
+    content_url = reverse(
+        "browse-content",
+        url_args={"query_string": f'sha1_git:{content_checksums["sha1_git"]}'},
+    )
+
     content_raw_url = reverse(
         "browse-content-raw",
         url_args={"query_string": query_string},
         query_params=query_params,
     )
 
-    content_metadata = {
-        "sha1": content_data["checksums"]["sha1"],
-        "sha1_git": content_data["checksums"]["sha1_git"],
-        "sha256": content_data["checksums"]["sha256"],
-        "blake2s256": content_data["checksums"]["blake2s256"],
-        "mimetype": content_data["mimetype"],
-        "encoding": content_data["encoding"],
-        "size": filesizeformat(content_data["length"]),
-        "language": content_data["language"],
-        "licenses": content_data["licenses"],
-        "filename": filename,
-        "directory": directory_id,
-        "context-independent directory": directory_url,
-    }
+    content_metadata = ContentMetadata(
+        object_type=CONTENT,
+        sha1=content_checksums["sha1"],
+        sha1_git=content_checksums["sha1_git"],
+        sha256=content_checksums["sha256"],
+        blake2s256=content_checksums["blake2s256"],
+        content_url=content_url,
+        mimetype=content_data["mimetype"],
+        encoding=content_data["encoding"],
+        size=filesizeformat(content_data["length"]),
+        language=content_data["language"],
+        licenses=content_data["licenses"],
+        path=path,
+        filename=filename,
+        directory=directory_id,
+        directory_url=directory_url,
+        revision=None,
+        release=None,
+        snapshot=None,
+        origin_url=origin_url,
+    )
 
-    if filename:
-        content_metadata["filename"] = filename
+    swh_ids = get_swh_persistent_ids(
+        [{"type": "content", "id": content_checksums["sha1_git"]}]
+    )
 
-    sha1_git = content_data["checksums"]["sha1_git"]
-    swh_ids = get_swh_persistent_ids([{"type": "content", "id": sha1_git}])
-
-    heading = "Content - %s" % sha1_git
+    heading = "Content - %s" % content_checksums["sha1_git"]
     if breadcrumbs:
         content_path = "/".join([bc["name"] for bc in breadcrumbs])
         heading += " - %s" % content_path
@@ -333,6 +348,8 @@ def content_display(request, query_string):
             "content": content,
             "content_size": content_data["length"],
             "max_content_size": content_display_max_size,
+            "filename": filename,
+            "encoding": content_data["encoding"],
             "mimetype": mimetype,
             "language": language,
             "available_languages": available_languages,

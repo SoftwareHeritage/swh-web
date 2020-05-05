@@ -241,6 +241,19 @@ def get_client_ip(request):
     return ip
 
 
+browsers_supported_image_mimes = set(
+    [
+        "image/gif",
+        "image/png",
+        "image/jpeg",
+        "image/bmp",
+        "image/webp",
+        "image/svg",
+        "image/svg+xml",
+    ]
+)
+
+
 def context_processor(request):
     """
     Django context processor used to inject variables
@@ -260,6 +273,7 @@ def context_processor(request):
         "available_languages": None,
         "swh_client_config": config["client_config"],
         "oidc_enabled": bool(config["keycloak"]["server_url"]),
+        "browsers_supported_image_mimes": browsers_supported_image_mimes,
     }
 
 

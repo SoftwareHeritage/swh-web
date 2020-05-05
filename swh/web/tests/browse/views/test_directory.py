@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import random
+import textwrap
 
 from hypothesis import given
 
@@ -66,7 +67,7 @@ def test_permalink_box_context(client, tests_data, directory):
     url = reverse(
         "browse-directory",
         url_args={"sha1_git": directory},
-        query_params={"origin": origin_url},
+        query_params={"origin_url": origin_url},
     )
 
     resp = client.get(url)
@@ -80,10 +81,11 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
     files = [e for e in directory_entries if e["type"] == "file"]
 
     url_args = {"sha1_git": root_directory_sha1}
+    query_params = {}
     if path:
-        url_args["path"] = path
+        query_params["path"] = path
 
-    url = reverse("browse-directory", url_args=url_args)
+    url = reverse("browse-directory", url_args=url_args, query_params=query_params)
 
     root_dir_url = reverse(
         "browse-directory", url_args={"sha1_git": root_directory_sha1}
@@ -108,7 +110,8 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
                 dir_path = "%s/%s" % (path, d["name"])
             dir_url = reverse(
                 "browse-directory",
-                url_args={"sha1_git": root_directory_sha1, "path": dir_path},
+                url_args={"sha1_git": root_directory_sha1},
+                query_params={"path": dir_path},
             )
         assert_contains(resp, dir_url)
 
@@ -134,7 +137,8 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
     for p in path_info:
         dir_url = reverse(
             "browse-directory",
-            url_args={"sha1_git": root_directory_sha1, "path": p["path"]},
+            url_args={"sha1_git": root_directory_sha1},
+            query_params={"path": p["path"]},
         )
         assert_contains(resp, '<a href="%s">%s</a>' % (dir_url, p["name"]))
 
@@ -144,3 +148,16 @@ def _directory_view(client, root_directory_sha1, directory_entries, path=None):
     swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
+
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                f"Browse archived directory\n"
+                f'<a href="{swh_dir_id_url}">\n'
+                f"  {swh_dir_id}\n"
+                f"</a>"
+            ),
+            " " * 4,
+        ),
+    )
