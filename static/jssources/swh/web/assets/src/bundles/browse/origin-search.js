@@ -35,7 +35,7 @@ function populateOriginSearchResultsTable(origins) {
     clearOriginSearchResultsTable();
     let table = $('#origin-search-results tbody');
     for (let [i, origin] of origins.entries()) {
-      let browseUrl = Urls.browse_origin(origin.url);
+      let browseUrl = `${Urls.browse_origin()}?origin_url=${origin.url}`;
       let tableRow = `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
       tableRow += `<td id="visit-type-origin-${i}" style="width: 120px;"></td>`;

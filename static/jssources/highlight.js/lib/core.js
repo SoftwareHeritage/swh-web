@@ -864,7 +864,7 @@ function commonKeyword(word) {
 return COMMON_KEYWORDS.includes(word.toLowerCase());
 }
 
-var version = "10.0.0";
+var version = "10.0.2";
 
 /*
 Syntax highlighting with language autodetection.
@@ -1208,6 +1208,23 @@ const HLJS = function(hljs) {
           return processed;
       }
 
+      // edge case for when illegal matches $ (end of line) which is technically
+      // a 0 width match but not a begin/end match so it's not caught by the
+      // first handler (when ignoreIllegals is true)
+      if (match.type === "illegal" && lexeme === "") {
+        // advance so we aren't stuck in an infinite loop
+        return 1;
+      }
+
+      // infinite loops are BAD, this is a last ditch catch all. if we have a
+      // decent number of iterations yet our index (cursor position in our
+      // parsing) still 3x behind our index then something is very wrong
+      // so we bail
+      if (iterations > 100000 && iterations > match.index * 3) {
+        const err = new Error('potential infinite loop, way more iterations than matches');
+        throw err;
+      }
+
       /*
       Why might be find ourselves here?  Only one occasion now.  An end match that was
       triggered but could not be completed.  When might this happen?  When an `endSameasBegin`
@@ -1238,13 +1255,17 @@ const HLJS = function(hljs) {
     processContinuations();
     var mode_buffer = '';
     var relevance = 0;
-    var match, processedCount, index = 0;
+    var match;
+    var processedCount;
+    var index = 0;
+    var iterations = 0;
+    var continueScanAtSamePosition = false;
 
     try {
-      var continueScanAtSamePosition = false;
       top.matcher.considerAll();
 
-      while (true) {
+      for (;;) {
+        iterations++;
         if (continueScanAtSamePosition) {
           continueScanAtSamePosition = false;
           // only regexes not matched previously will now be
@@ -1303,6 +1324,22 @@ const HLJS = function(hljs) {
     }
   }
 
+  // returns a valid highlight result, without actually
+  // doing any actual work, auto highlight starts with
+  // this and it's possible for small snippets that
+  // auto-detection may not find a better match
+  function justTextHighlightResult(code) {
+    const result = {
+      relevance: 0,
+      emitter: new options.__emitter(options),
+      value: escape$1(code),
+      illegal: false,
+      top: PLAINTEXT_LANGUAGE
+    };
+    result.emitter.addText(code);
+    return result;
+  }
+
   /*
   Highlighting with language detection. Accepts a string with the code to
   highlight. Returns an object with the following properties:
@@ -1316,11 +1353,7 @@ const HLJS = function(hljs) {
   */
   function highlightAuto(code, languageSubset) {
     languageSubset = languageSubset || options.languages || Object.keys(languages);
-    var result = {
-      relevance: 0,
-      emitter: new options.__emitter(options),
-      value: escape$1(code)
-    };
+    var result = justTextHighlightResult(code);
     var second_best = result;
     languageSubset.filter(getLanguage).filter(autoDetection).forEach(function(name) {
       var current = _highlight(name, code, false);
@@ -1449,7 +1482,7 @@ const HLJS = function(hljs) {
     window.addEventListener('DOMContentLoaded', initHighlighting, false);
   }
 
-  var PLAINTEXT_LANGUAGE = { disableAutodetect: true };
+  const PLAINTEXT_LANGUAGE = { disableAutodetect: true, name: 'Plain text' };
 
   function registerLanguage(name, language) {
     var lang;

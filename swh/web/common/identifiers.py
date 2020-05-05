@@ -24,7 +24,7 @@ from swh.model.identifiers import (
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
-from swh.web.common.utils import reverse
+from swh.web.common.utils import swh_object_icons, reverse
 
 
 def get_swh_persistent_id(
@@ -94,7 +94,7 @@ def resolve_swh_persistent_id(
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
     if "origin" in swh_id_parsed.metadata:
-        query_dict["origin"] = swh_id_parsed.metadata["origin"]
+        query_dict["origin_url"] = swh_id_parsed.metadata["origin"]
     if object_type == CONTENT:
         query_string = "sha1_git:" + object_id
         fragment = ""
@@ -195,3 +195,52 @@ def group_swh_persistent_identifiers(
         pids_by_type[obj_type].append(hash_to_bytes(obj_id))
 
     return pids_by_type
+
+
+def get_swh_persistent_ids(swh_objects, snapshot_context=None):
+    """
+    Returns a list of dict containing info related to persistent
+    identifiers of swh objects.
+
+    Args:
+        swh_objects (list): a list of dict with the following keys:
+
+            * type: swh object type
+              (content/directory/release/revision/snapshot)
+            * id: swh object id
+
+        snapshot_context (dict): optional parameter describing the snapshot in
+            which the object has been found
+
+    Returns:
+        list: a list of dict with the following keys:
+            * object_type: the swh object type
+              (content/directory/release/revision/snapshot)
+            * object_icon: the swh object icon to use in HTML views
+            * swh_id: the computed swh object persistent identifier
+            * swh_id_url: the url resolving the persistent identifier
+            * show_options: boolean indicating if the persistent id options
+                must be displayed in persistent ids HTML view
+    """
+    swh_ids = []
+    for swh_object in swh_objects:
+        if not swh_object["id"]:
+            continue
+        swh_id = get_swh_persistent_id(swh_object["type"], swh_object["id"])
+        show_options = swh_object["type"] == "content" or (
+            snapshot_context and snapshot_context["origin_info"] is not None
+        )
+
+        object_icon = swh_object_icons[swh_object["type"]]
+
+        swh_ids.append(
+            {
+                "object_type": swh_object["type"],
+                "object_id": swh_object["id"],
+                "object_icon": object_icon,
+                "swh_id": swh_id,
+                "swh_id_url": reverse("browse-swh-id", url_args={"swh_id": swh_id}),
+                "show_options": show_options,
+            }
+        )
+    return swh_ids

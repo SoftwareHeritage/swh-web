@@ -17,12 +17,11 @@ import sentry_sdk
 
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import http_status_code_message
-from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import (
     reverse,
     format_utc_iso_date,
-    swh_object_icons,
     rst_to_html,
+    browsers_supported_image_mimes,
 )
 from swh.web.config import get_config
 
@@ -243,19 +242,6 @@ def request_content(
     return content_data
 
 
-_browsers_supported_image_mimes = set(
-    [
-        "image/gif",
-        "image/png",
-        "image/jpeg",
-        "image/bmp",
-        "image/webp",
-        "image/svg",
-        "image/svg+xml",
-    ]
-)
-
-
 def prepare_content_for_display(content_data, mime_type, path):
     """Function that prepares a content for HTML display.
 
@@ -290,10 +276,8 @@ def prepare_content_for_display(content_data, mime_type, path):
         mime_type = mime_type.replace("application/", "text/")
 
     if mime_type.startswith("image/"):
-        if mime_type in _browsers_supported_image_mimes:
+        if mime_type in browsers_supported_image_mimes:
             content_data = base64.b64encode(content_data).decode("ascii")
-        else:
-            content_data = None
 
     if mime_type.startswith("image/svg"):
         mime_type = "image/svg+xml"
@@ -334,9 +318,9 @@ def _snapshot_context_query_params(snapshot_context):
     query_params = None
     if snapshot_context and snapshot_context["origin_info"]:
         origin_info = snapshot_context["origin_info"]
-        query_params = {"origin": origin_info["url"]}
-        if "timestamp" in snapshot_context["url_args"]:
-            query_params["timestamp"] = snapshot_context["url_args"]["timestamp"]
+        query_params = {"origin_url": origin_info["url"]}
+        if "timestamp" in snapshot_context["query_params"]:
+            query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
         if "visit_id" in snapshot_context["query_params"]:
             query_params["visit_id"] = snapshot_context["query_params"]["visit_id"]
     elif snapshot_context:
@@ -523,14 +507,12 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     query_params = {"revision": revision_id}
     if snapshot_context and snapshot_context["origin_info"]:
         origin_info = snapshot_context["origin_info"]
-        url_args = {"origin_url": origin_info["url"]}
-        if "timestamp" in snapshot_context["url_args"]:
-            url_args["timestamp"] = snapshot_context["url_args"]["timestamp"]
+        query_params["origin_url"] = origin_info["url"]
+        if "timestamp" in snapshot_context["query_params"]:
+            query_params["timestamp"] = snapshot_context["query_params"]["timestamp"]
         if "visit_id" in snapshot_context["query_params"]:
             query_params["visit_id"] = snapshot_context["query_params"]["visit_id"]
-        revision_log_url = reverse(
-            "browse-origin-log", url_args=url_args, query_params=query_params
-        )
+        revision_log_url = reverse("browse-origin-log", query_params=query_params)
     elif snapshot_context:
         url_args = {"snapshot_id": snapshot_context["snapshot_id"]}
         revision_log_url = reverse(
@@ -760,52 +742,3 @@ def get_readme_to_display(readmes):
                 readme_html = "Readme bytes are not available"
 
     return readme_name, readme_url, readme_html
-
-
-def get_swh_persistent_ids(swh_objects, snapshot_context=None):
-    """
-    Returns a list of dict containing info related to persistent
-    identifiers of swh objects.
-
-    Args:
-        swh_objects (list): a list of dict with the following keys:
-
-            * type: swh object type
-              (content/directory/release/revision/snapshot)
-            * id: swh object id
-
-        snapshot_context (dict): optional parameter describing the snapshot in
-            which the object has been found
-
-    Returns:
-        list: a list of dict with the following keys:
-            * object_type: the swh object type
-              (content/directory/release/revision/snapshot)
-            * object_icon: the swh object icon to use in HTML views
-            * swh_id: the computed swh object persistent identifier
-            * swh_id_url: the url resolving the persistent identifier
-            * show_options: boolean indicating if the persistent id options
-                must be displayed in persistent ids HTML view
-    """
-    swh_ids = []
-    for swh_object in swh_objects:
-        if not swh_object["id"]:
-            continue
-        swh_id = get_swh_persistent_id(swh_object["type"], swh_object["id"])
-        show_options = swh_object["type"] == "content" or (
-            snapshot_context and snapshot_context["origin_info"] is not None
-        )
-
-        object_icon = swh_object_icons[swh_object["type"]]
-
-        swh_ids.append(
-            {
-                "object_type": swh_object["type"],
-                "object_id": swh_object["id"],
-                "object_icon": object_icon,
-                "swh_id": swh_id,
-                "swh_id_url": reverse("browse-swh-id", url_args={"swh_id": swh_id}),
-                "show_options": show_options,
-            }
-        )
-    return swh_ids

@@ -13,7 +13,7 @@ See top-level LICENSE file for more information
 {% include "includes/top-navigation.html" %}
 <div style="height: 35px;margin: 4px;">
   <i class="{{ swh_object_icons.release }} fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
-  created by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
+  created by {{ swh_object_metadata.author_url }} on <b>{{ swh_object_metadata.date }}</b>
 </div>
 <pre style="white-space: pre-wrap">
 <h6>{{ release.note_header }}</h6>{{ release.note_body }}
