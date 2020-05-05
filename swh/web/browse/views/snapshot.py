@@ -38,16 +38,34 @@ def snapshot_browse(request, snapshot_id):
 
 @browse_route(
     r"snapshot/(?P<snapshot_id>[0-9a-f]+)/directory/",
-    r"snapshot/(?P<snapshot_id>[0-9a-f]+)/directory/(?P<path>.+)/",
     view_name="browse-snapshot-directory",
     checksum_args=["snapshot_id"],
 )
-def snapshot_directory_browse(request, snapshot_id, path=None):
+def snapshot_directory_browse(request, snapshot_id):
     """Django view for browsing the content of a directory collected
     in a snapshot.
 
-    The url that points to it is
-    :http:get:`/browse/snapshot/(snapshot_id)/directory/[(path)/]`
+    The URL that points to it is :http:get:`/browse/snapshot/(snapshot_id)/directory/`
+    """
+    return browse_snapshot_directory(
+        request,
+        snapshot_id=snapshot_id,
+        path=request.GET.get("path"),
+        origin_url=request.GET.get("origin"),
+    )
+
+
+@browse_route(
+    r"snapshot/(?P<snapshot_id>[0-9a-f]+)/directory/(?P<path>.+)/",
+    view_name="browse-snapshot-directory-legacy",
+    checksum_args=["snapshot_id"],
+)
+def snapshot_directory_browse_legacy(request, snapshot_id, path=None):
+    """Django view for browsing the content of a directory collected
+    in a snapshot.
+
+    The URL that points to it is
+    :http:get:`/browse/snapshot/(snapshot_id)/directory/(path)/`
     """
     origin_url = request.GET.get("origin_url", None)
     if not origin_url:
@@ -58,20 +76,41 @@ def snapshot_directory_browse(request, snapshot_id, path=None):
 
 
 @browse_route(
-    r"snapshot/(?P<snapshot_id>[0-9a-f]+)/content/(?P<path>.+)/",
+    r"snapshot/(?P<snapshot_id>[0-9a-f]+)/content/",
     view_name="browse-snapshot-content",
     checksum_args=["snapshot_id"],
 )
-def snapshot_content_browse(request, snapshot_id, path):
+def snapshot_content_browse(request, snapshot_id):
+    """Django view that produces an HTML display of a content
+    collected in a snapshot.
+
+    The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/content/`
+    """
+    return browse_snapshot_content(
+        request,
+        snapshot_id=snapshot_id,
+        path=request.GET.get("path"),
+        selected_language=request.GET.get("language"),
+    )
+
+
+@browse_route(
+    r"snapshot/(?P<snapshot_id>[0-9a-f]+)/content/(?P<path>.+)/",
+    view_name="browse-snapshot-content-legacy",
+    checksum_args=["snapshot_id"],
+)
+def snapshot_content_browse_legacy(request, snapshot_id, path):
     """Django view that produces an HTML display of a content
     collected in a snapshot.
 
     The url that points to it is
     :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
     """
-    language = request.GET.get("language", None)
     return browse_snapshot_content(
-        request, snapshot_id=snapshot_id, path=path, selected_language=language
+        request,
+        snapshot_id=snapshot_id,
+        path=path,
+        selected_language=request.GET.get("language"),
     )
 
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,13 +6,13 @@
 from django.shortcuts import render
 import sentry_sdk
 
+from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     gen_revision_link,
     gen_link,
     gen_snapshot_link,
-    get_swh_persistent_ids,
     gen_directory_link,
     gen_content_link,
     gen_release_link,
@@ -20,6 +20,8 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.identifiers import get_swh_persistent_ids
+from swh.web.common.typing import ReleaseMetadata
 from swh.web.common.utils import reverse, format_utc_iso_date
 
 
@@ -37,7 +39,7 @@ def release_browse(request, sha1_git):
     """
     try:
         release = service.lookup_release(sha1_git)
-        snapshot_context = None
+        snapshot_context = {}
         origin_info = None
         snapshot_id = request.GET.get("snapshot_id", None)
         origin_url = request.GET.get("origin_url", None)
@@ -69,35 +71,40 @@ def release_browse(request, sha1_git):
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    release_data = {}
+    target_url = None
+    if release["target_type"] == REVISION:
+        target_url = gen_revision_link(release["target"])
+    elif release["target_type"] == CONTENT:
+        target_url = gen_content_link(release["target"])
+    elif release["target_type"] == DIRECTORY:
+        target_url = gen_directory_link(release["target"])
+    elif release["target_type"] == RELEASE:
+        target_url = gen_release_link(release["target"])
 
-    release_data["author"] = "None"
-    if release["author"]:
-        release_data["author"] = gen_person_mail_link(release["author"])
-    release_data["date"] = format_utc_iso_date(release["date"])
-    release_data["release"] = sha1_git
-    release_data["name"] = release["name"]
-    release_data["synthetic"] = release["synthetic"]
-    release_data["target"] = release["target"]
-    release_data["target type"] = release["target_type"]
-
+    snapshot_id = None
+    browse_snp_link = None
     if snapshot_context:
-        if release["target_type"] == "revision":
-            release_data["context-independent target"] = gen_revision_link(
-                release["target"]
-            )
-        elif release["target_type"] == "content":
-            release_data["context-independent target"] = gen_content_link(
-                release["target"]
-            )
-        elif release["target_type"] == "directory":
-            release_data["context-independent target"] = gen_directory_link(
-                release["target"]
-            )
-        elif release["target_type"] == "release":
-            release_data["context-independent target"] = gen_release_link(
-                release["target"]
-            )
+        snapshot_id = snapshot_context["snapshot_id"]
+        browse_snp_link = gen_snapshot_link(snapshot_id)
+
+    release_metadata = ReleaseMetadata(
+        object_type=RELEASE,
+        release=sha1_git,
+        release_url=gen_release_link(release["id"]),
+        author=release["author"]["fullname"] if release["author"] else "None",
+        author_url=gen_person_mail_link(release["author"])
+        if release["author"]
+        else "None",
+        date=format_utc_iso_date(release["date"]),
+        name=release["name"],
+        synthetic=release["synthetic"],
+        target=release["target"],
+        target_type=release["target_type"],
+        target_url=target_url,
+        snapshot=snapshot_context.get("snapshot_id", None),
+        snapshot_url=browse_snp_link,
+        origin_url=origin_url,
+    )
 
     release_note_lines = []
     if release["message"]:
@@ -107,7 +114,7 @@ def release_browse(request, sha1_git):
 
     rev_directory = None
     target_link = None
-    if release["target_type"] == "revision":
+    if release["target_type"] == REVISION:
         target_link = gen_revision_link(
             release["target"],
             snapshot_context=snapshot_context,
@@ -125,7 +132,7 @@ def release_browse(request, sha1_git):
             }
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
-    elif release["target_type"] == "directory":
+    elif release["target_type"] == DIRECTORY:
         target_link = gen_directory_link(
             release["target"],
             snapshot_context=snapshot_context,
@@ -143,14 +150,14 @@ def release_browse(request, sha1_git):
             }
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
-    elif release["target_type"] == "content":
+    elif release["target_type"] == CONTENT:
         target_link = gen_content_link(
             release["target"],
             snapshot_context=snapshot_context,
             link_text=None,
             link_attrs=None,
         )
-    elif release["target_type"] == "release":
+    elif release["target_type"] == RELEASE:
         target_link = gen_release_link(
             release["target"],
             snapshot_context=snapshot_context,
@@ -163,8 +170,10 @@ def release_browse(request, sha1_git):
         if origin_info:
             rev_directory_url = reverse(
                 "browse-origin-directory",
-                url_args={"origin_url": origin_info["url"]},
-                query_params={"release": release["name"]},
+                query_params={
+                    "origin_url": origin_info["url"],
+                    "release": release["name"],
+                },
             )
         elif snapshot_id:
             rev_directory_url = reverse(
@@ -183,22 +192,13 @@ def release_browse(request, sha1_git):
     release["directory_link"] = directory_link
     release["target_link"] = target_link
 
-    if snapshot_context:
-        release_data["snapshot"] = snapshot_context["snapshot_id"]
-
-    if origin_info:
-        release_data["context-independent release"] = gen_release_link(release["id"])
-        release_data["origin url"] = gen_link(origin_info["url"], origin_info["url"])
-        browse_snapshot_link = gen_snapshot_link(snapshot_context["snapshot_id"])
-        release_data["context-independent snapshot"] = browse_snapshot_link
-
-    swh_objects = [{"type": "release", "id": sha1_git}]
+    swh_objects = [{"type": RELEASE, "id": sha1_git}]
 
     if snapshot_context:
         snapshot_id = snapshot_context["snapshot_id"]
 
     if snapshot_id:
-        swh_objects.append({"type": "snapshot", "id": snapshot_id})
+        swh_objects.append({"type": SNAPSHOT, "id": snapshot_id})
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -223,7 +223,7 @@ def release_browse(request, sha1_git):
             "heading": heading,
             "swh_object_id": swh_ids[0]["swh_id"],
             "swh_object_name": "Release",
-            "swh_object_metadata": release_data,
+            "swh_object_metadata": release_metadata,
             "release": release,
             "snapshot_context": snapshot_context,
             "show_actions_menu": True,

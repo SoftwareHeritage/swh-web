@@ -1,7 +1,7 @@
 {% extends "./layout.html" %}
 
 {% comment %}
-Copyright (C) 2017-2018  The Software Heritage developers
+Copyright (C) 2017-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -15,10 +15,10 @@ See top-level LICENSE file for more information
 {% if snapshot_context %}
   <h4>
     <i class="{{ swh_object_icons|key_value:swh_object_name.lower }} fa-fw" aria-hidden="true"></i>
-    Browse archived {{ swh_object_name.lower }}
+
     {% if snapshot_context.origin_info %}
-      for origin
-      <a href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
+      Browse archived {{ swh_object_name.lower }} for origin
+      <a href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url }}">
         {{ snapshot_context.origin_info.url }}
       </a>
       {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
@@ -27,7 +27,7 @@ See top-level LICENSE file for more information
         </a>
       {% endif %}
     {% else %}
-      for snapshot
+      Browse archived {{ swh_object_name.lower }} for snapshot
       <a href="{% url 'browse-swh-id' snapshot_context.snapshot_swhid %}">
         {{ snapshot_context.snapshot_swhid }}
       </a>

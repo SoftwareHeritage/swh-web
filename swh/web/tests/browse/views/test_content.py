@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import textwrap
+
 from django.utils.html import escape
 
 from hypothesis import given
@@ -25,6 +27,7 @@ from swh.web.tests.strategies import (
     content_text_non_utf8,
     content_text_no_highlight,
     content_image_type,
+    content_unsupported_image_type_rendering,
     content_text,
     invalid_sha1,
     unknown_content,
@@ -61,6 +64,18 @@ def test_content_view_text(client, archive_data, content):
     swh_cnt_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
     assert_contains(resp, swh_cnt_id_url)
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                f"Browse archived content\n"
+                f'<a href="{swh_cnt_id_url}">\n'
+                f"  {swh_cnt_id}\n"
+                f"</a>"
+            ),
+            " " * 4,
+        ),
+    )
 
 
 @given(content_text_no_highlight())
@@ -125,6 +140,26 @@ def test_content_view_image(client, archive_data, content):
     assert_contains(resp, url_raw)
 
 
+@given(content_unsupported_image_type_rendering())
+def test_content_view_image_no_rendering(client, archive_data, content):
+    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+
+    resp = client.get(url)
+
+    mimetype = content["mimetype"]
+    encoding = content["encoding"]
+
+    assert resp.status_code == 200
+    assert_template_used(resp, "browse/content.html")
+    assert_contains(
+        resp,
+        (
+            f"Content with mime type {mimetype} and encoding {encoding} "
+            "cannot be displayed."
+        ),
+    )
+
+
 @given(content_text())
 def test_content_view_text_with_path(client, archive_data, content):
     path = content["path"]
@@ -167,7 +202,9 @@ def test_content_view_text_with_path(client, archive_data, content):
 
     for p in path_info:
         dir_url = reverse(
-            "browse-directory", url_args={"sha1_git": root_dir_sha1, "path": p["path"]}
+            "browse-directory",
+            url_args={"sha1_git": root_dir_sha1},
+            query_params={"path": p["path"]},
         )
         assert_contains(resp, '<a href="' + dir_url + '">' + p["name"] + "</a>")
 

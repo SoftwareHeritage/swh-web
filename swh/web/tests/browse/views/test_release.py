@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import random
+import textwrap
 
 from hypothesis import given
 
@@ -33,7 +34,7 @@ def test_release_browse_with_origin(client, archive_data, origin):
     url = reverse(
         "browse-release",
         url_args={"sha1_git": release["target"]},
-        query_params={"origin": origin["url"]},
+        query_params={"origin_url": origin["url"]},
     )
 
     release_data = archive_data.release_get(release["target"])
@@ -70,7 +71,7 @@ def test_release_uppercase(client, release):
 def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
     query_params = {}
     if origin_info:
-        query_params["origin"] = origin_info["url"]
+        query_params["origin_url"] = origin_info["url"]
 
     release_id = release_data["id"]
     release_name = release_data["name"]
@@ -104,12 +105,38 @@ def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
     assert_contains(resp, swh_rel_id)
     assert_contains(resp, swh_rel_id_url)
 
+    if origin_info:
+        browse_origin_url = reverse(
+            "browse-origin", query_params={"origin_url": origin_info["url"]}
+        )
+        title = (
+            f"Browse archived release for origin\n"
+            f'<a href="{browse_origin_url}">\n'
+            f'  {origin_info["url"]}\n'
+            f"</a>"
+        )
+        indent = " " * 6
+    else:
+        title = (
+            f"Browse archived release\n"
+            f'<a href="{swh_rel_id_url}">\n'
+            f"  {swh_rel_id}\n"
+            f"</a>"
+        )
+        indent = " " * 4
+
+    assert_contains(
+        resp, textwrap.indent(title, indent),
+    )
+
     if release_data["target_type"] == "revision":
         if origin_info:
             directory_url = reverse(
                 "browse-origin-directory",
-                url_args={"origin_url": origin_info["url"]},
-                query_params={"release": release_data["name"]},
+                query_params={
+                    "origin_url": origin_info["url"],
+                    "release": release_data["name"],
+                },
             )
         else:
             rev = archive_data.revision_get(release_data["target"])

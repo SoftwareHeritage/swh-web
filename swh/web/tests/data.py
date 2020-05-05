@@ -12,6 +12,7 @@ from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
+from swh.model.model import Content
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
 from swh.model.model import Directory, Origin
 from swh.loader.git.from_disk import GitLoaderFromArchive
@@ -137,6 +138,24 @@ _TEST_ORIGINS = [
 _contents = {}
 
 
+def _add_extra_contents(storage, contents):
+    pbm_image_data = b"""P1
+# PBM example
+24 7
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 1 1 1 1 0 0 1 1 1 1 0 0 1 1 1 1 0 0 1 1 1 1 0
+0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 1 0
+0 1 1 1 0 0 0 1 1 1 0 0 0 1 1 1 0 0 0 1 1 1 1 0
+0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0
+0 1 0 0 0 0 0 1 1 1 1 0 0 1 1 1 1 0 0 1 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"""
+
+    # add file with mimetype image/x-portable-bitmap in the archive content
+    pbm_content = Content.from_data(pbm_image_data)
+    storage.content_add([pbm_content])
+    contents.add(pbm_content.sha1)
+
+
 # Tests data initialization
 def _init_tests_data():
     # To hold reference to the memory storage
@@ -173,7 +192,7 @@ def _init_tests_data():
         # storage.origin_add([{'url': url}])
         storage.origin_add([Origin(url=url)])
         search.origin_update([{"url": url, "has_visits": True}])
-        visit = storage.origin_visit_add(url, "2019-12-03 13:55:05", "tar")
+        visit = storage.origin_visit_add(url, "2019-12-03 13:55:05Z", "tar")
         storage.origin_visit_update(
             url,
             visit.visit,
@@ -209,38 +228,44 @@ def _init_tests_data():
             dir_id = rev["directory"]
             directories.add(hash_to_hex(dir_id))
             for entry in dir_iterator(storage, dir_id):
-                content_path[entry["sha1"]] = "/".join(
-                    [hash_to_hex(dir_id), entry["path"].decode("utf-8")]
-                )
                 if entry["type"] == "file":
                     contents.add(entry["sha1"])
+                    content_path[entry["sha1"]] = "/".join(
+                        [hash_to_hex(dir_id), entry["path"].decode("utf-8")]
+                    )
                 elif entry["type"] == "dir":
                     directories.add(hash_to_hex(entry["target"]))
+
+    _add_extra_contents(storage, contents)
 
     # Get all checksums for each content
     result = storage.content_get_metadata(contents)
     contents = []
     for sha1, contents_metadata in result.items():
-        for content_metadata in contents_metadata:
-            contents.append(
-                {
-                    algo: hash_to_hex(content_metadata[algo])
-                    for algo in DEFAULT_ALGORITHMS
-                }
-            )
+        sha1 = contents_metadata[0]["sha1"]
+        content_metadata = {
+            algo: hash_to_hex(contents_metadata[0][algo]) for algo in DEFAULT_ALGORITHMS
+        }
+
+        path = ""
+        if sha1 in content_path:
             path = content_path[sha1]
-            cnt = next(storage.content_get([sha1]))
-            mimetype, encoding = get_mimetype_and_encoding_for_content(cnt["data"])
-            _, _, cnt["data"] = _re_encode_content(mimetype, encoding, cnt["data"])
-            content_display_data = prepare_content_for_display(
-                cnt["data"], mimetype, path
-            )
-            contents[-1]["path"] = path
-            contents[-1]["mimetype"] = mimetype
-            contents[-1]["encoding"] = encoding
-            contents[-1]["hljs_language"] = content_display_data["language"]
-            contents[-1]["data"] = content_display_data["content_data"]
-            _contents[contents[-1]["sha1"]] = contents[-1]
+        cnt = next(storage.content_get([sha1]))
+        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt["data"])
+        _, _, cnt["data"] = _re_encode_content(mimetype, encoding, cnt["data"])
+        content_display_data = prepare_content_for_display(cnt["data"], mimetype, path)
+
+        content_metadata.update(
+            {
+                "path": path,
+                "mimetype": mimetype,
+                "encoding": encoding,
+                "hljs_language": content_display_data["language"],
+                "data": content_display_data["content_data"],
+            }
+        )
+        _contents[hash_to_hex(sha1)] = content_metadata
+        contents.append(content_metadata)
 
     # Create indexer storage instance that will be shared by indexers
     idx_storage = get_indexer_storage("memory", {})

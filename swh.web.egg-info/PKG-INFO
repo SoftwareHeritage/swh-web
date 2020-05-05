@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.0.229
+Version: 0.0.230
 Summary: Software Heritage Web UI
 Home-page: https://forge.softwareheritage.org/diffusion/DWUI/
 Author: Software Heritage developers
@@ -9,6 +9,7 @@ License: UNKNOWN
 Project-URL: Bug Reports, https://forge.softwareheritage.org/maniphest
 Project-URL: Funding, https://www.softwareheritage.org/donate
 Project-URL: Source, https://forge.softwareheritage.org/source/swh-web
+Project-URL: Documentation, https://docs.softwareheritage.org/devel/swh-web/
 Description: # swh-web
         
         This repository holds the development of Software Heritage web applications:

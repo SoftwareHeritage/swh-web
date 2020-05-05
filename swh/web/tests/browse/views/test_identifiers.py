@@ -53,7 +53,7 @@ def test_revision_id_browse(client, revision):
     assert resp.status_code == 302
     assert resp["location"] == revision_browse_url
 
-    query_params = {"origin": "https://github.com/user/repo"}
+    query_params = {"origin_url": "https://github.com/user/repo"}
 
     url = reverse(
         "browse-swh-id", url_args={"swh_id": swh_id}, query_params=query_params
@@ -80,7 +80,7 @@ def test_release_id_browse(client, release):
     assert resp.status_code == 302
     assert resp["location"] == release_browse_url
 
-    query_params = {"origin": "https://github.com/user/repo"}
+    query_params = {"origin_url": "https://github.com/user/repo"}
 
     url = reverse(
         "browse-swh-id", url_args={"swh_id": swh_id}, query_params=query_params
@@ -107,7 +107,7 @@ def test_snapshot_id_browse(client, snapshot):
     assert resp.status_code == 302
     assert resp["location"] == snapshot_browse_url
 
-    query_params = {"origin": "https://github.com/user/repo"}
+    query_params = {"origin_url": "https://github.com/user/repo"}
 
     url = reverse(
         "browse-swh-id", url_args={"swh_id": swh_id}, query_params=query_params
@@ -142,7 +142,7 @@ def test_content_id_optional_parts_browse(client, content):
     content_browse_url = reverse(
         "browse-content",
         url_args={"query_string": query_string},
-        query_params={"origin": "https://github.com/user/repo"},
+        query_params={"origin_url": "https://github.com/user/repo"},
     )
     content_browse_url += "#L4-L20"
 

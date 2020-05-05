@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -16,7 +16,12 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 import sentry_sdk
 
-from swh.model.identifiers import persistent_identifier, snapshot_identifier
+from swh.model.identifiers import (
+    persistent_identifier,
+    snapshot_identifier,
+    CONTENT,
+    DIRECTORY,
+)
 
 from swh.web.browse.utils import (
     get_directory_entries,
@@ -30,19 +35,20 @@ from swh.web.browse.utils import (
     gen_revision_log_link,
     gen_release_link,
     get_readme_to_display,
-    get_swh_persistent_ids,
     gen_snapshot_link,
 )
 
 from swh.web.common import service, highlightjs
-from swh.web.common.exc import handle_view_exception, NotFoundExc
+from swh.web.common.exc import handle_view_exception, NotFoundExc, BadInputExc
+from swh.web.common.identifiers import get_swh_persistent_ids
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
     OriginInfo,
-    QueryParameters,
     SnapshotBranchInfo,
     SnapshotReleaseInfo,
     SnapshotContext,
+    ContentMetadata,
+    DirectoryMetadata,
 )
 from swh.web.common.utils import (
     reverse,
@@ -416,8 +422,9 @@ def get_snapshot_context(
     origin_info = None
     visit_info = None
     url_args = {}
-    query_params: QueryParameters = {}
+    query_params: Dict[str, Any] = {}
     origin_visits_url = None
+
     if origin_url:
         origin_info = service.lookup_origin({"url": origin_url})
 
@@ -442,28 +449,24 @@ def get_snapshot_context(
             origin_info, timestamp, visit_id, snapshot_id
         )
 
-        url_args = {"origin_url": origin_info["url"]}
+        query_params["origin_url"] = origin_info["url"]
 
-        query_params = {}
+        origin_visits_url = reverse("browse-origin-visits", query_params=query_params)
+
         if visit_id is not None:
             query_params["visit_id"] = visit_id
 
-        origin_visits_url = reverse("browse-origin-visits", url_args=url_args)
+        if timestamp is not None:
+            query_params["timestamp"] = format_utc_iso_date(
+                timestamp, "%Y-%m-%dT%H:%M:%SZ"
+            )
 
-        if timestamp:
-            url_args["timestamp"] = format_utc_iso_date(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-        visit_url = reverse(
-            "browse-origin-directory", url_args=url_args, query_params=query_params
-        )
+        visit_url = reverse("browse-origin-directory", query_params=query_params)
         visit_info["url"] = visit_url
 
-        branches_url = reverse(
-            "browse-origin-branches", url_args=url_args, query_params=query_params
-        )
+        branches_url = reverse("browse-origin-branches", query_params=query_params)
 
-        releases_url = reverse(
-            "browse-origin-releases", url_args=url_args, query_params=query_params
-        )
+        releases_url = reverse("browse-origin-releases", query_params=query_params)
     else:
         assert snapshot_id is not None
         branches, releases = get_snapshot_content(snapshot_id)
@@ -492,6 +495,9 @@ def get_snapshot_context(
     root_directory = None
 
     snapshot_total_size = sum(snapshot_sizes.values())
+
+    if path is not None:
+        query_params["path"] = path
 
     if snapshot_total_size and revision_id is not None:
         revision = service.lookup_revision(revision_id)
@@ -547,30 +553,22 @@ def get_snapshot_context(
             )
 
     for b in branches:
-        branch_url_args = dict(url_args)
         branch_query_params = dict(query_params)
         branch_query_params.pop("release", None)
         if b["name"] != b["revision"]:
             branch_query_params.pop("revision", None)
             branch_query_params["branch"] = b["name"]
-        if path:
-            branch_url_args["path"] = path
         b["url"] = reverse(
-            browse_view_name, url_args=branch_url_args, query_params=branch_query_params
+            browse_view_name, url_args=url_args, query_params=branch_query_params
         )
 
     for r in releases:
-        release_url_args = dict(url_args)
         release_query_params = dict(query_params)
         release_query_params.pop("branch", None)
         release_query_params.pop("revision", None)
         release_query_params["release"] = r["name"]
-        if path:
-            release_url_args["path"] = path
         r["url"] = reverse(
-            browse_view_name,
-            url_args=release_url_args,
-            query_params=release_query_params,
+            browse_view_name, url_args=url_args, query_params=release_query_params,
         )
 
     return SnapshotContext(
@@ -598,7 +596,7 @@ def get_snapshot_context(
 def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
     origin_info = snapshot_context["origin_info"]
     url_args = snapshot_context["url_args"]
-    query_params = snapshot_context["query_params"]
+    query_params = dict(snapshot_context["query_params"])
     root_directory = snapshot_context["root_directory"]
 
     path_info = gen_path_info(path)
@@ -610,6 +608,7 @@ def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
 
     breadcrumbs = []
     if root_directory:
+        query_params.pop("path", None)
         breadcrumbs.append(
             {
                 "name": root_directory[:7],
@@ -619,17 +618,21 @@ def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
             }
         )
     for pi in path_info:
-        bc_url_args = dict(url_args)
-        bc_url_args["path"] = pi["path"]
+        query_params["path"] = pi["path"]
         breadcrumbs.append(
             {
                 "name": pi["name"],
                 "url": reverse(
-                    browse_view_name, url_args=bc_url_args, query_params=query_params
+                    browse_view_name, url_args=url_args, query_params=query_params
                 ),
             }
         )
     return breadcrumbs
+
+
+def _check_origin_url(snapshot_id, origin_url):
+    if snapshot_id is None and origin_url is None:
+        raise BadInputExc("An origin URL must be provided as query parameter.")
 
 
 def browse_snapshot_directory(
@@ -639,6 +642,8 @@ def browse_snapshot_directory(
     Django view implementation for browsing a directory in a snapshot context.
     """
     try:
+
+        _check_origin_url(snapshot_id, origin_url)
 
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
@@ -669,7 +674,7 @@ def browse_snapshot_directory(
     origin_info = snapshot_context["origin_info"]
     visit_info = snapshot_context["visit_info"]
     url_args = snapshot_context["url_args"]
-    query_params = snapshot_context["query_params"]
+    query_params = dict(snapshot_context["query_params"])
     revision_id = snapshot_context["revision_id"]
     snapshot_id = snapshot_context["snapshot_id"]
 
@@ -686,10 +691,9 @@ def browse_snapshot_directory(
         if d["type"] == "rev":
             d["url"] = reverse("browse-revision", url_args={"sha1_git": d["target"]})
         else:
-            bc_url_args = dict(url_args)
-            bc_url_args["path"] = path + d["name"]
+            query_params["path"] = path + d["name"]
             d["url"] = reverse(
-                browse_view_name, url_args=bc_url_args, query_params=query_params
+                browse_view_name, url_args=url_args, query_params=query_params
             )
 
     sum_file_sizes = 0
@@ -702,10 +706,9 @@ def browse_snapshot_directory(
         browse_view_name = "browse-snapshot-content"
 
     for f in files:
-        bc_url_args = dict(url_args)
-        bc_url_args["path"] = path + f["name"]
+        query_params["path"] = path + f["name"]
         f["url"] = reverse(
-            browse_view_name, url_args=bc_url_args, query_params=query_params
+            browse_view_name, url_args=url_args, query_params=query_params
         )
         if f["length"] is not None:
             sum_file_sizes += f["length"]
@@ -741,37 +744,11 @@ def browse_snapshot_directory(
     browse_snp_link = gen_snapshot_link(snapshot_id)
 
     revision_found = True
-    if sha1_git is None:
+    if sha1_git is None and revision_id is not None:
         try:
             service.lookup_revision(revision_id)
         except NotFoundExc:
             revision_found = False
-
-    dir_metadata = {
-        "directory": sha1_git,
-        "context-independent directory": browse_dir_link,
-        "number of regular files": nb_files,
-        "number of subdirectories": nb_dirs,
-        "sum of regular file sizes": sum_file_sizes,
-        "path": dir_path,
-        "revision": revision_id,
-        "revision_found": revision_found,
-        "context-independent revision": browse_rev_link,
-        "snapshot": snapshot_id,
-        "context-independent snapshot": browse_snp_link,
-    }
-
-    if origin_info:
-        dir_metadata["origin url"] = origin_info["url"]
-        dir_metadata["origin visit date"] = format_utc_iso_date(visit_info["date"])
-        dir_metadata["origin visit type"] = visit_info["type"]
-
-    vault_cooking = {
-        "directory_context": True,
-        "directory_id": sha1_git,
-        "revision_context": True,
-        "revision_id": revision_id,
-    }
 
     swh_objects = [
         {"type": "directory", "id": sha1_git},
@@ -779,12 +756,44 @@ def browse_snapshot_directory(
         {"type": "snapshot", "id": snapshot_id},
     ]
 
+    visit_date = None
+    visit_type = None
+    if visit_info:
+        visit_date = format_utc_iso_date(visit_info["date"])
+        visit_type = visit_info["type"]
+
     release_id = snapshot_context["release_id"]
+    browse_rel_link = None
     if release_id:
         swh_objects.append({"type": "release", "id": release_id})
         browse_rel_link = gen_release_link(release_id)
-        dir_metadata["release"] = release_id
-        dir_metadata["context-independent release"] = browse_rel_link
+
+    dir_metadata = DirectoryMetadata(
+        object_type=DIRECTORY,
+        directory=sha1_git,
+        directory_url=browse_dir_link,
+        nb_files=nb_files,
+        nb_dirs=nb_dirs,
+        sum_file_sizes=sum_file_sizes,
+        path=dir_path,
+        revision=revision_id,
+        revision_found=revision_found,
+        revision_url=browse_rev_link,
+        release=release_id,
+        release_url=browse_rel_link,
+        snapshot=snapshot_id,
+        snapshot_url=browse_snp_link,
+        origin_url=origin_url,
+        visit_date=visit_date,
+        visit_type=visit_type,
+    )
+
+    vault_cooking = {
+        "directory_context": True,
+        "directory_id": sha1_git,
+        "revision_context": True,
+        "revision_id": revision_id,
+    }
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -841,6 +850,11 @@ def browse_snapshot_content(
     """
     try:
 
+        _check_origin_url(snapshot_id, origin_url)
+
+        if path is None:
+            raise BadInputExc("The path of a content must be given as query parameter.")
+
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
             origin_url=origin_url,
@@ -856,7 +870,7 @@ def browse_snapshot_content(
         root_directory = snapshot_context["root_directory"]
         sha1_git = None
         query_string = None
-        content_data = None
+        content_data = {}
         directory_id = None
         split_path = path.split("/")
         filename = split_path[-1]
@@ -881,24 +895,19 @@ def browse_snapshot_content(
     visit_info = snapshot_context["visit_info"]
     snapshot_id = snapshot_context["snapshot_id"]
 
-    content = None
-    language = None
-    mimetype = None
-    if content_data and content_data["raw_data"] is not None:
+    if content_data.get("raw_data") is not None:
         content_display_data = prepare_content_for_display(
             content_data["raw_data"], content_data["mimetype"], path
         )
-        content = content_display_data["content_data"]
-        language = content_display_data["language"]
-        mimetype = content_display_data["mimetype"]
+        content_data.update(content_display_data)
 
     # Override language with user-selected language
     if selected_language is not None:
-        language = selected_language
+        content_data["language"] = selected_language
 
     available_languages = None
 
-    if mimetype and "text/" in mimetype:
+    if content_data.get("mimetype") is not None and "text/" in content_data["mimetype"]:
         available_languages = highlightjs.get_supported_languages()
 
     breadcrumbs = _build_breadcrumbs(snapshot_context, filepath)
@@ -919,59 +928,53 @@ def browse_snapshot_content(
 
     browse_dir_link = gen_directory_link(directory_id)
 
-    content_metadata = {
-        "context-independent content": browse_content_link,
-        "path": None,
-        "filename": None,
-        "directory": directory_id,
-        "context-independent directory": browse_dir_link,
-        "revision": revision_id,
-        "context-independent revision": browse_rev_link,
-        "snapshot": snapshot_id,
-    }
-
-    cnt_sha1_git = None
-    content_size = None
-    error_code = 200
-    error_description = ""
-    error_message = ""
-    if content_data:
-        for checksum in content_data["checksums"].keys():
-            content_metadata[checksum] = content_data["checksums"][checksum]
-        content_metadata["mimetype"] = content_data["mimetype"]
-        content_metadata["encoding"] = content_data["encoding"]
-        content_metadata["size"] = filesizeformat(content_data["length"])
-        content_metadata["language"] = content_data["language"]
-        content_metadata["licenses"] = content_data["licenses"]
-        content_metadata["path"] = "/" + filepath
-        content_metadata["filename"] = filename
-
-        cnt_sha1_git = content_data["checksums"]["sha1_git"]
-        content_size = content_data["length"]
-        error_code = content_data["error_code"]
-        error_message = content_data["error_message"]
-        error_description = content_data["error_description"]
-
-    if origin_info:
-        content_metadata["origin url"] = origin_info["url"]
-        content_metadata["origin visit date"] = format_utc_iso_date(visit_info["date"])
-        content_metadata["origin visit type"] = visit_info["type"]
-        browse_snapshot_link = gen_snapshot_link(snapshot_id)
-        content_metadata["context-independent snapshot"] = browse_snapshot_link
+    content_checksums = content_data.get("checksums", {})
 
     swh_objects = [
-        {"type": "content", "id": cnt_sha1_git},
+        {"type": "content", "id": content_checksums.get("sha1_git")},
         {"type": "directory", "id": directory_id},
         {"type": "revision", "id": revision_id},
         {"type": "snapshot", "id": snapshot_id},
     ]
 
+    visit_date = None
+    visit_type = None
+    if visit_info:
+        visit_date = format_utc_iso_date(visit_info["date"])
+        visit_type = visit_info["type"]
+
     release_id = snapshot_context["release_id"]
+    browse_rel_link = None
     if release_id:
         swh_objects.append({"type": "release", "id": release_id})
         browse_rel_link = gen_release_link(release_id)
-        content_metadata["release"] = release_id
-        content_metadata["context-independent release"] = browse_rel_link
+
+    content_metadata = ContentMetadata(
+        object_type=CONTENT,
+        sha1=content_checksums.get("sha1"),
+        sha1_git=content_checksums.get("sha1_git"),
+        sha256=content_checksums.get("sha256"),
+        blake2s256=content_checksums.get("blake2s256"),
+        content_url=browse_content_link,
+        mimetype=content_data.get("mimetype"),
+        encoding=content_data.get("encoding"),
+        size=filesizeformat(content_data.get("length", 0)),
+        language=content_data.get("language"),
+        licenses=content_data.get("licenses"),
+        path=f"/{filepath}",
+        filename=filename,
+        directory=directory_id,
+        directory_url=browse_dir_link,
+        revision=revision_id,
+        revision_url=browse_rev_link,
+        release=release_id,
+        release_url=browse_rel_link,
+        snapshot=snapshot_id,
+        snapshot_url=gen_snapshot_link(snapshot_id),
+        origin_url=origin_url,
+        visit_date=visit_date,
+        visit_type=visit_type,
+    )
 
     swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
 
@@ -1000,11 +1003,13 @@ def browse_snapshot_content(
             "heading": heading,
             "swh_object_name": "Content",
             "swh_object_metadata": content_metadata,
-            "content": content,
-            "content_size": content_size,
+            "content": content_data.get("content_data"),
+            "content_size": content_data.get("length"),
             "max_content_size": content_display_max_size,
-            "mimetype": mimetype,
-            "language": language,
+            "filename": filename,
+            "encoding": content_data.get("encoding"),
+            "mimetype": content_data.get("mimetype"),
+            "language": content_data.get("language"),
             "available_languages": available_languages,
             "breadcrumbs": breadcrumbs if root_directory else [],
             "top_right_link": top_right_link,
@@ -1012,11 +1017,11 @@ def browse_snapshot_content(
             "vault_cooking": None,
             "show_actions_menu": True,
             "swh_ids": swh_ids,
-            "error_code": error_code,
-            "error_message": error_message,
-            "error_description": error_description,
+            "error_code": content_data.get("error_code"),
+            "error_message": content_data.get("error_message"),
+            "error_description": content_data.get("error_description"),
         },
-        status=error_code,
+        status=content_data.get("error_code", 200),
     )
 
 
@@ -1029,6 +1034,8 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
     snapshot context.
     """
     try:
+
+        _check_origin_url(snapshot_id, origin_url)
 
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
@@ -1173,6 +1180,8 @@ def browse_snapshot_branches(
     """
     try:
 
+        _check_origin_url(snapshot_id, origin_url)
+
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
             origin_url=origin_url,
@@ -1216,7 +1225,7 @@ def browse_snapshot_branches(
             revision_url = reverse(
                 "browse-revision",
                 url_args={"sha1_git": branch["revision"]},
-                query_params={"origin": origin_info["url"]},
+                query_params={"origin_url": origin_info["url"]},
             )
         query_params["branch"] = branch["name"]
         directory_url = reverse(
@@ -1286,6 +1295,9 @@ def browse_snapshot_releases(
     context.
     """
     try:
+
+        _check_origin_url(snapshot_id, origin_url)
+
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
             origin_url=origin_url,
@@ -1317,7 +1329,7 @@ def browse_snapshot_releases(
         if snapshot_id:
             query_params_tgt = {"snapshot_id": snapshot_id}
         else:
-            query_params_tgt = {"origin": origin_info["url"]}
+            query_params_tgt = {"origin_url": origin_info["url"]}
         release_url = reverse(
             "browse-release",
             url_args={"sha1_git": release["id"]},

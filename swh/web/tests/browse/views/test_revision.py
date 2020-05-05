@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import textwrap
+
 from django.utils.html import escape
 from hypothesis import given
 
@@ -37,7 +39,7 @@ def test_revision_browse(client, archive_data, revision):
 
     for parent in revision_data["parents"]:
         parent_url = reverse("browse-revision", url_args={"sha1_git": parent})
-        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent))
+        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent[:7]))
 
     author_date = revision_data["date"]
     committer_date = revision_data["committer_date"]
@@ -49,6 +51,22 @@ def test_revision_browse(client, archive_data, revision):
     assert_contains(resp, escape(message_lines[0]))
     assert_contains(resp, escape("\n".join(message_lines[1:])))
 
+    swh_rev_id = get_swh_persistent_id("revision", revision)
+    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                f"Browse archived revision\n"
+                f'<a href="{swh_rev_id_url}">\n'
+                f"  {swh_rev_id}\n"
+                f"</a>"
+            ),
+            " " * 4,
+        ),
+    )
+
 
 @given(origin())
 def test_revision_origin_browse(client, archive_data, origin):
@@ -59,14 +77,13 @@ def test_revision_origin_browse(client, archive_data, origin):
 
     origin_revision_log_url = reverse(
         "browse-origin-log",
-        url_args={"origin_url": origin["url"]},
-        query_params={"revision": revision},
+        query_params={"origin_url": origin["url"], "revision": revision},
     )
 
     url = reverse(
         "browse-revision",
         url_args={"sha1_git": revision},
-        query_params={"origin": origin["url"]},
+        query_params={"origin_url": origin["url"]},
     )
 
     resp = client.get(url)
@@ -77,9 +94,9 @@ def test_revision_origin_browse(client, archive_data, origin):
         parent_url = reverse(
             "browse-revision",
             url_args={"sha1_git": parent},
-            query_params={"origin": origin["url"]},
+            query_params={"origin_url": origin["url"]},
         )
-        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent))
+        assert_contains(resp, '<a href="%s">%s</a>' % (parent_url, parent[:7]))
 
     assert_contains(resp, "vault-cook-directory")
     assert_contains(resp, "vault-cook-revision")
@@ -210,6 +227,22 @@ def test_revision_log_browse(client, archive_data, revision):
             resp, '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
         )
 
+    swh_rev_id = get_swh_persistent_id("revision", revision)
+    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                f"Browse archived revisions history\n"
+                f'<a href="{swh_rev_id_url}">\n'
+                f"  {swh_rev_id}\n"
+                f"</a>"
+            ),
+            " " * 4,
+        ),
+    )
+
 
 @given(revision(), unknown_revision(), new_origin())
 def test_revision_request_errors(client, revision, unknown_revision, new_origin):
@@ -224,7 +257,7 @@ def test_revision_request_errors(client, revision, unknown_revision, new_origin)
     url = reverse(
         "browse-revision",
         url_args={"sha1_git": revision},
-        query_params={"origin": new_origin.url},
+        query_params={"origin_url": new_origin.url},
     )
 
     resp = client.get(url)

@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,13 +18,15 @@ from swh.web.api.views.utils import api_lookup
 # XXX: a bit spaghetti. Would be better with class-based views.
 def _dispatch_cook_progress(request, obj_type, obj_id):
     hex_id = hashutil.hash_to_hex(obj_id)
-    object_name = obj_type.split("_")[0].title()
+    object_name = obj_type.split("_")[0]
     if request.method == "GET":
         return api_lookup(
             service.vault_progress,
             obj_type,
             obj_id,
-            notfound_msg=("{} '{}' was never requested.".format(object_name, hex_id)),
+            notfound_msg=(
+                "Cooking of {} '{}' was never requested.".format(object_name, hex_id)
+            ),
             request=request,
         )
     elif request.method == "POST":
@@ -34,7 +36,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
             obj_type,
             obj_id,
             email,
-            notfound_msg=("{} '{}' not found.".format(object_name, hex_id)),
+            notfound_msg=("{} '{}' not found.".format(object_name.title(), hex_id)),
             request=request,
         )
 
@@ -136,7 +138,7 @@ def api_vault_fetch_directory(request, dir_id):
         service.vault_fetch,
         "directory",
         obj_id,
-        notfound_msg="Directory with ID '{}' not found.".format(dir_id),
+        notfound_msg="Cooked archive for directory '{}' not found.".format(dir_id),
         request=request,
     )
     fname = "{}.tar.gz".format(dir_id)
@@ -243,7 +245,7 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
         service.vault_fetch,
         "revision_gitfast",
         obj_id,
-        notfound_msg="Revision with ID '{}' not found.".format(rev_id),
+        notfound_msg="Cooked archive for revision '{}' not found.".format(rev_id),
         request=request,
     )
     fname = "{}.gitfast.gz".format(rev_id)
