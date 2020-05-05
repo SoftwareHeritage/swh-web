@@ -11,10 +11,9 @@ from collections import defaultdict
 from typing import Any, Dict, List, Set, Iterator, Optional, Tuple
 
 from swh.model import hashutil
-
-from swh.storage.algos import diff, revisions_walker
-
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.storage.algos import diff, revisions_walker
+from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
 from swh.web.common import converters
 from swh.web.common import query
@@ -1090,22 +1089,29 @@ def lookup_directory_through_revision(revision, path=None, limit=100, with_data=
     return (rev["id"], lookup_directory_with_revision(rev["id"], path, with_data))
 
 
+def _vault_request(vault_fn, *args, **kwargs):
+    try:
+        return vault_fn(*args, **kwargs)
+    except VaultNotFoundExc:
+        return None
+
+
 def vault_cook(obj_type, obj_id, email=None):
     """Cook a vault bundle.
     """
-    return vault.cook(obj_type, obj_id, email=email)
+    return _vault_request(vault.cook, obj_type, obj_id, email=email)
 
 
 def vault_fetch(obj_type, obj_id):
     """Fetch a vault bundle.
     """
-    return vault.fetch(obj_type, obj_id)
+    return _vault_request(vault.fetch, obj_type, obj_id)
 
 
 def vault_progress(obj_type, obj_id):
     """Get the current progress of a vault bundle.
     """
-    return vault.progress(obj_type, obj_id)
+    return _vault_request(vault.progress, obj_type, obj_id)
 
 
 def diff_revision(rev_id):
