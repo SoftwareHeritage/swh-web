@@ -3,7 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Dict, Iterable, List, Optional
+from urllib.parse import quote
+from typing import Any, Dict, Iterable, List, Optional
 from typing_extensions import TypedDict
 
 from django.http import QueryDict
@@ -23,12 +24,21 @@ from swh.model.identifiers import (
 )
 
 from swh.web.common.exc import BadInputExc
-from swh.web.common.typing import QueryParameters
-from swh.web.common.utils import swh_object_icons, reverse
+from swh.web.common.typing import (
+    QueryParameters,
+    SnapshotContext,
+    SWHObjectInfo,
+    SWHIDInfo,
+    SWHIDContext,
+)
+from swh.web.common.utils import reverse
 
 
 def get_swh_persistent_id(
-    object_type: str, object_id: str, scheme_version: int = 1
+    object_type: str,
+    object_id: str,
+    scheme_version: int = 1,
+    metadata: SWHIDContext = {},
 ) -> str:
     """
     Returns the persistent identifier for a swh object based on:
@@ -53,7 +63,7 @@ def get_swh_persistent_id(
             generate a valid identifier
     """
     try:
-        swh_id = persistent_identifier(object_type, object_id, scheme_version)
+        swh_id = persistent_identifier(object_type, object_id, scheme_version, metadata)
     except ValidationError as e:
         raise BadInputExc(
             "Invalid object (%s) for swh persistent id. %s" % (object_id, e)
@@ -197,50 +207,114 @@ def group_swh_persistent_identifiers(
     return pids_by_type
 
 
-def get_swh_persistent_ids(swh_objects, snapshot_context=None):
+def get_swhids_info(
+    swh_objects: Iterable[SWHObjectInfo],
+    snapshot_context: Optional[SnapshotContext] = None,
+    extra_context: Optional[Dict[str, Any]] = None,
+) -> List[SWHIDInfo]:
     """
     Returns a list of dict containing info related to persistent
     identifiers of swh objects.
 
     Args:
-        swh_objects (list): a list of dict with the following keys:
-
-            * type: swh object type
-              (content/directory/release/revision/snapshot)
-            * id: swh object id
-
-        snapshot_context (dict): optional parameter describing the snapshot in
-            which the object has been found
+        swh_objects: an iterable of dict describing archived objects
+        snapshot_context: optional dict parameter describing the snapshot in
+            which the objects have been found
+        extra_context: optional dict filled with extra contextual info about
+            the objects
 
     Returns:
-        list: a list of dict with the following keys:
-            * object_type: the swh object type
-              (content/directory/release/revision/snapshot)
-            * object_icon: the swh object icon to use in HTML views
-            * swh_id: the computed swh object persistent identifier
-            * swh_id_url: the url resolving the persistent identifier
-            * show_options: boolean indicating if the persistent id options
-                must be displayed in persistent ids HTML view
+        a list of dict containing persistent identifiers info
+
     """
-    swh_ids = []
+    swhids_info = []
     for swh_object in swh_objects:
-        if not swh_object["id"]:
+        if not swh_object["object_id"]:
+            swhids_info.append(
+                SWHIDInfo(
+                    object_type=swh_object["object_type"],
+                    object_id="",
+                    swhid="",
+                    swhid_url="",
+                    context={},
+                    swhid_with_context=None,
+                    swhid_with_context_url=None,
+                )
+            )
             continue
-        swh_id = get_swh_persistent_id(swh_object["type"], swh_object["id"])
-        show_options = swh_object["type"] == "content" or (
-            snapshot_context and snapshot_context["origin_info"] is not None
-        )
+        object_type = swh_object["object_type"]
+        object_id = swh_object["object_id"]
+        swhid_context: SWHIDContext = {}
+        if snapshot_context:
+            if snapshot_context["origin_info"] is not None:
+                swhid_context["origin"] = quote(
+                    snapshot_context["origin_info"]["url"], safe="/?:@&"
+                )
+            if object_type != SNAPSHOT:
+                swhid_context["visit"] = get_swh_persistent_id(
+                    SNAPSHOT, snapshot_context["snapshot_id"]
+                )
+            if object_type not in (RELEASE, REVISION, SNAPSHOT):
+                if snapshot_context["release_id"] is not None:
+                    swhid_context["anchor"] = get_swh_persistent_id(
+                        RELEASE, snapshot_context["release_id"]
+                    )
+                elif snapshot_context["revision_id"] is not None:
+                    swhid_context["anchor"] = get_swh_persistent_id(
+                        REVISION, snapshot_context["revision_id"]
+                    )
 
-        object_icon = swh_object_icons[swh_object["type"]]
+        if object_type in (CONTENT, DIRECTORY):
+            if (
+                extra_context
+                and "revision" in extra_context
+                and extra_context["revision"]
+            ):
+                swhid_context["anchor"] = get_swh_persistent_id(
+                    REVISION, extra_context["revision"]
+                )
+            elif (
+                extra_context
+                and "root_directory" in extra_context
+                and extra_context["root_directory"]
+                and (
+                    object_type != DIRECTORY
+                    or extra_context["root_directory"] != object_id
+                )
+            ):
+                swhid_context["anchor"] = get_swh_persistent_id(
+                    DIRECTORY, extra_context["root_directory"]
+                )
+            path = None
+            if extra_context and "path" in extra_context:
+                path = extra_context["path"]
+                if "filename" in extra_context and object_type == CONTENT:
+                    path += extra_context["filename"]
+            if path:
+                swhid_context["path"] = quote(path, safe="/?:@&")
 
-        swh_ids.append(
-            {
-                "object_type": swh_object["type"],
-                "object_id": swh_object["id"],
-                "object_icon": object_icon,
-                "swh_id": swh_id,
-                "swh_id_url": reverse("browse-swh-id", url_args={"swh_id": swh_id}),
-                "show_options": show_options,
-            }
+        swhid = get_swh_persistent_id(object_type, object_id)
+        swhid_url = reverse("browse-swh-id", url_args={"swh_id": swhid})
+
+        swhid_with_context = None
+        swhid_with_context_url = None
+        if swhid_context:
+            swhid_with_context = get_swh_persistent_id(
+                object_type, object_id, metadata=swhid_context
+            )
+            swhid_with_context_url = reverse(
+                "browse-swh-id", url_args={"swh_id": swhid_with_context}
+            )
+
+        swhids_info.append(
+            SWHIDInfo(
+                object_type=object_type,
+                object_id=object_id,
+                swhid=swhid,
+                swhid_url=swhid_url,
+                context=swhid_context,
+                swhid_with_context=swhid_with_context,
+                swhid_with_context_url=swhid_with_context_url,
+            )
         )
-    return swh_ids
+    return swhids_info

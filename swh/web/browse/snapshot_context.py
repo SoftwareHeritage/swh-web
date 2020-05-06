@@ -21,6 +21,9 @@ from swh.model.identifiers import (
     snapshot_identifier,
     CONTENT,
     DIRECTORY,
+    REVISION,
+    RELEASE,
+    SNAPSHOT,
 )
 
 from swh.web.browse.utils import (
@@ -40,7 +43,7 @@ from swh.web.browse.utils import (
 
 from swh.web.common import service, highlightjs
 from swh.web.common.exc import handle_view_exception, NotFoundExc, BadInputExc
-from swh.web.common.identifiers import get_swh_persistent_ids
+from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
     OriginInfo,
@@ -49,6 +52,7 @@ from swh.web.common.typing import (
     SnapshotContext,
     ContentMetadata,
     DirectoryMetadata,
+    SWHObjectInfo,
 )
 from swh.web.common.utils import (
     reverse,
@@ -751,9 +755,9 @@ def browse_snapshot_directory(
             revision_found = False
 
     swh_objects = [
-        {"type": "directory", "id": sha1_git},
-        {"type": "revision", "id": revision_id},
-        {"type": "snapshot", "id": snapshot_id},
+        SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git),
+        SWHObjectInfo(object_type=REVISION, object_id=revision_id),
+        SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id),
     ]
 
     visit_date = None
@@ -765,16 +769,18 @@ def browse_snapshot_directory(
     release_id = snapshot_context["release_id"]
     browse_rel_link = None
     if release_id:
-        swh_objects.append({"type": "release", "id": release_id})
+        swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
         browse_rel_link = gen_release_link(release_id)
 
     dir_metadata = DirectoryMetadata(
         object_type=DIRECTORY,
+        object_id=sha1_git,
         directory=sha1_git,
         directory_url=browse_dir_link,
         nb_files=nb_files,
         nb_dirs=nb_dirs,
         sum_file_sizes=sum_file_sizes,
+        root_directory=root_directory,
         path=dir_path,
         revision=revision_id,
         revision_found=revision_found,
@@ -795,7 +801,7 @@ def browse_snapshot_directory(
         "revision_id": revision_id,
     }
 
-    swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
+    swhids_info = get_swhids_info(swh_objects, snapshot_context, dir_metadata)
 
     dir_path = "/".join([bc["name"] for bc in breadcrumbs]) + "/"
     context_found = "snapshot: %s" % snapshot_context["snapshot_id"]
@@ -832,7 +838,7 @@ def browse_snapshot_directory(
             "snapshot_context": snapshot_context,
             "vault_cooking": vault_cooking,
             "show_actions_menu": True,
-            "swh_ids": swh_ids,
+            "swhids_info": swhids_info,
         },
     )
 
@@ -931,10 +937,10 @@ def browse_snapshot_content(
     content_checksums = content_data.get("checksums", {})
 
     swh_objects = [
-        {"type": "content", "id": content_checksums.get("sha1_git")},
-        {"type": "directory", "id": directory_id},
-        {"type": "revision", "id": revision_id},
-        {"type": "snapshot", "id": snapshot_id},
+        SWHObjectInfo(object_type=CONTENT, object_id=content_checksums.get("sha1_git")),
+        SWHObjectInfo(object_type=DIRECTORY, object_id=directory_id),
+        SWHObjectInfo(object_type=REVISION, object_id=revision_id),
+        SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id),
     ]
 
     visit_date = None
@@ -946,11 +952,12 @@ def browse_snapshot_content(
     release_id = snapshot_context["release_id"]
     browse_rel_link = None
     if release_id:
-        swh_objects.append({"type": "release", "id": release_id})
+        swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
         browse_rel_link = gen_release_link(release_id)
 
     content_metadata = ContentMetadata(
         object_type=CONTENT,
+        object_id=content_checksums.get("sha1_git"),
         sha1=content_checksums.get("sha1"),
         sha1_git=content_checksums.get("sha1_git"),
         sha256=content_checksums.get("sha256"),
@@ -961,6 +968,7 @@ def browse_snapshot_content(
         size=filesizeformat(content_data.get("length", 0)),
         language=content_data.get("language"),
         licenses=content_data.get("licenses"),
+        root_directory=root_directory,
         path=f"/{filepath}",
         filename=filename,
         directory=directory_id,
@@ -976,7 +984,7 @@ def browse_snapshot_content(
         visit_type=visit_type,
     )
 
-    swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
+    swhids_info = get_swhids_info(swh_objects, snapshot_context, content_metadata)
 
     content_path = "/".join([bc["name"] for bc in breadcrumbs])
     context_found = "snapshot: %s" % snapshot_context["snapshot_id"]
@@ -1016,7 +1024,7 @@ def browse_snapshot_content(
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
             "show_actions_menu": True,
-            "swh_ids": swh_ids,
+            "swhids_info": swhids_info,
             "error_code": content_data.get("error_code"),
             "error_message": content_data.get("error_message"),
             "error_description": content_data.get("error_description"),
@@ -1132,18 +1140,18 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
         revision_metadata["origin visit type"] = visit_info["type"]
 
     swh_objects = [
-        {"type": "revision", "id": revision_id},
-        {"type": "snapshot", "id": snapshot_id},
+        SWHObjectInfo(object_type=REVISION, object_id=revision_id),
+        SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id),
     ]
 
     release_id = snapshot_context["release_id"]
     if release_id:
-        swh_objects.append({"type": "release", "id": release_id})
+        swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
         browse_rel_link = gen_release_link(release_id)
         revision_metadata["release"] = release_id
         revision_metadata["context-independent release"] = browse_rel_link
 
-    swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
+    swhids_info = get_swhids_info(swh_objects, snapshot_context)
 
     context_found = "snapshot: %s" % snapshot_context["snapshot_id"]
     if origin_info:
@@ -1166,7 +1174,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
             "show_actions_menu": True,
-            "swh_ids": swh_ids,
+            "swhids_info": swhids_info,
         },
     )
 

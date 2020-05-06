@@ -261,7 +261,7 @@ describe('Persistent Identifiers Tests', function() {
       const swhIdsContext = win.swh.webapp.getSwhIdsContext();
       for (let testData of testsData) {
         assert.isTrue(swhIdsContext.hasOwnProperty(testData.objectType));
-        assert.equal(swhIdsContext[testData.objectType].swh_id,
+        assert.equal(swhIdsContext[testData.objectType].swhid,
                      testData.objectPids.slice(-1)[0]);
       }
     });
