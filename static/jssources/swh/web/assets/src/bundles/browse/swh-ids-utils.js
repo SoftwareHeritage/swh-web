@@ -16,24 +16,27 @@ export function swhIdObjectTypeToggled(event) {
   $(event.target).tab('show');
 }
 
-export function swhIdOptionOriginToggled(event) {
+export function swhIdContextOptionToggled(event) {
   event.stopPropagation();
   let swhIdElt = $(event.target).closest('.swh-id-ui').find('.swh-id');
-  let originPart = ';origin=' + $(event.target).data('swh-origin');
+  let swhIdWithContext = $(event.target).data('swhid-with-context');
   let currentSwhId = swhIdElt.text();
   if ($(event.target).prop('checked')) {
-    if (currentSwhId.indexOf(originPart) === -1) {
-      currentSwhId += originPart;
-    }
+    currentSwhId = swhIdWithContext;
   } else {
-    currentSwhId = currentSwhId.replace(originPart, '');
+    const pos = currentSwhId.indexOf(';');
+    if (pos !== -1) {
+      currentSwhId = currentSwhId.slice(0, pos);
+    }
   }
   swhIdElt.text(currentSwhId);
   swhIdElt.attr('href', '/' + currentSwhId + '/');
+
+  addLinesInfo();
 }
 
-function setIdLinesPart(elt) {
-  let swhIdElt = $(elt).closest('.swh-id-ui').find('.swh-id');
+function addLinesInfo() {
+  let swhIdElt = $('#swh-id-tab-content').find('.swh-id');
   let currentSwhId = swhIdElt.text();
   let lines = [];
   let linesPart = ';lines=';
@@ -49,22 +52,16 @@ function setIdLinesPart(elt) {
   if (lines.length > 1) {
     linesPart += '-' + lines[1];
   }
-  if ($(elt).prop('checked')) {
-    currentSwhId = currentSwhId.replace(/;lines=\d+-*\d*/g, '');
-    currentSwhId += linesPart;
-  } else {
-    currentSwhId = currentSwhId.replace(linesPart, '');
-  }
-  swhIdElt.text(currentSwhId);
-  swhIdElt.attr('href', '/' + currentSwhId + '/');
-}
 
-export function swhIdOptionLinesToggled(event) {
-  event.stopPropagation();
-  if (!window.location.hash) {
-    return;
+  if ($('#swh-id-context-option-content').prop('checked')) {
+    currentSwhId = currentSwhId.replace(/;lines=\d+-*\d*/g, '');
+    if (lines.length > 0) {
+      currentSwhId += linesPart;
+    }
+
+    swhIdElt.text(currentSwhId);
+    swhIdElt.attr('href', '/' + currentSwhId + '/');
   }
-  setIdLinesPart(event.target);
 }
 
 $(document).ready(() => {
@@ -108,11 +105,16 @@ $(document).ready(() => {
 
   // set the tab visible once the close animation is terminated
   $('#swh-identifiers').css('display', 'block');
-  $('.swh-id-option-origin').trigger('click');
-  $('.swh-id-option-lines').trigger('click');
+  $('.swh-id-context-option').trigger('click');
 
+  // highlighted code lines changed
   $(window).on('hashchange', () => {
-    setIdLinesPart('.swh-id-option-lines');
+    addLinesInfo();
+  });
+
+  // highlighted code lines removed
+  $('body').click(() => {
+    addLinesInfo();
   });
 
 });

@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
+
 from hypothesis import given
 
 import pytest
@@ -23,10 +25,22 @@ from swh.web.common.identifiers import (
     resolve_swh_persistent_id,
     get_persistent_identifier,
     group_swh_persistent_identifiers,
+    get_swhids_info,
 )
+from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.common.utils import reverse
+from swh.web.common.typing import SWHObjectInfo
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import content, directory, release, revision, snapshot
+from swh.web.tests.strategies import (
+    content,
+    directory,
+    release,
+    revision,
+    snapshot,
+    origin,
+    origin_with_multiple_visits,
+    directory_with_subdirs,
+)
 
 
 @given(content())
@@ -119,3 +133,287 @@ def test_group_persistent_identifiers(content, directory, release, revision, sna
     pid_groups = group_swh_persistent_identifiers(swh_pids)
 
     assert pid_groups == expected
+
+
+@given(directory_with_subdirs())
+def test_get_swhids_info_directory_context(archive_data, directory):
+    extra_context = {"path": "/"}
+    swhid = get_swhids_info(
+        [SWHObjectInfo(object_type=DIRECTORY, object_id=directory)],
+        snapshot_context=None,
+        extra_context=extra_context,
+    )[0]
+    swhid_dir_parsed = get_persistent_identifier(swhid["swhid_with_context"])
+
+    assert swhid_dir_parsed.metadata == extra_context
+
+    dir_content = archive_data.directory_ls(directory)
+    dir_subdirs = [e for e in dir_content if e["type"] == "dir"]
+    dir_subdir = random.choice(dir_subdirs)
+    dir_subdir_path = f'/{dir_subdir["name"]}/'
+
+    dir_subdir_content = archive_data.directory_ls(dir_subdir["target"])
+    dir_subdir_files = [e for e in dir_subdir_content if e["type"] == "file"]
+    dir_subdir_file = random.choice(dir_subdir_files)
+
+    extra_context = {
+        "root_directory": directory,
+        "path": dir_subdir_path,
+        "filename": dir_subdir_file["name"],
+    }
+    swhids = get_swhids_info(
+        [
+            SWHObjectInfo(object_type=DIRECTORY, object_id=dir_subdir["target"]),
+            SWHObjectInfo(
+                object_type=CONTENT, object_id=dir_subdir_file["checksums"]["sha1_git"]
+            ),
+        ],
+        snapshot_context=None,
+        extra_context=extra_context,
+    )
+    swhid_dir_parsed = get_persistent_identifier(swhids[0]["swhid_with_context"])
+    swhid_cnt_parsed = get_persistent_identifier(swhids[1]["swhid_with_context"])
+
+    anchor = get_swh_persistent_id(DIRECTORY, directory)
+
+    assert swhid_dir_parsed.metadata == {
+        "anchor": anchor,
+        "path": dir_subdir_path,
+    }
+
+    assert swhid_cnt_parsed.metadata == {
+        "anchor": anchor,
+        "path": f'{dir_subdir_path}{dir_subdir_file["name"]}',
+    }
+
+
+@given(revision())
+def test_get_swhids_info_revision_context(archive_data, revision):
+    revision_data = archive_data.revision_get(revision)
+    directory = revision_data["directory"]
+    dir_content = archive_data.directory_ls(directory)
+    dir_entry = random.choice(dir_content)
+
+    swh_objects = [
+        SWHObjectInfo(object_type=REVISION, object_id=revision),
+        SWHObjectInfo(object_type=DIRECTORY, object_id=directory),
+    ]
+
+    extra_context = {"revision": revision, "path": "/"}
+    if dir_entry["type"] == "file":
+        swh_objects.append(
+            SWHObjectInfo(
+                object_type=CONTENT, object_id=dir_entry["checksums"]["sha1_git"]
+            )
+        )
+        extra_context["filename"] = dir_entry["name"]
+
+    swhids = get_swhids_info(
+        swh_objects, snapshot_context=None, extra_context=extra_context,
+    )
+
+    assert swhids[0]["context"] == {}
+    swhid_dir_parsed = get_persistent_identifier(swhids[1]["swhid_with_context"])
+
+    anchor = get_swh_persistent_id(REVISION, revision)
+
+    assert swhid_dir_parsed.metadata == {
+        "anchor": anchor,
+        "path": "/",
+    }
+
+    if dir_entry["type"] == "file":
+        swhid_cnt_parsed = get_persistent_identifier(swhids[2]["swhid_with_context"])
+        assert swhid_cnt_parsed.metadata == {
+            "anchor": anchor,
+            "path": f'/{dir_entry["name"]}',
+        }
+
+
+@given(origin_with_multiple_visits())
+def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
+    """
+    Test SWHIDs with contextual info computation under a variety of origin / snapshot
+    browsing contexts.
+    """
+
+    visits = archive_data.origin_visit_get(origin["url"])
+
+    for visit in visits:
+        snapshot = archive_data.snapshot_get(visit["snapshot"])
+        snapshot_id = snapshot["id"]
+        branches = {
+            k: v["target"]
+            for k, v in snapshot["branches"].items()
+            if v["target_type"] == "revision"
+        }
+        releases = {
+            k: v["target"]
+            for k, v in snapshot["branches"].items()
+            if v["target_type"] == "release"
+        }
+        head_rev_id = archive_data.snapshot_get_head(snapshot)
+        head_rev = archive_data.revision_get(head_rev_id)
+        root_dir = head_rev["directory"]
+        dir_content = archive_data.directory_ls(root_dir)
+        dir_files = [e for e in dir_content if e["type"] == "file"]
+        dir_file = random.choice(dir_files)
+        revision_log = [r["id"] for r in archive_data.revision_log(head_rev_id)]
+
+        branch_name = random.choice(list(branches))
+        release = random.choice(list(releases))
+        release_data = archive_data.release_get(releases[release])
+        release_name = release_data["name"]
+        revision_id = random.choice(revision_log)
+
+        for snp_ctx_params, anchor_info in (
+            (
+                {"snapshot_id": snapshot_id},
+                {"anchor_type": REVISION, "anchor_id": head_rev_id},
+            ),
+            (
+                {"snapshot_id": snapshot_id, "branch_name": branch_name},
+                {"anchor_type": REVISION, "anchor_id": branches[branch_name]},
+            ),
+            (
+                {"snapshot_id": snapshot_id, "release_name": release_name},
+                {"anchor_type": RELEASE, "anchor_id": releases[release]},
+            ),
+            (
+                {"snapshot_id": snapshot_id, "revision_id": revision_id},
+                {"anchor_type": REVISION, "anchor_id": revision_id},
+            ),
+            (
+                {"origin_url": origin["url"], "snapshot_id": snapshot_id},
+                {"anchor_type": REVISION, "anchor_id": head_rev_id},
+            ),
+            (
+                {
+                    "origin_url": origin["url"],
+                    "snapshot_id": snapshot_id,
+                    "branch_name": branch_name,
+                },
+                {"anchor_type": REVISION, "anchor_id": branches[branch_name]},
+            ),
+            (
+                {
+                    "origin_url": origin["url"],
+                    "snapshot_id": snapshot_id,
+                    "release_name": release_name,
+                },
+                {"anchor_type": RELEASE, "anchor_id": releases[release]},
+            ),
+            (
+                {
+                    "origin_url": origin["url"],
+                    "snapshot_id": snapshot_id,
+                    "revision_id": revision_id,
+                },
+                {"anchor_type": REVISION, "anchor_id": revision_id},
+            ),
+        ):
+
+            snapshot_context = get_snapshot_context(**snp_ctx_params)
+
+            rev_id = head_rev_id
+            if "branch_name" in snp_ctx_params:
+                rev_id = branches[branch_name]
+            elif "release_name" in snp_ctx_params:
+                rev_id = release_data["target"]
+            elif "revision_id" in snp_ctx_params:
+                rev_id = revision_id
+
+            swh_objects = [
+                SWHObjectInfo(
+                    object_type=CONTENT, object_id=dir_file["checksums"]["sha1_git"]
+                ),
+                SWHObjectInfo(object_type=DIRECTORY, object_id=root_dir),
+                SWHObjectInfo(object_type=REVISION, object_id=rev_id),
+                SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id),
+            ]
+
+            if "release_name" in snp_ctx_params:
+                swh_objects.append(
+                    SWHObjectInfo(object_type=RELEASE, object_id=release_data["id"])
+                )
+
+            swhids = get_swhids_info(
+                swh_objects,
+                snapshot_context,
+                extra_context={"path": "/", "filename": dir_file["name"]},
+            )
+
+            swhid_cnt_parsed = get_persistent_identifier(
+                swhids[0]["swhid_with_context"]
+            )
+            swhid_dir_parsed = get_persistent_identifier(
+                swhids[1]["swhid_with_context"]
+            )
+            swhid_rev_parsed = get_persistent_identifier(
+                swhids[2]["swhid_with_context"]
+            )
+
+            swhid_snp_parsed = get_persistent_identifier(
+                swhids[3]["swhid_with_context"] or swhids[3]["swhid"]
+            )
+
+            swhid_rel_parsed = None
+            if "release_name" in snp_ctx_params:
+                swhid_rel_parsed = get_persistent_identifier(
+                    swhids[4]["swhid_with_context"]
+                )
+
+            anchor = get_swh_persistent_id(
+                object_type=anchor_info["anchor_type"],
+                object_id=anchor_info["anchor_id"],
+            )
+
+            snapshot_swhid = get_swh_persistent_id(
+                object_type=SNAPSHOT, object_id=snapshot_id
+            )
+
+            expected_cnt_context = {
+                "visit": snapshot_swhid,
+                "anchor": anchor,
+                "path": f'/{dir_file["name"]}',
+            }
+
+            expected_dir_context = {
+                "visit": snapshot_swhid,
+                "anchor": anchor,
+                "path": "/",
+            }
+
+            expected_rev_context = {"visit": snapshot_swhid}
+
+            expected_snp_context = {}
+
+            if "origin_url" in snp_ctx_params:
+                expected_cnt_context["origin"] = origin["url"]
+                expected_dir_context["origin"] = origin["url"]
+                expected_rev_context["origin"] = origin["url"]
+                expected_snp_context["origin"] = origin["url"]
+
+            assert swhid_cnt_parsed.metadata == expected_cnt_context
+            assert swhid_dir_parsed.metadata == expected_dir_context
+            assert swhid_rev_parsed.metadata == expected_rev_context
+            assert swhid_snp_parsed.metadata == expected_snp_context
+
+            if "release_name" in snp_ctx_params:
+                assert swhid_rel_parsed.metadata == expected_rev_context
+
+
+@given(origin(), directory())
+def test_get_swhids_info_path_encoding(archive_data, origin, directory):
+    snapshot_context = get_snapshot_context(origin_url=origin["url"])
+    snapshot_context["origin_info"]["url"] = "http://example.org/?project=abc;def%"
+    path = "/foo;/bar%"
+
+    swhid = get_swhids_info(
+        [SWHObjectInfo(object_type=DIRECTORY, object_id=directory)],
+        snapshot_context=snapshot_context,
+        extra_context={"path": path},
+    )[0]
+
+    assert swhid["context"]["origin"] == "http://example.org/?project%3Dabc%3Bdef%25"
+    assert swhid["context"]["path"] == "/foo%3B/bar%25"

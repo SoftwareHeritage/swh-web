@@ -8,6 +8,7 @@ import textwrap
 from django.utils.html import escape
 from hypothesis import given
 
+from swh.model.identifiers import DIRECTORY, REVISION, SNAPSHOT
 from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import reverse, format_utc_iso_date, parse_timestamp
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
@@ -51,7 +52,7 @@ def test_revision_browse(client, archive_data, revision):
     assert_contains(resp, escape(message_lines[0]))
     assert_contains(resp, escape("\n".join(message_lines[1:])))
 
-    swh_rev_id = get_swh_persistent_id("revision", revision)
+    swh_rev_id = get_swh_persistent_id(REVISION, revision)
     swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
 
     assert_contains(
@@ -66,6 +67,14 @@ def test_revision_browse(client, archive_data, revision):
             " " * 4,
         ),
     )
+
+    swhid_context = {"anchor": swh_rev_id, "path": "/"}
+
+    swh_dir_id = get_swh_persistent_id(DIRECTORY, dir_id, metadata=swhid_context)
+    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
+
+    assert_contains(resp, swh_dir_id)
+    assert_contains(resp, swh_dir_id_url)
 
 
 @given(origin())
@@ -101,12 +110,20 @@ def test_revision_origin_browse(client, archive_data, origin):
     assert_contains(resp, "vault-cook-directory")
     assert_contains(resp, "vault-cook-revision")
 
-    swh_rev_id = get_swh_persistent_id("revision", revision)
+    swhid_context = {
+        "origin": origin["url"],
+        "visit": get_swh_persistent_id(SNAPSHOT, snapshot["id"]),
+    }
+
+    swh_rev_id = get_swh_persistent_id(REVISION, revision, metadata=swhid_context)
     swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
     assert_contains(resp, swh_rev_id)
     assert_contains(resp, swh_rev_id_url)
 
-    swh_dir_id = get_swh_persistent_id("directory", dir_id)
+    swhid_context["anchor"] = get_swh_persistent_id(REVISION, revision)
+    swhid_context["path"] = "/"
+
+    swh_dir_id = get_swh_persistent_id(DIRECTORY, dir_id, metadata=swhid_context)
     swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
@@ -227,7 +244,7 @@ def test_revision_log_browse(client, archive_data, revision):
             resp, '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
         )
 
-    swh_rev_id = get_swh_persistent_id("revision", revision)
+    swh_rev_id = get_swh_persistent_id(REVISION, revision)
     swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
 
     assert_contains(

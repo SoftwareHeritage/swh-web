@@ -12,7 +12,13 @@ from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
-from swh.model.identifiers import persistent_identifier, REVISION
+from swh.model.identifiers import (
+    persistent_identifier,
+    CONTENT,
+    DIRECTORY,
+    REVISION,
+    SNAPSHOT,
+)
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -32,8 +38,8 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
-from swh.web.common.identifiers import get_swh_persistent_ids
-from swh.web.common.typing import RevisionMetadata
+from swh.web.common.identifiers import get_swhids_info
+from swh.web.common.typing import RevisionMetadata, SWHObjectInfo
 from swh.web.common.utils import (
     reverse,
     format_utc_iso_date,
@@ -281,7 +287,7 @@ def revision_log_browse(request, sha1_git):
             "snapshot_context": None,
             "vault_cooking": None,
             "show_actions_menu": True,
-            "swh_ids": None,
+            "swhids_info": None,
         },
     )
 
@@ -353,6 +359,7 @@ def revision_browse(request, sha1_git):
 
     revision_metadata = RevisionMetadata(
         object_type=REVISION,
+        object_id=sha1_git,
         revision=sha1_git,
         revision_url=gen_revision_link(sha1_git),
         author=revision["author"]["fullname"] if revision["author"] else "None",
@@ -430,7 +437,7 @@ def revision_browse(request, sha1_git):
         "revision_id": sha1_git,
     }
 
-    swh_objects = [{"type": "revision", "id": sha1_git}]
+    swh_objects = [SWHObjectInfo(object_type=REVISION, object_id=sha1_git)]
 
     content = None
     content_size = None
@@ -444,6 +451,9 @@ def revision_browse(request, sha1_git):
     error_code = 200
     error_message = ""
     error_description = ""
+
+    extra_context = dict(revision_metadata)
+    extra_context["path"] = f"/{path}" if path else "/"
 
     if content_data:
         breadcrumbs[-1]["url"] = None
@@ -460,6 +470,7 @@ def revision_browse(request, sha1_git):
         if path:
             filename = path_info[-1]["name"]
             query_params["filename"] = filename
+            extra_context["filename"] = filename
 
         top_right_link = {
             "url": reverse(
@@ -471,7 +482,9 @@ def revision_browse(request, sha1_git):
             "text": "Raw File",
         }
 
-        swh_objects.append({"type": "content", "id": file_info["target"]})
+        swh_objects.append(
+            SWHObjectInfo(object_type=CONTENT, object_id=file_info["target"])
+        )
 
         error_code = content_data["error_code"]
         error_message = content_data["error_message"]
@@ -512,7 +525,7 @@ def revision_browse(request, sha1_git):
         vault_cooking["directory_context"] = True
         vault_cooking["directory_id"] = dir_id
 
-        swh_objects.append({"type": "directory", "id": dir_id})
+        swh_objects.append(SWHObjectInfo(object_type=DIRECTORY, object_id=dir_id))
 
     diff_revision_url = reverse(
         "diff-revision",
@@ -525,9 +538,9 @@ def revision_browse(request, sha1_git):
     )
 
     if snapshot_id:
-        swh_objects.append({"type": "snapshot", "id": snapshot_id})
+        swh_objects.append(SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id))
 
-    swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
+    swhids_info = get_swhids_info(swh_objects, snapshot_context, extra_context)
 
     heading = "Revision - %s - %s" % (
         sha1_git[:7],
@@ -544,7 +557,7 @@ def revision_browse(request, sha1_git):
         "browse/revision.html",
         {
             "heading": heading,
-            "swh_object_id": swh_ids[0]["swh_id"],
+            "swh_object_id": swhids_info[0]["swhid"],
             "swh_object_name": "Revision",
             "swh_object_metadata": revision_metadata,
             "message_header": message_lines[0],
@@ -568,7 +581,7 @@ def revision_browse(request, sha1_git):
             "vault_cooking": vault_cooking,
             "diff_revision_url": diff_revision_url,
             "show_actions_menu": True,
-            "swh_ids": swh_ids,
+            "swhids_info": swhids_info,
             "error_code": error_code,
             "error_message": error_message,
             "error_description": error_description,

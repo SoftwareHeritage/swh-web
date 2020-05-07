@@ -20,8 +20,8 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
-from swh.web.common.identifiers import get_swh_persistent_ids
-from swh.web.common.typing import ReleaseMetadata
+from swh.web.common.identifiers import get_swhids_info
+from swh.web.common.typing import ReleaseMetadata, SWHObjectInfo
 from swh.web.common.utils import reverse, format_utc_iso_date
 
 
@@ -89,6 +89,7 @@ def release_browse(request, sha1_git):
 
     release_metadata = ReleaseMetadata(
         object_type=RELEASE,
+        object_id=sha1_git,
         release=sha1_git,
         release_url=gen_release_link(release["id"]),
         author=release["author"]["fullname"] if release["author"] else "None",
@@ -192,15 +193,15 @@ def release_browse(request, sha1_git):
     release["directory_link"] = directory_link
     release["target_link"] = target_link
 
-    swh_objects = [{"type": RELEASE, "id": sha1_git}]
+    swh_objects = [SWHObjectInfo(object_type=RELEASE, object_id=sha1_git)]
 
     if snapshot_context:
         snapshot_id = snapshot_context["snapshot_id"]
 
     if snapshot_id:
-        swh_objects.append({"type": SNAPSHOT, "id": snapshot_id})
+        swh_objects.append(SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id))
 
-    swh_ids = get_swh_persistent_ids(swh_objects, snapshot_context)
+    swhids_info = get_swhids_info(swh_objects, snapshot_context)
 
     note_header = "None"
     if len(release_note_lines) > 0:
@@ -221,7 +222,7 @@ def release_browse(request, sha1_git):
         "browse/release.html",
         {
             "heading": heading,
-            "swh_object_id": swh_ids[0]["swh_id"],
+            "swh_object_id": swhids_info[0]["swhid"],
             "swh_object_name": "Release",
             "swh_object_metadata": release_metadata,
             "release": release,
@@ -230,6 +231,6 @@ def release_browse(request, sha1_git):
             "breadcrumbs": None,
             "vault_cooking": vault_cooking,
             "top_right_link": None,
-            "swh_ids": swh_ids,
+            "swhids_info": swhids_info,
         },
     )
