@@ -21,8 +21,8 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import service
 from swh.web.common.exc import handle_view_exception, NotFoundExc
-from swh.web.common.identifiers import get_swh_persistent_ids
-from swh.web.common.typing import DirectoryMetadata
+from swh.web.common.identifiers import get_swhids_info
+from swh.web.common.typing import DirectoryMetadata, SWHObjectInfo
 from swh.web.common.utils import reverse, gen_path_info
 
 
@@ -130,11 +130,13 @@ def _directory_browse(request, sha1_git, path=None):
 
     dir_metadata = DirectoryMetadata(
         object_type=DIRECTORY,
-        directory=sha1_git,
+        object_id=sha1_git,
+        directory=root_sha1_git,
         nb_files=len(files),
         nb_dirs=len(dirs),
         sum_file_sizes=sum_file_sizes,
-        path=path or None,
+        root_directory=root_sha1_git,
+        path=f"/{path}" if path else "/",
         revision=None,
         revision_found=None,
         release=None,
@@ -148,11 +150,9 @@ def _directory_browse(request, sha1_git, path=None):
         "revision_id": None,
     }
 
-    swh_objects = [{"type": "directory", "id": sha1_git}]
+    swh_objects = [SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git)]
 
-    swh_ids = get_swh_persistent_ids(
-        swh_objects=swh_objects, snapshot_context=snapshot_context
-    )
+    swhids_info = get_swhids_info(swh_objects, snapshot_context, dir_metadata)
 
     heading = "Directory - %s" % sha1_git
     if breadcrumbs:
@@ -164,7 +164,7 @@ def _directory_browse(request, sha1_git, path=None):
         "browse/directory.html",
         {
             "heading": heading,
-            "swh_object_id": swh_ids[0]["swh_id"],
+            "swh_object_id": swhids_info[0]["swhid"],
             "swh_object_name": "Directory",
             "swh_object_metadata": dir_metadata,
             "dirs": dirs,
@@ -177,7 +177,7 @@ def _directory_browse(request, sha1_git, path=None):
             "snapshot_context": snapshot_context,
             "vault_cooking": vault_cooking,
             "show_actions_menu": True,
-            "swh_ids": swh_ids,
+            "swhids_info": swhids_info,
         },
     )
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -296,8 +296,11 @@ export function getBrowsedSwhObjectMetadata() {
 // SWHID metadata contain the following keys:
 //   * object_type: type of archived object
 //   * object_id: sha1 object identifier
-//   * swh_id: SWH persistent identifier without contextual info
-//   * swh_id_url: URL to resolve SWH persistent identifier without contextual info
+//   * swhid: SWH persistent identifier without contextual info
+//   * swhid_url: URL to resolve SWH persistent identifier without contextual info
+//   * context: object describing SWHID context
+//   * swhid_with_context: SWH persistent identifier with contextual info
+//   * swhid_with_context_url: URL to resolve SWH persistent identifier with contextual info
 let swhidsContext_ = {};
 
 export function setSwhIdsContext(swhidsContext) {

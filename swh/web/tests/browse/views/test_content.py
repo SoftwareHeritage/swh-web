@@ -9,6 +9,7 @@ from django.utils.html import escape
 
 from hypothesis import given
 
+from swh.model.identifiers import CONTENT, DIRECTORY
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
@@ -60,7 +61,7 @@ def test_content_view_text(client, archive_data, content):
         assert_contains(resp, escape(content_display["content_data"]))
     assert_contains(resp, url_raw)
 
-    swh_cnt_id = get_swh_persistent_id("content", sha1_git)
+    swh_cnt_id = get_swh_persistent_id(CONTENT, sha1_git)
     swh_cnt_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
     assert_contains(resp, swh_cnt_id_url)
@@ -97,7 +98,7 @@ def test_content_view_text_no_highlight(client, archive_data, content):
     assert_contains(resp, escape(content_display["content_data"]))
     assert_contains(resp, url_raw)
 
-    swh_cnt_id = get_swh_persistent_id("content", sha1_git)
+    swh_cnt_id = get_swh_persistent_id(CONTENT, sha1_git)
     swh_cnt_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_cnt_id})
 
     assert_contains(resp, swh_cnt_id)
@@ -116,7 +117,7 @@ def test_content_view_no_utf8_text(client, archive_data, content):
 
     assert resp.status_code == 200
     assert_template_used(resp, "browse/content.html")
-    swh_cnt_id = get_swh_persistent_id("content", sha1_git)
+    swh_cnt_id = get_swh_persistent_id(CONTENT, sha1_git)
     swh_cnt_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_cnt_id})
     assert_contains(resp, swh_cnt_id_url)
     assert_contains(resp, escape(content_display["content_data"]))
@@ -189,6 +190,18 @@ def test_content_view_text_with_path(client, archive_data, content):
     root_dir_sha1 = split_path[0]
     filename = split_path[-1]
     path = path.replace(root_dir_sha1 + "/", "").replace(filename, "")
+
+    swhid_context = {
+        "anchor": get_swh_persistent_id(DIRECTORY, root_dir_sha1),
+        "path": f"/{path}{filename}",
+    }
+
+    swh_cnt_id = get_swh_persistent_id(
+        CONTENT, content["sha1_git"], metadata=swhid_context
+    )
+    swh_cnt_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_cnt_id})
+    assert_contains(resp, swh_cnt_id)
+    assert_contains(resp, swh_cnt_id_url)
 
     path_info = gen_path_info(path)
 

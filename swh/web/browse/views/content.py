@@ -27,8 +27,8 @@ from swh.web.browse.utils import (
 )
 from swh.web.common import query, service, highlightjs
 from swh.web.common.exc import NotFoundExc, handle_view_exception
-from swh.web.common.identifiers import get_swh_persistent_ids
-from swh.web.common.typing import ContentMetadata
+from swh.web.common.identifiers import get_swhids_info
+from swh.web.common.typing import ContentMetadata, SWHObjectInfo
 from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
 
 
@@ -287,6 +287,8 @@ def content_display(request, query_string):
             return handle_view_exception(request, exc)
     elif root_dir != path:
         directory_id = root_dir
+    else:
+        root_dir = None
 
     if directory_id:
         directory_url = gen_directory_link(directory_id)
@@ -308,6 +310,7 @@ def content_display(request, query_string):
 
     content_metadata = ContentMetadata(
         object_type=CONTENT,
+        object_id=content_checksums["sha1_git"],
         sha1=content_checksums["sha1"],
         sha1_git=content_checksums["sha1_git"],
         sha256=content_checksums["sha256"],
@@ -318,8 +321,9 @@ def content_display(request, query_string):
         size=filesizeformat(content_data["length"]),
         language=content_data["language"],
         licenses=content_data["licenses"],
-        path=path,
-        filename=filename,
+        root_directory=root_dir,
+        path=f"/{path}" if path else "/",
+        filename=filename or "",
         directory=directory_id,
         directory_url=directory_url,
         revision=None,
@@ -328,8 +332,9 @@ def content_display(request, query_string):
         origin_url=origin_url,
     )
 
-    swh_ids = get_swh_persistent_ids(
-        [{"type": "content", "id": content_checksums["sha1_git"]}]
+    swhids_info = get_swhids_info(
+        [SWHObjectInfo(object_type=CONTENT, object_id=content_checksums["sha1_git"])],
+        extra_context=content_metadata,
     )
 
     heading = "Content - %s" % content_checksums["sha1_git"]
@@ -342,7 +347,7 @@ def content_display(request, query_string):
         "browse/content.html",
         {
             "heading": heading,
-            "swh_object_id": swh_ids[0]["swh_id"],
+            "swh_object_id": swhids_info[0]["swhid"],
             "swh_object_name": "Content",
             "swh_object_metadata": content_metadata,
             "content": content,
@@ -362,7 +367,7 @@ def content_display(request, query_string):
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
             "show_actions_menu": True,
-            "swh_ids": swh_ids,
+            "swhids_info": swhids_info,
             "error_code": content_data["error_code"],
             "error_message": content_data["error_message"],
             "error_description": content_data["error_description"],
