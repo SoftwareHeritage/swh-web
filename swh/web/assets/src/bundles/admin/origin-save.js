@@ -137,7 +137,7 @@ export function initOriginSaveAdmin() {
       render: (data, type, row) => {
         if (data === 'succeed' && row.visit_date) {
           let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${row.origin_url}`;
-          browseOriginUrl += `visit/${row.visit_date}/`;
+          browseOriginUrl += `&timestamp=${row.visit_date}`;
           return `<a href="${browseOriginUrl}">${data}</a>`;
         }
         return data;

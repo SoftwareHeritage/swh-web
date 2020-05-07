@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2019  The Software Heritage developers
+Copyright (C) 2017-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -7,10 +7,10 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
-{% if swh_ids %}
+{% if swhids_info %}
 
   <div id="swh-identifiers" style="display: none;">
-    {% if swh_ids|length > 1 %}
+    {% if swhids_info|length > 1 %}
       <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90 fa-fw"></i>Permalinks</a>
     {% else %}
       <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90 fa-fw"></i>Permalink</a>
@@ -26,17 +26,17 @@ See top-level LICENSE file for more information
       </p>
 
       <ul class="nav nav-pills ml-auto p-2">
-        {% for swh_id in swh_ids %}
+        {% for swhid_info in swhids_info %}
           {% if forloop.first %}
             <li class="nav-item">
-              <a class="nav-link active" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
-                <i class="{{ swh_id.object_icon }} fa-fw"></i>{{ swh_id.object_type }}
+              <a class="nav-link active" href="#swh-id-tab-{{ swhid_info.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                <i class="{{ swh_object_icons|key_value:swhid_info.object_type }} fa-fw"></i>{{ swhid_info.object_type }}
               </a>
             </li>
           {% else %}
             <li class="nav-item">
-              <a class="nav-link" href="#swh-id-tab-{{ swh_id.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
-                  <i class="{{ swh_id.object_icon }} fa-fw"></i>{{ swh_id.object_type }}
+              <a class="nav-link" href="#swh-id-tab-{{ swhid_info.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                  <i class="{{ swh_object_icons|key_value:swhid_info.object_type }} fa-fw"></i>{{ swhid_info.object_type }}
               </a>
             </li>
           {% endif %}
@@ -44,11 +44,11 @@ See top-level LICENSE file for more information
       </ul>
 
       <div class="tab-content">
-        {% for swh_id in swh_ids %}
+        {% for swhid_info in swhids_info %}
           {% if forloop.first %}
-            <div class="tab-pane active" id="swh-id-tab-{{ swh_id.object_type }}">
+            <div class="tab-pane active" id="swh-id-tab-{{ swhid_info.object_type }}">
           {% else %}
-            <div class="tab-pane" id="swh-id-tab-{{ swh_id.object_type }}">
+            <div class="tab-pane" id="swh-id-tab-{{ swhid_info.object_type }}">
           {% endif %}
             <div class="card">
               <div class="card-body swh-id-ui">
@@ -57,30 +57,22 @@ See top-level LICENSE file for more information
                        onclick="swh.webapp.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url }}')"
                        title="Click to display badge integration info">
                 {% endif %}
-                <img class="swh-badge swh-badge-{{ swh_id.object_type }}" src="{% url 'swh-badge' swh_id.object_type swh_id.object_id %}"
-                     onclick="swh.webapp.showBadgeInfoModal('{{ swh_id.object_type }}', $(this).parent().find('.swh-id').text())"
-                     title="Click to display badge integration info">
-                <pre><a class="swh-id" id="{{ swh_id.swh_id }}" href="{{ swh_id.swh_id_url }}">{{ swh_id.swh_id }}</a></pre>
-                {% if swh_id.show_options %}
+                {% if swhid_info.object_id %}
+                  <img class="swh-badge swh-badge-{{ swhid_info.object_type }}" src="{% url 'swh-badge' swhid_info.object_type swhid_info.object_id %}"
+                      onclick="swh.webapp.showBadgeInfoModal('{{ swhid_info.object_type }}', $(this).parent().find('.swh-id').text())"
+                      title="Click to display badge integration info">
+                  <pre><a class="swh-id" id="{{ swhid_info.swhid }}" href="{{ swhid_info.swhid_url }}">{{ swhid_info.swhid }}</a></pre>
+                {% endif %}
+                {% if swhid_info.swhid_with_context is not None %}
                   <div class="float-left">
                     <form id="swh-id-options">
-                      {% if snapshot_context and snapshot_context.origin_info %}
-                        <div class="form-check swh-id-option">
-                          <input class="form-check-input swh-id-option-origin" value="option-origin" type="checkbox"
-                                id="swh-id-option-origin-{{ swh_id.object_type }}"
-                                data-swh-origin="{{ snapshot_context.origin_info.url }}"
-                                onclick="swh.browse.swhIdOptionOriginToggled(event)">
-                          <label class="form-check-label" for="swh-id-option-origin-{{ swh_id.object_type }}">Add origin info</label>
-                        </div>
-                      {% endif %}
-                      {% if swh_id.object_type == 'content' %}
-                        <div class="form-check swh-id-option">
-                          <input class="form-check-input swh-id-option-lines" value="option-lines" type="checkbox"
-                                id="swh-id-option-lines-{{ swh_id.object_type }}"
-                                onclick="swh.browse.swhIdOptionLinesToggled(event)">
-                          <label class="form-check-label" for="swh-id-option-lines-{{ swh_id.object_type }}">Add selected lines info</label>
-                        </div>
-                      {% endif %}
+                      <div class="form-check swh-id-option">
+                        <input class="form-check-input swh-id-context-option" value="option-origin" type="checkbox"
+                              id="swh-id-context-option-{{ swhid_info.object_type }}"
+                              data-swhid-with-context="{{ swhid_info.swhid_with_context }}"
+                              onclick="swh.browse.swhIdContextOptionToggled(event)">
+                        <label class="form-check-label" for="swh-id-context-option-{{ swhid_info.object_type }}">Add contextual information</label>
+                      </div>
                     </form>
                   </div>
                 {% endif %}
@@ -101,6 +93,6 @@ See top-level LICENSE file for more information
     </div>
   </div>
   <script>
-    swh.webapp.setSwhIdsContext({{ swh_ids|jsonify }});
+    swh.webapp.setSwhIdsContext({{ swhids_info|jsonify }});
   </script>
 {% endif %}

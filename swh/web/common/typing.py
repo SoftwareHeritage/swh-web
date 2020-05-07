@@ -112,8 +112,28 @@ class SnapshotContext(TypedDict):
     """optional origin visit info associated to the snapshot"""
 
 
-class SWHObjectMetadata(TypedDict, total=False):
+class SWHObjectInfo(TypedDict):
     object_type: str
+    object_id: str
+
+
+class SWHIDContext(TypedDict, total=False):
+    origin: str
+    anchor: str
+    visit: str
+    path: str
+    lines: str
+
+
+class SWHIDInfo(SWHObjectInfo):
+    swhid: str
+    swhid_url: str
+    context: SWHIDContext
+    swhid_with_context: Optional[str]
+    swhid_with_context_url: Optional[str]
+
+
+class SWHObjectInfoMetadata(TypedDict, total=False):
     origin_url: Optional[str]
     visit_date: Optional[str]
     visit_type: Optional[str]
@@ -123,7 +143,7 @@ class SWHObjectMetadata(TypedDict, total=False):
     snapshot_url: Optional[str]
 
 
-class ContentMetadata(SWHObjectMetadata):
+class ContentMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     sha1: str
     sha1_git: str
     sha256: str
@@ -137,16 +157,18 @@ class ContentMetadata(SWHObjectMetadata):
     path: Optional[str]
     filename: Optional[str]
     directory: Optional[str]
+    root_directory: Optional[str]
     revision: Optional[str]
     release: Optional[str]
     snapshot: Optional[str]
 
 
-class DirectoryMetadata(SWHObjectMetadata):
+class DirectoryMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     directory: str
     nb_files: int
     nb_dirs: int
     sum_file_sizes: str
+    root_directory: Optional[str]
     path: str
     revision: Optional[str]
     revision_found: Optional[bool]
@@ -154,7 +176,7 @@ class DirectoryMetadata(SWHObjectMetadata):
     snapshot: Optional[str]
 
 
-class ReleaseMetadata(SWHObjectMetadata):
+class ReleaseMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     release: str
     author: str
     author_url: str
@@ -167,7 +189,7 @@ class ReleaseMetadata(SWHObjectMetadata):
     snapshot: Optional[str]
 
 
-class RevisionMetadata(SWHObjectMetadata):
+class RevisionMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     revision: str
     author: str
     author_url: str
