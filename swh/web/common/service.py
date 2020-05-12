@@ -1023,6 +1023,41 @@ def lookup_latest_origin_snapshot(origin, allowed_statuses=None):
     return converters.from_snapshot(snapshot)
 
 
+def lookup_snapshot_branch_name_from_tip_revision(
+    snapshot_id: str, revision_id: str
+) -> Optional[str]:
+    """Check if a revision corresponds to the tip of a snapshot branch
+
+    Args:
+        snapshot_id: hexadecimal representation of a snapshot id
+        revision_id: hexadecimal representation of a revision id
+
+    Returns:
+        The name of the first found branch or None otherwise
+    """
+    per_page = 10000
+    branches_from = ""
+    snapshot: Dict[str, Any] = {"branches": {}}
+    branches = []
+    while not branches_from or len(snapshot["branches"]) == per_page + 1:
+        snapshot = lookup_snapshot(
+            snapshot_id,
+            target_types=[REVISION],
+            branches_from=branches_from,
+            branches_count=per_page + 1,
+        )
+
+        branches += [
+            {"name": k, "target": v["target"]} for k, v in snapshot["branches"].items()
+        ]
+        branches_from = branches[-1]["name"]
+
+    for branch in branches:
+        if branch["target"] == revision_id:
+            return branch["name"]
+    return None
+
+
 def lookup_revision_through(revision, limit=100):
     """Retrieve a revision from the criterion stored in revision dictionary.
 

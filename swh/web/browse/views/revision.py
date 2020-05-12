@@ -488,6 +488,9 @@ def revision_browse(request, sha1_git):
             mimetype = content_display_data["mimetype"]
         if path:
             filename = path_info[-1]["name"]
+            query_params["filename"] = filename
+            filepath = "/".join(pi["name"] for pi in path_info[:-1])
+            extra_context["path"] = f"/{filepath}/" if filepath else "/"
             extra_context["filename"] = filename
 
         top_right_link = {
