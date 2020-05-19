@@ -82,7 +82,7 @@ def test_drf_oidc_bearer_token_auth_failure(mocker, api_client):
 
     # check for failed authentication when token format is invalid
     mock_keycloak(mocker)
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer invalid-token-format")
+    api_client.credentials(HTTP_AUTHORIZATION="Bearer invalid-token-format")
 
     response = api_client.get(url)
     request = response.wsgi_request
@@ -106,7 +106,7 @@ def test_drf_oidc_auth_invalid_or_missing_authorization_type(api_client):
     assert isinstance(request.user, AnonymousUser)
 
     # invalid authorization type
-    api_client.credentials(HTTP_AUTHORIZATION=f"Foo token")
+    api_client.credentials(HTTP_AUTHORIZATION="Foo token")
 
     response = api_client.get(url)
     request = response.wsgi_request

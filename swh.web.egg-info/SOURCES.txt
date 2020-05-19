@@ -137,8 +137,8 @@ static/img/logos/npm.png
 static/img/logos/pypi.svg
 static/img/thirdParty/chosen-sprite.png
 static/img/thirdParty/chosen-sprite@2x.png
-static/js/admin.f62ce285834a69f40193.js
-static/js/admin.f62ce285834a69f40193.js.map
+static/js/admin.22425dff82b0c30c257c.js
+static/js/admin.22425dff82b0c30c257c.js.map
 static/js/browse.26241d62104088bfcb78.js
 static/js/browse.26241d62104088bfcb78.js.LICENSE.txt
 static/js/browse.26241d62104088bfcb78.js.map
