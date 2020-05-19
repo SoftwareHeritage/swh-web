@@ -672,7 +672,7 @@ def test_origin_release_browse(client, archive_data, origin):
         "origin": origin["url"],
         "visit": get_swh_persistent_id(SNAPSHOT, snapshot["id"]),
         "anchor": get_swh_persistent_id(RELEASE, release_data["id"]),
-        "path": f"/",
+        "path": "/",
     }
 
     swh_dir_id = get_swh_persistent_id(

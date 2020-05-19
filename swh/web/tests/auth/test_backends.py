@@ -121,7 +121,7 @@ def test_drf_oidc_bearer_token_auth_backend_failure(mocker, api_request_factory)
     mock_keycloak(mocker)
 
     request = api_request_factory.get(
-        url, HTTP_AUTHORIZATION=f"Bearer invalid-token-format"
+        url, HTTP_AUTHORIZATION="Bearer invalid-token-format"
     )
 
     with pytest.raises(AuthenticationFailed):
@@ -136,7 +136,7 @@ def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
     access_token = sample_data.oidc_profile["access_token"]
 
     # Invalid authorization type
-    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Foo token")
+    request = api_request_factory.get(url, HTTP_AUTHORIZATION="Foo token")
 
     with pytest.raises(AuthenticationFailed):
         drf_auth_backend.authenticate(request)

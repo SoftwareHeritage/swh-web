@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -40,6 +40,11 @@ export function initDepositAdmin() {
                 let originPatternIdx = data.indexOf(originPattern);
                 if (originPatternIdx !== -1) {
                   let originUrl = data.slice(originPatternIdx + originPattern.length);
+                  let nextSepPattern = ';';
+                  let nextSepPatternIdx = originUrl.indexOf(nextSepPattern);
+                  if (nextSepPatternIdx !== -1) { /* Remove extra context */
+                    originUrl = originUrl.slice(0, nextSepPatternIdx);
+                  }
                   return `<a href="${originUrl}">${originUrl}</a>`;
                 }
               }
