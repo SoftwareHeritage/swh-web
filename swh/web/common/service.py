@@ -31,10 +31,10 @@ idx_storage = config.indexer_storage()
 MAX_LIMIT = 50  # Top limit the users can ask for
 
 
-def _first_element(l):
+def _first_element(lst):
     """Returns the first element in the provided list or None
     if it is empty or None"""
-    return next(iter(l or []), None)
+    return next(iter(lst or []), None)
 
 
 def lookup_multiple_hashes(hashes):
