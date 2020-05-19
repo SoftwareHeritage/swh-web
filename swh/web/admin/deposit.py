@@ -86,8 +86,6 @@ def _admin_deposit_list(request):
                 "reception_date": d["reception_date"],
                 "status": d["status"],
                 "status_detail": d["status_detail"],
-                "swh_anchor_id": d["swh_anchor_id"],
-                "swh_anchor_id_context": d["swh_anchor_id_context"],
                 "swh_id": d["swh_id"],
                 "swh_id_context": d["swh_id_context"],
             }
