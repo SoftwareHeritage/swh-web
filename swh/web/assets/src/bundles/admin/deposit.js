@@ -83,23 +83,6 @@ export function initDepositAdmin() {
             visible: false
           },
           {
-            data: 'swh_anchor_id',
-            name: 'swh_anchor_id',
-            render: (data, type, row) => {
-              return genSwhLink(data, type);
-            },
-            orderable: false
-          },
-          {
-            data: 'swh_anchor_id_context',
-            name: 'swh_anchor_id_context',
-            render: (data, type, row) => {
-              return genSwhLink(data, type);
-            },
-            orderable: false,
-            visible: false
-          },
-          {
             data: 'swh_id',
             name: 'swh_id',
             render: (data, type, row) => {
