@@ -342,7 +342,7 @@ def revision_browse(request, sha1_git):
                     visit_id=visit_id,
                     branch_name=request.GET.get("branch"),
                     release_name=request.GET.get("release"),
-                    revision_id=request.GET.get("revision"),
+                    revision_id=sha1_git,
                 )
             except NotFoundExc as e:
                 raw_rev_url = reverse(

@@ -333,7 +333,10 @@ def _snapshot_context_query_params(snapshot_context):
 
     if snapshot_context["release"]:
         query_params["release"] = snapshot_context["release"]
-    elif snapshot_context["branch"] and snapshot_context["branch"] != "HEAD":
+    elif snapshot_context["branch"] and snapshot_context["branch"] not in (
+        "HEAD",
+        snapshot_context["revision_id"],
+    ):
         query_params["branch"] = snapshot_context["branch"]
     elif snapshot_context["revision_id"]:
         query_params["revision"] = snapshot_context["revision_id"]

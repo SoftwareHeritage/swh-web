@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
 import textwrap
 
 from django.utils.html import escape
@@ -30,6 +31,9 @@ def test_revision_origin_snapshot_browse(client, archive_data, origin):
     _revision_browse_checks(
         client, archive_data, revision, origin_url=origin["url"], snapshot=snapshot,
     )
+
+    revision = random.choice(archive_data.revision_log(revision))["id"]
+    _revision_browse_checks(client, archive_data, revision, origin_url=origin["url"])
 
 
 @given(revision())
