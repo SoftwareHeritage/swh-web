@@ -16,7 +16,19 @@ function genSwhLink(data, type) {
 }
 
 function filterDataWithExcludePattern(data, excludePattern) {
-  /** Return true if the data is to be filtered, false otherwise. */
+  /* Return true if the data is to be filtered, false otherwise.
+
+    Args:
+      data (dict): row dict data
+      excludePattern (str): pattern to lookup in data columns
+
+    Returns:
+      true if the data is to be excluded (because it matches), false otherwise
+
+   */
+  if (excludePattern === '') {
+    return false; // otherwise, everything gets excluded
+  }
   for (const key in data) {
     let value = data[key];
     if ((typeof value === 'string' || value instanceof String) &&
