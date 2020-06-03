@@ -362,14 +362,14 @@ def test_lookup_directory_with_revision_unknown_content(archive_data, new_revisi
 
     # A directory that points to unknown content
     dir = Directory(
-        entries=[
+        entries=(
             DirectoryEntry(
                 name=bytes(dir_path.encode("utf-8")),
                 type="file",
                 target=hash_to_bytes(unknown_content_["sha1_git"]),
                 perms=DentryPerms.content,
-            )
-        ]
+            ),
+        )
     )
 
     # Create a revision that points to a directory

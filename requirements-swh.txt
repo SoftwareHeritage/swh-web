@@ -1,6 +1,6 @@
 swh.core >= 0.0.94
 swh.indexer >= 0.0.170
-swh.model >= 0.0.64
+swh.model >= 0.3.0
 swh.scheduler >= 0.0.72
 swh.search >= 0.0.4
 swh.storage >= 0.0.182
