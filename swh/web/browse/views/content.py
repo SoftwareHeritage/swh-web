@@ -333,7 +333,7 @@ def content_display(request, query_string):
         language=content_data["language"],
         licenses=content_data["licenses"],
         root_directory=root_dir,
-        path=f"/{path}" if path else "/",
+        path=f"/{path}" if path else "",
         filename=filename or "",
         directory=directory_id,
         directory_url=directory_url,
@@ -345,6 +345,7 @@ def content_display(request, query_string):
 
     swhids_info = get_swhids_info(
         [SWHObjectInfo(object_type=CONTENT, object_id=content_checksums["sha1_git"])],
+        snapshot_context,
         extra_context=content_metadata,
     )
 

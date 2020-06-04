@@ -289,7 +289,7 @@ def get_swhids_info(
                 )
             path = None
             if extra_context and "path" in extra_context:
-                path = extra_context["path"]
+                path = extra_context["path"] or "/"
                 if "filename" in extra_context and object_type == CONTENT:
                     path += extra_context["filename"]
             if path:
