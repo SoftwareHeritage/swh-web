@@ -11,7 +11,7 @@ from django.template.defaultfilters import filesizeformat
 import sentry_sdk
 
 
-from swh.model.identifiers import DIRECTORY
+from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -159,6 +159,24 @@ def _directory_browse(request, sha1_git, path=None):
     }
 
     swh_objects = [SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git)]
+
+    if snapshot_context:
+        swh_objects.append(
+            SWHObjectInfo(
+                object_type=REVISION, object_id=snapshot_context["revision_id"]
+            )
+        )
+        swh_objects.append(
+            SWHObjectInfo(
+                object_type=SNAPSHOT, object_id=snapshot_context["snapshot_id"]
+            )
+        )
+        if snapshot_context["release_id"]:
+            swh_objects.append(
+                SWHObjectInfo(
+                    object_type=RELEASE, object_id=snapshot_context["release_id"]
+                )
+            )
 
     swhids_info = get_swhids_info(swh_objects, snapshot_context, dir_metadata)
 

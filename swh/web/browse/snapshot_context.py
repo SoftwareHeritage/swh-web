@@ -106,17 +106,25 @@ def _get_release(releases, release_name, snapshot_id):
         return filtered_releases[0]
     else:
         # case where a large branches list has been truncated
-        for branch_name in (release_name, f"refs/tags/{release_name}"):
+        try:
+            # git origins have specific branches for releases
             snp = service.lookup_snapshot(
                 snapshot_id,
-                branches_from=branch_name,
+                branches_from=f"refs/tags/{release_name}",
                 branches_count=1,
                 target_types=["release"],
             )
-            _, snp_release = process_snapshot_branches(snp)
-            if snp_release and snp_release[0]["name"] == release_name:
-                releases.append(snp_release[0])
-                return snp_release[0]
+        except NotFoundExc:
+            snp = service.lookup_snapshot(
+                snapshot_id,
+                branches_from=release_name,
+                branches_count=1,
+                target_types=["release"],
+            )
+        _, snp_release = process_snapshot_branches(snp)
+        if snp_release and snp_release[0]["name"] == release_name:
+            releases.append(snp_release[0])
+            return snp_release[0]
 
 
 def _branch_not_found(
