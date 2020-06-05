@@ -2,6 +2,7 @@ import * as tslib_1 from "tslib";
 import { API, BaseClient } from '@sentry/core';
 import { getGlobalObject, logger } from '@sentry/utils';
 import { BrowserBackend } from './backend';
+import { Breadcrumbs } from './integrations';
 import { SDK_NAME, SDK_VERSION } from './version';
 /**
  * The Sentry Browser SDK Client.
@@ -32,6 +33,16 @@ var BrowserClient = /** @class */ (function (_super) {
                 },
             ]), version: SDK_VERSION });
         return _super.prototype._prepareEvent.call(this, event, scope, hint);
+    };
+    /**
+     * @inheritDoc
+     */
+    BrowserClient.prototype._sendEvent = function (event) {
+        var integration = this.getIntegration(Breadcrumbs);
+        if (integration) {
+            integration.addSentryBreadcrumb(event);
+        }
+        _super.prototype._sendEvent.call(this, event);
     };
     /**
      * Show a report dialog to the user to send feedback to a specific event.

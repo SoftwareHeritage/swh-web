@@ -1,5 +1,6 @@
 import * as tslib_1 from "tslib";
-import { Dsn, isPrimitive, isThenable, logger, normalize, SyncPromise, truncate, uuid4 } from '@sentry/utils';
+import { Scope } from '@sentry/hub';
+import { Dsn, isPrimitive, isThenable, logger, normalize, SyncPromise, timestampWithMs, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
 /**
  * Base implementation for all JavaScript SDK clients.
@@ -60,15 +61,8 @@ var BaseClient = /** @class */ (function () {
         this._processing = true;
         this._getBackend()
             .eventFromException(exception, hint)
-            .then(function (event) { return _this._processEvent(event, hint, scope); })
-            .then(function (finalEvent) {
-            // We need to check for finalEvent in case beforeSend returned null
-            eventId = finalEvent && finalEvent.event_id;
-            _this._processing = false;
-        })
-            .then(null, function (reason) {
-            logger.error(reason);
-            _this._processing = false;
+            .then(function (event) {
+            eventId = _this.captureEvent(event, hint, scope);
         });
         return eventId;
     };
@@ -82,16 +76,8 @@ var BaseClient = /** @class */ (function () {
         var promisedEvent = isPrimitive(message)
             ? this._getBackend().eventFromMessage("" + message, level, hint)
             : this._getBackend().eventFromException(message, hint);
-        promisedEvent
-            .then(function (event) { return _this._processEvent(event, hint, scope); })
-            .then(function (finalEvent) {
-            // We need to check for finalEvent in case beforeSend returned null
-            eventId = finalEvent && finalEvent.event_id;
-            _this._processing = false;
-        })
-            .then(null, function (reason) {
-            logger.error(reason);
-            _this._processing = false;
+        promisedEvent.then(function (event) {
+            eventId = _this.captureEvent(event, hint, scope);
         });
         return eventId;
     };
@@ -214,45 +200,29 @@ var BaseClient = /** @class */ (function () {
      * nested objects, such as the context, keys are merged.
      *
      * @param event The original event.
-     * @param hint May contain additional informartion about the original exception.
+     * @param hint May contain additional information about the original exception.
      * @param scope A scope containing event metadata.
      * @returns A new event with more information.
      */
     BaseClient.prototype._prepareEvent = function (event, scope, hint) {
         var _this = this;
-        var _a = this.getOptions(), environment = _a.environment, release = _a.release, dist = _a.dist, _b = _a.maxValueLength, maxValueLength = _b === void 0 ? 250 : _b, _c = _a.normalizeDepth, normalizeDepth = _c === void 0 ? 3 : _c;
-        var prepared = tslib_1.__assign({}, event);
-        if (prepared.environment === undefined && environment !== undefined) {
-            prepared.environment = environment;
+        var _a = this.getOptions().normalizeDepth, normalizeDepth = _a === void 0 ? 3 : _a;
+        var prepared = tslib_1.__assign({}, event, { event_id: event.event_id || (hint && hint.event_id ? hint.event_id : uuid4()), timestamp: event.timestamp || timestampWithMs() });
+        this._applyClientOptions(prepared);
+        this._applyIntegrationsMetadata(prepared);
+        // If we have scope given to us, use it as the base for further modifications.
+        // This allows us to prevent unnecessary copying of data if `captureContext` is not provided.
+        var finalScope = scope;
+        if (hint && hint.captureContext) {
+            finalScope = Scope.clone(finalScope).update(hint.captureContext);
         }
-        if (prepared.release === undefined && release !== undefined) {
-            prepared.release = release;
-        }
-        if (prepared.dist === undefined && dist !== undefined) {
-            prepared.dist = dist;
-        }
-        if (prepared.message) {
-            prepared.message = truncate(prepared.message, maxValueLength);
-        }
-        var exception = prepared.exception && prepared.exception.values && prepared.exception.values[0];
-        if (exception && exception.value) {
-            exception.value = truncate(exception.value, maxValueLength);
-        }
-        var request = prepared.request;
-        if (request && request.url) {
-            request.url = truncate(request.url, maxValueLength);
-        }
-        if (prepared.event_id === undefined) {
-            prepared.event_id = hint && hint.event_id ? hint.event_id : uuid4();
-        }
-        this._addIntegrations(prepared.sdk);
         // We prepare the result here with a resolved Event.
         var result = SyncPromise.resolve(prepared);
         // This should be the last thing called, since we want that
         // {@link Hub.addEventProcessor} gets the finished prepared event.
-        if (scope) {
+        if (finalScope) {
             // In case we have a hub we reassign it.
-            result = scope.applyToEvent(prepared, hint);
+            result = finalScope.applyToEvent(prepared, hint);
         }
         return result.then(function (evt) {
             // tslint:disable-next-line:strict-type-predicates
@@ -290,14 +260,51 @@ var BaseClient = /** @class */ (function () {
         }));
     };
     /**
+     *  Enhances event using the client configuration.
+     *  It takes care of all "static" values like environment, release and `dist`,
+     *  as well as truncating overly long values.
+     * @param event event instance to be enhanced
+     */
+    BaseClient.prototype._applyClientOptions = function (event) {
+        var _a = this.getOptions(), environment = _a.environment, release = _a.release, dist = _a.dist, _b = _a.maxValueLength, maxValueLength = _b === void 0 ? 250 : _b;
+        if (event.environment === undefined && environment !== undefined) {
+            event.environment = environment;
+        }
+        if (event.release === undefined && release !== undefined) {
+            event.release = release;
+        }
+        if (event.dist === undefined && dist !== undefined) {
+            event.dist = dist;
+        }
+        if (event.message) {
+            event.message = truncate(event.message, maxValueLength);
+        }
+        var exception = event.exception && event.exception.values && event.exception.values[0];
+        if (exception && exception.value) {
+            exception.value = truncate(exception.value, maxValueLength);
+        }
+        var request = event.request;
+        if (request && request.url) {
+            request.url = truncate(request.url, maxValueLength);
+        }
+    };
+    /**
      * This function adds all used integrations to the SDK info in the event.
      * @param sdkInfo The sdkInfo of the event that will be filled with all integrations.
      */
-    BaseClient.prototype._addIntegrations = function (sdkInfo) {
+    BaseClient.prototype._applyIntegrationsMetadata = function (event) {
+        var sdkInfo = event.sdk;
         var integrationsArray = Object.keys(this._integrations);
         if (sdkInfo && integrationsArray.length > 0) {
             sdkInfo.integrations = integrationsArray;
         }
+    };
+    /**
+     * Tells the backend to send this event
+     * @param event The Sentry event to send
+     */
+    BaseClient.prototype._sendEvent = function (event) {
+        this._getBackend().sendEvent(event);
     };
     /**
      * Processes an event (either error or message) and sends it to Sentry.
@@ -308,7 +315,7 @@ var BaseClient = /** @class */ (function () {
      *
      *
      * @param event The event to send to Sentry.
-     * @param hint May contain additional informartion about the original exception.
+     * @param hint May contain additional information about the original exception.
      * @param scope A scope containing event metadata.
      * @returns A SyncPromise that resolves with the event or rejects in case event was/will not be send.
      */
@@ -318,9 +325,11 @@ var BaseClient = /** @class */ (function () {
         if (!this._isEnabled()) {
             return SyncPromise.reject('SDK not enabled, will not send event.');
         }
+        var isTransaction = event.type === 'transaction';
         // 1.0 === 100% events are sent
         // 0.0 === 0% events are sent
-        if (typeof sampleRate === 'number' && Math.random() > sampleRate) {
+        // Sampling for transaction happens somewhere else
+        if (!isTransaction && typeof sampleRate === 'number' && Math.random() > sampleRate) {
             return SyncPromise.reject('This event has been sampled, will not send event.');
         }
         return new SyncPromise(function (resolve, reject) {
@@ -332,8 +341,9 @@ var BaseClient = /** @class */ (function () {
                 }
                 var finalEvent = prepared;
                 var isInternalException = hint && hint.data && hint.data.__sentry__ === true;
-                if (isInternalException || !beforeSend) {
-                    _this._getBackend().sendEvent(finalEvent);
+                // We skip beforeSend in case of transactions
+                if (isInternalException || !beforeSend || isTransaction) {
+                    _this._sendEvent(finalEvent);
                     resolve(finalEvent);
                     return;
                 }
@@ -353,7 +363,7 @@ var BaseClient = /** @class */ (function () {
                         return;
                     }
                     // From here on we are really async
-                    _this._getBackend().sendEvent(finalEvent);
+                    _this._sendEvent(finalEvent);
                     resolve(finalEvent);
                 }
             })
@@ -380,7 +390,7 @@ var BaseClient = /** @class */ (function () {
                 return;
             }
             // From here on we are really async
-            _this._getBackend().sendEvent(processedEvent);
+            _this._sendEvent(processedEvent);
             resolve(processedEvent);
         })
             .then(null, function (e) {

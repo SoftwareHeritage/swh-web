@@ -3,10 +3,22 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
+
 from hypothesis import given
 
+from swh.model.identifiers import CONTENT, REVISION, SNAPSHOT
+from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import content, directory, revision, release, snapshot
+from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.strategies import (
+    content,
+    directory,
+    origin,
+    revision,
+    release,
+    snapshot,
+)
 
 swh_id_prefix = "swh:1:"
 
@@ -158,3 +170,37 @@ def test_origin_id_not_resolvable(client, release):
     url = reverse("browse-swh-id", url_args={"swh_id": swh_id})
     resp = client.get(url)
     assert resp.status_code == 400
+
+
+@given(origin())
+def test_legacy_swhid_browse(archive_data, client, origin):
+    snapshot = archive_data.snapshot_get_latest(origin["url"])
+    revision = archive_data.snapshot_get_head(snapshot)
+    directory = archive_data.revision_get(revision)["directory"]
+    directory_content = archive_data.directory_ls(directory)
+    directory_file = random.choice(
+        [e for e in directory_content if e["type"] == "file"]
+    )
+    legacy_swhid = get_swh_persistent_id(
+        CONTENT,
+        directory_file["checksums"]["sha1_git"],
+        metadata={"origin": origin["url"]},
+    )
+
+    url = reverse("browse-swh-id", url_args={"swh_id": legacy_swhid})
+    resp = client.get(url)
+    assert resp.status_code == 302
+
+    resp = client.get(resp["location"])
+
+    swhid = get_swh_persistent_id(
+        CONTENT,
+        directory_file["checksums"]["sha1_git"],
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+            "anchor": get_swh_persistent_id(REVISION, revision),
+        },
+    )
+
+    assert_contains(resp, swhid)

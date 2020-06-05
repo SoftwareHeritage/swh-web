@@ -340,7 +340,7 @@ def test_enrich_revision_with_children_and_parent_no_dir(
 
     revision_data = archive_data.revision_get(revision)
     del revision_data["directory"]
-    revision_data["parents"].append(parent_revision)
+    revision_data["parents"] = revision_data["parents"] + (parent_revision,)
     revision_data["children"] = child_revision
 
     url = reverse("api-1-revision", url_args={"sha1_git": revision})
@@ -356,7 +356,7 @@ def test_enrich_revision_with_children_and_parent_no_dir(
         "api-1-revision-log", url_args={"sha1_git": revision}, request=request
     )
 
-    revision_data["parents"] = [
+    revision_data["parents"] = tuple(
         {
             "id": p["id"],
             "url": reverse(
@@ -364,7 +364,7 @@ def test_enrich_revision_with_children_and_parent_no_dir(
             ),
         }
         for p in revision_data["parents"]
-    ]
+    )
 
     revision_data["children_urls"] = [
         reverse(
@@ -399,7 +399,7 @@ def test_enrich_revision_no_context(
         "api-1-revision-log", url_args={"sha1_git": revision}, request=request
     )
 
-    revision_data["parents"] = [
+    revision_data["parents"] = tuple(
         {
             "id": parent_revision,
             "url": reverse(
@@ -408,7 +408,7 @@ def test_enrich_revision_no_context(
                 request=request,
             ),
         }
-    ]
+    )
 
     revision_data["children_urls"] = [
         reverse(
@@ -426,7 +426,7 @@ def test_enrich_revision_with_no_message(
 
     revision_data = archive_data.revision_get(revision)
     revision_data["message"] = None
-    revision_data["parents"].append(parent_revision)
+    revision_data["parents"] = revision_data["parents"] + (parent_revision,)
     revision_data["children"] = child_revision
 
     url = reverse("api-1-revision", url_args={"sha1_git": revision})
@@ -448,7 +448,7 @@ def test_enrich_revision_with_no_message(
         "api-1-revision-log", url_args={"sha1_git": revision}, request=request
     )
 
-    revision_data["parents"] = [
+    revision_data["parents"] = tuple(
         {
             "id": p["id"],
             "url": reverse(
@@ -456,7 +456,7 @@ def test_enrich_revision_with_no_message(
             ),
         }
         for p in revision_data["parents"]
-    ]
+    )
 
     revision_data["children_urls"] = [
         reverse(
@@ -475,7 +475,7 @@ def test_enrich_revision_with_invalid_message(
     revision_data = archive_data.revision_get(revision)
     revision_data["message"] = None
     revision_data["message_decoding_failed"] = (True,)
-    revision_data["parents"].append(parent_revision)
+    revision_data["parents"] = revision_data["parents"] + (parent_revision,)
     revision_data["children"] = child_revision
 
     url = reverse("api-1-revision", url_args={"sha1_git": revision})
@@ -501,7 +501,7 @@ def test_enrich_revision_with_invalid_message(
         "api-1-revision-log", url_args={"sha1_git": revision}, request=request
     )
 
-    revision_data["parents"] = [
+    revision_data["parents"] = tuple(
         {
             "id": p["id"],
             "url": reverse(
@@ -509,7 +509,7 @@ def test_enrich_revision_with_invalid_message(
             ),
         }
         for p in revision_data["parents"]
-    ]
+    )
 
     revision_data["children_urls"] = [
         reverse(

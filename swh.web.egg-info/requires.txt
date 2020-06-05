@@ -18,12 +18,12 @@ pyyaml
 requests
 sentry-sdk
 typing-extensions
-swh.core>=0.0.94
-swh.indexer>=0.0.170
-swh.model>=0.0.64
-swh.scheduler>=0.0.72
+swh.core>=0.0.95
+swh.indexer>=0.0.171
+swh.model>=0.3.0
+swh.scheduler>=0.1.1
 swh.search>=0.0.4
-swh.storage>=0.0.182
+swh.storage>=0.1.1
 swh.vault>=0.0.33
 
 [testing]
@@ -35,6 +35,6 @@ pytest
 pytest-django
 pytest-mock
 requests-mock
-swh.core[http]>=0.0.94
-swh.loader.git>=0.0.59
-swh.storage>=0.0.182
+swh.core[http]>=0.0.95
+swh.loader.git>=0.1.2
+swh.storage>=0.1.1

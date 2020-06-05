@@ -41,18 +41,20 @@ def release_browse(request, sha1_git):
         release = service.lookup_release(sha1_git)
         snapshot_context = {}
         origin_info = None
-        snapshot_id = request.GET.get("snapshot_id", None)
-        origin_url = request.GET.get("origin_url", None)
+        snapshot_id = request.GET.get("snapshot_id")
+        if not snapshot_id:
+            snapshot_id = request.GET.get("snapshot")
+        origin_url = request.GET.get("origin_url")
         if not origin_url:
-            origin_url = request.GET.get("origin", None)
-        timestamp = request.GET.get("timestamp", None)
-        visit_id = request.GET.get("visit_id", None)
+            origin_url = request.GET.get("origin")
+        timestamp = request.GET.get("timestamp")
+        visit_id = request.GET.get("visit_id")
         if origin_url:
             try:
                 snapshot_context = get_snapshot_context(
                     snapshot_id, origin_url, timestamp, visit_id
                 )
-            except NotFoundExc:
+            except NotFoundExc as e:
                 raw_rel_url = reverse("browse-release", url_args={"sha1_git": sha1_git})
                 error_message = (
                     "The Software Heritage archive has a release "
@@ -63,8 +65,10 @@ def release_browse(request, sha1_git):
                     "without origin information: %s"
                     % (gen_link(origin_url), gen_link(raw_rel_url))
                 )
-
-                raise NotFoundExc(error_message)
+                if str(e).startswith("Origin"):
+                    raise NotFoundExc(error_message)
+                else:
+                    raise e
             origin_info = snapshot_context["origin_info"]
         elif snapshot_id:
             snapshot_context = get_snapshot_context(snapshot_id)
@@ -174,6 +178,7 @@ def release_browse(request, sha1_git):
                 query_params={
                     "origin_url": origin_info["url"],
                     "release": release["name"],
+                    "snapshot": snapshot_id,
                 },
             )
         elif snapshot_id:

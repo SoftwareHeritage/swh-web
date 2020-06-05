@@ -362,14 +362,14 @@ def test_lookup_directory_with_revision_unknown_content(archive_data, new_revisi
 
     # A directory that points to unknown content
     dir = Directory(
-        entries=[
+        entries=(
             DirectoryEntry(
                 name=bytes(dir_path.encode("utf-8")),
                 type="file",
                 target=hash_to_bytes(unknown_content_["sha1_git"]),
                 perms=DentryPerms.content,
-            )
-        ]
+            ),
+        )
     )
 
     # Create a revision that points to a directory
@@ -948,3 +948,24 @@ def test_lookup_origin_missing_trailing_slash(archive_data):
     archive_data.origin_add_one(deb_origin)
     origin_info = service.lookup_origin({"url": deb_origin.url[:-1]})
     assert origin_info["url"] == deb_origin.url
+
+
+@given(snapshot())
+def test_lookup_snapshot_branch_name_from_tip_revision(archive_data, snapshot_id):
+    snapshot = archive_data.snapshot_get(snapshot_id)
+    branches = [
+        {"name": k, "revision": v["target"]}
+        for k, v in snapshot["branches"].items()
+        if v["target_type"] == "revision"
+    ]
+    branch_info = random.choice(branches)
+    possible_results = [
+        b["name"] for b in branches if b["revision"] == branch_info["revision"]
+    ]
+
+    assert (
+        service.lookup_snapshot_branch_name_from_tip_revision(
+            snapshot_id, branch_info["revision"]
+        )
+        in possible_results
+    )

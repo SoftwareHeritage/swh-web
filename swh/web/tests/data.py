@@ -271,7 +271,7 @@ def _init_tests_data():
     idx_storage = get_indexer_storage("memory", {})
 
     # Add the empty directory to the test archive
-    storage.directory_add([Directory(entries=[])])
+    storage.directory_add([Directory(entries=())])
 
     # Return tests data
     return {

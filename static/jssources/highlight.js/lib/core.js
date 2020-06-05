@@ -864,7 +864,7 @@ function commonKeyword(word) {
 return COMMON_KEYWORDS.includes(word.toLowerCase());
 }
 
-var version = "10.0.2";
+var version = "10.0.3";
 
 /*
 Syntax highlighting with language autodetection.

@@ -23,6 +23,7 @@ from swh.model.identifiers import (
     PersistentId,
 )
 
+from swh.web.common import service
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import (
     QueryParameters,
@@ -72,9 +73,12 @@ def get_swh_persistent_id(
         return swh_id
 
 
-ResolvedPersistentId = TypedDict(
-    "ResolvedPersistentId", {"swh_id_parsed": PersistentId, "browse_url": Optional[str]}
-)
+class ResolvedPersistentId(TypedDict):
+    """parsed SWHID with context"""
+
+    swh_id_parsed: PersistentId
+    """URL to browse object according to SWHID context"""
+    browse_url: Optional[str]
 
 
 def resolve_swh_persistent_id(
@@ -99,48 +103,108 @@ def resolve_swh_persistent_id(
     object_type = swh_id_parsed.object_type
     object_id = swh_id_parsed.object_id
     browse_url = None
+    url_args = {}
     query_dict = QueryDict("", mutable=True)
+    fragment = ""
+    anchor_swhid_parsed = None
+
     if query_params and len(query_params) > 0:
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
+
     if "origin" in swh_id_parsed.metadata:
         query_dict["origin_url"] = swh_id_parsed.metadata["origin"]
+
+    if "anchor" in swh_id_parsed.metadata:
+        anchor_swhid_parsed = get_persistent_identifier(
+            swh_id_parsed.metadata["anchor"]
+        )
+
+    if "path" in swh_id_parsed.metadata and swh_id_parsed.metadata["path"] != "/":
+        query_dict["path"] = swh_id_parsed.metadata["path"]
+        if anchor_swhid_parsed:
+            directory = ""
+            if anchor_swhid_parsed.object_type == DIRECTORY:
+                directory = anchor_swhid_parsed.object_id
+            elif anchor_swhid_parsed.object_type == REVISION:
+                revision = service.lookup_revision(anchor_swhid_parsed.object_id)
+                directory = revision["directory"]
+            elif anchor_swhid_parsed.object_type == RELEASE:
+                release = service.lookup_release(anchor_swhid_parsed.object_id)
+                if release["target_type"] == REVISION:
+                    revision = service.lookup_revision(release["target"])
+                    directory = revision["directory"]
+            if object_type == CONTENT:
+                if "origin" not in swh_id_parsed.metadata:
+                    # when no origin context, content objects need to have their
+                    # path prefixed by root directory id for proper breadcrumbs display
+                    query_dict["path"] = directory + query_dict["path"]
+                else:
+                    # remove leading slash from SWHID content path
+                    query_dict["path"] = query_dict["path"][1:]
+            elif object_type == DIRECTORY:
+                object_id = directory
+                # remove leading and trailing slashes from SWHID directory path
+                query_dict["path"] = query_dict["path"][1:-1]
+
+    # snapshot context
+    if "visit" in swh_id_parsed.metadata:
+
+        snp_swhid_parsed = get_persistent_identifier(swh_id_parsed.metadata["visit"])
+        if snp_swhid_parsed.object_type != SNAPSHOT:
+            raise BadInputExc("Visit must be a snapshot SWHID.")
+        query_dict["snapshot"] = snp_swhid_parsed.object_id
+
+        if anchor_swhid_parsed:
+            if anchor_swhid_parsed.object_type == REVISION:
+                # check if the anchor revision is the tip of a branch
+                branch_name = service.lookup_snapshot_branch_name_from_tip_revision(
+                    snp_swhid_parsed.object_id, anchor_swhid_parsed.object_id
+                )
+                if branch_name:
+                    query_dict["branch"] = branch_name
+                elif object_type != REVISION:
+                    query_dict["revision"] = anchor_swhid_parsed.object_id
+
+            elif anchor_swhid_parsed.object_type == RELEASE:
+                release = service.lookup_release(anchor_swhid_parsed.object_id)
+                if release:
+                    query_dict["release"] = release["name"]
+
+        if object_type == REVISION and "release" not in query_dict:
+            branch_name = service.lookup_snapshot_branch_name_from_tip_revision(
+                snp_swhid_parsed.object_id, object_id
+            )
+            if branch_name:
+                query_dict["branch"] = branch_name
+
+    # browsing content or directory without snapshot context
+    elif object_type in (CONTENT, DIRECTORY) and anchor_swhid_parsed:
+        if anchor_swhid_parsed.object_type == REVISION:
+            # anchor revision, objects are browsed from its view
+            object_type = REVISION
+            object_id = anchor_swhid_parsed.object_id
+        elif object_type == DIRECTORY and anchor_swhid_parsed.object_type == DIRECTORY:
+            # a directory is browsed from its root
+            object_id = anchor_swhid_parsed.object_id
+
     if object_type == CONTENT:
         query_string = "sha1_git:" + object_id
-        fragment = ""
         if "lines" in swh_id_parsed.metadata:
             lines = swh_id_parsed.metadata["lines"].split("-")
             fragment += "#L" + lines[0]
             if len(lines) > 1:
                 fragment += "-L" + lines[1]
-        browse_url = (
-            reverse(
-                "browse-content",
-                url_args={"query_string": query_string},
-                query_params=query_dict,
-            )
-            + fragment
-        )
+        url_args["query_string"] = query_string
+
     elif object_type == DIRECTORY:
-        browse_url = reverse(
-            "browse-directory",
-            url_args={"sha1_git": object_id},
-            query_params=query_dict,
-        )
+        url_args["sha1_git"] = object_id
     elif object_type == RELEASE:
-        browse_url = reverse(
-            "browse-release", url_args={"sha1_git": object_id}, query_params=query_dict
-        )
+        url_args["sha1_git"] = object_id
     elif object_type == REVISION:
-        browse_url = reverse(
-            "browse-revision", url_args={"sha1_git": object_id}, query_params=query_dict
-        )
+        url_args["sha1_git"] = object_id
     elif object_type == SNAPSHOT:
-        browse_url = reverse(
-            "browse-snapshot",
-            url_args={"snapshot_id": object_id},
-            query_params=query_dict,
-        )
+        url_args["snapshot_id"] = object_id
     elif object_type == ORIGIN:
         raise BadInputExc(
             (
@@ -150,7 +214,15 @@ def resolve_swh_persistent_id(
             )
         )
 
-    return {"swh_id_parsed": swh_id_parsed, "browse_url": browse_url}
+    if url_args:
+        browse_url = (
+            reverse(
+                f"browse-{object_type}", url_args=url_args, query_params=query_dict,
+            )
+            + fragment
+        )
+
+    return ResolvedPersistentId(swh_id_parsed=swh_id_parsed, browse_url=browse_url)
 
 
 def get_persistent_identifier(persistent_id: str) -> PersistentId:
@@ -289,7 +361,7 @@ def get_swhids_info(
                 )
             path = None
             if extra_context and "path" in extra_context:
-                path = extra_context["path"]
+                path = extra_context["path"] or "/"
                 if "filename" in extra_context and object_type == CONTENT:
                     path += extra_context["filename"]
             if path:

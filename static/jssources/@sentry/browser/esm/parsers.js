@@ -78,6 +78,7 @@ export function prepareFramesForEvent(stack) {
     }
     // The frame where the crash happened, should be the last entry in the array
     return localStack
+        .slice(0, STACKTRACE_LIMIT)
         .map(function (frame) { return ({
         colno: frame.column === null ? undefined : frame.column,
         filename: frame.url || localStack[0].url,
@@ -85,7 +86,6 @@ export function prepareFramesForEvent(stack) {
         in_app: true,
         lineno: frame.line === null ? undefined : frame.line,
     }); })
-        .slice(0, STACKTRACE_LIMIT)
         .reverse();
 }
 //# sourceMappingURL=parsers.js.map
