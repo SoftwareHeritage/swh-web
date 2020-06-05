@@ -11,6 +11,7 @@ from swh.web.browse.snapshot_context import (
     get_origin_visit_snapshot,
     get_snapshot_content,
     get_snapshot_context,
+    _get_release,
 )
 from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
@@ -20,7 +21,11 @@ from swh.web.common.typing import (
     SnapshotContext,
 )
 from swh.web.common.utils import format_utc_iso_date, reverse
-from swh.web.tests.strategies import origin_with_multiple_visits, snapshot
+from swh.web.tests.strategies import (
+    origin_with_multiple_visits,
+    snapshot,
+    origin_with_releases,
+)
 
 
 @given(origin_with_multiple_visits())
@@ -327,3 +332,24 @@ def _check_branch_release_revision_parameters(
     expected_revision["query_params"] = {"revision": revision["id"], **query_params}
 
     assert snapshot_context == expected_revision
+
+
+@given(origin_with_releases())
+def test_get_release_large_snapshot(archive_data, origin):
+    snapshot = archive_data.snapshot_get_latest(origin["url"])
+    release_id = random.choice(
+        [
+            v["target"]
+            for v in snapshot["branches"].values()
+            if v["target_type"] == "release"
+        ]
+    )
+    release_data = archive_data.release_get(release_id)
+    # simulate large snapshot processing by providing releases parameter
+    # as an empty list
+    release = _get_release(
+        releases=[], release_name=release_data["name"], snapshot_id=snapshot["id"]
+    )
+
+    assert release_data["name"] == release["name"]
+    assert release_data["id"] == release["id"]
