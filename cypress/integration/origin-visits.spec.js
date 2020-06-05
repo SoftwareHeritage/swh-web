@@ -75,4 +75,20 @@ describe('Visits tests', function() {
         searchInCalendar(getTime($el.text()));
       });
   });
+
+  it('should close calendar popover when leaving day', function() {
+    cy.get('#swh-last-visit > .swh-visit-full')
+      .then(($el) => {
+        const date = getTime($el.text());
+        searchInCalendar(date);
+        cy.contains('.month', date.monthName)
+          .find('.day-content')
+          .eq(date.date - 1)
+          .trigger('mouseout');
+
+        cy.get('.popover')
+          .should('not.be.visible');
+      });
+  });
+
 });

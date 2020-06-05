@@ -15,7 +15,7 @@ let visitsByDate = {};
 
 function closePopover() {
   if (currentPopover) {
-    $(currentPopover).popover('hide');
+    $(currentPopover).popover('dispose');
     currentPopover = null;
   }
 }
@@ -121,18 +121,25 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
           container: 'body',
           html: true,
           content: content
+        }).on('mouseleave', () => {
+          if (!$('.popover:hover').length) {
+            // close popover when leaving day in calendar
+            // except if the pointer is hovering it
+            closePopover();
+          }
+        });
+
+        $(e.element).on('shown.bs.popover', () => {
+          $('.popover').mouseleave(() => {
+            // close popover when pointer leaves it
+            closePopover();
+          });
         });
 
         $(e.element).popover('show');
         currentPopover = e.element;
       }
     }
-  });
-  $('#swh-visits-timeline').mouseenter(() => {
-    closePopover();
-  });
-  $('#swh-visits-list').mouseenter(() => {
-    closePopover();
   });
   $('#swh-visits-calendar.calendar table td').css('width', maxSize + 'px');
   $('#swh-visits-calendar.calendar table td').css('height', maxSize + 'px');
