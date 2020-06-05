@@ -228,7 +228,7 @@ def enrich_revision(
                 }
             )
 
-        revision["parents"] = parents
+        revision["parents"] = tuple(parents)
 
     if "children" in revision:
         children = []

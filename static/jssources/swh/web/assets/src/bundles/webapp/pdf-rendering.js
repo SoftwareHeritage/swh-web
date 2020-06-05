@@ -25,9 +25,9 @@ export async function renderPdf(pdfUrl) {
     // Using promise to fetch the page
     pdfDoc.getPage(num).then(page => {
       let divWidth = $('.swh-content').width();
-      let scale = Math.min(defaultScale, divWidth / page.getViewport(1).width);
+      let scale = Math.min(defaultScale, divWidth / page.getViewport({scale: 1.0}).width);
 
-      let viewport = page.getViewport(scale);
+      let viewport = page.getViewport({scale: scale});
       canvas.width = viewport.width;
       canvas.height = viewport.height;
 

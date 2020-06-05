@@ -6,7 +6,9 @@ var BaseTransport = /** @class */ (function () {
         this.options = options;
         /** A simple buffer holding all requests. */
         this._buffer = new PromiseBuffer(30);
-        this.url = new API(this.options.dsn).getStoreEndpointWithUrlEncodedAuth();
+        this._api = new API(this.options.dsn);
+        // tslint:disable-next-line:deprecation
+        this.url = this._api.getStoreEndpointWithUrlEncodedAuth();
     }
     /**
      * @inheritDoc

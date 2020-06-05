@@ -11,34 +11,64 @@ var API = /** @class */ (function () {
     API.prototype.getDsn = function () {
         return this._dsnObject;
     };
-    /** Returns a string with auth headers in the url to the store endpoint. */
-    API.prototype.getStoreEndpoint = function () {
-        return "" + this._getBaseUrl() + this.getStoreEndpointPath();
-    };
-    /** Returns the store endpoint with auth added in url encoded. */
-    API.prototype.getStoreEndpointWithUrlEncodedAuth = function () {
-        var dsn = this._dsnObject;
-        var auth = {
-            sentry_key: dsn.user,
-            sentry_version: SENTRY_API_VERSION,
-        };
-        // Auth is intentionally sent as part of query string (NOT as custom HTTP header)
-        // to avoid preflight CORS requests
-        return this.getStoreEndpoint() + "?" + urlEncode(auth);
-    };
-    /** Returns the base path of the url including the port. */
-    API.prototype._getBaseUrl = function () {
+    /** Returns the prefix to construct Sentry ingestion API endpoints. */
+    API.prototype.getBaseApiEndpoint = function () {
         var dsn = this._dsnObject;
         var protocol = dsn.protocol ? dsn.protocol + ":" : '';
         var port = dsn.port ? ":" + dsn.port : '';
-        return protocol + "//" + dsn.host + port;
+        return protocol + "//" + dsn.host + port + (dsn.path ? "/" + dsn.path : '') + "/api/";
+    };
+    /** Returns the store endpoint URL. */
+    API.prototype.getStoreEndpoint = function () {
+        return this._getIngestEndpoint('store');
+    };
+    /** Returns the envelope endpoint URL. */
+    API.prototype._getEnvelopeEndpoint = function () {
+        return this._getIngestEndpoint('envelope');
+    };
+    /** Returns the ingest API endpoint for target. */
+    API.prototype._getIngestEndpoint = function (target) {
+        var base = this.getBaseApiEndpoint();
+        var dsn = this._dsnObject;
+        return "" + base + dsn.projectId + "/" + target + "/";
+    };
+    /**
+     * Returns the store endpoint URL with auth in the query string.
+     *
+     * Sending auth as part of the query string and not as custom HTTP headers avoids CORS preflight requests.
+     */
+    API.prototype.getStoreEndpointWithUrlEncodedAuth = function () {
+        return this.getStoreEndpoint() + "?" + this._encodedAuth();
+    };
+    /**
+     * Returns the envelope endpoint URL with auth in the query string.
+     *
+     * Sending auth as part of the query string and not as custom HTTP headers avoids CORS preflight requests.
+     */
+    API.prototype.getEnvelopeEndpointWithUrlEncodedAuth = function () {
+        return this._getEnvelopeEndpoint() + "?" + this._encodedAuth();
+    };
+    /** Returns a URL-encoded string with auth config suitable for a query string. */
+    API.prototype._encodedAuth = function () {
+        var dsn = this._dsnObject;
+        var auth = {
+            // We send only the minimum set of required information. See
+            // https://github.com/getsentry/sentry-javascript/issues/2572.
+            sentry_key: dsn.user,
+            sentry_version: SENTRY_API_VERSION,
+        };
+        return urlEncode(auth);
     };
     /** Returns only the path component for the store endpoint. */
     API.prototype.getStoreEndpointPath = function () {
         var dsn = this._dsnObject;
         return (dsn.path ? "/" + dsn.path : '') + "/api/" + dsn.projectId + "/store/";
     };
-    /** Returns an object that can be used in request headers. */
+    /**
+     * Returns an object that can be used in request headers.
+     *
+     * @deprecated in favor of `getStoreEndpointWithUrlEncodedAuth` and `getEnvelopeEndpointWithUrlEncodedAuth`.
+     */
     API.prototype.getRequestHeaders = function (clientName, clientVersion) {
         var dsn = this._dsnObject;
         var header = ["Sentry sentry_version=" + SENTRY_API_VERSION];
@@ -56,7 +86,7 @@ var API = /** @class */ (function () {
     API.prototype.getReportDialogEndpoint = function (dialogOptions) {
         if (dialogOptions === void 0) { dialogOptions = {}; }
         var dsn = this._dsnObject;
-        var endpoint = "" + this._getBaseUrl() + (dsn.path ? "/" + dsn.path : '') + "/api/embed/error-page/";
+        var endpoint = this.getBaseApiEndpoint() + "embed/error-page/";
         var encodedOptions = [];
         encodedOptions.push("dsn=" + dsn.toString());
         for (var key in dialogOptions) {

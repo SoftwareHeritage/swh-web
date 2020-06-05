@@ -208,6 +208,19 @@ def revision_log_browse(request, sha1_git):
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`
     """
     try:
+        origin_url = request.GET.get("origin_url")
+        snapshot_id = request.GET.get("snapshot")
+        snapshot_context = None
+        if origin_url or snapshot_id:
+            snapshot_context = get_snapshot_context(
+                snapshot_id=snapshot_id,
+                origin_url=origin_url,
+                timestamp=request.GET.get("timestamp"),
+                visit_id=request.GET.get("visit_id"),
+                branch_name=request.GET.get("branch"),
+                release_name=request.GET.get("release"),
+                revision_id=sha1_git,
+            )
         per_page = int(request.GET.get("per_page", NB_LOG_ENTRIES))
         offset = int(request.GET.get("offset", 0))
         revs_ordering = request.GET.get("revs_ordering", "committer_date")
@@ -284,7 +297,7 @@ def revision_log_browse(request, sha1_git):
             "prev_log_url": prev_log_url,
             "breadcrumbs": None,
             "top_right_link": None,
-            "snapshot_context": None,
+            "snapshot_context": snapshot_context,
             "vault_cooking": None,
             "show_actions_menu": True,
             "swhids_info": None,
@@ -308,22 +321,30 @@ def revision_browse(request, sha1_git):
         revision = service.lookup_revision(sha1_git)
         origin_info = None
         snapshot_context = None
-        origin_url = request.GET.get("origin_url", None)
+        origin_url = request.GET.get("origin_url")
         if not origin_url:
-            origin_url = request.GET.get("origin", None)
-        timestamp = request.GET.get("timestamp", None)
-        visit_id = request.GET.get("visit_id", None)
-        snapshot_id = request.GET.get("snapshot_id", None)
-        path = request.GET.get("path", None)
+            origin_url = request.GET.get("origin")
+        timestamp = request.GET.get("timestamp")
+        visit_id = request.GET.get("visit_id")
+        snapshot_id = request.GET.get("snapshot_id")
+        if not snapshot_id:
+            snapshot_id = request.GET.get("snapshot")
+        path = request.GET.get("path")
         dir_id = None
         dirs, files = None, None
         content_data = {}
         if origin_url:
             try:
                 snapshot_context = get_snapshot_context(
-                    origin_url=origin_url, timestamp=timestamp, visit_id=visit_id
+                    snapshot_id=snapshot_id,
+                    origin_url=origin_url,
+                    timestamp=timestamp,
+                    visit_id=visit_id,
+                    branch_name=request.GET.get("branch"),
+                    release_name=request.GET.get("release"),
+                    revision_id=sha1_git,
                 )
-            except NotFoundExc:
+            except NotFoundExc as e:
                 raw_rev_url = reverse(
                     "browse-revision", url_args={"sha1_git": sha1_git}
                 )
@@ -336,11 +357,15 @@ def revision_browse(request, sha1_git):
                     "without origin information: %s"
                     % (gen_link(origin_url), gen_link(raw_rev_url))
                 )
-                raise NotFoundExc(error_message)
+                if str(e).startswith("Origin"):
+                    raise NotFoundExc(error_message)
+                else:
+                    raise e
             origin_info = snapshot_context["origin_info"]
             snapshot_id = snapshot_context["snapshot_id"]
         elif snapshot_id:
             snapshot_context = get_snapshot_context(snapshot_id)
+
         if path:
             file_info = service.lookup_directory_with_path(revision["directory"], path)
             if file_info["type"] == "dir":
@@ -399,12 +424,7 @@ def revision_browse(request, sha1_git):
 
     path_info = gen_path_info(path)
 
-    query_params = {
-        "snapshot_id": snapshot_id,
-        "origin_url": origin_url,
-        "timestamp": timestamp,
-        "visit_id": visit_id,
-    }
+    query_params = snapshot_context["query_params"] if snapshot_context else {}
 
     breadcrumbs = []
     breadcrumbs.append(
@@ -466,17 +486,18 @@ def revision_browse(request, sha1_git):
             content = content_display_data["content_data"]
             language = content_display_data["language"]
             mimetype = content_display_data["mimetype"]
-        query_params = {}
         if path:
             filename = path_info[-1]["name"]
             query_params["filename"] = filename
+            filepath = "/".join(pi["name"] for pi in path_info[:-1])
+            extra_context["path"] = f"/{filepath}/" if filepath else "/"
             extra_context["filename"] = filename
 
         top_right_link = {
             "url": reverse(
                 "browse-content-raw",
                 url_args={"query_string": query_string},
-                query_params=query_params,
+                query_params={"filename": filename},
             ),
             "icon": swh_object_icons["content"],
             "text": "Raw File",
@@ -527,14 +548,10 @@ def revision_browse(request, sha1_git):
 
         swh_objects.append(SWHObjectInfo(object_type=DIRECTORY, object_id=dir_id))
 
+    query_params.pop("path", None)
+
     diff_revision_url = reverse(
-        "diff-revision",
-        url_args={"sha1_git": sha1_git},
-        query_params={
-            "origin_url": origin_url,
-            "timestamp": timestamp,
-            "visit_id": visit_id,
-        },
+        "diff-revision", url_args={"sha1_git": sha1_git}, query_params=query_params,
     )
 
     if snapshot_id:

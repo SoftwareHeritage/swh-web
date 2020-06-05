@@ -6,6 +6,7 @@
 import random
 import textwrap
 
+from django.utils.html import escape
 from hypothesis import given
 
 from swh.web.common.identifiers import get_swh_persistent_id
@@ -16,32 +17,29 @@ from swh.web.tests.strategies import release, origin_with_releases, unknown_rele
 
 @given(release())
 def test_release_browse(client, archive_data, release):
-    url = reverse("browse-release", url_args={"sha1_git": release})
-
-    release_data = archive_data.release_get(release)
-
-    resp = client.get(url)
-
-    _release_browse_checks(resp, release_data, archive_data)
+    _release_browse_checks(client, release, archive_data)
 
 
 @given(origin_with_releases())
-def test_release_browse_with_origin(client, archive_data, origin):
+def test_release_browse_with_origin_snapshot(client, archive_data, origin):
     snapshot = archive_data.snapshot_get_latest(origin["url"])
     release = random.choice(
-        [b for b in snapshot["branches"].values() if b["target_type"] == "release"]
+        [
+            b["target"]
+            for b in snapshot["branches"].values()
+            if b["target_type"] == "release"
+        ]
     )
-    url = reverse(
-        "browse-release",
-        url_args={"sha1_git": release["target"]},
-        query_params={"origin_url": origin["url"]},
+
+    _release_browse_checks(client, release, archive_data, origin_url=origin["url"])
+    _release_browse_checks(client, release, archive_data, snapshot_id=snapshot["id"])
+    _release_browse_checks(
+        client,
+        release,
+        archive_data,
+        origin_url=origin["url"],
+        snapshot_id=snapshot["id"],
     )
-
-    release_data = archive_data.release_get(release["target"])
-
-    resp = client.get(url)
-
-    _release_browse_checks(resp, release_data, archive_data, origin)
 
 
 @given(unknown_release())
@@ -68,10 +66,18 @@ def test_release_uppercase(client, release):
     assert resp["location"] == redirect_url
 
 
-def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
-    query_params = {}
-    if origin_info:
-        query_params["origin_url"] = origin_info["url"]
+def _release_browse_checks(
+    client, release, archive_data, origin_url=None, snapshot_id=None
+):
+    query_params = {"origin_url": origin_url, "snapshot": snapshot_id}
+
+    url = reverse(
+        "browse-release", url_args={"sha1_git": release}, query_params=query_params
+    )
+
+    release_data = archive_data.release_get(release)
+
+    resp = client.get(url)
 
     release_id = release_data["id"]
     release_name = release_data["name"]
@@ -98,21 +104,31 @@ def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
     assert_contains(resp, release_id)
     assert_contains(resp, release_name)
     assert_contains(resp, target_type)
-    assert_contains(resp, '<a href="%s">%s</a>' % (target_url, target))
+    assert_contains(resp, '<a href="%s">%s</a>' % (escape(target_url), target))
 
     swh_rel_id = get_swh_persistent_id("release", release_id)
     swh_rel_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rel_id})
     assert_contains(resp, swh_rel_id)
     assert_contains(resp, swh_rel_id_url)
 
-    if origin_info:
+    if origin_url:
         browse_origin_url = reverse(
-            "browse-origin", query_params={"origin_url": origin_info["url"]}
+            "browse-origin", query_params={"origin_url": origin_url}
         )
         title = (
             f"Browse archived release for origin\n"
             f'<a href="{browse_origin_url}">\n'
-            f'  {origin_info["url"]}\n'
+            f"  {origin_url}\n"
+            f"</a>"
+        )
+        indent = " " * 6
+    elif snapshot_id:
+        swh_snp_id = get_swh_persistent_id("snapshot", snapshot_id)
+        swh_snp_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_snp_id})
+        title = (
+            f"Browse archived release for snapshot\n"
+            f'<a href="{swh_snp_id_url}">\n'
+            f"  {swh_snp_id}\n"
             f"</a>"
         )
         indent = " " * 6
@@ -130,17 +146,24 @@ def _release_browse_checks(resp, release_data, archive_data, origin_info=None):
     )
 
     if release_data["target_type"] == "revision":
-        if origin_info:
+        if origin_url:
             directory_url = reverse(
                 "browse-origin-directory",
                 query_params={
-                    "origin_url": origin_info["url"],
+                    "origin_url": origin_url,
                     "release": release_data["name"],
+                    "snapshot": snapshot_id,
                 },
+            )
+        elif snapshot_id:
+            directory_url = reverse(
+                "browse-snapshot-directory",
+                url_args={"snapshot_id": snapshot_id},
+                query_params={"release": release_data["name"],},
             )
         else:
             rev = archive_data.revision_get(release_data["target"])
             directory_url = reverse(
                 "browse-directory", url_args={"sha1_git": rev["directory"]}
             )
-        assert_contains(resp, directory_url)
+        assert_contains(resp, escape(directory_url))

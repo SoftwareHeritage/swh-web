@@ -1,4 +1,5 @@
 import * as tslib_1 from "tslib";
+import { eventToSentryRequest } from '@sentry/core';
 import { Status } from '@sentry/types';
 import { logger, parseRetryAfterHeader, SyncPromise } from '@sentry/utils';
 import { BaseTransport } from './base';
@@ -23,6 +24,7 @@ var XHRTransport = /** @class */ (function (_super) {
                 status: 429,
             });
         }
+        var sentryReq = eventToSentryRequest(event, this._api);
         return this._buffer.add(new SyncPromise(function (resolve, reject) {
             var request = new XMLHttpRequest();
             request.onreadystatechange = function () {
@@ -41,13 +43,13 @@ var XHRTransport = /** @class */ (function (_super) {
                 }
                 reject(request);
             };
-            request.open('POST', _this.url);
+            request.open('POST', sentryReq.url);
             for (var header in _this.options.headers) {
                 if (_this.options.headers.hasOwnProperty(header)) {
                     request.setRequestHeader(header, _this.options.headers[header]);
                 }
             }
-            request.send(JSON.stringify(event));
+            request.send(sentryReq.body);
         }));
     };
     return XHRTransport;

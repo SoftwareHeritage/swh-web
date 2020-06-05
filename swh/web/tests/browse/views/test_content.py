@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
 import textwrap
 
 from django.utils.html import escape
@@ -10,6 +11,7 @@ from django.utils.html import escape
 from hypothesis import given
 
 from swh.model.identifiers import CONTENT, DIRECTORY
+from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
@@ -33,6 +35,7 @@ from swh.web.tests.strategies import (
     invalid_sha1,
     unknown_content,
     content_utf8_detected_as_binary,
+    origin_with_multiple_visits,
 )
 
 
@@ -418,6 +421,112 @@ def test_content_utf8_detected_as_binary_display(client, archive_data, content):
     content_display = _process_content_for_display(archive_data, content)
 
     assert_contains(resp, escape(content_display["content_data"]))
+
+
+@given(origin_with_multiple_visits())
+def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
+    visits = archive_data.origin_visit_get(origin["url"])
+    visit = random.choice(visits)
+    snapshot = archive_data.snapshot_get(visit["snapshot"])
+    branches, releases = process_snapshot_branches(snapshot)
+    branch_info = random.choice(branches)
+
+    directory = archive_data.revision_get(branch_info["revision"])["directory"]
+    directory_content = archive_data.directory_ls(directory)
+    directory_file = random.choice(
+        [e for e in directory_content if e["type"] == "file"]
+    )
+
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": directory_file["checksums"]["sha1"]},
+        query_params={
+            "origin_url": origin["url"],
+            "snapshot": snapshot["id"],
+            "branch": branch_info["name"],
+            "path": directory_file["name"],
+        },
+    )
+
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert_template_used(resp, "browse/content.html")
+    _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
+    assert_contains(resp, directory_file["name"])
+    assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
+
+
+@given(origin_with_multiple_visits())
+def test_content_origin_snapshot_release_browse(client, archive_data, origin):
+    visits = archive_data.origin_visit_get(origin["url"])
+    visit = random.choice(visits)
+    snapshot = archive_data.snapshot_get(visit["snapshot"])
+    branches, releases = process_snapshot_branches(snapshot)
+    release_info = random.choice(releases)
+
+    directory_content = archive_data.directory_ls(release_info["directory"])
+    directory_file = random.choice(
+        [e for e in directory_content if e["type"] == "file"]
+    )
+
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": directory_file["checksums"]["sha1"]},
+        query_params={
+            "origin_url": origin["url"],
+            "snapshot": snapshot["id"],
+            "release": release_info["name"],
+            "path": directory_file["name"],
+        },
+    )
+
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert_template_used(resp, "browse/content.html")
+    _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
+    assert_contains(resp, directory_file["name"])
+    assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
+
+
+def _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases):
+    browse_origin_url = reverse(
+        "browse-origin", query_params={"origin_url": origin["url"]}
+    )
+    assert_contains(
+        resp,
+        textwrap.indent(
+            (
+                "Browse archived content for origin\n"
+                f'<a href="{browse_origin_url}">\n'
+                f"  {origin['url']}\n"
+                f"</a>"
+            ),
+            " " * 6,
+        ),
+    )
+
+    origin_branches_url = reverse(
+        "browse-origin-branches",
+        query_params={"origin_url": origin["url"], "snapshot": snapshot["id"]},
+    )
+
+    assert_contains(
+        resp,
+        '<a href="%s">Branches (%s)</a>' % (escape(origin_branches_url), len(branches)),
+    )
+
+    origin_releases_url = reverse(
+        "browse-origin-releases",
+        query_params={"origin_url": origin["url"], "snapshot": snapshot["id"]},
+    )
+
+    assert_contains(
+        resp,
+        '<a href="%s">Releases (%s)</a>' % (escape(origin_releases_url), len(releases)),
+    )
+
+    assert_contains(resp, '<li class="swh-branch">', count=len(branches))
+    assert_contains(resp, '<li class="swh-release">', count=len(releases))
 
 
 def _process_content_for_display(archive_data, content):

@@ -33,6 +33,7 @@ def origin_directory_browse(request):
     return browse_snapshot_directory(
         request,
         origin_url=request.GET.get("origin_url"),
+        snapshot_id=request.GET.get("snapshot"),
         timestamp=request.GET.get("timestamp"),
         path=request.GET.get("path"),
     )
@@ -54,7 +55,11 @@ def origin_directory_browse_legacy(request, origin_url, timestamp=None, path=Non
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/directory/[(path)/]`
     """
     return browse_snapshot_directory(
-        request, origin_url=origin_url, timestamp=timestamp, path=path
+        request,
+        origin_url=origin_url,
+        snapshot_id=request.GET.get("snapshot"),
+        timestamp=timestamp,
+        path=path,
     )
 
 
@@ -71,6 +76,7 @@ def origin_content_browse(request):
     return browse_snapshot_content(
         request,
         origin_url=request.GET.get("origin_url"),
+        snapshot_id=request.GET.get("snapshot"),
         timestamp=request.GET.get("timestamp"),
         path=request.GET.get("path"),
         selected_language=request.GET.get("language"),
@@ -95,6 +101,7 @@ def origin_content_browse_legacy(request, origin_url, path=None, timestamp=None)
     return browse_snapshot_content(
         request,
         origin_url=origin_url,
+        snapshot_id=request.GET.get("snapshot"),
         timestamp=timestamp,
         path=path,
         selected_language=request.GET.get("language"),
@@ -113,6 +120,7 @@ def origin_log_browse(request):
     return browse_snapshot_log(
         request,
         origin_url=request.GET.get("origin_url"),
+        snapshot_id=request.GET.get("snapshot"),
         timestamp=request.GET.get("timestamp"),
     )
 
@@ -131,7 +139,12 @@ def origin_log_browse_legacy(request, origin_url, timestamp=None):
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/log/`
 
     """
-    return browse_snapshot_log(request, origin_url=origin_url, timestamp=timestamp)
+    return browse_snapshot_log(
+        request,
+        origin_url=origin_url,
+        snapshot_id=request.GET.get("snapshot"),
+        timestamp=timestamp,
+    )
 
 
 @browse_route(
@@ -147,6 +160,7 @@ def origin_branches_browse(request):
     return browse_snapshot_branches(
         request,
         origin_url=request.GET.get("origin_url"),
+        snapshot_id=request.GET.get("snapshot"),
         timestamp=request.GET.get("timestamp"),
     )
 
@@ -165,7 +179,12 @@ def origin_branches_browse_legacy(request, origin_url, timestamp=None):
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/branches/`
 
     """
-    return browse_snapshot_branches(request, origin_url=origin_url, timestamp=timestamp)
+    return browse_snapshot_branches(
+        request,
+        origin_url=origin_url,
+        snapshot_id=request.GET.get("snapshot"),
+        timestamp=timestamp,
+    )
 
 
 @browse_route(
@@ -181,6 +200,7 @@ def origin_releases_browse(request):
     return browse_snapshot_releases(
         request,
         origin_url=request.GET.get("origin_url"),
+        snapshot_id=request.GET.get("snapshot"),
         timestamp=request.GET.get("timestamp"),
     )
 
@@ -199,7 +219,12 @@ def origin_releases_browse_legacy(request, origin_url, timestamp=None):
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/releases/`
 
     """
-    return browse_snapshot_releases(request, origin_url=origin_url, timestamp=timestamp)
+    return browse_snapshot_releases(
+        request,
+        origin_url=origin_url,
+        snapshot_id=request.GET.get("snapshot"),
+        timestamp=timestamp,
+    )
 
 
 def _origin_visits_browse(request, origin_url):
