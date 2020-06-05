@@ -14,7 +14,7 @@ from django.template.defaultfilters import filesizeformat
 import sentry_sdk
 
 from swh.model.hashutil import hash_to_hex
-from swh.model.identifiers import CONTENT
+from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -343,10 +343,33 @@ def content_display(request, query_string):
         origin_url=origin_url,
     )
 
+    swh_objects = [
+        SWHObjectInfo(object_type=CONTENT, object_id=content_checksums["sha1_git"])
+    ]
+
+    if directory_id:
+        swh_objects.append(SWHObjectInfo(object_type=DIRECTORY, object_id=directory_id))
+
+    if snapshot_context:
+        swh_objects.append(
+            SWHObjectInfo(
+                object_type=REVISION, object_id=snapshot_context["revision_id"]
+            )
+        )
+        swh_objects.append(
+            SWHObjectInfo(
+                object_type=SNAPSHOT, object_id=snapshot_context["snapshot_id"]
+            )
+        )
+        if snapshot_context["release_id"]:
+            swh_objects.append(
+                SWHObjectInfo(
+                    object_type=RELEASE, object_id=snapshot_context["release_id"]
+                )
+            )
+
     swhids_info = get_swhids_info(
-        [SWHObjectInfo(object_type=CONTENT, object_id=content_checksums["sha1_git"])],
-        snapshot_context,
-        extra_context=content_metadata,
+        swh_objects, snapshot_context, extra_context=content_metadata,
     )
 
     heading = "Content - %s" % content_checksums["sha1_git"]

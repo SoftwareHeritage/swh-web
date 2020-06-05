@@ -19,8 +19,8 @@ static/css/highlightjs.d9447d564c34f736404e.css
 static/css/highlightjs.d9447d564c34f736404e.css.map
 static/css/org.67476f903a00cae36e53.css
 static/css/org.67476f903a00cae36e53.css.map
-static/css/origin.80670990101be574f569.css
-static/css/origin.80670990101be574f569.css.map
+static/css/origin.5f169bca01a29f5399e9.css
+static/css/origin.5f169bca01a29f5399e9.css.map
 static/css/revision.95d0cd25ea778ff5e9d2.css
 static/css/revision.95d0cd25ea778ff5e9d2.css.map
 static/css/showdown.1ae988b0766ffa189a28.css
@@ -150,8 +150,8 @@ static/js/mathjax.26dd134e9b1778a91cde.js
 static/js/mathjax.26dd134e9b1778a91cde.js.map
 static/js/org.67476f903a00cae36e53.js
 static/js/org.67476f903a00cae36e53.js.map
-static/js/origin.80670990101be574f569.js
-static/js/origin.80670990101be574f569.js.map
+static/js/origin.5f169bca01a29f5399e9.js
+static/js/origin.5f169bca01a29f5399e9.js.map
 static/js/pdf.worker.min.js
 static/js/pdfjs.cb4f6268032541ac1a80.js
 static/js/pdfjs.cb4f6268032541ac1a80.js.map

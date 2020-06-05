@@ -10,7 +10,7 @@ from django.utils.html import escape
 
 from hypothesis import given
 
-from swh.model.identifiers import CONTENT, DIRECTORY
+from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content,
@@ -455,6 +455,45 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
     assert_contains(resp, directory_file["name"])
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
 
+    cnt_swhid = get_swh_persistent_id(
+        CONTENT,
+        directory_file["checksums"]["sha1_git"],
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+            "anchor": get_swh_persistent_id(REVISION, branch_info["revision"]),
+            "path": f"/{directory_file['name']}",
+        },
+    )
+    assert_contains(resp, cnt_swhid)
+
+    dir_swhid = get_swh_persistent_id(
+        DIRECTORY,
+        directory,
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+            "anchor": get_swh_persistent_id(REVISION, branch_info["revision"]),
+            "path": "/",
+        },
+    )
+    assert_contains(resp, dir_swhid)
+
+    rev_swhid = get_swh_persistent_id(
+        REVISION,
+        branch_info["revision"],
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+        },
+    )
+    assert_contains(resp, rev_swhid)
+
+    snp_swhid = get_swh_persistent_id(
+        SNAPSHOT, snapshot, metadata={"origin": origin["url"],},
+    )
+    assert_contains(resp, snp_swhid)
+
 
 @given(origin_with_multiple_visits())
 def test_content_origin_snapshot_release_browse(client, archive_data, origin):
@@ -486,6 +525,55 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
     _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
     assert_contains(resp, directory_file["name"])
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
+
+    cnt_swhid = get_swh_persistent_id(
+        CONTENT,
+        directory_file["checksums"]["sha1_git"],
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+            "anchor": get_swh_persistent_id(RELEASE, release_info["id"]),
+            "path": f"/{directory_file['name']}",
+        },
+    )
+    assert_contains(resp, cnt_swhid)
+
+    dir_swhid = get_swh_persistent_id(
+        DIRECTORY,
+        release_info["directory"],
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+            "anchor": get_swh_persistent_id(RELEASE, release_info["id"]),
+            "path": "/",
+        },
+    )
+    assert_contains(resp, dir_swhid)
+
+    rev_swhid = get_swh_persistent_id(
+        REVISION,
+        release_info["target"],
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+        },
+    )
+    assert_contains(resp, rev_swhid)
+
+    rel_swhid = get_swh_persistent_id(
+        RELEASE,
+        release_info["id"],
+        metadata={
+            "origin": origin["url"],
+            "visit": get_swh_persistent_id(SNAPSHOT, snapshot),
+        },
+    )
+    assert_contains(resp, rel_swhid)
+
+    snp_swhid = get_swh_persistent_id(
+        SNAPSHOT, snapshot, metadata={"origin": origin["url"],},
+    )
+    assert_contains(resp, snp_swhid)
 
 
 def _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases):
