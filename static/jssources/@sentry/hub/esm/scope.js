@@ -1,5 +1,5 @@
 import * as tslib_1 from "tslib";
-import { getGlobalObject, isThenable, SyncPromise, timestampWithMs } from '@sentry/utils';
+import { getGlobalObject, isPlainObject, isThenable, SyncPromise, timestampWithMs } from '@sentry/utils';
 /**
  * Holds additional event information. {@link Scope.applyToEvent} will be
  * called by the client before an event will be sent.
@@ -21,7 +21,7 @@ var Scope = /** @class */ (function () {
         /** Extra */
         this._extra = {};
         /** Contexts */
-        this._context = {};
+        this._contexts = {};
     }
     /**
      * Add internal on change listener. Used for sub SDKs that need to store the scope.
@@ -142,9 +142,6 @@ var Scope = /** @class */ (function () {
      */
     Scope.prototype.setTransaction = function (transaction) {
         this._transaction = transaction;
-        if (this._span) {
-            this._span.transaction = transaction;
-        }
         this._notifyScopeListeners();
         return this;
     };
@@ -153,7 +150,7 @@ var Scope = /** @class */ (function () {
      */
     Scope.prototype.setContext = function (key, context) {
         var _a;
-        this._context = tslib_1.__assign({}, this._context, (_a = {}, _a[key] = context, _a));
+        this._contexts = tslib_1.__assign({}, this._contexts, (_a = {}, _a[key] = context, _a));
         this._notifyScopeListeners();
         return this;
     };
@@ -182,7 +179,7 @@ var Scope = /** @class */ (function () {
             newScope._breadcrumbs = tslib_1.__spread(scope._breadcrumbs);
             newScope._tags = tslib_1.__assign({}, scope._tags);
             newScope._extra = tslib_1.__assign({}, scope._extra);
-            newScope._context = tslib_1.__assign({}, scope._context);
+            newScope._contexts = tslib_1.__assign({}, scope._contexts);
             newScope._user = scope._user;
             newScope._level = scope._level;
             newScope._span = scope._span;
@@ -195,12 +192,55 @@ var Scope = /** @class */ (function () {
     /**
      * @inheritDoc
      */
+    Scope.prototype.update = function (captureContext) {
+        if (!captureContext) {
+            return this;
+        }
+        if (typeof captureContext === 'function') {
+            var updatedScope = captureContext(this);
+            return updatedScope instanceof Scope ? updatedScope : this;
+        }
+        if (captureContext instanceof Scope) {
+            this._tags = tslib_1.__assign({}, this._tags, captureContext._tags);
+            this._extra = tslib_1.__assign({}, this._extra, captureContext._extra);
+            this._contexts = tslib_1.__assign({}, this._contexts, captureContext._contexts);
+            if (captureContext._user) {
+                this._user = captureContext._user;
+            }
+            if (captureContext._level) {
+                this._level = captureContext._level;
+            }
+            if (captureContext._fingerprint) {
+                this._fingerprint = captureContext._fingerprint;
+            }
+        }
+        else if (isPlainObject(captureContext)) {
+            // tslint:disable-next-line:no-parameter-reassignment
+            captureContext = captureContext;
+            this._tags = tslib_1.__assign({}, this._tags, captureContext.tags);
+            this._extra = tslib_1.__assign({}, this._extra, captureContext.extra);
+            this._contexts = tslib_1.__assign({}, this._contexts, captureContext.contexts);
+            if (captureContext.user) {
+                this._user = captureContext.user;
+            }
+            if (captureContext.level) {
+                this._level = captureContext.level;
+            }
+            if (captureContext.fingerprint) {
+                this._fingerprint = captureContext.fingerprint;
+            }
+        }
+        return this;
+    };
+    /**
+     * @inheritDoc
+     */
     Scope.prototype.clear = function () {
         this._breadcrumbs = [];
         this._tags = {};
         this._extra = {};
         this._user = {};
-        this._context = {};
+        this._contexts = {};
         this._level = undefined;
         this._transaction = undefined;
         this._fingerprint = undefined;
@@ -266,17 +306,14 @@ var Scope = /** @class */ (function () {
         if (this._user && Object.keys(this._user).length) {
             event.user = tslib_1.__assign({}, this._user, event.user);
         }
-        if (this._context && Object.keys(this._context).length) {
-            event.contexts = tslib_1.__assign({}, this._context, event.contexts);
+        if (this._contexts && Object.keys(this._contexts).length) {
+            event.contexts = tslib_1.__assign({}, this._contexts, event.contexts);
         }
         if (this._level) {
             event.level = this._level;
         }
         if (this._transaction) {
             event.transaction = this._transaction;
-        }
-        if (this._span) {
-            event.contexts = tslib_1.__assign({ trace: this._span.getTraceContext() }, event.contexts);
         }
         this._applyFingerprint(event);
         event.breadcrumbs = tslib_1.__spread((event.breadcrumbs || []), this._breadcrumbs);

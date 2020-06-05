@@ -1,14 +1,48 @@
+import * as tslib_1 from "tslib";
 import { fill, getFunctionName, getGlobalObject } from '@sentry/utils';
 import { wrap } from '../helpers';
+var DEFAULT_EVENT_TARGET = [
+    'EventTarget',
+    'Window',
+    'Node',
+    'ApplicationCache',
+    'AudioTrackList',
+    'ChannelMergerNode',
+    'CryptoOperation',
+    'EventSource',
+    'FileReader',
+    'HTMLUnknownElement',
+    'IDBDatabase',
+    'IDBRequest',
+    'IDBTransaction',
+    'KeyOperation',
+    'MediaController',
+    'MessagePort',
+    'ModalWindow',
+    'Notification',
+    'SVGElementInstance',
+    'Screen',
+    'TextTrack',
+    'TextTrackCue',
+    'TextTrackList',
+    'WebSocket',
+    'WebSocketWorker',
+    'Worker',
+    'XMLHttpRequest',
+    'XMLHttpRequestEventTarget',
+    'XMLHttpRequestUpload',
+];
 /** Wrap timer functions and event targets to catch errors and provide better meta data */
 var TryCatch = /** @class */ (function () {
-    function TryCatch() {
-        /** JSDoc */
-        this._ignoreOnError = 0;
+    /**
+     * @inheritDoc
+     */
+    function TryCatch(options) {
         /**
          * @inheritDoc
          */
         this.name = TryCatch.id;
+        this._options = tslib_1.__assign({ XMLHttpRequest: true, eventTarget: true, requestAnimationFrame: true, setInterval: true, setTimeout: true }, options);
     }
     /** JSDoc */
     TryCatch.prototype._wrapTimeFunction = function (original) {
@@ -31,7 +65,7 @@ var TryCatch = /** @class */ (function () {
     /** JSDoc */
     TryCatch.prototype._wrapRAF = function (original) {
         return function (callback) {
-            return original(wrap(callback, {
+            return original.call(this, wrap(callback, {
                 mechanism: {
                     data: {
                         function: 'requestAnimationFrame',
@@ -136,45 +170,23 @@ var TryCatch = /** @class */ (function () {
      * and provide better metadata.
      */
     TryCatch.prototype.setupOnce = function () {
-        this._ignoreOnError = this._ignoreOnError;
         var global = getGlobalObject();
-        fill(global, 'setTimeout', this._wrapTimeFunction.bind(this));
-        fill(global, 'setInterval', this._wrapTimeFunction.bind(this));
-        fill(global, 'requestAnimationFrame', this._wrapRAF.bind(this));
-        if ('XMLHttpRequest' in global) {
+        if (this._options.setTimeout) {
+            fill(global, 'setTimeout', this._wrapTimeFunction.bind(this));
+        }
+        if (this._options.setInterval) {
+            fill(global, 'setInterval', this._wrapTimeFunction.bind(this));
+        }
+        if (this._options.requestAnimationFrame) {
+            fill(global, 'requestAnimationFrame', this._wrapRAF.bind(this));
+        }
+        if (this._options.XMLHttpRequest && 'XMLHttpRequest' in global) {
             fill(XMLHttpRequest.prototype, 'send', this._wrapXHR.bind(this));
         }
-        [
-            'EventTarget',
-            'Window',
-            'Node',
-            'ApplicationCache',
-            'AudioTrackList',
-            'ChannelMergerNode',
-            'CryptoOperation',
-            'EventSource',
-            'FileReader',
-            'HTMLUnknownElement',
-            'IDBDatabase',
-            'IDBRequest',
-            'IDBTransaction',
-            'KeyOperation',
-            'MediaController',
-            'MessagePort',
-            'ModalWindow',
-            'Notification',
-            'SVGElementInstance',
-            'Screen',
-            'TextTrack',
-            'TextTrackCue',
-            'TextTrackList',
-            'WebSocket',
-            'WebSocketWorker',
-            'Worker',
-            'XMLHttpRequest',
-            'XMLHttpRequestEventTarget',
-            'XMLHttpRequestUpload',
-        ].forEach(this._wrapEventTarget.bind(this));
+        if (this._options.eventTarget) {
+            var eventTarget = Array.isArray(this._options.eventTarget) ? this._options.eventTarget : DEFAULT_EVENT_TARGET;
+            eventTarget.forEach(this._wrapEventTarget.bind(this));
+        }
     };
     /**
      * @inheritDoc

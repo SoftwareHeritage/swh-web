@@ -311,9 +311,14 @@ var Hub = /** @class */ (function () {
     /**
      * @inheritDoc
      */
-    Hub.prototype.startSpan = function (spanOrSpanContext, forceNoChild) {
-        if (forceNoChild === void 0) { forceNoChild = false; }
-        return this._callExtensionMethod('startSpan', spanOrSpanContext, forceNoChild);
+    Hub.prototype.startSpan = function (context) {
+        return this._callExtensionMethod('startSpan', context);
+    };
+    /**
+     * @inheritDoc
+     */
+    Hub.prototype.startTransaction = function (context) {
+        return this._callExtensionMethod('startTransaction', context);
     };
     /**
      * @inheritDoc

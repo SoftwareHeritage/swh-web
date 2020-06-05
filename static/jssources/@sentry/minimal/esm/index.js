@@ -23,7 +23,7 @@ function callOnHub(method) {
  * @param exception An exception-like object.
  * @returns The generated eventId.
  */
-export function captureException(exception) {
+export function captureException(exception, captureContext) {
     var syntheticException;
     try {
         throw new Error('Sentry syntheticException');
@@ -32,6 +32,7 @@ export function captureException(exception) {
         syntheticException = exception;
     }
     return callOnHub('captureException', exception, {
+        captureContext: captureContext,
         originalException: exception,
         syntheticException: syntheticException,
     });
@@ -43,7 +44,7 @@ export function captureException(exception) {
  * @param level Define the level of the message.
  * @returns The generated eventId.
  */
-export function captureMessage(message, level) {
+export function captureMessage(message, captureContext) {
     var syntheticException;
     try {
         throw new Error(message);
@@ -51,10 +52,11 @@ export function captureMessage(message, level) {
     catch (exception) {
         syntheticException = exception;
     }
-    return callOnHub('captureMessage', message, level, {
-        originalException: message,
-        syntheticException: syntheticException,
-    });
+    // This is necessary to provide explicit scopes upgrade, without changing the original
+    // arrity of the `captureMessage(message, level)` method.
+    var level = typeof captureContext === 'string' ? captureContext : undefined;
+    var context = typeof captureContext !== 'string' ? { captureContext: captureContext } : undefined;
+    return callOnHub('captureMessage', message, level, tslib_1.__assign({ originalException: message, syntheticException: syntheticException }, context));
 }
 /**
  * Captures a manually created event and sends it to Sentry.
@@ -86,7 +88,7 @@ export function addBreadcrumb(breadcrumb) {
 /**
  * Sets context data with the given name.
  * @param name of the context
- * @param context Any kind of data. This data will be normailzed.
+ * @param context Any kind of data. This data will be normalized.
  */
 export function setContext(name, context) {
     callOnHub('setContext', name, context);
@@ -108,7 +110,7 @@ export function setTags(tags) {
 /**
  * Set key:value that will be sent as extra data with the event.
  * @param key String of extra
- * @param extra Any kind of data. This data will be normailzed.
+ * @param extra Any kind of data. This data will be normalized.
  */
 export function setExtra(key, extra) {
     callOnHub('setExtra', key, extra);
@@ -161,5 +163,15 @@ export function _callOnClient(method) {
         args[_i - 1] = arguments[_i];
     }
     callOnHub.apply(void 0, tslib_1.__spread(['_invokeClient', method], args));
+}
+/**
+ * Starts a Transaction. This is the entry point to do manual tracing. You can
+ * add child spans to transactions. Spans themselves can have children, building
+ * a tree structure. This function returns a Transaction and you need to keep
+ * track of the instance yourself. When you call `.finish()` on the transaction
+ * it will be sent to Sentry.
+ */
+export function startTransaction(context) {
+    return callOnHub('startTransaction', tslib_1.__assign({}, context));
 }
 //# sourceMappingURL=index.js.map

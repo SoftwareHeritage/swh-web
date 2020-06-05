@@ -131,6 +131,18 @@ def test_origin_content_view(client, archive_data, origin):
         timestamp=visit_unix_ts,
     )
 
+    _origin_content_view_test_helper(
+        client,
+        archive_data,
+        origin,
+        origin_visits[-1],
+        tdata["branches"],
+        tdata["releases"],
+        tdata["root_dir_sha1"],
+        tdata["content"],
+        snapshot_id=tdata["visit"]["snapshot"],
+    )
+
     tdata = _get_archive_data(0)
 
     _origin_content_view_test_helper(
@@ -143,6 +155,18 @@ def test_origin_content_view(client, archive_data, origin):
         tdata["root_dir_sha1"],
         tdata["content"],
         visit_id=tdata["visit"]["visit"],
+    )
+
+    _origin_content_view_test_helper(
+        client,
+        archive_data,
+        origin,
+        origin_visits[0],
+        tdata["branches"],
+        tdata["releases"],
+        tdata["root_dir_sha1"],
+        tdata["content"],
+        snapshot_id=tdata["visit"]["snapshot"],
     )
 
 
@@ -207,8 +231,17 @@ def test_origin_root_directory_view(client, archive_data, origin):
         timestamp=visit["date"],
     )
 
-    origin = dict(origin)
-    del origin["type"]
+    _origin_directory_view_test_helper(
+        client,
+        archive_data,
+        origin,
+        visit,
+        branches,
+        releases,
+        root_dir_sha1,
+        dir_content,
+        snapshot_id=visit["snapshot"],
+    )
 
     _origin_directory_view_test_helper(
         client,
@@ -255,6 +288,18 @@ def test_origin_root_directory_view(client, archive_data, origin):
         root_dir_sha1,
         dir_content,
         timestamp=visit["date"],
+    )
+
+    _origin_directory_view_test_helper(
+        client,
+        archive_data,
+        origin,
+        visit,
+        branches,
+        releases,
+        root_dir_sha1,
+        dir_content,
+        snapshot_id=visit["snapshot"],
     )
 
 
@@ -332,8 +377,18 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         timestamp=visit["date"],
     )
 
-    origin = dict(origin)
-    del origin["type"]
+    _origin_directory_view_test_helper(
+        client,
+        archive_data,
+        origin,
+        visit,
+        branches,
+        releases,
+        root_dir_sha1,
+        subdir_content,
+        path=subdir_path,
+        snapshot_id=visit["snapshot"],
+    )
 
     _origin_directory_view_test_helper(
         client,
@@ -386,6 +441,19 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         timestamp=visit["date"],
     )
 
+    _origin_directory_view_test_helper(
+        client,
+        archive_data,
+        origin,
+        visit,
+        branches,
+        releases,
+        root_dir_sha1,
+        subdir_content,
+        path=subdir_path,
+        snapshot_id=visit["snapshot"],
+    )
+
 
 @given(origin())
 def test_origin_branches(client, archive_data, origin):
@@ -397,10 +465,9 @@ def test_origin_branches(client, archive_data, origin):
 
     _origin_branches_test_helper(client, origin, snapshot_content)
 
-    origin = dict(origin)
-    origin["type"] = None
-
-    _origin_branches_test_helper(client, origin, snapshot_content)
+    _origin_branches_test_helper(
+        client, origin, snapshot_content, snapshot_id=visit["snapshot"]
+    )
 
 
 @given(origin())
@@ -413,10 +480,9 @@ def test_origin_releases(client, archive_data, origin):
 
     _origin_releases_test_helper(client, origin, snapshot_content)
 
-    origin = dict(origin)
-    origin["type"] = None
-
-    _origin_releases_test_helper(client, origin, snapshot_content)
+    _origin_releases_test_helper(
+        client, origin, snapshot_content, snapshot_id=visit["snapshot"]
+    )
 
 
 @given(
@@ -773,10 +839,11 @@ def _origin_content_view_test_helper(
     content,
     visit_id=None,
     timestamp=None,
+    snapshot_id=None,
 ):
     content_path = "/".join(content["path"].split("/")[1:])
 
-    if not visit_id:
+    if not visit_id and not snapshot_id:
         visit_id = origin_visit["visit"]
 
     query_params = {"origin_url": origin_info["url"], "path": content_path}
@@ -786,6 +853,8 @@ def _origin_content_view_test_helper(
 
     if visit_id:
         query_params["visit_id"] = visit_id
+    elif snapshot_id:
+        query_params["snapshot"] = snapshot_id
 
     url = reverse("browse-origin-content", query_params=query_params)
 
@@ -916,20 +985,23 @@ def _origin_directory_view_test_helper(
     directory_entries,
     visit_id=None,
     timestamp=None,
+    snapshot_id=None,
     path=None,
 ):
     dirs = [e for e in directory_entries if e["type"] in ("dir", "rev")]
     files = [e for e in directory_entries if e["type"] == "file"]
 
-    if not visit_id:
+    if not visit_id and not snapshot_id:
         visit_id = origin_visit["visit"]
 
     query_params = {"origin_url": origin_info["url"]}
 
     if timestamp:
         query_params["timestamp"] = timestamp
-    else:
+    elif visit_id:
         query_params["visit_id"] = visit_id
+    else:
+        query_params["snapshot"] = snapshot_id
 
     if path:
         query_params["path"] = path
@@ -1052,8 +1124,10 @@ def _origin_directory_view_test_helper(
     _check_origin_view_title(resp, origin_info["url"], "directory")
 
 
-def _origin_branches_test_helper(client, origin_info, origin_snapshot):
-    query_params = {"origin_url": origin_info["url"]}
+def _origin_branches_test_helper(
+    client, origin_info, origin_snapshot, snapshot_id=None
+):
+    query_params = {"origin_url": origin_info["url"], "snapshot": snapshot_id}
 
     url = reverse("browse-origin-branches", query_params=query_params)
 
@@ -1069,7 +1143,8 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
 
     assert_contains(
         resp,
-        '<a href="%s">Branches (%s)</a>' % (origin_branches_url, len(origin_branches)),
+        '<a href="%s">Branches (%s)</a>'
+        % (escape(origin_branches_url), len(origin_branches)),
     )
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
@@ -1077,7 +1152,9 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
     nb_releases = len(origin_releases)
     if nb_releases > 0:
         assert_contains(
-            resp, '<a href="%s">Releases (%s)</a>' % (origin_releases_url, nb_releases)
+            resp,
+            '<a href="%s">Releases (%s)</a>'
+            % (escape(origin_releases_url), nb_releases),
         )
 
     assert_contains(resp, '<tr class="swh-branch-entry', count=len(origin_branches))
@@ -1085,22 +1162,24 @@ def _origin_branches_test_helper(client, origin_info, origin_snapshot):
     for branch in origin_branches:
         browse_branch_url = reverse(
             "browse-origin-directory",
-            query_params={"origin_url": origin_info["url"], "branch": branch["name"]},
+            query_params={"branch": branch["name"], **query_params},
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_branch_url))
 
         browse_revision_url = reverse(
             "browse-revision",
             url_args={"sha1_git": branch["revision"]},
-            query_params={"origin_url": origin_info["url"]},
+            query_params=query_params,
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
 
     _check_origin_view_title(resp, origin_info["url"], "branches")
 
 
-def _origin_releases_test_helper(client, origin_info, origin_snapshot):
-    query_params = {"origin_url": origin_info["url"]}
+def _origin_releases_test_helper(
+    client, origin_info, origin_snapshot, snapshot_id=None
+):
+    query_params = {"origin_url": origin_info["url"], "snapshot": snapshot_id}
 
     url = reverse("browse-origin-releases", query_params=query_params)
 
@@ -1115,7 +1194,8 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
 
     assert_contains(
         resp,
-        '<a href="%s">Branches (%s)</a>' % (origin_branches_url, len(origin_branches)),
+        '<a href="%s">Branches (%s)</a>'
+        % (escape(origin_branches_url), len(origin_branches)),
     )
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
@@ -1123,7 +1203,9 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
     nb_releases = len(origin_releases)
     if nb_releases > 0:
         assert_contains(
-            resp, '<a href="%s">Releases (%s)</a>' % (origin_releases_url, nb_releases)
+            resp,
+            '<a href="%s">Releases (%s)</a>'
+            % (escape(origin_releases_url), nb_releases),
         )
 
     assert_contains(resp, '<tr class="swh-release-entry', count=nb_releases)
@@ -1132,12 +1214,12 @@ def _origin_releases_test_helper(client, origin_info, origin_snapshot):
         browse_release_url = reverse(
             "browse-release",
             url_args={"sha1_git": release["id"]},
-            query_params={"origin_url": origin_info["url"]},
+            query_params=query_params,
         )
         browse_revision_url = reverse(
             "browse-revision",
             url_args={"sha1_git": release["target"]},
-            query_params={"origin_url": origin_info["url"]},
+            query_params=query_params,
         )
 
         assert_contains(resp, '<a href="%s">' % escape(browse_release_url))

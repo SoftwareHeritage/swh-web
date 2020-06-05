@@ -6,6 +6,6 @@ pytest
 pytest-django
 pytest-mock
 requests-mock
-swh.core[http] >= 0.0.94
-swh.loader.git >= 0.0.59
-swh.storage >= 0.0.182
+swh.core[http] >= 0.0.95
+swh.loader.git >= 0.1.2
+swh.storage >= 0.1.1

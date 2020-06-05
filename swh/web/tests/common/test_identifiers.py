@@ -62,7 +62,9 @@ def test_get_swh_persistent_id(content):
 
 
 @given(content(), directory(), release(), revision(), snapshot())
-def test_resolve_swh_persistent_id(content, directory, release, revision, snapshot):
+def test_resolve_swh_persistent_id_legacy(
+    content, directory, release, revision, snapshot
+):
     for obj_type, obj_id in (
         (CONTENT, content["sha1_git"]),
         (DIRECTORY, directory),
@@ -417,3 +419,148 @@ def test_get_swhids_info_path_encoding(archive_data, origin, directory):
 
     assert swhid["context"]["origin"] == "http://example.org/?project%3Dabc%3Bdef%25"
     assert swhid["context"]["path"] == "/foo%3B/bar%25"
+
+
+@given(origin_with_multiple_visits())
+def test_resolve_swhids_snapshot_context(client, archive_data, origin):
+    visits = archive_data.origin_visit_get(origin["url"])
+    visit = random.choice(visits)
+    snapshot = archive_data.snapshot_get(visit["snapshot"])
+    head_rev_id = archive_data.snapshot_get_head(snapshot)
+    branch_info = random.choice(
+        [
+            {"name": k, "revision": v["target"]}
+            for k, v in snapshot["branches"].items()
+            if v["target_type"] == "revision"
+        ]
+    )
+    release_info = random.choice(
+        [
+            {"name": k, "release": v["target"]}
+            for k, v in snapshot["branches"].items()
+            if v["target_type"] == "release"
+        ]
+    )
+    release_info["name"] = archive_data.release_get(release_info["release"])["name"]
+
+    directory = archive_data.revision_get(branch_info["revision"])["directory"]
+    directory_content = archive_data.directory_ls(directory)
+    directory_subdir = random.choice(
+        [e for e in directory_content if e["type"] == "dir"]
+    )
+    directory_file = random.choice(
+        [e for e in directory_content if e["type"] == "file"]
+    )
+    random_rev_id = random.choice(archive_data.revision_log(head_rev_id))["id"]
+
+    for snp_ctx_params in (
+        {},
+        {"branch_name": branch_info["name"]},
+        {"release_name": release_info["name"]},
+        {"revision_id": random_rev_id},
+    ):
+        snapshot_context = get_snapshot_context(
+            snapshot["id"], origin["url"], **snp_ctx_params
+        )
+
+        _check_resolved_swhid_browse_url(SNAPSHOT, snapshot["id"], snapshot_context)
+
+        rev = head_rev_id
+        if "branch_name" in snp_ctx_params:
+            rev = branch_info["revision"]
+        if "revision_id" in snp_ctx_params:
+            rev = random_rev_id
+
+        _check_resolved_swhid_browse_url(REVISION, rev, snapshot_context)
+
+        _check_resolved_swhid_browse_url(
+            DIRECTORY, directory, snapshot_context, path="/"
+        )
+
+        _check_resolved_swhid_browse_url(
+            DIRECTORY,
+            directory_subdir["target"],
+            snapshot_context,
+            path=f"/{directory_subdir['name']}/",
+        )
+
+        _check_resolved_swhid_browse_url(
+            CONTENT,
+            directory_file["target"],
+            snapshot_context,
+            path=f"/{directory_file['name']}",
+        )
+
+
+def _check_resolved_swhid_browse_url(
+    object_type, object_id, snapshot_context, path=None
+):
+    snapshot_id = snapshot_context["snapshot_id"]
+    origin_url = None
+    if snapshot_context["origin_info"]:
+        origin_url = snapshot_context["origin_info"]["url"]
+
+    obj_context = {}
+    query_params = {}
+
+    if origin_url:
+        obj_context["origin"] = origin_url
+        query_params["origin_url"] = origin_url
+
+    obj_context["visit"] = get_swh_persistent_id(SNAPSHOT, snapshot_id)
+    query_params["snapshot"] = snapshot_id
+
+    if object_type in (CONTENT, DIRECTORY, REVISION):
+        if snapshot_context["release"]:
+            obj_context["anchor"] = get_swh_persistent_id(
+                RELEASE, snapshot_context["release_id"]
+            )
+            query_params["release"] = snapshot_context["release"]
+        else:
+            obj_context["anchor"] = get_swh_persistent_id(
+                REVISION, snapshot_context["revision_id"]
+            )
+            if (
+                snapshot_context["branch"]
+                and snapshot_context["branch"] != snapshot_context["revision_id"]
+            ):
+                branch = snapshot_context["branch"]
+                if branch == "HEAD":
+                    for b in snapshot_context["branches"]:
+                        if (
+                            b["revision"] == snapshot_context["revision_id"]
+                            and b["name"] != "HEAD"
+                        ):
+                            branch = b["name"]
+                            break
+
+                query_params["branch"] = branch
+            elif object_type != REVISION:
+                query_params["revision"] = snapshot_context["revision_id"]
+
+    if path:
+        obj_context["path"] = path
+        if path != "/":
+            if object_type == CONTENT:
+                query_params["path"] = path[1:]
+            else:
+                query_params["path"] = path[1:-1]
+
+    if object_type == DIRECTORY:
+        object_id = snapshot_context["root_directory"]
+
+    obj_swhid = get_swh_persistent_id(object_type, object_id, metadata=obj_context)
+
+    obj_swhid_resolved = resolve_swh_persistent_id(obj_swhid)
+
+    url_args = {"sha1_git": object_id}
+    if object_type == CONTENT:
+        url_args = {"query_string": f"sha1_git:{object_id}"}
+    elif object_type == SNAPSHOT:
+        url_args = {"snapshot_id": object_id}
+
+    expected_url = reverse(
+        f"browse-{object_type}", url_args=url_args, query_params=query_params,
+    )
+
+    assert obj_swhid_resolved["browse_url"] == expected_url

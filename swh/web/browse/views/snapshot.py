@@ -51,7 +51,7 @@ def snapshot_directory_browse(request, snapshot_id):
         request,
         snapshot_id=snapshot_id,
         path=request.GET.get("path"),
-        origin_url=request.GET.get("origin"),
+        origin_url=request.GET.get("origin_url"),
     )
 
 

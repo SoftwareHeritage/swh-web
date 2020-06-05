@@ -19,7 +19,6 @@ var UserAgent = /** @class */ (function () {
                 if (!global.navigator || !global.location) {
                     return event;
                 }
-                // Request Interface: https://docs.sentry.io/development/sdk-dev/event-payloads/request/
                 var request = event.request || {};
                 request.url = request.url || global.location.href;
                 request.headers = request.headers || {};

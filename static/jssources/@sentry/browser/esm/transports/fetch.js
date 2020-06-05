@@ -1,4 +1,5 @@
 import * as tslib_1 from "tslib";
+import { eventToSentryRequest } from '@sentry/core';
 import { Status } from '@sentry/types';
 import { getGlobalObject, logger, parseRetryAfterHeader, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
 import { BaseTransport } from './base';
@@ -24,8 +25,9 @@ var FetchTransport = /** @class */ (function (_super) {
                 status: 429,
             });
         }
-        var defaultOptions = {
-            body: JSON.stringify(event),
+        var sentryReq = eventToSentryRequest(event, this._api);
+        var options = {
+            body: sentryReq.body,
             method: 'POST',
             // Despite all stars in the sky saying that Edge supports old draft syntax, aka 'never', 'always', 'origin' and 'default
             // https://caniuse.com/#feat=referrer-policy
@@ -34,11 +36,11 @@ var FetchTransport = /** @class */ (function (_super) {
             referrerPolicy: (supportsReferrerPolicy() ? 'origin' : ''),
         };
         if (this.options.headers !== undefined) {
-            defaultOptions.headers = this.options.headers;
+            options.headers = this.options.headers;
         }
         return this._buffer.add(new SyncPromise(function (resolve, reject) {
             global
-                .fetch(_this.url, defaultOptions)
+                .fetch(sentryReq.url, options)
                 .then(function (response) {
                 var status = Status.fromHttpCode(response.status);
                 if (status === Status.Success) {

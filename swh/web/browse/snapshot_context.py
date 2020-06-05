@@ -430,6 +430,12 @@ def get_snapshot_context(
     origin_visits_url = None
 
     if origin_url:
+
+        if visit_id is not None:
+            query_params["visit_id"] = visit_id
+        elif snapshot_id is not None:
+            query_params["snapshot"] = snapshot_id
+
         origin_info = service.lookup_origin({"url": origin_url})
 
         visit_info = get_origin_visit(origin_info, timestamp, visit_id, snapshot_id)
@@ -455,10 +461,9 @@ def get_snapshot_context(
 
         query_params["origin_url"] = origin_info["url"]
 
-        origin_visits_url = reverse("browse-origin-visits", query_params=query_params)
-
-        if visit_id is not None:
-            query_params["visit_id"] = visit_id
+        origin_visits_url = reverse(
+            "browse-origin-visits", query_params={"origin_url": origin_info["url"]}
+        )
 
         if timestamp is not None:
             query_params["timestamp"] = format_utc_iso_date(
@@ -729,6 +734,7 @@ def browse_snapshot_directory(
 
     history_url = None
     if snapshot_id != _empty_snapshot_id:
+        query_params.pop("path", None)
         history_url = reverse(
             browse_view_name, url_args=url_args, query_params=query_params
         )
@@ -1223,18 +1229,16 @@ def browse_snapshot_branches(
         return handle_view_exception(request, exc)
 
     for branch in displayed_branches:
-        if snapshot_id:
-            revision_url = reverse(
-                "browse-revision",
-                url_args={"sha1_git": branch["revision"]},
-                query_params={"snapshot_id": snapshot_id},
-            )
-        else:
-            revision_url = reverse(
-                "browse-revision",
-                url_args={"sha1_git": branch["revision"]},
-                query_params={"origin_url": origin_info["url"]},
-            )
+        rev_query_params = {}
+        if origin_info:
+            rev_query_params["origin_url"] = origin_info["url"]
+
+        revision_url = reverse(
+            "browse-revision",
+            url_args={"sha1_git": branch["revision"]},
+            query_params=query_params,
+        )
+
         query_params["branch"] = branch["name"]
         directory_url = reverse(
             browse_view_name, url_args=url_args, query_params=query_params
@@ -1334,10 +1338,10 @@ def browse_snapshot_releases(
         return handle_view_exception(request, exc)
 
     for release in displayed_releases:
-        if snapshot_id:
-            query_params_tgt = {"snapshot_id": snapshot_id}
-        else:
-            query_params_tgt = {"origin_url": origin_info["url"]}
+        query_params_tgt = {"snapshot": snapshot_id}
+        if origin_info:
+            query_params_tgt["origin_url"] = origin_info["url"]
+
         release_url = reverse(
             "browse-release",
             url_args={"sha1_git": release["id"]},

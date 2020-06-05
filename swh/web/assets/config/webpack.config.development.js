@@ -368,17 +368,19 @@ module.exports = {
     }),
     // needed in order to use pdf.js
     new webpack.IgnorePlugin(/^\.\/pdf.worker.js$/),
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
-        to: path.resolve(__dirname, '../../../../static/js/')
-      },
-      {
-        from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
-        to: path.resolve(__dirname, '../../../../static/fonts/'),
-        flatten: true
-      }
-    ]),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
+          to: path.resolve(__dirname, '../../../../static/js/')
+        },
+        {
+          from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
+          to: path.resolve(__dirname, '../../../../static/fonts/'),
+          flatten: true
+        }
+      ]
+    }),
     new GenerateWebLabelsPlugin({
       outputType: 'json',
       exclude: ['mini-css-extract-plugin',

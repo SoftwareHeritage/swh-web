@@ -1,7 +1,7 @@
 import * as tslib_1 from "tslib";
-import { API, getCurrentHub } from '@sentry/core';
+import { getCurrentHub } from '@sentry/core';
 import { Severity } from '@sentry/types';
-import { addInstrumentationHandler, getEventDescription, getGlobalObject, htmlTreeAsString, logger, parseUrl, safeJoin, } from '@sentry/utils';
+import { addInstrumentationHandler, getEventDescription, getGlobalObject, htmlTreeAsString, parseUrl, safeJoin, } from '@sentry/utils';
 /**
  * Default Breadcrumbs instrumentations
  * TODO: Deprecated - with v6, this will be renamed to `Instrument`
@@ -17,6 +17,22 @@ var Breadcrumbs = /** @class */ (function () {
         this.name = Breadcrumbs.id;
         this._options = tslib_1.__assign({ console: true, dom: true, fetch: true, history: true, sentry: true, xhr: true }, options);
     }
+    /**
+     * Create a breadcrumb of `sentry` from the events themselves
+     */
+    Breadcrumbs.prototype.addSentryBreadcrumb = function (event) {
+        if (!this._options.sentry) {
+            return;
+        }
+        getCurrentHub().addBreadcrumb({
+            category: "sentry." + (event.type === 'transaction' ? 'transaction' : 'event'),
+            event_id: event.event_id,
+            level: event.level,
+            message: getEventDescription(event),
+        }, {
+            event: event,
+        });
+    };
     /**
      * Creates breadcrumbs from console API calls
      */
@@ -88,10 +104,6 @@ var Breadcrumbs = /** @class */ (function () {
             });
             return;
         }
-        // We only capture issued sentry requests
-        if (this._options.sentry && handlerData.xhr.__sentry_own_request__) {
-            addSentryBreadcrumb(handlerData.args[0]);
-        }
     };
     /**
      * Creates breadcrumbs from fetch API calls
@@ -101,25 +113,14 @@ var Breadcrumbs = /** @class */ (function () {
         if (!handlerData.endTimestamp) {
             return;
         }
-        var client = getCurrentHub().getClient();
-        var dsn = client && client.getDsn();
-        if (this._options.sentry && dsn) {
-            var filterUrl = new API(dsn).getStoreEndpoint();
-            // if Sentry key appears in URL, don't capture it as a request
-            // but rather as our own 'sentry' type breadcrumb
-            if (filterUrl &&
-                handlerData.fetchData.url.indexOf(filterUrl) !== -1 &&
-                handlerData.fetchData.method === 'POST' &&
-                handlerData.args[1] &&
-                handlerData.args[1].body) {
-                addSentryBreadcrumb(handlerData.args[1].body);
-                return;
-            }
+        if (handlerData.fetchData.url.match(/sentry_key/) && handlerData.fetchData.method === 'POST') {
+            // We will not create breadcrumbs for fetch requests that contain `sentry_key` (internal sentry requests)
+            return;
         }
         if (handlerData.error) {
             getCurrentHub().addBreadcrumb({
                 category: 'fetch',
-                data: tslib_1.__assign({}, handlerData.fetchData, { status_code: handlerData.response.status }),
+                data: handlerData.fetchData,
                 level: Severity.Error,
                 type: 'http',
             }, {
@@ -248,24 +249,4 @@ var Breadcrumbs = /** @class */ (function () {
     return Breadcrumbs;
 }());
 export { Breadcrumbs };
-/**
- * Create a breadcrumb of `sentry` from the events themselves
- */
-function addSentryBreadcrumb(serializedData) {
-    // There's always something that can go wrong with deserialization...
-    try {
-        var event_1 = JSON.parse(serializedData);
-        getCurrentHub().addBreadcrumb({
-            category: "sentry." + (event_1.type === 'transaction' ? 'transaction' : 'event'),
-            event_id: event_1.event_id,
-            level: event_1.level || Severity.fromString('error'),
-            message: getEventDescription(event_1),
-        }, {
-            event: event_1,
-        });
-    }
-    catch (_oO) {
-        logger.error('Error while adding sentry type breadcrumb');
-    }
-}
 //# sourceMappingURL=breadcrumbs.js.map

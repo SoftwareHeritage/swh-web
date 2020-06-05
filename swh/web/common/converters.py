@@ -50,6 +50,8 @@ def fmap(f, data):
         return map(lambda y: fmap(f, y), (x for x in data))
     if isinstance(data, list):
         return [fmap(f, x) for x in data]
+    if isinstance(data, tuple):
+        return tuple(fmap(f, x) for x in data)
     if isinstance(data, dict):
         return {k: fmap(f, v) for (k, v) in data.items()}
     return f(data)
