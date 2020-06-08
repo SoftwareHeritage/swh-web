@@ -7,6 +7,7 @@
 
 let url;
 let origin;
+const $ = Cypress.$;
 
 const saveCodeMsg = {
   'success': 'The "save code now" request has been accepted and will be processed as soon as possible.',
@@ -154,6 +155,37 @@ describe('Origin Save Tests', function() {
 
     cy.wait('@saveRequest').then(() => {
       checkAlertVisible('danger', saveCodeMsg['unknownError']);
+    });
+  });
+
+  it('should display origin save info in the requests table', function() {
+    cy.fixture('origin-save').then(originSaveJSON => {
+      cy.route('GET', '/save/requests/list/**', originSaveJSON);
+      cy.get('#swh-origin-save-requests-list-tab').click();
+      cy.get('tbody tr').then(rows => {
+        let i = 0;
+        for (let row of rows) {
+          const cells = row.cells;
+          const requestDateStr = new Date(originSaveJSON.data[i].save_request_date).toLocaleString();
+          const saveStatus = originSaveJSON.data[i].save_task_status;
+          assert.equal($(cells[0]).text(), requestDateStr);
+          assert.equal($(cells[1]).text(), originSaveJSON.data[i].visit_type);
+          let html = '';
+          if (saveStatus === 'succeed') {
+            let browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${originSaveJSON.data[i].origin_url}`;
+            browseOriginUrl += `&amp;timestamp=${originSaveJSON.data[i].visit_date}`;
+            html += `<a href="${browseOriginUrl}">${originSaveJSON.data[i].origin_url}</a>`;
+          } else {
+            html += originSaveJSON.data[i].origin_url;
+          }
+          html += `&nbsp;<a href="${originSaveJSON.data[i].origin_url}">`;
+          html += '<i class="fa fa-external-link" aria-hidden="true"></i></a>';
+          assert.equal($(cells[2]).html(), html);
+          assert.equal($(cells[3]).text(), originSaveJSON.data[i].save_request_status);
+          assert.equal($(cells[4]).text(), saveStatus);
+          ++i;
+        }
+      });
     });
   });
 
