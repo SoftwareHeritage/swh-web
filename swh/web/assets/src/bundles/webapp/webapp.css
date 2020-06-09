@@ -309,6 +309,10 @@ a.dropdown-left::before {
     right: 0;
 }
 
+.swh-background-gray {
+    background: #efeff2;
+}
+
 .swh-donate-link {
     border: 1px solid #fecd1b;
     background-color: #e20026;

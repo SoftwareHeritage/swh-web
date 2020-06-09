@@ -24,10 +24,20 @@ See top-level LICENSE file for more information
 
 {% block content %}
 
+<div class="p-3 swh-background-gray">
 <h4>Search</h4>
 
 {% include "includes/origin-search-form.html" %}
+<p class="text-right">
+... or check our
+<a style="color: #e20026;" href="{% url 'api-1-homepage' %}">
+  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-cogs"></i>Web API
+</a>
+</p>
+</div>
 
+
+<div class="p-3">
 <h4>Overview</h4>
 
 <p>
@@ -39,33 +49,9 @@ See top-level LICENSE file for more information
   The Software Heritage archive is growing over time as we crawl new source code from software
   projects and development forges.
 </p>
+</div>
 
-<p>
-  <div class="row">
-    <div class="col-md-4 swh-web-app-link" align="center">
-      <a href="{% url 'browse-search' %}">
-        <i style="color: #e20026;" class="nav-icon mdi mdi-48px mdi-bookshelf"></i>
-        <h5>Browse</h5>
-        <p>Explore the archive using a dedicated web interface.</p>
-      </a>
-    </div>
-    <div class="col-md-4 swh-web-app-link" align="center">
-      <a href="{% url 'api-1-homepage' %}">
-        <i style="color: #e20026;" class="nav-icon mdi mdi-48px mdi-cogs"></i>
-        <h5>Web API</h5>
-        <p>Query the archive programmatically using a RESTful API.</p>
-      </a>
-    </div>
-    <div class="col-md-4 swh-web-app-link" align="center">
-      <a href="https://softwareheritage.org/support">
-        <i style="color: #e20026;" class="nav-icon mdi mdi-48px mdi-handshake"></i>
-        <h5>Support</h5>
-        <p>You can help build the Great Library of Source Code!</p>
-      </a>
-    </div>
-  </div>
-</p>
-
+<div class="p-3">
 <h4>Content</h4>
 
 <p>
@@ -73,7 +59,9 @@ See top-level LICENSE file for more information
   archive. It currently includes:
 </p>
 <iframe class="swh-coverage-list" src="{% url 'swh-coverage' %}"></iframe>
+</div>
 
+<div class="p-3">
 <h4>Size</h4>
 
 <p>
@@ -120,6 +108,7 @@ See top-level LICENSE file for more information
   </p>
 
 </p>
+</div>
 
 <script>
   swh.webapp.initHomePage();

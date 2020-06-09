@@ -139,19 +139,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <div class="sidebar">
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-            <li class="nav-header">Archive Access</li>
-            <li class="nav-item swh-browse-item" title="Explore the archive using a dedicated web interface">
-              <a href="{% url 'browse-search' %}" class="nav-link swh-browse-link">
-                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-bookshelf"></i>
-                <p>Browse</p>
-              </a>
-            </li>
-            <li class="nav-item swh-api-1-item" title="Query the archive programmatically using a RESTful API">
-              <a href="{% url 'api-1-homepage' %}" class="nav-link swh-api-1-link">
-                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-cogs"></i>
-                <p>Web API</p>
-              </a>
-            </li>
             <li class="nav-header">Features</li>
             <li class="nav-item swh-search-item" title="Search archived software">
               <a href="{% url 'browse-search' %}" class="nav-link swh-search-link">
@@ -162,7 +149,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <li class="nav-item swh-vault-item" title="Download archived software from the Vault">
               <a href="{% url 'browse-vault' %}" class="nav-link swh-vault-link">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-download"></i>
-                <p>Vault</p>
+                <p>Downloads</p>
               </a>
             </li>
             <li class="nav-item swh-origin-save-item" title="Request the saving of a software origin into the archive">
@@ -171,7 +158,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <p>Save code now</p>
               </a>
             </li>
-            <li class="nav-header">Miscellaneous</li>
             <li class="nav-item swh-help-item" title="How to browse the archive ?">
               <a href="{% url 'browse-help' %}" class="nav-link swh-help-link">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
