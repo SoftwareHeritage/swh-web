@@ -56,4 +56,20 @@ describe('Home Page Tests', function() {
         }
       });
   });
+
+  it('should redirect to search page when submitting search form', function() {
+    const searchText = 'git';
+    cy.get('#origins-url-patterns')
+      .type(searchText)
+      .get('.swh-search-icon')
+      .click();
+
+    cy.location('pathname')
+      .should('equal', this.Urls.browse_search());
+
+    cy.location('search')
+      .should('equal', `?q=${searchText}&with_visit=true&with_content=true`);
+
+  });
+
 });

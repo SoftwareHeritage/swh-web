@@ -8,6 +8,11 @@ See top-level LICENSE file for more information
 {% endcomment %}
 
 {% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+{% render_bundle 'browse' %}
+{% endblock %}
 
 {% block title %}Welcome to the Software Heritage archive{% endblock %}
 
@@ -18,6 +23,10 @@ See top-level LICENSE file for more information
 {% endblock %}
 
 {% block content %}
+
+<h4>Search</h4>
+
+{% include "includes/origin-search-form.html" %}
 
 <h4>Overview</h4>
 

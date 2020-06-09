@@ -191,7 +191,7 @@ export function initOriginSearch() {
         queryParameters.append('search_metadata', searchMetadata);
       }
       // Update the url, triggering page reload and effective search
-      window.location.search = `?${queryParameters.toString()}`;
+      window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
     });
 
     $('#origins-next-results-button').click(event => {
