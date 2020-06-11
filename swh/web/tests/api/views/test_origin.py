@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,9 +7,10 @@ from hypothesis import given
 import pytest
 from requests.utils import parse_header_links
 
-from swh.model.model import Origin
+from swh.model.model import Origin, OriginVisitStatus
 
 from swh.storage.exc import StorageDBError, StorageAPIError
+from swh.storage.utils import now
 
 from swh.web.api.utils import enrich_origin_visit, enrich_origin
 from swh.web.common.exc import BadInputExc
@@ -104,12 +105,14 @@ def test_api_lookup_origin_visits(
             new_origin.url, visit_date, type="git"
         )
         archive_data.snapshot_add([new_snapshots[i]])
-        archive_data.origin_visit_update(
-            new_origin.url,
-            origin_visit.visit,
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=origin_visit.visit,
+            date=now(),
             status="full",
             snapshot=new_snapshots[i].id,
         )
+        archive_data.origin_visit_status_add([visit_status])
 
     all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
 
@@ -150,12 +153,14 @@ def test_api_lookup_origin_visits_by_id(
             new_origin.url, visit_date, type="git"
         )
         archive_data.snapshot_add([new_snapshots[i]])
-        archive_data.origin_visit_update(
-            new_origin.url,
-            origin_visit.visit,
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=origin_visit.visit,
+            date=now(),
             status="full",
             snapshot=new_snapshots[i].id,
         )
+        archive_data.origin_visit_status_add([visit_status])
 
     all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
 
@@ -197,9 +202,14 @@ def test_api_lookup_origin_visit(
         )
         visit_id = origin_visit.visit
         archive_data.snapshot_add([new_snapshots[i]])
-        archive_data.origin_visit_update(
-            new_origin.url, visit_id, status="full", snapshot=new_snapshots[i].id
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=origin_visit.visit,
+            date=now(),
+            status="full",
+            snapshot=new_snapshots[i].id,
         )
+        archive_data.origin_visit_status_add([visit_status])
         url = reverse(
             "api-1-origin-visit",
             url_args={"origin_url": new_origin.url, "visit_id": visit_id},
@@ -249,9 +259,15 @@ def test_api_lookup_origin_visit_latest(
         visit_ids.append(origin_visit.visit)
 
     archive_data.snapshot_add([new_snapshots[0]])
-    archive_data.origin_visit_update(
-        new_origin.url, visit_ids[0], status="full", snapshot=new_snapshots[0].id
+
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit_ids[0],
+        date=now(),
+        status="full",
+        snapshot=new_snapshots[0].id,
     )
+    archive_data.origin_visit_status_add([visit_status])
 
     url = reverse("api-1-origin-visit-latest", url_args={"origin_url": new_origin.url})
 
@@ -286,9 +302,15 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
         visit_ids.append(origin_visit.visit)
 
     archive_data.snapshot_add([new_snapshots[0]])
-    archive_data.origin_visit_update(
-        new_origin.url, visit_ids[0], status="full", snapshot=new_snapshots[0].id
+
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit_ids[0],
+        date=now(),
+        status="full",
+        snapshot=new_snapshots[0].id,
     )
+    archive_data.origin_visit_status_add([visit_status])
 
     url = reverse(
         "api-1-origin-visit-latest",
