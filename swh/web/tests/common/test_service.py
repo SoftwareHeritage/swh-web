@@ -13,7 +13,7 @@ from hypothesis import given
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.from_disk import DentryPerms
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-from swh.model.model import Directory, DirectoryEntry, Origin, Revision
+from swh.model.model import Directory, DirectoryEntry, Origin, OriginVisit, Revision
 
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
@@ -202,8 +202,19 @@ def test_stat_counters(archive_data):
 @given(new_origin(), visit_dates())
 def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
     archive_data.origin_add_one(new_origin)
-    for ts in visit_dates:
-        archive_data.origin_visit_add(new_origin.url, ts, type="git")
+
+    archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=ts,
+                type="git",
+                status="ongoing",
+                snapshot=None,
+            )
+            for ts in visit_dates
+        ]
+    )
 
     actual_origin_visits = list(
         service.lookup_origin_visits(new_origin.url, per_page=100)
@@ -219,9 +230,18 @@ def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
 @given(new_origin(), visit_dates())
 def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
     archive_data.origin_add_one(new_origin)
-    visits = []
-    for ts in visit_dates:
-        visits.append(archive_data.origin_visit_add(new_origin.url, ts, type="git"))
+    visits = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=ts,
+                type="git",
+                status="ongoing",
+                snapshot=None,
+            )
+            for ts in visit_dates
+        ]
+    )
 
     visit = random.choice(visits).visit
     actual_origin_visit = service.lookup_origin_visit(new_origin.url, visit)

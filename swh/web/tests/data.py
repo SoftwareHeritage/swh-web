@@ -15,7 +15,7 @@ from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
 from swh.model.model import Content, OriginVisitStatus
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
-from swh.model.model import Directory, Origin
+from swh.model.model import Directory, Origin, OriginVisit
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
@@ -120,19 +120,26 @@ _TEST_ORIGINS = [
             "highlightjs-line-numbers.js.zip",
             "highlightjs-line-numbers.js_visit2.zip",
         ],
-        "visit_date": ["Dec 1 2018, 01:00 UTC", "Jan 20 2019, 15:00 UTC"],
+        "visit_date": [
+            datetime.datetime(2018, 12, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2019, 1, 20, 15, 0, 0, tzinfo=datetime.timezone.utc),
+        ],
     },
     {
         "type": "git",
         "url": "https://github.com/memononen/libtess2",
         "archives": ["libtess2.zip"],
-        "visit_date": ["May 25 2018, 01:00 UTC"],
+        "visit_date": [
+            datetime.datetime(2018, 5, 25, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ],
     },
     {
         "type": "git",
         "url": "repo_with_submodules",
         "archives": ["repo_with_submodules.tgz"],
-        "visit_date": ["Jan 1 2019, 01:00 UTC"],
+        "visit_date": [
+            datetime.datetime(2019, 1, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ],
     },
 ]
 
@@ -194,7 +201,10 @@ def _init_tests_data():
         storage.origin_add([Origin(url=url)])
         search.origin_update([{"url": url, "has_visits": True}])
         date = datetime.datetime(2019, 12, 3, 13, 55, 5, tzinfo=datetime.timezone.utc)
-        visit = storage.origin_visit_add(url, date, "tar")
+        visit = OriginVisit(
+            origin=url, date=date, type="tar", status="ongoing", snapshot=None
+        )
+        visit = storage.origin_visit_add([visit])[0]
         visit_status = OriginVisitStatus(
             origin=url,
             visit=visit.visit,

@@ -16,7 +16,13 @@ from swh.storage.utils import now
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-from swh.model.model import Snapshot, SnapshotBranch, TargetType, OriginVisitStatus
+from swh.model.model import (
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+    OriginVisit,
+    OriginVisitStatus,
+)
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import get_swh_persistent_id
@@ -503,7 +509,17 @@ def test_origin_snapshot_null_branch(
             }
 
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
-    visit = archive_data.origin_visit_add(new_origin["url"], visit_dates[0], type="git")
+    visit = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin["url"],
+                date=visit_dates[0],
+                type="git",
+                status="ongoing",
+                snapshot=None,
+            )
+        ]
+    )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin["url"],
         visit=visit.visit,
@@ -538,7 +554,17 @@ def test_origin_snapshot_invalid_branch(
         }
 
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
-    visit = archive_data.origin_visit_add(new_origin["url"], visit_dates[0], type="git")
+    visit = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin["url"],
+                date=visit_dates[0],
+                type="git",
+                status="ongoing",
+                snapshot=None,
+            )
+        ]
+    )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin["url"],
         visit=visit.visit,
@@ -786,7 +812,17 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
     )
     new_origin = archive_data.origin_add([new_origin])[0]
     archive_data.snapshot_add([snapshot])
-    visit = archive_data.origin_visit_add(new_origin["url"], now(), type="git")
+    visit = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin["url"],
+                date=now(),
+                type="git",
+                status="ongoing",
+                snapshot=None,
+            )
+        ]
+    )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin["url"],
         visit=visit.visit,
@@ -1267,7 +1303,17 @@ def test_origin_branches_pagination_with_alias(
     }
     new_origin = archive_data.origin_add([new_origin])[0]
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
-    visit = archive_data.origin_visit_add(new_origin["url"], visit_dates[0], type="git")
+    visit = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin["url"],
+                date=visit_dates[0],
+                type="git",
+                status="ongoing",
+                snapshot=None,
+            )
+        ]
+    )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin["url"],
         visit=visit.visit,
