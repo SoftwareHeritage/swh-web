@@ -54,7 +54,7 @@ See top-level LICENSE file for more information
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="{{ swh_object_icons.revision }} fa-fw"></i>Revision</th>
+          <th><i class="{{ swh_object_icons.revision }} mdi-fw" aria-hidden="true"></i>Revision</th>
           <th>Author</th>
           <th>Date</th>
           <th>Message</th>
@@ -66,7 +66,7 @@ See top-level LICENSE file for more information
           <tr class="swh-revision-log-entry swh-tr-hover-highlight" title="{{ rev.tooltip }}">
             <td class="swh-revision-log-entry-id">
               <a href="{{ rev.url }}">
-                <i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>{{ rev.id }}
+                <i class="{{ swh_object_icons|key_value:'revision' }} mdi-fw" aria-hidden="true"></i>{{ rev.id }}
               </a>
             </td>
             <td class="swh-revision-log-entry-author">

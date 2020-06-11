@@ -109,7 +109,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top" id="swh-navbar">
         <div class="navbar-header">
           <a class="nav-link swh-push-menu" data-widget="pushmenu" data-enable-remember="true" href="#">
-            <i class="fa fa-bars"></i>
+            <i class="mdi mdi-24px mdi-menu mdi-fw" aria-hidden="true"></i>
           </a>
         </div>
         <div class="navbar" style="width: 94%;">
@@ -142,39 +142,39 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <li class="nav-header">Archive Access</li>
             <li class="nav-item swh-browse-item" title="Explore the archive using a dedicated web interface">
               <a href="{% url 'browse-search' %}" class="nav-link swh-browse-link">
-                <img class="nav-icon" src="{% static 'img/swh-browse.png' %}"/>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-bookshelf"></i>
                 <p>Browse</p>
               </a>
             </li>
             <li class="nav-item swh-api-1-item" title="Query the archive programmatically using a RESTful API">
               <a href="{% url 'api-1-homepage' %}" class="nav-link swh-api-1-link">
-                <img class="nav-icon" src="{% static 'img/swh-api.png' %}"/>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-cogs"></i>
                 <p>Web API</p>
               </a>
             </li>
             <li class="nav-header">Features</li>
             <li class="nav-item swh-search-item" title="Search archived software">
               <a href="{% url 'browse-search' %}" class="nav-link swh-search-link">
-                <i style="color: #e20026;" class="nav-icon fa fa-search"></i>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-magnify"></i>
                 <p>Search</p>
               </a>
             </li>
             <li class="nav-item swh-vault-item" title="Download archived software from the Vault">
               <a href="{% url 'browse-vault' %}" class="nav-link swh-vault-link">
-                <img class="nav-icon" src="{% static 'img/swh-vault.png' %}"/>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-download"></i>
                 <p>Vault</p>
               </a>
             </li>
             <li class="nav-item swh-origin-save-item" title="Request the saving of a software origin into the archive">
               <a href="{% url 'origin-save' %}" class="nav-link swh-origin-save-link">
-                <i style="color: #e20026;" class="nav-icon fa fa-download"></i>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-folder-download"></i>
                 <p>Save code now</p>
               </a>
             </li>
             <li class="nav-header">Miscellaneous</li>
             <li class="nav-item swh-help-item" title="How to browse the archive ?">
               <a href="{% url 'browse-help' %}" class="nav-link swh-help-link">
-                <i style="color: #e20026;" class="nav-icon fa fa-question"></i>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
                 <p>Help</p>
               </a>
             </li>
@@ -182,13 +182,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               <li class="nav-header">Administration</li>
               <li class="nav-item swh-origin-save-admin-item" title="Save code now administration">
                 <a href="{% url 'admin-origin-save' %}" class="nav-link swh-origin-save-admin-link">
-                  <i style="color: #fecd1b;" class="nav-icon fa fa-download"></i>
+                  <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-download"></i>
                   <p>Save code now</p>
                 </a>
               </li>
               <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
                 <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
-                  <i style="color: #fecd1b;" class="nav-icon fa fa-download"></i>
+                  <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
                   <p>Deposit</p>
                 </a>
               </li>

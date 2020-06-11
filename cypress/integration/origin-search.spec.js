@@ -63,7 +63,7 @@ describe('Test origin-search', function() {
       .should('be.visible')
       .find('.swh-visit-status')
       .find('i')
-      .should('have.class', 'fa-check')
+      .should('have.class', 'mdi-check-bold')
       .and('have.attr', 'title',
            'Origin has at least one full visit by Software Heritage');
   });

@@ -34,17 +34,17 @@ from swh.web.config import get_config
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
 swh_object_icons = {
-    "branch": "fa fa-code-fork",
-    "branches": "fa fa-code-fork",
-    "content": "fa fa-file-text",
-    "directory": "fa fa-folder",
-    "person": "fa fa-user",
-    "revisions history": "fa fa-history",
-    "release": "fa fa-tag",
-    "releases": "fa fa-tag",
-    "revision": "octicon-git-commit",
-    "snapshot": "fa fa-camera",
-    "visits": "fa fa-calendar",
+    "branch": "mdi mdi-source-branch",
+    "branches": "mdi mdi-source-branch",
+    "content": "mdi mdi-file-document",
+    "directory": "mdi mdi-folder",
+    "person": "mdi mdi-account",
+    "revisions history": "mdi mdi-history",
+    "release": "mdi mdi-tag",
+    "releases": "mdi mdi-tag",
+    "revision": "mdi mdi-rotate-90 mdi-source-commit",
+    "snapshot": "mdi mdi-camera",
+    "visits": "mdi mdi-calendar-month",
 }
 
 

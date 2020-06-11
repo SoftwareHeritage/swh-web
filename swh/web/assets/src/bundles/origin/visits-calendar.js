@@ -108,10 +108,10 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
 
         let visits = visitsByDate[dateStr];
         let content = '<div><h6>' + e.date.toDateString() + '</h6></div>';
-        content += '<ul style="list-style-type: none;">';
+        content += '<ul class="swh-list-unstyled">';
         for (let i = 0; i < visits.length; ++i) {
           let visitTime = visits[i].formatted_date.substr(visits[i].formatted_date.indexOf(',') + 2);
-          content += '<li><a class="swh-visit-' + visits[i].status + '" title="' + visits[i].status +
+          content += '<li><a class="swh-visit-icon swh-visit-' + visits[i].status + '" title="' + visits[i].status +
                      ' visit" href="' + visits[i].url + '">' + visitTime + '</a></li>';
         }
         content += '</ul>';

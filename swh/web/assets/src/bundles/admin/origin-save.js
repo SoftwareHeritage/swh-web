@@ -90,7 +90,7 @@ export function initOriginSaveAdmin() {
             } else {
               html += sanitizedURL;
             }
-            html += `&nbsp;<a href="${sanitizedURL}"><i class="fa fa-external-link" aria-hidden="true"></i></a>`;
+            html += `&nbsp;<a href="${sanitizedURL}"><i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>`;
             return html;
           }
           return data;
@@ -149,7 +149,7 @@ export function initOriginSaveAdmin() {
       name: 'info',
       render: (data, type, row) => {
         if (row.save_task_status === 'succeed' || row.save_task_status === 'failed') {
-          return '<i class="fa fa-info-circle swh-save-request-info" aria-hidden="true" style="cursor: pointer"' +
+          return '<i class="mdi mdi-information-outline swh-save-request-info" aria-hidden="true" style="cursor: pointer"' +
                   `onclick="swh.admin.displaySaveRequestInfo(event, ${row.id})"></i>`;
         } else {
           return '';

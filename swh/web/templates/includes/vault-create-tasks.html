@@ -12,17 +12,17 @@ See top-level LICENSE file for more information
   <!-- entry in the Actions menu -->
   <div class="dropdown-submenu swh-vault-menu">
     <a class="dropdown-item dropdown-left" tabindex="-1" href="#">
-      <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download
+      <i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download
     </a>
     <div class="dropdown-menu">
       {% if vault_cooking.directory_context %}
         <button class="dropdown-item" type="button" tabindex="-1" onclick="swh.vault.vaultRequest('directory', '{{ vault_cooking.directory_id }}')">
-          <i class="{{ swh_object_icons.directory }} fa-fw" aria-hidden="true"></i>as tarball
+          <i class="{{ swh_object_icons.directory }} mdi-fw" aria-hidden="true"></i>as tarball
         </button>
       {% endif %}
       {% if vault_cooking.revision_context %}
         <button class="dropdown-item" type="button" tabindex="-1" onclick="swh.vault.vaultRequest('revision', '{{ vault_cooking.revision_id }}')">
-          <i class="{{ swh_object_icons.revision }} fa-fw"></i>as git
+          <i class="{{ swh_object_icons.revision }} mdi-fw" aria-hidden="true"></i>as git
         </button>
       {% endif %}
     </div>

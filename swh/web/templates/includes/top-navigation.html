@@ -13,10 +13,10 @@ See top-level LICENSE file for more information
       <div class="dropdown float-left" id="swh-branches-releases-dd">
         <button class="btn btn-block btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
           {% if snapshot_context.branch %}
-            <i class="{{ swh_object_icons.branch }} fa-fw" aria-hidden="true"></i>
+            <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
             Branch: <strong>{{ snapshot_context.branch }}</strong>
           {% else %}
-            <i class="{{ swh_object_icons.release }} fa-fw" aria-hidden="true"></i>
+            <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
             Release: <strong>{{ snapshot_context.release }}</strong>
           {% endif %}
           <span class="caret"></span>
@@ -31,11 +31,11 @@ See top-level LICENSE file for more information
               {% for b in snapshot_context.branches %}
                 <li class="swh-branch">
                   <a href="{{ b.url | safe }}">
-                    <i class="{{ swh_object_icons.branch }} fa-fw" aria-hidden="true"></i>
+                    <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
                     {% if b.name == snapshot_context.branch %}
-                      <i class="fa fa-check fa-fw" aria-hidden="true"></i>
+                      <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
                     {% else %}
-                      <i class="fa fa-fw" aria-hidden="true"></i>
+                      <i class="mdi mdi-fw" aria-hidden="true"></i>
                     {% endif %}
                     {{ b.name }}
                   </a>
@@ -43,7 +43,7 @@ See top-level LICENSE file for more information
               {% endfor %}
               {% if snapshot_context.branches|length < snapshot_context.snapshot_sizes.revision %}
                 <li>
-                  <i class="fa fa-warning fa-fw" aria-hidden="true"></i>
+                  <i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>
                   Branches list truncated to {{ snapshot_context.branches|length }} entries,
                   {{ snapshot_context.branches|length|mul:-1|add:snapshot_context.snapshot_sizes.revision }}
                   were omitted.
@@ -56,11 +56,11 @@ See top-level LICENSE file for more information
                   {% if r.target_type == 'revision' %}
                     <li class="swh-release">
                       <a href="{{ r.url | safe }}">
-                        <i class="{{ swh_object_icons.release }} fa-fw" aria-hidden="true"></i>
+                        <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
                         {% if r.name == snapshot_context.release %}
-                          <i class="fa fa-check fa-fw" aria-hidden="true"></i>
+                          <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
                         {% else %}
-                          <i class="fa fa-fw" aria-hidden="true"></i>
+                          <i class="mdi mdi-fw" aria-hidden="true"></i>
                         {% endif %}
                         {{ r.name }}
                       </a>
@@ -69,7 +69,7 @@ See top-level LICENSE file for more information
                 {% endfor %}
                 {% if snapshot_context.releases|length < snapshot_context.snapshot_sizes.release %}
                 <li>
-                  <i class="fa fa-warning fa-fw" aria-hidden="true"></i>
+                  <i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>
                   Releases list truncated to {{ snapshot_context.releases|length }} entries,
                   {{ snapshot_context.releases|length|mul:-1|add:snapshot_context.snapshot_sizes.release }}
                   were omitted.
@@ -89,7 +89,7 @@ See top-level LICENSE file for more information
     {% if top_right_link %}
       <a href="{{ top_right_link.url | safe }}" class="btn btn-default btn-sm swh-tr-link" role="button">
         {% if top_right_link.icon %}
-          <i class="{{ top_right_link.icon }} fa-fw"></i>
+          <i class="{{ top_right_link.icon }} mdi-fw" aria-hidden="true"></i>
         {% endif %}
         {{ top_right_link.text }}
       </a>
@@ -104,7 +104,7 @@ See top-level LICENSE file for more information
     {% endif %}
     {% if show_actions_menu %}
       <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
-        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>Actions
+        <i class="mdi mdi-menu mdi-fw" aria-hidden="true"></i>Actions
         <span class="caret"></span>
       </button>
       <ul class="dropdown-menu dropdown-menu-right swh-browse-actions-menu">

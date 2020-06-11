@@ -176,13 +176,13 @@ function checkVaultCookingTasks() {
                        `following commands:\n\n$ git init\n$ zcat ${cookingTask.object_id}.gitfast.gz | git fast-import">`;
           }
           tableRow += '<td><input type="checkbox" class="vault-task-toggle-selection"/></td>';
-          tableRow += `<td style="width: 120px"><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} fa-fw"></i>${cookingTask.object_type}</td>`;
+          tableRow += `<td style="width: 120px"><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} mdi-fw" aria-hidden="true"></i>${cookingTask.object_type}</td>`;
           tableRow += `<td class="vault-object-id" data-object-id="${cookingTask.object_id}"><a href="${browseUrl}">${cookingTask.object_id}</a></td>`;
           tableRow += `<td style="width: 350px">${progressBar.outerHTML}</td>`;
           let downloadLink = downloadLinkWait;
           if (cookingTask.status === 'done') {
             downloadLink = `<button class="btn btn-default btn-sm" onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')` +
-                           '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</button>';
+                           '"><i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
           } else if (cookingTask.status === 'failed') {
             downloadLink = '';
           }
@@ -195,7 +195,7 @@ function checkVaultCookingTasks() {
           let downloadLink = rowTask.find('.vault-dl-link');
           if (cookingTask.status === 'done') {
             downloadLink[0].innerHTML = `<button class="btn btn-default btn-sm" onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')` +
-                                        '"><i class="fa fa-download fa-fw" aria-hidden="true"></i>Download</button>';
+                                        '"><i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
           } else if (cookingTask.status === 'failed') {
             downloadLink[0].innerHTML = '';
           } else if (cookingTask.status === 'new') {

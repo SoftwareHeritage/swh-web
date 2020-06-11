@@ -179,7 +179,7 @@ describe('Origin Save Tests', function() {
             html += originSaveJSON.data[i].origin_url;
           }
           html += `&nbsp;<a href="${originSaveJSON.data[i].origin_url}">`;
-          html += '<i class="fa fa-external-link" aria-hidden="true"></i></a>';
+          html += '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
           assert.equal($(cells[2]).html(), html);
           assert.equal($(cells[3]).text(), originSaveJSON.data[i].save_request_status);
           assert.equal($(cells[4]).text(), saveStatus);
