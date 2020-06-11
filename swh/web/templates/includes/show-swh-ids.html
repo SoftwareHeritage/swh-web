@@ -66,12 +66,12 @@ See top-level LICENSE file for more information
                 {% if swhid_info.swhid_with_context is not None %}
                   <div class="float-left">
                     <form id="swh-id-options">
-                      <div class="form-check swh-id-option">
-                        <input class="form-check-input swh-id-context-option" value="option-origin" type="checkbox"
+                      <div class="custom-control custom-checkbox swh-id-option">
+                        <input class="custom-control-input swh-id-context-option" value="option-origin" type="checkbox"
                               id="swh-id-context-option-{{ swhid_info.object_type }}"
                               data-swhid-with-context="{{ swhid_info.swhid_with_context }}"
                               onclick="swh.browse.swhIdContextOptionToggled(event)">
-                        <label class="form-check-label" for="swh-id-context-option-{{ swhid_info.object_type }}">Add contextual information</label>
+                        <label class="custom-control-label font-weight-normal" for="swh-id-context-option-{{ swhid_info.object_type }}">Add contextual information</label>
                       </div>
                     </form>
                   </div>

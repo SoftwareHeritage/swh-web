@@ -12,6 +12,7 @@ See top-level LICENSE file for more information
 {% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
 
 {% block navbar-content %}
+
 {% if snapshot_context %}
   <h4>
     <i class="{{ swh_object_icons|key_value:swh_object_name.lower }} mdi-fw" aria-hidden="true"></i>
@@ -42,6 +43,7 @@ See top-level LICENSE file for more information
     </a>
   </h4>
 {% endif %}
+
 {% endblock %}
 
 {% block browse-content %}

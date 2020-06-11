@@ -77,11 +77,11 @@ describe('Test origin-search', function() {
     // Check all three checkboxes and check if
     // correct url params are added
     cy.get('#swh-search-origins-with-visit')
-      .check()
+      .check({force: true})
       .get('#swh-filter-empty-visits')
-      .check()
+      .check({force: true})
       .get('#swh-search-origin-metadata')
-      .check()
+      .check({force: true})
       .then(() => {
         const searchText = origin.url;
         doSearch(searchText);
@@ -128,9 +128,9 @@ describe('Test origin-search', function() {
     it('should not paginate if there are not many results', function() {
       // Setup search
       cy.get('#swh-search-origins-with-visit')
-        .uncheck()
+        .uncheck({force: true})
         .get('#swh-filter-empty-visits')
-        .uncheck()
+        .uncheck({force: true})
         .then(() => {
           const searchText = 'libtess';
 
@@ -154,9 +154,9 @@ describe('Test origin-search', function() {
       stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
-        .uncheck()
+        .uncheck({force: true})
         .get('#swh-filter-empty-visits')
-        .uncheck()
+        .uncheck({force: true})
         .then(() => {
           const searchText = 'many.origins';
 
@@ -219,9 +219,9 @@ describe('Test origin-search', function() {
       stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
-        .uncheck()
+        .uncheck({force: true})
         .get('#swh-filter-empty-visits')
-        .uncheck()
+        .uncheck({force: true})
         .then(() => {
           const searchText = 'many.origins';
 
@@ -268,9 +268,9 @@ describe('Test origin-search', function() {
       stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
-        .uncheck()
+        .uncheck({force: true})
         .get('#swh-filter-empty-visits')
-        .uncheck()
+        .uncheck({force: true})
         .then(() => {
           const searchText = 'many.origins';
 

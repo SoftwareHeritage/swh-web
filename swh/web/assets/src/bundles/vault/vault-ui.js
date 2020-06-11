@@ -175,8 +175,10 @@ function checkVaultCookingTasks() {
             tableRow = `<tr id="vault-task-${cookingTask.object_id}"  title="Once downloaded, the git repository can be imported with the ` +
                        `following commands:\n\n$ git init\n$ zcat ${cookingTask.object_id}.gitfast.gz | git fast-import">`;
           }
-          tableRow += '<td><input type="checkbox" class="vault-task-toggle-selection"/></td>';
-          tableRow += `<td style="width: 120px"><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} mdi-fw" aria-hidden="true"></i>${cookingTask.object_type}</td>`;
+          tableRow += '<td><div class="custom-control custom-checkbox">';
+          tableRow += `<input type="checkbox" class="custom-control-input vault-task-toggle-selection" id="vault-task-toggle-selection-${cookingTask.object_id}"/>`;
+          tableRow += `<label class="custom-control-label" for="vault-task-toggle-selection-${cookingTask.object_id}"></label></td>`;
+          tableRow += `<td style="width: 120px"><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} mdi-fw"></i>${cookingTask.object_type}</td>`;
           tableRow += `<td class="vault-object-id" data-object-id="${cookingTask.object_id}"><a href="${browseUrl}">${cookingTask.object_id}</a></td>`;
           tableRow += `<td style="width: 350px">${progressBar.outerHTML}</td>`;
           let downloadLink = downloadLinkWait;

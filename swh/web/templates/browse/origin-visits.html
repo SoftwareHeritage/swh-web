@@ -41,23 +41,26 @@ See top-level LICENSE file for more information
 
 <h4>History</h4>
 
-<div class="text-center">
-  <div class="form-check-inline">
-    <label class="form-check-label active" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
-      <input type="radio" class="form-check-input" name="optradio" checked>Show full visits with different snapshots
+<form class="text-center">
+  <div class="custom-control custom-radio custom-control-inline">
+    <input class="custom-control-input" type="radio" id="swh-different-snapshot-visits" name="swh-visits" value="option1" checked>
+    <label class="custom-control-label font-weight-normal" for="swh-different-snapshot-visits" onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
+      Show full visits with different snapshots
     </label>
   </div>
-  <div class="form-check-inline">
-    <label class="form-check-label" onclick="swh.origin.showFullVisits(event)">
-      <input type="radio" class="form-check-input" name="optradio">Show all full visits
+  <div class="custom-control custom-radio custom-control-inline">
+    <input class="custom-control-input" type="radio" id="swh-full-visits" name="swh-visits" value="option2">
+    <label class="custom-control-label font-weight-normal" for="swh-full-visits" onclick="swh.origin.showFullVisits(event)">
+      Show all full visits
     </label>
   </div>
-  <div class="form-check-inline disabled">
-    <label class="form-check-label" onclick="swh.origin.showAllVisits(event)">
-      <input type="radio" class="form-check-input" name="optradio">Show all visits
+  <div class="custom-control custom-radio custom-control-inline">
+    <input class="custom-control-input" type="radio" id="swh-all-visits" name="swh-visits" value="option3">
+    <label class="custom-control-label font-weight-normal" for="swh-all-visits" onclick="swh.origin.showAllVisits(event)">
+      Show all visits
     </label>
   </div>
-</div>
+</form>
 
 <h5>Calendar</h5>
 

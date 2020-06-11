@@ -137,14 +137,14 @@ describe('Persistent Identifiers Tests', function() {
         .contains(td.objectPids[0])
         .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[0]));
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id-context-option`)
+      cy.get(`#swh-id-tab-${td.objectType} .swh-id-option`)
         .click();
 
       cy.get(`#swh-id-tab-${td.objectType} .swh-id`)
         .contains(td.objectPids[1])
         .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[1]));
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id-context-option`)
+      cy.get(`#swh-id-tab-${td.objectType} .swh-id-option`)
         .click();
 
       cy.get(`#swh-id-tab-${td.objectType} .swh-id`)

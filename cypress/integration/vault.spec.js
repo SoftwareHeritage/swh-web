@@ -325,7 +325,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
     cy.get(`#vault-task-${this.revision}`)
       .find('input[type="checkbox"]')
-      .click();
+      .click({force: true});
     cy.contains('button', 'Remove selected tasks')
       .click();
 
