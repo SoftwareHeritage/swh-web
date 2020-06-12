@@ -66,8 +66,7 @@ var API = /** @class */ (function () {
     };
     /**
      * Returns an object that can be used in request headers.
-     *
-     * @deprecated in favor of `getStoreEndpointWithUrlEncodedAuth` and `getEnvelopeEndpointWithUrlEncodedAuth`.
+     * This is needed for node and the old /store endpoint in sentry
      */
     API.prototype.getRequestHeaders = function (clientName, clientVersion) {
         var dsn = this._dsnObject;

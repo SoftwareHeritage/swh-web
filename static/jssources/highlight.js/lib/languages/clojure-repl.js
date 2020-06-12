@@ -7,6 +7,7 @@ Website: https://clojure.org
 Category: lisp
 */
 
+/** @type LanguageFn */
 function clojureRepl(hljs) {
   return {
     name: 'Clojure REPL',

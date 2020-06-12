@@ -6,9 +6,13 @@ Website: https://clojure.org
 Category: lisp
 */
 
+/** @type LanguageFn */
 function clojure(hljs) {
+  var SYMBOLSTART = 'a-zA-Z_\\-!.?+*=<>&#\'';
+  var SYMBOL_RE = '[' + SYMBOLSTART + '][' + SYMBOLSTART + '0-9/;:]*';
   var globals = 'def defonce defprotocol defstruct defmulti defmethod defn- defn defmacro deftype defrecord';
   var keywords = {
+    $pattern: SYMBOL_RE,
     'builtin-name':
       // Clojure keywords
       globals + ' ' +
@@ -41,8 +45,6 @@ function clojure(hljs) {
       'lazy-seq spread list* str find-keyword keyword symbol gensym force rationalize'
   };
 
-  var SYMBOLSTART = 'a-zA-Z_\\-!.?+*=<>&#\'';
-  var SYMBOL_RE = '[' + SYMBOLSTART + '][' + SYMBOLSTART + '0-9/;:]*';
   var SIMPLE_NUMBER_RE = '[-+]?\\d+(\\.\\d+)?';
 
   var SYMBOL = {
@@ -86,7 +88,6 @@ function clojure(hljs) {
   };
   var NAME = {
     keywords: keywords,
-    lexemes: SYMBOL_RE,
     className: 'name', begin: SYMBOL_RE,
     starts: BODY
   };

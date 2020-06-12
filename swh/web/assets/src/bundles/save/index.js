@@ -86,8 +86,17 @@ export function initOriginSave() {
             name: 'origin_url',
             render: (data, type, row) => {
               if (type === 'display') {
+                let html = '';
                 const sanitizedURL = $.fn.dataTable.render.text().display(data);
-                return `<a href="${sanitizedURL}">${sanitizedURL}</a>`;
+                if (row.save_task_status === 'succeed') {
+                  let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${sanitizedURL}`;
+                  browseOriginUrl += `&amp;timestamp=${row.visit_date}`;
+                  html += `<a href="${browseOriginUrl}">${sanitizedURL}</a>`;
+                } else {
+                  html += sanitizedURL;
+                }
+                html += `&nbsp;<a href="${sanitizedURL}"><i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>`;
+                return html;
               }
               return data;
             }
@@ -98,15 +107,7 @@ export function initOriginSave() {
           },
           {
             data: 'save_task_status',
-            name: 'loading_task_status',
-            render: (data, type, row) => {
-              if (data === 'succeed' && row.visit_date) {
-                let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${row.origin_url}`;
-                browseOriginUrl += `&timestamp=${row.visit_date}`;
-                return `<a href="${browseOriginUrl}">${data}</a>`;
-              }
-              return data;
-            }
+            name: 'loading_task_status'
           }
         ],
         scrollY: '50vh',
@@ -132,22 +133,26 @@ export function initOriginSave() {
 
     let saveRequestAcceptedAlert = htmlAlert(
       'success',
-      'The "save code now" request has been accepted and will be processed as soon as possible.'
+      'The "save code now" request has been accepted and will be processed as soon as possible.',
+      true
     );
 
     let saveRequestPendingAlert = htmlAlert(
       'warning',
-      'The "save code now" request has been put in pending state and may be accepted for processing after manual review.'
+      'The "save code now" request has been put in pending state and may be accepted for processing after manual review.',
+      true
     );
 
     let saveRequestRateLimitedAlert = htmlAlert(
       'danger',
-      'The rate limit for "save code now" requests has been reached. Please try again later.'
+      'The rate limit for "save code now" requests has been reached. Please try again later.',
+      true
     );
 
     let saveRequestUnknownErrorAlert = htmlAlert(
       'danger',
-      'An unexpected error happened when submitting the "save code now request".'
+      'An unexpected error happened when submitting the "save code now request".',
+      true
     );
 
     $('#swh-save-origin-form').submit(event => {
@@ -246,22 +251,26 @@ export function initTakeNewSnapshot() {
 
   let newSnapshotRequestAcceptedAlert = htmlAlert(
     'success',
-    'The "take new snapshot" request has been accepted and will be processed as soon as possible.'
+    'The "take new snapshot" request has been accepted and will be processed as soon as possible.',
+    true
   );
 
   let newSnapshotRequestPendingAlert = htmlAlert(
     'warning',
-    'The "take new snapshot" request has been put in pending state and may be accepted for processing after manual review.'
+    'The "take new snapshot" request has been put in pending state and may be accepted for processing after manual review.',
+    true
   );
 
   let newSnapshotRequestRateLimitAlert = htmlAlert(
     'danger',
-    'The rate limit for "take new snapshot" requests has been reached. Please try again later.'
+    'The rate limit for "take new snapshot" requests has been reached. Please try again later.',
+    true
   );
 
   let newSnapshotRequestUnknownErrorAlert = htmlAlert(
     'danger',
-    'An unexpected error happened when submitting the "save code now request".'
+    'An unexpected error happened when submitting the "save code now request".',
+    true
   );
 
   $(document).ready(() => {
@@ -278,7 +287,7 @@ export function initTakeNewSnapshot() {
                         (statusCode, errorData) => {
                           $('#swh-take-new-snapshot-request-status').css('color', 'red');
                           if (statusCode === 403) {
-                            const errorAlert = htmlAlert('danger', `Error: ${errorData['detail']}`);
+                            const errorAlert = htmlAlert('danger', `Error: ${errorData['detail']}`, true);
                             $('#swh-take-new-snapshot-request-status').html(errorAlert);
                           } else if (statusCode === 429) {
                             $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestRateLimitAlert);

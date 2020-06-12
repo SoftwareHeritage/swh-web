@@ -461,9 +461,9 @@ function pgsql(hljs) {
             contains: [{begin: '\\\\.'}],
             relevance: 10
           },
-          {
+          hljs.END_SAME_AS_BEGIN({
             begin: DOLLAR_STRING,
-            endSameAsBegin: true,
+            end: DOLLAR_STRING,
             contains: [
               {
                 // actually we want them all except SQL; listed are those with known implementations
@@ -472,7 +472,7 @@ function pgsql(hljs) {
                 endsWithParent: true
               }
             ]
-          },
+          }),
           // identifiers in quotes
           {
             begin: '"', end: '"',

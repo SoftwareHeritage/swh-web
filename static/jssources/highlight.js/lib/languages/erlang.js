@@ -20,7 +20,7 @@ function erlang(hljs) {
   var COMMENT = hljs.COMMENT('%', '$');
   var NUMBER = {
     className: 'number',
-    begin: '\\b(\\d+#[a-fA-F0-9]+|\\d+(\\.\\d+)?([eE][-+]?\\d+)?)',
+    begin: '\\b(\\d+(_\\d+)*#[a-fA-F0-9]+(_[a-fA-F0-9]+)*|\\d+(_\\d+)*(\\.\\d+(_\\d+)*)?([eE][-+]?\\d+)?)',
     relevance: 0
   };
   var NAMED_FUN = {
@@ -136,11 +136,12 @@ function erlang(hljs) {
         relevance: 0,
         excludeEnd: true,
         returnBegin: true,
-        lexemes: '-' + hljs.IDENT_RE,
-        keywords:
-          '-module -record -undef -export -ifdef -ifndef -author -copyright -doc -vsn ' +
+        keywords: {
+          $pattern: '-' + hljs.IDENT_RE,
+          keyword: '-module -record -undef -export -ifdef -ifndef -author -copyright -doc -vsn ' +
           '-import -include -include_lib -compile -define -else -endif -file -behaviour ' +
-          '-behavior -spec',
+          '-behavior -spec'
+        },
         contains: [PARAMS]
       },
       NUMBER,

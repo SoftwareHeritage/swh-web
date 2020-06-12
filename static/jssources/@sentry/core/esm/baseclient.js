@@ -247,7 +247,7 @@ var BaseClient = /** @class */ (function () {
             return null;
         }
         // tslint:disable:no-unsafe-any
-        return tslib_1.__assign({}, event, (event.breadcrumbs && {
+        var normalized = tslib_1.__assign({}, event, (event.breadcrumbs && {
             breadcrumbs: event.breadcrumbs.map(function (b) { return (tslib_1.__assign({}, b, (b.data && {
                 data: normalize(b.data, depth),
             }))); }),
@@ -258,6 +258,17 @@ var BaseClient = /** @class */ (function () {
         }), (event.extra && {
             extra: normalize(event.extra, depth),
         }));
+        // event.contexts.trace stores information about a Transaction. Similarly,
+        // event.spans[] stores information about child Spans. Given that a
+        // Transaction is conceptually a Span, normalization should apply to both
+        // Transactions and Spans consistently.
+        // For now the decision is to skip normalization of Transactions and Spans,
+        // so this block overwrites the normalized event to add back the original
+        // Transaction information prior to normalization.
+        if (event.contexts && event.contexts.trace) {
+            normalized.contexts.trace = event.contexts.trace;
+        }
+        return normalized;
     };
     /**
      *  Enhances event using the client configuration.

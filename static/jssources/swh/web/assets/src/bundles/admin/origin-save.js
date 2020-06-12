@@ -81,8 +81,17 @@ export function initOriginSaveAdmin() {
         name: 'origin_url',
         render: (data, type, row) => {
           if (type === 'display') {
+            let html = '';
             const sanitizedURL = $.fn.dataTable.render.text().display(data);
-            return `<a href="${sanitizedURL}">${sanitizedURL}</a>`;
+            if (row.save_task_status === 'succeed') {
+              let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${sanitizedURL}`;
+              browseOriginUrl += `&amp;timestamp=${row.visit_date}`;
+              html += `<a href="${browseOriginUrl}">${sanitizedURL}</a>`;
+            } else {
+              html += sanitizedURL;
+            }
+            html += `&nbsp;<a href="${sanitizedURL}"><i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>`;
+            return html;
           }
           return data;
         }
@@ -133,22 +142,14 @@ export function initOriginSaveAdmin() {
 
     columnsData.push({
       data: 'save_task_status',
-      name: 'save_task_status',
-      render: (data, type, row) => {
-        if (data === 'succeed' && row.visit_date) {
-          let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${row.origin_url}`;
-          browseOriginUrl += `&timestamp=${row.visit_date}`;
-          return `<a href="${browseOriginUrl}">${data}</a>`;
-        }
-        return data;
-      }
+      name: 'save_task_status'
     });
 
     columnsData.push({
       name: 'info',
       render: (data, type, row) => {
         if (row.save_task_status === 'succeed' || row.save_task_status === 'failed') {
-          return '<i class="fa fa-info-circle swh-save-request-info" aria-hidden="true" style="cursor: pointer"' +
+          return '<i class="mdi mdi-information-outline swh-save-request-info" aria-hidden="true" style="cursor: pointer"' +
                   `onclick="swh.admin.displaySaveRequestInfo(event, ${row.id})"></i>`;
         } else {
           return '';

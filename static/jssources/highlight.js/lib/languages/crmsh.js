@@ -6,6 +6,7 @@ Description: Syntax Highlighting for the crmsh DSL
 Category: config
 */
 
+/** @type LanguageFn */
 function crmsh(hljs) {
   var RESOURCES = 'primitive rsc_template';
 
