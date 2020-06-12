@@ -13,6 +13,7 @@ change in v10 and don't have to change the requirements again later.
 See: https://github.com/highlightjs/highlight.js/issues/2146
 */
 
+/** @type LanguageFn */
 function cLike(hljs) {
   function optional(s) {
     return '(?:' + s + ')?';
@@ -44,7 +45,10 @@ function cLike(hljs) {
         begin: '(u8?|U|L)?\'(' + CHARACTER_ESCAPES + "|.)", end: '\'',
         illegal: '.'
       },
-      { begin: /(?:u8?|U|L)?R"([^()\\ ]{0,16})\((?:.|\n)*?\)\1"/ }
+      hljs.END_SAME_AS_BEGIN({
+        begin: /(?:u8?|U|L)?R"([^()\\ ]{0,16})\(/,
+        end: /\)([^()\\ ]{0,16})"/,
+      })
     ]
   };
 
@@ -103,8 +107,8 @@ function cLike(hljs) {
       'atomic_ullong new throw return ' +
       'and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq',
     built_in: 'std string wstring cin cout cerr clog stdin stdout stderr stringstream istringstream ostringstream ' +
-      'auto_ptr deque list queue stack vector map set bitset multiset multimap unordered_set ' +
-      'unordered_map unordered_multiset unordered_multimap array shared_ptr abort terminate abs acos ' +
+      'auto_ptr deque list queue stack vector map set pair bitset multiset multimap unordered_set ' +
+      'unordered_map unordered_multiset unordered_multimap priority_queue make_pair array shared_ptr abort terminate abs acos ' +
       'asin atan2 atan calloc ceil cosh cos exit exp fabs floor fmod fprintf fputs free frexp ' +
       'fscanf future isalnum isalpha iscntrl isdigit isgraph islower isprint ispunct isspace isupper ' +
       'isxdigit tolower toupper labs ldexp log10 log malloc realloc memchr memcmp memcpy memset modf pow ' +
@@ -209,8 +213,8 @@ function cLike(hljs) {
       EXPRESSION_CONTAINS,
       [
       PREPROCESSOR,
-      {
-        begin: '\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<', end: '>',
+      { // containers: ie, `vector <int> rooms (9);`
+        begin: '\\b(deque|list|queue|priority_queue|pair|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<', end: '>',
         keywords: CPP_KEYWORDS,
         contains: ['self', CPP_PRIMITIVE_TYPES]
       },

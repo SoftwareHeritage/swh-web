@@ -52,8 +52,10 @@ function makefile(hljs) {
   var META = {
     className: 'meta',
     begin: /^\.PHONY:/, end: /$/,
-    keywords: {'meta-keyword': '.PHONY'},
-    lexemes: /[\.\w]+/
+    keywords: {
+      $pattern: /[\.\w]+/,
+      'meta-keyword': '.PHONY'
+    }
   };
   /* Targets */
   var TARGET = {
@@ -64,10 +66,11 @@ function makefile(hljs) {
   return {
     name: 'Makefile',
     aliases: ['mk', 'mak'],
-    keywords:
-      'define endef undefine ifdef ifndef ifeq ifneq else endif ' +
-      'include -include sinclude override export unexport private vpath',
-    lexemes: /[\w-]+/,
+    keywords: {
+      $pattern: /[\w-]+/,
+      keyword: 'define endef undefine ifdef ifndef ifeq ifneq else endif ' +
+      'include -include sinclude override export unexport private vpath'
+    },
     contains: [
       hljs.HASH_COMMENT_MODE,
       VARIABLE,

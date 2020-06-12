@@ -6,6 +6,7 @@ Website: https://www.gnu.org/software/bash/
 Category: common
 */
 
+/** @type LanguageFn */
 function bash(hljs) {
   const VAR = {};
   const BRACED_VAR = {
@@ -55,11 +56,21 @@ function bash(hljs) {
       VAR
     ]
   };
-  const SHEBANG = {
-    className: 'meta',
-    begin: /^#![^\n]+sh\s*$/,
+  const SH_LIKE_SHELLS = [
+    "fish",
+    "bash",
+    "zsh",
+    "sh",
+    "csh",
+    "ksh",
+    "tcsh",
+    "dash",
+    "scsh",
+  ];
+  const KNOWN_SHEBANG = hljs.SHEBANG({
+    binary: `(${SH_LIKE_SHELLS.join("|")})`,
     relevance: 10
-  };
+  });
   const FUNCTION = {
     className: 'function',
     begin: /\w[\w\d_]*\s*\(\s*\)\s*\{/,
@@ -71,8 +82,8 @@ function bash(hljs) {
   return {
     name: 'Bash',
     aliases: ['sh', 'zsh'],
-    lexemes: /\b-?[a-z\._]+\b/,
     keywords: {
+      $pattern: /\b-?[a-z\._]+\b/,
       keyword:
         'if then else elif fi for while in do done case esac function',
       literal:
@@ -98,7 +109,8 @@ function bash(hljs) {
         '-ne -eq -lt -gt -f -d -e -s -l -a' // relevance booster
     },
     contains: [
-      SHEBANG,
+      KNOWN_SHEBANG, // to catch known shells and boost relevancy
+      hljs.SHEBANG(), // to catch unknown shells but still highlight the shebang
       FUNCTION,
       ARITHMETIC,
       hljs.HASH_COMMENT_MODE,

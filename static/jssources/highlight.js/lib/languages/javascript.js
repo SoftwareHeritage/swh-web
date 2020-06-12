@@ -1,3 +1,174 @@
+const IDENT_RE = '[A-Za-z$_][0-9A-Za-z$_]*';
+const KEYWORDS = [
+  "as", // for exports
+  "in",
+  "of",
+  "if",
+  "for",
+  "while",
+  "finally",
+  "var",
+  "new",
+  "function",
+  "do",
+  "return",
+  "void",
+  "else",
+  "break",
+  "catch",
+  "instanceof",
+  "with",
+  "throw",
+  "case",
+  "default",
+  "try",
+  "switch",
+  "continue",
+  "typeof",
+  "delete",
+  "let",
+  "yield",
+  "const",
+  "class",
+  // JS handles these with a special rule
+  // "get",
+  // "set",
+  "debugger",
+  "async",
+  "await",
+  "static",
+  "import",
+  "from",
+  "export",
+  "extends"
+];
+const LITERALS = [
+  "true",
+  "false",
+  "null",
+  "undefined",
+  "NaN",
+  "Infinity"
+];
+
+const TYPES = [
+  "Intl",
+  "DataView",
+  "Number",
+  "Math",
+  "Date",
+  "String",
+  "RegExp",
+  "Object",
+  "Function",
+  "Boolean",
+  "Error",
+  "Symbol",
+  "Set",
+  "Map",
+  "WeakSet",
+  "WeakMap",
+  "Proxy",
+  "Reflect",
+  "JSON",
+  "Promise",
+  "Float64Array",
+  "Int16Array",
+  "Int32Array",
+  "Int8Array",
+  "Uint16Array",
+  "Uint32Array",
+  "Float32Array",
+  "Array",
+  "Uint8Array",
+  "Uint8ClampedArray",
+  "ArrayBuffer"
+];
+
+const ERROR_TYPES = [
+  "EvalError",
+  "InternalError",
+  "RangeError",
+  "ReferenceError",
+  "SyntaxError",
+  "TypeError",
+  "URIError"
+];
+
+const BUILT_IN_GLOBALS = [
+  "setInterval",
+  "setTimeout",
+  "clearInterval",
+  "clearTimeout",
+
+  "require",
+  "exports",
+
+  "eval",
+  "isFinite",
+  "isNaN",
+  "parseFloat",
+  "parseInt",
+  "decodeURI",
+  "decodeURIComponent",
+  "encodeURI",
+  "encodeURIComponent",
+  "escape",
+  "unescape"
+];
+
+const BUILT_IN_VARIABLES = [
+  "arguments",
+  "this",
+  "super",
+  "console",
+  "window",
+  "document",
+  "localStorage",
+  "module",
+  "global" // Node.js
+];
+
+const BUILT_INS = [].concat(
+  BUILT_IN_GLOBALS,
+  BUILT_IN_VARIABLES,
+  TYPES,
+  ERROR_TYPES
+);
+
+/**
+ * @param {string} value
+ * @returns {RegExp}
+ * */
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function source(re) {
+  if (!re) return null;
+  if (typeof re === "string") return re;
+
+  return re.source;
+}
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function lookahead(re) {
+  return concat('(?=', re, ')');
+}
+
+/**
+ * @param {...(RegExp | string) } args
+ * @returns {string}
+ */
+function concat(...args) {
+  const joined = args.map((x) => source(x)).join("");
+  return joined;
+}
+
 /*
 Language: JavaScript
 Description: JavaScript (JS) is a lightweight, interpreted, or just-in-time compiled programming language with first-class functions.
@@ -6,6 +177,7 @@ Website: https://developer.mozilla.org/en-US/docs/Web/JavaScript
 */
 
 function javascript(hljs) {
+  var IDENT_RE$1 = IDENT_RE;
   var FRAGMENT = {
     begin: '<>',
     end: '</>'
@@ -14,26 +186,11 @@ function javascript(hljs) {
     begin: /<[A-Za-z0-9\\._:-]+/,
     end: /\/[A-Za-z0-9\\._:-]+>|\/>/
   };
-  var IDENT_RE = '[A-Za-z$_][0-9A-Za-z$_]*';
-  var KEYWORDS = {
-    keyword:
-      'in of if for while finally var new function do return void else break catch ' +
-      'instanceof with throw case default try this switch continue typeof delete ' +
-      'let yield const export super debugger as async await static ' +
-      // ECMAScript 6 modules import
-      'import from as'
-    ,
-    literal:
-      'true false null undefined NaN Infinity',
-    built_in:
-      'eval isFinite isNaN parseFloat parseInt decodeURI decodeURIComponent ' +
-      'encodeURI encodeURIComponent escape unescape Object Function Boolean Error ' +
-      'EvalError InternalError RangeError ReferenceError StopIteration SyntaxError ' +
-      'TypeError URIError Number Math Date String RegExp Array Float32Array ' +
-      'Float64Array Int16Array Int32Array Int8Array Uint16Array Uint32Array ' +
-      'Uint8Array Uint8ClampedArray ArrayBuffer DataView JSON Intl arguments require ' +
-      'module console window document Symbol Set Map WeakSet WeakMap Proxy Reflect ' +
-      'Promise'
+  var KEYWORDS$1 = {
+    $pattern: IDENT_RE,
+    keyword: KEYWORDS.join(" "),
+    literal: LITERALS.join(" "),
+    built_in: BUILT_INS.join(" ")
   };
   var NUMBER = {
     className: 'number',
@@ -47,7 +204,7 @@ function javascript(hljs) {
   var SUBST = {
     className: 'subst',
     begin: '\\$\\{', end: '\\}',
-    keywords: KEYWORDS,
+    keywords: KEYWORDS$1,
     contains: []  // defined later
   };
   var HTML_TEMPLATE = {
@@ -90,6 +247,10 @@ function javascript(hljs) {
     hljs.REGEXP_MODE
   ];
   var PARAMS_CONTAINS = SUBST.contains.concat([
+    // eat recursive parens in sub expressions
+    { begin: /\(/, end: /\)/,
+      contains: ["self"].concat(SUBST.contains, [hljs.C_BLOCK_COMMENT_MODE, hljs.C_LINE_COMMENT_MODE])
+    },
     hljs.C_BLOCK_COMMENT_MODE,
     hljs.C_LINE_COMMENT_MODE
   ]);
@@ -104,16 +265,16 @@ function javascript(hljs) {
   return {
     name: 'JavaScript',
     aliases: ['js', 'jsx', 'mjs', 'cjs'],
-    keywords: KEYWORDS,
+    keywords: KEYWORDS$1,
     contains: [
+      hljs.SHEBANG({
+        binary: "node",
+        relevance: 5
+      }),
       {
         className: 'meta',
         relevance: 10,
         begin: /^\s*['"]use (strict|asm)['"]/
-      },
-      {
-        className: 'meta',
-        begin: /^#!/, end: /$/
       },
       hljs.APOS_STRING_MODE,
       hljs.QUOTE_STRING_MODE,
@@ -139,7 +300,7 @@ function javascript(hljs) {
                 },
                 {
                   className: 'variable',
-                  begin: IDENT_RE + '(?=\\s*(-)|$)',
+                  begin: IDENT_RE$1 + '(?=\\s*(-)|$)',
                   endsParent: true,
                   relevance: 0
                 },
@@ -157,13 +318,29 @@ function javascript(hljs) {
       hljs.C_BLOCK_COMMENT_MODE,
       NUMBER,
       { // object attr container
-        begin: /[{,\n]\s*/, relevance: 0,
+        begin: concat(/[{,\n]\s*/,
+          // we need to look ahead to make sure that we actually have an
+          // attribute coming up so we don't steal a comma from a potential
+          // "value" container
+          //
+          // NOTE: this might not work how you think.  We don't actually always
+          // enter this mode and stay.  Instead it might merely match `,
+          // <comments up next>` and then immediately end after the , because it
+          // fails to find any actual attrs. But this still does the job because
+          // it prevents the value contain rule from grabbing this instead and
+          // prevening this rule from firing when we actually DO have keys.
+          lookahead(concat(
+            // we also need to allow for multiple possible comments inbetween
+            // the first key:value pairing
+            /(((\/\/.*)|(\/\*(.|\n)*\*\/))\s*)*/,
+            IDENT_RE$1 + '\\s*:'))),
+        relevance: 0,
         contains: [
           {
-            begin: IDENT_RE + '\\s*:', returnBegin: true,
+            className: 'attr',
+            begin: IDENT_RE$1 + lookahead('\\s*:'),
             relevance: 0,
-            contains: [{className: 'attr', begin: IDENT_RE, relevance: 0}]
-          }
+          },
         ]
       },
       { // "value" container
@@ -175,22 +352,32 @@ function javascript(hljs) {
           hljs.REGEXP_MODE,
           {
             className: 'function',
-            begin: '(\\(.*?\\)|' + IDENT_RE + ')\\s*=>', returnBegin: true,
+            // we have to count the parens to make sure we actually have the
+            // correct bounding ( ) before the =>.  There could be any number of
+            // sub-expressions inside also surrounded by parens.
+            begin: '(\\([^(]*' +
+              '(\\([^(]*' +
+                '(\\([^(]*' +
+                '\\))?' +
+              '\\))?' +
+            '\\)|' + hljs.UNDERSCORE_IDENT_RE + ')\\s*=>', returnBegin: true,
             end: '\\s*=>',
             contains: [
               {
                 className: 'params',
                 variants: [
                   {
-                    begin: IDENT_RE
+                    begin: hljs.UNDERSCORE_IDENT_RE
                   },
                   {
+                    className: null,
                     begin: /\(\s*\)/,
+                    skip: true
                   },
                   {
                     begin: /\(/, end: /\)/,
                     excludeBegin: true, excludeEnd: true,
-                    keywords: KEYWORDS,
+                    keywords: KEYWORDS$1,
                     contains: PARAMS_CONTAINS
                   }
                 ]
@@ -226,7 +413,7 @@ function javascript(hljs) {
         className: 'function',
         beginKeywords: 'function', end: /\{/, excludeEnd: true,
         contains: [
-          hljs.inherit(hljs.TITLE_MODE, {begin: IDENT_RE}),
+          hljs.inherit(hljs.TITLE_MODE, {begin: IDENT_RE$1}),
           PARAMS
         ],
         illegal: /\[|%/
@@ -249,11 +436,11 @@ function javascript(hljs) {
         beginKeywords: 'constructor', end: /\{/, excludeEnd: true
       },
       {
-        begin:'(get|set)\\s+(?=' + IDENT_RE+ '\\()',
+        begin: '(get|set)\\s+(?=' + IDENT_RE$1 + '\\()',
         end: /{/,
         keywords: "get set",
         contains: [
-          hljs.inherit(hljs.TITLE_MODE, {begin: IDENT_RE}),
+          hljs.inherit(hljs.TITLE_MODE, {begin: IDENT_RE$1}),
           { begin: /\(\)/ }, // eat to avoid empty params
           PARAMS
         ]

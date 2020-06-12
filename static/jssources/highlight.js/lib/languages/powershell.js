@@ -6,7 +6,7 @@ Contributors: Nicholas Blumhardt <nblumhardt@nblumhardt.com>, Victor Zhou <OiCMu
 Website: https://docs.microsoft.com/en-us/powershell/
 */
 
-function powershell(hljs){
+function powershell(hljs) {
 
   var TYPES =
     ["string", "char", "byte", "int", "long", "bool",  "decimal",  "single",
@@ -36,6 +36,7 @@ function powershell(hljs){
     '-split|-wildcard|-xor';
 
   var KEYWORDS = {
+    $pattern: /-?[A-z\.\-]+\b/,
     keyword: 'if else foreach return do while until elseif begin for trap data dynamicparam ' +
     'end break throw param continue finally in switch exit filter try process catch ' +
     'hidden static parameter',
@@ -227,7 +228,6 @@ function powershell(hljs){
   return {
     name: 'PowerShell',
     aliases: ["ps", "ps1"],
-    lexemes: /-?[A-z\.\-]+\b/,
     case_insensitive: true,
     keywords: KEYWORDS,
     contains: GENTLEMANS_SET.concat(

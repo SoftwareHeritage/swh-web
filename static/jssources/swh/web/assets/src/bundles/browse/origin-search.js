@@ -39,7 +39,7 @@ function populateOriginSearchResultsTable(origins) {
       let tableRow = `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
       tableRow += `<td id="visit-type-origin-${i}" style="width: 120px;"></td>`;
-      tableRow += `<td class="swh-visit-status" id="visit-status-origin-${i}"><i title="Checking visit status" class="fa fa-refresh fa-spin"></i></td>`;
+      tableRow += `<td class="swh-visit-status" id="visit-status-origin-${i}"><i title="Checking visit status" class="mdi mdi-sync mdi-spin"></i></td>`;
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
@@ -51,9 +51,9 @@ function populateOriginSearchResultsTable(origins) {
           $(`#visit-type-origin-${i}`).text(data.type);
           $(`#visit-status-origin-${i}`).children().remove();
           if (data) {
-            $(`#visit-status-origin-${i}`).append('<i title="Origin has at least one full visit by Software Heritage" class="fa fa-check"></i>');
+            $(`#visit-status-origin-${i}`).append('<i title="Origin has at least one full visit by Software Heritage" class="mdi mdi-check-bold"></i>');
           } else {
-            $(`#visit-status-origin-${i}`).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="fa fa-times"></i>');
+            $(`#visit-status-origin-${i}`).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="mdi mdi-close-thick"></i>');
             if ($('#swh-filter-empty-visits').prop('checked')) {
               $(`#origin-${i}`).remove();
             }
@@ -191,7 +191,7 @@ export function initOriginSearch() {
         queryParameters.append('search_metadata', searchMetadata);
       }
       // Update the url, triggering page reload and effective search
-      window.location.search = `?${queryParameters.toString()}`;
+      window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
     });
 
     $('#origins-next-results-button').click(event => {

@@ -366,8 +366,8 @@ function maxima(hljs) {
 
   return {
     name: 'Maxima',
-    lexemes: '[A-Za-z_%][0-9A-Za-z_%]*',
     keywords: {
+      $pattern: '[A-Za-z_%][0-9A-Za-z_%]*',
       keyword: KEYWORDS,
       literal: LITERALS,
       built_in: BUILTIN_FUNCTIONS,

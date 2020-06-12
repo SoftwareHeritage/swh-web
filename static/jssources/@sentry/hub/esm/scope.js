@@ -315,6 +315,12 @@ var Scope = /** @class */ (function () {
         if (this._transaction) {
             event.transaction = this._transaction;
         }
+        // We want to set the trace context for normal events only if there isn't already
+        // a trace context on the event. There is a product feature in place where we link
+        // errors with transaction and it relys on that.
+        if (this._span) {
+            event.contexts = tslib_1.__assign({ trace: this._span.getTraceContext() }, event.contexts);
+        }
         this._applyFingerprint(event);
         event.breadcrumbs = tslib_1.__spread((event.breadcrumbs || []), this._breadcrumbs);
         event.breadcrumbs = event.breadcrumbs.length > 0 ? event.breadcrumbs : undefined;

@@ -39,7 +39,7 @@ fs.readdirSync(bundlesDir).forEach(file => {
   bundles[file] = ['bundles/' + file + '/index.js'];
 });
 
-// common loaders for css related assets (css, sass, less)
+// common loaders for css related assets (css, sass)
 let cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
@@ -239,21 +239,6 @@ module.exports = {
         use: cssLoaders.concat([
           {
             loader: 'sass-loader',
-            options: {
-              sourceMap: !isDevServer
-            }
-          }
-        ])
-      },
-      // less import configuration:
-      //  - generate css with less-loader
-      //  - process it with postcss
-      //  - then extract it to a dedicated file associated to each bundle
-      {
-        test: /\.less$/,
-        use: cssLoaders.concat([
-          {
-            loader: 'less-loader',
             options: {
               sourceMap: !isDevServer
             }

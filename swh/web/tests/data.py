@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
 import os
 import random
 
@@ -12,9 +13,9 @@ from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.model import Content
+from swh.model.model import Content, OriginVisitStatus
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
-from swh.model.model import Directory, Origin
+from swh.model.model import Directory, Origin, OriginVisit
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
@@ -119,19 +120,26 @@ _TEST_ORIGINS = [
             "highlightjs-line-numbers.js.zip",
             "highlightjs-line-numbers.js_visit2.zip",
         ],
-        "visit_date": ["Dec 1 2018, 01:00 UTC", "Jan 20 2019, 15:00 UTC"],
+        "visit_date": [
+            datetime.datetime(2018, 12, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2019, 1, 20, 15, 0, 0, tzinfo=datetime.timezone.utc),
+        ],
     },
     {
         "type": "git",
         "url": "https://github.com/memononen/libtess2",
         "archives": ["libtess2.zip"],
-        "visit_date": ["May 25 2018, 01:00 UTC"],
+        "visit_date": [
+            datetime.datetime(2018, 5, 25, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ],
     },
     {
         "type": "git",
         "url": "repo_with_submodules",
         "archives": ["repo_with_submodules.tgz"],
-        "visit_date": ["Jan 1 2019, 01:00 UTC"],
+        "visit_date": [
+            datetime.datetime(2019, 1, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
+        ],
     },
 ]
 
@@ -192,13 +200,19 @@ def _init_tests_data():
         # storage.origin_add([{'url': url}])
         storage.origin_add([Origin(url=url)])
         search.origin_update([{"url": url, "has_visits": True}])
-        visit = storage.origin_visit_add(url, "2019-12-03 13:55:05Z", "tar")
-        storage.origin_visit_update(
-            url,
-            visit.visit,
+        date = datetime.datetime(2019, 12, 3, 13, 55, 5, tzinfo=datetime.timezone.utc)
+        visit = OriginVisit(
+            origin=url, date=date, type="tar", status="ongoing", snapshot=None
+        )
+        visit = storage.origin_visit_add([visit])[0]
+        visit_status = OriginVisitStatus(
+            origin=url,
+            visit=visit.visit,
+            date=date,
             status="full",
             snapshot=hash_to_bytes("1a8893e6a86f444e8be8e7bda6cb34fb1735a00e"),
         )
+        storage.origin_visit_status_add([visit_status])
 
     contents = set()
     directories = set()

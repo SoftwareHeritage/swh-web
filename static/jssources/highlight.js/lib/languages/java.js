@@ -1,3 +1,48 @@
+/**
+ * @param {string} value
+ * @returns {RegExp}
+ * */
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function source(re) {
+  if (!re) return null;
+  if (typeof re === "string") return re;
+
+  return re.source;
+}
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function optional(re) {
+  return concat('(', re, ')?');
+}
+
+/**
+ * @param {...(RegExp | string) } args
+ * @returns {string}
+ */
+function concat(...args) {
+  const joined = args.map((x) => source(x)).join("");
+  return joined;
+}
+
+/**
+ * Any of the passed expresssions may match
+ *
+ * Creates a huge this | this | that | that match
+ * @param {(RegExp | string)[] } args
+ * @returns {string}
+ */
+function either(...args) {
+  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  return joined;
+}
+
 /*
 Language: Java
 Author: Vsevolod Solovyov <vsevolod.solovyov@gmail.com>
@@ -8,8 +53,7 @@ Website: https://www.java.com/
 function java(hljs) {
   var JAVA_IDENT_RE = '[\u00C0-\u02B8a-zA-Z_$][\u00C0-\u02B8a-zA-Z_$0-9]*';
   var GENERIC_IDENT_RE = JAVA_IDENT_RE + '(<' + JAVA_IDENT_RE + '(\\s*,\\s*' + JAVA_IDENT_RE + ')*>)?';
-  var KEYWORDS =
-    'false synchronized int abstract float private char boolean var static null if const ' +
+  var KEYWORDS = 'false synchronized int abstract float private char boolean var static null if const ' +
     'for true while long strictfp finally protected import native final void ' +
     'enum else break transient catch instanceof byte super volatile case assert short ' +
     'package default double public try this switch continue throws protected public private ' +
@@ -18,7 +62,7 @@ function java(hljs) {
   var ANNOTATION = {
     className: 'meta',
     begin: '@' + JAVA_IDENT_RE,
-    contains:[
+    contains: [
       {
         begin: /\(/,
         end: /\)/,
@@ -26,24 +70,45 @@ function java(hljs) {
       },
     ]
   };
-  // https://docs.oracle.com/javase/7/docs/technotes/guides/language/underscores-literals.html
-  var JAVA_NUMBER_RE = '\\b' +
-    '(' +
-      '0[bB]([01]+[01_]+[01]+|[01]+)' + // 0b...
-      '|' +
-      '0[xX]([a-fA-F0-9]+[a-fA-F0-9_]+[a-fA-F0-9]+|[a-fA-F0-9]+)' + // 0x...
-      '|' +
-      '(' +
-        '([\\d]+[\\d_]+[\\d]+|[\\d]+)(\\.([\\d]+[\\d_]+[\\d]+|[\\d]+))?' +
-        '|' +
-        '\\.([\\d]+[\\d_]+[\\d]+|[\\d]+)' +
-      ')' +
-      '([eE][-+]?\\d+)?' + // octal, decimal, float
-    ')' +
-    '[lLfF]?';
+  /**
+   * A given sequence, possibly with underscores
+   * @type {(s: string | RegExp) => string}  */
+  var SEQUENCE_ALLOWING_UNDERSCORES = (seq) => concat('[', seq, ']+([', seq, '_]*[', seq, ']+)?');
   var JAVA_NUMBER_MODE = {
     className: 'number',
-    begin: JAVA_NUMBER_RE,
+    variants: [
+      { begin: `\\b(0[bB]${SEQUENCE_ALLOWING_UNDERSCORES('01')})[lL]?` }, // binary
+      { begin: `\\b(0${SEQUENCE_ALLOWING_UNDERSCORES('0-7')})[dDfFlL]?` }, // octal
+      {
+        begin: concat(
+          /\b0[xX]/,
+          either(
+            concat(SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9'), /\./, SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9')),
+            concat(SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9'), /\.?/),
+            concat(/\./, SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9')),
+          ),
+          /([pP][+-]?(\d+))?/,
+          /[fFdDlL]?/ // decimal & fp mixed for simplicity
+        )
+      },
+      // scientific notation
+      { begin: concat(
+        /\b/,
+        either(
+          concat(/\d*\./, SEQUENCE_ALLOWING_UNDERSCORES("\\d")), // .3, 3.3, 3.3_3
+          SEQUENCE_ALLOWING_UNDERSCORES("\\d") // 3, 3_3
+        ),
+        /[eE][+-]?[\d]+[dDfF]?/)
+      },
+      // decimal & fp mixed for simplicity
+      { begin: concat(
+        /\b/,
+        SEQUENCE_ALLOWING_UNDERSCORES(/\d/),
+        optional(/\.?/),
+        optional(SEQUENCE_ALLOWING_UNDERSCORES(/\d/)),
+        /[dDfFlL]?/)
+      }
+    ],
     relevance: 0
   };
 
@@ -57,15 +122,15 @@ function java(hljs) {
         '/\\*\\*',
         '\\*/',
         {
-          relevance : 0,
-          contains : [
+          relevance: 0,
+          contains: [
             {
               // eat up @'s in emails to prevent them to be recognized as doctags
               begin: /\w+@/, relevance: 0
             },
             {
-              className : 'doctag',
-              begin : '@[A-Za-z]+'
+              className: 'doctag',
+              begin: '@[A-Za-z]+'
             }
           ]
         }
@@ -80,7 +145,7 @@ function java(hljs) {
         keywords: 'class interface',
         illegal: /[:"\[\]]/,
         contains: [
-          {beginKeywords: 'extends implements'},
+          { beginKeywords: 'extends implements' },
           hljs.UNDERSCORE_TITLE_MODE
         ]
       },

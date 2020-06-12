@@ -7,7 +7,10 @@ Category: lisp
 */
 
 function hy(hljs) {
+  var SYMBOLSTART = 'a-zA-Z_\\-!.?+*=<>&#\'';
+  var SYMBOL_RE = '[' + SYMBOLSTART + '][' + SYMBOLSTART + '0-9/;:]*';
   var keywords = {
+    $pattern: SYMBOL_RE,
     'builtin-name':
       // keywords
       '!= % %= & &= * ** **= *= *map ' +
@@ -41,14 +44,7 @@ function hy(hljs) {
       'xi xor yield yield-from zero? zip zip-longest | |= ~'
    };
 
-  var SYMBOLSTART = 'a-zA-Z_\\-!.?+*=<>&#\'';
-  var SYMBOL_RE = '[' + SYMBOLSTART + '][' + SYMBOLSTART + '0-9/;:]*';
   var SIMPLE_NUMBER_RE = '[-+]?\\d+(\\.\\d+)?';
-
-  var SHEBANG = {
-    className: 'meta',
-    begin: '^#!', end: '$'
-  };
 
   var SYMBOL = {
     begin: SYMBOL_RE,
@@ -91,7 +87,6 @@ function hy(hljs) {
   };
   var NAME = {
     keywords: keywords,
-    lexemes: SYMBOL_RE,
     className: 'name', begin: SYMBOL_RE,
     starts: BODY
   };
@@ -105,7 +100,7 @@ function hy(hljs) {
     name: 'Hy',
     aliases: ['hylang'],
     illegal: /\S/,
-    contains: [SHEBANG, LIST, STRING, HINT, HINT_COL, COMMENT, KEY, COLLECTION, NUMBER, LITERAL]
+    contains: [hljs.SHEBANG(), LIST, STRING, HINT, HINT_COL, COMMENT, KEY, COLLECTION, NUMBER, LITERAL]
   }
 }
 

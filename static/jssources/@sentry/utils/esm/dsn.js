@@ -46,6 +46,12 @@ var Dsn = /** @class */ (function () {
             path = split.slice(0, -1).join('/');
             projectId = split.pop();
         }
+        if (projectId) {
+            var projectMatch = projectId.match(/^\d+/);
+            if (projectMatch) {
+                projectId = projectMatch[0];
+            }
+        }
         this._fromComponents({ host: host, pass: pass, path: path, projectId: projectId, port: port, protocol: protocol, user: user });
     };
     /** Maps Dsn components into this instance. */
@@ -63,14 +69,17 @@ var Dsn = /** @class */ (function () {
         var _this = this;
         ['protocol', 'user', 'host', 'projectId'].forEach(function (component) {
             if (!_this[component]) {
-                throw new SentryError(ERROR_MESSAGE);
+                throw new SentryError(ERROR_MESSAGE + ": " + component + " missing");
             }
         });
+        if (!this.projectId.match(/^\d+$/)) {
+            throw new SentryError(ERROR_MESSAGE + ": Invalid projectId " + this.projectId);
+        }
         if (this.protocol !== 'http' && this.protocol !== 'https') {
-            throw new SentryError(ERROR_MESSAGE);
+            throw new SentryError(ERROR_MESSAGE + ": Invalid protocol " + this.protocol);
         }
         if (this.port && isNaN(parseInt(this.port, 10))) {
-            throw new SentryError(ERROR_MESSAGE);
+            throw new SentryError(ERROR_MESSAGE + ": Invalid port " + this.port);
         }
     };
     return Dsn;

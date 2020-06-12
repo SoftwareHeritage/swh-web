@@ -177,32 +177,17 @@ function instrumentXHR() {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
+            var xhr = this; // tslint:disable-line:no-this-assignment
             var url = args[1];
-            this.__sentry_xhr__ = {
+            xhr.__sentry_xhr__ = {
                 method: isString(args[0]) ? args[0].toUpperCase() : args[0],
                 url: args[1],
             };
             // if Sentry key appears in URL, don't capture it as a request
-            if (isString(url) && this.__sentry_xhr__.method === 'POST' && url.match(/sentry_key/)) {
-                this.__sentry_own_request__ = true;
+            if (isString(url) && xhr.__sentry_xhr__.method === 'POST' && url.match(/sentry_key/)) {
+                xhr.__sentry_own_request__ = true;
             }
-            return originalOpen.apply(this, args);
-        };
-    });
-    fill(xhrproto, 'send', function (originalSend) {
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            var xhr = this; // tslint:disable-line:no-this-assignment
-            var commonHandlerData = {
-                args: args,
-                startTimestamp: Date.now(),
-                xhr: xhr,
-            };
-            triggerHandlers('xhr', tslib_1.__assign({}, commonHandlerData));
-            xhr.addEventListener('readystatechange', function () {
+            var onreadystatechangeHandler = function () {
                 if (xhr.readyState === 4) {
                     try {
                         // touching statusCode in some platforms throws
@@ -214,8 +199,42 @@ function instrumentXHR() {
                     catch (e) {
                         /* do nothing */
                     }
-                    triggerHandlers('xhr', tslib_1.__assign({}, commonHandlerData, { endTimestamp: Date.now() }));
+                    triggerHandlers('xhr', {
+                        args: args,
+                        endTimestamp: Date.now(),
+                        startTimestamp: Date.now(),
+                        xhr: xhr,
+                    });
                 }
+            };
+            if ('onreadystatechange' in xhr && typeof xhr.onreadystatechange === 'function') {
+                fill(xhr, 'onreadystatechange', function (original) {
+                    return function () {
+                        var readyStateArgs = [];
+                        for (var _i = 0; _i < arguments.length; _i++) {
+                            readyStateArgs[_i] = arguments[_i];
+                        }
+                        onreadystatechangeHandler();
+                        return original.apply(xhr, readyStateArgs);
+                    };
+                });
+            }
+            else {
+                xhr.addEventListener('readystatechange', onreadystatechangeHandler);
+            }
+            return originalOpen.apply(xhr, args);
+        };
+    });
+    fill(xhrproto, 'send', function (originalSend) {
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            triggerHandlers('xhr', {
+                args: args,
+                startTimestamp: Date.now(),
+                xhr: this,
             });
             return originalSend.apply(this, args);
         };

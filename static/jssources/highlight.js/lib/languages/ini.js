@@ -1,3 +1,48 @@
+/**
+ * @param {string} value
+ * @returns {RegExp}
+ * */
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function source(re) {
+  if (!re) return null;
+  if (typeof re === "string") return re;
+
+  return re.source;
+}
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function lookahead(re) {
+  return concat('(?=', re, ')');
+}
+
+/**
+ * @param {...(RegExp | string) } args
+ * @returns {string}
+ */
+function concat(...args) {
+  const joined = args.map((x) => source(x)).join("");
+  return joined;
+}
+
+/**
+ * Any of the passed expresssions may match
+ *
+ * Creates a huge this | this | that | that match
+ * @param {(RegExp | string)[] } args
+ * @returns {string}
+ */
+function either(...args) {
+  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  return joined;
+}
+
 /*
 Language: TOML, also INI
 Description: TOML aims to be a minimal configuration file format that's easy to read due to obvious semantics.
@@ -54,6 +99,17 @@ function ini(hljs) {
     relevance:0
   };
 
+  var BARE_KEY = /[A-Za-z0-9_-]+/;
+  var QUOTED_KEY_DOUBLE_QUOTE = /"(\\"|[^"])*"/;
+  var QUOTED_KEY_SINGLE_QUOTE = /'[^']*'/;
+  var ANY_KEY = either(
+    BARE_KEY, QUOTED_KEY_DOUBLE_QUOTE, QUOTED_KEY_SINGLE_QUOTE
+  );
+  var DOTTED_KEY = concat(
+    ANY_KEY, '(\\s*\\.\\s*', ANY_KEY, ')*',
+    lookahead(/\s*=\s*[^#\s]/)
+  );
+
   return {
     name: 'TOML, also INI',
     aliases: ['toml'],
@@ -66,7 +122,7 @@ function ini(hljs) {
         begin: /\[+/, end: /\]+/
       },
       {
-        begin: /^[a-z0-9\[\]_\.-]+(?=\s*=\s*)/,
+        begin: DOTTED_KEY,
         className: 'attr',
         starts: {
           end: /$/,

@@ -5,6 +5,7 @@ Description: AutoHotkey language definition
 Category: scripting
 */
 
+/** @type LanguageFn */
 function autohotkey(hljs) {
   var BACKTICK_ESCAPE = {
     begin: '`[\\s\\S]'

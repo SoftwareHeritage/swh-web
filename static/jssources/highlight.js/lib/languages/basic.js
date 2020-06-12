@@ -5,14 +5,15 @@ Description: Based on the BASIC reference from the Tandy 1000 guide
 Website: https://en.wikipedia.org/wiki/Tandy_1000
 */
 
+/** @type LanguageFn */
 function basic(hljs) {
   return {
     name: 'BASIC',
     case_insensitive: true,
     illegal: '^\.',
     // Support explicitly typed variables that end with $%! or #.
-    lexemes: '[a-zA-Z][a-zA-Z0-9_\$\%\!\#]*',
     keywords: {
+        $pattern: '[a-zA-Z][a-zA-Z0-9_\$\%\!\#]*',
         keyword:
           'ABS ASC AND ATN AUTO|0 BEEP BLOAD|10 BSAVE|10 CALL CALLS CDBL CHAIN CHDIR CHR$|10 CINT CIRCLE ' +
           'CLEAR CLOSE CLS COLOR COM COMMON CONT COS CSNG CSRLIN CVD CVI CVS DATA DATE$ ' +

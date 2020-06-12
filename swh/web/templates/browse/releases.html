@@ -15,7 +15,7 @@ See top-level LICENSE file for more information
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="{{ swh_object_icons.release }} fa-fw"></i>Name</th>
+          <th><i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>Name</th>
           <th>Target</th>
           <th>Message</th>
           <th>Date</th>
@@ -26,12 +26,12 @@ See top-level LICENSE file for more information
           <tr class="swh-release-entry swh-tr-hover-highlight">
             <td class="swh-release-name">
               <a href="{{ release.release_url }}">
-                <i class="{{ swh_object_icons.release }} fa-fw"></i>{{ release.name }}
+                <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>{{ release.name }}
               </a>
             </td>
             <td class="swh-release-target">
               <a href="{{ release.target_url }}">
-                <i class="{{ swh_object_icons|key_value:release.target_type }} fa-fw"></i>{{ release.target|slice:":7" }}
+                <i class="{{ swh_object_icons|key_value:release.target_type }} mdi-fw" aria-hidden="true"></i>{{ release.target|slice:":7" }}
               </a>
             </td>
             <td class="swh-log-entry-message swh-release-message swh-table-cell-text-overflow" title="{{ release.message }}">
