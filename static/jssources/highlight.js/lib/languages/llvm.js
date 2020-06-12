@@ -10,7 +10,6 @@ function llvm(hljs) {
   var identifier = '([-a-zA-Z$._][\\w\\-$.]*)';
   return {
     name: 'LLVM IR',
-    //lexemes: '[.%]?' + hljs.IDENT_RE,
     keywords:
       'begin end true false declare define global ' +
       'constant private linker_private internal ' +

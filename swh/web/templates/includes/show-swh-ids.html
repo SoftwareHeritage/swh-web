@@ -11,9 +11,9 @@ See top-level LICENSE file for more information
 
   <div id="swh-identifiers" style="display: none;">
     {% if swhids_info|length > 1 %}
-      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90 fa-fw"></i>Permalinks</a>
+      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalinks</a>
     {% else %}
-      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="fa fa-link fa-rotate-90 fa-fw"></i>Permalink</a>
+      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalink</a>
     {% endif %}
     <div id="swh-identifiers-content">
       <p>
@@ -30,13 +30,13 @@ See top-level LICENSE file for more information
           {% if forloop.first %}
             <li class="nav-item">
               <a class="nav-link active" href="#swh-id-tab-{{ swhid_info.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
-                <i class="{{ swh_object_icons|key_value:swhid_info.object_type }} fa-fw"></i>{{ swhid_info.object_type }}
+                <i class="{{ swh_object_icons|key_value:swhid_info.object_type }} mdi-fw" aria-hidden="true"></i>{{ swhid_info.object_type }}
               </a>
             </li>
           {% else %}
             <li class="nav-item">
               <a class="nav-link" href="#swh-id-tab-{{ swhid_info.object_type }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
-                  <i class="{{ swh_object_icons|key_value:swhid_info.object_type }} fa-fw"></i>{{ swhid_info.object_type }}
+                  <i class="{{ swh_object_icons|key_value:swhid_info.object_type }} mdi-fw" aria-hidden="true"></i>{{ swhid_info.object_type }}
               </a>
             </li>
           {% endif %}
@@ -66,12 +66,12 @@ See top-level LICENSE file for more information
                 {% if swhid_info.swhid_with_context is not None %}
                   <div class="float-left">
                     <form id="swh-id-options">
-                      <div class="form-check swh-id-option">
-                        <input class="form-check-input swh-id-context-option" value="option-origin" type="checkbox"
+                      <div class="custom-control custom-checkbox swh-id-option">
+                        <input class="custom-control-input swh-id-context-option" value="option-origin" type="checkbox"
                               id="swh-id-context-option-{{ swhid_info.object_type }}"
                               data-swhid-with-context="{{ swhid_info.swhid_with_context }}"
                               onclick="swh.browse.swhIdContextOptionToggled(event)">
-                        <label class="form-check-label" for="swh-id-context-option-{{ swhid_info.object_type }}">Add contextual information</label>
+                        <label class="custom-control-label font-weight-normal" for="swh-id-context-option-{{ swhid_info.object_type }}">Add contextual information</label>
                       </div>
                     </form>
                   </div>
@@ -79,10 +79,10 @@ See top-level LICENSE file for more information
                 <div class="float-right">
                   <button type="button" class="btn btn-default btn-sm btn-swh-id-copy"
                           title="Copy persistent identifier to clipboard">
-                    <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy identifier
+                    <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy identifier
                   <button type="button" class="btn btn-default btn-sm btn-swh-id-url-copy"
                           title="Copy url resolving the persistent identifier to clipboard">
-                    <i class="fa fa-clipboard fa-fw" aria-hidden="true"></i>Copy permalink
+                    <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy permalink
                   </button>
                 </div>
               </div>

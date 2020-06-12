@@ -1,3 +1,140 @@
+const KEYWORDS = [
+  "as", // for exports
+  "in",
+  "of",
+  "if",
+  "for",
+  "while",
+  "finally",
+  "var",
+  "new",
+  "function",
+  "do",
+  "return",
+  "void",
+  "else",
+  "break",
+  "catch",
+  "instanceof",
+  "with",
+  "throw",
+  "case",
+  "default",
+  "try",
+  "switch",
+  "continue",
+  "typeof",
+  "delete",
+  "let",
+  "yield",
+  "const",
+  "class",
+  // JS handles these with a special rule
+  // "get",
+  // "set",
+  "debugger",
+  "async",
+  "await",
+  "static",
+  "import",
+  "from",
+  "export",
+  "extends"
+];
+const LITERALS = [
+  "true",
+  "false",
+  "null",
+  "undefined",
+  "NaN",
+  "Infinity"
+];
+
+const TYPES = [
+  "Intl",
+  "DataView",
+  "Number",
+  "Math",
+  "Date",
+  "String",
+  "RegExp",
+  "Object",
+  "Function",
+  "Boolean",
+  "Error",
+  "Symbol",
+  "Set",
+  "Map",
+  "WeakSet",
+  "WeakMap",
+  "Proxy",
+  "Reflect",
+  "JSON",
+  "Promise",
+  "Float64Array",
+  "Int16Array",
+  "Int32Array",
+  "Int8Array",
+  "Uint16Array",
+  "Uint32Array",
+  "Float32Array",
+  "Array",
+  "Uint8Array",
+  "Uint8ClampedArray",
+  "ArrayBuffer"
+];
+
+const ERROR_TYPES = [
+  "EvalError",
+  "InternalError",
+  "RangeError",
+  "ReferenceError",
+  "SyntaxError",
+  "TypeError",
+  "URIError"
+];
+
+const BUILT_IN_GLOBALS = [
+  "setInterval",
+  "setTimeout",
+  "clearInterval",
+  "clearTimeout",
+
+  "require",
+  "exports",
+
+  "eval",
+  "isFinite",
+  "isNaN",
+  "parseFloat",
+  "parseInt",
+  "decodeURI",
+  "decodeURIComponent",
+  "encodeURI",
+  "encodeURIComponent",
+  "escape",
+  "unescape"
+];
+
+const BUILT_IN_VARIABLES = [
+  "arguments",
+  "this",
+  "super",
+  "console",
+  "window",
+  "document",
+  "localStorage",
+  "module",
+  "global" // Node.js
+];
+
+const BUILT_INS = [].concat(
+  BUILT_IN_GLOBALS,
+  BUILT_IN_VARIABLES,
+  TYPES,
+  ERROR_TYPES
+);
+
 /*
 Language: CoffeeScript
 Author: Dmytrii Nagirniak <dnagir@gmail.com>
@@ -7,27 +144,50 @@ Category: common, scripting
 Website: https://coffeescript.org
 */
 
+/** @type LanguageFn */
 function coffeescript(hljs) {
-  var KEYWORDS = {
-    keyword:
-      // JS keywords
-      'in if for while finally new do return else break catch instanceof throw try this ' +
-      'switch continue typeof delete debugger super yield import export from as default await ' +
-      // Coffee keywords
-      'then unless until loop of by when and or is isnt not',
-    literal:
-      // JS literals
-      'true false null undefined ' +
-      // Coffee literals
-      'yes no on off',
-    built_in:
-      'npm require console print module global window document'
+  var COFFEE_BUILT_INS = [
+    'npm',
+    'print'
+  ];
+  var COFFEE_LITERALS = [
+    'yes',
+    'no',
+    'on',
+    'off'
+  ];
+  var COFFEE_KEYWORDS = [
+    'then',
+    'unless',
+    'until',
+    'loop',
+    'by',
+    'when',
+    'and',
+    'or',
+    'is',
+    'isnt',
+    'not'
+  ];
+  var NOT_VALID_KEYWORDS = [
+    "var",
+    "const",
+    "let",
+    "function",
+    "static"
+  ];
+  var excluding = (list) =>
+    (kw) => !list.includes(kw);
+  var KEYWORDS$1 = {
+    keyword: KEYWORDS.concat(COFFEE_KEYWORDS).filter(excluding(NOT_VALID_KEYWORDS)).join(" "),
+    literal: LITERALS.concat(COFFEE_LITERALS).join(" "),
+    built_in: BUILT_INS.concat(COFFEE_BUILT_INS).join(" ")
   };
   var JS_IDENT_RE = '[A-Za-z$_][0-9A-Za-z$_]*';
   var SUBST = {
     className: 'subst',
     begin: /#\{/, end: /}/,
-    keywords: KEYWORDS
+    keywords: KEYWORDS$1
   };
   var EXPRESSIONS = [
     hljs.BINARY_NUMBER_MODE,
@@ -98,7 +258,7 @@ function coffeescript(hljs) {
     pair of parens to be called "params" */
     contains: [{
       begin: /\(/, end: /\)/,
-      keywords: KEYWORDS,
+      keywords: KEYWORDS$1,
       contains: ['self'].concat(EXPRESSIONS)
     }]
   };
@@ -106,7 +266,7 @@ function coffeescript(hljs) {
   return {
     name: 'CoffeeScript',
     aliases: ['coffee', 'cson', 'iced'],
-    keywords: KEYWORDS,
+    keywords: KEYWORDS$1,
     illegal: /\/\*/,
     contains: EXPRESSIONS.concat([
       hljs.COMMENT('###', '###'),

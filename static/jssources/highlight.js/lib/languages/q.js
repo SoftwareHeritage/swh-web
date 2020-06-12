@@ -7,6 +7,7 @@ Website: https://kx.com/connect-with-us/developers/
 */
 function q(hljs) {
   var Q_KEYWORDS = {
+  $pattern: /(`?)[A-Za-z0-9_]+\b/,
   keyword:
     'do while select delete by update from',
   literal:
@@ -20,7 +21,6 @@ function q(hljs) {
   name: 'Q',
   aliases:['k', 'kdb'],
   keywords: Q_KEYWORDS,
-  lexemes: /(`?)[A-Za-z0-9_]+\b/,
   contains: [
   hljs.C_LINE_COMMENT_MODE,
     hljs.QUOTE_STRING_MODE,

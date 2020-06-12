@@ -84,8 +84,7 @@ function php(hljs) {
         false,
         {
           endsWithParent: true,
-          keywords: '__halt_compiler',
-          lexemes: hljs.UNDERSCORE_IDENT_RE
+          keywords: '__halt_compiler'
         }
       ),
       {

@@ -35,6 +35,9 @@ var FetchTransport = /** @class */ (function (_super) {
             // REF: https://github.com/getsentry/raven-js/issues/1233
             referrerPolicy: (supportsReferrerPolicy() ? 'origin' : ''),
         };
+        if (this.options.fetchParameters !== undefined) {
+            Object.assign(options, this.options.fetchParameters);
+        }
         if (this.options.headers !== undefined) {
             options.headers = this.options.headers;
         }

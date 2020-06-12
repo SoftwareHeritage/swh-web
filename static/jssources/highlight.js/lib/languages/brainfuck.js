@@ -4,7 +4,8 @@ Author: Evgeny Stepanischev <imbolk@gmail.com>
 Website: https://esolangs.org/wiki/Brainfuck
 */
 
-function brainfuck(hljs){
+/** @type LanguageFn */
+function brainfuck(hljs) {
   var LITERAL = {
     className: 'literal',
     begin: '[\\+\\-]',

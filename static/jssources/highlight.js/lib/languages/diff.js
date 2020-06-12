@@ -6,6 +6,7 @@ Website: https://www.gnu.org/software/diffutils/
 Category: common
 */
 
+/** @type LanguageFn */
 function diff(hljs) {
   return {
     name: 'Diff',

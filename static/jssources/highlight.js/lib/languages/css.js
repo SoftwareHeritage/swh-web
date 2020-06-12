@@ -4,6 +4,7 @@ Category: common, css
 Website: https://developer.mozilla.org/en-US/docs/Web/CSS
 */
 
+/** @type LanguageFn */
 function css(hljs) {
   var FUNCTION_LIKE = {
     begin: /[\w-]+\(/, returnBegin: true,

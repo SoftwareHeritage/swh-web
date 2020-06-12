@@ -5,56 +5,48 @@
  * See top-level LICENSE file for more information
  */
 
-.swh-visit-full {
-    color: green;
+.swh-visit-icon {
+    left: -20px;
+    top: -2px;
     position: relative;
 }
 
+.swh-visit-icon::before {
+    font-family: 'Material Design Icons';
+    margin-right: 3px;
+    vertical-align: bottom;
+}
+
+.swh-visit-full {
+    color: green;
+}
+
 .swh-visit-full::before {
-    content: '\f00c';
-    font-family: 'FontAwesome';
-    left: -20px;
-    position: absolute;
-    top: -2px;
+    content: '\f0e1e';
 }
 
 .swh-visit-partial {
     color: #edc344;
-    position: relative;
 }
 
 .swh-visit-partial::before {
-    content: '\f071';
-    font-family: 'FontAwesome';
-    left: -20px;
-    position: absolute;
-    top: -2px;
+    content: '\f0026';
 }
 
 .swh-visit-failed {
     color: #f00;
-    position: relative;
 }
 
 .swh-visit-failed::before {
-    content: '\f06a';
-    font-family: 'FontAwesome';
-    left: -20px;
-    position: absolute;
-    top: -2px;
+    content: '\f1398';
 }
 
 .swh-visit-ongoing {
     color: #00f;
-    position: relative;
 }
 
 .swh-visit-ongoing::before {
-    content: '\f021';
-    font-family: 'FontAwesome';
-    left: -20px;
-    position: absolute;
-    top: -2px;
+    content: '\f04e6';
 }
 
 #swh-visits-calendar.calendar {
