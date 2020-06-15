@@ -46,4 +46,10 @@ describe('Test footer', function() {
     cy.get('footer')
       .should('contain', copyrightText);
   });
+
+  it('should contain link to Web API', function() {
+    cy.get('footer')
+      .get(`a[href="${this.Urls.api_1_homepage()}"]`)
+      .should('contain', 'Web API');
+  });
 });
