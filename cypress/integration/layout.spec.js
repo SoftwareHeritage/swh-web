@@ -8,8 +8,11 @@
 const url = '/';
 
 describe('Test top-bar', function() {
-  it('should should contain all navigation links', function() {
+  beforeEach(function() {
+    cy.clearLocalStorage();
     cy.visit(url);
+  });
+  it('should should contain all navigation links', function() {
     cy.get('.swh-top-bar a')
       .should('have.length.of.at.least', 4)
       .and('be.visible')
@@ -17,16 +20,67 @@ describe('Test top-bar', function() {
   });
 
   it('should show donate button on lg screen', function() {
-    cy.visit(url);
     cy.get('.swh-donate-link')
       .should('be.visible');
   });
 
   it('should hide donate button on sm screen', function() {
     cy.viewport(600, 800);
-    cy.visit(url);
     cy.get('.swh-donate-link')
       .should('not.be.visible');
+  });
+  it('should change container width when toggling Full width switch', function() {
+    cy.get('#swh-web-content')
+      .should('have.class', 'container')
+      .should('not.have.class', 'container-fluid');
+
+    cy.should(() => {
+      expect(JSON.parse(localStorage.getItem('swh-web-full-width'))).to.be.null;
+    });
+
+    cy.get('#swh-full-width-switch')
+      .click({force: true});
+
+    cy.get('#swh-web-content')
+      .should('not.have.class', 'container')
+      .should('have.class', 'container-fluid');
+
+    cy.should(() => {
+      expect(JSON.parse(localStorage.getItem('swh-web-full-width'))).to.be.true;
+    });
+
+    cy.get('#swh-full-width-switch')
+      .click({force: true});
+
+    cy.get('#swh-web-content')
+      .should('have.class', 'container')
+      .should('not.have.class', 'container-fluid');
+
+    cy.should(() => {
+      expect(JSON.parse(localStorage.getItem('swh-web-full-width'))).to.be.false;
+    });
+  });
+  it('should restore container width when loading page again', function() {
+    cy.visit(url)
+      .get('#swh-web-content')
+      .should('have.class', 'container')
+      .should('not.have.class', 'container-fluid');
+
+    cy.get('#swh-full-width-switch')
+      .click({force: true});
+
+    cy.visit(url)
+      .get('#swh-web-content')
+      .should('not.have.class', 'container')
+      .should('have.class', 'container-fluid');
+
+    cy.get('#swh-full-width-switch')
+      .click({force: true});
+
+    cy.visit(url)
+      .get('#swh-web-content')
+      .should('have.class', 'container')
+      .should('not.have.class', 'container-fluid');
   });
 });
 
