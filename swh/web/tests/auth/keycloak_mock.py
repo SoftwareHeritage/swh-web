@@ -16,7 +16,9 @@ from .sample_data import oidc_profile, realm_public_key, userinfo
 
 
 class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
-    def __init__(self, auth_success=True, exp=None):
+    def __init__(
+        self, auth_success=True, exp=None, user_groups=[], user_permissions=[]
+    ):
         swhweb_config = get_config()
         super().__init__(
             swhweb_config["keycloak"]["server_url"],
@@ -25,6 +27,8 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
         )
         self.auth_success = auth_success
         self.exp = exp
+        self.user_groups = user_groups
+        self.user_permissions = user_permissions
         self._keycloak.public_key = lambda: realm_public_key
         self._keycloak.well_know = lambda: {
             "issuer": f"{self.server_url}realms/{self.realm_name}",
@@ -86,12 +90,20 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
         else:
             decoded["auth_time"] = int(timezone.now().timestamp())
             decoded["exp"] = decoded["auth_time"] + expire_in
-        decoded["groups"] = ["/staff"]
+        decoded["groups"] = self.user_groups
+        if self.user_permissions:
+            decoded["resource_access"][self.client_id] = {
+                "roles": self.user_permissions
+            }
         return decoded
 
 
-def mock_keycloak(mocker, auth_success=True, exp=None):
-    kc_oidc_mock = KeycloackOpenIDConnectMock(auth_success, exp)
+def mock_keycloak(
+    mocker, auth_success=True, exp=None, user_groups=[], user_permissions=[]
+):
+    kc_oidc_mock = KeycloackOpenIDConnectMock(
+        auth_success, exp, user_groups, user_permissions
+    )
     mock_get_oidc_client = mocker.patch("swh.web.auth.views.get_oidc_client")
     mock_get_oidc_client.return_value = kc_oidc_mock
     mocker.patch("swh.web.auth.backends._oidc_client", kc_oidc_mock)
