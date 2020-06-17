@@ -7,10 +7,10 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
-<div class="swh-browse-top-navigation">
+<div class="swh-browse-top-navigation d-flex align-items-start justify-content-between flex-wrap">
   {% if snapshot_context %}
     {% if snapshot_context.branch or snapshot_context.release %}
-      <div class="dropdown float-left" id="swh-branches-releases-dd">
+      <div class="dropdown" id="swh-branches-releases-dd">
         <button class="btn btn-block btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
           {% if snapshot_context.branch %}
             <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
@@ -85,7 +85,11 @@ See top-level LICENSE file for more information
     {% endif %}
   {% endif %}
 
-  <div class="btn-group float-right swh-actions-dropdown flex d-flex flex-wrap">
+  <div class="flex-grow-1">
+    {% include "includes/breadcrumbs.html" %}
+  </div>
+
+  <div class="btn-group swh-actions-dropdown ml-auto">
     {% if top_right_link %}
       <a href="{{ top_right_link.url | safe }}" class="btn btn-default btn-sm swh-tr-link" role="button">
         {% if top_right_link.icon %}
@@ -116,9 +120,6 @@ See top-level LICENSE file for more information
       </ul>
     {% endif %}
   </div>
-
-  {% include "includes/breadcrumbs.html" %}
-
 </div>
 
 {% include "includes/show-swh-ids.html" %}
