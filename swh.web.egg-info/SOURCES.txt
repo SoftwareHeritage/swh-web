@@ -29,8 +29,8 @@ static/css/vault.4b34c927db9da8cda371.css
 static/css/vault.4b34c927db9da8cda371.css.map
 static/css/vendors.c0c915e091315f85c303.css
 static/css/vendors.c0c915e091315f85c303.css.map
-static/css/webapp.a7db4884b49699b317cc.css
-static/css/webapp.a7db4884b49699b317cc.css.map
+static/css/webapp.b05b6daf2aa275292dc1.css
+static/css/webapp.b05b6daf2aa275292dc1.css.map
 static/fonts/MathJax_AMS-Regular.woff
 static/fonts/MathJax_Calligraphic-Bold.woff
 static/fonts/MathJax_Calligraphic-Regular.woff
@@ -164,9 +164,9 @@ static/js/vault.4b34c927db9da8cda371.js.map
 static/js/vendors.c0c915e091315f85c303.js
 static/js/vendors.c0c915e091315f85c303.js.LICENSE.txt
 static/js/vendors.c0c915e091315f85c303.js.map
-static/js/webapp.a7db4884b49699b317cc.js
-static/js/webapp.a7db4884b49699b317cc.js.LICENSE.txt
-static/js/webapp.a7db4884b49699b317cc.js.map
+static/js/webapp.b05b6daf2aa275292dc1.js
+static/js/webapp.b05b6daf2aa275292dc1.js.LICENSE.txt
+static/js/webapp.b05b6daf2aa275292dc1.js.map
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json
 static/jssources/@babel/runtime/LICENSE.txt

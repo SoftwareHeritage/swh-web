@@ -366,6 +366,10 @@ ul.nav-sidebar a {
     background-color: #e7e7e7 !important;
 }
 
+.nav-tabs .nav-link.active {
+    border-top: 3px solid #e20026;
+}
+
 .swh-image-error {
     width: 80px;
     height: auto;
