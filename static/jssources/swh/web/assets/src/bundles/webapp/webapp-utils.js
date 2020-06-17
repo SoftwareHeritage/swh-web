@@ -313,3 +313,26 @@ export function setSwhIdsContext(swhidsContext) {
 export function getSwhIdsContext() {
   return swhidsContext_;
 }
+
+function setFullWidth(fullWidth) {
+  if (fullWidth) {
+    $('#swh-web-content').removeClass('container');
+    $('#swh-web-content').addClass('container-fluid');
+  } else {
+    $('#swh-web-content').removeClass('container-fluid');
+    $('#swh-web-content').addClass('container');
+  }
+  localStorage.setItem('swh-web-full-width', JSON.stringify(fullWidth));
+  $('#swh-full-width-switch').prop('checked', fullWidth);
+}
+
+export function fullWidthToggled(event) {
+  setFullWidth($(event.target).prop('checked'));
+}
+
+export function setContainerFullWidth() {
+  let previousFullWidthState = JSON.parse(localStorage.getItem('swh-web-full-width'));
+  if (previousFullWidthState !== null) {
+    setFullWidth(previousFullWidthState);
+  }
+}

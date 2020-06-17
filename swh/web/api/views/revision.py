@@ -6,7 +6,6 @@
 from django.http import HttpResponse
 
 from swh.web.common import service
-from swh.web.common.utils import reverse
 from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
@@ -183,37 +182,39 @@ def api_revision_directory(request, sha1_git, dir_path=None, with_data=False):
     "api-1-revision-log",
     checksum_args=["sha1_git"],
 )
-@api_route(
-    r"/revision/(?P<sha1_git>[0-9a-f]+)" r"/prev/(?P<prev_sha1s>[0-9a-f]*/*)/log/",
-    "api-1-revision-log",
-    checksum_args=["sha1_git", "prev_sha1s"],
-)
 @api_doc("/revision/log/")
 @format_docstring(return_revision_array=DOC_RETURN_REVISION_ARRAY)
-def api_revision_log(request, sha1_git, prev_sha1s=None):
+def api_revision_log(request, sha1_git):
     """
-    .. http:get:: /api/1/revision/(sha1_git)[/prev/(prev_sha1s)]/log/
+    .. http:get:: /api/1/revision/(sha1_git)/log/
 
         Get a list of all revisions heading to a given one, in other words show
         the commit log.
 
+        The revisions are returned in the breadth-first search order while
+        visiting the revision graph. The number of revisions to return is also
+        bounded by the **limit** query parameter.
+
+        .. warning::
+            To get the full BFS traversal of the revision graph when the
+            total number of revisions is greater than 1000, it is up to
+            the client to keep track of the multiple branches of history
+            when there's merge revisions in the returned objects.
+            In other words, identify all the continuation points that need
+            to be followed to get the full history through recursion.
+
         :param string sha1_git: hexadecimal representation of the revision
             **sha1_git** identifier
-        :param string prev_sha1s: optional parameter representing the navigation
-            breadcrumbs (descendant revisions previously visited). If multiple values,
-            use / as delimiter. If provided, revisions information will be added at
-            the beginning of the returned list.
-        :query int per_page: number of elements in the returned list, for pagination
-            purpose
+        :query int limit: maximum number of revisions to return when performing
+            BFS traversal on the revision graph (default to 10, can not exceed 1000)
 
         {common_headers}
-        {resheader_link}
 
         {return_revision_array}
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
-        :statuscode 404: requested revision can not be found in the archive
+        :statuscode 404: head revision can not be found in the archive
 
         **Example:**
 
@@ -221,55 +222,17 @@ def api_revision_log(request, sha1_git, prev_sha1s=None):
 
             :swh_web_api:`revision/e1a315fa3fa734e2a6154ed7b5b9ae0eb8987aad/log/`
     """
-    result = {}
-    per_page = int(request.query_params.get("per_page", "10"))
-
-    def lookup_revision_log_with_limit(s, limit=per_page + 1):
-        return service.lookup_revision_log(s, limit)
+    limit = int(request.query_params.get("limit", "10"))
+    limit = min(limit, 1000)
 
     error_msg = "Revision with sha1_git %s not found." % sha1_git
-    rev_get = api_lookup(
-        lookup_revision_log_with_limit,
+    revisions = api_lookup(
+        service.lookup_revision_log,
         sha1_git,
+        limit,
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_revision,
         request=request,
     )
 
-    nb_rev = len(rev_get)
-    if nb_rev == per_page + 1:
-        rev_backward = rev_get[:-1]
-        new_last_sha1 = rev_get[-1]["id"]
-        query_params = {}
-
-        if request.query_params.get("per_page"):
-            query_params["per_page"] = per_page
-
-        result["headers"] = {
-            "link-next": reverse(
-                "api-1-revision-log",
-                url_args={"sha1_git": new_last_sha1},
-                query_params=query_params,
-                request=request,
-            )
-        }
-
-    else:
-        rev_backward = rev_get
-
-    if not prev_sha1s:  # no nav breadcrumbs, so we're done
-        revisions = rev_backward
-
-    else:
-        rev_forward_ids = prev_sha1s.split("/")
-        rev_forward = api_lookup(
-            service.lookup_revision_multiple,
-            rev_forward_ids,
-            notfound_msg=error_msg,
-            enrich_fn=utils.enrich_revision,
-            request=request,
-        )
-        revisions = rev_forward + rev_backward
-
-    result.update({"results": revisions})
-    return result
+    return {"results": revisions}
