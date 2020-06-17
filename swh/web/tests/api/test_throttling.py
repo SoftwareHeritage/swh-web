@@ -6,14 +6,19 @@
 import pytest
 
 from django.conf.urls import url
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
+from django.contrib.contenttypes.models import ContentType
 from django.test.utils import override_settings
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from swh.web.api.throttling import SwhWebRateThrottle, throttle_scope
+from swh.web.api.throttling import (
+    SwhWebRateThrottle,
+    throttle_scope,
+    API_THROTTLING_EXEMPTED_PERM,
+)
 from swh.web.settings.tests import (
     scope1_limiter_rate,
     scope1_limiter_rate_post,
@@ -192,3 +197,29 @@ def test_non_staff_users_are_rate_limited(api_client):
 
     response = api_client.post("/scope2_func")
     check_response(response, 429, scope2_limiter_rate_post, 0)
+
+
+@override_settings(ROOT_URLCONF=__name__)
+@pytest.mark.django_db
+def test_users_with_throttling_exempted_perm_are_not_rate_limited(api_client):
+    user = User.objects.create_user(username="johndoe", password="")
+    perm_splitted = API_THROTTLING_EXEMPTED_PERM.split(".")
+    app_label = ".".join(perm_splitted[:-1])
+    perm_name = perm_splitted[-1]
+    content_type = ContentType.objects.create(app_label=app_label, model="dummy")
+    permission = Permission.objects.create(
+        codename=perm_name, name=perm_name, content_type=content_type,
+    )
+    user.user_permissions.add(permission)
+
+    assert user.has_perm(API_THROTTLING_EXEMPTED_PERM)
+
+    api_client.force_login(user)
+
+    for _ in range(scope2_limiter_rate + 1):
+        response = api_client.get("/scope2_func")
+        check_response(response, 200)
+
+    for _ in range(scope2_limiter_rate_post + 1):
+        response = api_client.post("/scope2_func")
+        check_response(response, 200)
