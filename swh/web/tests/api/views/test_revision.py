@@ -70,37 +70,24 @@ def test_api_revision_raw_ko_no_rev(api_client):
 
 @given(revision())
 def test_api_revision_log(api_client, archive_data, revision):
-    per_page = 10
+    limit = 10
 
     url = reverse(
         "api-1-revision-log",
         url_args={"sha1_git": revision},
-        query_params={"per_page": per_page},
+        query_params={"limit": limit},
     )
 
     rv = api_client.get(url)
 
-    expected_log = archive_data.revision_log(revision, limit=per_page + 1)
+    expected_log = archive_data.revision_log(revision, limit=limit)
     expected_log = list(
         map(enrich_revision, expected_log, [rv.wsgi_request] * len(expected_log))
     )
 
-    has_next = len(expected_log) > per_page
-
     assert rv.status_code == 200, rv.data
     assert rv["Content-Type"] == "application/json"
-    assert rv.data == (expected_log[:-1] if has_next else expected_log)
-
-    if has_next:
-        assert "Link" in rv
-        next_log_url = rv.wsgi_request.build_absolute_uri(
-            reverse(
-                "api-1-revision-log",
-                url_args={"sha1_git": expected_log[-1]["id"]},
-                query_params={"per_page": per_page},
-            )
-        )
-        assert next_log_url in rv["Link"]
+    assert rv.data == expected_log
 
 
 def test_api_revision_log_not_found(api_client):
@@ -117,35 +104,6 @@ def test_api_revision_log_not_found(api_client):
         "reason": "Revision with sha1_git %s not found." % unknown_revision_,
     }
     assert not rv.has_header("Link")
-
-
-@given(revision())
-def test_api_revision_log_context(api_client, archive_data, revision):
-    revisions = archive_data.revision_log(revision, limit=4)
-
-    prev_rev = revisions[0]["id"]
-    rev = revisions[-1]["id"]
-
-    per_page = 10
-
-    url = reverse(
-        "api-1-revision-log",
-        url_args={"sha1_git": rev, "prev_sha1s": prev_rev},
-        query_params={"per_page": per_page},
-    )
-
-    rv = api_client.get(url)
-
-    expected_log = archive_data.revision_log(rev, limit=per_page)
-    prev_revision = archive_data.revision_get(prev_rev)
-    expected_log.insert(0, prev_revision)
-    expected_log = list(
-        map(enrich_revision, expected_log, [rv.wsgi_request] * len(expected_log))
-    )
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
-    assert rv.data == expected_log
 
 
 def test_api_revision_directory_ko_not_found(api_client, mocker):
