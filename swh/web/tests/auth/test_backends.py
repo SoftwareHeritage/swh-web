@@ -50,6 +50,10 @@ def _check_authenticated_user(user, decoded_token, kc_oidc_mock):
 
 @pytest.mark.django_db
 def test_oidc_code_pkce_auth_backend_success(mocker, request_factory):
+    """
+    Checks successful login based on OpenID Connect with PKCE extension
+    Django authentication backend (login from Web UI).
+    """
     kc_oidc_mock = mock_keycloak(mocker, user_groups=["/staff"])
     oidc_profile = sample_data.oidc_profile
     user = _authenticate_user(request_factory)
@@ -79,6 +83,10 @@ def test_oidc_code_pkce_auth_backend_success(mocker, request_factory):
 
 @pytest.mark.django_db
 def test_oidc_code_pkce_auth_backend_failure(mocker, request_factory):
+    """
+    Checks failed login based on OpenID Connect with PKCE extension Django
+    authentication backend (login from Web UI).
+    """
     mock_keycloak(mocker, auth_success=False)
 
     user = _authenticate_user(request_factory)
@@ -88,6 +96,10 @@ def test_oidc_code_pkce_auth_backend_failure(mocker, request_factory):
 
 @pytest.mark.django_db
 def test_oidc_code_pkce_auth_backend_permissions(mocker, request_factory):
+    """
+    Checks that a permission defined with OpenID Connect is correctly mapped
+    to a Django one when logging from Web UI.
+    """
     permission = "webapp.some-permission"
     mock_keycloak(mocker, user_permissions=[permission])
     user = _authenticate_user(request_factory)
@@ -100,6 +112,10 @@ def test_oidc_code_pkce_auth_backend_permissions(mocker, request_factory):
 
 @pytest.mark.django_db
 def test_drf_oidc_bearer_token_auth_backend_success(mocker, api_request_factory):
+    """
+    Checks successful login based on OpenID Connect bearer token Django REST
+    Framework authentication backend (Web API login).
+    """
     url = reverse("api-1-stat-counters")
     drf_auth_backend = OIDCBearerTokenAuthentication()
 
@@ -118,7 +134,10 @@ def test_drf_oidc_bearer_token_auth_backend_success(mocker, api_request_factory)
 
 @pytest.mark.django_db
 def test_drf_oidc_bearer_token_auth_backend_failure(mocker, api_request_factory):
-
+    """
+    Checks failed login based on OpenID Connect bearer token Django REST
+    Framework authentication backend (Web API login).
+    """
     url = reverse("api-1-stat-counters")
     drf_auth_backend = OIDCBearerTokenAuthentication()
 
@@ -144,7 +163,11 @@ def test_drf_oidc_bearer_token_auth_backend_failure(mocker, api_request_factory)
 
 
 def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
-
+    """
+    Checks failed login based on OpenID Connect bearer token Django REST
+    Framework authentication backend (Web API login) due to invalid
+    authorization header value.
+    """
     url = reverse("api-1-stat-counters")
     drf_auth_backend = OIDCBearerTokenAuthentication()
 
@@ -165,6 +188,10 @@ def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
 
 @pytest.mark.django_db
 def test_drf_oidc_bearer_token_auth_backend_permissions(mocker, api_request_factory):
+    """
+    Checks that a permission defined with OpenID Connect is correctly mapped
+    to a Django one when using bearer token authentication.
+    """
     permission = "webapp.some-permission"
     mock_keycloak(mocker, user_permissions=[permission])
 
