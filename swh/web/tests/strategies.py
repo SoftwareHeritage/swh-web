@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -25,6 +25,7 @@ from swh.model.hashutil import hash_to_hex, hash_to_bytes
 from swh.model.identifiers import directory_identifier
 from swh.model.model import Person, Revision, RevisionType, TimestampWithTimezone
 from swh.storage.algos.revisions_walker import get_revisions_walker
+from swh.storage.algos.snapshot import snapshot_get_latest
 from swh.model.hypothesis_strategies import (
     origins as new_origin_strategy,
     snapshots as new_snapshot,
@@ -278,8 +279,8 @@ def origin_with_releases():
     ret = []
     tests_data = get_tests_data()
     for origin in tests_data["origins"]:
-        snapshot = tests_data["storage"].snapshot_get_latest(origin["url"])
-        if any([b["target_type"] == "release" for b in snapshot["branches"].values()]):
+        snapshot = snapshot_get_latest(tests_data["storage"], origin["url"])
+        if any([b.target_type.value == "release" for b in snapshot.branches.values()]):
             ret.append(origin)
     return sampled_from(ret)
 
@@ -469,12 +470,12 @@ def _get_origin_dfs_revisions_walker():
     tests_data = get_tests_data()
     storage = tests_data["storage"]
     origin = random.choice(tests_data["origins"][:-1])
-    snapshot = storage.snapshot_get_latest(origin["url"])
-    if snapshot["branches"][b"HEAD"]["target_type"] == "alias":
-        target = snapshot["branches"][b"HEAD"]["target"]
-        head = snapshot["branches"][target]["target"]
+    snapshot = snapshot_get_latest(storage, origin["url"])
+    if snapshot.branches[b"HEAD"].target_type.value == "alias":
+        target = snapshot.branches[b"HEAD"].target
+        head = snapshot.branches[target].target
     else:
-        head = snapshot["branches"][b"HEAD"]["target"]
+        head = snapshot.branches[b"HEAD"].target
     return get_revisions_walker("dfs", storage, head)
 
 

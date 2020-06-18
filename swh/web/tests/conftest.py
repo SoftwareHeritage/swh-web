@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -19,6 +19,7 @@ from rest_framework.test import APIClient, APIRequestFactory
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common import converters
 from swh.web.tests.data import get_tests_data, override_storages
+from swh.storage.algos.snapshot import snapshot_get_latest
 
 # Used to skip some tests
 ctags_json_missing = (
@@ -216,8 +217,8 @@ class _ArchiveData:
         )
 
     def snapshot_get_latest(self, origin_url):
-        snp = self.storage.snapshot_get_latest(origin_url)
-        return converters.from_snapshot(snp)
+        snp = snapshot_get_latest(self.storage, origin_url)
+        return converters.from_snapshot(snp.to_dict())
 
     def origin_get(self, origin_info):
         origin = self.storage.origin_get(origin_info)
