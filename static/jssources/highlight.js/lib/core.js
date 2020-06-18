@@ -1211,7 +1211,7 @@ function commonKeyword(keyword) {
   return COMMON_KEYWORDS.includes(keyword.toLowerCase());
 }
 
-var version = "10.1.0";
+var version = "10.1.1";
 
 /*
 Syntax highlighting with language autodetection.
@@ -1226,6 +1226,7 @@ const NO_MATCH = Symbol("nomatch");
 
 /**
  * @param {any} hljs - object that is extended (legacy)
+ * @returns {HLJSApi}
  */
 const HLJS = function(hljs) {
   // Convenience variables for build-in objects

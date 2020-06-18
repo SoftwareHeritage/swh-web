@@ -15,6 +15,33 @@ realm_public_key = (
 
 oidc_profile = {
     "access_token": (
+        # decoded token:
+        # {'acr': '1',
+        #  'allowed-origins': ['*'],
+        #  'aud': ['swh-web', 'account'],
+        #  'auth_time': 1592395601,
+        #  'azp': 'swh-web',
+        #  'email': 'john.doe@example.com',
+        #  'email_verified': False,
+        #  'exp': 1592396202,
+        #  'family_name': 'Doe',
+        #  'given_name': 'John',
+        #  'groups': ['/staff'],
+        #  'iat': 1582723101,
+        #  'iss': 'http://localhost:8080/auth/realms/SoftwareHeritage',
+        #  'jti': '31fc50b7-bbe5-4f51-91ef-8e3eec51331e',
+        #  'name': 'John Doe',
+        #  'nbf': 0,
+        #  'preferred_username': 'johndoe',
+        #  'realm_access': {'roles': ['offline_access', 'uma_authorization']},
+        #  'resource_access': {'account': {'roles': ['manage-account',
+        #                                            'manage-account-links',
+        #                                            'view-profile']}},
+        #  'scope': 'openid email profile',
+        #  'session_state': 'd82b90d1-0a94-4e74-ad66-dd95341c7b6d',
+        #  'sub': 'feacd344-b468-4a65-a236-14f61e6b7200',
+        #  'typ': 'Bearer'
+        #  }
         "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPSnhV"
         "Q0p0TmJQT0NOUGFNNmc3ZU1zY2pqTXhoem9vNGxZaFhsa1c2TWhBIn0."
         "eyJqdGkiOiIzMWZjNTBiNy1iYmU1LTRmNTEtOTFlZi04ZTNlZWM1MTMz"

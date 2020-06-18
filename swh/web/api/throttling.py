@@ -17,6 +17,8 @@ from swh.web.config import get_config
 APIView = TypeVar("APIView", bound="rest_framework.views.APIView")
 Request = rest_framework.request.Request
 
+API_THROTTLING_EXEMPTED_PERM = "swh.web.api.throttling_exempted"
+
 
 class SwhWebRateThrottle(ScopedRateThrottle):
     """Custom request rate limiter for DRF enabling to exempt
@@ -76,7 +78,9 @@ class SwhWebRateThrottle(ScopedRateThrottle):
 
     def allow_request(self, request: Request, view: APIView) -> bool:
         # no throttling for staff users
-        if request.user.is_authenticated and request.user.is_staff:
+        if request.user.is_authenticated and (
+            request.user.is_staff or request.user.has_perm(API_THROTTLING_EXEMPTED_PERM)
+        ):
             return True
         # class based view case
         if not self.scope:
