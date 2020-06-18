@@ -44,6 +44,11 @@ def _oidc_user_from_decoded_token(decoded_token: Dict[str, Any]) -> OIDCUser:
     if "groups" in decoded_token:
         user.is_staff = "/staff" in decoded_token["groups"]
 
+    # extract user permissions if any
+    resource_access = decoded_token.get("resource_access", {})
+    client_resource_access = resource_access.get(_oidc_client.client_id, {})
+    user.permissions = set(client_resource_access.get("roles", []))
+
     # add user sub to custom User proxy model
     user.sub = decoded_token["sub"]
 

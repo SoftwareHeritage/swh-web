@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Set
 
 from django.contrib.auth.models import User
 
@@ -31,6 +31,9 @@ class OIDCUser(User):
     scope: Optional[str] = None
     session_state: Optional[str] = None
 
+    # User permissions
+    permissions: Set[str]
+
     class Meta:
         app_label = "swh.web.auth"
         proxy = True
@@ -41,3 +44,37 @@ class OIDCUser(User):
         users to web application database.
         """
         pass
+
+    def get_group_permissions(self, obj=None) -> Set[str]:
+        """
+        Override django.contrib.auth.models.PermissionsMixin.get_group_permissions
+        to get permissions from OIDC
+        """
+        return self.get_all_permissions(obj)
+
+    def get_all_permissions(self, obj=None) -> Set[str]:
+        """
+        Override django.contrib.auth.models.PermissionsMixin.get_all_permissions
+        to get permissions from OIDC
+        """
+        return self.permissions
+
+    def has_perm(self, perm, obj=None) -> bool:
+        """
+        Override django.contrib.auth.models.PermissionsMixin.has_perm
+        to check permission from OIDC
+        """
+        if self.is_active and self.is_superuser:
+            return True
+
+        return perm in self.permissions
+
+    def has_module_perms(self, app_label) -> bool:
+        """
+        Override django.contrib.auth.models.PermissionsMixin.has_module_perms
+        to check permissions from OIDC.
+        """
+        if self.is_active and self.is_superuser:
+            return True
+
+        return any(perm.startswith(app_label) for perm in self.permissions)
