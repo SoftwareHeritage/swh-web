@@ -1,3 +1,11 @@
+swh-web (0.0.240-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.240     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-18 14:13:12 +0200)
+  * Upstream changes:     - version 0.0.240
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 18 Jun 2020 13:13:08 +0000
+
 swh-web (0.0.239-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.239     - (tagged by Antoine Lambert
