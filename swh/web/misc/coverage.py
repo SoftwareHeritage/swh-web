@@ -116,6 +116,15 @@ _code_providers = [
         "origin_types": "repositories",
     },
     {
+        "provider_id": "ipol",
+        "provider_url": "https://www.ipol.im/",
+        "provider_logo": "img/logos/ipol.png",
+        "provider_info": "software artifacts associated to the articles "
+        "IPOL publishes",
+        "origin_url_regexp": "^https://doi.org/10.5201/ipol",
+        "origin_types": "tarballs",
+    },
+    {
         "provider_id": "npm",
         "provider_url": "https://www.npmjs.com/",
         "provider_logo": "img/logos/npm.png",
@@ -123,6 +132,15 @@ _code_providers = [
         "javascript (continuously archived)",
         "origin_url_regexp": "^https://www.npmjs.com/",
         "origin_types": "packages",
+    },
+    {
+        "provider_id": "nixos",
+        "provider_url": "https://nixos.org/",
+        "provider_logo": "img/logos/nixos.png",
+        "provider_info": "source code tarballs used to build the Nix package "
+        "collection",
+        "origin_url_regexp": "^https://nix-community.github.io/nixpkgs-swh",
+        "origin_types": "tarballs",
     },
     {
         "provider_id": "pypi",
