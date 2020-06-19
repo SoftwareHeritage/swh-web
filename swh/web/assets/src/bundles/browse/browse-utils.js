@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -70,3 +70,17 @@ $(document).ready(() => {
   });
 
 });
+
+export function initBrowseNavbar() {
+  if (window.location.pathname === Urls.browse_origin_visits()) {
+    $('#swh-browse-origin-visits-nav-link').addClass('active');
+  } else if (window.location.pathname === Urls.browse_origin_branches() ||
+    window.location.pathname === Urls.browse_snapshot_branches()) {
+    $('#swh-browse-snapshot-branches-nav-link').addClass('active');
+  } else if (window.location.pathname === Urls.browse_origin_releases() ||
+             window.location.pathname === Urls.browse_snapshot_releases()) {
+    $('#swh-browse-snapshot-releases-nav-link').addClass('active');
+  } else {
+    $('#swh-browse-code-nav-link').addClass('active');
+  }
+}

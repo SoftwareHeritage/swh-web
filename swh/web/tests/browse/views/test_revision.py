@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import random
-import textwrap
 
 from django.utils.html import escape
 from hypothesis import given
@@ -149,22 +148,6 @@ def test_revision_log_browse(client, archive_data, revision):
             resp, '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
         )
 
-    swh_rev_id = get_swh_persistent_id(REVISION, revision)
-    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
-
-    assert_contains(
-        resp,
-        textwrap.indent(
-            (
-                f"Browse archived revisions history\n"
-                f'<a href="{swh_rev_id_url}">\n'
-                f"  {swh_rev_id}\n"
-                f"</a>"
-            ),
-            " " * 4,
-        ),
-    )
-
 
 @given(revision(), unknown_revision(), new_origin())
 def test_revision_request_errors(client, revision, unknown_revision, new_origin):
@@ -285,35 +268,11 @@ def _revision_browse_checks(
         browse_origin_url = reverse(
             "browse-origin", query_params={"origin_url": origin_url}
         )
-        title = (
-            f"Browse archived revision for origin\n"
-            f'<a href="{browse_origin_url}">\n'
-            f"  {origin_url}\n"
-            f"</a>"
-        )
-        indent = " " * 6
+        assert_contains(resp, f'href="{browse_origin_url}"')
     elif snapshot:
         swh_snp_id = get_swh_persistent_id("snapshot", snapshot["id"])
         swh_snp_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_snp_id})
-        title = (
-            f"Browse archived revision for snapshot\n"
-            f'<a href="{swh_snp_id_url}">\n'
-            f"  {swh_snp_id}\n"
-            f"</a>"
-        )
-        indent = " " * 6
-    else:
-        title = (
-            f"Browse archived revision\n"
-            f'<a href="{swh_rev_id_url}">\n'
-            f"  {swh_rev_id}\n"
-            f"</a>"
-        )
-        indent = " " * 4
-
-    assert_contains(
-        resp, textwrap.indent(title, indent),
-    )
+        assert_contains(resp, f'href="{swh_snp_id_url}"')
 
     swhid_context = {}
     if origin_url:

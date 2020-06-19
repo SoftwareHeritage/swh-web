@@ -19,6 +19,7 @@ from swh.model.model import Directory, Origin, OriginVisit
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
+from swh.storage.algos.snapshot import snapshot_get_latest
 from swh.web import config
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content,
@@ -224,15 +225,16 @@ def _init_tests_data():
 
     # Get all objects loaded into the test archive
     for origin in _TEST_ORIGINS:
-        snp = storage.snapshot_get_latest(origin["url"])
-        snapshots.add(hash_to_hex(snp["id"]))
-        for branch_name, branch_data in snp["branches"].items():
-            if branch_data["target_type"] == "revision":
-                revisions.add(branch_data["target"])
-            elif branch_data["target_type"] == "release":
-                release = next(storage.release_get([branch_data["target"]]))
+        snp = snapshot_get_latest(storage, origin["url"])
+        snapshots.add(hash_to_hex(snp.id))
+        for branch_name, branch_data in snp.branches.items():
+            target_type = branch_data.target_type.value
+            if target_type == "revision":
+                revisions.add(branch_data.target)
+            elif target_type == "release":
+                release = next(storage.release_get([branch_data.target]))
                 revisions.add(release["target"])
-                releases.add(hash_to_hex(branch_data["target"]))
+                releases.add(hash_to_hex(branch_data.target))
 
         for rev_log in storage.revision_shortlog(set(revisions)):
             rev_id = rev_log[0]

@@ -1,8 +1,15 @@
-swh-web (0.0.240-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.241-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.241     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-06-19 18:08:44
+    +0200)
+  * Upstream changes:     - v0.0.241     - misc/coverage: Add IPOL and
+    NixOS logos     - service: Use latest origin visit status from an
+    origin     - Migrate to swh.storage.algos.snapshot_get_latest     -
+    templates/browse: Improve navigation for origin/snapshot related
+    views
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 18 Jun 2020 13:16:32 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 19 Jun 2020 16:22:34 +0000
 
 swh-web (0.0.240-1~swh1) unstable-swh; urgency=medium
 

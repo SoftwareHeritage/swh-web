@@ -8,11 +8,13 @@ import os
 import re
 
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Iterator, Optional, Tuple
+from typing import Any, Dict, List, Set, Iterable, Iterator, Optional, Tuple
 
 from swh.model import hashutil
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.storage.algos import diff, revisions_walker
+from swh.storage.algos.origin import origin_get_latest_visit_status
+from swh.storage.algos.snapshot import snapshot_get_latest
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
 from swh.web.common import converters
@@ -902,7 +904,7 @@ def lookup_origin_visits(
 
 def lookup_origin_visit_latest(
     origin_url: str, require_snapshot: bool
-) -> OriginVisitInfo:
+) -> Optional[OriginVisitInfo]:
     """Return the origin's latest visit
 
     Args:
@@ -910,13 +912,20 @@ def lookup_origin_visit_latest(
         require_snapshot (bool): filter out origins without a snapshot
 
     Returns:
-       dict: The origin_visit concerned
+       The origin_visit as dict if found
 
     """
-    visit = storage.origin_visit_get_latest(
-        origin_url, require_snapshot=require_snapshot
+
+    visit_and_status = origin_get_latest_visit_status(
+        storage, origin_url, require_snapshot=require_snapshot
     )
-    return converters.from_origin_visit(visit)
+    return (
+        converters.from_origin_visit(
+            {**visit_and_status[0].to_dict(), **visit_and_status[1].to_dict()}
+        )
+        if visit_and_status
+        else None
+    )
 
 
 def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
@@ -1003,7 +1012,9 @@ def lookup_snapshot(
     return converters.from_snapshot(snapshot)
 
 
-def lookup_latest_origin_snapshot(origin, allowed_statuses=None):
+def lookup_latest_origin_snapshot(
+    origin: str, allowed_statuses: Iterable[str] = None
+) -> Optional[Dict[str, Any]]:
     """Return information about the latest snapshot of an origin.
 
     .. warning:: At most 1000 branches contained in the snapshot
@@ -1019,8 +1030,10 @@ def lookup_latest_origin_snapshot(origin, allowed_statuses=None):
     Returns:
         A dict filled with the snapshot content.
     """
-    snapshot = storage.snapshot_get_latest(origin, allowed_statuses)
-    return converters.from_snapshot(snapshot)
+    snp = snapshot_get_latest(
+        storage, origin, allowed_statuses=allowed_statuses, branches_count=1000
+    )
+    return converters.from_snapshot(snp.to_dict()) if snp is not None else None
 
 
 def lookup_snapshot_branch_name_from_tip_revision(
