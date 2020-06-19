@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -13,11 +13,18 @@ const progressbarColors = {
   'done': 'rgb(92, 184, 92)'
 };
 
-function checkVaultCookingTask(objectType) {
-  cy.contains('button', 'Actions')
-    .click();
+function adminLogin() {
+  cy.visit('/admin/')
+    .get('input[name="username"]')
+    .type('admin')
+    .get('input[name="password"]')
+    .type('admin')
+    .get('form')
+    .submit();
+}
 
-  cy.contains('.dropdown-item', 'Download')
+function checkVaultCookingTask(objectType) {
+  cy.contains('button', 'Download')
     .click();
 
   cy.contains('.dropdown-item', objectType)
@@ -124,7 +131,8 @@ describe('Vault Cooking User Interface Tests', function() {
       response: this.genVaultDirCookingResponse('new')
     }).as('createVaultCookingTask');
 
-    checkVaultCookingTask('as tarball');
+    cy.contains('button', 'Download')
+      .click();
 
     cy.route({
       method: 'GET',
@@ -189,6 +197,7 @@ describe('Vault Cooking User Interface Tests', function() {
   });
 
   it('should create a revision cooking task and report its status', function() {
+    adminLogin();
     // Browse a revision
     cy.visit(this.revisionUrl);
 
@@ -358,7 +367,8 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('fetchCookedArchive');
 
     // Create a vault cooking task through the GUI
-    checkVaultCookingTask('as tarball');
+    cy.contains('button', 'Download')
+      .click();
 
     // Start archive download through the GUI
     cy.get('.modal-dialog')
@@ -370,7 +380,7 @@ describe('Vault Cooking User Interface Tests', function() {
   });
 
   it('should offer to immediately download a revision gitfast archive if already cooked', function() {
-
+    adminLogin();
     // Browse a directory
     cy.visit(this.revisionUrl);
 
@@ -416,7 +426,8 @@ describe('Vault Cooking User Interface Tests', function() {
       response: this.genVaultDirCookingResponse('failed')
     }).as('checkVaultCookingTask');
 
-    checkVaultCookingTask('as tarball');
+    cy.contains('button', 'Download')
+      .click();
 
     // Check that recooking the directory is offered to user
     cy.get('.modal-dialog')

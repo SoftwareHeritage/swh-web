@@ -851,7 +851,7 @@ def browse_snapshot_directory(
             "readme_html": readme_html,
             "snapshot_context": snapshot_context,
             "vault_cooking": vault_cooking,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
         },
     )
@@ -1037,7 +1037,7 @@ def browse_snapshot_content(
             "top_right_link": top_right_link,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
             "error_code": content_data.get("error_code"),
             "error_message": content_data.get("error_message"),
@@ -1187,7 +1187,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
             "top_right_link": None,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
         },
     )
@@ -1436,6 +1436,6 @@ def browse_snapshot_releases(
             "next_releases_url": next_releases_url,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": False,
+            "show_actions": False,
         },
     )

@@ -401,7 +401,7 @@ def content_display(request, query_string):
             },
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
             "error_code": content_data["error_code"],
             "error_message": content_data["error_message"],
