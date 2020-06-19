@@ -6,7 +6,6 @@
 import random
 import re
 import string
-import textwrap
 
 from django.utils.html import escape
 
@@ -71,7 +70,7 @@ def test_origin_visits_browse(client, archive_data, origin):
         )
         assert_contains(resp, browse_dir_url)
 
-    _check_origin_view_title(resp, origin["url"], "visits")
+    _check_origin_link(resp, origin["url"])
 
 
 @given(origin_with_multiple_visits())
@@ -955,19 +954,13 @@ def _origin_content_view_test_helper(
 
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
-    assert_contains(
-        resp,
-        '<a href="%s">Branches (%s)</a>'
-        % (escape(origin_branches_url), len(origin_branches)),
-    )
+    assert_contains(resp, f'href="{escape(origin_branches_url)}"')
+    assert_contains(resp, f"Branches ({len(origin_branches)})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
-    assert_contains(
-        resp,
-        '<a href="%s">Releases (%s)</a>'
-        % (escape(origin_releases_url), len(origin_releases)),
-    )
+    assert_contains(resp, f'href="{escape(origin_releases_url)}">')
+    assert_contains(resp, f"Releases ({len(origin_releases)})")
 
     assert_contains(resp, '<li class="swh-branch">', count=len(origin_branches))
 
@@ -1017,7 +1010,7 @@ def _origin_content_view_test_helper(
 
     assert_contains(resp, "swh-take-new-snapshot")
 
-    _check_origin_view_title(resp, origin_info["url"], "content")
+    _check_origin_link(resp, origin_info["url"])
 
 
 def _origin_directory_view_test_helper(
@@ -1105,21 +1098,15 @@ def _origin_directory_view_test_helper(
 
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
-    assert_contains(
-        resp,
-        '<a href="%s">Branches (%s)</a>'
-        % (escape(origin_branches_url), len(origin_branches)),
-    )
+    assert_contains(resp, f'href="{escape(origin_branches_url)}"')
+    assert_contains(resp, f"Branches ({len(origin_branches)})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
-        assert_contains(
-            resp,
-            '<a href="%s">Releases (%s)</a>'
-            % (escape(origin_releases_url), nb_releases),
-        )
+        assert_contains(resp, f'href="{escape(origin_releases_url)}"')
+        assert_contains(resp, f"Releases ({nb_releases})")
 
     if path:
         query_params["path"] = path
@@ -1143,7 +1130,7 @@ def _origin_directory_view_test_helper(
             "browse-origin-directory", query_params=query_params
         )
 
-        assert_contains(resp, '<a href="%s">' % root_dir_release_url)
+        assert_contains(resp, 'href="%s"' % root_dir_release_url)
 
     assert_contains(resp, "vault-cook-directory")
     assert_contains(resp, "vault-cook-revision")
@@ -1167,7 +1154,7 @@ def _origin_directory_view_test_helper(
 
     assert_contains(resp, "swh-take-new-snapshot")
 
-    _check_origin_view_title(resp, origin_info["url"], "directory")
+    _check_origin_link(resp, origin_info["url"])
 
 
 def _origin_branches_test_helper(
@@ -1187,21 +1174,15 @@ def _origin_branches_test_helper(
 
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
-    assert_contains(
-        resp,
-        '<a href="%s">Branches (%s)</a>'
-        % (escape(origin_branches_url), len(origin_branches)),
-    )
+    assert_contains(resp, f'href="{escape(origin_branches_url)}"')
+    assert_contains(resp, f"Branches ({len(origin_branches)})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
-        assert_contains(
-            resp,
-            '<a href="%s">Releases (%s)</a>'
-            % (escape(origin_releases_url), nb_releases),
-        )
+        assert_contains(resp, f'href="{escape(origin_releases_url)}">')
+        assert_contains(resp, f"Releases ({nb_releases})")
 
     assert_contains(resp, '<tr class="swh-branch-entry', count=len(origin_branches))
 
@@ -1219,7 +1200,7 @@ def _origin_branches_test_helper(
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
 
-    _check_origin_view_title(resp, origin_info["url"], "branches")
+    _check_origin_link(resp, origin_info["url"])
 
 
 def _origin_releases_test_helper(
@@ -1238,21 +1219,15 @@ def _origin_releases_test_helper(
 
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
-    assert_contains(
-        resp,
-        '<a href="%s">Branches (%s)</a>'
-        % (escape(origin_branches_url), len(origin_branches)),
-    )
+    assert_contains(resp, f'href="{escape(origin_branches_url)}"')
+    assert_contains(resp, f"Branches ({len(origin_branches)})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
-        assert_contains(
-            resp,
-            '<a href="%s">Releases (%s)</a>'
-            % (escape(origin_releases_url), nb_releases),
-        )
+        assert_contains(resp, f'href="{escape(origin_releases_url)}"')
+        assert_contains(resp, f"Releases ({nb_releases})")
 
     assert_contains(resp, '<tr class="swh-release-entry', count=nb_releases)
 
@@ -1271,7 +1246,7 @@ def _origin_releases_test_helper(
         assert_contains(resp, '<a href="%s">' % escape(browse_release_url))
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
 
-    _check_origin_view_title(resp, origin_info["url"], "releases")
+    _check_origin_link(resp, origin_info["url"])
 
 
 @given(
@@ -1332,20 +1307,8 @@ def test_origin_branches_pagination_with_alias(
     assert_contains(resp, '<ul class="pagination')
 
 
-def _check_origin_view_title(resp, origin_url, object_type):
+def _check_origin_link(resp, origin_url):
     browse_origin_url = reverse(
         "browse-origin", query_params={"origin_url": origin_url}
     )
-
-    assert_contains(
-        resp,
-        textwrap.indent(
-            (
-                f"Browse archived {object_type} for origin\n"
-                f'<a href="{browse_origin_url}">\n'
-                f"  {origin_url}\n"
-                f"</a>"
-            ),
-            " " * 6,
-        ),
-    )
+    assert_contains(resp, f'href="{browse_origin_url}"')

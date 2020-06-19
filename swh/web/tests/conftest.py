@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,6 +9,7 @@ import shutil
 import sys
 
 from subprocess import run, PIPE
+from typing import Optional, Iterable
 
 import pytest
 
@@ -19,6 +20,8 @@ from rest_framework.test import APIClient, APIRequestFactory
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common import converters
 from swh.web.tests.data import get_tests_data, override_storages
+from swh.storage.algos.origin import origin_get_latest_visit_status
+from swh.storage.algos.snapshot import snapshot_get_latest
 
 # Used to skip some tests
 ctags_json_missing = (
@@ -216,8 +219,8 @@ class _ArchiveData:
         )
 
     def snapshot_get_latest(self, origin_url):
-        snp = self.storage.snapshot_get_latest(origin_url)
-        return converters.from_snapshot(snp)
+        snp = snapshot_get_latest(self.storage, origin_url)
+        return converters.from_snapshot(snp.to_dict())
 
     def origin_get(self, origin_info):
         origin = self.storage.origin_get(origin_info)
@@ -230,6 +233,28 @@ class _ArchiveData:
     def origin_visit_get_by(self, origin_url, visit_id):
         visit = self.storage.origin_visit_get_by(origin_url, visit_id)
         return converters.from_origin_visit(visit)
+
+    def origin_visit_status_get_latest(
+        self,
+        origin_url,
+        type: Optional[str] = None,
+        allowed_statuses: Optional[Iterable[str]] = None,
+        require_snapshot: bool = False,
+    ):
+        visit_and_status = origin_get_latest_visit_status(
+            self.storage,
+            origin_url,
+            type=type,
+            allowed_statuses=allowed_statuses,
+            require_snapshot=require_snapshot,
+        )
+        return (
+            converters.from_origin_visit(
+                {**visit_and_status[0].to_dict(), **visit_and_status[1].to_dict()}
+            )
+            if visit_and_status
+            else None
+        )
 
     def snapshot_get(self, snapshot_id):
         snp = self.storage.snapshot_get(hash_to_bytes(snapshot_id))

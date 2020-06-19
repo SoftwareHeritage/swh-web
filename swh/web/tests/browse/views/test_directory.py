@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import random
-import textwrap
 
 from django.utils.html import escape
 from hypothesis import given
@@ -215,38 +214,24 @@ def _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releas
     browse_origin_url = reverse(
         "browse-origin", query_params={"origin_url": origin["url"]}
     )
-    assert_contains(
-        resp,
-        textwrap.indent(
-            (
-                "Browse archived directory for origin\n"
-                f'<a href="{browse_origin_url}">\n'
-                f"  {origin['url']}\n"
-                f"</a>"
-            ),
-            " " * 6,
-        ),
-    )
+
+    assert_contains(resp, f'href="{browse_origin_url}"')
 
     origin_branches_url = reverse(
         "browse-origin-branches",
         query_params={"origin_url": origin["url"], "snapshot": snapshot["id"]},
     )
 
-    assert_contains(
-        resp,
-        '<a href="%s">Branches (%s)</a>' % (escape(origin_branches_url), len(branches)),
-    )
+    assert_contains(resp, f'href="{escape(origin_branches_url)}"')
+    assert_contains(resp, f"Branches ({len(branches)})")
 
     origin_releases_url = reverse(
         "browse-origin-releases",
         query_params={"origin_url": origin["url"], "snapshot": snapshot["id"]},
     )
 
-    assert_contains(
-        resp,
-        '<a href="%s">Releases (%s)</a>' % (escape(origin_releases_url), len(releases)),
-    )
+    assert_contains(resp, f'href="{escape(origin_releases_url)}"')
+    assert_contains(resp, f"Releases ({len(releases)})")
 
     assert_contains(resp, '<li class="swh-branch">', count=len(branches))
     assert_contains(resp, '<li class="swh-release">', count=len(releases))
@@ -327,19 +312,6 @@ def _directory_view_checks(
 
     swh_dir_id = get_swh_persistent_id(DIRECTORY, directory_entries[0]["dir_id"])
     swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
-
-    assert_contains(
-        resp,
-        textwrap.indent(
-            (
-                f"Browse archived directory\n"
-                f'<a href="{swh_dir_id_url}">\n'
-                f"  {swh_dir_id}\n"
-                f"</a>"
-            ),
-            " " * 4,
-        ),
-    )
 
     swhid_context = {}
     if root_directory_sha1 != directory_entries[0]["dir_id"]:

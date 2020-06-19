@@ -343,9 +343,11 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
 
     archive_data.snapshot_add([new_snapshots[0]])
 
+    # Add snapshot to the latest visit
+    visit_id = visit_ids[-1]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
-        visit=visit_ids[0],
+        visit=visit_id,
         date=now(),
         status="full",
         snapshot=new_snapshots[0].id,
@@ -363,7 +365,9 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
     assert rv.status_code == 200, rv.data
     assert rv["Content-Type"] == "application/json"
 
-    expected_visit = archive_data.origin_visit_get_by(new_origin.url, visit_ids[0])
+    expected_visit = archive_data.origin_visit_status_get_latest(
+        new_origin.url, type="git", require_snapshot=True
+    )
 
     expected_visit = enrich_origin_visit(
         expected_visit,
