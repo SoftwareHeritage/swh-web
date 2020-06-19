@@ -38,6 +38,7 @@ swh_object_icons = {
     "branches": "mdi mdi-source-branch",
     "content": "mdi mdi-file-document",
     "directory": "mdi mdi-folder",
+    "origin": "mdi mdi-source-repository",
     "person": "mdi mdi-account",
     "revisions history": "mdi mdi-history",
     "release": "mdi mdi-tag",

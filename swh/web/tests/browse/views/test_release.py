@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import random
-import textwrap
 
 from django.utils.html import escape
 from hypothesis import given
@@ -115,35 +114,11 @@ def _release_browse_checks(
         browse_origin_url = reverse(
             "browse-origin", query_params={"origin_url": origin_url}
         )
-        title = (
-            f"Browse archived release for origin\n"
-            f'<a href="{browse_origin_url}">\n'
-            f"  {origin_url}\n"
-            f"</a>"
-        )
-        indent = " " * 6
+        assert_contains(resp, f'href="{browse_origin_url}"')
     elif snapshot_id:
         swh_snp_id = get_swh_persistent_id("snapshot", snapshot_id)
         swh_snp_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_snp_id})
-        title = (
-            f"Browse archived release for snapshot\n"
-            f'<a href="{swh_snp_id_url}">\n'
-            f"  {swh_snp_id}\n"
-            f"</a>"
-        )
-        indent = " " * 6
-    else:
-        title = (
-            f"Browse archived release\n"
-            f'<a href="{swh_rel_id_url}">\n'
-            f"  {swh_rel_id}\n"
-            f"</a>"
-        )
-        indent = " " * 4
-
-    assert_contains(
-        resp, textwrap.indent(title, indent),
-    )
+        assert_contains(resp, f'href="{swh_snp_id_url}"')
 
     if release_data["target_type"] == "revision":
         if origin_url:

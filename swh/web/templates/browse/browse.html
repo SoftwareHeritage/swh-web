@@ -13,36 +13,9 @@ See top-level LICENSE file for more information
 
 {% block navbar-content %}
 
-{% if snapshot_context %}
-  <h4>
-    <i class="{{ swh_object_icons|key_value:swh_object_name.lower }} mdi-fw" aria-hidden="true"></i>
-
-    {% if snapshot_context.origin_info %}
-      Browse archived {{ swh_object_name.lower }} for origin
-      <a href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url }}">
-        {{ snapshot_context.origin_info.url }}
-      </a>
-      {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
-        <a href="{{ snapshot_context.origin_info.url }}" title="Go to origin">
-          <i class="mdi mdi-open-in-new" aria-hidden="true"></i>
-        </a>
-      {% endif %}
-    {% else %}
-      Browse archived {{ swh_object_name.lower }} for snapshot
-      <a href="{% url 'browse-swh-id' snapshot_context.snapshot_swhid %}">
-        {{ snapshot_context.snapshot_swhid }}
-      </a>
-    {% endif %}
-  </h4>
-{% else %}
-  <h4>
-    <i class="{{ swh_object_icons|key_value:swh_object_name.lower }} mdi-fw" aria-hidden="true"></i>
-    Browse archived {{ swh_object_name.lower }}
-    <a href="{% url 'browse-swh-id' swh_object_id %}">
-      {{ swh_object_id }}
-    </a>
-  </h4>
-{% endif %}
+<h4>
+  Browse the archive
+</h4>
 
 {% endblock %}
 
