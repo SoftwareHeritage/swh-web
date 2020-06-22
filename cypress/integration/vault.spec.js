@@ -13,16 +13,6 @@ const progressbarColors = {
   'done': 'rgb(92, 184, 92)'
 };
 
-function adminLogin() {
-  cy.visit('/admin/')
-    .get('input[name="username"]')
-    .type('admin')
-    .get('input[name="password"]')
-    .type('admin')
-    .get('form')
-    .submit();
-}
-
 function checkVaultCookingTask(objectType) {
   cy.contains('button', 'Download')
     .click();
@@ -197,7 +187,7 @@ describe('Vault Cooking User Interface Tests', function() {
   });
 
   it('should create a revision cooking task and report its status', function() {
-    adminLogin();
+    cy.adminLogin();
     // Browse a revision
     cy.visit(this.revisionUrl);
 
@@ -380,7 +370,7 @@ describe('Vault Cooking User Interface Tests', function() {
   });
 
   it('should offer to immediately download a revision gitfast archive if already cooked', function() {
-    adminLogin();
+    cy.adminLogin();
     // Browse a directory
     cy.visit(this.revisionUrl);
 

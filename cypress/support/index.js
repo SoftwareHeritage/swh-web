@@ -20,6 +20,32 @@ Cypress.Commands.add('xhrShouldBeCalled', (alias, timesCalled) => {
   ).to.have.length(timesCalled);
 });
 
+Cypress.Commands.add('adminLogin', () => {
+  const url = '/admin/login/';
+  return cy.request({
+    url: url,
+    method: 'GET'
+  }).then(() => {
+    cy.getCookie('sessionid').should('not.exist');
+    cy.getCookie('csrftoken').its('value').then((token) => {
+      cy.request({
+        url: url,
+        method: 'POST',
+        form: true,
+        followRedirect: false,
+        body: {
+          username: 'admin',
+          password: 'admin',
+          csrfmiddlewaretoken: token
+        }
+      }).then(() => {
+        cy.getCookie('sessionid').should('exist');
+        return cy.getCookie('csrftoken').its('value');
+      });
+    });
+  });
+});
+
 before(function() {
   this.unarchivedRepo = {
     url: 'https://github.com/SoftwareHeritage/swh-web',

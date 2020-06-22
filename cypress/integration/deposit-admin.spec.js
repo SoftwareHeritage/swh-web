@@ -5,18 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-const username = 'admin';
-const password = 'admin';
-
-function login(username, password) {
-  cy.get('input[name="username"]')
-    .type(username)
-    .get('input[name="password"]')
-    .type(password)
-    .get('form')
-    .submit();
-}
-
 // data to use as request query response
 let responseDeposits;
 let expectedOrigins;
@@ -62,10 +50,8 @@ describe('Test admin deposit page', function() {
   });
 
   it('Should filter out deposits matching excluding pattern from display', function() {
+    cy.adminLogin();
     cy.visit(this.Urls.admin_deposit());
-    // FIXME: cypress anti-pattern, do not use ui to log ¯\_(ツ)_/¯
-    // https://docs.cypress.io/guides/getting-started/testing-your-app.html#Logging-in
-    login(username, password);
 
     cy.server();
 
@@ -209,10 +195,8 @@ describe('Test admin deposit page', function() {
   });
 
   it('Should display properly entries', function() {
+    cy.adminLogin();
     cy.visit(this.Urls.admin_deposit());
-    // FIXME: cypress anti-pattern, do not use ui to log ¯\_(ツ)_/¯
-    // https://docs.cypress.io/guides/getting-started/testing-your-app.html#Logging-in
-    login(username, password);
 
     let testDeposits = responseDeposits;
 

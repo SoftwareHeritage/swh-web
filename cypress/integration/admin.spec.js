@@ -7,20 +7,9 @@
 
 const $ = Cypress.$;
 
-const username = 'admin';
-const password = 'admin';
 const defaultRedirect = '/admin/origin/save/';
 
 let url;
-
-function login(username, password) {
-  cy.get('input[name="username"]')
-    .type(username)
-    .get('input[name="password"]')
-    .type(password)
-    .get('form')
-    .submit();
-}
 
 function logout() {
   cy.contains('a', 'logout')
@@ -33,8 +22,13 @@ describe('Test Admin Login/logout', function() {
   });
 
   it('should redirect to default page', function() {
-    cy.visit(url);
-    login(username, password);
+    cy.visit(url)
+      .get('input[name="username"]')
+      .type('admin')
+      .get('input[name="password"]')
+      .type('admin')
+      .get('form')
+      .submit();
 
     cy.location('pathname')
       .should('be.equal', defaultRedirect);
@@ -43,8 +37,8 @@ describe('Test Admin Login/logout', function() {
   });
 
   it('should display admin-origin-save and deposit in sidebar', function() {
+    cy.adminLogin();
     cy.visit(url);
-    login(username, password);
 
     cy.get(`.sidebar a[href="${this.Urls.admin_origin_save()}"]`)
       .should('be.visible');
@@ -56,11 +50,11 @@ describe('Test Admin Login/logout', function() {
   });
 
   it('should display username on top-right', function() {
+    cy.adminLogin();
     cy.visit(url);
-    login(username, password);
 
     cy.get('.swh-position-right')
-      .should('contain', username);
+      .should('contain', 'admin');
 
     logout();
   });
@@ -93,7 +87,8 @@ describe('Test Admin Login/logout', function() {
       .location('search')
       .should('contain', `next=${this.Urls.admin_deposit()}`);
 
-    login(username, password);
+    cy.adminLogin();
+    cy.visit(this.Urls.admin_deposit());
 
     cy.location('pathname')
       .should('be.equal', this.Urls.admin_deposit());
@@ -122,9 +117,8 @@ const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
 describe('Test Admin Origin Save Urls Filtering', function() {
 
   beforeEach(function() {
+    cy.adminLogin();
     cy.visit(this.Urls.admin_origin_save());
-
-    login(username, password);
 
     cy.contains('a', 'Origin urls filtering')
       .click()
