@@ -23,11 +23,32 @@ describe('Test top-bar', function() {
     cy.get('.swh-donate-link')
       .should('be.visible');
   });
-
   it('should hide donate button on sm screen', function() {
     cy.viewport(600, 800);
     cy.get('.swh-donate-link')
       .should('not.be.visible');
+  });
+  it('should hide full width switch on small screens', function() {
+    cy.viewport(360, 740);
+    cy.get('#swh-full-width-switch-container')
+      .should('not.be.visible');
+
+    cy.viewport(600, 800);
+    cy.get('#swh-full-width-switch-container')
+      .should('not.be.visible');
+
+    cy.viewport(800, 600);
+    cy.get('#swh-full-width-switch-container')
+      .should('not.be.visible');
+  });
+  it('should show full width switch on large screens', function() {
+    cy.viewport(1024, 768);
+    cy.get('#swh-full-width-switch-container')
+      .should('be.visible');
+
+    cy.viewport(1920, 1080);
+    cy.get('#swh-full-width-switch-container')
+      .should('be.visible');
   });
   it('should change container width when toggling Full width switch', function() {
     cy.get('#swh-web-content')
