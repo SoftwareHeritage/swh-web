@@ -13,6 +13,7 @@ from swh.web.browse.snapshot_context import (
     get_snapshot_context,
     _get_release,
 )
+from swh.web.browse.utils import gen_revision_url
 from swh.web.common.identifiers import get_swh_persistent_id
 from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
 from swh.web.common.typing import (
@@ -140,6 +141,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
             releases=releases,
             releases_url=releases_url,
             revision_id=revision_id,
+            revision_info=_get_revision_info(archive_data, revision_id),
             root_directory=root_directory,
             snapshot_id=snapshot,
             snapshot_sizes=snapshot_sizes,
@@ -147,6 +149,11 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
             url_args=url_args,
             visit_info=None,
         )
+
+        if revision_id:
+            expected["revision_info"]["revision_url"] = gen_revision_url(
+                revision_id, snapshot_context
+            )
 
         assert snapshot_context == expected
 
@@ -233,6 +240,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             releases=releases,
             releases_url=releases_url,
             revision_id=revision_id,
+            revision_info=_get_revision_info(archive_data, revision_id),
             root_directory=root_directory,
             snapshot_id=snapshot,
             snapshot_sizes=snapshot_sizes,
@@ -240,6 +248,11 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             url_args={},
             visit_info=visit_info,
         )
+
+        if revision_id:
+            expected["revision_info"]["revision_url"] = gen_revision_url(
+                revision_id, snapshot_context
+            )
 
         assert snapshot_context == expected
 
@@ -269,8 +282,14 @@ def _check_branch_release_revision_parameters(
     expected_branch = dict(base_expected_context)
     expected_branch["branch"] = branch["name"]
     expected_branch["revision_id"] = branch["revision"]
+    expected_branch["revision_info"] = _get_revision_info(
+        archive_data, branch["revision"]
+    )
     expected_branch["root_directory"] = branch["directory"]
     expected_branch["query_params"] = {"branch": branch["name"], **query_params}
+    expected_branch["revision_info"]["revision_url"] = gen_revision_url(
+        branch["revision"], expected_branch
+    )
 
     assert snapshot_context == expected_branch
 
@@ -288,8 +307,14 @@ def _check_branch_release_revision_parameters(
         expected_release["release_id"] = release["id"]
         if release["target_type"] == "revision":
             expected_release["revision_id"] = release["target"]
+            expected_release["revision_info"] = _get_revision_info(
+                archive_data, release["target"]
+            )
         expected_release["root_directory"] = release["directory"]
         expected_release["query_params"] = {"release": release["name"], **query_params}
+        expected_release["revision_info"]["revision_url"] = gen_revision_url(
+            release["target"], expected_release
+        )
 
         assert snapshot_context == expected_release
 
@@ -328,8 +353,14 @@ def _check_branch_release_revision_parameters(
     expected_revision["branch"] = revision["id"]
     expected_revision["branches"] = branches
     expected_revision["revision_id"] = revision["id"]
+    expected_revision["revision_info"] = _get_revision_info(
+        archive_data, revision["id"]
+    )
     expected_revision["root_directory"] = revision["directory"]
     expected_revision["query_params"] = {"revision": revision["id"], **query_params}
+    expected_revision["revision_info"]["revision_url"] = gen_revision_url(
+        revision["id"], expected_revision
+    )
 
     assert snapshot_context == expected_revision
 
@@ -353,3 +384,15 @@ def test_get_release_large_snapshot(archive_data, origin):
 
     assert release_data["name"] == release["name"]
     assert release_data["id"] == release["id"]
+
+
+def _get_revision_info(archive_data, revision_id):
+    revision_info = None
+    if revision_id:
+        revision_info = archive_data.revision_get(revision_id)
+        revision_info["message_header"] = revision_info["message"].split("\n")[0]
+        revision_info["date"] = format_utc_iso_date(revision_info["date"])
+        revision_info["committer_date"] = format_utc_iso_date(
+            revision_info["committer_date"]
+        )
+    return revision_info
