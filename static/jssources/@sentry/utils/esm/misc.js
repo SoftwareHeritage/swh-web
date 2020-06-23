@@ -249,9 +249,9 @@ function _htmlElementAsString(el) {
             out.push("." + classes[i]);
         }
     }
-    var attrWhitelist = ['type', 'name', 'title', 'alt'];
-    for (i = 0; i < attrWhitelist.length; i++) {
-        key = attrWhitelist[i];
+    var allowedAttrs = ['type', 'name', 'title', 'alt'];
+    for (i = 0; i < allowedAttrs.length; i++) {
+        key = allowedAttrs[i];
         attr = elem.getAttribute(key);
         if (attr) {
             out.push("[" + key + "=\"" + attr + "\"]");
@@ -282,21 +282,23 @@ export var crossPlatformPerformance = (function () {
             return performanceFallback;
         }
     }
-    if (getGlobalObject().performance) {
-        // Polyfill for performance.timeOrigin.
-        //
-        // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
-        // is not as widely supported. Namely, performance.timeOrigin is undefined in Safari as of writing.
-        // tslint:disable-next-line:strict-type-predicates
-        if (performance.timeOrigin === undefined) {
-            // As of writing, performance.timing is not available in Web Workers in mainstream browsers, so it is not always a
-            // valid fallback. In the absence of a initial time provided by the browser, fallback to INITIAL_TIME.
-            // @ts-ignore
-            // tslint:disable-next-line:deprecation
-            performance.timeOrigin = (performance.timing && performance.timing.navigationStart) || INITIAL_TIME;
-        }
+    var performance = getGlobalObject().performance;
+    if (!performance || !performance.now) {
+        return performanceFallback;
     }
-    return getGlobalObject().performance || performanceFallback;
+    // Polyfill for performance.timeOrigin.
+    //
+    // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
+    // is not as widely supported. Namely, performance.timeOrigin is undefined in Safari as of writing.
+    // tslint:disable-next-line:strict-type-predicates
+    if (performance.timeOrigin === undefined) {
+        // As of writing, performance.timing is not available in Web Workers in mainstream browsers, so it is not always a
+        // valid fallback. In the absence of a initial time provided by the browser, fallback to INITIAL_TIME.
+        // @ts-ignore
+        // tslint:disable-next-line:deprecation
+        performance.timeOrigin = (performance.timing && performance.timing.navigationStart) || INITIAL_TIME;
+    }
+    return performance;
 })();
 /**
  * Returns a timestamp in seconds with milliseconds precision since the UNIX epoch calculated with the monotonic clock.

@@ -1,0 +1,35 @@
+{% comment %}
+Copyright (C) 2020  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% if snapshot_context and snapshot_context.revision_id %}
+  <div class="card d-none d-md-block">
+    <div class="card-body pt-2 pb-1 d-flex align-items-start justify-content-between">
+      <i style="min-width: 36px;" class="{{ swh_object_icons.revision }} mdi-36px mdi-fw" aria-hidden="true"></i>
+      <div class="flex-grow-1 pl-3">
+        Tip revision:
+        <a href="{{ snapshot_context.revision_info.revision_url }}">
+          <b>{{ snapshot_context.revision_id }}</b>
+        </a>
+        authored by <b>{{ snapshot_context.revision_info.author.name }}</b>
+        on <b>{{ snapshot_context.revision_info.date }}</b>
+        <br/>
+        <b>{{ snapshot_context.revision_info.message_header }}</b>
+      </div>
+    </div>
+  </div>
+  <div class="card d-sm-block d-md-none">
+    <div class="card-body pt-1 pb-1 d-flex align-items-center justify-content-between">
+      <i class="{{ swh_object_icons.revision }} mdi-24px mdi-fw" aria-hidden="true"></i>
+      <div class="flex-grow-1 pl-3 align-middle">
+        Tip revision:
+        <a href="{{ snapshot_context.revision_info.revision_url }}">
+          <b>{{ snapshot_context.revision_id|slice:"0:7" }}</b>
+        </a>
+      </div>
+    </div>
+  </div>
+{% endif %}

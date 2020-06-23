@@ -106,18 +106,14 @@ See top-level LICENSE file for more information
         {% endfor %}
       </select>
     {% endif %}
-    {% if show_actions_menu %}
-      <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
-        <i class="mdi mdi-menu mdi-fw" aria-hidden="true"></i>Actions
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-right swh-browse-actions-menu">
-        {% if not snapshot_context or not snapshot_context.is_empty %}
-          {% include "includes/vault-create-tasks.html" %}
-        {% endif %}
+    {% if show_actions %}
+      {% if not snapshot_context or not snapshot_context.is_empty %}
+        {% include "includes/vault-create-tasks.html" %}
+      {% endif %}
+      {% include "includes/take-new-snapshot.html" %}
+      {% if user.is_staff %}
         {% include "includes/show-metadata.html" %}
-        {% include "includes/take-new-snapshot.html" %}
-      </ul>
+      {% endif %}
     {% endif %}
   </div>
 </div>

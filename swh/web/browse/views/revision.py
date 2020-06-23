@@ -299,7 +299,7 @@ def revision_log_browse(request, sha1_git):
             "top_right_link": None,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": None,
         },
     )
@@ -597,7 +597,7 @@ def revision_browse(request, sha1_git):
             "top_right_link": top_right_link,
             "vault_cooking": vault_cooking,
             "diff_revision_url": diff_revision_url,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
             "error_code": error_code,
             "error_message": error_message,

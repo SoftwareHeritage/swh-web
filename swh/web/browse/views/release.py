@@ -232,7 +232,7 @@ def release_browse(request, sha1_git):
             "swh_object_metadata": release_metadata,
             "release": release,
             "snapshot_context": snapshot_context,
-            "show_actions_menu": True,
+            "show_actions": True,
             "breadcrumbs": None,
             "vault_cooking": vault_cooking,
             "top_right_link": None,
