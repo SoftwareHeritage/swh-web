@@ -30,6 +30,7 @@ from swh.web.browse.utils import (
     get_directory_entries,
     gen_directory_link,
     gen_revision_link,
+    gen_revision_url,
     request_content,
     gen_content_link,
     prepare_content_for_display,
@@ -588,7 +589,24 @@ def get_snapshot_context(
             browse_view_name, url_args=url_args, query_params=release_query_params,
         )
 
-    return SnapshotContext(
+    revision_info = None
+    if revision_id:
+        try:
+            revision_info = service.lookup_revision(revision_id)
+        except NotFoundExc:
+            pass
+        else:
+            revision_info["date"] = format_utc_iso_date(revision_info["date"])
+            revision_info["committer_date"] = format_utc_iso_date(
+                revision_info["committer_date"]
+            )
+            if revision_info["message"]:
+                message_lines = revision_info["message"].split("\n")
+                revision_info["message_header"] = message_lines[0]
+            else:
+                revision_info["message_header"] = ""
+
+    snapshot_context = SnapshotContext(
         branch=branch_name,
         branches=branches,
         branches_url=branches_url,
@@ -601,6 +619,7 @@ def get_snapshot_context(
         releases=releases,
         releases_url=releases_url,
         revision_id=revision_id,
+        revision_info=revision_info,
         root_directory=root_directory,
         snapshot_id=snapshot_id,
         snapshot_sizes=snapshot_sizes,
@@ -608,6 +627,11 @@ def get_snapshot_context(
         url_args=url_args,
         visit_info=visit_info,
     )
+
+    if revision_info:
+        revision_info["revision_url"] = gen_revision_url(revision_id, snapshot_context)
+
+    return snapshot_context
 
 
 def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
@@ -851,7 +875,7 @@ def browse_snapshot_directory(
             "readme_html": readme_html,
             "snapshot_context": snapshot_context,
             "vault_cooking": vault_cooking,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
         },
     )
@@ -1037,7 +1061,7 @@ def browse_snapshot_content(
             "top_right_link": top_right_link,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
             "error_code": content_data.get("error_code"),
             "error_message": content_data.get("error_message"),
@@ -1187,7 +1211,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
             "top_right_link": None,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
         },
     )
@@ -1436,6 +1460,6 @@ def browse_snapshot_releases(
             "next_releases_url": next_releases_url,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": False,
+            "show_actions": False,
         },
     )

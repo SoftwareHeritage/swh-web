@@ -270,7 +270,7 @@ def _origin_visits_browse(request, origin_url):
             "origin_info": origin_info,
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
-            "show_actions_menu": False,
+            "show_actions": False,
         },
     )
 

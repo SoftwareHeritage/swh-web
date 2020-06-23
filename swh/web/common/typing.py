@@ -75,7 +75,7 @@ class SnapshotReleaseInfo(TypedDict):
 
 class SnapshotContext(TypedDict):
     branch: Optional[str]
-    """optional branch name set when browsing snapshot int that scope"""
+    """optional branch name set when browsing snapshot in that scope"""
     branches: List[SnapshotBranchInfo]
     """list of snapshot branches (possibly truncated)"""
     branches_url: str
@@ -89,15 +89,17 @@ class SnapshotContext(TypedDict):
     query_params: QueryParameters
     """common query parameters when browsing snapshot content"""
     release: Optional[str]
-    """optional release name set when browsing snapshot int that scope"""
+    """optional release name set when browsing snapshot in that scope"""
     release_id: Optional[str]
-    """optional release identifier set when browsing snapshot int that scope"""
+    """optional release identifier set when browsing snapshot in that scope"""
     releases: List[SnapshotReleaseInfo]
     """list of snapshot releases (possibly truncated)"""
     releases_url: str
     """snapshot releases list browse URL"""
     revision_id: Optional[str]
-    """optional revision identifier set when browsing snapshot int that scope"""
+    """optional revision identifier set when browsing snapshot in that scope"""
+    revision_info: Optional[Dict[str, Any]]
+    """optional revision info set when browsing snapshot in that scope"""
     root_directory: Optional[str]
     """optional root directory identifier set when browsing snapshot content"""
     snapshot_id: str

@@ -45,19 +45,18 @@ var InboundFilters = /** @class */ (function () {
             logger.warn("Event dropped due to being matched by `ignoreErrors` option.\nEvent: " + getEventDescription(event));
             return true;
         }
-        if (this._isBlacklistedUrl(event, options)) {
-            logger.warn("Event dropped due to being matched by `blacklistUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
+        if (this._isDeniedUrl(event, options)) {
+            logger.warn("Event dropped due to being matched by `denyUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
             return true;
         }
-        if (!this._isWhitelistedUrl(event, options)) {
-            logger.warn("Event dropped due to not being matched by `whitelistUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
+        if (!this._isAllowedUrl(event, options)) {
+            logger.warn("Event dropped due to not being matched by `allowUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
             return true;
         }
         return false;
     };
     /** JSDoc */
     InboundFilters.prototype._isSentryError = function (event, options) {
-        if (options === void 0) { options = {}; }
         if (!options.ignoreInternal) {
             return false;
         }
@@ -75,7 +74,6 @@ var InboundFilters = /** @class */ (function () {
     };
     /** JSDoc */
     InboundFilters.prototype._isIgnoredError = function (event, options) {
-        if (options === void 0) { options = {}; }
         if (!options.ignoreErrors || !options.ignoreErrors.length) {
             return false;
         }
@@ -85,33 +83,32 @@ var InboundFilters = /** @class */ (function () {
         });
     };
     /** JSDoc */
-    InboundFilters.prototype._isBlacklistedUrl = function (event, options) {
-        if (options === void 0) { options = {}; }
+    InboundFilters.prototype._isDeniedUrl = function (event, options) {
         // TODO: Use Glob instead?
-        if (!options.blacklistUrls || !options.blacklistUrls.length) {
+        if (!options.denyUrls || !options.denyUrls.length) {
             return false;
         }
         var url = this._getEventFilterUrl(event);
-        return !url ? false : options.blacklistUrls.some(function (pattern) { return isMatchingPattern(url, pattern); });
+        return !url ? false : options.denyUrls.some(function (pattern) { return isMatchingPattern(url, pattern); });
     };
     /** JSDoc */
-    InboundFilters.prototype._isWhitelistedUrl = function (event, options) {
-        if (options === void 0) { options = {}; }
+    InboundFilters.prototype._isAllowedUrl = function (event, options) {
         // TODO: Use Glob instead?
-        if (!options.whitelistUrls || !options.whitelistUrls.length) {
+        if (!options.allowUrls || !options.allowUrls.length) {
             return true;
         }
         var url = this._getEventFilterUrl(event);
-        return !url ? true : options.whitelistUrls.some(function (pattern) { return isMatchingPattern(url, pattern); });
+        return !url ? true : options.allowUrls.some(function (pattern) { return isMatchingPattern(url, pattern); });
     };
     /** JSDoc */
     InboundFilters.prototype._mergeOptions = function (clientOptions) {
         if (clientOptions === void 0) { clientOptions = {}; }
+        // tslint:disable:deprecation
         return {
-            blacklistUrls: tslib_1.__spread((this._options.blacklistUrls || []), (clientOptions.blacklistUrls || [])),
+            allowUrls: tslib_1.__spread((this._options.whitelistUrls || []), (this._options.allowUrls || []), (clientOptions.whitelistUrls || []), (clientOptions.allowUrls || [])),
+            denyUrls: tslib_1.__spread((this._options.blacklistUrls || []), (this._options.denyUrls || []), (clientOptions.blacklistUrls || []), (clientOptions.denyUrls || [])),
             ignoreErrors: tslib_1.__spread((this._options.ignoreErrors || []), (clientOptions.ignoreErrors || []), DEFAULT_IGNORE_ERRORS),
             ignoreInternal: typeof this._options.ignoreInternal !== 'undefined' ? this._options.ignoreInternal : true,
-            whitelistUrls: tslib_1.__spread((this._options.whitelistUrls || []), (clientOptions.whitelistUrls || [])),
         };
     };
     /** JSDoc */
