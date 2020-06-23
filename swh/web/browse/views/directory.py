@@ -215,7 +215,7 @@ def _directory_browse(request, sha1_git, path=None):
             "readme_html": readme_html,
             "snapshot_context": snapshot_context,
             "vault_cooking": vault_cooking,
-            "show_actions_menu": True,
+            "show_actions": True,
             "swhids_info": swhids_info,
         },
     )

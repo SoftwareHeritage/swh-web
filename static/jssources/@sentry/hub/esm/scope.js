@@ -140,10 +140,17 @@ var Scope = /** @class */ (function () {
     /**
      * @inheritDoc
      */
-    Scope.prototype.setTransaction = function (transaction) {
-        this._transaction = transaction;
+    Scope.prototype.setTransactionName = function (name) {
+        this._transactionName = name;
         this._notifyScopeListeners();
         return this;
+    };
+    /**
+     * Can be removed in major version.
+     * @deprecated in favor of {@link this.setTransactionName}
+     */
+    Scope.prototype.setTransaction = function (name) {
+        return this.setTransactionName(name);
     };
     /**
      * @inheritDoc
@@ -163,11 +170,20 @@ var Scope = /** @class */ (function () {
         return this;
     };
     /**
-     * Internal getter for Span, used in Hub.
-     * @hidden
+     * @inheritDoc
      */
     Scope.prototype.getSpan = function () {
         return this._span;
+    };
+    /**
+     * @inheritDoc
+     */
+    Scope.prototype.getTransaction = function () {
+        var span = this.getSpan();
+        if (span && span.spanRecorder && span.spanRecorder.spans[0]) {
+            return span.spanRecorder.spans[0];
+        }
+        return undefined;
     };
     /**
      * Inherit values from the parent scope.
@@ -183,7 +199,7 @@ var Scope = /** @class */ (function () {
             newScope._user = scope._user;
             newScope._level = scope._level;
             newScope._span = scope._span;
-            newScope._transaction = scope._transaction;
+            newScope._transactionName = scope._transactionName;
             newScope._fingerprint = scope._fingerprint;
             newScope._eventProcessors = tslib_1.__spread(scope._eventProcessors);
         }
@@ -242,7 +258,7 @@ var Scope = /** @class */ (function () {
         this._user = {};
         this._contexts = {};
         this._level = undefined;
-        this._transaction = undefined;
+        this._transactionName = undefined;
         this._fingerprint = undefined;
         this._span = undefined;
         this._notifyScopeListeners();
@@ -312,8 +328,8 @@ var Scope = /** @class */ (function () {
         if (this._level) {
             event.level = this._level;
         }
-        if (this._transaction) {
-            event.transaction = this._transaction;
+        if (this._transactionName) {
+            event.transaction = this._transactionName;
         }
         // We want to set the trace context for normal events only if there isn't already
         // a trace context on the event. There is a product feature in place where we link

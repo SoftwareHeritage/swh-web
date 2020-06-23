@@ -39,6 +39,7 @@ var Hub = /** @class */ (function () {
         /** Is a {@link Layer}[] containing the client and scope */
         this._stack = [];
         this._stack.push({ client: client, scope: scope });
+        this.bindClient(client);
     }
     /**
      * Internal helper function to call a method on the top client if it exists.
