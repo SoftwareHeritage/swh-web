@@ -65,7 +65,7 @@ describe('Test origin-search', function() {
       .find('i')
       .should('have.class', 'mdi-check-bold')
       .and('have.attr', 'title',
-           'Origin has at least one full visit by Software Heritage');
+           'Software origin has been archived by Software Heritage');
   });
 
   it('should show not found message when no repo matches', function() {
