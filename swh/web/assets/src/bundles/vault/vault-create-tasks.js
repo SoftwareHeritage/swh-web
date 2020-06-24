@@ -33,6 +33,15 @@ export function vaultRequest(objectType, objectId) {
 }
 
 function addVaultCookingTask(cookingTask) {
+
+  const swhidsContext = swh.webapp.getSwhIdsContext();
+  cookingTask.origin = swhidsContext[cookingTask.object_type].context.origin;
+  cookingTask.path = swhidsContext[cookingTask.object_type].context.path;
+  cookingTask.browse_url = swhidsContext[cookingTask.object_type].swhid_with_context_url;
+  if (!cookingTask.browse_url) {
+    cookingTask.browse_url = swhidsContext[cookingTask.object_type].swhid_url;
+  }
+
   let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
   if (!vaultCookingTasks) {
     vaultCookingTasks = [];

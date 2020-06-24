@@ -67,8 +67,10 @@ function testStatus(taskId, color, statusMsg, status) {
 describe('Vault Cooking User Interface Tests', function() {
 
   before(function() {
-    this.directory = this.origin[0].directory[0].id;
-    this.directoryUrl = this.Urls.browse_directory(this.directory);
+    const dirInfo = this.origin[0].directory[0];
+    this.directory = dirInfo.id;
+    this.directoryUrl = this.Urls.browse_origin_directory() +
+      `?origin_url=${this.origin[0].url}&path=${dirInfo.path}`;
     this.vaultDirectoryUrl = this.Urls.api_1_vault_cook_directory(this.directory);
     this.vaultFetchDirectoryUrl = this.Urls.api_1_vault_fetch_directory(this.directory);
 
@@ -130,70 +132,82 @@ describe('Vault Cooking User Interface Tests', function() {
       response: this.genVaultDirCookingResponse('new')
     }).as('checkVaultCookingTask');
 
-    // Create a vault cooking task through the GUI
-    cy.get('.modal-dialog')
-      .contains('button:visible', 'Ok')
-      .click();
+    cy.window().then(win => {
+      const swhIdsContext = win.swh.webapp.getSwhIdsContext();
+      const browseDirectoryUrl = swhIdsContext.directory.swhid_with_context_url;
 
-    cy.wait('@createVaultCookingTask');
+      // Create a vault cooking task through the GUI
+      cy.get('.modal-dialog')
+        .contains('button:visible', 'Ok')
+        .click();
 
-    // Check that a redirection to the vault UI has been performed
-    cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
+      cy.wait('@createVaultCookingTask');
 
-    cy.wait('@checkVaultCookingTask').then(() => {
-      testStatus(this.directory, progressbarColors['new'], 'new', 'new');
+      // Check that a redirection to the vault UI has been performed
+      cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
+
+      cy.wait('@checkVaultCookingTask').then(() => {
+        testStatus(this.directory, progressbarColors['new'], 'new', 'new');
+      });
+
+      // Stub response to the vault API indicating the task is processing
+      cy.route({
+        method: 'GET',
+        url: this.vaultDirectoryUrl,
+        response: this.genVaultDirCookingResponse('pending', 'Processing...')
+      }).as('checkVaultCookingTask');
+
+      cy.wait('@checkVaultCookingTask').then(() => {
+        testStatus(this.directory, progressbarColors['pending'], 'Processing...', 'pending');
+      });
+
+      // Stub response to the vault API indicating the task is finished
+      cy.route({
+        method: 'GET',
+        url: this.vaultDirectoryUrl,
+        response: this.genVaultDirCookingResponse('done')
+      }).as('checkVaultCookingTask');
+
+      cy.wait('@checkVaultCookingTask').then(() => {
+        testStatus(this.directory, progressbarColors['done'], 'done', 'done');
+      });
+
+      // Stub response to the vault API to simulate archive download
+      cy.route({
+        method: 'GET',
+        url: this.vaultFetchDirectoryUrl,
+        response: `fx:${this.directory}.tar.gz,binary`,
+        headers: {
+          'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
+          'Content-Type': 'application/gzip'
+        }
+      }).as('fetchCookedArchive');
+
+      cy.get(`#vault-task-${this.directory} .vault-origin a`)
+        .should('have.text', this.origin[0].url)
+        .should('have.attr', 'href', `${this.Urls.browse_origin()}?origin_url=${this.origin[0].url}`);
+
+      cy.get(`#vault-task-${this.directory} .vault-object-info a`)
+        .should('have.text', this.directory)
+        .should('have.attr', 'href', browseDirectoryUrl);
+
+      cy.get(`#vault-task-${this.directory} .vault-dl-link button`)
+        .click();
+
+      cy.wait('@fetchCookedArchive').then((xhr) => {
+        assert.isNotNull(xhr.response.body);
+      });
     });
-
-    // Stub response to the vault API indicating the task is processing
-    cy.route({
-      method: 'GET',
-      url: this.vaultDirectoryUrl,
-      response: this.genVaultDirCookingResponse('pending', 'Processing...')
-    }).as('checkVaultCookingTask');
-
-    cy.wait('@checkVaultCookingTask').then(() => {
-      testStatus(this.directory, progressbarColors['pending'], 'Processing...', 'pending');
-    });
-
-    // Stub response to the vault API indicating the task is finished
-    cy.route({
-      method: 'GET',
-      url: this.vaultDirectoryUrl,
-      response: this.genVaultDirCookingResponse('done')
-    }).as('checkVaultCookingTask');
-
-    cy.wait('@checkVaultCookingTask').then(() => {
-      testStatus(this.directory, progressbarColors['done'], 'done', 'done');
-    });
-
-    // Stub response to the vault API to simulate archive download
-    cy.route({
-      method: 'GET',
-      url: this.vaultFetchDirectoryUrl,
-      response: `fx:${this.directory}.tar.gz,binary`,
-      headers: {
-        'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
-        'Content-Type': 'application/gzip'
-      }
-    }).as('fetchCookedArchive');
-
-    cy.get(`#vault-task-${this.directory} .vault-dl-link button`)
-      .click();
-
-    cy.wait('@fetchCookedArchive').then((xhr) => {
-      assert.isNotNull(xhr.response.body);
-    });
-
   });
 
   it('should create a revision cooking task and report its status', function() {
     cy.adminLogin();
+
     // Browse a revision
     cy.visit(this.revisionUrl);
 
     // Stub responses when requesting the vault API to simulate
     // a task has been created
-
     cy.route({
       method: 'GET',
       url: this.vaultRevisionUrl,
@@ -215,59 +229,71 @@ describe('Vault Cooking User Interface Tests', function() {
       response: this.genVaultRevCookingResponse('new')
     }).as('checkVaultCookingTask');
 
-    // Create a vault cooking task through the GUI
-    cy.get('.modal-dialog')
-      .contains('button:visible', 'Ok')
-      .click();
+    cy.window().then(win => {
+      const swhIdsContext = win.swh.webapp.getSwhIdsContext();
+      const browseRevisionUrl = swhIdsContext.revision.swhid_url;
 
-    cy.wait('@createVaultCookingTask');
+      // Create a vault cooking task through the GUI
+      cy.get('.modal-dialog')
+        .contains('button:visible', 'Ok')
+        .click();
 
-    // Check that a redirection to the vault UI has been performed
-    cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
+      cy.wait('@createVaultCookingTask');
 
-    cy.wait('@checkVaultCookingTask').then(() => {
-      testStatus(this.revision, progressbarColors['new'], 'new', 'new');
-    });
+      // Check that a redirection to the vault UI has been performed
+      cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
 
-    // Stub response to the vault API indicating the task is processing
-    cy.route({
-      method: 'GET',
-      url: this.vaultRevisionUrl,
-      response: this.genVaultRevCookingResponse('pending', 'Processing...')
-    }).as('checkVaultCookingTask');
+      cy.wait('@checkVaultCookingTask').then(() => {
+        testStatus(this.revision, progressbarColors['new'], 'new', 'new');
+      });
 
-    cy.wait('@checkVaultCookingTask').then(() => {
-      testStatus(this.revision, progressbarColors['pending'], 'Processing...', 'pending');
-    });
+      // Stub response to the vault API indicating the task is processing
+      cy.route({
+        method: 'GET',
+        url: this.vaultRevisionUrl,
+        response: this.genVaultRevCookingResponse('pending', 'Processing...')
+      }).as('checkVaultCookingTask');
 
-    // Stub response to the vault API indicating the task is finished
-    cy.route({
-      method: 'GET',
-      url: this.vaultRevisionUrl,
-      response: this.genVaultRevCookingResponse('done')
-    }).as('checkVaultCookingTask');
+      cy.wait('@checkVaultCookingTask').then(() => {
+        testStatus(this.revision, progressbarColors['pending'], 'Processing...', 'pending');
+      });
 
-    cy.wait('@checkVaultCookingTask').then(() => {
-      testStatus(this.revision, progressbarColors['done'], 'done', 'done');
-    });
+      // Stub response to the vault API indicating the task is finished
+      cy.route({
+        method: 'GET',
+        url: this.vaultRevisionUrl,
+        response: this.genVaultRevCookingResponse('done')
+      }).as('checkVaultCookingTask');
 
-    // Stub response to the vault API indicating to simulate archive
-    // download
-    cy.route({
-      method: 'GET',
-      url: this.vaultFetchRevisionUrl,
-      response: `fx:${this.revision}.gitfast.gz,binary`,
-      headers: {
-        'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
-        'Content-Type': 'application/gzip'
-      }
-    }).as('fetchCookedArchive');
+      cy.wait('@checkVaultCookingTask').then(() => {
+        testStatus(this.revision, progressbarColors['done'], 'done', 'done');
+      });
 
-    cy.get(`#vault-task-${this.revision} .vault-dl-link button`)
-      .click();
+      // Stub response to the vault API indicating to simulate archive
+      // download
+      cy.route({
+        method: 'GET',
+        url: this.vaultFetchRevisionUrl,
+        response: `fx:${this.revision}.gitfast.gz,binary`,
+        headers: {
+          'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
+          'Content-Type': 'application/gzip'
+        }
+      }).as('fetchCookedArchive');
 
-    cy.wait('@fetchCookedArchive').then((xhr) => {
-      assert.isNotNull(xhr.response.body);
+      cy.get(`#vault-task-${this.revision} .vault-origin`)
+        .should('have.text', 'unknown');
+
+      cy.get(`#vault-task-${this.revision} .vault-object-info a`)
+        .should('have.text', this.revision)
+        .should('have.attr', 'href', browseRevisionUrl);
+
+      cy.get(`#vault-task-${this.revision} .vault-dl-link button`)
+        .click();
+
+      cy.wait('@fetchCookedArchive').then((xhr) => {
+        assert.isNotNull(xhr.response.body);
+      });
     });
   });
 
