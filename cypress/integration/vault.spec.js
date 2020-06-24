@@ -103,14 +103,71 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.server();
   });
 
-  it('should create a directory cooking task and report its status', function() {
+  it('should report an error when vault service is experiencing issues', function() {
+    // Browse a directory
+    cy.visit(this.directoryUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // an internal server error
+    cy.route({
+      method: 'GET',
+      url: this.vaultDirectoryUrl,
+      response: {'exception': 'APIError'},
+      status: 500
+    }).as('checkVaultCookingTask');
+
+    cy.contains('button', 'Download')
+      .click();
+
+    // Check error alert is displayed
+    cy.get('.alert-danger')
+    .should('be.visible')
+    .should('contain', 'Archive cooking service is currently experiencing issues.');
+  });
+
+  it('should report an error when a cooking task creation failed', function() {
+
+    // Browse a directory
+    cy.visit(this.directoryUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // a task can not be created
+    cy.route({
+      method: 'GET',
+      url: this.vaultDirectoryUrl,
+      response: {'exception': 'NotFoundExc'}
+    }).as('checkVaultCookingTask');
+
+    cy.route({
+      method: 'POST',
+      url: this.vaultDirectoryUrl,
+      response: {'exception': 'ValueError'},
+      status: 500
+    }).as('createVaultCookingTask');
+
+    cy.contains('button', 'Download')
+      .click();
+
+    // Create a vault cooking task through the GUI
+    cy.get('.modal-dialog')
+      .contains('button:visible', 'Ok')
+      .click();
+
+    cy.wait('@createVaultCookingTask');
+
+    // Check error alert is displayed
+    cy.get('.alert-danger')
+      .should('be.visible')
+      .should('contain', 'Archive cooking request submission failed.');
+  });
+
+  it('should create a directory cooking task and report the success', function() {
 
     // Browse a directory
     cy.visit(this.directoryUrl);
 
     // Stub responses when requesting the vault API to simulate
     // a task has been created
-
     cy.route({
       method: 'GET',
       url: this.vaultDirectoryUrl,
@@ -143,8 +200,13 @@ describe('Vault Cooking User Interface Tests', function() {
 
       cy.wait('@createVaultCookingTask');
 
-      // Check that a redirection to the vault UI has been performed
-      cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
+      // Check success alert is displayed
+      cy.get('.alert-success')
+        .should('be.visible')
+        .should('contain', 'Archive cooking request successfully submitted.');
+
+      // Go to Downloads page
+      cy.visit(this.Urls.browse_vault());
 
       cy.wait('@checkVaultCookingTask').then(() => {
         testStatus(this.directory, progressbarColors['new'], 'new', 'new');
@@ -240,8 +302,13 @@ describe('Vault Cooking User Interface Tests', function() {
 
       cy.wait('@createVaultCookingTask');
 
-      // Check that a redirection to the vault UI has been performed
-      cy.url().should('eq', Cypress.config().baseUrl + this.Urls.browse_vault());
+      // Check success alert is displayed
+      cy.get('.alert-success')
+        .should('be.visible')
+        .should('contain', 'Archive cooking request successfully submitted.');
+
+      // Go to Downloads page
+      cy.visit(this.Urls.browse_vault());
 
       cy.wait('@checkVaultCookingTask').then(() => {
         testStatus(this.revision, progressbarColors['new'], 'new', 'new');
