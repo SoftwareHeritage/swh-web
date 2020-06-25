@@ -159,34 +159,76 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display origin save info in the requests table', function() {
-    cy.fixture('origin-save').then(originSaveJSON => {
-      cy.route('GET', '/save/requests/list/**', originSaveJSON);
-      cy.get('#swh-origin-save-requests-list-tab').click();
-      cy.get('tbody tr').then(rows => {
-        let i = 0;
-        for (let row of rows) {
-          const cells = row.cells;
-          const requestDateStr = new Date(originSaveJSON.data[i].save_request_date).toLocaleString();
-          const saveStatus = originSaveJSON.data[i].save_task_status;
-          assert.equal($(cells[0]).text(), requestDateStr);
-          assert.equal($(cells[1]).text(), originSaveJSON.data[i].visit_type);
-          let html = '';
-          if (saveStatus === 'succeed') {
-            let browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${originSaveJSON.data[i].origin_url}`;
-            browseOriginUrl += `&amp;timestamp=${originSaveJSON.data[i].visit_date}`;
-            html += `<a href="${browseOriginUrl}">${originSaveJSON.data[i].origin_url}</a>`;
-          } else {
-            html += originSaveJSON.data[i].origin_url;
-          }
-          html += `&nbsp;<a href="${originSaveJSON.data[i].origin_url}">`;
-          html += '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
-          assert.equal($(cells[2]).html(), html);
-          assert.equal($(cells[3]).text(), originSaveJSON.data[i].save_request_status);
-          assert.equal($(cells[4]).text(), saveStatus);
-          ++i;
+    cy.fixture('origin-save').as('originSaveJSON');
+    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('tbody tr').then(rows => {
+      let i = 0;
+      for (let row of rows) {
+        const cells = row.cells;
+        const requestDateStr = new Date(this.originSaveJSON.data[i].save_request_date).toLocaleString();
+        const saveStatus = this.originSaveJSON.data[i].save_task_status;
+        assert.equal($(cells[0]).text(), requestDateStr);
+        assert.equal($(cells[1]).text(), this.originSaveJSON.data[i].visit_type);
+        let html = '';
+        if (saveStatus === 'succeed') {
+          let browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${this.originSaveJSON.data[i].origin_url}`;
+          browseOriginUrl += `&amp;timestamp=${this.originSaveJSON.data[i].visit_date}`;
+          html += `<a href="${browseOriginUrl}">${this.originSaveJSON.data[i].origin_url}</a>`;
+        } else {
+          html += this.originSaveJSON.data[i].origin_url;
         }
-      });
+        html += `&nbsp;<a href="${this.originSaveJSON.data[i].origin_url}">`;
+        html += '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
+        assert.equal($(cells[2]).html(), html);
+        assert.equal($(cells[3]).text(), this.originSaveJSON.data[i].save_request_status);
+        assert.equal($(cells[4]).text(), saveStatus);
+        ++i;
+      }
     });
+  });
+
+  it('should display/close task info popover when clicking on the info button', function() {
+    cy.fixture('origin-save').as('originSaveJSON');
+    cy.fixture('save-task-info').as('saveTaskInfoJSON');
+    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+    cy.route('GET', '/save/task/info/**', '@saveTaskInfoJSON');
+
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('.swh-save-request-info')
+      .eq(0)
+      .click();
+
+    cy.get('.swh-save-request-info-popover')
+      .should('be.visible');
+
+    cy.get('.swh-save-request-info')
+      .eq(0)
+      .click();
+
+    cy.get('.swh-save-request-info-popover')
+      .should('not.be.visible');
+  });
+
+  it('should hide task info popover when clicking on the close button', function() {
+    cy.fixture('origin-save').as('originSaveJSON');
+    cy.fixture('save-task-info').as('saveTaskInfoJSON');
+    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+    cy.route('GET', '/save/task/info/**', '@saveTaskInfoJSON');
+
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('.swh-save-request-info')
+      .eq(0)
+      .click();
+
+    cy.get('.swh-save-request-info-popover')
+      .should('be.visible');
+
+    cy.get('.swh-save-request-info-close')
+      .click();
+
+    cy.get('.swh-save-request-info-popover')
+      .should('not.be.visible');
   });
 
 });

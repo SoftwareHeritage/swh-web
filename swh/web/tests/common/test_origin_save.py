@@ -46,8 +46,13 @@ def test_get_save_origin_archived_task_info(mocker):
 
 
 @pytest.mark.django_db
-def test_get_save_origin_task_info_with_es(mocker):
+def test_get_save_origin_task_full_info_with_es(mocker):
     _get_save_origin_task_info_test(mocker, es_available=True)
+
+
+@pytest.mark.django_db
+def test_get_save_origin_task_info_with_es(mocker):
+    _get_save_origin_task_info_test(mocker, es_available=True, full_info=False)
 
 
 @pytest.mark.django_db
@@ -72,7 +77,7 @@ def _mock_scheduler(mocker, task_status="succeed", task_archived=False):
         if not task_archived
         else None
     )
-    mock_scheduler.get_tasks.return_value = [task]
+    mock_scheduler.get_tasks.return_value = [dict(task) if task else None]
 
     task_run = {
         "backend_id": "f00c712c-e820-41ce-a07c-9bf8df914205",
@@ -84,11 +89,13 @@ def _mock_scheduler(mocker, task_status="succeed", task_archived=False):
         "status": task_status,
         "task": _task_id,
     }
-    mock_scheduler.get_task_runs.return_value = [task_run]
+    mock_scheduler.get_task_runs.return_value = [dict(task_run)]
     return task, task_run
 
 
-def _get_save_origin_task_info_test(mocker, task_archived=False, es_available=True):
+def _get_save_origin_task_info_test(
+    mocker, task_archived=False, es_available=True, full_info=True
+):
     swh_web_config = get_config()
 
     if es_available:
@@ -111,7 +118,7 @@ def _get_save_origin_task_info_test(mocker, task_archived=False, es_available=Tr
 
     task_exec_data = es_response["hits"]["hits"][-1]["_source"]
 
-    sor_task_info = get_save_origin_task_info(sor.id)
+    sor_task_info = get_save_origin_task_info(sor.id, full_info=full_info)
 
     expected_result = (
         {
@@ -120,6 +127,7 @@ def _get_save_origin_task_info_test(mocker, task_archived=False, es_available=Tr
             "id": task["id"],
             "backend_id": task_run["backend_id"],
             "scheduled": task_run["scheduled"],
+            "started": task_run["started"],
             "ended": task_run["ended"],
             "status": task_run["status"],
         }
@@ -135,6 +143,20 @@ def _get_save_origin_task_info_test(mocker, task_archived=False, es_available=Tr
                 "worker": task_exec_data["hostname"],
             }
         )
+
+    if not full_info:
+        expected_result.pop("id", None)
+        expected_result.pop("backend_id", None)
+        expected_result.pop("worker", None)
+        if "message" in expected_result:
+            message = ""
+            message_lines = expected_result["message"].split("\n")
+            for line in message_lines:
+                if line.startswith("Traceback"):
+                    break
+                message += f"{line}\n"
+            message += message_lines[-1]
+            expected_result["message"] = message
 
     assert sor_task_info == expected_result
 

@@ -19,6 +19,7 @@ from swh.web.common.origin_save import (
     create_save_origin_request,
     get_savable_visit_types,
     get_save_origin_requests_from_queryset,
+    get_save_origin_task_info,
 )
 from swh.web.common.utils import EnforceCSRFAuthentication
 
@@ -101,6 +102,16 @@ def _origin_save_requests_list(request, status):
     return HttpResponse(table_data_json, content_type="application/json")
 
 
+def _save_origin_task_info(request, save_request_id):
+    request_info = get_save_origin_task_info(
+        save_request_id, full_info=request.user.is_staff
+    )
+    for date_field in ("scheduled", "started", "ended"):
+        if date_field in request_info and request_info[date_field] is not None:
+            request_info[date_field] = request_info[date_field].isoformat()
+    return HttpResponse(json.dumps(request_info), content_type="application/json")
+
+
 urlpatterns = [
     url(r"^save/$", _origin_save_view, name="origin-save"),
     url(
@@ -113,5 +124,10 @@ urlpatterns = [
         r"^save/requests/list/(?P<status>.+)/$",
         _origin_save_requests_list,
         name="origin-save-requests-list",
+    ),
+    url(
+        r"^save/task/info/(?P<save_request_id>.+)/",
+        _save_origin_task_info,
+        name="origin-save-task-info",
     ),
 ]
