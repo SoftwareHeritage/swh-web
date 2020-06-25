@@ -499,9 +499,25 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
             path=f"/{directory_file['name']}",
         )
 
+        _check_resolved_swhid_browse_url(
+            CONTENT,
+            directory_file["target"],
+            snapshot_context,
+            path=f"/{directory_file['name']}",
+            lines="10",
+        )
+
+        _check_resolved_swhid_browse_url(
+            CONTENT,
+            directory_file["target"],
+            snapshot_context,
+            path=f"/{directory_file['name']}",
+            lines="10-20",
+        )
+
 
 def _check_resolved_swhid_browse_url(
-    object_type, object_id, snapshot_context, path=None
+    object_type, object_id, snapshot_context, path=None, lines=None
 ):
     snapshot_id = snapshot_context["snapshot_id"]
     origin_url = None
@@ -557,6 +573,9 @@ def _check_resolved_swhid_browse_url(
     if object_type == DIRECTORY:
         object_id = snapshot_context["root_directory"]
 
+    if lines:
+        obj_context["lines"] = lines
+
     obj_swhid = get_swh_persistent_id(object_type, object_id, metadata=obj_context)
 
     obj_swhid_resolved = resolve_swh_persistent_id(obj_swhid)
@@ -570,5 +589,10 @@ def _check_resolved_swhid_browse_url(
     expected_url = reverse(
         f"browse-{object_type}", url_args=url_args, query_params=query_params,
     )
+    if lines:
+        lines_number = lines.split("-")
+        expected_url += f"#L{lines_number[0]}"
+        if len(lines_number) > 1:
+            expected_url += f"-L{lines_number[1]}"
 
     assert obj_swhid_resolved["browse_url"] == expected_url
