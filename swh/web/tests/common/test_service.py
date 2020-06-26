@@ -204,16 +204,7 @@ def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
     archive_data.origin_add_one(new_origin)
 
     archive_data.origin_visit_add(
-        [
-            OriginVisit(
-                origin=new_origin.url,
-                date=ts,
-                type="git",
-                status="ongoing",
-                snapshot=None,
-            )
-            for ts in visit_dates
-        ]
+        [OriginVisit(origin=new_origin.url, date=ts, type="git",) for ts in visit_dates]
     )
 
     actual_origin_visits = list(
@@ -231,16 +222,7 @@ def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
 def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
     archive_data.origin_add_one(new_origin)
     visits = archive_data.origin_visit_add(
-        [
-            OriginVisit(
-                origin=new_origin.url,
-                date=ts,
-                type="git",
-                status="ongoing",
-                snapshot=None,
-            )
-            for ts in visit_dates
-        ]
+        [OriginVisit(origin=new_origin.url, date=ts, type="git",) for ts in visit_dates]
     )
 
     visit = random.choice(visits).visit

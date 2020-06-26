@@ -202,9 +202,7 @@ def _init_tests_data():
         storage.origin_add([Origin(url=url)])
         search.origin_update([{"url": url, "has_visits": True}])
         date = datetime.datetime(2019, 12, 3, 13, 55, 5, tzinfo=datetime.timezone.utc)
-        visit = OriginVisit(
-            origin=url, date=date, type="tar", status="ongoing", snapshot=None
-        )
+        visit = OriginVisit(origin=url, date=date, type="tar")
         visit = storage.origin_visit_add([visit])[0]
         visit_status = OriginVisitStatus(
             origin=url,

@@ -509,15 +509,7 @@ def test_origin_snapshot_null_branch(
 
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
-        [
-            OriginVisit(
-                origin=new_origin.url,
-                date=visit_dates[0],
-                type="git",
-                status="ongoing",
-                snapshot=None,
-            )
-        ]
+        [OriginVisit(origin=new_origin.url, date=visit_dates[0], type="git",)]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -554,15 +546,7 @@ def test_origin_snapshot_invalid_branch(
 
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
-        [
-            OriginVisit(
-                origin=new_origin.url,
-                date=visit_dates[0],
-                type="git",
-                status="ongoing",
-                snapshot=None,
-            )
-        ]
+        [OriginVisit(origin=new_origin.url, date=visit_dates[0], type="git",)]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -812,15 +796,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([snapshot])
     visit = archive_data.origin_visit_add(
-        [
-            OriginVisit(
-                origin=new_origin.url,
-                date=now(),
-                type="git",
-                status="ongoing",
-                snapshot=None,
-            )
-        ]
+        [OriginVisit(origin=new_origin.url, date=now(), type="git",)]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -1279,15 +1255,7 @@ def test_origin_branches_pagination_with_alias(
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
-        [
-            OriginVisit(
-                origin=new_origin.url,
-                date=visit_dates[0],
-                type="git",
-                status="ongoing",
-                snapshot=None,
-            )
-        ]
+        [OriginVisit(origin=new_origin.url, date=visit_dates[0], type="git",)]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
