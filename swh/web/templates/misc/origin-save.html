@@ -32,11 +32,11 @@ See top-level LICENSE file for more information
   <div class="form-row">
     <div class="col-md-1"></div>
     <div class="form-group col-md-2">
-      <label for="swh-input-visit-type">Visit type</label>
+      <label for="swh-input-visit-type">Origin type</label>
       <select id="swh-input-visit-type" class="form-control" required>
         {% comment %} <option selected value="">Choose...</option> {% endcomment %}
       </select>
-      <div class="invalid-feedback">The visit type must be specified</div>
+      <div class="invalid-feedback">The origin type must be specified</div>
     </div>
     <div class="form-group col-md-6">
       <label for="swh-input-origin-url">Origin url</label>
@@ -67,7 +67,7 @@ See top-level LICENSE file for more information
   <div id="swh-origin-save-requests-create" class="tab-pane active">
     <p style="margin-top: 1rem;">A "Save code now" request takes the following parameters:</p>
     <ul>
-      <li><b>Visit type:</b> the type of version control system the software origin is using.
+      <li><b>Origin type:</b> the type of version control system the software origin is using.
         Currently, the supported types are:
         <ul>
           <li><code>git</code>, for origins using <a href="https://git-scm.com/">Git</a></li>
@@ -110,6 +110,7 @@ See top-level LICENSE file for more information
           <th data-priority="5">Request</th>
           <th data-priority="2">Status</th>
           <th data-priority="6">Info</th>
+          <th data-priority="7"></th>
         </tr>
       </thead>
     </table>

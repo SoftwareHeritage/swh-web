@@ -120,6 +120,19 @@ export function initOriginSave() {
                 return '';
               }
             }
+          },
+          {
+            render: (data, type, row) => {
+              if (row.save_request_status === 'accepted') {
+                const saveAgainButton =
+                  '<button class="btn btn-default btn-sm swh-save-origin-again" type="button" ' +
+                  `onclick="swh.save.fillSaveRequestFormAndScroll(` +
+                  `'${row.visit_type}', '${row.origin_url}');">` +
+                  '<i class="mdi mdi-camera mdi-fw" aria-hidden="true"></i>' +
+                  'Save again</button>';
+                return saveAgainButton;
+              }
+            }
           }
         ],
         scrollY: '50vh',
@@ -430,4 +443,15 @@ export function displaySaveRequestInfo(event, saveRequestId) {
       $('.swh-popover').html(content);
       $(event.target).popover('update');
     });
+}
+
+export function fillSaveRequestFormAndScroll(visitType, originUrl) {
+  $('#swh-input-visit-type option').each(function() {
+    let val = $(this).val();
+    if (val === visitType) {
+      $(this).prop('selected', true);
+    }
+  });
+  $('#swh-input-origin-url').val(originUrl);
+  window.scrollTo(0, 0);
 }

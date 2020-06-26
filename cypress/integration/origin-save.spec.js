@@ -231,4 +231,21 @@ describe('Origin Save Tests', function() {
       .should('not.be.visible');
   });
 
+  it('should fill save request form when clicking on "Save again" button', function() {
+    cy.fixture('origin-save').as('originSaveJSON');
+    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('.swh-save-origin-again')
+      .eq(0)
+      .click();
+
+    cy.get('tbody tr').eq(0).then(row => {
+      const cells = row[0].cells;
+      cy.get('#swh-input-visit-type')
+        .should('have.value', $(cells[1]).text());
+      cy.get('#swh-input-origin-url')
+        .should('have.value', $(cells[2]).text().slice(0, -1));
+    });
+  });
 });
