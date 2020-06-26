@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-const url = '/';
+const url = '/browse/help/';
 
 describe('Test top-bar', function() {
   beforeEach(function() {
@@ -102,6 +102,20 @@ describe('Test top-bar', function() {
       .get('#swh-web-content')
       .should('have.class', 'container')
       .should('not.have.class', 'container-fluid');
+  });
+});
+
+describe('Test navbar', function() {
+  it('should redirect to search page when submitting search form in navbar', function() {
+    const keyword = 'python';
+    cy.get('#swh-origins-search-top-input')
+      .type(keyword);
+
+    cy.get('.swh-search-navbar')
+      .submit();
+
+    cy.url()
+      .should('include', `${this.Urls.browse_search()}?q=${keyword}`);
   });
 });
 

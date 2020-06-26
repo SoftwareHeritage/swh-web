@@ -673,3 +673,15 @@ div.d3-tooltip {
     line-height: 1rem;
     vertical-align: middle;
 }
+
+.swh-search-navbar {
+    position: absolute;
+    top: 0.7rem;
+    right: 15rem;
+    z-index: 50000;
+    width: 500px;
+}
+
+.sidebar-collapse .swh-search-navbar {
+    right: 4rem;
+}

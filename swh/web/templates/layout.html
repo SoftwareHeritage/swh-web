@@ -117,6 +117,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <div class="navbar" style="width: 94%;">
           <div class="swh-navbar-content">
             {% block navbar-content %}{% endblock %}
+            {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
+              <form class="form-horizontal d-none d-md-flex input-group swh-search-navbar"
+                  id="swh-origins-search-top">
+                <input class="form-control"
+                  placeholder="Enter a SWHID to resolve or keyword(s) to search for in origin URLs"
+                  type="text" id="swh-origins-search-top-input"/>
+                <div class="input-group-append">
+                  <button class="btn btn-primary" type="submit">
+                  <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </form>
+            {% endif %}
           </div>
         </div>
       </nav>

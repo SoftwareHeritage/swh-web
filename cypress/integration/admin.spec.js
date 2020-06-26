@@ -27,7 +27,7 @@ describe('Test Admin Login/logout', function() {
       .type('admin')
       .get('input[name="password"]')
       .type('admin')
-      .get('form')
+      .get('.container form')
       .submit();
 
     cy.location('pathname')
