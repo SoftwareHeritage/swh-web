@@ -156,25 +156,30 @@ def test_get_swhids_info_directory_context(archive_data, directory):
 
     dir_subdir_content = archive_data.directory_ls(dir_subdir["target"])
     dir_subdir_files = [e for e in dir_subdir_content if e["type"] == "file"]
-    dir_subdir_file = random.choice(dir_subdir_files)
+
+    swh_objects_info = [
+        SWHObjectInfo(object_type=DIRECTORY, object_id=dir_subdir["target"])
+    ]
 
     extra_context = {
         "root_directory": directory,
         "path": dir_subdir_path,
-        "filename": dir_subdir_file["name"],
     }
-    swhids = get_swhids_info(
-        [
-            SWHObjectInfo(object_type=DIRECTORY, object_id=dir_subdir["target"]),
+
+    if dir_subdir_files:
+        dir_subdir_file = random.choice(dir_subdir_files)
+        extra_context["filename"] = dir_subdir_file["name"]
+        swh_objects_info.append(
             SWHObjectInfo(
                 object_type=CONTENT, object_id=dir_subdir_file["checksums"]["sha1_git"]
-            ),
-        ],
-        snapshot_context=None,
-        extra_context=extra_context,
+            )
+        )
+
+    swhids = get_swhids_info(
+        swh_objects_info, snapshot_context=None, extra_context=extra_context,
     )
+
     swhid_dir_parsed = get_persistent_identifier(swhids[0]["swhid_with_context"])
-    swhid_cnt_parsed = get_persistent_identifier(swhids[1]["swhid_with_context"])
 
     anchor = get_swh_persistent_id(DIRECTORY, directory)
 
@@ -183,10 +188,13 @@ def test_get_swhids_info_directory_context(archive_data, directory):
         "path": dir_subdir_path,
     }
 
-    assert swhid_cnt_parsed.metadata == {
-        "anchor": anchor,
-        "path": f'{dir_subdir_path}{dir_subdir_file["name"]}',
-    }
+    if dir_subdir_files:
+        swhid_cnt_parsed = get_persistent_identifier(swhids[1]["swhid_with_context"])
+
+        assert swhid_cnt_parsed.metadata == {
+            "anchor": anchor,
+            "path": f'{dir_subdir_path}{dir_subdir_file["name"]}',
+        }
 
 
 @given(revision())
@@ -491,9 +499,25 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
             path=f"/{directory_file['name']}",
         )
 
+        _check_resolved_swhid_browse_url(
+            CONTENT,
+            directory_file["target"],
+            snapshot_context,
+            path=f"/{directory_file['name']}",
+            lines="10",
+        )
+
+        _check_resolved_swhid_browse_url(
+            CONTENT,
+            directory_file["target"],
+            snapshot_context,
+            path=f"/{directory_file['name']}",
+            lines="10-20",
+        )
+
 
 def _check_resolved_swhid_browse_url(
-    object_type, object_id, snapshot_context, path=None
+    object_type, object_id, snapshot_context, path=None, lines=None
 ):
     snapshot_id = snapshot_context["snapshot_id"]
     origin_url = None
@@ -549,6 +573,9 @@ def _check_resolved_swhid_browse_url(
     if object_type == DIRECTORY:
         object_id = snapshot_context["root_directory"]
 
+    if lines:
+        obj_context["lines"] = lines
+
     obj_swhid = get_swh_persistent_id(object_type, object_id, metadata=obj_context)
 
     obj_swhid_resolved = resolve_swh_persistent_id(obj_swhid)
@@ -562,5 +589,10 @@ def _check_resolved_swhid_browse_url(
     expected_url = reverse(
         f"browse-{object_type}", url_args=url_args, query_params=query_params,
     )
+    if lines:
+        lines_number = lines.split("-")
+        expected_url += f"#L{lines_number[0]}"
+        if len(lines_number) > 1:
+            expected_url += f"-L{lines_number[1]}"
 
     assert obj_swhid_resolved["browse_url"] == expected_url

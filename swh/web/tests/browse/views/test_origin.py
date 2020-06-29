@@ -497,7 +497,7 @@ def test_origin_snapshot_null_branch(
     client, archive_data, new_origin, new_snapshot, visit_dates, revisions
 ):
     snp_dict = new_snapshot.to_dict()
-    new_origin = archive_data.origin_add([new_origin])[0]
+    archive_data.origin_add([new_origin])
     for i, branch in enumerate(snp_dict["branches"].keys()):
         if i == 0:
             snp_dict["branches"][branch] = None
@@ -511,7 +511,7 @@ def test_origin_snapshot_null_branch(
     visit = archive_data.origin_visit_add(
         [
             OriginVisit(
-                origin=new_origin["url"],
+                origin=new_origin.url,
                 date=visit_dates[0],
                 type="git",
                 status="ongoing",
@@ -520,7 +520,7 @@ def test_origin_snapshot_null_branch(
         ]
     )[0]
     visit_status = OriginVisitStatus(
-        origin=new_origin["url"],
+        origin=new_origin.url,
         visit=visit.visit,
         date=now(),
         status="partial",
@@ -529,7 +529,7 @@ def test_origin_snapshot_null_branch(
     archive_data.origin_visit_status_add([visit_status])
 
     url = reverse(
-        "browse-origin-directory", query_params={"origin_url": new_origin["url"]}
+        "browse-origin-directory", query_params={"origin_url": new_origin.url}
     )
     rv = client.get(url)
     assert rv.status_code == 200
@@ -545,7 +545,7 @@ def test_origin_snapshot_invalid_branch(
     client, archive_data, new_origin, new_snapshot, visit_dates, revisions
 ):
     snp_dict = new_snapshot.to_dict()
-    new_origin = archive_data.origin_add([new_origin])[0]
+    archive_data.origin_add([new_origin])
     for i, branch in enumerate(snp_dict["branches"].keys()):
         snp_dict["branches"][branch] = {
             "target_type": "revision",
@@ -556,7 +556,7 @@ def test_origin_snapshot_invalid_branch(
     visit = archive_data.origin_visit_add(
         [
             OriginVisit(
-                origin=new_origin["url"],
+                origin=new_origin.url,
                 date=visit_dates[0],
                 type="git",
                 status="ongoing",
@@ -565,7 +565,7 @@ def test_origin_snapshot_invalid_branch(
         ]
     )[0]
     visit_status = OriginVisitStatus(
-        origin=new_origin["url"],
+        origin=new_origin.url,
         visit=visit.visit,
         date=now(),
         status="full",
@@ -575,7 +575,7 @@ def test_origin_snapshot_invalid_branch(
 
     url = reverse(
         "browse-origin-directory",
-        query_params={"origin_url": new_origin["url"], "branch": "invalid_branch"},
+        query_params={"origin_url": new_origin.url, "branch": "invalid_branch"},
     )
     rv = client.get(url)
     assert rv.status_code == 404
@@ -809,12 +809,12 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
             )
         }
     )
-    new_origin = archive_data.origin_add([new_origin])[0]
+    archive_data.origin_add([new_origin])
     archive_data.snapshot_add([snapshot])
     visit = archive_data.origin_visit_add(
         [
             OriginVisit(
-                origin=new_origin["url"],
+                origin=new_origin.url,
                 date=now(),
                 type="git",
                 status="ongoing",
@@ -823,7 +823,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
         ]
     )[0]
     visit_status = OriginVisitStatus(
-        origin=new_origin["url"],
+        origin=new_origin.url,
         visit=visit.visit,
         date=now(),
         status="partial",
@@ -833,7 +833,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
 
     url = reverse(
         "browse-origin-directory",
-        query_params={"origin_url": new_origin["url"], "branch": branch_name},
+        query_params={"origin_url": new_origin.url, "branch": branch_name},
     )
 
     resp = client.get(url)
@@ -1276,12 +1276,12 @@ def test_origin_branches_pagination_with_alias(
         "target_type": "release",
         "target": hash_to_bytes(existing_release),
     }
-    new_origin = archive_data.origin_add([new_origin])[0]
+    archive_data.origin_add([new_origin])
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
         [
             OriginVisit(
-                origin=new_origin["url"],
+                origin=new_origin.url,
                 date=visit_dates[0],
                 type="git",
                 status="ongoing",
@@ -1290,7 +1290,7 @@ def test_origin_branches_pagination_with_alias(
         ]
     )[0]
     visit_status = OriginVisitStatus(
-        origin=new_origin["url"],
+        origin=new_origin.url,
         visit=visit.visit,
         date=now(),
         status="full",
@@ -1298,9 +1298,7 @@ def test_origin_branches_pagination_with_alias(
     )
     archive_data.origin_visit_status_add([visit_status])
 
-    url = reverse(
-        "browse-origin-branches", query_params={"origin_url": new_origin["url"]}
-    )
+    url = reverse("browse-origin-branches", query_params={"origin_url": new_origin.url})
     resp = client.get(url)
     assert resp.status_code == 200
     assert_template_used(resp, "browse/branches.html")

@@ -108,6 +108,31 @@ export function initOriginSave() {
           {
             data: 'save_task_status',
             name: 'loading_task_status'
+          },
+          {
+            name: 'info',
+            render: (data, type, row) => {
+              if (row.save_task_status === 'succeed' || row.save_task_status === 'failed') {
+                return `<i class="mdi mdi-information-outline swh-save-request-info" ` +
+                       'aria-hidden="true" style="cursor: pointer"' +
+                       `onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;
+              } else {
+                return '';
+              }
+            }
+          },
+          {
+            render: (data, type, row) => {
+              if (row.save_request_status === 'accepted') {
+                const saveAgainButton =
+                  '<button class="btn btn-default btn-sm swh-save-origin-again" type="button" ' +
+                  `onclick="swh.save.fillSaveRequestFormAndScroll(` +
+                  `'${row.visit_type}', '${row.origin_url}');">` +
+                  '<i class="mdi mdi-camera mdi-fw" aria-hidden="true"></i>' +
+                  'Save again</button>';
+                return saveAgainButton;
+              }
+            }
           }
         ],
         scrollY: '50vh',
@@ -127,8 +152,9 @@ export function initOriginSave() {
       window.location.hash = '#requests';
     });
 
-    $('#swh-origin-save-request-create-tab').on('shown.bs.tab', () => {
+    $('#swh-origin-save-request-help-tab').on('shown.bs.tab', () => {
       removeUrlFragment();
+      $('.swh-save-request-info').popover('dispose');
     });
 
     let saveRequestAcceptedAlert = htmlAlert(
@@ -297,4 +323,135 @@ export function initTakeNewSnapshot() {
                         });
     });
   });
+}
+
+export function displaySaveRequestInfo(event, saveRequestId) {
+  event.stopPropagation();
+  const saveRequestTaskInfoUrl = Urls.origin_save_task_info(saveRequestId);
+  // close popover when clicking again on the info icon
+  if ($(event.target).data('bs.popover')) {
+    $(event.target).popover('dispose');
+    return;
+  }
+  $('.swh-save-request-info').popover('dispose');
+  $(event.target).popover({
+    animation: false,
+    boundary: 'viewport',
+    container: 'body',
+    title: 'Save request task information ' +
+             '<i style="cursor: pointer; position: absolute; right: 1rem;" ' +
+             `class="mdi mdi-close swh-save-request-info-close"></i>`,
+    content: `<div class="swh-popover swh-save-request-info-popover">
+                  <div class="text-center">
+                    <img src=${swhSpinnerSrc}></img>
+                    <p>Fetching task information ...</p>
+                  </div>
+                </div>`,
+    html: true,
+    placement: 'left',
+    sanitizeFn: swh.webapp.filterXSS
+  });
+
+  $(event.target).on('shown.bs.popover', function() {
+    const popoverId = $(this).attr('aria-describedby');
+    $(`#${popoverId} .mdi-close`).click(() => {
+      $(this).popover('dispose');
+    });
+  });
+
+  $(event.target).popover('show');
+  fetch(saveRequestTaskInfoUrl)
+    .then(response => response.json())
+    .then(saveRequestTaskInfo => {
+      let content;
+      if ($.isEmptyObject(saveRequestTaskInfo)) {
+        content = 'Not available';
+      } else {
+        let saveRequestInfo = [];
+        if (saveRequestTaskInfo.type) {
+          saveRequestInfo.push({
+            key: 'Task type',
+            value: saveRequestTaskInfo.type
+          });
+        }
+        if (saveRequestTaskInfo.arguments) {
+          saveRequestInfo.push({
+            key: 'Task arguments',
+            value: JSON.stringify(saveRequestTaskInfo.arguments, null, 2)
+          });
+        }
+        if (saveRequestTaskInfo.id) {
+          saveRequestInfo.push({
+            key: 'Task id',
+            value: saveRequestTaskInfo.id
+          });
+        }
+        if (saveRequestTaskInfo.backend_id) {
+          saveRequestInfo.push({
+            key: 'Task backend id',
+            value: saveRequestTaskInfo.backend_id
+          });
+        }
+        if (saveRequestTaskInfo.scheduled) {
+          saveRequestInfo.push({
+            key: 'Task scheduling date',
+            value: new Date(saveRequestTaskInfo.scheduled).toLocaleString()
+          });
+        }
+        if (saveRequestTaskInfo.started) {
+          saveRequestInfo.push({
+            key: 'Task start date',
+            value: new Date(saveRequestTaskInfo.started).toLocaleString()
+          });
+        }
+        if (saveRequestTaskInfo.ended) {
+          saveRequestInfo.push({
+            key: 'Task termination date',
+            value: new Date(saveRequestTaskInfo.ended).toLocaleString()
+          });
+        }
+        if (saveRequestTaskInfo.duration) {
+          saveRequestInfo.push({
+            key: 'Task duration',
+            value: saveRequestTaskInfo.duration + ' seconds'
+          });
+        }
+        if (saveRequestTaskInfo.worker) {
+          saveRequestInfo.push({
+            key: 'Task executor',
+            value: saveRequestTaskInfo.worker
+          });
+        }
+        if (saveRequestTaskInfo.message) {
+          saveRequestInfo.push({
+            key: 'Task log',
+            value: saveRequestTaskInfo.message
+          });
+        }
+        content = '<table class="table"><tbody>';
+        for (let info of saveRequestInfo) {
+          content +=
+            `<tr>
+              <th class="swh-metadata-table-row swh-metadata-table-key">${info.key}</th>
+              <td class="swh-metadata-table-row swh-metadata-table-value">
+                <pre>${info.value}</pre>
+              </td>
+            </tr>`;
+        }
+        content += '</tbody></table>';
+      }
+      $('.swh-popover').html(content);
+      $(event.target).popover('update');
+    });
+}
+
+export function fillSaveRequestFormAndScroll(visitType, originUrl) {
+  $('#swh-input-visit-type option').each(function() {
+    let val = $(this).val();
+    if (val === visitType) {
+      $(this).prop('selected', true);
+    }
+  });
+  $('#swh-input-origin-url').val(originUrl);
+  window.scrollTo(0, 0);
 }

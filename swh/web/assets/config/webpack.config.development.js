@@ -202,10 +202,18 @@ module.exports = {
         test: require.resolve('jquery'),
         use: [{
           loader: 'expose-loader',
-          options: 'jQuery'
-        }, {
-          loader: 'expose-loader',
-          options: '$'
+          options: {
+            exposes: [
+              {
+                globalName: '$',
+                override: true
+              },
+              {
+                globalName: 'jQuery',
+                override: true
+              }
+            ]
+          }
         }]
       },
       // expose highlightjs to the global context as hljs when importing it
@@ -213,14 +221,24 @@ module.exports = {
         test: require.resolve('highlight.js'),
         use: [{
           loader: 'expose-loader',
-          options: 'hljs'
+          options: {
+            exposes: {
+              globalName: 'hljs',
+              override: true
+            }
+          }
         }]
       },
       {
         test: require.resolve('js-cookie'),
         use: [{
           loader: 'expose-loader',
-          options: 'Cookies'
+          options: {
+            exposes: {
+              globalName: 'Cookies',
+              override: true
+            }
+          }
         }]
       },
       // css import configuration:
