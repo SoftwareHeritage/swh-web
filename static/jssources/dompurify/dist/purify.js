@@ -213,7 +213,7 @@
      * Version label, exposed for easier checks
      * if DOMPurify is up to date or not
      */
-    DOMPurify.version = '2.0.11';
+    DOMPurify.version = '2.0.12';
 
     /**
      * Array of elements that DOMPurify removed during sanitation.
@@ -259,7 +259,7 @@
     }
 
     var trustedTypesPolicy = _createTrustedTypesPolicy(trustedTypes, originalDocument);
-    var emptyHTML = trustedTypesPolicy ? trustedTypesPolicy.createHTML('') : '';
+    var emptyHTML = trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML('') : '';
 
     var _document = document,
         implementation = _document.implementation,
@@ -699,7 +699,7 @@
 
       /* Remove element if anything forbids its presence */
       if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
-        /* Keep content except for black-listed elements */
+        /* Keep content except for bad-listed elements */
         if (KEEP_CONTENT && !FORBID_CONTENTS[tagName] && typeof currentNode.insertAdjacentHTML === 'function') {
           try {
             var htmlToInsert = currentNode.innerHTML;
@@ -1024,10 +1024,10 @@
         }
       } else {
         /* Exit directly if we have nothing to do */
-        if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && RETURN_TRUSTED_TYPE &&
+        if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT &&
         // eslint-disable-next-line unicorn/prefer-includes
         dirty.indexOf('<') === -1) {
-          return trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+          return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(dirty) : dirty;
         }
 
         /* Initialize the document to work on */

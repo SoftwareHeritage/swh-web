@@ -7,12 +7,13 @@
 
 import {handleFetchError, handleFetchErrors, csrfPost} from 'utils/functions';
 
-let progress = `<div class="progress">
-                  <div class="progress-bar progress-bar-success progress-bar-striped"
-                       role="progressbar" aria-valuenow="100" aria-valuemin="0"
-                       aria-valuemax="100" style="width: 100%;height: 100%;">
-                  </div>
-                </div>;`;
+let progress =
+  `<div class="progress">
+    <div class="progress-bar progress-bar-success progress-bar-striped"
+          role="progressbar" aria-valuenow="100" aria-valuemin="0"
+          aria-valuemax="100" style="width: 100%;height: 100%;">
+    </div>
+  </div>;`;
 
 let pollingInterval = 5000;
 let checkVaultId;
@@ -133,7 +134,7 @@ function checkVaultCookingTasks() {
     }
   }
   $('.swh-vault-table tbody tr').each((i, row) => {
-    let objectId = $(row).find('.vault-object-id').data('object-id');
+    let objectId = $(row).find('.vault-object-info').data('object-id');
     if ($.inArray(objectId, currentObjectIds) === -1) {
       $(row).remove();
     }
@@ -154,14 +155,15 @@ function checkVaultCookingTasks() {
 
         let rowTask = $('#vault-task-' + cookingTask.object_id);
 
-        let downloadLinkWait = 'Waiting for download link to be available';
         if (!rowTask.length) {
 
-          let browseUrl;
-          if (cookingTask.object_type === 'directory') {
-            browseUrl = Urls.browse_directory(cookingTask.object_id);
-          } else {
-            browseUrl = Urls.browse_revision(cookingTask.object_id);
+          let browseUrl = cookingTask.browse_url;
+          if (!browseUrl) {
+            if (cookingTask.object_type === 'directory') {
+              browseUrl = Urls.browse_directory(cookingTask.object_id);
+            } else {
+              browseUrl = Urls.browse_revision(cookingTask.object_id);
+            }
           }
 
           let progressBar = $.parseHTML(progress)[0];
@@ -169,26 +171,49 @@ function checkVaultCookingTasks() {
           updateProgressBar(progressBarContent, cookingTask);
           let tableRow;
           if (cookingTask.object_type === 'directory') {
-            tableRow = `<tr id="vault-task-${cookingTask.object_id}" title="Once downloaded, the directory can be extracted with the ` +
-                       `following command:\n\n$ tar xvzf ${cookingTask.object_id}.tar.gz">`;
+            tableRow =
+              `<tr id="vault-task-${cookingTask.object_id}" ` +
+              `title="Once downloaded, the directory can be extracted with the ` +
+              `following command:\n\n$ tar xvzf ${cookingTask.object_id}.tar.gz">`;
           } else {
-            tableRow = `<tr id="vault-task-${cookingTask.object_id}"  title="Once downloaded, the git repository can be imported with the ` +
-                       `following commands:\n\n$ git init\n$ zcat ${cookingTask.object_id}.gitfast.gz | git fast-import">`;
+            tableRow =
+              `<tr id="vault-task-${cookingTask.object_id}"  ` +
+              'title="Once downloaded, the git repository can be imported with the ' +
+              `following commands:\n\n$ git init\n$ zcat ${cookingTask.object_id}.gitfast.gz | ` +
+              'git fast-import">';
           }
           tableRow += '<td><div class="custom-control custom-checkbox">';
-          tableRow += `<input type="checkbox" class="custom-control-input vault-task-toggle-selection" id="vault-task-toggle-selection-${cookingTask.object_id}"/>`;
-          tableRow += `<label class="custom-control-label" for="vault-task-toggle-selection-${cookingTask.object_id}"></label></td>`;
-          tableRow += `<td style="width: 120px"><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} mdi-fw"></i>${cookingTask.object_type}</td>`;
-          tableRow += `<td class="vault-object-id" data-object-id="${cookingTask.object_id}"><a href="${browseUrl}">${cookingTask.object_id}</a></td>`;
-          tableRow += `<td style="width: 350px">${progressBar.outerHTML}</td>`;
-          let downloadLink = downloadLinkWait;
-          if (cookingTask.status === 'done') {
-            downloadLink = `<button class="btn btn-default btn-sm" onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')` +
-                           '"><i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
-          } else if (cookingTask.status === 'failed') {
-            downloadLink = '';
+          tableRow +=
+            '<input type="checkbox" class="custom-control-input vault-task-toggle-selection" ' +
+            `id="vault-task-toggle-selection-${cookingTask.object_id}"/>`;
+          tableRow +=
+            '<label class="custom-control-label" ' +
+            `for="vault-task-toggle-selection-${cookingTask.object_id}"></label></td>`;
+          if (cookingTask.origin) {
+            tableRow += `<td class="vault-origin">` +
+                        `<a href="${Urls.browse_origin()}?origin_url=${cookingTask.origin}">` +
+                        `${cookingTask.origin}</a></td>`;
+          } else {
+            tableRow += `<td class="vault-origin">unknown</td>`;
           }
-          tableRow += `<td class="vault-dl-link" style="width: 320px">${downloadLink}</td>`;
+          tableRow +=
+            `<td><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} mdi-fw">` +
+            `</i>${cookingTask.object_type}</td>`;
+          tableRow += `<td class="vault-object-info" data-object-id="${cookingTask.object_id}">` +
+                      `<b>id:</b>&nbsp;<a href="${browseUrl}">${cookingTask.object_id}</a>`;
+          if (cookingTask.path) {
+            tableRow += `<br/><b>path:</b>&nbsp;${cookingTask.path}`;
+          }
+          tableRow += '</td>';
+          tableRow += `<td>${progressBar.outerHTML}</td>`;
+          let downloadLink = '';
+          if (cookingTask.status === 'done') {
+            downloadLink =
+              '<button class="btn btn-default btn-sm" ' +
+              `onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')">` +
+              '<i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
+          }
+          tableRow += `<td class="vault-dl-link">${downloadLink}</td>`;
           tableRow += '</tr>';
           table.prepend(tableRow);
         } else {
@@ -196,12 +221,12 @@ function checkVaultCookingTasks() {
           updateProgressBar(progressBar, cookingTask);
           let downloadLink = rowTask.find('.vault-dl-link');
           if (cookingTask.status === 'done') {
-            downloadLink[0].innerHTML = `<button class="btn btn-default btn-sm" onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')` +
-                                        '"><i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
-          } else if (cookingTask.status === 'failed') {
+            downloadLink[0].innerHTML =
+              '<button class="btn btn-default btn-sm" ' +
+              `onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')">` +
+              '<i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
+          } else {
             downloadLink[0].innerHTML = '';
-          } else if (cookingTask.status === 'new') {
-            downloadLink[0].innerHTML = downloadLinkWait;
           }
         }
       }
@@ -234,7 +259,7 @@ export function initUi() {
     $('.swh-vault-table tbody tr').each((i, row) => {
       let taskSelected = $(row).find('.vault-task-toggle-selection').prop('checked');
       if (taskSelected) {
-        let objectId = $(row).find('.vault-object-id').data('object-id');
+        let objectId = $(row).find('.vault-object-info').data('object-id');
         tasksToRemove.push(objectId);
         $(row).remove();
       }

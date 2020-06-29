@@ -107,6 +107,7 @@ def resolve_swh_persistent_id(
     query_dict = QueryDict("", mutable=True)
     fragment = ""
     anchor_swhid_parsed = None
+    process_lines = object_type is CONTENT
 
     if query_params and len(query_params) > 0:
         for k in sorted(query_params.keys()):
@@ -189,14 +190,7 @@ def resolve_swh_persistent_id(
             object_id = anchor_swhid_parsed.object_id
 
     if object_type == CONTENT:
-        query_string = "sha1_git:" + object_id
-        if "lines" in swh_id_parsed.metadata:
-            lines = swh_id_parsed.metadata["lines"].split("-")
-            fragment += "#L" + lines[0]
-            if len(lines) > 1:
-                fragment += "-L" + lines[1]
-        url_args["query_string"] = query_string
-
+        url_args["query_string"] = f"sha1_git:{object_id}"
     elif object_type == DIRECTORY:
         url_args["sha1_git"] = object_id
     elif object_type == RELEASE:
@@ -213,6 +207,12 @@ def resolve_swh_persistent_id(
                 "internal usage only"
             )
         )
+
+    if "lines" in swh_id_parsed.metadata and process_lines:
+        lines = swh_id_parsed.metadata["lines"].split("-")
+        fragment += "#L" + lines[0]
+        if len(lines) > 1:
+            fragment += "-L" + lines[1]
 
     if url_args:
         browse_url = (

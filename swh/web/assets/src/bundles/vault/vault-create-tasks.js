@@ -5,7 +5,14 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost} from 'utils/functions';
+import {handleFetchError, csrfPost, htmlAlert} from 'utils/functions';
+
+const alertStyle = {
+  'position': 'fixed',
+  'left': '1rem',
+  'bottom': '1rem',
+  'z-index': '100000'
+};
 
 export function vaultRequest(objectType, objectId) {
   let vaultUrl;
@@ -28,11 +35,28 @@ export function vaultRequest(objectType, objectId) {
       // it will be asked to cook it again if it is not
       } else if (data.status === 'done') {
         $(`#vault-fetch-${objectType}-modal`).modal('show');
+      } else {
+        const cookingServiceDownAlert =
+          $(htmlAlert('danger',
+                      'Archive cooking service is currently experiencing issues.<br/>' +
+                      'Please try again later.',
+                      true));
+        cookingServiceDownAlert.css(alertStyle);
+        $('body').append(cookingServiceDownAlert);
       }
     });
 }
 
 function addVaultCookingTask(cookingTask) {
+
+  const swhidsContext = swh.webapp.getSwhIdsContext();
+  cookingTask.origin = swhidsContext[cookingTask.object_type].context.origin;
+  cookingTask.path = swhidsContext[cookingTask.object_type].context.path;
+  cookingTask.browse_url = swhidsContext[cookingTask.object_type].swhid_with_context_url;
+  if (!cookingTask.browse_url) {
+    cookingTask.browse_url = swhidsContext[cookingTask.object_type].swhid_url;
+  }
+
   let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
   if (!vaultCookingTasks) {
     vaultCookingTasks = [];
@@ -50,6 +74,7 @@ function addVaultCookingTask(cookingTask) {
     if (cookingTask.email) {
       cookingUrl += '?email=' + cookingTask.email;
     }
+
     csrfPost(cookingUrl)
       .then(handleFetchError)
       .then(() => {
@@ -57,14 +82,25 @@ function addVaultCookingTask(cookingTask) {
         localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
         $('#vault-cook-directory-modal').modal('hide');
         $('#vault-cook-revision-modal').modal('hide');
-        window.location = Urls.browse_vault();
+        const cookingTaskCreatedAlert =
+          $(htmlAlert('success',
+                      'Archive cooking request successfully submitted.<br/>' +
+                      `Go to the <a href="${Urls.browse_vault()}">Downloads</a> page ` +
+                      'to get the download link once it is ready.',
+                      true));
+        cookingTaskCreatedAlert.css(alertStyle);
+        $('body').append(cookingTaskCreatedAlert);
       })
       .catch(() => {
         $('#vault-cook-directory-modal').modal('hide');
         $('#vault-cook-revision-modal').modal('hide');
+        const cookingTaskFailedAlert =
+          $(htmlAlert('danger',
+                      'Archive cooking request submission failed.',
+                      true));
+        cookingTaskFailedAlert.css(alertStyle);
+        $('body').append(cookingTaskFailedAlert);
       });
-  } else {
-    window.location = Urls.browse_vault();
   }
 }
 

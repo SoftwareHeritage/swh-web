@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -356,11 +356,11 @@ function genDiffPanel(diffData) {
   `<div id="panel_${diffData.id}" class="card swh-file-diff-panel">
     <div class="card-header bg-gray-light border-bottom-0">
       <a data-toggle="collapse" href="#panel_${diffData.id}_content">
-        <div class="pull-left swh-title-color">
+        <div class="float-left swh-title-color">
           <strong>${diffPanelTitle}</strong>
         </div>
       </a>
-      <div class="pull-right">
+      <div class="ml-auto float-right">
         <div class="btn-group btn-group-toggle diff-styles" data-toggle="buttons" style="visibility: hidden;">
           <label class="btn btn-default btn-sm form-check-label active unified-diff-button" onclick="swh.revision.showUnifiedDiff(event, '${diffData.id}')">
             <input type="radio" name="diffs-switch" id="unified" autocomplete="off" checked> Unified
