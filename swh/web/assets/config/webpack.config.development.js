@@ -203,7 +203,16 @@ module.exports = {
         use: [{
           loader: 'expose-loader',
           options: {
-            exposes: ['$', 'jQuery']
+            exposes: [
+              {
+                globalName: '$',
+                override: true
+              },
+              {
+                globalName: 'jQuery',
+                override: true
+              }
+            ]
           }
         }]
       },
@@ -213,7 +222,10 @@ module.exports = {
         use: [{
           loader: 'expose-loader',
           options: {
-            exposes: 'hljs'
+            exposes: {
+              globalName: 'hljs',
+              override: true
+            }
           }
         }]
       },
@@ -222,7 +234,10 @@ module.exports = {
         use: [{
           loader: 'expose-loader',
           options: {
-            exposes: 'Cookies'
+            exposes: {
+              globalName: 'Cookies',
+              override: true
+            }
           }
         }]
       },
