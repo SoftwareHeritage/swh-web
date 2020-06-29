@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 from itertools import product
 import json
 import logging
+from typing import Any, Dict
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -148,19 +149,25 @@ def _check_origin_url_valid(origin_url):
 def _get_visit_info_for_save_request(save_request):
     visit_date = None
     visit_status = None
-    try:
-        origin = {"url": save_request.origin_url}
-        origin_info = service.lookup_origin(origin)
-        origin_visits = get_origin_visits(origin_info)
-        visit_dates = [parse_timestamp(v["date"]) for v in origin_visits]
-        i = bisect_right(visit_dates, save_request.request_date)
-        if i != len(visit_dates):
-            visit_date = visit_dates[i]
-            visit_status = origin_visits[i]["status"]
-            if origin_visits[i]["status"] == "ongoing":
-                visit_date = None
-    except Exception as exc:
-        sentry_sdk.capture_exception(exc)
+    time_now = datetime.now(tz=timezone.utc)
+    time_delta = time_now - save_request.request_date
+    # stop trying to find a visit date one month after save request submission
+    # as those requests to storage are expensive and associated loading task
+    # surely ended up with errors
+    if time_delta.days <= 30:
+        try:
+            origin = {"url": save_request.origin_url}
+            origin_info = service.lookup_origin(origin)
+            origin_visits = get_origin_visits(origin_info)
+            visit_dates = [parse_timestamp(v["date"]) for v in origin_visits]
+            i = bisect_right(visit_dates, save_request.request_date)
+            if i != len(visit_dates):
+                visit_date = visit_dates[i]
+                visit_status = origin_visits[i]["status"]
+                if origin_visits[i]["status"] == "ongoing":
+                    visit_date = None
+        except Exception as exc:
+            sentry_sdk.capture_exception(exc)
     return visit_date, visit_status
 
 
@@ -418,7 +425,9 @@ def get_save_origin_requests(visit_type, origin_url):
     return get_save_origin_requests_from_queryset(sors)
 
 
-def get_save_origin_task_info(save_request_id):
+def get_save_origin_task_info(
+    save_request_id: int, full_info: bool = True
+) -> Dict[str, Any]:
     """
     Get detailed information about an accepted save origin request
     and its associated loading task.
@@ -427,10 +436,11 @@ def get_save_origin_task_info(save_request_id):
     from the scheduler database, returns an empty dictionary.
 
     Args:
-        save_request_id (int): identifier of a save origin request
+        save_request_id: identifier of a save origin request
+        full_info: whether to return detailed info for staff users
 
     Returns:
-        dict: A dictionary with the following keys:
+        A dictionary with the following keys:
 
             - **type**: loading task type
             - **arguments**: loading task arguments
@@ -468,7 +478,6 @@ def get_save_origin_task_info(save_request_id):
     task_run["id"] = task_run["task"]
     del task_run["task"]
     del task_run["metadata"]
-    del task_run["started"]
 
     es_workers_index_url = config.get_config()["es_workers_index_url"]
     if not es_workers_index_url:
@@ -481,8 +490,8 @@ def get_save_origin_task_info(save_request_id):
     else:
         min_ts = save_request.request_date
         max_ts = min_ts + timedelta(days=30)
-    min_ts = int(min_ts.timestamp()) * 1000
-    max_ts = int(max_ts.timestamp()) * 1000
+    min_ts_unix = int(min_ts.timestamp()) * 1000
+    max_ts_unix = int(max_ts.timestamp()) * 1000
 
     save_task_status = _save_task_status[task["status"]]
     priority = "3" if save_task_status == SAVE_TASK_FAILED else "6"
@@ -495,8 +504,8 @@ def get_save_origin_task_info(save_request_id):
                 {
                     "range": {
                         "@timestamp": {
-                            "gte": min_ts,
-                            "lte": max_ts,
+                            "gte": min_ts_unix,
+                            "lte": max_ts_unix,
                             "format": "epoch_millis",
                         }
                     }
@@ -530,6 +539,21 @@ def get_save_origin_task_info(save_request_id):
     except Exception as exc:
         logger.warning("Request to Elasticsearch failed\n%s", exc)
         sentry_sdk.capture_exception(exc)
+
+    if not full_info:
+        for field in ("id", "backend_id", "worker"):
+            # remove some staff only fields
+            task_run.pop(field, None)
+        if "message" in task_run and "Loading failure" in task_run["message"]:
+            # hide traceback for non staff users, only display exception
+            message_lines = task_run["message"].split("\n")
+            message = ""
+            for line in message_lines:
+                if line.startswith("Traceback"):
+                    break
+                message += f"{line}\n"
+            message += message_lines[-1]
+            task_run["message"] = message
 
     return task_run
 

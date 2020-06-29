@@ -23,7 +23,6 @@ from swh.web.common.models import (
 
 from swh.web.common.origin_save import (
     create_save_origin_request,
-    get_save_origin_task_info,
     SAVE_REQUEST_PENDING,
     SAVE_REQUEST_REJECTED,
 )
@@ -214,16 +213,3 @@ def _admin_origin_save_request_remove(request, sor_id):
         entry.delete()
         status_code = 200
     return HttpResponse(status=status_code)
-
-
-@admin_route(
-    r"origin/save/task/info/(?P<save_request_id>.+)/",
-    view_name="admin-origin-save-task-info",
-)
-@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
-def _save_origin_task_info(request, save_request_id):
-    request_info = get_save_origin_task_info(save_request_id)
-    for date_field in ("scheduled", "started", "ended"):
-        if date_field in request_info and request_info[date_field] is not None:
-            request_info[date_field] = request_info[date_field].isoformat()
-    return HttpResponse(json.dumps(request_info), content_type="application/json")

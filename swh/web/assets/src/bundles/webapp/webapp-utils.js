@@ -164,6 +164,18 @@ $(document).ready(() => {
       $('#back-to-top').css('display', 'none');
     }
   });
+
+  // navbar search form submission callback
+  $('#swh-origins-search-top').submit(event => {
+    event.preventDefault();
+    let searchQueryText = $('#swh-origins-search-top-input').val().trim();
+    let queryParameters = new URLSearchParams();
+    queryParameters.append('q', searchQueryText);
+    queryParameters.append('with_visit', true);
+    queryParameters.append('with_content', true);
+    window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
+  });
+
 });
 
 export function initPage(page) {
@@ -180,7 +192,6 @@ export function initPage(page) {
         sessionStorage.setItem('last-browse-page', window.location);
       }
     });
-
   });
 }
 

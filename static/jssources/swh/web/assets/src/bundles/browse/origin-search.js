@@ -36,10 +36,19 @@ function populateOriginSearchResultsTable(origins) {
     let table = $('#origin-search-results tbody');
     for (let [i, origin] of origins.entries()) {
       let browseUrl = `${Urls.browse_origin()}?origin_url=${origin.url}`;
-      let tableRow = `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
-      tableRow += `<td style="white-space: nowrap;"><a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
-      tableRow += `<td id="visit-type-origin-${i}" style="width: 120px;"></td>`;
-      tableRow += `<td class="swh-visit-status" id="visit-status-origin-${i}"><i title="Checking visit status" class="mdi mdi-sync mdi-spin"></i></td>`;
+      let tableRow =
+        `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
+      tableRow +=
+        `<td id="visit-type-origin-${i}" style="width: 120px;">` +
+        '<i title="Checking software origin type" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
+        'Checking</td>';
+      tableRow +=
+        '<td style="white-space: nowrap;">' +
+        `<a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
+      tableRow +=
+        `<td class="swh-visit-status" id="visit-status-origin-${i}">` +
+        '<i title="Checking archiving status" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
+        'Checking</td>';
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
@@ -48,12 +57,16 @@ function populateOriginSearchResultsTable(origins) {
       fetch(latestSnapshotUrl)
         .then(response => response.json())
         .then(data => {
-          $(`#visit-type-origin-${i}`).text(data.type);
+          $(`#visit-type-origin-${i}`).html(data.type);
           $(`#visit-status-origin-${i}`).children().remove();
           if (data) {
-            $(`#visit-status-origin-${i}`).append('<i title="Origin has at least one full visit by Software Heritage" class="mdi mdi-check-bold"></i>');
+            $(`#visit-status-origin-${i}`).html(
+              '<i title="Software origin has been archived by Software Heritage" ' +
+              'class="mdi mdi-check-bold mdi-fw"></i>Archived');
           } else {
-            $(`#visit-status-origin-${i}`).append('<i title="Origin has not yet been visited by Software Heritage or does not have at least one full visit" class="mdi mdi-close-thick"></i>');
+            $(`#visit-status-origin-${i}`).html(
+              '<i title="Software origin archival by Software Heritage is pending" ' +
+              'class="mdi mdi-close-thick mdi-fw"></i>Pending archival');
             if ($('#swh-filter-empty-visits').prop('checked')) {
               $(`#origin-${i}`).remove();
             }

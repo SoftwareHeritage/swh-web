@@ -52,10 +52,6 @@ See top-level LICENSE file for more information
             into a standard <code>tar.gz archive</code>.
           </p>
           <p>
-            Once downloaded, the directory can be extracted with the following command:
-          </p>
-          <p><code>$ tar xvzf {{ vault_cooking.directory_id }}.tar.gz</code></p>
-          <p>
             Are you sure you want to continue ?
           </p>
           <form>
@@ -88,10 +84,6 @@ See top-level LICENSE file for more information
             as a standard <code>tar.gz archive</code>.
           </p>
           <p>
-            Once downloaded, the directory can be extracted with the following command:
-          </p>
-          <p><code>$ tar xvzf {{ vault_cooking.directory_id }}.tar.gz</code></p>
-          <p>
             Are you sure you want to continue ?
           </p>
         </div>
@@ -116,13 +108,6 @@ See top-level LICENSE file for more information
           <p>
             You have requested the cooking of the history heading to revision with identifier <strong>{{ vault_cooking.revision_id }}</strong>
             into a <code>git fast-import archive</code>.
-          </p>
-          <p>
-            Once downloaded, the git repository can be imported with the following commands:
-          </p>
-          <p>
-            <code>$ git init</code><br/>
-            <code>$ zcat {{ vault_cooking.revision_id }}.gitfast.gz | git fast-import</code>
           </p>
           <p>
             Are you sure you want to continue ?
@@ -155,13 +140,6 @@ See top-level LICENSE file for more information
           <p>
             You have requested the download of the history heading to revision with identifier <strong>{{ vault_cooking.revision_id }}</strong>
             as a <code>git fast-import archive</code>.
-          </p>
-          <p>
-            Once downloaded, the git repository can be imported with the following commands:
-          </p>
-          <p>
-            <code>$ git init</code><br/>
-            <code>$ zcat {{ vault_cooking.revision_id }}.gitfast.gz | git fast-import</code>
           </p>
           <p>
             Are you sure you want to continue ?

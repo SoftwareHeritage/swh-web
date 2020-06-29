@@ -22,7 +22,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
 
   // histogram size and margins
   let width = 1000;
-  let height = 300;
+  let height = 200;
   let margin = {top: 20, right: 80, bottom: 30, left: 50};
 
   // create responsive svg
