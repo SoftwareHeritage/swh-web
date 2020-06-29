@@ -201,7 +201,7 @@ def test_stat_counters(archive_data):
 
 @given(new_origin(), visit_dates())
 def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
 
     archive_data.origin_visit_add(
         [OriginVisit(origin=new_origin.url, date=ts, type="git",) for ts in visit_dates]
@@ -220,7 +220,7 @@ def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
 
 @given(new_origin(), visit_dates())
 def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     visits = archive_data.origin_visit_add(
         [OriginVisit(origin=new_origin.url, date=ts, type="git",) for ts in visit_dates]
     )
@@ -235,7 +235,7 @@ def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
 
 @given(new_origin())
 def test_lookup_origin(archive_data, new_origin):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
 
     actual_origin = service.lookup_origin({"url": new_origin.url})
     expected_origin = archive_data.origin_get({"url": new_origin.url})
@@ -947,7 +947,7 @@ def test_lookup_origin_extra_trailing_slash(origin):
 
 def test_lookup_origin_missing_trailing_slash(archive_data):
     deb_origin = Origin(url="http://snapshot.debian.org/package/r-base/")
-    archive_data.origin_add_one(deb_origin)
+    archive_data.origin_add([deb_origin])
     origin_info = service.lookup_origin({"url": deb_origin.url[:-1]})
     assert origin_info["url"] == deb_origin.url
 

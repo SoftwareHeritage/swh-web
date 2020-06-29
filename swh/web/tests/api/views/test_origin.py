@@ -99,7 +99,7 @@ def test_api_lookup_origin_visits(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
 
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
             [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
@@ -147,7 +147,7 @@ def test_api_lookup_origin_visits(
 def test_api_lookup_origin_visits_by_id(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
             [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
@@ -195,7 +195,7 @@ def test_api_lookup_origin_visits_by_id(
 def test_api_lookup_origin_visit(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
             [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
@@ -233,7 +233,7 @@ def test_api_lookup_origin_visit(
 
 @given(new_origin())
 def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data, new_origin):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
 
     url = reverse("api-1-origin-visit-latest", url_args={"origin_url": new_origin.url})
 
@@ -249,7 +249,7 @@ def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data, new_o
 def test_api_lookup_origin_visit_latest(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     visit_dates.sort()
     visit_ids = []
     for i, visit_date in enumerate(visit_dates):
@@ -292,7 +292,7 @@ def test_api_lookup_origin_visit_latest(
 def test_api_lookup_origin_visit_latest_with_snapshot(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     visit_dates.sort()
     visit_ids = []
     for i, visit_date in enumerate(visit_dates):
