@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from swh.model import from_disk
 from swh.model.hashutil import hash_to_hex
 from swh.model.model import Content
+from swh.model.from_disk import DiskBackedContent
 from swh.web.common.highlightjs import get_hljs_language_from_filename
 from swh.web.tests.data import get_tests_data
 
@@ -43,9 +44,10 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
     directory = from_disk.Directory.from_disk(path=test_contents_dir)
 
     contents = []
-    for name, obj in directory.items():
-        if isinstance(obj, from_disk.Content):
-            c = obj.to_model().with_data().to_dict()
+    for name, obj_ in directory.items():
+        obj = obj_.to_model()
+        if obj.object_type in [Content.object_type, DiskBackedContent.object_type]:
+            c = obj.with_data().to_dict()
             c["status"] = "visible"
             sha1 = hash_to_hex(c["sha1"])
             if ext_key:
