@@ -732,6 +732,41 @@ def test_origin_empty_snapshot(client, mocker, origin):
     assert mock_service.lookup_snapshot_sizes.called
 
 
+@given(new_origin())
+def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target="refs/head/master".encode(), target_type=TargetType.ALIAS,
+            ),
+            b"refs/head/master": None,
+        }
+    )
+    archive_data.origin_add([new_origin])
+    archive_data.snapshot_add([snapshot])
+    visit = archive_data.origin_visit_add(
+        [OriginVisit(origin=new_origin.url, date=now(), type="git",)]
+    )[0]
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit.visit,
+        date=now(),
+        status="partial",
+        snapshot=snapshot.id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+
+    url = reverse(
+        "browse-origin-directory", query_params={"origin_url": new_origin.url},
+    )
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert_template_used(resp, "browse/directory.html")
+    resp_content = resp.content.decode("utf-8")
+    assert re.search("snapshot.*is empty", resp_content)
+    assert not re.search("swh-tr-link", resp_content)
+
+
 @given(origin_with_releases())
 def test_origin_release_browse(client, archive_data, origin):
     snapshot = archive_data.snapshot_get_latest(origin["url"])
