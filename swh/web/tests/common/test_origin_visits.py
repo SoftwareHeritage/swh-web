@@ -3,14 +3,19 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import timedelta
+
 from hypothesis import given
 
 import pytest
 
 from swh.model.hashutil import hash_to_hex
+from swh.model.model import OriginVisit, OriginVisitStatus
+from swh.storage.utils import now
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.origin_visits import get_origin_visits, get_origin_visit
-from swh.web.tests.strategies import new_snapshots
+from swh.web.common.typing import OriginInfo
+from swh.web.tests.strategies import new_origin, new_snapshots
 
 
 @given(new_snapshots(3))
@@ -140,57 +145,94 @@ def test_get_origin_visit(mocker, snapshots):
     assert visit == visits[-1]
 
 
-def test_get_origin_visit_latest_valid_snapshot(mocker):
-    mock_origin_visits = mocker.patch("swh.web.common.origin_visits.get_origin_visits")
-    origin_info = {
-        "url": "https://nix-community.github.io/nixpkgs-swh/sources-unstable.json",
-    }
-    visits = [
-        {
-            "date": "2020-04-15T12:42:52.936520+00:00",
-            "origin": origin_info["url"],
-            "snapshot": "d820451681c74eec63693b6ea4e4b8417c76bb7a",
-            "status": "partial",
-            "type": "nixguix",
-            "visit": 16,
-        },
-        {
-            "date": "2020-04-17T17:25:13.738789+00:00",
-            "origin": origin_info["url"],
-            "snapshot": "d20627c1ae2b5e553e8adcf625f37e37cc5190dd",
-            "status": "partial",
-            "type": "nixguix",
-            "visit": 17,
-        },
-        {
-            "date": "2020-04-19T19:02:42.906079+00:00",
-            "origin": origin_info["url"],
-            "snapshot": None,
-            "status": "partial",
-            "type": "nixguix",
-            "visit": 18,
-        },
-        {
-            "date": "2020-04-20T12:43:41.120422+00:00",
-            "origin": origin_info["url"],
-            "snapshot": None,
-            "status": "partial",
-            "type": "nixguix",
-            "visit": 19,
-        },
-        {
-            "date": "2020-04-20T12:46:40.255418+00:00",
-            "origin": origin_info["url"],
-            "snapshot": None,
-            "status": "partial",
-            "type": "nixguix",
-            "visit": 20,
-        },
-    ]
+@given(new_origin(), new_snapshots(6))
+def test_get_origin_visit_return_first_valid_full_visit(
+    archive_data, new_origin, new_snapshots
+):
+    visits = []
+    archive_data.origin_add([new_origin])
+    # create 6 visits, the first three have full status while the
+    # last three have partial status and set a null snapshot for
+    # the last four visits
+    for i, snp in enumerate(new_snapshots):
+        visit_date = now() + timedelta(days=i * 10)
+        visit = archive_data.origin_visit_add(
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+        )[0]
+        archive_data.snapshot_add([new_snapshots[i]])
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status="full" if i < 3 else "partial",
+            snapshot=new_snapshots[i].id if i < 2 else None,
+        )
+        if i < 2:
+            archive_data.origin_visit_status_add([visit_status])
+        visits.append(visit.visit)
 
-    mock_origin_visits.return_value = visits
+    # should return the second visit
+    expected_visit = archive_data.origin_visit_get_by(new_origin.url, visits[1])
+    assert get_origin_visit((OriginInfo(url=new_origin.url))) == expected_visit
 
-    visit = get_origin_visit(origin_info)
 
-    assert visit["snapshot"] is not None
-    assert visit["visit"] == 17
+@given(new_origin(), new_snapshots(6))
+def test_get_origin_visit_non_resolvable_snapshots(
+    archive_data, new_origin, new_snapshots
+):
+    visits = []
+    archive_data.origin_add([new_origin])
+    # create 6 full visits, the first three have resolvable snapshots
+    # while the last three have non resolvable snapshots
+    for i, snp in enumerate(new_snapshots):
+        visit_date = now() + timedelta(days=i * 10)
+        visit = archive_data.origin_visit_add(
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+        )[0]
+        archive_data.snapshot_add([new_snapshots[i]])
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status="full",
+            snapshot=new_snapshots[i].id,
+        )
+        if i < 3:
+            archive_data.origin_visit_status_add([visit_status])
+        visits.append(visit.visit)
+
+    # should return the third visit
+    expected_visit = archive_data.origin_visit_get_by(new_origin.url, visits[2])
+    assert get_origin_visit((OriginInfo(url=new_origin.url))) == expected_visit
+
+
+@given(new_origin(), new_snapshots(6))
+def test_get_origin_visit_return_first_valid_partial_visit(
+    archive_data, new_origin, new_snapshots
+):
+    visits = []
+
+    archive_data.origin_add([new_origin])
+    # create 6 visits, the first three have full status but null snapshot
+    # while the last three have partial status with valid snapshot
+    for i, snp in enumerate(new_snapshots):
+        visit_date = now() + timedelta(days=i * 10)
+        visit = archive_data.origin_visit_add(
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+        )[0]
+        archive_data.snapshot_add([new_snapshots[i]])
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status="full" if i < 3 else "partial",
+            snapshot=new_snapshots[i].id if i > 2 else None,
+        )
+        if i > 2:
+            archive_data.origin_visit_status_add([visit_status])
+
+        visits.append(visit.visit)
+
+    # should return the last visit
+    expected_visit = archive_data.origin_visit_get_by(new_origin.url, visits[-1])
+    assert get_origin_visit((OriginInfo(url=new_origin.url))) == expected_visit

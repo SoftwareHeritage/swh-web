@@ -232,7 +232,8 @@ class _ArchiveData:
 
     def origin_visit_get_by(self, origin_url, visit_id):
         visit = self.storage.origin_visit_get_by(origin_url, visit_id)
-        return converters.from_origin_visit(visit)
+        visit_status = self.storage.origin_visit_status_get_latest(origin_url, visit_id)
+        return converters.from_origin_visit({**visit, **visit_status.to_dict()})
 
     def origin_visit_status_get_latest(
         self,

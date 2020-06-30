@@ -18,6 +18,9 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
     That list is put in cache in order to speedup the navigation
     in the swh web browse ui.
 
+    The returned visits are sorted according to their date in
+    ascending order.
+
     Args:
         origin_info: dict describing the origin to fetch visits from
 
@@ -85,21 +88,53 @@ def get_origin_visit(
     snapshot_id: Optional[str] = None,
 ) -> OriginVisitInfo:
     """Function that returns information about a visit for a given origin.
-    The visit is retrieved from a provided timestamp.
-    The closest visit from that timestamp is selected.
+
+    If a timestamp is provided, the closest visit from that
+    timestamp is returned.
+
+    If a snapshot identifier is provided, the first visit with that snapshot
+    is returned.
+
+    If no search hints are provided, return the most recent full visit with
+    a valid snapshot or the most recent partial visit with a valid snapshot
+    otherwise.
 
     Args:
         origin_info: a dict filled with origin information
         visit_ts: an ISO date string or Unix timestamp to parse
+        snapshot_id: a snapshot identifier
 
     Returns:
         A dict containing the visit info.
+
+    Raises:
+        swh.web.common.exc.NotFoundExc: if no visit can be found
     """
+
+    if not visit_ts and not visit_id and not snapshot_id:
+        from swh.web.common import service
+
+        # returns the latest full visit with a valid snapshot
+        visit = service.lookup_origin_visit_latest(
+            origin_info["url"], allowed_statuses=["full"], require_snapshot=True
+        )
+        if not visit:
+            # or the latest partial visit with a valid snapshot otherwise
+            visit = service.lookup_origin_visit_latest(
+                origin_info["url"], allowed_statuses=["partial"], require_snapshot=True
+            )
+        if visit:
+            return visit
+        else:
+            raise NotFoundExc(
+                f"No valid visit for origin with url {origin_info['url']} found!"
+            )
+
     visits = get_origin_visits(origin_info)
 
     if not visits:
         raise NotFoundExc(
-            ("No visit associated to origin with" " url %s!" % origin_info["url"])
+            f"No visits associated to origin with url {origin_info['url']}!"
         )
 
     if snapshot_id:
@@ -124,39 +159,35 @@ def get_origin_visit(
             )
         return visits[0]
 
-    if not visit_ts:
-        # returns the latest visit with a valid snapshot when no timestamp is provided
-        for v in reversed(visits):
-            if v["snapshot"] is not None:
-                return v
-        return visits[-1]
+    if visit_ts:
 
-    target_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
+        target_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
 
-    # Find the visit with date closest to the target (in absolute value)
-    (abs_time_delta, visit_idx) = min(
-        (
-            (math.floor(parse_timestamp(visit["date"]).timestamp()), i)
-            for (i, visit) in enumerate(visits)
-        ),
-        key=lambda ts_and_i: abs(ts_and_i[0] - target_visit_ts),
-    )
-
-    if visit_idx is not None:
-        visit = visits[visit_idx]
-        # If multiple visits have the same date, select the one with
-        # the largest id.
-        while (
-            visit_idx < len(visits) - 1
-            and visit["date"] == visits[visit_idx + 1]["date"]
-        ):
-            visit_idx = visit_idx + 1
-            visit = visits[visit_idx]
-        return visit
-    else:
-        raise NotFoundExc(
+        # Find the visit with date closest to the target (in absolute value)
+        (abs_time_delta, visit_idx) = min(
             (
-                "Visit with timestamp %s for origin with "
-                "url %s not found!" % (visit_ts, origin_info["url"])
-            )
+                (math.floor(parse_timestamp(visit["date"]).timestamp()), i)
+                for (i, visit) in enumerate(visits)
+            ),
+            key=lambda ts_and_i: abs(ts_and_i[0] - target_visit_ts),
         )
+
+        if visit_idx is not None:
+            visit = visits[visit_idx]
+            # If multiple visits have the same date, select the one with
+            # the largest id.
+            while (
+                visit_idx < len(visits) - 1
+                and visit["date"] == visits[visit_idx + 1]["date"]
+            ):
+                visit_idx = visit_idx + 1
+                visit = visits[visit_idx]
+            return visit
+        else:
+            raise NotFoundExc(
+                (
+                    "Visit with timestamp %s for origin with "
+                    "url %s not found!" % (visit_ts, origin_info["url"])
+                )
+            )
+    return visits[-1]

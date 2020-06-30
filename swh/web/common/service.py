@@ -903,21 +903,34 @@ def lookup_origin_visits(
 
 
 def lookup_origin_visit_latest(
-    origin_url: str, require_snapshot: bool
+    origin_url: str,
+    require_snapshot: bool = False,
+    type: Optional[str] = None,
+    allowed_statuses: Optional[Iterable[str]] = None,
 ) -> Optional[OriginVisitInfo]:
     """Return the origin's latest visit
 
     Args:
-        origin_url (str): origin to list visits for
-        require_snapshot (bool): filter out origins without a snapshot
+        origin_url: origin to list visits for
+        type: Optional visit type to filter on (e.g git, tar, dsc, svn,
+            hg, npm, pypi, ...)
+        allowed_statuses: list of visit statuses considered
+            to find the latest visit. For instance,
+            ``allowed_statuses=['full']`` will only consider visits that
+            have successfully run to completion.
+        require_snapshot: filter out origins without a snapshot
 
     Returns:
-       The origin_visit as dict if found
+       The origin visit info as dict if found
 
     """
 
     visit_and_status = origin_get_latest_visit_status(
-        storage, origin_url, require_snapshot=require_snapshot
+        storage,
+        origin_url,
+        type=type,
+        allowed_statuses=allowed_statuses,
+        require_snapshot=require_snapshot,
     )
     return (
         converters.from_origin_visit(

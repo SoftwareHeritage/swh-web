@@ -205,7 +205,7 @@ def test_api_lookup_origin_visit(
         visit_status = OriginVisitStatus(
             origin=new_origin.url,
             visit=origin_visit.visit,
-            date=now(),
+            date=visit_date,
             status="full",
             snapshot=new_snapshots[i].id,
         )
