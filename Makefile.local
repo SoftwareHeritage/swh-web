@@ -70,7 +70,7 @@ test-full:
 
 .PHONY: test-frontend-cmd
 test-frontend-cmd: build-webpack-test run-migrations-test
-	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run ; pkill -P $$! ; $(YARN) run mochawesome
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 ; pkill -P $$! ; $(YARN) run mochawesome
 
 test-frontend: export CYPRESS_SKIP_SLOW_TESTS=1
 test-frontend: test-frontend-cmd
