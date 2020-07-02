@@ -1,14 +1,15 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.0.218
+Version: 0.0.245
 Summary: Software Heritage Web UI
 Home-page: https://forge.softwareheritage.org/diffusion/DWUI/
 Author: Software Heritage developers
 Author-email: swh-devel@inria.fr
 License: UNKNOWN
-Project-URL: Funding, https://www.softwareheritage.org/donate
 Project-URL: Bug Reports, https://forge.softwareheritage.org/maniphest
+Project-URL: Funding, https://www.softwareheritage.org/donate
 Project-URL: Source, https://forge.softwareheritage.org/source/swh-web
+Project-URL: Documentation, https://docs.softwareheritage.org/devel/swh-web/
 Description: # swh-web
         
         This repository holds the development of Software Heritage web applications:
@@ -123,5 +124,6 @@ Classifier: License :: OSI Approved :: GNU Affero General Public License v3 or l
 Classifier: Operating System :: OS Independent
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Framework :: Django
+Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 Provides-Extra: testing

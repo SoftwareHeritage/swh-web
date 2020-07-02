@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -174,6 +174,10 @@ pre {
     white-space: pre-wrap;
 }
 
+.swh-list-unstyled {
+    list-style: none;
+}
+
 .popover {
     max-width: 97%;
     z-index: 40000;
@@ -182,6 +186,7 @@ pre {
 .modal {
     text-align: center;
     padding: 0 !important;
+    z-index: 50000;
 }
 
 .modal::before {
@@ -215,8 +220,8 @@ pre {
 }
 
 a.dropdown-left::before {
-    content: "\f0d9";
-    font-family: 'FontAwesome';
+    content: "\f035e";
+    font-family: 'Material Design Icons';
     display: block;
     width: 20px;
     height: 20px;
@@ -294,9 +299,18 @@ a.dropdown-left::before {
     color: #fecd1b;
 }
 
+.swh-position-left {
+    position: absolute;
+    left: 0;
+}
+
 .swh-position-right {
     position: absolute;
     right: 0;
+}
+
+.swh-background-gray {
+    background: #efeff2;
 }
 
 .swh-donate-link {
@@ -352,6 +366,10 @@ ul.nav-sidebar a {
     background-color: #e7e7e7 !important;
 }
 
+.nav-tabs .nav-link.active {
+    border-top: 3px solid #e20026;
+}
+
 .swh-image-error {
     width: 80px;
     height: auto;
@@ -367,10 +385,6 @@ ul.nav-sidebar a {
         height: auto;
     }
 
-    .swh-navbar-content h4 {
-        font-size: 1rem;
-    }
-
     .swh-donate-link {
         display: none;
     }
@@ -380,7 +394,11 @@ ul.nav-sidebar a {
     padding-top: 4px;
 }
 
-.swh-id-option {
+.swh-id {
+    white-space: pre-wrap;
+}
+
+.swh-id .swh-id-option {
     display: inline-block;
     margin-right: 5px;
     line-height: 1rem;
@@ -441,6 +459,21 @@ hr.swh-faded-line {
     background-image: linear-gradient(to left, #f0f0f0, #8c8b8b, #f0f0f0);
 }
 
+/* Ensure that section title with link is colored like standard section title */
+.swh-readme h1 a,
+.swh-readme h2 a,
+.swh-readme h3 a,
+.swh-readme h4 a,
+.swh-readme h5 a,
+.swh-readme h6 a {
+    color: #e20026;
+}
+
+/* Make list compact in reStructuredText rendering */
+.swh-rst li p {
+    margin-bottom: 0;
+}
+
 .swh-readme-txt pre {
     background: none;
     border: none;
@@ -489,6 +522,12 @@ tr.swh-api-doc-route a {
 
 .swh-apidoc .col {
     margin: 10px;
+}
+
+.swh-apidoc .swh-rst blockquote {
+    border: 0;
+    margin: 0;
+    padding: 0;
 }
 
 a.toggle-col {
@@ -579,4 +618,70 @@ div.d3-tooltip {
 
 .wrapper {
     overflow: hidden;
+}
+
+.swh-badge {
+    padding-bottom: 1rem;
+    cursor: pointer;
+}
+
+.swh-badge-html,
+.swh-badge-md,
+.swh-badge-rst {
+    white-space: pre-wrap;
+}
+
+/* Material Design icons alignment tweaks */
+
+.mdi {
+    display: inline-block;
+}
+
+.mdi-camera {
+    transform: translateY(1px);
+}
+
+.mdi-source-commit {
+    transform: translateY(2px);
+}
+
+/* To set icons at a fixed width. Great to use when different
+   icon widths throw off alignment. Courtesy of Font Awesome. */
+.mdi-fw {
+    text-align: center;
+    width: 1.25em;
+}
+
+.main-header .nav-link {
+    height: inherit;
+}
+
+.nav-sidebar .nav-header:not(:first-of-type) {
+    padding-top: 1rem;
+}
+
+.nav-sidebar .nav-link {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.nav-sidebar > .nav-item .nav-icon {
+    vertical-align: sub;
+}
+
+.swh-search-icon {
+    line-height: 1rem;
+    vertical-align: middle;
+}
+
+.swh-search-navbar {
+    position: absolute;
+    top: 0.7rem;
+    right: 15rem;
+    z-index: 50000;
+    width: 500px;
+}
+
+.sidebar-collapse .swh-search-navbar {
+    right: 4rem;
 }

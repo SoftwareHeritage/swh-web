@@ -2,25 +2,23 @@
 # should match https://pypi.python.org/pypi names. For the full spec or
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
-# Runtime dependencies
 beautifulsoup4
-Django >= 1.11.0, < 2.0
-djangorestframework >= 3.4.0
-django_webpack_loader
-django_js_reverse
+django < 3
+django-cors-headers
+django-js-reverse
+djangorestframework
+django-webpack-loader
 docutils
-python-magic >= 0.4.0
 htmlmin
 lxml
+prometheus-client
+pybadges
 pygments
-pypandoc
 python-dateutil
+python-keycloak >= 0.19.0
+python-magic >= 0.4.0
+python-memcached
 pyyaml
 requests
-python-memcached
-
-# Doc dependencies
-sphinx
-sphinxcontrib-httpdomain
-
-
+sentry-sdk
+typing-extensions

@@ -27,11 +27,17 @@ See top-level LICENSE file for more information
   <table class="table swh-table swh-table-striped swh-vault-table" id="vault-cooking-tasks">
     <thead>
       <tr>
-        <th><input type="checkbox" id="vault-tasks-toggle-selection"/></th>
+        <th>
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="vault-tasks-toggle-selection">
+            <label class="custom-control-label" for="vault-tasks-toggle-selection"></label>
+          </div>
+        </th>
+        <th style="width: 300px">Origin</th>
         <th style="width: 100px">Object type</th>
-        <th>Object id</th>
-        <th style="width: 350px">Cooking status</th>
-        <th style="width: 320px"></th>
+        <th>Object info</th>
+        <th style="width: 250px">Cooking status</th>
+        <th style="width: 120px"></th>
       </tr>
     </thead>
     <tbody></tbody>

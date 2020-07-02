@@ -8,8 +8,8 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 
 
-@api_route(r'/stat/counters/', 'api-1-stat-counters')
-@api_doc('/stat/counters/', noargs=True)
+@api_route(r"/stat/counters/", "api-1-stat-counters")
+@api_doc("/stat/counters/", noargs=True)
 @format_docstring()
 def api_stats(request):
     """
@@ -38,9 +38,6 @@ def api_stats(request):
             (aka set of named branches) in the archive
 
         {common_headers}
-
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
 
         :statuscode 200: no error
 

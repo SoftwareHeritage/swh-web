@@ -45,6 +45,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
     </script>
 
+    <script>
+      SWH_CONFIG = {{swh_client_config|jsonify}};
+      swh.webapp.sentryInit(SWH_CONFIG.sentry_dsn);
+    </script>
+
     <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
     <script>
@@ -66,6 +71,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="wrapper">
       <div class="swh-top-bar">
         <ul>
+          <li class="swh-position-left">
+            <div id="swh-full-width-switch-container" class="custom-control custom-switch d-none d-lg-block d-xl-block">
+              <input type="checkbox" class="custom-control-input" id="swh-full-width-switch" onclick="swh.webapp.fullWidthToggled(event)">
+              <label class="custom-control-label font-weight-normal" for="swh-full-width-switch">Full width</label>
+            </div>
+          </li>
           <li>
             <a href="https://www.softwareheritage.org">Home</a>
           </li>
@@ -73,31 +84,58 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <a href="https://forge.softwareheritage.org/">Development</a>
           </li>
           <li>
-              <a href="https://docs.softwareheritage.org/devel/">Documentation</a>
+            <a href="https://docs.softwareheritage.org/devel/">Documentation</a>
+          </li>
+          <li>
+            <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
           </li>
           <li class="swh-position-right">
-            {% if user.is_authenticated and user.is_staff %}
+            {% url 'logout' as logout_url %}
+            {% if user.is_authenticated %}
               Logged in as <strong>{{ user.username }}</strong>,
-              <a href="{% url 'logout' %}">logout</a>
-            {% else %}
-              <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
+              {% if 'OIDC' in user.backend %}
+                <a href="{% url 'oidc-logout' %}">logout</a>
+              {% else %}
+                <a href="{{ logout_url }}">logout</a>
+              {% endif %}
+            {% elif oidc_enabled %}
+              {% if request.path != logout_url %}
+                <a href="{% url 'oidc-login' %}?next_path={{ request.build_absolute_uri }}">login</a>
+              {% else %}
+                <a href="{% url 'oidc-login' %}">login</a>
+              {% endif %}
             {% endif %}
           </li>
         </ul>
       </div>
       <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top" id="swh-navbar">
         <div class="navbar-header">
-          <a class="nav-link swh-push-menu" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
+          <a class="nav-link swh-push-menu" data-widget="pushmenu" data-enable-remember="true" href="#">
+            <i class="mdi mdi-24px mdi-menu mdi-fw" aria-hidden="true"></i>
+          </a>
         </div>
         <div class="navbar" style="width: 94%;">
           <div class="swh-navbar-content">
             {% block navbar-content %}{% endblock %}
+            {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
+              <form class="form-horizontal d-none d-md-flex input-group swh-search-navbar"
+                  id="swh-origins-search-top">
+                <input class="form-control"
+                  placeholder="Enter a SWHID to resolve or keyword(s) to search for in origin URLs"
+                  type="text" id="swh-origins-search-top-input"/>
+                <div class="input-group-append">
+                  <button class="btn btn-primary" type="submit">
+                  <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </form>
+            {% endif %}
           </div>
         </div>
       </nav>
     </div>
 
-    <aside class="swh-sidebar main-sidebar sidebar-light-primary elevation-4">
+    <aside class="swh-sidebar main-sidebar sidebar-no-expand sidebar-light-primary elevation-4">
       <a href="{% url 'swh-web-homepage' %}" class="brand-link">
         <img class="brand-image" src="{% static 'img/swh-logo.png' %}">
         <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
@@ -116,56 +154,42 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <div class="sidebar">
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-            <li class="nav-header">Archive Access</li>
-            <li class="nav-item swh-browse-item" title="Explore the archive using a dedicated web interface">
-              <a href="{% url 'browse-search' %}" class="nav-link swh-browse-link">
-                <img class="nav-icon" src="{% static 'img/swh-browse.png' %}"/>
-                <p>Browse</p>
-              </a>
-            </li>
-            <li class="nav-item swh-api-1-item" title="Query the archive programmatically using a RESTful API">
-              <a href="{% url 'api-1-homepage' %}" class="nav-link swh-api-1-link">
-                <img class="nav-icon" src="{% static 'img/swh-api.png' %}"/>
-                <p>Web API</p>
-              </a>
-            </li>
             <li class="nav-header">Features</li>
             <li class="nav-item swh-search-item" title="Search archived software">
               <a href="{% url 'browse-search' %}" class="nav-link swh-search-link">
-                <i style="color: #e20026;" class="nav-icon fa fa-search"></i>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-magnify"></i>
                 <p>Search</p>
               </a>
             </li>
             <li class="nav-item swh-vault-item" title="Download archived software from the Vault">
               <a href="{% url 'browse-vault' %}" class="nav-link swh-vault-link">
-                <img class="nav-icon" src="{% static 'img/swh-vault.png' %}"/>
-                <p>Vault</p>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-download"></i>
+                <p>Downloads</p>
               </a>
             </li>
             <li class="nav-item swh-origin-save-item" title="Request the saving of a software origin into the archive">
               <a href="{% url 'origin-save' %}" class="nav-link swh-origin-save-link">
-                <i style="color: #e20026;" class="nav-icon fa fa-download"></i>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-folder-download"></i>
                 <p>Save code now</p>
               </a>
             </li>
-            <li class="nav-header">Miscellaneous</li>
             <li class="nav-item swh-help-item" title="How to browse the archive ?">
               <a href="{% url 'browse-help' %}" class="nav-link swh-help-link">
-                <i style="color: #e20026;" class="nav-icon fa fa-question"></i>
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
                 <p>Help</p>
               </a>
             </li>
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated  and user.is_staff %}
               <li class="nav-header">Administration</li>
               <li class="nav-item swh-origin-save-admin-item" title="Save code now administration">
                 <a href="{% url 'admin-origin-save' %}" class="nav-link swh-origin-save-admin-link">
-                  <i style="color: #fecd1b;" class="nav-icon fa fa-download"></i>
+                  <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-download"></i>
                   <p>Save code now</p>
                 </a>
               </li>
               <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
                 <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
-                  <i style="color: #fecd1b;" class="nav-icon fa fa-download"></i>
+                  <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
                   <p>Deposit</p>
                 </a>
               </li>
@@ -177,7 +201,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <div class="content-wrapper">
       <section class="content">
-        <div class="container">
+        <div class="container" id="swh-web-content">
           {% block content %}{% endblock %}
         </div>
       </section>
@@ -197,14 +221,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         Heritage are available under their own copyright and licenses. <br />
         <span class="link-color">Terms of use: </span>
         <a href="https://www.softwareheritage.org/legal/bulk-access-terms-of-use/">Archive access</a>,
-        <a href="https://www.softwareheritage.org/legal/api-1-terms-of-use/">API</a>-
+        <a href="https://www.softwareheritage.org/legal/api-terms-of-use/">API</a>-
         <a href="https://www.softwareheritage.org/contact/">Contact</a>-
-        <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>
+        <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
+        <a href="{% url 'api-1-homepage' %}">Web API</a>
       </div>
     </footer>
     <div id="back-to-top">
       <a href="#top"><img alt="back to top" src="{% static 'img/arrow-up-small.png' %}" /></a>
     </div>
+    <script>
+      swh.webapp.setContainerFullWidth();
+    </script>
   </body>
 
 </html>

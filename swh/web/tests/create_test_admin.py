@@ -6,9 +6,9 @@
 
 from django.contrib.auth import get_user_model
 
-username = 'admin'
-password = 'admin'
-email = 'admin@swh-web.org'
+username = "admin"
+password = "admin"
+email = "admin@swh-web.org"
 
 User = get_user_model()
 

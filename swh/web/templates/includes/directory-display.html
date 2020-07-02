@@ -1,9 +1,11 @@
 {% comment %}
-Copyright (C) 2017-2019  The Software Heritage developers
+Copyright (C) 2017-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
+
+{% include "includes/revision-info.html" %}
 
 {% if snapshot_context and snapshot_context.is_empty %}
   {% include "includes/empty-snapshot.html" %}
@@ -21,7 +23,7 @@ See top-level LICENSE file for more information
         {% for d in dirs %}
           <tr class="swh-directory-entry swh-tr-hover-highlight">
             <td class="swh-directory">
-              <i class="{{ swh_object_icons.directory }} fa-fw" aria-hidden="true"></i>
+              <i class="{{ swh_object_icons.directory }} mdi-fw" aria-hidden="true"></i>
               <a href="{{ d.url | safe }}">
                 {{ d.name }}
               </a>
@@ -36,7 +38,7 @@ See top-level LICENSE file for more information
         {% for f in files %}
           <tr class="swh-directory-entry swh-tr-hover-highlight">
             <td class="swh-content">
-              <i class="{{ swh_object_icons.content }} fa-fw" aria-hidden="true"></i>
+              <i class="{{ swh_object_icons.content }} mdi-fw" aria-hidden="true"></i>
               <a href="{{ f.url | safe }}">
                 {{ f.name }}
               </a>
@@ -53,6 +55,10 @@ See top-level LICENSE file for more information
     </table>
   </div>
   <hr class="mt-0 mb-2">
+{% elif "revision_found" in swh_object_metadata and swh_object_metadata.revision_found is False %}
+  <i>Revision {{ swh_object_metadata.revision }} could not be found in the archive.</i>
+  <br/>
+  <i>Its associated directory can not be displayed.</i>
 {% elif dirs|length == 0 and files|length == 0 %}
   <i>Directory is empty</i>
 {% endif %}

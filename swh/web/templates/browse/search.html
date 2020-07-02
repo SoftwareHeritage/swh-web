@@ -1,7 +1,7 @@
 {% extends "./layout.html" %}
 
 {% comment %}
-Copyright (C) 2017-2019  The Software Heritage developers
+Copyright (C) 2017-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -15,38 +15,16 @@ See top-level LICENSE file for more information
 
 {% block browse-content %}
 
-<form class="form-horizontal" id="swh-search-origins">
-  <div class="input-group">
-    <input class="form-control" placeholder="Enter a persistent id to resolve or string pattern(s) to search for in origin urls" type="text" id="origins-url-patterns"/>
-    <div class="input-group-append">
-      <button class="btn btn-default" type="submit"><i class="swh-search-icon fa fa-search"></i></button>
-    </div>
-  </div>
-  <div class="form-check swh-id-option">
-    <input class="form-check-input" value="option-origins-with-visit" type="checkbox"
-          id="swh-search-origins-with-visit" checked>
-    <label class="form-check-label" for="swh-search-origins-with-visit">only show origins visited at least once</label>
-  </div>
-  <div class="form-check swh-id-option">
-    <input class="form-check-input" value="option-filter-empty-visits" type="checkbox"
-          id="swh-filter-empty-visits" checked>
-    <label class="form-check-label" for="swh-filter-empty-visits">filter out origins with no archived content</label>
-  </div>
-  <div class="form-check swh-id-option">
-    <input class="form-check-input" value="option-filter-empty-visits" type="checkbox"
-          id="swh-search-origin-metadata">
-    <label class="form-check-label" for="swh-search-origin-metadata">search in metadata (instead of URL)</label>
-  </div>
-</form>
+{% include "includes/origin-search-form.html" %}
 <hr>
 <div id="swh-origin-search-results" class="mb-3" style="display: none;">
   <div class="table-responsive">
     <table class="table swh-table swh-table-striped" id="origin-search-results">
       <thead>
         <tr>
+          <th>Origin type</th>
           <th>Origin url</th>
-          <th>Visit type</th>
-          <th>Visit status</th>
+          <th>Archiving status</th>
         </tr>
       </thead>
       <tbody>
@@ -64,12 +42,11 @@ See top-level LICENSE file for more information
 </p>
 
 <ul class="pagination justify-content-center swh-search-pagination">
-  <li class="disabled page-item" id="origins-prev-results-button"><a class="page-link" tabindex="-1">Previous</a></li>
-  <li class="disabled page-item" id="origins-next-results-button"><a class="page-link" tabindex="-1">Next</a></li>
+  <li class="disabled page-item" id="origins-prev-results-button"><a class="page-link" href="#" tabindex="-1">Previous</a></li>
+  <li class="disabled page-item" id="origins-next-results-button"><a class="page-link" href="#" tabindex="-1">Next</a></li>
 </ul>
 
 <script>
   swh.webapp.initPage('search');
-  swh.browse.initOriginSearch();
 </script>
 {% endblock %}

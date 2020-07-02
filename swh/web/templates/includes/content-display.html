@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2019  The Software Heritage developers
+Copyright (C) 2017-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -7,13 +7,15 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
+{% include "includes/revision-info.html" %}
+
 {% if snapshot_context and snapshot_context.is_empty %}
   {% include "includes/empty-snapshot.html" %}
 {% else %}
   <div class="card">
-    {% if swh_object_metadata.filename %}
+    {% if filename %}
       <div class="swh-content-filename card-header bg-gray-light swh-heading-color">
-        {{ swh_object_metadata.filename }}
+        {{ filename }}
       </div>
     {% endif %}
     <div class="swh-content">
@@ -21,14 +23,14 @@ See top-level LICENSE file for more information
         Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
       {% elif "inode/x-empty" == mimetype %}
         <i>File is empty</i>
-      {% elif swh_object_metadata.filename and swh_object_metadata.filename|default:""|slice:"-5:" == "ipynb" %}
+      {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
         <div class="swh-ipynb">
         </div>
-      {% elif "text/" in mimetype and swh_object_metadata.encoding != "binary" %}
+      {% elif "text/" in mimetype and encoding != "binary" %}
         <div class="highlightjs">
           <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>
-      {% elif "image/" in mimetype and content %}
+      {% elif mimetype in browsers_supported_image_mimes and content %}
         <img src="data:{{ mimetype }};base64,{{ content }}"/>
       {% elif "application/pdf" == mimetype %}
         <div class="text-center">
@@ -40,7 +42,7 @@ See top-level LICENSE file for more information
           <canvas id="pdf-canvas"></canvas>
         </div>
       {% elif content %}
-        Content with mime type {{ swh_object_metadata.mimetype }} can not be displayed.
+        Content with mime type {{ mimetype }} and encoding {{ encoding }} cannot be displayed.
       {% else %}
         {% include "includes/http-error.html" %}
       {% endif %}
@@ -50,7 +52,7 @@ See top-level LICENSE file for more information
   <script>
     {% if "application/pdf" == mimetype %}
       swh.webapp.renderPdf({{ top_right_link.url|jsonify }});
-    {% elif swh_object_metadata.filename and swh_object_metadata.filename|default:""|slice:"-5:" == "ipynb" %}
+    {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
       swh.webapp.renderNotebook({{ top_right_link.url|jsonify }}, '.swh-ipynb');
     {% elif content %}
       let codeContainer = $('code');

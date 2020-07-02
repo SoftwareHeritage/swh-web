@@ -15,11 +15,11 @@ See top-level LICENSE file for more information
 <nav class="bread-crumbs">
   <ul>
     <li><a href="/api/"><h4>Web API</h4></a></li>
-    <li class="bc-no-root"><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
+    <li class="bc-no-root"><i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i></li>
     <li class="bc-no-root"><a href="/api/1/">endpoints</a></li>
     {% for endpoint in endpoint_path %}
-      <li class="bc-no-root"><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
-      {% if endpoint.name != 'stat' and endpoint.name != 'vault' and endpoint.path != 'vault/revision' %}
+      <li class="bc-no-root"><i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i></li>
+      {% if endpoint.name != 'stat' and endpoint.name != 'vault' and endpoint.path != 'vault/revision/doc/' %}
         <li class="bc-no-root"><a href="{{ '/api/1/'|add:endpoint.path }}">{{ endpoint.name }}</a></li>
       {% else %}
         <li class="bc-no-root"><span>{{ endpoint.name }}</span></li>
@@ -35,13 +35,13 @@ See top-level LICENSE file for more information
 {% if description %}
   <div>
     <h4> Description </h4>
-    {{ description | safe_docstring_display | safe }}
+    {{ description | docstring_display | safe }}
   </div>
 {% endif %}
 {% if response_data is not None %}
   <div>
     <h4>Request</h4>
-    <pre><strong>{{ request.method }}</strong> {{ request.path }}</pre>
+    <pre><strong>{{ request.method }}</strong> {{ request.build_absolute_uri }}</pre>
     <hr/>
     <h4>Response</h4>
     {% if status_code != 200 %}
@@ -71,7 +71,7 @@ See top-level LICENSE file for more information
       <tbody>
         {% for url in urls %}
           <tr>
-            <td>{{ url.rule | safe_docstring_display | safe }}</td>
+            <td>{{ url.rule | docstring_display | safe }}</td>
             <td>{{ url.methods | dictsort:0 | join:', ' }}</td>
           </tr>
         {% endfor %}
@@ -86,7 +86,7 @@ See top-level LICENSE file for more information
     {% for arg in args %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ arg.name }} ({{ arg.type }}) </dt>
-        <dd class="col col-md-9"> {{ arg.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ arg.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
@@ -98,7 +98,7 @@ See top-level LICENSE file for more information
     {% for param in params %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ param.name }} ({{ param.type }}) </dt>
-        <dd class="col col-md-9"> {{ param.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ param.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
@@ -110,11 +110,36 @@ See top-level LICENSE file for more information
     {% for header in reqheaders %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ header.name }} </dt>
-        <dd class="col col-md-9"> {{ header.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ header.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
 <hr/>
+{% endif %}
+{% if input_type %}
+  <div>
+    <h4> Request data </h4>
+    <dl class="row">
+      <dt class="col col-md-2 text-right"> {{ input_type }} </dt>
+      <dd class="col col-md-9">
+        <p>
+          {% if input_type == 'array' and inputs_list == '' %}
+            {{ inputs.0.doc | safe }}
+          {% elif input_type == 'array' and inputs_list != '' %}
+            an array of objects containing the following keys:
+          {% elif input_type == 'octet stream' %}
+            raw data as an octet stream
+          {% elif input_type == 'object' %}
+            an object containing the following keys:
+          {% endif %}
+          {% if inputs_list != '' %}
+            {{ inputs_list | docstring_display | safe }}
+          {% endif %}
+        </p>
+      </dd>
+    </dl>
+  </div>
+  <hr/>
 {% endif %}
 {% if resheaders and resheaders|length > 0 %}
   <div>
@@ -122,7 +147,7 @@ See top-level LICENSE file for more information
     {% for header in resheaders %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ header.name }} </dt>
-        <dd class="col col-md-9"> {{ header.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ header.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>
@@ -135,14 +160,18 @@ See top-level LICENSE file for more information
       <dt class="col col-md-2 text-right"> {{ return_type }} </dt>
       <dd class="col col-md-9">
         <p>
-          {% if return_type == 'array' %}
+          {% if return_type == 'array' and returns_list == '' %}
+            {{ returns.0.doc | safe }}
+          {% elif return_type == 'array' and returns_list != '' %}
             an array of objects containing the following keys:
           {% elif return_type == 'octet stream' %}
-            the raw data as an octet stream
-          {% else %}
+            raw data as an octet stream
+          {% elif return_type == 'object' %}
             an object containing the following keys:
           {% endif %}
-          {{ returns_list | safe_docstring_display | safe }}
+          {% if returns_list != '' %}
+            {{ returns_list | docstring_display | safe }}
+          {% endif %}
         </p>
       </dd>
     </dl>
@@ -155,7 +184,7 @@ See top-level LICENSE file for more information
     {% for status in status_codes %}
       <dl class="row">
         <dt class="col col-md-2 text-right"> {{ status.code }} </dt>
-        <dd class="col col-md-9"> {{ status.doc | safe_docstring_display | safe }} </dd>
+        <dd class="col col-md-9"> {{ status.doc | docstring_display | safe }} </dd>
       </dl>
     {% endfor %}
   </div>

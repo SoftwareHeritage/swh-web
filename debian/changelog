@@ -1,8 +1,223 @@
-swh-web (0.0.218-1~swh1~bpo9+1) stretch-swh; urgency=medium
+swh-web (0.0.245-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for stretch-swh
+  * New upstream release 0.0.245     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-07-02 15:51:46 +0200)
+  * Upstream changes:     - version 0.0.245
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 04 Nov 2019 13:15:04 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 02 Jul 2020 14:28:23 +0000
+
+swh-web (0.0.244-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.244     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-29 15:00:40 +0200)
+  * Upstream changes:     - version 0.0.244
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 29 Jun 2020 13:22:24 +0000
+
+swh-web (0.0.242-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.242     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-23 14:24:01 +0200)
+  * Upstream changes:     - version 0.0.242
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 23 Jun 2020 12:55:08 +0000
+
+swh-web (0.0.241-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.241     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-06-19 18:08:44
+    +0200)
+  * Upstream changes:     - v0.0.241     - misc/coverage: Add IPOL and
+    NixOS logos     - service: Use latest origin visit status from an
+    origin     - Migrate to swh.storage.algos.snapshot_get_latest     -
+    templates/browse: Improve navigation for origin/snapshot related
+    views
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 19 Jun 2020 16:22:34 +0000
+
+swh-web (0.0.240-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.240     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-18 14:13:12 +0200)
+  * Upstream changes:     - version 0.0.240
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 18 Jun 2020 13:13:08 +0000
+
+swh-web (0.0.239-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.239     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-17 10:52:06 +0200)
+  * Upstream changes:     - version 0.0.239
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 17 Jun 2020 09:16:33 +0000
+
+swh-web (0.0.238-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.238     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-12 14:17:47 +0200)
+  * Upstream changes:     - version 0.0.238
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 12 Jun 2020 13:14:45 +0000
+
+swh-web (0.0.237-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.237     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-05 17:42:35 +0200)
+  * Upstream changes:     - version 0.0.237
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 05 Jun 2020 16:24:05 +0000
+
+swh-web (0.0.236-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.236     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-06-05 14:38:37 +0200)
+  * Upstream changes:     - version 0.0.236
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 05 Jun 2020 13:05:41 +0000
+
+swh-web (0.0.235-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.235     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-05-27 14:58:13
+    +0200)
+  * Upstream changes:     - v0.0.235     - admin-deposit: Fix edge case
+    on empty exclude pattern
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 27 May 2020 13:10:37 +0000
+
+swh-web (0.0.234-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.234     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-05-26 15:39:22
+    +0200)
+  * Upstream changes:     - v0.0.234     - deposit-admin: Filtering out
+    deposits matching an excluding pattern     - deposit-admin-spec:
+    Improve default tests on admin page     - deposit-admin.spec: Add
+    coverage to the deposit admin page     - admin/deposit: Fix
+    discrepancy     - admin/deposit: Fix column identifiers
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 26 May 2020 13:58:52 +0000
+
+swh-web (0.0.233-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.233     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-05-20 11:32:57
+    +0200)
+  * Upstream changes:     - v0.0.233     - admin/deposit: Drop unused
+    columns and rename "directory with context"     - Drop
+    swh_anchor_id* references from Deposit model
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 20 May 2020 09:51:40 +0000
+
+swh-web (0.0.232-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.232     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-05-19 09:57:29
+    +0200)
+  * Upstream changes:     - v0.0.232     - admin/deposit: Extract origin
+    from swh_anchor_id according to latest change     - Fix pep8
+    violations
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 19 May 2020 08:08:47 +0000
+
+swh-web (0.0.231-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.231     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-05-07 18:07:33 +0200)
+  * Upstream changes:     - version 0.0.231
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 07 May 2020 16:29:01 +0000
+
+swh-web (0.0.230-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.230     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-05-05 19:19:24 +0200)
+  * Upstream changes:     - version 0.0.230
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 05 May 2020 17:55:59 +0000
+
+swh-web (0.0.229-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.229     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-04-22 12:54:34 +0200)
+  * Upstream changes:     - version 0.0.229
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 22 Apr 2020 11:23:17 +0000
+
+swh-web (0.0.228-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.228     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-04-21 13:59:34 +0200)
+  * Upstream changes:     - version 0.0.228
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 21 Apr 2020 12:19:31 +0000
+
+swh-web (0.0.227-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.227     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-04-07 12:34:35 +0200)
+  * Upstream changes:     - version 0.0.227
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 07 Apr 2020 14:41:45 +0000
+
+swh-web (0.0.226-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.226     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-02-18 16:46:42 +0100)
+  * Upstream changes:     - version 0.0.226
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 18 Feb 2020 16:38:01 +0000
+
+swh-web (0.0.225-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.225     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-02-10 11:39:19 +0100)
+  * Upstream changes:     - version 0.0.225
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 10 Feb 2020 11:35:35 +0000
+
+swh-web (0.0.224-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.224     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2020-01-16 13:42:20 +0100)
+  * Upstream changes:     - version 0.0.224
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 16 Jan 2020 13:09:29 +0000
+
+swh-web (0.0.223-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.223     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2019-12-13 15:01:06 +0100)
+  * Upstream changes:     - version 0.0.223
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 13 Dec 2019 14:24:54 +0000
+
+swh-web (0.0.221-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.221     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2019-12-04 13:30:38 +0100)
+  * Upstream changes:     - version 0.0.221
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 04 Dec 2019 12:53:41 +0000
+
+swh-web (0.0.220-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.220     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2019-11-08 18:00:47 +0100)
+  * Upstream changes:     - v0.0.220     - * typing: minimal changes to
+    make a no-op mypy run pass     - * Makefile.local: port to new swh-
+    environment typecheck naming     - * sphinx: Fix doc generation and
+    warnings     - * Add support for swh-indexer v0.0.157.
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 08 Nov 2019 17:21:30 +0000
+
+swh-web (0.0.219-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.219     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2019-11-06 10:49:54 +0100)
+  * Upstream changes:     - version 0.0.219
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 06 Nov 2019 10:10:30 +0000
 
 swh-web (0.0.218-1~swh1) unstable-swh; urgency=medium
 

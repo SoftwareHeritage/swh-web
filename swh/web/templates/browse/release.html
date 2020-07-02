@@ -12,14 +12,19 @@ See top-level LICENSE file for more information
 {% block swh-browse-content %}
 {% include "includes/top-navigation.html" %}
 <div style="height: 35px;margin: 4px;">
-  <i class="{{ swh_object_icons.release }} fa-fw"></i>Release <b>{{ swh_object_metadata.name }}</b>
-  created by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>
+  <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>Release <b>{{ swh_object_metadata.name }}</b>
+  created by {{ swh_object_metadata.author_url }} on <b>{{ swh_object_metadata.date }}</b>
 </div>
 <pre style="white-space: pre-wrap">
 <h6>{{ release.note_header }}</h6>{{ release.note_body }}
 </pre>
 <div style="margin: 4px;">
-  <b>Target:</b> <i class="{{ swh_object_icons|key_value:release.target_type }} fa-fw"></i>
+  <b>Target:</b> <i class="{{ swh_object_icons|key_value:release.target_type }} mdi-fw" aria-hidden="true"></i>
   {{ release.target_link}}
+  {% if release.directory_link %}
+    <br/>
+    <b>Directory:</b> <i class="{{ swh_object_icons|key_value:'directory' }} mdi-fw" aria-hidden="true"></i>
+    {{ release.directory_link}}
+  {% endif %}
 </div>
 {% endblock %}

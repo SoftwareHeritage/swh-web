@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2019  The Software Heritage developers
+Copyright (C) 2019-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -10,12 +10,10 @@ See top-level LICENSE file for more information
 
 {% if snapshot_context and snapshot_context.visit_info and snapshot_context.visit_info.type|visit_type_savable %}
 
-  <!-- entry in the Actions menu -->
-  <div class="dropdown-submenu">
-    <button class="dropdown-item" type="button" tabindex="-1" data-toggle="modal" data-target="#swh-take-new-snapshot-modal">
-      <i class="fa fa-camera fa-fw" aria-hidden="true"></i>Take a new snapshot
-    </button>
-  </div>
+  <button class="btn btn-default btn-sm" type="button" tabindex="-1" data-toggle="modal" data-target="#swh-take-new-snapshot-modal">
+    <i class="mdi mdi-camera mdi-fw" aria-hidden="true"></i>
+    New snapshot
+  </button>
 
   <div class="modal fade" id="swh-take-new-snapshot-modal" tabindex="-1" role="dialog" aria-labelledby="swh-take-new-snapshot-modal-label" aria-hidden="true">
     <div class="modal-dialog">
@@ -29,7 +27,7 @@ See top-level LICENSE file for more information
         <div class="modal-body">
           <p>
             If the archived software origin currently browsed is not synchronized with its upstream
-            version (for instance when new commits have been issued), you can explicitely request Software
+            version (for instance when new commits have been issued), you can explicitly request Software
             Heritage to take a new snapshot of it.
           <p>
           </p>

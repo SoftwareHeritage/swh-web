@@ -15,7 +15,7 @@ See top-level LICENSE file for more information
 <div class="bread-crumbs">
   <ul>
     <li><a href="/api/"><h4>Web API</h4></a></li>
-    <li class="bc-no-root"><i class="fa fa-caret-right fa-fw" aria-hidden="true"></i></li>
+    <li class="bc-no-root"><i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i></li>
     <li class="bc-no-root">endpoints</li>
   </ul>
 </div>
@@ -53,13 +53,13 @@ See top-level LICENSE file for more information
           {% else %}
             <td id="{{ route }}">
               <a href="{% url doc.route_view_name %}">
-                {% url doc.route_view_name %}
+                {{ doc.route }}
               </a>
             </td>
           {% endif %}
           <td class="d-none d-sm-table-cell">
             <a href="{% url doc.route_view_name %}">
-              {{ doc.doc_intro | safe_docstring_display | safe }}
+              {{ doc.doc_intro | docstring_display | safe }}
             </a>
           </td>
         </tr>

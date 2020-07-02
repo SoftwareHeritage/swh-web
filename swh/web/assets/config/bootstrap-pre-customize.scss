@@ -5,9 +5,10 @@
  * See top-level LICENSE file for more information
  */
 
-// override some global boostrap sass variables before generating stylesheets
+// override some global bootstrap sass variables before generating stylesheets
 
 // global text colors and fonts
+$primary: #e20026;
 $body-color: rgba(0, 0, 0, 0.55);
 $font-family-sans-serif: "Alegreya Sans", sans-serif !important;
 $link-color: rgba(0, 0, 0, 0.75);

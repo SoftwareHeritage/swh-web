@@ -1,28 +1,27 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import base64
 import magic
-import pypandoc
 import stat
 import textwrap
 
-from collections import defaultdict
 from threading import Lock
 
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+import sentry_sdk
 
-from swh.model.identifiers import persistent_identifier
 from swh.web.common import highlightjs, service
-from swh.web.common.exc import NotFoundExc, http_status_code_message
-from swh.web.common.origin_visits import get_origin_visit
+from swh.web.common.exc import http_status_code_message
 from swh.web.common.utils import (
-    reverse, format_utc_iso_date, get_swh_persistent_id,
-    swh_object_icons
+    reverse,
+    format_utc_iso_date,
+    rst_to_html,
+    browsers_supported_image_mimes,
 )
 from swh.web.config import get_config
 
@@ -44,7 +43,7 @@ def get_directory_entries(sha1_git):
     Raises:
         NotFoundExc if the directory is not found
     """
-    cache_entry_id = 'directory_entries_%s' % sha1_git
+    cache_entry_id = "directory_entries_%s" % sha1_git
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
@@ -52,17 +51,17 @@ def get_directory_entries(sha1_git):
 
     entries = list(service.lookup_directory(sha1_git))
     for e in entries:
-        e['perms'] = stat.filemode(e['perms'])
-        if e['type'] == 'rev':
+        e["perms"] = stat.filemode(e["perms"])
+        if e["type"] == "rev":
             # modify dir entry name to explicitly show it points
             # to a revision
-            e['name'] = '%s @ %s' % (e['name'], e['target'][:7])
+            e["name"] = "%s @ %s" % (e["name"], e["target"][:7])
 
-    dirs = [e for e in entries if e['type'] in ('dir', 'rev')]
-    files = [e for e in entries if e['type'] == 'file']
+    dirs = [e for e in entries if e["type"] in ("dir", "rev")]
+    files = [e for e in entries if e["type"] == "file"]
 
-    dirs = sorted(dirs, key=lambda d: d['name'])
-    files = sorted(files, key=lambda f: f['name'])
+    dirs = sorted(dirs, key=lambda d: d["name"])
+    files = sorted(files, key=lambda f: f["name"])
 
     cache.set(cache_entry_id, (dirs, files))
 
@@ -86,11 +85,11 @@ def get_mimetype_and_encoding_for_content(content):
     """
     # https://pypi.org/project/python-magic/
     # packaged as python3-magic in debian buster
-    if hasattr(magic, 'from_buffer'):
+    if hasattr(magic, "from_buffer"):
         m = magic.Magic(mime=True, mime_encoding=True)
         mime_encoding = m.from_buffer(content)
-        mime_type, encoding = mime_encoding.split(';')
-        encoding = encoding.replace(' charset=', '')
+        mime_type, encoding = mime_encoding.split(";")
+        encoding = encoding.replace(" charset=", "")
     # https://pypi.org/project/file-magic/
     # packaged as python3-magic in debian stretch
     else:
@@ -110,42 +109,42 @@ def get_mimetype_and_encoding_for_content(content):
 
 # maximum authorized content size in bytes for HTML display
 # with code highlighting
-content_display_max_size = get_config()['content_display_max_size']
-
-snapshot_content_max_size = get_config()['snapshot_content_max_size']
+content_display_max_size = get_config()["content_display_max_size"]
 
 
 def _re_encode_content(mimetype, encoding, content_data):
     # encode textual content to utf-8 if needed
-    if mimetype.startswith('text/'):
+    if mimetype.startswith("text/"):
         # probably a malformed UTF-8 content, re-encode it
         # by replacing invalid chars with a substitution one
-        if encoding == 'unknown-8bit':
-            content_data = content_data.decode('utf-8', 'replace')\
-                                       .encode('utf-8')
-        elif encoding not in ['utf-8', 'binary']:
-            content_data = content_data.decode(encoding, 'replace')\
-                                       .encode('utf-8')
-    elif mimetype.startswith('application/octet-stream'):
+        if encoding == "unknown-8bit":
+            content_data = content_data.decode("utf-8", "replace").encode("utf-8")
+        elif encoding not in ["utf-8", "binary"]:
+            content_data = content_data.decode(encoding, "replace").encode("utf-8")
+    elif mimetype.startswith("application/octet-stream"):
         # file may detect a text content as binary
         # so try to decode it for display
-        encodings = ['us-ascii']
-        encodings += ['iso-8859-%s' % i for i in range(1, 17)]
-        for encoding in encodings:
+        encodings = ["us-ascii", "utf-8"]
+        encodings += ["iso-8859-%s" % i for i in range(1, 17)]
+        for enc in encodings:
             try:
-                content_data = content_data.decode(encoding)\
-                                           .encode('utf-8')
-            except Exception:
-                pass
+                content_data = content_data.decode(enc).encode("utf-8")
+            except Exception as exc:
+                sentry_sdk.capture_exception(exc)
             else:
                 # ensure display in content view
-                mimetype = 'text/plain'
+                encoding = enc
+                mimetype = "text/plain"
                 break
-    return mimetype, content_data
+    return mimetype, encoding, content_data
 
 
-def request_content(query_string, max_size=content_display_max_size,
-                    raise_if_unavailable=True, re_encode=True):
+def request_content(
+    query_string,
+    max_size=content_display_max_size,
+    raise_if_unavailable=True,
+    re_encode=True,
+):
     """Function that retrieves a content from the archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -177,70 +176,70 @@ def request_content(query_string, max_size=content_display_max_size,
         filetype = service.lookup_content_filetype(query_string)
         language = service.lookup_content_language(query_string)
         license = service.lookup_content_license(query_string)
-    except Exception:
-        pass
-    mimetype = 'unknown'
-    encoding = 'unknown'
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
+    mimetype = "unknown"
+    encoding = "unknown"
     if filetype:
-        mimetype = filetype['mimetype']
-        encoding = filetype['encoding']
+        mimetype = filetype["mimetype"]
+        encoding = filetype["encoding"]
         # workaround when encountering corrupted data due to implicit
         # conversion from bytea to text in the indexer db (see T818)
         # TODO: Remove that code when all data have been correctly converted
-        if mimetype.startswith('\\'):
+        if mimetype.startswith("\\"):
             filetype = None
 
-    content_data['error_code'] = 200
-    content_data['error_message'] = ''
-    content_data['error_description'] = ''
+    content_data["error_code"] = 200
+    content_data["error_message"] = ""
+    content_data["error_description"] = ""
 
-    if not max_size or content_data['length'] < max_size:
+    if not max_size or content_data["length"] < max_size:
         try:
             content_raw = service.lookup_content_raw(query_string)
-        except Exception as e:
+        except Exception as exc:
             if raise_if_unavailable:
-                raise e
+                raise exc
             else:
-                content_data['raw_data'] = None
-                content_data['error_code'] = 404
-                content_data['error_description'] = \
-                    'The bytes of the content are currently not available in the archive.' # noqa
-                content_data['error_message'] = \
-                    http_status_code_message[content_data['error_code']]
+                sentry_sdk.capture_exception(exc)
+                content_data["raw_data"] = None
+                content_data["error_code"] = 404
+                content_data["error_description"] = (
+                    "The bytes of the content are currently not available "
+                    "in the archive."
+                )
+                content_data["error_message"] = http_status_code_message[
+                    content_data["error_code"]
+                ]
         else:
-            content_data['raw_data'] = content_raw['data']
+            content_data["raw_data"] = content_raw["data"]
 
             if not filetype:
-                mimetype, encoding = \
-                    get_mimetype_and_encoding_for_content(content_data['raw_data']) # noqa
+                mimetype, encoding = get_mimetype_and_encoding_for_content(
+                    content_data["raw_data"]
+                )
 
             if re_encode:
-                mimetype, raw_data = _re_encode_content(
-                    mimetype, encoding, content_data['raw_data'])
-                content_data['raw_data'] = raw_data
+                mimetype, encoding, raw_data = _re_encode_content(
+                    mimetype, encoding, content_data["raw_data"]
+                )
+                content_data["raw_data"] = raw_data
 
     else:
-        content_data['raw_data'] = None
+        content_data["raw_data"] = None
 
-    content_data['mimetype'] = mimetype
-    content_data['encoding'] = encoding
+    content_data["mimetype"] = mimetype
+    content_data["encoding"] = encoding
 
     if language:
-        content_data['language'] = language['lang']
+        content_data["language"] = language["lang"]
     else:
-        content_data['language'] = 'not detected'
+        content_data["language"] = "not detected"
     if license:
-        content_data['licenses'] = ', '.join(license['facts'][0]['licenses'])
+        content_data["licenses"] = ", ".join(license["facts"][0]["licenses"])
     else:
-        content_data['licenses'] = 'not detected'
+        content_data["licenses"] = "not detected"
 
     return content_data
-
-
-_browsers_supported_image_mimes = set(['image/gif', 'image/png',
-                                       'image/jpeg', 'image/bmp',
-                                       'image/webp', 'image/svg',
-                                       'image/svg+xml'])
 
 
 def prepare_content_for_display(content_data, mime_type, path):
@@ -272,217 +271,21 @@ def prepare_content_for_display(content_data, mime_type, path):
         language = highlightjs.get_hljs_language_from_mime_type(mime_type)
 
     if not language:
-        language = 'nohighlight'
-    elif mime_type.startswith('application/'):
-        mime_type = mime_type.replace('application/', 'text/')
+        language = "nohighlight"
+    elif mime_type.startswith("application/"):
+        mime_type = mime_type.replace("application/", "text/")
 
-    if mime_type.startswith('image/'):
-        if mime_type in _browsers_supported_image_mimes:
-            content_data = base64.b64encode(content_data)
-            content_data = content_data.decode('utf-8')
-        else:
-            content_data = None
+    if mime_type.startswith("image/"):
+        if mime_type in browsers_supported_image_mimes:
+            content_data = base64.b64encode(content_data).decode("ascii")
 
-    if mime_type.startswith('image/svg'):
-        mime_type = 'image/svg+xml'
+    if mime_type.startswith("image/svg"):
+        mime_type = "image/svg+xml"
 
-    return {'content_data': content_data,
-            'language': language,
-            'mimetype': mime_type}
+    if mime_type.startswith("text/"):
+        content_data = content_data.decode("utf-8", errors="replace")
 
-
-def process_snapshot_branches(snapshot):
-    """
-    Process a dictionary describing snapshot branches: extract those
-    targeting revisions and releases, put them in two different lists,
-    then sort those lists in lexicographical order of the branches' names.
-
-    Args:
-        snapshot_branches (dict): A dict describing the branches of a snapshot
-            as returned for instance by
-            :func:`swh.web.common.service.lookup_snapshot`
-
-    Returns:
-        tuple: A tuple whose first member is the sorted list of branches
-            targeting revisions and second member the sorted list of branches
-            targeting releases
-    """
-    snapshot_branches = snapshot['branches']
-    branches = {}
-    branch_aliases = {}
-    releases = {}
-    revision_to_branch = defaultdict(set)
-    revision_to_release = defaultdict(set)
-    release_to_branch = defaultdict(set)
-    for branch_name, target in snapshot_branches.items():
-        if not target:
-            # FIXME: display branches with an unknown target anyway
-            continue
-        target_id = target['target']
-        target_type = target['target_type']
-        if target_type == 'revision':
-            branches[branch_name] = {
-                'name': branch_name,
-                'revision': target_id,
-            }
-            revision_to_branch[target_id].add(branch_name)
-        elif target_type == 'release':
-            release_to_branch[target_id].add(branch_name)
-        elif target_type == 'alias':
-            branch_aliases[branch_name] = target_id
-        # FIXME: handle pointers to other object types
-
-    def _enrich_release_branch(branch, release):
-        releases[branch] = {
-            'name': release['name'],
-            'branch_name': branch,
-            'date': format_utc_iso_date(release['date']),
-            'id': release['id'],
-            'message': release['message'],
-            'target_type': release['target_type'],
-            'target': release['target'],
-        }
-
-    def _enrich_revision_branch(branch, revision):
-        branches[branch].update({
-            'revision': revision['id'],
-            'directory': revision['directory'],
-            'date': format_utc_iso_date(revision['date']),
-            'message': revision['message']
-        })
-
-    releases_info = service.lookup_release_multiple(
-        release_to_branch.keys()
-    )
-    for release in releases_info:
-        branches_to_update = release_to_branch[release['id']]
-        for branch in branches_to_update:
-            _enrich_release_branch(branch, release)
-        if release['target_type'] == 'revision':
-            revision_to_release[release['target']].update(
-                branches_to_update
-            )
-
-    revisions = service.lookup_revision_multiple(
-        set(revision_to_branch.keys()) | set(revision_to_release.keys())
-    )
-
-    for revision in revisions:
-        if not revision:
-            continue
-        for branch in revision_to_branch[revision['id']]:
-            _enrich_revision_branch(branch, revision)
-        for release in revision_to_release[revision['id']]:
-            releases[release]['directory'] = revision['directory']
-
-    for branch_alias, branch_target in branch_aliases.items():
-        if branch_target in branches:
-            branches[branch_alias] = dict(branches[branch_target])
-        else:
-            snp = service.lookup_snapshot(snapshot['id'],
-                                          branches_from=branch_target,
-                                          branches_count=1)
-            if snp and branch_target in snp['branches']:
-
-                if snp['branches'][branch_target] is None:
-                    continue
-
-                target_type = snp['branches'][branch_target]['target_type']
-                target = snp['branches'][branch_target]['target']
-                if target_type == 'revision':
-                    branches[branch_alias] = snp['branches'][branch_target]
-                    revision = service.lookup_revision(target)
-                    _enrich_revision_branch(branch_alias, revision)
-                elif target_type == 'release':
-                    release = service.lookup_release(target)
-                    _enrich_release_branch(branch_alias, release)
-
-        if branch_alias in branches:
-            branches[branch_alias]['name'] = branch_alias
-
-    ret_branches = list(sorted(branches.values(), key=lambda b: b['name']))
-    ret_releases = list(sorted(releases.values(), key=lambda b: b['name']))
-
-    return ret_branches, ret_releases
-
-
-def get_snapshot_content(snapshot_id):
-    """Returns the lists of branches and releases
-    associated to a swh snapshot.
-    That list is put in  cache in order to speedup the navigation
-    in the swh-web/browse ui.
-
-    .. warning:: At most 1000 branches contained in the snapshot
-        will be returned for performance reasons.
-
-    Args:
-        snapshot_id (str): hexadecimal representation of the snapshot
-            identifier
-
-    Returns:
-        A tuple with two members. The first one is a list of dict describing
-        the snapshot branches. The second one is a list of dict describing the
-        snapshot releases.
-
-    Raises:
-        NotFoundExc if the snapshot does not exist
-    """
-    cache_entry_id = 'swh_snapshot_%s' % snapshot_id
-    cache_entry = cache.get(cache_entry_id)
-
-    if cache_entry:
-        return cache_entry['branches'], cache_entry['releases']
-
-    branches = []
-    releases = []
-
-    if snapshot_id:
-        snapshot = service.lookup_snapshot(
-            snapshot_id, branches_count=snapshot_content_max_size)
-        branches, releases = process_snapshot_branches(snapshot)
-
-    cache.set(cache_entry_id, {
-        'branches': branches,
-        'releases': releases,
-    })
-
-    return branches, releases
-
-
-def get_origin_visit_snapshot(origin_info, visit_ts=None, visit_id=None,
-                              snapshot_id=None):
-    """Returns the lists of branches and releases
-    associated to a swh origin for a given visit.
-    The visit is expressed by a timestamp. In the latter case,
-    the closest visit from the provided timestamp will be used.
-    If no visit parameter is provided, it returns the list of branches
-    found for the latest visit.
-    That list is put in  cache in order to speedup the navigation
-    in the swh-web/browse ui.
-
-    .. warning:: At most 1000 branches contained in the snapshot
-        will be returned for performance reasons.
-
-    Args:
-        origin_info (dict): a dict filled with origin information
-            (id, url, type)
-        visit_ts (int or str): an ISO date string or Unix timestamp to parse
-        visit_id (int): optional visit id for disambiguation in case
-            several visits have the same timestamp
-
-    Returns:
-        A tuple with two members. The first one is a list of dict describing
-        the origin branches for the given visit.
-        The second one is a list of dict describing the origin releases
-        for the given visit.
-
-    Raises:
-        NotFoundExc if the origin or its visit are not found
-    """
-
-    visit_info = get_origin_visit(origin_info, visit_ts, visit_id, snapshot_id)
-
-    return get_snapshot_content(visit_info['snapshot'])
+    return {"content_data": content_data, "language": language, "mimetype": mime_type}
 
 
 def gen_link(url, link_text=None, link_attrs=None):
@@ -501,30 +304,42 @@ def gen_link(url, link_text=None, link_attrs=None):
         An HTML link in the form '<a href="url">link_text</a>'
 
     """
-    attrs = ' '
+    attrs = " "
     if link_attrs:
         for k, v in link_attrs.items():
             attrs += '%s="%s" ' % (k, v)
     if not link_text:
         link_text = url
-    link = '<a%shref="%s">%s</a>' \
-        % (attrs, escape(url), escape(link_text))
+    link = '<a%shref="%s">%s</a>' % (attrs, escape(url), escape(link_text))
     return mark_safe(link)
 
 
 def _snapshot_context_query_params(snapshot_context):
-    query_params = None
-    if snapshot_context and snapshot_context['origin_info']:
-        origin_info = snapshot_context['origin_info']
-        query_params = {'origin': origin_info['url']}
-        if 'timestamp' in snapshot_context['url_args']:
-            query_params['timestamp'] = \
-                 snapshot_context['url_args']['timestamp']
-        if 'visit_id' in snapshot_context['query_params']:
-            query_params['visit_id'] = \
-                snapshot_context['query_params']['visit_id']
+    query_params = {}
+    if not snapshot_context:
+        return query_params
+    if snapshot_context and snapshot_context["origin_info"]:
+        origin_info = snapshot_context["origin_info"]
+        snp_query_params = snapshot_context["query_params"]
+        query_params = {"origin_url": origin_info["url"]}
+        if "timestamp" in snp_query_params:
+            query_params["timestamp"] = snp_query_params["timestamp"]
+        if "visit_id" in snp_query_params:
+            query_params["visit_id"] = snp_query_params["visit_id"]
+        if "snapshot" in snp_query_params and "visit_id" not in query_params:
+            query_params["snapshot"] = snp_query_params["snapshot"]
     elif snapshot_context:
-        query_params = {'snapshot_id': snapshot_context['snapshot_id']}
+        query_params = {"snapshot": snapshot_context["snapshot_id"]}
+
+    if snapshot_context["release"]:
+        query_params["release"] = snapshot_context["release"]
+    elif snapshot_context["branch"] and snapshot_context["branch"] not in (
+        "HEAD",
+        snapshot_context["revision_id"],
+    ):
+        query_params["branch"] = snapshot_context["branch"]
+    elif snapshot_context["revision_id"]:
+        query_params["revision"] = snapshot_context["revision_id"]
     return query_params
 
 
@@ -542,16 +357,20 @@ def gen_revision_url(revision_id, snapshot_context=None):
 
     """
     query_params = _snapshot_context_query_params(snapshot_context)
+    query_params.pop("revision", None)
 
-    return reverse('browse-revision',
-                   url_args={'sha1_git': revision_id},
-                   query_params=query_params)
+    return reverse(
+        "browse-revision", url_args={"sha1_git": revision_id}, query_params=query_params
+    )
 
 
-def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
-                      link_text='Browse',
-                      link_attrs={'class': 'btn btn-default btn-sm',
-                                  'role': 'button'}):
+def gen_revision_link(
+    revision_id,
+    shorten_id=False,
+    snapshot_context=None,
+    link_text="Browse",
+    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
+):
     """
     Utility function for generating a link to a revision HTML view
     to insert in Django templates.
@@ -584,9 +403,12 @@ def gen_revision_link(revision_id, shorten_id=False, snapshot_context=None,
         return gen_link(revision_url, link_text, link_attrs)
 
 
-def gen_directory_link(sha1_git, snapshot_context=None, link_text='Browse',
-                       link_attrs={'class': 'btn btn-default btn-sm',
-                                   'role': 'button'}):
+def gen_directory_link(
+    sha1_git,
+    snapshot_context=None,
+    link_text="Browse",
+    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
+):
     """
     Utility function for generating a link to a directory HTML view
     to insert in Django templates.
@@ -607,18 +429,21 @@ def gen_directory_link(sha1_git, snapshot_context=None, link_text='Browse',
 
     query_params = _snapshot_context_query_params(snapshot_context)
 
-    directory_url = reverse('browse-directory',
-                            url_args={'sha1_git': sha1_git},
-                            query_params=query_params)
+    directory_url = reverse(
+        "browse-directory", url_args={"sha1_git": sha1_git}, query_params=query_params
+    )
 
     if not link_text:
         link_text = sha1_git
     return gen_link(directory_url, link_text, link_attrs)
 
 
-def gen_snapshot_link(snapshot_id, snapshot_context=None, link_text='Browse',
-                      link_attrs={'class': 'btn btn-default btn-sm',
-                                  'role': 'button'}):
+def gen_snapshot_link(
+    snapshot_id,
+    snapshot_context=None,
+    link_text="Browse",
+    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
+):
     """
     Utility function for generating a link to a snapshot HTML view
     to insert in Django templates.
@@ -637,17 +462,22 @@ def gen_snapshot_link(snapshot_id, snapshot_context=None, link_text='Browse',
 
     query_params = _snapshot_context_query_params(snapshot_context)
 
-    snapshot_url = reverse('browse-snapshot',
-                           url_args={'snapshot_id': snapshot_id},
-                           query_params=query_params)
+    snapshot_url = reverse(
+        "browse-snapshot",
+        url_args={"snapshot_id": snapshot_id},
+        query_params=query_params,
+    )
     if not link_text:
         link_text = snapshot_id
     return gen_link(snapshot_url, link_text, link_attrs)
 
 
-def gen_content_link(sha1_git, snapshot_context=None, link_text='Browse',
-                     link_attrs={'class': 'btn btn-default btn-sm',
-                                 'role': 'button'}):
+def gen_content_link(
+    sha1_git,
+    snapshot_context=None,
+    link_text="Browse",
+    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
+):
     """
     Utility function for generating a link to a content HTML view
     to insert in Django templates.
@@ -668,9 +498,11 @@ def gen_content_link(sha1_git, snapshot_context=None, link_text='Browse',
 
     query_params = _snapshot_context_query_params(snapshot_context)
 
-    content_url = reverse('browse-content',
-                          url_args={'query_string': 'sha1_git:' + sha1_git},
-                          query_params=query_params)
+    content_url = reverse(
+        "browse-content",
+        url_args={"query_string": "sha1_git:" + sha1_git},
+        query_params=query_params,
+    )
     if not link_text:
         link_text = sha1_git
     return gen_link(content_url, link_text, link_attrs)
@@ -688,34 +520,32 @@ def get_revision_log_url(revision_id, snapshot_context=None):
     Returns:
         The revision log view URL
     """
-    query_params = {'revision': revision_id}
-    if snapshot_context and snapshot_context['origin_info']:
-        origin_info = snapshot_context['origin_info']
-        url_args = {'origin_url': origin_info['url']}
-        if 'timestamp' in snapshot_context['url_args']:
-            url_args['timestamp'] = \
-                snapshot_context['url_args']['timestamp']
-        if 'visit_id' in snapshot_context['query_params']:
-            query_params['visit_id'] = \
-                snapshot_context['query_params']['visit_id']
-        revision_log_url = reverse('browse-origin-log',
-                                   url_args=url_args,
-                                   query_params=query_params)
+    query_params = {}
+    if snapshot_context:
+        query_params = _snapshot_context_query_params(snapshot_context)
+
+    query_params["revision"] = revision_id
+    if snapshot_context and snapshot_context["origin_info"]:
+        revision_log_url = reverse("browse-origin-log", query_params=query_params)
     elif snapshot_context:
-        url_args = {'snapshot_id': snapshot_context['snapshot_id']}
-        revision_log_url = reverse('browse-snapshot-log',
-                                   url_args=url_args,
-                                   query_params=query_params)
+        url_args = {"snapshot_id": snapshot_context["snapshot_id"]}
+        del query_params["snapshot"]
+        revision_log_url = reverse(
+            "browse-snapshot-log", url_args=url_args, query_params=query_params
+        )
     else:
-        revision_log_url = reverse('browse-revision-log',
-                                   url_args={'sha1_git': revision_id})
+        revision_log_url = reverse(
+            "browse-revision-log", url_args={"sha1_git": revision_id}
+        )
     return revision_log_url
 
 
-def gen_revision_log_link(revision_id, snapshot_context=None,
-                          link_text='Browse',
-                          link_attrs={'class': 'btn btn-default btn-sm',
-                                      'role': 'button'}):
+def gen_revision_log_link(
+    revision_id,
+    snapshot_context=None,
+    link_text="Browse",
+    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
+):
     """
     Utility function for generating a link to a revision log HTML view
     (possibly in the context of an origin) to insert in Django templates.
@@ -758,22 +588,24 @@ def gen_person_mail_link(person, link_text=None):
         str: A mail link to the person or the person name if no email is
             present in person data
     """
-    person_name = person['name'] or person['fullname'] or 'None'
+    person_name = person["name"] or person["fullname"] or "None"
     if link_text is None:
         link_text = person_name
-    person_email = person['email'] if person['email'] else None
-    if person_email is None and '@' in person_name and ' ' not in person_name:
+    person_email = person["email"] if person["email"] else None
+    if person_email is None and "@" in person_name and " " not in person_name:
         person_email = person_name
     if person_email:
-        return gen_link(url='mailto:%s' % person_email,
-                        link_text=link_text)
+        return gen_link(url="mailto:%s" % person_email, link_text=link_text)
     else:
         return person_name
 
 
-def gen_release_link(sha1_git, snapshot_context=None, link_text='Browse',
-                     link_attrs={'class': 'btn btn-default btn-sm',
-                                 'role': 'button'}):
+def gen_release_link(
+    sha1_git,
+    snapshot_context=None,
+    link_text="Browse",
+    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
+):
     """
     Utility function for generating a link to a release HTML view
     to insert in Django templates.
@@ -792,9 +624,9 @@ def gen_release_link(sha1_git, snapshot_context=None, link_text='Browse',
 
     query_params = _snapshot_context_query_params(snapshot_context)
 
-    release_url = reverse('browse-release',
-                          url_args={'sha1_git': sha1_git},
-                          query_params=query_params)
+    release_url = reverse(
+        "browse-release", url_args={"sha1_git": sha1_git}, query_params=query_params
+    )
     if not link_text:
         link_text = sha1_git
     return gen_link(release_url, link_text, link_attrs)
@@ -821,167 +653,37 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
     for i, rev in enumerate(revision_log):
         if i == per_page:
             break
-        author_name = 'None'
-        author_fullname = 'None'
-        committer_fullname = 'None'
-        if rev['author']:
-            author_name = gen_person_mail_link(rev['author'])
-            author_fullname = rev['author']['fullname']
-        if rev['committer']:
-            committer_fullname = rev['committer']['fullname']
-        author_date = format_utc_iso_date(rev['date'])
-        committer_date = format_utc_iso_date(rev['committer_date'])
+        author_name = "None"
+        author_fullname = "None"
+        committer_fullname = "None"
+        if rev["author"]:
+            author_name = gen_person_mail_link(rev["author"])
+            author_fullname = rev["author"]["fullname"]
+        if rev["committer"]:
+            committer_fullname = rev["committer"]["fullname"]
+        author_date = format_utc_iso_date(rev["date"])
+        committer_date = format_utc_iso_date(rev["committer_date"])
 
-        tooltip = 'revision %s\n' % rev['id']
-        tooltip += 'author: %s\n' % author_fullname
-        tooltip += 'author date: %s\n' % author_date
-        tooltip += 'committer: %s\n' % committer_fullname
-        tooltip += 'committer date: %s\n\n' % committer_date
-        if rev['message']:
-            tooltip += textwrap.indent(rev['message'], ' '*4)
+        tooltip = "revision %s\n" % rev["id"]
+        tooltip += "author: %s\n" % author_fullname
+        tooltip += "author date: %s\n" % author_date
+        tooltip += "committer: %s\n" % committer_fullname
+        tooltip += "committer date: %s\n\n" % committer_date
+        if rev["message"]:
+            tooltip += textwrap.indent(rev["message"], " " * 4)
 
-        revision_log_data.append({
-            'author': author_name,
-            'id': rev['id'][:7],
-            'message': rev['message'],
-            'date': author_date,
-            'commit_date': committer_date,
-            'url': gen_revision_url(rev['id'], snapshot_context),
-            'tooltip': tooltip
-        })
+        revision_log_data.append(
+            {
+                "author": author_name,
+                "id": rev["id"][:7],
+                "message": rev["message"],
+                "date": author_date,
+                "commit_date": committer_date,
+                "url": gen_revision_url(rev["id"], snapshot_context),
+                "tooltip": tooltip,
+            }
+        )
     return revision_log_data
-
-
-def get_snapshot_context(snapshot_id=None, origin_url=None,
-                         timestamp=None, visit_id=None):
-    """
-    Utility function to compute relevant information when navigating
-    the archive in a snapshot context. The snapshot is either
-    referenced by its id or it will be retrieved from an origin visit.
-
-    Args:
-        snapshot_id (str): hexadecimal representation of a snapshot identifier,
-            all other parameters will be ignored if it is provided
-        origin_url (str): the origin_url
-            (e.g. https://github.com/(user)/(repo)/)
-        timestamp (str): a datetime string for retrieving the closest
-            visit of the origin
-        visit_id (int): optional visit id for disambiguation in case
-            of several visits with the same timestamp
-
-    Returns:
-        A dict with the following entries:
-            * origin_info: dict containing origin information
-            * visit_info: dict containing visit information
-            * branches: the list of branches for the origin found
-              during the visit
-            * releases: the list of releases for the origin found
-              during the visit
-            * origin_browse_url: the url to browse the origin
-            * origin_branches_url: the url to browse the origin branches
-            * origin_releases_url': the url to browse the origin releases
-            * origin_visit_url: the url to browse the snapshot of the origin
-              found during the visit
-            * url_args: dict containing url arguments to use when browsing in
-              the context of the origin and its visit
-
-    Raises:
-        NotFoundExc: if no snapshot is found for the visit of an origin.
-    """
-    origin_info = None
-    visit_info = None
-    url_args = None
-    query_params = {}
-    branches = []
-    releases = []
-    browse_url = None
-    visit_url = None
-    branches_url = None
-    releases_url = None
-    swh_type = 'snapshot'
-    if origin_url:
-        swh_type = 'origin'
-        origin_info = service.lookup_origin({'url': origin_url})
-
-        visit_info = get_origin_visit(origin_info, timestamp, visit_id,
-                                      snapshot_id)
-        fmt_date = format_utc_iso_date(visit_info['date'])
-        visit_info['fmt_date'] = fmt_date
-        snapshot_id = visit_info['snapshot']
-
-        if not snapshot_id:
-            raise NotFoundExc('No snapshot associated to the visit of origin '
-                              '%s on %s' % (escape(origin_url), fmt_date))
-
-        # provided timestamp is not necessarily equals to the one
-        # of the retrieved visit, so get the exact one in order
-        # use it in the urls generated below
-        if timestamp:
-            timestamp = visit_info['date']
-
-        branches, releases = \
-            get_origin_visit_snapshot(origin_info, timestamp, visit_id,
-                                      snapshot_id)
-
-        url_args = {'origin_url': origin_info['url']}
-
-        query_params = {'visit_id': visit_id}
-
-        browse_url = reverse('browse-origin-visits',
-                             url_args=url_args)
-
-        if timestamp:
-            url_args['timestamp'] = format_utc_iso_date(timestamp,
-                                                        '%Y-%m-%dT%H:%M:%S')
-        visit_url = reverse('browse-origin-directory',
-                            url_args=url_args,
-                            query_params=query_params)
-        visit_info['url'] = visit_url
-
-        branches_url = reverse('browse-origin-branches',
-                               url_args=url_args,
-                               query_params=query_params)
-
-        releases_url = reverse('browse-origin-releases',
-                               url_args=url_args,
-                               query_params=query_params)
-    elif snapshot_id:
-        branches, releases = get_snapshot_content(snapshot_id)
-        url_args = {'snapshot_id': snapshot_id}
-        browse_url = reverse('browse-snapshot',
-                             url_args=url_args)
-        branches_url = reverse('browse-snapshot-branches',
-                               url_args=url_args)
-
-        releases_url = reverse('browse-snapshot-releases',
-                               url_args=url_args)
-
-    releases = list(reversed(releases))
-
-    snapshot_size = service.lookup_snapshot_size(snapshot_id)
-
-    is_empty = sum(snapshot_size.values()) == 0
-
-    swh_snp_id = persistent_identifier('snapshot', snapshot_id)
-
-    return {
-        'swh_type': swh_type,
-        'swh_object_id': swh_snp_id,
-        'snapshot_id': snapshot_id,
-        'snapshot_size': snapshot_size,
-        'is_empty': is_empty,
-        'origin_info': origin_info,
-        'visit_info': visit_info,
-        'branches': branches,
-        'releases': releases,
-        'branch': None,
-        'release': None,
-        'browse_url': browse_url,
-        'branches_url': branches_url,
-        'releases_url': releases_url,
-        'url_args': url_args,
-        'query_params': query_params
-    }
 
 
 # list of common readme names ordered by preference
@@ -991,7 +693,7 @@ _common_readme_names = [
     "readme.md",
     "readme.rst",
     "readme.txt",
-    "readme"
+    "readme",
 ]
 
 
@@ -1012,32 +714,35 @@ def get_readme_to_display(readmes):
     readme_sha1 = None
     readme_html = None
 
-    lc_readmes = {k.lower(): {'orig_name': k, 'sha1': v}
-                  for k, v in readmes.items()}
+    lc_readmes = {k.lower(): {"orig_name": k, "sha1": v} for k, v in readmes.items()}
 
     # look for readme names according to the preference order
     # defined by the _common_readme_names list
     for common_readme_name in _common_readme_names:
         if common_readme_name in lc_readmes:
-            readme_name = lc_readmes[common_readme_name]['orig_name']
-            readme_sha1 = lc_readmes[common_readme_name]['sha1']
-            readme_url = reverse('browse-content-raw',
-                                 url_args={'query_string': readme_sha1},
-                                 query_params={'re_encode': 'true'})
+            readme_name = lc_readmes[common_readme_name]["orig_name"]
+            readme_sha1 = lc_readmes[common_readme_name]["sha1"]
+            readme_url = reverse(
+                "browse-content-raw",
+                url_args={"query_string": readme_sha1},
+                query_params={"re_encode": "true"},
+            )
             break
 
     # otherwise pick the first readme like file if any
     if not readme_name and len(readmes.items()) > 0:
         readme_name = next(iter(readmes))
         readme_sha1 = readmes[readme_name]
-        readme_url = reverse('browse-content-raw',
-                             url_args={'query_string': readme_sha1},
-                             query_params={'re_encode': 'true'})
+        readme_url = reverse(
+            "browse-content-raw",
+            url_args={"query_string": readme_sha1},
+            query_params={"re_encode": "true"},
+        )
 
     # convert rst README to html server side as there is
     # no viable solution to perform that task client side
-    if readme_name and readme_name.endswith('.rst'):
-        cache_entry_id = 'readme_%s' % readme_sha1
+    if readme_name and readme_name.endswith(".rst"):
+        cache_entry_id = "readme_%s" % readme_sha1
         cache_entry = cache.get(cache_entry_id)
 
         if cache_entry:
@@ -1045,54 +750,10 @@ def get_readme_to_display(readmes):
         else:
             try:
                 rst_doc = request_content(readme_sha1)
-                readme_html = pypandoc.convert_text(rst_doc['raw_data'],
-                                                    'html', format='rst')
+                readme_html = rst_to_html(rst_doc["raw_data"])
                 cache.set(cache_entry_id, readme_html)
-            except Exception:
-                readme_html = 'Readme bytes are not available'
+            except Exception as exc:
+                sentry_sdk.capture_exception(exc)
+                readme_html = "Readme bytes are not available"
 
     return readme_name, readme_url, readme_html
-
-
-def get_swh_persistent_ids(swh_objects, snapshot_context=None):
-    """
-    Returns a list of dict containing info related to persistent
-    identifiers of swh objects.
-
-    Args:
-        swh_objects (list): a list of dict with the following keys:
-            * type: swh object type
-              (content/directory/release/revision/snapshot)
-            * id: swh object id
-        snapshot_context (dict): optional parameter describing the snapshot in
-            which the object has been found
-
-    Returns:
-        list: a list of dict with the following keys:
-            * object_type: the swh object type
-              (content/directory/release/revision/snapshot)
-            * object_icon: the swh object icon to use in HTML views
-            * swh_id: the computed swh object persistent identifier
-            * swh_id_url: the url resolving the persistent identifier
-            * show_options: boolean indicating if the persistent id options
-                must be displayed in persistent ids HTML view
-    """
-    swh_ids = []
-    for swh_object in swh_objects:
-        if not swh_object['id']:
-            continue
-        swh_id = get_swh_persistent_id(swh_object['type'], swh_object['id'])
-        show_options = swh_object['type'] == 'content' or \
-            (snapshot_context and snapshot_context['origin_info'] is not None)
-
-        object_icon = swh_object_icons[swh_object['type']]
-
-        swh_ids.append({
-            'object_type': swh_object['type'],
-            'object_icon': object_icon,
-            'swh_id': swh_id,
-            'swh_id_url': reverse('browse-swh-id',
-                                  url_args={'swh_id': swh_id}),
-            'show_options': show_options
-        })
-    return swh_ids

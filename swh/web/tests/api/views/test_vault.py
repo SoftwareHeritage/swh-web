@@ -1,122 +1,173 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from rest_framework.test import APITestCase
-from unittest.mock import patch
+from hypothesis import given
 
 from swh.model import hashutil
+from swh.vault.exc import NotFoundExc
+from swh.web.common.utils import reverse
+from swh.web.tests.strategies import (
+    directory,
+    revision,
+    unknown_directory,
+    unknown_revision,
+)
 
-from swh.web.tests.testcase import WebTestCase
 
-TEST_OBJ_ID = 'd4905454cc154b492bd6afed48694ae3c579345e'
+@given(directory(), revision())
+def test_api_vault_cook(api_client, mocker, directory, revision):
+    mock_service = mocker.patch("swh.web.api.views.vault.service")
 
-OBJECT_TYPES = {'directory': ('directory', None),
-                'revision_gitfast': ('revision', 'gitfast')}
+    for obj_type, obj_id in (
+        ("directory", directory),
+        ("revision_gitfast", revision),
+    ):
 
-
-class VaultApiTestCase(WebTestCase, APITestCase):
-    @patch('swh.web.api.views.vault.service')
-    def test_api_vault_cook(self, mock_service):
+        fetch_url = reverse(
+            f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
+        )
         stub_cook = {
-            'fetch_url': ('http://127.0.0.1:5004/api/1/vault/directory/{}/raw/'
-                          .format(TEST_OBJ_ID)),
-            'obj_id': TEST_OBJ_ID,
-            'obj_type': 'test_type',
-            'progress_message': None,
-            'status': 'done',
-            'task_uuid': 'de75c902-5ee5-4739-996e-448376a93eff',
+            "fetch_url": fetch_url,
+            "obj_id": obj_id,
+            "obj_type": obj_type,
+            "progress_message": None,
+            "status": "done",
+            "task_uuid": "de75c902-5ee5-4739-996e-448376a93eff",
         }
-        stub_fetch = b'content'
+        stub_fetch = b"content"
 
         mock_service.vault_cook.return_value = stub_cook
         mock_service.vault_fetch.return_value = stub_fetch
 
-        for obj_type, (obj_type_name, obj_type_format) in OBJECT_TYPES.items():
-            url = '/api/1/vault/{}/{}/'.format(obj_type_name, TEST_OBJ_ID)
-            if obj_type_format:
-                url += '{}/'.format(obj_type_format)
-            rv = self.client.post(url, {'email': 'test@test.mail'})
+        url = reverse(
+            f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id}
+        )
 
-            self.assertEqual(rv.status_code, 200, rv.data)
-            self.assertEqual(rv['Content-Type'], 'application/json')
+        rv = api_client.post(url, {"email": "test@test.mail"})
 
-            self.assertEqual(rv.data, stub_cook)
-            mock_service.vault_cook.assert_called_with(
-                obj_type,
-                hashutil.hash_to_bytes(TEST_OBJ_ID),
-                'test@test.mail')
+        assert rv.status_code == 200, rv.data
+        assert rv["Content-Type"] == "application/json"
 
-            rv = self.client.get(url + 'raw/')
+        stub_cook["fetch_url"] = rv.wsgi_request.build_absolute_uri(
+            stub_cook["fetch_url"]
+        )
 
-            self.assertEqual(rv.status_code, 200)
-            self.assertEqual(rv['Content-Type'], 'application/gzip')
-            self.assertEqual(rv.content, stub_fetch)
-            mock_service.vault_fetch.assert_called_with(
-                obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID))
+        assert rv.data == stub_cook
+        mock_service.vault_cook.assert_called_with(
+            obj_type, hashutil.hash_to_bytes(obj_id), "test@test.mail"
+        )
 
-    @patch('swh.web.api.views.vault.service')
-    def test_api_vault_cook_uppercase_hash(self, mock_service):
-        stub_cook = {
-            'fetch_url': ('http://127.0.0.1:5004/api/1/vault/directory/{}/raw/'
-                          .format(TEST_OBJ_ID.upper())),
-            'obj_id': TEST_OBJ_ID.upper(),
-            'obj_type': 'test_type',
-            'progress_message': None,
-            'status': 'done',
-            'task_uuid': 'de75c902-5ee5-4739-996e-448376a93eff',
-        }
-        stub_fetch = b'content'
+        rv = api_client.get(fetch_url)
 
-        mock_service.vault_cook.return_value = stub_cook
-        mock_service.vault_fetch.return_value = stub_fetch
+        assert rv.status_code == 200
+        assert rv["Content-Type"] == "application/gzip"
+        assert rv.content == stub_fetch
+        mock_service.vault_fetch.assert_called_with(
+            obj_type, hashutil.hash_to_bytes(obj_id)
+        )
 
-        for obj_type, (obj_type_name, obj_type_format) in OBJECT_TYPES.items():
-            url = '/api/1/vault/{}/{}/'.format(obj_type_name, TEST_OBJ_ID)
-            if obj_type_format:
-                url += '{}/'.format(obj_type_format)
-            rv = self.client.post(url, {'email': 'test@test.mail'})
 
-            self.assertEqual(rv.status_code, 200, rv.data)
-            self.assertEqual(rv['Content-Type'], 'application/json')
+@given(directory(), revision())
+def test_api_vault_cook_uppercase_hash(api_client, directory, revision):
 
-            self.assertEqual(rv.data, stub_cook)
-            mock_service.vault_cook.assert_called_with(
-                obj_type,
-                hashutil.hash_to_bytes(TEST_OBJ_ID),
-                'test@test.mail')
+    for obj_type, obj_id in (
+        ("directory", directory),
+        ("revision_gitfast", revision),
+    ):
 
-            rv = self.client.get(url + 'raw/')
+        url = reverse(
+            f"api-1-vault-cook-{obj_type}-uppercase-checksum",
+            url_args={f"{obj_type[:3]}_id": obj_id.upper()},
+        )
+        rv = api_client.post(url, {"email": "test@test.mail"})
 
-            self.assertEqual(rv.status_code, 200)
-            self.assertEqual(rv['Content-Type'], 'application/gzip')
-            self.assertEqual(rv.content, stub_fetch)
-            mock_service.vault_fetch.assert_called_with(
-                obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID))
+        assert rv.status_code == 302
 
-    @patch('swh.web.api.views.vault.service')
-    def test_api_vault_cook_notfound(self, mock_service):
-        mock_service.vault_cook.return_value = None
-        mock_service.vault_fetch.return_value = None
+        redirect_url = reverse(
+            f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id}
+        )
 
-        for obj_type, (obj_type_name, obj_type_format) in OBJECT_TYPES.items():
-            url = '/api/1/vault/{}/{}/'.format(obj_type_name, TEST_OBJ_ID)
-            if obj_type_format:
-                url += '{}/'.format(obj_type_format)
-            rv = self.client.post(url)
+        assert rv["location"] == redirect_url
 
-            self.assertEqual(rv.status_code, 404, rv.data)
-            self.assertEqual(rv['Content-Type'], 'application/json')
+        fetch_url = reverse(
+            f"api-1-vault-fetch-{obj_type}-uppercase-checksum",
+            url_args={f"{obj_type[:3]}_id": obj_id.upper()},
+        )
 
-            self.assertEqual(rv.data['exception'], 'NotFoundExc')
-            mock_service.vault_cook.assert_called_with(
-                obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID), None)
+        rv = api_client.get(fetch_url)
 
-            rv = self.client.get(url + 'raw/')
+        assert rv.status_code == 302
 
-            self.assertEqual(rv.status_code, 404, rv.data)
-            self.assertEqual(rv['Content-Type'], 'application/json')
-            self.assertEqual(rv.data['exception'], 'NotFoundExc')
-            mock_service.vault_fetch.assert_called_with(
-                obj_type, hashutil.hash_to_bytes(TEST_OBJ_ID))
+        redirect_url = reverse(
+            f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
+        )
+
+        assert rv["location"] == redirect_url
+
+
+@given(directory(), revision(), unknown_directory(), unknown_revision())
+def test_api_vault_cook_notfound(
+    api_client, mocker, directory, revision, unknown_directory, unknown_revision
+):
+    mock_vault = mocker.patch("swh.web.common.service.vault")
+    mock_vault.cook.side_effect = NotFoundExc("object not found")
+    mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
+    mock_vault.progress.side_effect = NotFoundExc("cooking request not found")
+
+    for obj_type, obj_id in (
+        ("directory", directory),
+        ("revision_gitfast", revision),
+    ):
+
+        obj_name = obj_type.split("_")[0]
+
+        url = reverse(
+            f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
+        )
+
+        rv = api_client.get(url)
+
+        assert rv.status_code == 404, rv.data
+        assert rv["Content-Type"] == "application/json"
+        assert rv.data["exception"] == "NotFoundExc"
+        assert (
+            rv.data["reason"]
+            == f"Cooking of {obj_name} '{obj_id}' was never requested."
+        )
+        mock_vault.progress.assert_called_with(obj_type, hashutil.hash_to_bytes(obj_id))
+
+    for obj_type, obj_id in (
+        ("directory", unknown_directory),
+        ("revision_gitfast", unknown_revision),
+    ):
+        obj_name = obj_type.split("_")[0]
+
+        url = reverse(
+            f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id}
+        )
+        rv = api_client.post(url)
+
+        assert rv.status_code == 404, rv.data
+        assert rv["Content-Type"] == "application/json"
+
+        assert rv.data["exception"] == "NotFoundExc"
+        assert rv.data["reason"] == f"{obj_name.title()} '{obj_id}' not found."
+        mock_vault.cook.assert_called_with(
+            obj_type, hashutil.hash_to_bytes(obj_id), email=None
+        )
+
+        fetch_url = reverse(
+            f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
+        )
+
+        rv = api_client.get(fetch_url)
+
+        assert rv.status_code == 404, rv.data
+        assert rv["Content-Type"] == "application/json"
+        assert rv.data["exception"] == "NotFoundExc"
+        assert (
+            rv.data["reason"] == f"Cooked archive for {obj_name} '{obj_id}' not found."
+        )
+        mock_vault.fetch.assert_called_with(obj_type, hashutil.hash_to_bytes(obj_id))

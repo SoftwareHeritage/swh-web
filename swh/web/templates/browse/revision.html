@@ -18,9 +18,9 @@ See top-level LICENSE file for more information
 
 {% block swh-browse-content %}
 <div>
-  <i class="{{ swh_object_icons|key_value:'revision' }} fa-fw"></i>Revision <b>{{ swh_object_metadata.revision }}</b>
-  authored by {{ swh_object_metadata.author }} on <b>{{ swh_object_metadata.date }}</b>,
-  committed by {{ swh_object_metadata.committer }} on <b>{{ swh_object_metadata|key_value:'committer date' }}</b>
+  <i class="{{ swh_object_icons|key_value:'revision' }} mdi-fw" aria-hidden="true"></i>Revision <b>{{ swh_object_metadata.revision }}</b>
+  authored by {{ swh_object_metadata.author_url }} on <b>{{ swh_object_metadata.date }}</b>,
+  committed by {{ swh_object_metadata.committer_url }} on <b>{{ swh_object_metadata.committer_date }}</b>
 </div>
 
 <div class="card">
@@ -41,7 +41,7 @@ See top-level LICENSE file for more information
 
 <div style="margin: 4px; padding-bottom: 5px;">
   <b>{{ parents|length }} parent{% if parents|length > 1 %}s{% endif %}</b>
-  <i class="{{ swh_object_icons.revision }} fa-fw"></i>
+  <i class="{{ swh_object_icons.revision }} mdi-fw" aria-hidden="true"></i>
   {% for parent in parents %}
     <a href="{{ parent.url }}">{{ parent.id|slice:":7" }}</a>
     {% if not forloop.last %}

@@ -1,0 +1,62 @@
+{
+  "took": 19,
+  "timed_out": false,
+  "_shards": {
+    "total": 194,
+    "successful": 194,
+    "skipped": 186,
+    "failed": 0
+  },
+  "hits": {
+    "total": {"relation": "eq", "value": 1},
+    "max_score": null,
+    "hits": [{
+      "_index": "swh_workers-2019.08.30",
+      "_type": "doc",
+      "_id": "uHrS5GwBjk15w1A-eZNK",
+      "_score": null,
+      "_source": {
+        "comm": "python3",
+        "code_line": "909",
+        "type": "journal",
+        "code_func": "load",
+        "transport": "journal",
+        "swh_task_name": "swh.loader.git.tasks.UpdateGitRepository",
+        "logger": "swh.loader.git.BulkLoader",
+        "swh_task_args_0": "https://gitlab.com/inkscape/inkscape",
+        "source_realtime_timestamp": "1567207093348189",
+        "code_file": "/usr/lib/python3/dist-packages/swh/loader/core/loader.py",
+        "systemd_slice": "system-swh\\x2dworker.slice",
+        "@version": "1",
+        "cap_effective": "0",
+        "boot_id": "b82af8ba13ee48258109a7dfd5058e53",
+        "machine_id": "563ec85b8bcd4ec289b9af4f52b6fa41",
+        "swh_task_id": "f00c712c-e820-41ce-a07c-9bf8df914205",
+        "gid": "1004",
+        "beat": {
+          "name": "worker13",
+          "version": "5.5.0",
+          "hostname": "worker13"
+        },
+        "priority": "3",
+        "systemd_invocation_id": "18bb45cd515d4e1794ddd4d391389045",
+        "@realtime_timestamp": 1567207093348366,
+        "pid": "675",
+        "exe": "/usr/bin/python3.5",
+        "@timestamp": "2019-08-30T23:18:13.348Z",
+        "systemd_unit": "swh-worker@loader_git.service",
+        "tags": ["beats_input_codec_plain_applied"],
+        "systemd_cgroup": "/system.slice/system-swh\\x2dworker.slice/swh-worker@loader_git.service",
+        "host": "worker13",
+        "thread_name": "MainThread",
+        "message": "[2019-08-30 23:18:13,342: ERROR/ForkPoolWorker-64335] Loading failure, updating to `partial` status\nTraceback (most recent call last):\n  File \"/usr/lib/python3/dist-packages/swh/loader/core/loader.py\", line 895, in load\n    more_data_to_fetch = self.fetch_data()\n  File \"/usr/lib/python3/dist-packages/swh/loader/git/loader.py\", line 311, in fetch_data\n    do_progress)\n  File \"/usr/lib/python3/dist-packages/swh/loader/git/loader.py\", line 243, in fetch_pack_from_origin\n    progress=do_activity).refs\n  File \"/usr/lib/python3/dist-packages/dulwich/client.py\", line 1557, in fetch_pack\n    \"git-upload-pack\", url, data=req_data.getvalue())\n  File \"/usr/lib/python3/dist-packages/dulwich/client.py\", line 1467, in _smart_request\n    resp, read = self._http_request(url, headers, data)\n  File \"/usr/lib/python3/dist-packages/dulwich/client.py\", line 1402, in _http_request\n    raise NotGitRepository()\ndulwich.errors.NotGitRepository",
+        "uid": "1004",
+        "syslog_identifier": "python3",
+        "swh_task_kwargs_base_url": "None",
+        "hostname": "worker13",
+        "cmdline": "/usr/bin/python3 -m celery worker --app=swh.scheduler.celery_backend.config.app --pool=prefork --events --concurrency=1 --maxtasksperchild=5 -Ofair --loglevel=info --without-gossip --without-mingle --without-heartbeat -n loader_git.%h"
+      },
+      "sort": [1567207093348]
+    }]
+  }
+}

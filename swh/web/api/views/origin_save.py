@@ -8,15 +8,19 @@ from django.views.decorators.cache import never_cache
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common.origin_save import (
-    create_save_origin_request, get_save_origin_requests
+    create_save_origin_request,
+    get_save_origin_requests,
 )
 
 
-@api_route(r'/origin/save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/',
-           'api-1-save-origin', methods=['GET', 'POST'],
-           throttle_scope='swh_save_origin')
+@api_route(
+    r"/origin/save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/",
+    "api-1-save-origin",
+    methods=["GET", "POST"],
+    throttle_scope="swh_save_origin",
+)
 @never_cache
-@api_doc('/origin/save/')
+@api_doc("/origin/save/")
 @format_docstring()
 def api_save_origin(request, visit_type, origin_url):
     """
@@ -68,21 +72,18 @@ def api_save_origin(request, visit_type, origin_url):
             either **not created**, **not yet scheduled**, **scheduled**,
             **succeed** or **failed**
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-        :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided
         :statuscode 403: the provided origin url is blacklisted
         :statuscode 404: no save requests have been found for a given origin
     """
 
-    if request.method == 'POST':
+    if request.method == "POST":
         sor = create_save_origin_request(visit_type, origin_url)
-        del sor['id']
+        del sor["id"]
     else:
         sor = get_save_origin_requests(visit_type, origin_url)
         for s in sor:
-            del s['id']
+            del s["id"]
 
     return sor

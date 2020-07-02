@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,26 +18,38 @@ from swh.web.api.views.utils import api_lookup
 # XXX: a bit spaghetti. Would be better with class-based views.
 def _dispatch_cook_progress(request, obj_type, obj_id):
     hex_id = hashutil.hash_to_hex(obj_id)
-    object_name = obj_type.split('_')[0].title()
-    if request.method == 'GET':
+    object_name = obj_type.split("_")[0]
+    if request.method == "GET":
         return api_lookup(
-            service.vault_progress, obj_type, obj_id,
-            notfound_msg=("{} '{}' was never requested."
-                          .format(object_name, hex_id)))
-    elif request.method == 'POST':
-        email = request.POST.get('email', request.GET.get('email', None))
+            service.vault_progress,
+            obj_type,
+            obj_id,
+            notfound_msg=(
+                "Cooking of {} '{}' was never requested.".format(object_name, hex_id)
+            ),
+            request=request,
+        )
+    elif request.method == "POST":
+        email = request.POST.get("email", request.GET.get("email", None))
         return api_lookup(
-            service.vault_cook, obj_type, obj_id, email,
-            notfound_msg=("{} '{}' not found."
-                          .format(object_name, hex_id)))
+            service.vault_cook,
+            obj_type,
+            obj_id,
+            email,
+            notfound_msg=("{} '{}' not found.".format(object_name.title(), hex_id)),
+            request=request,
+        )
 
 
-@api_route(r'/vault/directory/(?P<dir_id>[0-9a-f]+)/',
-           'api-1-vault-cook-directory', methods=['GET', 'POST'],
-           checksum_args=['dir_id'],
-           throttle_scope='swh_vault_cooking')
+@api_route(
+    r"/vault/directory/(?P<dir_id>[0-9a-f]+)/",
+    "api-1-vault-cook-directory",
+    methods=["GET", "POST"],
+    checksum_args=["dir_id"],
+    throttle_scope="swh_vault_cooking",
+)
 @never_cache
-@api_doc('/vault/directory/')
+@api_doc("/vault/directory/")
 @format_docstring()
 def api_vault_cook_directory(request, dir_id):
     """
@@ -77,26 +89,29 @@ def api_vault_cook_directory(request, dir_id):
             (either **new**, **pending**, **done** or **failed**)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-        :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
-        :statuscode 404: requested directory can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
-        dir_id, ['sha1'], 'Only sha1_git is supported.')
+        dir_id, ["sha1"], "Only sha1_git is supported."
+    )
 
-    res = _dispatch_cook_progress(request, 'directory', obj_id)
-    res['fetch_url'] = reverse('api-1-vault-fetch-directory',
-                               url_args={'dir_id': dir_id})
+    res = _dispatch_cook_progress(request, "directory", obj_id)
+    res["fetch_url"] = reverse(
+        "api-1-vault-fetch-directory", url_args={"dir_id": dir_id}
+    )
     return res
 
 
-@api_route(r'/vault/directory/(?P<dir_id>[0-9a-f]+)/raw/',
-           'api-1-vault-fetch-directory',
-           checksum_args=['dir_id'])
-@api_doc('/vault/directory/raw/', handle_response=True)
+@api_route(
+    r"/vault/directory/(?P<dir_id>[0-9a-f]+)/raw/",
+    "api-1-vault-fetch-directory",
+    checksum_args=["dir_id"],
+)
+@api_doc("/vault/directory/raw/", handle_response=True)
 def api_vault_fetch_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
@@ -110,30 +125,37 @@ def api_vault_fetch_directory(request, dir_id):
 
         :resheader Content-Type: application/octet-stream
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
-        :statuscode 404: requested directory can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
-        dir_id, ['sha1'], 'Only sha1_git is supported.')
+        dir_id, ["sha1"], "Only sha1_git is supported."
+    )
     res = api_lookup(
-        service.vault_fetch, 'directory', obj_id,
-        notfound_msg="Directory with ID '{}' not found.".format(dir_id))
-    fname = '{}.tar.gz'.format(dir_id)
-    response = HttpResponse(res, content_type='application/gzip')
-    response['Content-disposition'] = 'attachment; filename={}'.format(fname)
+        service.vault_fetch,
+        "directory",
+        obj_id,
+        notfound_msg="Cooked archive for directory '{}' not found.".format(dir_id),
+        request=request,
+    )
+    fname = "{}.tar.gz".format(dir_id)
+    response = HttpResponse(res, content_type="application/gzip")
+    response["Content-disposition"] = "attachment; filename={}".format(fname)
     return response
 
 
-@api_route(r'/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/',
-           'api-1-vault-cook-revision_gitfast', methods=['GET', 'POST'],
-           checksum_args=['rev_id'],
-           throttle_scope='swh_vault_cooking')
+@api_route(
+    r"/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/",
+    "api-1-vault-cook-revision_gitfast",
+    methods=["GET", "POST"],
+    checksum_args=["rev_id"],
+    throttle_scope="swh_vault_cooking",
+)
 @never_cache
-@api_doc('/vault/revision/gitfast/')
+@api_doc("/vault/revision/gitfast/")
 @format_docstring()
 def api_vault_cook_revision_gitfast(request, rev_id):
     """
@@ -174,26 +196,29 @@ def api_vault_cook_revision_gitfast(request, rev_id):
         :>json string status: the cooking task status (new/pending/done/failed)
         :>json string obj_id: the identifier of the object to cook
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`post`,
-        :http:method:`head`, :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
-        :statuscode 404: requested revision can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
-        rev_id, ['sha1'], 'Only sha1_git is supported.')
+        rev_id, ["sha1"], "Only sha1_git is supported."
+    )
 
-    res = _dispatch_cook_progress(request, 'revision_gitfast', obj_id)
-    res['fetch_url'] = reverse('api-1-vault-fetch-revision_gitfast',
-                               url_args={'rev_id': rev_id})
+    res = _dispatch_cook_progress(request, "revision_gitfast", obj_id)
+    res["fetch_url"] = reverse(
+        "api-1-vault-fetch-revision_gitfast", url_args={"rev_id": rev_id}
+    )
     return res
 
 
-@api_route(r'/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/raw/',
-           'api-1-vault-fetch-revision_gitfast',
-           checksum_args=['rev_id'])
-@api_doc('/vault/revision/gitfast/raw/', handle_response=True)
+@api_route(
+    r"/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/raw/",
+    "api-1-vault-fetch-revision_gitfast",
+    checksum_args=["rev_id"],
+)
+@api_doc("/vault/revision/gitfast/raw/", handle_response=True)
 def api_vault_fetch_revision_gitfast(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/raw/
@@ -207,34 +232,41 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
 
         :resheader Content-Type: application/octet-stream
 
-        **Allowed HTTP Methods:** :http:method:`get`, :http:method:`head`,
-        :http:method:`options`
-
         :statuscode 200: no error
         :statuscode 400: an invalid revision identifier has been provided
-        :statuscode 404: requested revision can not be found in the archive
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
-        rev_id, ['sha1'], 'Only sha1_git is supported.')
+        rev_id, ["sha1"], "Only sha1_git is supported."
+    )
     res = api_lookup(
-        service.vault_fetch, 'revision_gitfast', obj_id,
-        notfound_msg="Revision with ID '{}' not found.".format(rev_id))
-    fname = '{}.gitfast.gz'.format(rev_id)
-    response = HttpResponse(res, content_type='application/gzip')
-    response['Content-disposition'] = 'attachment; filename={}'.format(fname)
+        service.vault_fetch,
+        "revision_gitfast",
+        obj_id,
+        notfound_msg="Cooked archive for revision '{}' not found.".format(rev_id),
+        request=request,
+    )
+    fname = "{}.gitfast.gz".format(rev_id)
+    response = HttpResponse(res, content_type="application/gzip")
+    response["Content-disposition"] = "attachment; filename={}".format(fname)
     return response
 
 
-@api_route(r'/vault/revision_gitfast/(?P<rev_id>[0-9a-f]+)/raw/',
-           'api-1-vault-revision_gitfast-raw',
-           checksum_args=['rev_id'])
-@api_doc('/vault/revision_gitfast/raw/', tags=['hidden'], handle_response=True)
+@api_route(
+    r"/vault/revision_gitfast/(?P<rev_id>[0-9a-f]+)/raw/",
+    "api-1-vault-revision_gitfast-raw",
+    checksum_args=["rev_id"],
+)
+@api_doc("/vault/revision_gitfast/raw/", tags=["hidden"], handle_response=True)
 def _api_vault_revision_gitfast_raw(request, rev_id):
     """
     The vault backend sends an email containing an invalid url to fetch a
     gitfast archive. So setup a redirection to the correct one as a temporary
     workaround.
     """
-    rev_gitfast_raw_url = reverse('api-1-vault-fetch-revision_gitfast',
-                                  url_args={'rev_id': rev_id})
+    rev_gitfast_raw_url = reverse(
+        "api-1-vault-fetch-revision_gitfast", url_args={"rev_id": rev_id}
+    )
     return redirect(rev_gitfast_raw_url)

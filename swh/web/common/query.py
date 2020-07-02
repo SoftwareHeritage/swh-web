@@ -12,8 +12,8 @@ from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common.exc import BadInputExc
 
 
-SHA256_RE = re.compile(r'^[0-9a-f]{64}$', re.IGNORECASE)
-SHA1_RE = re.compile(r'^[0-9a-f]{40}$', re.IGNORECASE)
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$", re.IGNORECASE)
+SHA1_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 
 
 def parse_hash(q):
@@ -32,22 +32,24 @@ def parse_hash(q):
         hash value
 
     """
+
     def guess_algo(q):
         if SHA1_RE.match(q):
-            return 'sha1'
+            return "sha1"
         elif SHA256_RE.match(q):
-            return 'sha256'
+            return "sha256"
         else:
-            raise BadInputExc('Invalid checksum query string %s' % q)
+            raise BadInputExc("Invalid checksum query string %s" % q)
 
     def check_algo(algo, hex):
-        if (algo in {'sha1', 'sha1_git'} and not SHA1_RE.match(hex)) \
-           or (algo == 'sha256' and not SHA256_RE.match(hex)):
-            raise BadInputExc('Invalid hash %s for algorithm %s' % (hex, algo))
+        if (algo in {"sha1", "sha1_git"} and not SHA1_RE.match(hex)) or (
+            algo == "sha256" and not SHA256_RE.match(hex)
+        ):
+            raise BadInputExc("Invalid hash %s for algorithm %s" % (hex, algo))
 
-    parts = q.split(':')
+    parts = q.split(":")
     if len(parts) > 2:
-        raise BadInputExc('Invalid checksum query string %s' % q)
+        raise BadInputExc("Invalid checksum query string %s" % q)
     elif len(parts) == 1:
         parts = (guess_algo(q), q)
     elif len(parts) == 2:
@@ -55,7 +57,7 @@ def parse_hash(q):
 
     algo = parts[0]
     if algo not in ALGORITHMS:
-        raise BadInputExc('Unknown hash algorithm %s' % algo)
+        raise BadInputExc("Unknown hash algorithm %s" % algo)
 
     return (algo, hash_to_bytes(parts[1]))
 

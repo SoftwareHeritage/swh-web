@@ -1,7 +1,7 @@
 {% extends "./layout.html" %}
 
 {% comment %}
-Copyright (C) 2017-2018  The Software Heritage developers
+Copyright (C) 2017-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -12,36 +12,11 @@ See top-level LICENSE file for more information
 {% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
 
 {% block navbar-content %}
-{% if snapshot_context %}
-  <h4>
-    <i class="{{ swh_object_icons|key_value:swh_object_name.lower }} fa-fw" aria-hidden="true"></i>
-    Browse archived {{ swh_object_name.lower }}
-    {% if snapshot_context.origin_info %}
-      for origin
-      <a href="{% url 'browse-origin' snapshot_context.origin_info.url %}">
-        {{ snapshot_context.origin_info.url }}
-      </a>
-      {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
-        <a href="{{ snapshot_context.origin_info.url }}" title="Go to origin">
-          <i class="fa fa-external-link" aria-hidden="true"></i>
-        </a>
-      {% endif %}
-    {% else %}
-      for snapshot
-      <a href="{% url 'browse-swh-id' snapshot_context.swh_object_id %}">
-        {{ snapshot_context.swh_object_id }}
-      </a>
-    {% endif %}
-  </h4>
-{% else %}
-  <h4>
-    <i class="{{ swh_object_icons|key_value:swh_object_name.lower }} fa-fw" aria-hidden="true"></i>
-    Browse archived {{ swh_object_name.lower }}
-    <a href="{% url 'browse-swh-id' swh_object_id %}">
-      {{ swh_object_id }}
-    </a>
-  </h4>
-{% endif %}
+
+<h4>
+  Browse the archive
+</h4>
+
 {% endblock %}
 
 {% block browse-content %}

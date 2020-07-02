@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -21,8 +21,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 
-const loadedMathJaxJsFiles = require('./mathjax-js-files');
-
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
 // webpack-dev-server configuration
@@ -41,7 +39,7 @@ fs.readdirSync(bundlesDir).forEach(file => {
   bundles[file] = ['bundles/' + file + '/index.js'];
 });
 
-// common loaders for css related assets (css, sass, less)
+// common loaders for css related assets (css, sass)
 let cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
@@ -98,9 +96,9 @@ module.exports = {
     port: devServerPort,
     publicPath: devServerPublicPath,
     // enable to serve static assets not managed by webpack
-    contentBase: path.resolve('./swh/web/'),
+    contentBase: path.resolve('./'),
     // we do not use hot reloading here (as a framework like React needs to be used in order to fully benefit from that feature)
-    // and prefere to fully reload the frontend application in the browser instead
+    // and prefer to fully reload the frontend application in the browser instead
     hot: false,
     inline: true,
     historyApiFallback: true,
@@ -118,7 +116,7 @@ module.exports = {
   entry: bundles,
   // assets output configuration
   output: {
-    path: path.resolve('./swh/web/static/'),
+    path: path.resolve('./static/'),
     filename: 'js/[name].[chunkhash].js',
     chunkFilename: 'js/[name].[chunkhash].js',
     publicPath: publicPath,
@@ -204,10 +202,18 @@ module.exports = {
         test: require.resolve('jquery'),
         use: [{
           loader: 'expose-loader',
-          options: 'jQuery'
-        }, {
-          loader: 'expose-loader',
-          options: '$'
+          options: {
+            exposes: [
+              {
+                globalName: '$',
+                override: true
+              },
+              {
+                globalName: 'jQuery',
+                override: true
+              }
+            ]
+          }
         }]
       },
       // expose highlightjs to the global context as hljs when importing it
@@ -215,14 +221,24 @@ module.exports = {
         test: require.resolve('highlight.js'),
         use: [{
           loader: 'expose-loader',
-          options: 'hljs'
+          options: {
+            exposes: {
+              globalName: 'hljs',
+              override: true
+            }
+          }
         }]
       },
       {
         test: require.resolve('js-cookie'),
         use: [{
           loader: 'expose-loader',
-          options: 'Cookies'
+          options: {
+            exposes: {
+              globalName: 'Cookies',
+              override: true
+            }
+          }
         }]
       },
       // css import configuration:
@@ -241,21 +257,6 @@ module.exports = {
         use: cssLoaders.concat([
           {
             loader: 'sass-loader',
-            options: {
-              sourceMap: !isDevServer
-            }
-          }
-        ])
-      },
-      // less import configuration:
-      //  - generate css with less-loader
-      //  - process it with postcss
-      //  - then extract it to a dedicated file associated to each bundle
-      {
-        test: /\.less$/,
-        use: cssLoaders.concat([
-          {
-            loader: 'less-loader',
             options: {
               sourceMap: !isDevServer
             }
@@ -319,8 +320,9 @@ module.exports = {
         }]
       }
     ],
-    // tell webpack to not parse minified pdfjs file to speedup build process
-    noParse: [path.resolve(nodeModules, 'pdfjs-dist/build/pdf.min.js')]
+    // tell webpack to not parse already minified files to speedup build process
+    noParse: [path.resolve(nodeModules, 'pdfjs-dist/build/pdf.min.js'),
+              path.resolve(nodeModules, 'mathjax/es5/tex-mml-chtml.js')]
   },
   // webpack plugins
   plugins: [
@@ -332,7 +334,7 @@ module.exports = {
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
-      filename: './swh/web/static/webpack-stats.json'
+      filename: './static/webpack-stats.json'
     }),
     // for generating the robots.txt file
     new RobotstxtPlugin({
@@ -369,10 +371,19 @@ module.exports = {
     }),
     // needed in order to use pdf.js
     new webpack.IgnorePlugin(/^\.\/pdf.worker.js$/),
-    new CopyWebpackPlugin([{
-      from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
-      to: path.resolve(__dirname, '../../static/js/')
-    }]),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
+          to: path.resolve(__dirname, '../../../../static/js/')
+        },
+        {
+          from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
+          to: path.resolve(__dirname, '../../../../static/fonts/'),
+          flatten: true
+        }
+      ]
+    }),
     new GenerateWebLabelsPlugin({
       outputType: 'json',
       exclude: ['mini-css-extract-plugin',
@@ -408,8 +419,7 @@ module.exports = {
               'licenseFilePath': './LICENSE'
             }
           ]
-        },
-        loadedMathJaxJsFiles
+        }
       )
     }),
     new ProgressBarPlugin({

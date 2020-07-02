@@ -22,19 +22,52 @@ See top-level LICENSE file for more information
 
 {% block content %}
 
+<p class="mt-3">
+  You can contribute to extend the content of the Software Heritage archive by submitting an origin
+  save request. To do so, fill the required info in the form below:
+</p>
+
+<form id="swh-save-origin-form" class="needs-validation" novalidate>
+  {% csrf_token %}
+  <div class="form-row">
+    <div class="col-md-1"></div>
+    <div class="form-group col-md-2">
+      <label for="swh-input-visit-type">Origin type</label>
+      <select id="swh-input-visit-type" class="form-control" required>
+        {% comment %} <option selected value="">Choose...</option> {% endcomment %}
+      </select>
+      <div class="invalid-feedback">The origin type must be specified</div>
+    </div>
+    <div class="form-group col-md-6">
+      <label for="swh-input-origin-url">Origin url</label>
+      <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.save.validateSaveOriginUrl(this)" required>
+      <div class="invalid-feedback">The origin url is not valid or does not reference a code repository</div>
+    </div>
+    <div class="col-md-2">
+      <div class="form-group">
+        <label for="swh-input-origin-save-submit">&#8203;</label>
+        <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
+      </div>
+    </div>
+  </div>
+</form>
+<div class="swh-processing-save-request text-center" style="display: none;">
+  <img src="{% static 'img/swh-spinner.gif' %}">
+  <p>Processing "save code now" request ...</p>
+</div>
+<div id="swh-origin-save-request-status">
+</div>
+
 <ul class="nav nav-tabs" style="padding-left: 5px;">
-  <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="swh-origin-save-request-create-tab" href="#swh-origin-save-requests-create">Create save request</a></li>
+  <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="swh-origin-save-request-help-tab" href="#swh-origin-save-requests-create">Help</a></li>
   <li class="nav-item"><a class="nav-link" data-toggle="tab" id="swh-origin-save-requests-list-tab" href="#swh-origin-save-requests-list">Browse save requests</a></li>
 </ul>
 
 <div class="tab-content">
   <div id="swh-origin-save-requests-create" class="tab-pane active">
-    <p class="mt-3">
-      You can contribute to extend the content of the Software Heritage archive by submitting an origin
-      save request. To do so, fill the required info in the form below:
-    </p>
+    <p style="margin-top: 1rem;">A "Save code now" request takes the following parameters:</p>
     <ul>
-      <li><b>Visit type:</b> the type of version control system the software origin is using.
+      <li><b>Origin type:</b> the type of version control system the software origin is using.
         Currently, the supported types are:
         <ul>
           <li><code>git</code>, for origins using <a href="https://git-scm.com/">Git</a></li>
@@ -64,36 +97,7 @@ See top-level LICENSE file for more information
       Once a save request has been accepted, you can follow its current status in the
       <a id="swh-show-origin-save-requests-list" href="#swh-origin-save-requests-list">submitted save requests list</a>.
     </p>
-    <form id="swh-save-origin-form" class="needs-validation" novalidate>
-      {% csrf_token %}
-      <div class="form-row">
-        <div class="col-md-1"></div>
-        <div class="form-group col-md-2">
-          <label for="swh-input-visit-type">Visit type</label>
-          <select id="swh-input-visit-type" class="form-control" required>
-            {% comment %} <option selected value="">Choose...</option> {% endcomment %}
-          </select>
-          <div class="invalid-feedback">The visit type must be specified</div>
-        </div>
-        <div class="form-group col-md-6">
-          <label for="swh-input-origin-url">Origin url</label>
-          <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.save.validateSaveOriginUrl(this)" required>
-          <div class="invalid-feedback">The origin url is not valid or does not reference a code repository</div>
-        </div>
-        <div class="col-md-2">
-          <div class="form-group">
-            <label for="swh-input-origin-save-submit">&#8203;</label>
-            <button type="submit" id="swh-input-origin-save-submit" class="btn btn-default btn-block">Submit</button>
-          </div>
-        </div>
-      </div>
-    </form>
-    <div class="swh-processing-save-request text-center" style="display: none;">
-      <img src="{% static 'img/swh-spinner.gif' %}">
-      <p>Processing "save code now" request ...</p>
-    </div>
-    <div id="swh-origin-save-request-status">
-    </div>
+
   </div>
 
   <div id="swh-origin-save-requests-list" class="tab-pane mt-3">
@@ -105,6 +109,8 @@ See top-level LICENSE file for more information
           <th data-priority="1">Url</th>
           <th data-priority="5">Request</th>
           <th data-priority="2">Status</th>
+          <th data-priority="6">Info</th>
+          <th data-priority="7"></th>
         </tr>
       </thead>
     </table>

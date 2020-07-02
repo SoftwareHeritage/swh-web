@@ -5,112 +5,124 @@
 
 from datetime import datetime
 from hypothesis import given
-from rest_framework.test import APITestCase
 
-from swh.model.hashutil import hash_to_bytes
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.model import (
+    ObjectType,
+    Person,
+    Release,
+    Timestamp,
+    TimestampWithTimezone,
+)
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import (
-    release, sha1, content, directory
-)
-from swh.web.tests.testcase import WebTestCase
+from swh.web.tests.strategies import release, content, directory
 
 
-class ReleaseApiTestCase(WebTestCase, APITestCase):
+@given(release())
+def test_api_release(api_client, archive_data, release):
+    url = reverse("api-1-release", url_args={"sha1_git": release})
 
-    @given(release())
-    def test_api_release(self, release):
+    rv = api_client.get(url)
 
-        url = reverse('api-1-release', url_args={'sha1_git': release})
+    expected_release = archive_data.release_get(release)
+    target_revision = expected_release["target"]
+    target_url = reverse(
+        "api-1-revision",
+        url_args={"sha1_git": target_revision},
+        request=rv.wsgi_request,
+    )
+    expected_release["target_url"] = target_url
 
-        rv = self.client.get(url)
+    assert rv.status_code == 200, rv.data
+    assert rv["Content-Type"] == "application/json"
+    assert rv.data == expected_release
 
-        expected_release = self.release_get(release)
-        target_revision = expected_release['target']
-        target_url = reverse('api-1-revision',
-                             url_args={'sha1_git': target_revision})
-        expected_release['target_url'] = target_url
 
-        self.assertEqual(rv.status_code, 200, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, expected_release)
+@given(content(), directory(), release())
+def test_api_release_target_type_not_a_revision(
+    api_client, archive_data, content, directory, release
+):
+    for target_type, target in (
+        (ObjectType.CONTENT, content),
+        (ObjectType.DIRECTORY, directory),
+        (ObjectType.RELEASE, release),
+    ):
 
-    @given(sha1(), sha1(), sha1(), content(), directory(), release())
-    def test_api_release_target_type_not_a_revision(self, new_rel1, new_rel2,
-                                                    new_rel3, content,
-                                                    directory, release):
+        if target_type == ObjectType.CONTENT:
+            target = target["sha1_git"]
 
-        for new_rel_id, target_type, target in (
-                (new_rel1, 'content', content),
-                (new_rel2, 'directory', directory),
-                (new_rel3, 'release', release)):
+        sample_release = Release(
+            author=Person(
+                email=b"author@company.org",
+                fullname=b"author <author@company.org>",
+                name=b"author",
+            ),
+            date=TimestampWithTimezone(
+                timestamp=Timestamp(
+                    seconds=int(datetime.now().timestamp()), microseconds=0
+                ),
+                offset=0,
+                negative_utc=False,
+            ),
+            message=b"sample release message",
+            name=b"sample release",
+            synthetic=False,
+            target=hash_to_bytes(target),
+            target_type=target_type,
+        )
 
-            if target_type == 'content':
-                target = target['sha1_git']
+        archive_data.release_add([sample_release])
 
-            sample_release = {
-                'author': {
-                    'email': b'author@company.org',
-                    'fullname': b'author <author@company.org>',
-                    'name': b'author'
-                },
-                'date': {
-                    'timestamp': int(datetime.now().timestamp()),
-                    'offset': 0,
-                    'negative_utc': False,
-                },
-                'id': hash_to_bytes(new_rel_id),
-                'message': b'sample release message',
-                'name': b'sample release',
-                'synthetic': False,
-                'target': hash_to_bytes(target),
-                'target_type': target_type
-            }
+        new_release_id = hash_to_hex(sample_release.id)
 
-            self.storage.release_add([sample_release])
+        url = reverse("api-1-release", url_args={"sha1_git": new_release_id})
 
-            url = reverse('api-1-release', url_args={'sha1_git': new_rel_id})
+        rv = api_client.get(url)
 
-            rv = self.client.get(url)
+        expected_release = archive_data.release_get(new_release_id)
 
-            expected_release = self.release_get(new_rel_id)
+        if target_type == ObjectType.CONTENT:
+            url_args = {"q": "sha1_git:%s" % target}
+        else:
+            url_args = {"sha1_git": target}
 
-            if target_type == 'content':
-                url_args = {'q': 'sha1_git:%s' % target}
-            else:
-                url_args = {'sha1_git': target}
+        target_url = reverse(
+            "api-1-%s" % target_type.value, url_args=url_args, request=rv.wsgi_request
+        )
+        expected_release["target_url"] = target_url
 
-            target_url = reverse('api-1-%s' % target_type,
-                                 url_args=url_args)
-            expected_release['target_url'] = target_url
+        assert rv.status_code == 200, rv.data
+        assert rv["Content-Type"] == "application/json"
+        assert rv.data == expected_release
 
-            self.assertEqual(rv.status_code, 200, rv.data)
-            self.assertEqual(rv['Content-Type'], 'application/json')
-            self.assertEqual(rv.data, expected_release)
 
-    def test_api_release_not_found(self):
-        unknown_release_ = random_sha1()
+def test_api_release_not_found(api_client):
+    unknown_release_ = random_sha1()
 
-        url = reverse('api-1-release', url_args={'sha1_git': unknown_release_})
+    url = reverse("api-1-release", url_args={"sha1_git": unknown_release_})
 
-        rv = self.client.get(url)
+    rv = api_client.get(url)
 
-        self.assertEqual(rv.status_code, 404, rv.data)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        self.assertEqual(rv.data, {
-            'exception': 'NotFoundExc',
-            'reason': 'Release with sha1_git %s not found.' % unknown_release_
-        })
+    assert rv.status_code == 404, rv.data
+    assert rv["Content-Type"] == "application/json"
+    assert rv.data == {
+        "exception": "NotFoundExc",
+        "reason": "Release with sha1_git %s not found." % unknown_release_,
+    }
 
-    @given(release())
-    def test_api_release_uppercase(self, release):
-        url = reverse('api-1-release-uppercase-checksum',
-                      url_args={'sha1_git': release.upper()})
 
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 302)
+@given(release())
+def test_api_release_uppercase(api_client, release):
+    url = reverse(
+        "api-1-release-uppercase-checksum", url_args={"sha1_git": release.upper()}
+    )
 
-        redirect_url = reverse('api-1-release-uppercase-checksum',
-                               url_args={'sha1_git': release})
+    resp = api_client.get(url)
+    assert resp.status_code == 302
 
-        self.assertEqual(resp['location'], redirect_url)
+    redirect_url = reverse(
+        "api-1-release-uppercase-checksum", url_args={"sha1_git": release}
+    )
+
+    assert resp["location"] == redirect_url
