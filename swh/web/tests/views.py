@@ -16,8 +16,8 @@ from rest_framework.response import Response
 from swh.model import from_disk
 from swh.model.hashutil import hash_to_hex
 from swh.model.model import Content
+from swh.model.from_disk import DiskBackedContent
 from swh.web.common.highlightjs import get_hljs_language_from_filename
-from swh.web.config import get_config
 from swh.web.tests.data import get_tests_data
 
 _content_code_data_exts = {}  # type: Dict[str, Dict[str, str]]
@@ -44,9 +44,10 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
     directory = from_disk.Directory.from_disk(path=test_contents_dir)
 
     contents = []
-    for name, obj in directory.items():
-        if isinstance(obj, from_disk.Content):
-            c = obj.to_model().with_data().to_dict()
+    for name, obj_ in directory.items():
+        obj = obj_.to_model()
+        if obj.object_type in [Content.object_type, DiskBackedContent.object_type]:
+            c = obj.with_data().to_dict()
             c["status"] = "visible"
             sha1 = hash_to_hex(c["sha1"])
             if ext_key:
@@ -68,9 +69,10 @@ def _init_content_code_data_exts():
     a code content example.
     """
     global _content_code_data_exts
-    _init_content_tests_data(
-        "resources/contents/code/extensions", _content_code_data_exts, True
-    )
+    if not _content_code_data_exts:
+        _init_content_tests_data(
+            "resources/contents/code/extensions", _content_code_data_exts, True
+        )
 
 
 def _init_content_other_data_exts():
@@ -79,9 +81,10 @@ def _init_content_other_data_exts():
     a content example.
     """
     global _content_other_data_exts
-    _init_content_tests_data(
-        "resources/contents/other/extensions", _content_other_data_exts, True
-    )
+    if not _content_other_data_exts:
+        _init_content_tests_data(
+            "resources/contents/other/extensions", _content_other_data_exts, True
+        )
 
 
 def _init_content_code_data_filenames():
@@ -90,15 +93,10 @@ def _init_content_code_data_filenames():
     a content example.
     """
     global _content_code_data_filenames
-    _init_content_tests_data(
-        "resources/contents/code/filenames", _content_code_data_filenames, False
-    )
-
-
-if get_config()["e2e_tests_mode"]:
-    _init_content_code_data_exts()
-    _init_content_other_data_exts()
-    _init_content_code_data_filenames()
+    if not _content_code_data_filenames:
+        _init_content_tests_data(
+            "resources/contents/code/filenames", _content_code_data_filenames, False
+        )
 
 
 @api_view(["GET"])
@@ -107,6 +105,7 @@ def get_content_code_data_all_exts(request):
     Endpoint implementation returning a list of all source file
     extensions to test for highlighting using cypress.
     """
+    _init_content_code_data_exts()
     return Response(
         sorted(_content_code_data_exts.keys()),
         status=200,
@@ -122,6 +121,7 @@ def get_content_code_data_by_ext(request, ext):
     """
     data = None
     status = 404
+    _init_content_code_data_exts()
     if ext in _content_code_data_exts:
         data = _content_code_data_exts[ext]
         status = 200
@@ -149,6 +149,7 @@ def get_content_code_data_all_filenames(request):
     Endpoint implementation returning a list of all source filenames
     to test for highlighting using cypress.
     """
+    _init_content_code_data_filenames()
     return Response(
         sorted(_content_code_data_filenames.keys()),
         status=200,
@@ -164,6 +165,7 @@ def get_content_code_data_by_filename(request, filename):
     """
     data = None
     status = 404
+    _init_content_code_data_filenames()
     if filename in _content_code_data_filenames:
         data = _content_code_data_filenames[filename]
         status = 200
