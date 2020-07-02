@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import timedelta
+
 from hypothesis import given
 import pytest
 from requests.utils import parse_header_links
@@ -205,7 +207,7 @@ def test_api_lookup_origin_visit(
         visit_status = OriginVisitStatus(
             origin=new_origin.url,
             visit=origin_visit.visit,
-            date=visit_date,
+            date=visit_date + timedelta(minutes=5),
             status="full",
             snapshot=new_snapshots[i].id,
         )

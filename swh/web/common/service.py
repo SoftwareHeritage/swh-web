@@ -899,7 +899,8 @@ def lookup_origin_visits(
     """
     visits = _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page)
     for visit in visits:
-        yield converters.from_origin_visit(visit)
+        visit_status = storage.origin_visit_status_get_latest(origin, visit["visit"])
+        yield converters.from_origin_visit({**visit, **visit_status.to_dict()})
 
 
 def lookup_origin_visit_latest(
@@ -953,12 +954,13 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
 
     """
     visit = storage.origin_visit_get_by(origin_url, visit_id)
+    visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)
     if not visit:
         raise NotFoundExc(
             "Origin %s or its visit " "with id %s not found!" % (origin_url, visit_id)
         )
     visit["origin"] = origin_url
-    return converters.from_origin_visit(visit)
+    return converters.from_origin_visit({**visit, **visit_status.to_dict()})
 
 
 def lookup_snapshot_sizes(snapshot_id):

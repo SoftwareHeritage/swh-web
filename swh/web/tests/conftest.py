@@ -227,8 +227,15 @@ class _ArchiveData:
         return converters.from_origin(origin)
 
     def origin_visit_get(self, origin_url):
-        visits = self.storage.origin_visit_get(origin_url)
-        return list(map(converters.from_origin_visit, visits))
+        visits = list(self.storage.origin_visit_get(origin_url))
+        for i in range(len(visits)):
+            visit_status = self.storage.origin_visit_status_get_latest(
+                origin_url, visits[i]["visit"]
+            )
+            visits[i] = converters.from_origin_visit(
+                {**visits[i], **visit_status.to_dict()}
+            )
+        return visits
 
     def origin_visit_get_by(self, origin_url, visit_id):
         visit = self.storage.origin_visit_get_by(origin_url, visit_id)
