@@ -3,9 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import datetime
+from datetime import timedelta
 import os
 import random
+import time
 
 from copy import deepcopy
 
@@ -20,6 +21,7 @@ from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.storage.algos.snapshot import snapshot_get_latest
+from swh.storage.utils import now
 from swh.web import config
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content,
@@ -121,26 +123,16 @@ _TEST_ORIGINS = [
             "highlightjs-line-numbers.js.zip",
             "highlightjs-line-numbers.js_visit2.zip",
         ],
-        "visit_date": [
-            datetime.datetime(2018, 12, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
-            datetime.datetime(2019, 1, 20, 15, 0, 0, tzinfo=datetime.timezone.utc),
-        ],
     },
     {
         "type": "git",
         "url": "https://github.com/memononen/libtess2",
         "archives": ["libtess2.zip"],
-        "visit_date": [
-            datetime.datetime(2018, 5, 25, 1, 0, 0, tzinfo=datetime.timezone.utc),
-        ],
     },
     {
         "type": "git",
         "url": "repo_with_submodules",
         "archives": ["repo_with_submodules.tgz"],
-        "visit_date": [
-            datetime.datetime(2019, 1, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
-        ],
     },
 ]
 
@@ -178,6 +170,10 @@ def _init_tests_data():
     # Load git repositories from archives
     for origin in _TEST_ORIGINS:
         for i, archive in enumerate(origin["archives"]):
+            if i > 0:
+                # ensure visit dates will be different when simulating
+                # multiple visits of an origin
+                time.sleep(1)
             origin_repo_archive = os.path.join(
                 os.path.dirname(__file__), "resources/repos/%s" % archive
             )
@@ -185,7 +181,6 @@ def _init_tests_data():
                 origin["url"],
                 archive_path=origin_repo_archive,
                 config=_TEST_LOADER_CONFIG,
-                visit_date=origin["visit_date"][i],
             )
             if storage is None:
                 storage = loader.storage
@@ -201,15 +196,13 @@ def _init_tests_data():
         # storage.origin_add([{'url': url}])
         storage.origin_add([Origin(url=url)])
         search.origin_update([{"url": url, "has_visits": True}])
-        date = datetime.datetime(2019, 12, 3, 13, 55, 5, tzinfo=datetime.timezone.utc)
-        visit = OriginVisit(
-            origin=url, date=date, type="tar", status="ongoing", snapshot=None
-        )
+        date = now()
+        visit = OriginVisit(origin=url, date=date, type="tar")
         visit = storage.origin_visit_add([visit])[0]
         visit_status = OriginVisitStatus(
             origin=url,
             visit=visit.visit,
-            date=date,
+            date=date + timedelta(minutes=1),
             status="full",
             snapshot=hash_to_bytes("1a8893e6a86f444e8be8e7bda6cb34fb1735a00e"),
         )

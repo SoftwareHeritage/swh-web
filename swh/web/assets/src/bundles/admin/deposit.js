@@ -15,30 +15,6 @@ function genSwhLink(data, type) {
   return data;
 }
 
-function filterDataWithExcludePattern(data, excludePattern) {
-  /* Return true if the data is to be filtered, false otherwise.
-
-    Args:
-      data (dict): row dict data
-      excludePattern (str): pattern to lookup in data columns
-
-    Returns:
-      true if the data is to be excluded (because it matches), false otherwise
-
-   */
-  if (excludePattern === '') {
-    return false; // otherwise, everything gets excluded
-  }
-  for (const key in data) {
-    let value = data[key];
-    if ((typeof value === 'string' || value instanceof String) &&
-        value.search(excludePattern) !== -1) {
-      return true; // exclude the data from filtering
-    }
-  }
-  return false;
-}
-
 export function initDepositAdmin() {
   let depositsTable;
   $(document).ready(() => {
@@ -58,39 +34,15 @@ export function initDepositAdmin() {
         // i: (i)nfo
         // p: (p)agination
         // see https://datatables.net/examples/basic_init/dom.html
-        dom: '<<f<"#list-exclude">l>rt<"bottom"ip>>',
+        dom: '<<"d-flex justify-content-between align-items-center"f' +
+             '<"#list-exclude">l>rt<"bottom"ip>>',
         // div#list-exclude is a custom filter added next to dataTable
         // initialization below through js dom manipulation, see
         // https://datatables.net/examples/advanced_init/dom_toolbar.html
         ajax: {
           url: Urls.admin_deposit_list(),
-          // filtering data set depending on the exclude search input
-          dataFilter: function(dataResponse) {
-            /* Filter out data returned by the server to exclude entries
-               matching the exclude pattern.
-
-              Args
-                dataResponse (str): the json response in string
-
-              Returns:
-                json response altered (in string)
-             */
-            //
-            let data = jQuery.parseJSON(dataResponse);
-            let excludePattern = $('#swh-admin-deposit-list-exclude-filter').val();
-            let recordsFiltered = 0;
-            let filteredData = [];
-            for (const row of data.data) {
-              if (filterDataWithExcludePattern(row, excludePattern)) {
-                recordsFiltered += 1;
-              } else {
-                filteredData.push(row);
-              }
-            }
-            // update data values
-            data['recordsFiltered'] = recordsFiltered;
-            data['data'] = filteredData;
-            return JSON.stringify(data);
+          data: d => {
+            d.excludePattern = $('#swh-admin-deposit-list-exclude-filter').val();
           }
         },
         columns: [

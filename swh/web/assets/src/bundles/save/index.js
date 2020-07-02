@@ -131,6 +131,8 @@ export function initOriginSave() {
                   '<i class="mdi mdi-camera mdi-fw" aria-hidden="true"></i>' +
                   'Save again</button>';
                 return saveAgainButton;
+              } else {
+                return '';
               }
             }
           }
