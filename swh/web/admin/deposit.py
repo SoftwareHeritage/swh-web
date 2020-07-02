@@ -37,7 +37,6 @@ def _admin_deposit_list(request):
     deposits_list_auth = HTTPBasicAuth(
         config["private_api_user"], config["private_api_password"]
     )
-
     try:
         nb_deposits = requests.get(
             "%s?page_size=1" % deposits_list_url, auth=deposits_list_auth, timeout=30
@@ -61,6 +60,17 @@ def _admin_deposit_list(request):
                 for d in deposits
                 if any(
                     search_value.lower() in val
+                    for val in [str(v).lower() for v in d.values()]
+                )
+            ]
+
+        exclude_pattern = request.GET.get("excludePattern")
+        if exclude_pattern:
+            deposits = [
+                d
+                for d in deposits
+                if all(
+                    exclude_pattern.lower() not in val
                     for val in [str(v).lower() for v in d.values()]
                 )
             ]

@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import timedelta
+
 from hypothesis import given
 import pytest
 from requests.utils import parse_header_links
@@ -99,18 +101,10 @@ def test_api_lookup_origin_visits(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
 
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            [
-                OriginVisit(
-                    origin=new_origin.url,
-                    date=visit_date,
-                    type="git",
-                    status="ongoing",
-                    snapshot=None,
-                )
-            ]
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
         )[0]
         archive_data.snapshot_add([new_snapshots[i]])
         visit_status = OriginVisitStatus(
@@ -155,18 +149,10 @@ def test_api_lookup_origin_visits(
 def test_api_lookup_origin_visits_by_id(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            [
-                OriginVisit(
-                    origin=new_origin.url,
-                    date=visit_date,
-                    type="git",
-                    status="ongoing",
-                    snapshot=None,
-                )
-            ]
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
         )[0]
         archive_data.snapshot_add([new_snapshots[i]])
         visit_status = OriginVisitStatus(
@@ -211,25 +197,17 @@ def test_api_lookup_origin_visits_by_id(
 def test_api_lookup_origin_visit(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            [
-                OriginVisit(
-                    origin=new_origin.url,
-                    date=visit_date,
-                    type="git",
-                    status="ongoing",
-                    snapshot=None,
-                )
-            ]
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
         )[0]
         visit_id = origin_visit.visit
         archive_data.snapshot_add([new_snapshots[i]])
         visit_status = OriginVisitStatus(
             origin=new_origin.url,
             visit=origin_visit.visit,
-            date=now(),
+            date=visit_date + timedelta(minutes=5),
             status="full",
             snapshot=new_snapshots[i].id,
         )
@@ -257,7 +235,7 @@ def test_api_lookup_origin_visit(
 
 @given(new_origin())
 def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data, new_origin):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
 
     url = reverse("api-1-origin-visit-latest", url_args={"origin_url": new_origin.url})
 
@@ -273,20 +251,12 @@ def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data, new_o
 def test_api_lookup_origin_visit_latest(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     visit_dates.sort()
     visit_ids = []
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            [
-                OriginVisit(
-                    origin=new_origin.url,
-                    date=visit_date,
-                    type="git",
-                    status="ongoing",
-                    snapshot=None,
-                )
-            ]
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
         )[0]
         visit_ids.append(origin_visit.visit)
 
@@ -324,20 +294,12 @@ def test_api_lookup_origin_visit_latest(
 def test_api_lookup_origin_visit_latest_with_snapshot(
     api_client, archive_data, new_origin, visit_dates, new_snapshots
 ):
-    archive_data.origin_add_one(new_origin)
+    archive_data.origin_add([new_origin])
     visit_dates.sort()
     visit_ids = []
     for i, visit_date in enumerate(visit_dates):
         origin_visit = archive_data.origin_visit_add(
-            [
-                OriginVisit(
-                    origin=new_origin.url,
-                    date=visit_date,
-                    type="git",
-                    status="ongoing",
-                    snapshot=None,
-                )
-            ]
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
         )[0]
         visit_ids.append(origin_visit.visit)
 
