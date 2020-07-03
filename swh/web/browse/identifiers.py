@@ -5,20 +5,19 @@
 
 from django.shortcuts import redirect
 
-from swh.web.common.identifiers import resolve_swh_persistent_id
+from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.exc import handle_view_exception
 
 
-def swh_id_browse(request, swh_id):
+def swhid_browse(request, swhid):
     """
-    Django view enabling to browse the archive using
-    :ref:`SWHIDs <persistent-identifiers>`.
+    Django view enabling to browse the archive using :ref:`<persistent-identifiers>`.
 
-    The url that points to it is :http:get:`/(swh_id)/`.
+    The url that points to it is :http:get:`/(swhid)/`.
     """
     try:
-        swh_id_resolved = resolve_swh_persistent_id(swh_id, query_params=request.GET)
+        swhid_resolved = resolve_swhid(swhid, query_params=request.GET)
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    return redirect(swh_id_resolved["browse_url"])
+    return redirect(swhid_resolved["browse_url"])

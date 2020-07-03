@@ -156,18 +156,18 @@ function doSearch() {
   inSearch = true;
   if (searchQueryText.startsWith('swh:')) {
     // searchQueryText may be a PID so sending search queries to PID resolve endpoint
-    let resolvePidUrl = Urls.api_1_resolve_swh_pid(searchQueryText);
-    fetch(resolvePidUrl)
+    let resolveSWHIDUrl = Urls.api_1_resolve_swhid(searchQueryText);
+    fetch(resolveSWHIDUrl)
       .then(handleFetchError)
       .then(response => response.json())
       .then(data => {
-        // pid has been successfully resolved,
+        // SWHID has been successfully resolved,
         // so redirect to browse page
         window.location = data.browse_url;
       })
       .catch(response => {
         // display a useful error message if the input
-        // looks like a swh pid
+        // looks like a SWHID
         response.json().then(data => {
           $('#swh-origin-search-results').hide();
           $('.swh-search-pagination').hide();

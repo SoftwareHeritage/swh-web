@@ -105,8 +105,8 @@ describe('Test origin-search', function() {
 
     cy.route({
       method: 'GET',
-      url: `${this.Urls.api_1_resolve_swh_pid('').slice(0, -1)}**`
-    }).as('resolvePid');
+      url: `${this.Urls.api_1_resolve_swhid('').slice(0, -1)}**`
+    }).as('resolveSWHID');
 
     cy.route({
       method: 'GET',
@@ -120,7 +120,7 @@ describe('Test origin-search', function() {
 
     cy.wait('@searchOrigin');
 
-    cy.xhrShouldBeCalled('resolvePid', 0);
+    cy.xhrShouldBeCalled('resolveSWHID', 0);
     cy.xhrShouldBeCalled('searchOrigin', 1);
   });
 
@@ -341,43 +341,43 @@ describe('Test origin-search', function() {
     });
   });
 
-  context('Test valid persistent ids', function() {
+  context('Test valid SWHIDs', function() {
     it('should resolve directory', function() {
       const redirectUrl = this.Urls.browse_directory(origin.content[0].directory);
-      const persistentId = `swh:1:dir:${origin.content[0].directory}`;
+      const swhid = `swh:1:dir:${origin.content[0].directory}`;
 
-      searchShouldRedirect(persistentId, redirectUrl);
+      searchShouldRedirect(swhid, redirectUrl);
     });
 
     it('should resolve revision', function() {
       const redirectUrl = this.Urls.browse_revision(origin.revisions[0]);
-      const persistentId = `swh:1:rev:${origin.revisions[0]}`;
+      const swhid = `swh:1:rev:${origin.revisions[0]}`;
 
-      searchShouldRedirect(persistentId, redirectUrl);
+      searchShouldRedirect(swhid, redirectUrl);
     });
 
     it('should resolve snapshot', function() {
       const redirectUrl = this.Urls.browse_snapshot_directory(origin.snapshot);
-      const persistentId = `swh:1:snp:${origin.snapshot}`;
+      const swhid = `swh:1:snp:${origin.snapshot}`;
 
-      searchShouldRedirect(persistentId, redirectUrl);
+      searchShouldRedirect(swhid, redirectUrl);
     });
 
     it('should resolve content', function() {
       const redirectUrl = this.Urls.browse_content(`sha1_git:${origin.content[0].sha1git}`);
-      const persistentId = `swh:1:cnt:${origin.content[0].sha1git}`;
+      const swhid = `swh:1:cnt:${origin.content[0].sha1git}`;
 
-      searchShouldRedirect(persistentId, redirectUrl);
+      searchShouldRedirect(swhid, redirectUrl);
     });
 
     it('should not send request to the search endpoint', function() {
       cy.server();
-      const persistentId = `swh:1:rev:${origin.revisions[0]}`;
+      const swhid = `swh:1:rev:${origin.revisions[0]}`;
 
       cy.route({
         method: 'GET',
-        url: this.Urls.api_1_resolve_swh_pid(persistentId)
-      }).as('resolvePid');
+        url: this.Urls.api_1_resolve_swhid(swhid)
+      }).as('resolveSWHID');
 
       cy.route({
         method: 'GET',
@@ -385,44 +385,44 @@ describe('Test origin-search', function() {
       }).as('searchOrigin');
 
       cy.get('#origins-url-patterns')
-        .type(persistentId);
+        .type(swhid);
       cy.get('.swh-search-icon')
         .click();
 
-      cy.wait('@resolvePid');
+      cy.wait('@resolveSWHID');
 
-      cy.xhrShouldBeCalled('resolvePid', 1);
+      cy.xhrShouldBeCalled('resolveSWHID', 1);
       cy.xhrShouldBeCalled('searchOrigin', 0);
     });
   });
 
-  context('Test invalid persistent ids', function() {
+  context('Test invalid SWHIDs', function() {
     it('should show not found for directory', function() {
-      const persistentId = `swh:1:dir:${this.unarchivedRepo.rootDirectory}`;
+      const swhid = `swh:1:dir:${this.unarchivedRepo.rootDirectory}`;
       const msg = `Directory with sha1_git ${this.unarchivedRepo.rootDirectory} not found`;
 
-      searchShouldShowNotFound(persistentId, msg);
+      searchShouldShowNotFound(swhid, msg);
     });
 
     it('should show not found for snapshot', function() {
-      const persistentId = `swh:1:snp:${this.unarchivedRepo.snapshot}`;
+      const swhid = `swh:1:snp:${this.unarchivedRepo.snapshot}`;
       const msg = `Snapshot with id ${this.unarchivedRepo.snapshot} not found!`;
 
-      searchShouldShowNotFound(persistentId, msg);
+      searchShouldShowNotFound(swhid, msg);
     });
 
     it('should show not found for revision', function() {
-      const persistentId = `swh:1:rev:${this.unarchivedRepo.revision}`;
+      const swhid = `swh:1:rev:${this.unarchivedRepo.revision}`;
       const msg = `Revision with sha1_git ${this.unarchivedRepo.revision} not found.`;
 
-      searchShouldShowNotFound(persistentId, msg);
+      searchShouldShowNotFound(swhid, msg);
     });
 
     it('should show not found for content', function() {
-      const persistentId = `swh:1:cnt:${this.unarchivedRepo.content[0].sha1git}`;
+      const swhid = `swh:1:cnt:${this.unarchivedRepo.content[0].sha1git}`;
       const msg = `Content with sha1_git checksum equals to ${this.unarchivedRepo.content[0].sha1git} not found!`;
 
-      searchShouldShowNotFound(persistentId, msg);
+      searchShouldShowNotFound(swhid, msg);
     });
   });
 

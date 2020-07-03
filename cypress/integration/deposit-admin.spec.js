@@ -18,8 +18,8 @@ describe('Test admin deposit page', function() {
         'reception_date': '2020-05-18T13:48:27Z',
         'status': 'done',
         'status_detail': null,
-        'swh_id': 'swh:1:dir:ef04a768',
-        'swh_id_context': 'swh:1:dir:ef04a768;origin=https://w.s.o/c-d-1;visit=swh:1:snp:b234be1e;anchor=swh:1:rev:d24a75c9;path=/'
+        'swhid': 'swh:1:dir:ef04a768',
+        'swhid_context': 'swh:1:dir:ef04a768;origin=https://w.s.o/c-d-1;visit=swh:1:snp:b234be1e;anchor=swh:1:rev:d24a75c9;path=/'
       },
       {
         'id': 613,
@@ -27,8 +27,8 @@ describe('Test admin deposit page', function() {
         'reception_date': '2020-05-18T11:20:16Z',
         'status': 'done',
         'status_detail': null,
-        'swh_id': 'swh:1:dir:181417fb',
-        'swh_id_context': 'swh:1:dir:181417fb;origin=https://w.s.o/c-d-2;visit=swh:1:snp:8c32a2ef;anchor=swh:1:rev:3d1eba04;path=/'
+        'swhid': 'swh:1:dir:181417fb',
+        'swhid_context': 'swh:1:dir:181417fb;origin=https://w.s.o/c-d-2;visit=swh:1:snp:8c32a2ef;anchor=swh:1:rev:3d1eba04;path=/'
       },
       {
         'id': 612,
@@ -36,8 +36,8 @@ describe('Test admin deposit page', function() {
         'reception_date': '2020-05-18T11:20:16Z',
         'status': 'rejected',
         'status_detail': 'incomplete deposit!',
-        'swh_id': null,
-        'swh_id_context': null
+        'swhid': null,
+        'swhid_context': null
       }
     ];
     // those are computed from the
@@ -93,8 +93,8 @@ describe('Test admin deposit page', function() {
         expect(deposit.external_id).to.be.equal(responseDeposit['external_id']);
         expect(deposit.status).to.be.equal(responseDeposit['status']);
         expect(deposit.status_detail).to.be.equal(responseDeposit['status_detail']);
-        expect(deposit.swh_id).to.be.equal(responseDeposit['swh_id']);
-        expect(deposit.swh_id_context).to.be.equal(responseDeposit['swh_id_context']);
+        expect(deposit.swhid).to.be.equal(responseDeposit['swhid']);
+        expect(deposit.swhid_context).to.be.equal(responseDeposit['swhid_context']);
 
         let expectedOrigin = expectedOrigins[deposit.id];
         // ensure it's in the dom
@@ -111,9 +111,9 @@ describe('Test admin deposit page', function() {
         }
 
         // those are hidden by default
-        if (deposit.swh_id !== null) {
-          cy.contains(deposit.swh_id).should('not.be.visible');
-          cy.contains(deposit.swh_id_context).should('not.be.visible');
+        if (deposit.swhid !== null) {
+          cy.contains(deposit.swhid).should('not.be.visible');
+          cy.contains(deposit.swhid_context).should('not.be.visible');
         }
       });
 
@@ -139,9 +139,9 @@ describe('Test admin deposit page', function() {
           }
 
           // those are hidden by default, so now they should be visible
-          if (deposit.swh_id !== null) {
-            cy.contains(deposit.swh_id).should('be.visible');
-            cy.contains(deposit.swh_id_context).should('be.visible');
+          if (deposit.swhid !== null) {
+            cy.contains(deposit.swhid).should('be.visible');
+            cy.contains(deposit.swhid_context).should('be.visible');
           }
         });
       });

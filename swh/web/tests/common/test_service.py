@@ -901,7 +901,7 @@ def test_lookup_missing_hashes_non_present():
     missing_rel = random_sha1()
     missing_snp = random_sha1()
 
-    grouped_pids = {
+    grouped_swhids = {
         CONTENT: [hash_to_bytes(missing_cnt)],
         DIRECTORY: [hash_to_bytes(missing_dir)],
         REVISION: [hash_to_bytes(missing_rev)],
@@ -909,7 +909,7 @@ def test_lookup_missing_hashes_non_present():
         SNAPSHOT: [hash_to_bytes(missing_snp)],
     }
 
-    actual_result = service.lookup_missing_hashes(grouped_pids)
+    actual_result = service.lookup_missing_hashes(grouped_swhids)
 
     assert actual_result == {
         missing_cnt,
@@ -926,7 +926,7 @@ def test_lookup_missing_hashes_some_present(archive_data, content, directory):
     missing_rel = random_sha1()
     missing_snp = random_sha1()
 
-    grouped_pids = {
+    grouped_swhids = {
         CONTENT: [hash_to_bytes(content["sha1_git"])],
         DIRECTORY: [hash_to_bytes(directory)],
         REVISION: [hash_to_bytes(missing_rev)],
@@ -934,7 +934,7 @@ def test_lookup_missing_hashes_some_present(archive_data, content, directory):
         SNAPSHOT: [hash_to_bytes(missing_snp)],
     }
 
-    actual_result = service.lookup_missing_hashes(grouped_pids)
+    actual_result = service.lookup_missing_hashes(grouped_swhids)
 
     assert actual_result == {missing_rev, missing_rel, missing_snp}
 

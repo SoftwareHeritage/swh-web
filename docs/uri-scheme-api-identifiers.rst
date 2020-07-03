@@ -1,7 +1,7 @@
 Persistent identifiers
 ----------------------
 
-.. autosimple:: swh.web.api.views.identifiers.api_resolve_swh_pid
+.. autosimple:: swh.web.api.views.identifiers.api_resolve_swhid
 
-.. autosimple:: swh.web.api.views.identifiers.api_swh_pid_known
+.. autosimple:: swh.web.api.views.identifiers.api_swhid_known
 

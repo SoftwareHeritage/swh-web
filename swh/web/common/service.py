@@ -1286,20 +1286,20 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
     )
 
 
-def lookup_missing_hashes(grouped_pids: Dict[str, List[bytes]]) -> Set[str]:
+def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
     """Lookup missing Software Heritage persistent identifier hash, using
     batch processing.
 
     Args:
         A dictionary with:
-        keys: persistent identifier type
-        values: list(bytes) persistent identifier hash
+        keys: object types
+        values: object hashes
     Returns:
         A set(hexadecimal) of the hashes not found in the storage
     """
     missing_hashes = []
 
-    for obj_type, obj_ids in grouped_pids.items():
+    for obj_type, obj_ids in grouped_swhids.items():
         if obj_type == CONTENT:
             missing_hashes.append(storage.content_missing_per_sha1_git(obj_ids))
         elif obj_type == DIRECTORY:

@@ -359,10 +359,10 @@ def apidoc_test_post_endpoint(request):
 
         Endpoint documentation
 
-        :<jsonarr string -: Input array of pids
+        :<jsonarr string -: Input array of SWHIDs
 
-        :>json object <swh_pid>: an object whose keys are input persistent
-            identifiers and values objects with the following keys:
+        :>json object <swhid>: an object whose keys are input SWHIDs
+            and values objects with the following keys:
 
                 * **known (bool)**: whether the object was found
 
@@ -384,7 +384,7 @@ def test_apidoc_input_output_doc(client):
             " </dt>\n"
             ' <dd class="col col-md-9">\n'
             "  <p>\n"
-            "   Input array of pids\n"
+            "   Input array of SWHIDs\n"
             "  </p>\n"
             " </dd>\n"
             "</dl>\n"
@@ -408,9 +408,9 @@ def test_apidoc_input_output_doc(client):
             "     <li>\n"
             "      <p>\n"
             "       <strong>\n"
-            "        &lt;swh_pid&gt; (object)\n"
+            "        &lt;swhid&gt; (object)\n"
             "       </strong>\n"
-            "       : an object whose keys are input persistent identifiers"
+            "       : an object whose keys are input SWHIDs"
             " and values objects with the following keys:\n"
             "      </p>\n"
             "      <blockquote>\n"

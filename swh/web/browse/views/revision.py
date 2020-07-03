@@ -13,7 +13,7 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
 from swh.model.identifiers import (
-    persistent_identifier,
+    swhid,
     CONTENT,
     DIRECTORY,
     REVISION,
@@ -281,7 +281,7 @@ def revision_log_browse(request, sha1_git):
 
     revision_log_data = format_log_entries(revision_log, per_page)
 
-    swh_rev_id = persistent_identifier("revision", sha1_git)
+    swh_rev_id = swhid("revision", sha1_git)
 
     return render(
         request,

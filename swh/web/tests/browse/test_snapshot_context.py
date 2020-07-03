@@ -14,7 +14,7 @@ from swh.web.browse.snapshot_context import (
     _get_release,
 )
 from swh.web.browse.utils import gen_revision_url
-from swh.web.common.identifiers import get_swh_persistent_id
+from swh.web.common.identifiers import gen_swhid
 from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
 from swh.web.common.typing import (
     SnapshotBranchInfo,
@@ -125,7 +125,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         branches_url = reverse("browse-snapshot-branches", url_args=url_args)
         releases_url = reverse("browse-snapshot-releases", url_args=url_args)
         is_empty = not branches and not releases
-        snapshot_swhid = get_swh_persistent_id("snapshot", snapshot)
+        snapshot_swhid = gen_swhid("snapshot", snapshot)
         snapshot_sizes = {"revision": len(branches), "release": len(releases)}
 
         expected = SnapshotContext(
@@ -216,7 +216,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             "browse-origin-visits", query_params={"origin_url": kwargs["origin_url"]}
         )
         is_empty = not branches and not releases
-        snapshot_swhid = get_swh_persistent_id("snapshot", snapshot)
+        snapshot_swhid = gen_swhid("snapshot", snapshot)
         snapshot_sizes = {"revision": len(branches), "release": len(releases)}
 
         visit_info["url"] = reverse(

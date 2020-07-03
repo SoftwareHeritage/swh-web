@@ -18,7 +18,7 @@ export function swhIdObjectTypeToggled(event) {
 
 export function swhIdContextOptionToggled(event) {
   event.stopPropagation();
-  let swhIdElt = $(event.target).closest('.swh-id-ui').find('.swh-id');
+  let swhIdElt = $(event.target).closest('.swhid-ui').find('.swhid');
   let swhIdWithContext = $(event.target).data('swhid-with-context');
   let currentSwhId = swhIdElt.text();
   if ($(event.target).prop('checked')) {
@@ -36,7 +36,7 @@ export function swhIdContextOptionToggled(event) {
 }
 
 function addLinesInfo() {
-  let swhIdElt = $('#swh-id-tab-content').find('.swh-id');
+  let swhIdElt = $('#swhid-tab-content').find('.swhid');
   let currentSwhId = swhIdElt.text();
   let lines = [];
   let linesPart = ';lines=';
@@ -53,7 +53,7 @@ function addLinesInfo() {
     linesPart += '-' + lines[1];
   }
 
-  if ($('#swh-id-context-option-content').prop('checked')) {
+  if ($('#swhid-context-option-content').prop('checked')) {
     currentSwhId = currentSwhId.replace(/;lines=\d+-*\d*/g, '');
     if (lines.length > 0) {
       currentSwhId += linesPart;
@@ -65,16 +65,16 @@ function addLinesInfo() {
 }
 
 $(document).ready(() => {
-  new ClipboardJS('.btn-swh-id-copy', {
+  new ClipboardJS('.btn-swhid-copy', {
     text: trigger => {
-      let swhId = $(trigger).closest('.swh-id-ui').find('.swh-id').text();
+      let swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
       return swhId;
     }
   });
 
-  new ClipboardJS('.btn-swh-id-url-copy', {
+  new ClipboardJS('.btn-swhid-url-copy', {
     text: trigger => {
-      let swhId = $(trigger).closest('.swh-id-ui').find('.swh-id').text();
+      let swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
       return window.location.origin + '/' + swhId + '/';
     }
   });
@@ -105,7 +105,7 @@ $(document).ready(() => {
 
   // set the tab visible once the close animation is terminated
   $('#swh-identifiers').css('display', 'block');
-  $('.swh-id-context-option').trigger('click');
+  $('.swhid-context-option').trigger('click');
 
   // highlighted code lines changed
   $(window).on('hashchange', () => {

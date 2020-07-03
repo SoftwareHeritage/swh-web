@@ -45,38 +45,38 @@ describe('Persistent Identifiers Tests', function() {
       testsData = [
         {
           'objectType': 'content',
-          'objectPids': [cntSWHIDWithContext, cntSWHID],
+          'objectSWHIDs': [cntSWHIDWithContext, cntSWHID],
           'badgeUrl': this.Urls.swh_badge('content', swhids.content.object_id),
-          'badgePidUrl': this.Urls.swh_badge_pid(cntSWHID),
-          'browseUrl': this.Urls.browse_swh_id(cntSWHIDWithContext)
+          'badgeSWHIDUrl': this.Urls.swh_badge_swhid(cntSWHID),
+          'browseUrl': this.Urls.browse_swhid(cntSWHIDWithContext)
         },
         {
           'objectType': 'directory',
-          'objectPids': [dirSWHIDWithContext, dirSWHID],
+          'objectSWHIDs': [dirSWHIDWithContext, dirSWHID],
           'badgeUrl': this.Urls.swh_badge('directory', swhids.directory.object_id),
-          'badgePidUrl': this.Urls.swh_badge_pid(dirSWHID),
-          'browseUrl': this.Urls.browse_swh_id(dirSWHIDWithContext)
+          'badgeSWHIDUrl': this.Urls.swh_badge_swhid(dirSWHID),
+          'browseUrl': this.Urls.browse_swhid(dirSWHIDWithContext)
         },
         {
           'objectType': 'release',
-          'objectPids': [relSWHIDWithContext, relSWHID],
+          'objectSWHIDs': [relSWHIDWithContext, relSWHID],
           'badgeUrl': this.Urls.swh_badge('release', swhids.release.object_id),
-          'badgePidUrl': this.Urls.swh_badge_pid(relSWHID),
-          'browseUrl': this.Urls.browse_swh_id(relSWHIDWithContext)
+          'badgeSWHIDUrl': this.Urls.swh_badge_swhid(relSWHID),
+          'browseUrl': this.Urls.browse_swhid(relSWHIDWithContext)
         },
         {
           'objectType': 'revision',
-          'objectPids': [revSWHIDWithContext, revSWHID],
+          'objectSWHIDs': [revSWHIDWithContext, revSWHID],
           'badgeUrl': this.Urls.swh_badge('revision', swhids.revision.object_id),
-          'badgePidUrl': this.Urls.swh_badge_pid(revSWHID),
-          'browseUrl': this.Urls.browse_swh_id(revSWHIDWithContext)
+          'badgeSWHIDUrl': this.Urls.swh_badge_swhid(revSWHID),
+          'browseUrl': this.Urls.browse_swhid(revSWHIDWithContext)
         },
         {
           'objectType': 'snapshot',
-          'objectPids': [snpSWHIDWithContext, snpSWHID],
+          'objectSWHIDs': [snpSWHIDWithContext, snpSWHID],
           'badgeUrl': this.Urls.swh_badge('snapshot', swhids.snapshot.object_id),
-          'badgePidUrl': this.Urls.swh_badge_pid(snpSWHID),
-          'browseUrl': this.Urls.browse_swh_id(snpSWHIDWithContext)
+          'badgeSWHIDUrl': this.Urls.swh_badge_swhid(snpSWHID),
+          'browseUrl': this.Urls.browse_swhid(snpSWHIDWithContext)
         }
       ];
 
@@ -110,15 +110,15 @@ describe('Persistent Identifiers Tests', function() {
       .click();
 
     for (let td of testsData) {
-      cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
+      cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
 
-      cy.get(`#swh-id-tab-${td.objectType}`)
+      cy.get(`#swhid-tab-${td.objectType}`)
         .should('be.visible');
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id`)
-        .contains(td.objectPids[0])
-        .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[0]));
+      cy.get(`#swhid-tab-${td.objectType} .swhid`)
+        .contains(td.objectSWHIDs[0])
+        .should('have.attr', 'href', this.Urls.browse_swhid(td.objectSWHIDs[0]));
 
     }
 
@@ -130,26 +130,26 @@ describe('Persistent Identifiers Tests', function() {
 
     for (let td of testsData) {
 
-      cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
+      cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id`)
-        .contains(td.objectPids[0])
-        .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[0]));
+      cy.get(`#swhid-tab-${td.objectType} .swhid`)
+        .contains(td.objectSWHIDs[0])
+        .should('have.attr', 'href', this.Urls.browse_swhid(td.objectSWHIDs[0]));
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id-option`)
+      cy.get(`#swhid-tab-${td.objectType} .swhid-option`)
         .click();
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id`)
-        .contains(td.objectPids[1])
-        .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[1]));
+      cy.get(`#swhid-tab-${td.objectType} .swhid`)
+        .contains(td.objectSWHIDs[1])
+        .should('have.attr', 'href', this.Urls.browse_swhid(td.objectSWHIDs[1]));
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id-option`)
+      cy.get(`#swhid-tab-${td.objectType} .swhid-option`)
         .click();
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-id`)
-        .contains(td.objectPids[0])
-        .should('have.attr', 'href', this.Urls.browse_swh_id(td.objectPids[0]));
+      cy.get(`#swhid-tab-${td.objectType} .swhid`)
+        .contains(td.objectSWHIDs[0])
+        .should('have.attr', 'href', this.Urls.browse_swhid(td.objectSWHIDs[0]));
     }
 
   });
@@ -161,13 +161,13 @@ describe('Persistent Identifiers Tests', function() {
     const originBadgeUrl = this.Urls.swh_badge('origin', origin.url);
 
     for (let td of testsData) {
-      cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
+      cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-origin`)
+      cy.get(`#swhid-tab-${td.objectType} .swh-badge-origin`)
         .should('have.attr', 'src', originBadgeUrl);
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-${td.objectType}`)
+      cy.get(`#swhid-tab-${td.objectType} .swh-badge-${td.objectType}`)
         .should('have.attr', 'src', td.badgeUrl);
 
     }
@@ -180,10 +180,10 @@ describe('Persistent Identifiers Tests', function() {
       .click();
 
     for (let td of testsData) {
-      cy.get(`a[href="#swh-id-tab-${td.objectType}"]`)
+      cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-origin`)
+      cy.get(`#swhid-tab-${td.objectType} .swh-badge-origin`)
         .click()
         .wait(500);
 
@@ -197,14 +197,14 @@ describe('Persistent Identifiers Tests', function() {
         .click()
         .wait(500);
 
-      cy.get(`#swh-id-tab-${td.objectType} .swh-badge-${td.objectType}`)
+      cy.get(`#swhid-tab-${td.objectType} .swh-badge-${td.objectType}`)
         .click()
         .wait(500);
 
       for (let badgeType of ['html', 'md', 'rst']) {
         cy.get(`.modal .swh-badge-${badgeType}`)
           .contains(`${urlPrefix}${td.browseUrl}`)
-          .contains(`${urlPrefix}${td.badgePidUrl}`);
+          .contains(`${urlPrefix}${td.badgeSWHIDUrl}`);
       }
 
       cy.get('.modal.show .close')
@@ -220,7 +220,7 @@ describe('Persistent Identifiers Tests', function() {
       for (let testData of testsData) {
         assert.isTrue(swhIdsContext.hasOwnProperty(testData.objectType));
         assert.equal(swhIdsContext[testData.objectType].swhid,
-                     testData.objectPids.slice(-1)[0]);
+                     testData.objectSWHIDs.slice(-1)[0]);
       }
     });
   });

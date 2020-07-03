@@ -117,7 +117,7 @@ swh-web browse application
     * :mod:`swh.web.browse.views.content`: Implementation of endpoints for browsing contents.
     * :mod:`swh.web.browse.views.directory`: Implementation of endpoints for browsing directories.
     * :mod:`swh.web.browse.views.identifiers`: Implementation of endpoints for browsing objects
-      through persistent identifiers.
+      through :ref:`persistent-identifiers`.
     * :mod:`swh.web.browse.views.origin`: Implementation of endpoints for browsing origins.
     * :mod:`swh.web.browse.views.person`: Implementation of endpoints for browsing persons.
     * :mod:`swh.web.browse.views.release`: Implementation of endpoints for browsing releases.
