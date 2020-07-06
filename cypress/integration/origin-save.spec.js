@@ -19,10 +19,10 @@ const saveCodeMsg = {
 };
 
 function makeOriginSaveRequest(originType, originUrl) {
-  cy.get('#swh-input-visit-type')
-    .select(originType)
-    .get('#swh-input-origin-url')
+  cy.get('#swh-input-origin-url')
     .type(originUrl)
+    .get('#swh-input-visit-type')
+    .select(originType)
     .get('#swh-save-origin-form')
     .submit();
 }
@@ -74,6 +74,8 @@ describe('Origin Save Tests', function() {
   });
 
   beforeEach(function() {
+    cy.fixture('origin-save').as('originSaveJSON');
+    cy.fixture('save-task-info').as('saveTaskInfoJSON');
     cy.visit(url);
     cy.server();
   });
@@ -159,7 +161,6 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display origin save info in the requests table', function() {
-    cy.fixture('origin-save').as('originSaveJSON');
     cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('tbody tr').then(rows => {
@@ -189,8 +190,6 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display/close task info popover when clicking on the info button', function() {
-    cy.fixture('origin-save').as('originSaveJSON');
-    cy.fixture('save-task-info').as('saveTaskInfoJSON');
     cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
     cy.route('GET', '/save/task/info/**', '@saveTaskInfoJSON');
 
@@ -211,8 +210,6 @@ describe('Origin Save Tests', function() {
   });
 
   it('should hide task info popover when clicking on the close button', function() {
-    cy.fixture('origin-save').as('originSaveJSON');
-    cy.fixture('save-task-info').as('saveTaskInfoJSON');
     cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
     cy.route('GET', '/save/task/info/**', '@saveTaskInfoJSON');
 
@@ -232,7 +229,6 @@ describe('Origin Save Tests', function() {
   });
 
   it('should fill save request form when clicking on "Save again" button', function() {
-    cy.fixture('origin-save').as('originSaveJSON');
     cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
 
     cy.get('#swh-origin-save-requests-list-tab').click();
@@ -248,4 +244,32 @@ describe('Origin Save Tests', function() {
         .should('have.value', $(cells[2]).text().slice(0, -1));
     });
   });
+
+  it('should select correct origin type if possible when clicking on "Save again" button', function() {
+    const originUrl = 'https://gitlab.inria.fr/solverstack/maphys/maphys/';
+    const badOriginType = 'hg';
+    const goodOriginType = 'git';
+    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+    stubSaveRequest(this.Urls.origin_save_request(badOriginType, originUrl),
+                    badOriginType, 'accepted',
+                    originUrl, 'failed', 200, saveCodeMsg['accepted']);
+
+    makeOriginSaveRequest(badOriginType, originUrl);
+
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.wait('@saveRequest').then(() => {
+      cy.get('.swh-save-origin-again')
+        .eq(0)
+        .click();
+
+      cy.get('tbody tr').eq(0).then(row => {
+        const cells = row[0].cells;
+        cy.get('#swh-input-visit-type')
+          .should('have.value', goodOriginType);
+        cy.get('#swh-input-origin-url')
+          .should('have.value', $(cells[2]).text().slice(0, -1));
+      });
+    });
+  });
+
 });
