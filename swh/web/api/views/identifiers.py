@@ -58,7 +58,7 @@ def api_resolve_swhid(request, swhid):
     object_id = swhid_parsed.object_id
     service.lookup_object(object_type, object_id)
     # id is well-formed and the pointed object exists
-    swhid_data = swhid_parsed._asdict()
+    swhid_data = swhid_parsed.to_dict()
     swhid_data["browse_url"] = request.build_absolute_uri(swhid_resolved["browse_url"])
     return swhid_data
 
