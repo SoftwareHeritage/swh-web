@@ -441,12 +441,14 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
     directory_content = archive_data.directory_ls(directory)
-    directory_subdir = random.choice(
-        [e for e in directory_content if e["type"] == "dir"]
-    )
-    directory_file = random.choice(
-        [e for e in directory_content if e["type"] == "file"]
-    )
+    directory_subdirs = [e for e in directory_content if e["type"] == "dir"]
+    directory_subdir = None
+    if directory_subdirs:
+        directory_subdir = random.choice(directory_subdirs)
+    directory_files = [e for e in directory_content if e["type"] == "file"]
+    directory_file = None
+    if directory_files:
+        directory_file = random.choice(directory_files)
     random_rev_id = random.choice(archive_data.revision_log(head_rev_id))["id"]
 
     for snp_ctx_params in (
@@ -473,35 +475,37 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
             DIRECTORY, directory, snapshot_context, path="/"
         )
 
-        _check_resolved_swhid_browse_url(
-            DIRECTORY,
-            directory_subdir["target"],
-            snapshot_context,
-            path=f"/{directory_subdir['name']}/",
-        )
+        if directory_subdir:
+            _check_resolved_swhid_browse_url(
+                DIRECTORY,
+                directory_subdir["target"],
+                snapshot_context,
+                path=f"/{directory_subdir['name']}/",
+            )
 
-        _check_resolved_swhid_browse_url(
-            CONTENT,
-            directory_file["target"],
-            snapshot_context,
-            path=f"/{directory_file['name']}",
-        )
+        if directory_file:
+            _check_resolved_swhid_browse_url(
+                CONTENT,
+                directory_file["target"],
+                snapshot_context,
+                path=f"/{directory_file['name']}",
+            )
 
-        _check_resolved_swhid_browse_url(
-            CONTENT,
-            directory_file["target"],
-            snapshot_context,
-            path=f"/{directory_file['name']}",
-            lines="10",
-        )
+            _check_resolved_swhid_browse_url(
+                CONTENT,
+                directory_file["target"],
+                snapshot_context,
+                path=f"/{directory_file['name']}",
+                lines="10",
+            )
 
-        _check_resolved_swhid_browse_url(
-            CONTENT,
-            directory_file["target"],
-            snapshot_context,
-            path=f"/{directory_file['name']}",
-            lines="10-20",
-        )
+            _check_resolved_swhid_browse_url(
+                CONTENT,
+                directory_file["target"],
+                snapshot_context,
+                path=f"/{directory_file['name']}",
+                lines="10-20",
+            )
 
 
 def _check_resolved_swhid_browse_url(
