@@ -222,9 +222,9 @@ class _ArchiveData:
         snp = snapshot_get_latest(self.storage, origin_url)
         return converters.from_snapshot(snp.to_dict())
 
-    def origin_get(self, origin_info):
-        origin = self.storage.origin_get(origin_info)
-        return converters.from_origin(origin)
+    def origin_get(self, origin_urls):
+        origins = self.storage.origin_get(origin_urls)
+        return [converters.from_origin(o.to_dict()) for o in origins]
 
     def origin_visit_get(self, origin_url):
         visits = list(self.storage.origin_visit_get(origin_url))

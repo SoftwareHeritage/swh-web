@@ -238,7 +238,7 @@ def test_lookup_origin(archive_data, new_origin):
     archive_data.origin_add([new_origin])
 
     actual_origin = service.lookup_origin({"url": new_origin.url})
-    expected_origin = archive_data.origin_get({"url": new_origin.url})
+    expected_origin = archive_data.origin_get([new_origin.url])[0]
     assert actual_origin == expected_origin
 
 

@@ -462,14 +462,10 @@ def api_origin_intrinsic_metadata(request, origin_url):
 
             :swh_web_api:`origin/https://github.com/python/cpython/intrinsic-metadata`
     """
-    ori_dict = {"url": origin_url}
-
-    error_msg = "Origin with url %s not found" % ori_dict["url"]
-
     return api_lookup(
         service.lookup_origin_intrinsic_metadata,
-        ori_dict,
-        notfound_msg=error_msg,
+        origin_url,
+        notfound_msg=f"Origin with url {origin_url} not found",
         enrich_fn=enrich_origin,
         request=request,
     )

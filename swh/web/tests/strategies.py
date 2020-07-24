@@ -291,8 +291,7 @@ def new_origin():
     into the test archive.
     """
     return new_origin_strategy().filter(
-        lambda origin: get_tests_data()["storage"].origin_get([origin.to_dict()])[0]
-        is None
+        lambda origin: get_tests_data()["storage"].origin_get([origin.url])[0] is None
     )
 
 

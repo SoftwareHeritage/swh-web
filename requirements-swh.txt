@@ -3,5 +3,5 @@ swh.indexer >= 0.0.171
 swh.model >= 0.5.0
 swh.scheduler >= 0.1.1
 swh.search >= 0.0.4
-swh.storage >= 0.8.0
+swh.storage >= 0.11.3
 swh.vault >= 0.0.33
