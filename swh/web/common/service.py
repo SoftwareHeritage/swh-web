@@ -940,7 +940,7 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
     """Return information about visit visit_id with origin origin.
 
     Args:
-        origin (str): origin concerned by the visit
+        origin: origin concerned by the visit
         visit_id: the visit identifier to lookup
 
     Yields:
@@ -951,10 +951,9 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
     visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)
     if not visit:
         raise NotFoundExc(
-            "Origin %s or its visit " "with id %s not found!" % (origin_url, visit_id)
+            f"Origin {origin_url} or its visit with id {visit_id} not found!"
         )
-    visit["origin"] = origin_url
-    return converters.from_origin_visit({**visit, **visit_status.to_dict()})
+    return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
 
 
 def lookup_snapshot_sizes(snapshot_id):
