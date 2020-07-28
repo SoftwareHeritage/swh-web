@@ -1,0 +1,97 @@
+TEST_DIRS := ./swh/web/tests
+TESTFLAGS = --hypothesis-profile=swh-web-fast
+TESTFULL_FLAGS = --hypothesis-profile=swh-web
+YARN ?= yarn
+
+yarn-install: package.json
+	$(YARN) install
+
+.PHONY: build-webpack-dev
+build-webpack-dev: yarn-install
+	$(YARN) build-dev
+
+.PHONY: build-webpack-test
+build-webpack-test: yarn-install
+	$(YARN) build-test
+
+.PHONY: build-webpack-dev-no-verbose
+build-webpack-dev-no-verbose: yarn-install
+	$(YARN) build-dev >/dev/null
+
+.PHONY: build-webpack-prod
+build-webpack-prod: yarn-install
+	$(YARN) build
+
+.PHONY: run-migrations
+run-migrations:
+	python3 swh/web/manage.py migrate --settings=swh.web.settings.development -v0 2>/dev/null
+	python3 swh/web/manage.py createcachetable --settings=swh.web.settings.development -v0 2>/dev/null
+
+.PHONY: run-migrations-prod
+run-migrations-prod:
+	django-admin migrate --settings=swh.web.settings.production -v0 2>/dev/null
+	django-admin createcachetable --settings=swh.web.settings.production -v0 2>/dev/null
+
+.PHONY: run-migrations-test
+run-migrations-test:
+	rm -f swh/web/settings/testdb.sqlite3
+	django-admin migrate --settings=swh.web.settings.tests -v0 2>/dev/null
+	django-admin createcachetable --settings=swh.web.settings.tests -v0 2>/dev/null
+	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=swh.web.settings.tests
+
+.PHONY: clear-memcached
+clear-memcached:
+	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
+
+run-django-webpack-devserver: run-migrations yarn-install
+	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & sleep 10 && cd swh/web && python3 manage.py runserver --nostatic --settings=swh.web.settings.development"
+
+run-django-webpack-dev: build-webpack-dev run-migrations
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.development
+
+run-django-webpack-prod: build-webpack-prod run-migrations-prod clear-memcached
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production
+
+run-django-server-dev: run-migrations
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.development
+
+run-django-server-prod: run-migrations-prod clear-memcached
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.production
+
+run-gunicorn-server: run-migrations clear-memcached
+	DJANGO_SETTINGS_MODULE=swh.web.settings.production \
+		gunicorn3 -b 127.0.0.1:5004 'django.core.wsgi:get_wsgi_application()'
+
+run-django-webpack-memory-storages: build-webpack-dev run-migrations
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests
+
+test-full:
+	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
+
+.PHONY: test-frontend-cmd
+test-frontend-cmd: build-webpack-test run-migrations-test
+	python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 ; pkill -P $$! ; $(YARN) run mochawesome
+
+test-frontend: export CYPRESS_SKIP_SLOW_TESTS=1
+test-frontend: test-frontend-cmd
+
+test-frontend-full: export CYPRESS_SKIP_SLOW_TESTS=0
+test-frontend-full: test-frontend-cmd
+
+.PHONY: test-frontend-ui-cmd
+test-frontend-ui-cmd: build-webpack-test run-migrations-test
+	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT; jobs -p | head -1 | xargs pkill -P' SIGINT SIGTERM ERR EXIT; python3 swh/web/manage.py runserver --nostatic --settings=swh.web.settings.tests & sleep 10 && $(YARN) run cypress open"
+
+test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=1
+test-frontend-ui: test-frontend-ui-cmd
+
+test-frontend-full-ui: export CYPRESS_SKIP_SLOW_TESTS=0
+test-frontend-full-ui: test-frontend-ui-cmd
+
+
+# Override default rule to make sure DJANGO env var is properly set. It
+# *should* work without any override thanks to the mypy django-stubs plugin,
+# but it currently doesn't; see
+# https://github.com/typeddjango/django-stubs/issues/166
+check-mypy:
+	DJANGO_SETTINGS_MODULE=swh.web.settings.development $(MYPY) $(MYPYFLAGS) swh

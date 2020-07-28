@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from urllib.parse import quote
-from typing import Any, Dict, Iterable, List, Optional
+from typing import cast, Any, Dict, Iterable, List, Optional
 from typing_extensions import TypedDict
 
 from django.http import QueryDict
@@ -12,15 +12,15 @@ from django.http import QueryDict
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import (
-    persistent_identifier,
-    parse_persistent_identifier,
+    swhid,
+    parse_swhid,
     CONTENT,
     DIRECTORY,
     ORIGIN,
     RELEASE,
     REVISION,
     SNAPSHOT,
-    PersistentId,
+    SWHID,
 )
 
 from swh.web.common import service
@@ -35,73 +35,72 @@ from swh.web.common.typing import (
 from swh.web.common.utils import reverse
 
 
-def get_swh_persistent_id(
+def gen_swhid(
     object_type: str,
     object_id: str,
     scheme_version: int = 1,
     metadata: SWHIDContext = {},
 ) -> str:
     """
-    Returns the persistent identifier for a swh object based on:
+    Returns the SoftWare Heritage persistent IDentifier for a swh object based on:
 
         * the object type
         * the object id
-        * the swh identifiers scheme version
+        * the SWHID scheme version
 
     Args:
         object_type: the swh object type
             (content/directory/release/revision/snapshot)
         object_id: the swh object id (hexadecimal representation
             of its hash value)
-        scheme_version: the scheme version of the swh
-            persistent identifiers
+        scheme_version: the scheme version of the SWHIDs
 
     Returns:
-        the swh object persistent identifier
+        the SWHID of the object
 
     Raises:
         BadInputExc: if the provided parameters do not enable to
             generate a valid identifier
     """
     try:
-        swh_id = persistent_identifier(object_type, object_id, scheme_version, metadata)
-    except ValidationError as e:
-        raise BadInputExc(
-            "Invalid object (%s) for swh persistent id. %s" % (object_id, e)
+        obj_swhid = swhid(
+            object_type, object_id, scheme_version, cast(Dict[str, Any], metadata)
         )
+    except ValidationError as e:
+        raise BadInputExc("Invalid object (%s) for SWHID. %s" % (object_id, e))
     else:
-        return swh_id
+        return obj_swhid
 
 
-class ResolvedPersistentId(TypedDict):
+class ResolvedSWHID(TypedDict):
     """parsed SWHID with context"""
 
-    swh_id_parsed: PersistentId
+    swhid_parsed: SWHID
     """URL to browse object according to SWHID context"""
     browse_url: Optional[str]
 
 
-def resolve_swh_persistent_id(
-    swh_id: str, query_params: Optional[QueryParameters] = None
-) -> ResolvedPersistentId:
+def resolve_swhid(
+    swhid: str, query_params: Optional[QueryParameters] = None
+) -> ResolvedSWHID:
     """
-    Try to resolve a Software Heritage persistent id into an url for
+    Try to resolve a SoftWare Heritage persistent IDentifier into an url for
     browsing the targeted object.
 
     Args:
-        swh_id: a Software Heritage persistent identifier
+        swhid: a SoftWare Heritage persistent IDentifier
         query_params: optional dict filled with
             query parameters to append to the browse url
 
     Returns:
         a dict with the following keys:
 
-            * **swh_id_parsed**: the parsed identifier
+            * **swhid_parsed**: the parsed identifier
             * **browse_url**: the url for browsing the targeted object
     """
-    swh_id_parsed = get_persistent_identifier(swh_id)
-    object_type = swh_id_parsed.object_type
-    object_id = swh_id_parsed.object_id
+    swhid_parsed = get_swhid(swhid)
+    object_type = swhid_parsed.object_type
+    object_id = swhid_parsed.object_id
     browse_url = None
     url_args = {}
     query_dict = QueryDict("", mutable=True)
@@ -113,16 +112,14 @@ def resolve_swh_persistent_id(
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
 
-    if "origin" in swh_id_parsed.metadata:
-        query_dict["origin_url"] = swh_id_parsed.metadata["origin"]
+    if "origin" in swhid_parsed.metadata:
+        query_dict["origin_url"] = swhid_parsed.metadata["origin"]
 
-    if "anchor" in swh_id_parsed.metadata:
-        anchor_swhid_parsed = get_persistent_identifier(
-            swh_id_parsed.metadata["anchor"]
-        )
+    if "anchor" in swhid_parsed.metadata:
+        anchor_swhid_parsed = get_swhid(swhid_parsed.metadata["anchor"])
 
-    if "path" in swh_id_parsed.metadata and swh_id_parsed.metadata["path"] != "/":
-        query_dict["path"] = swh_id_parsed.metadata["path"]
+    if "path" in swhid_parsed.metadata and swhid_parsed.metadata["path"] != "/":
+        query_dict["path"] = swhid_parsed.metadata["path"]
         if anchor_swhid_parsed:
             directory = ""
             if anchor_swhid_parsed.object_type == DIRECTORY:
@@ -136,7 +133,7 @@ def resolve_swh_persistent_id(
                     revision = service.lookup_revision(release["target"])
                     directory = revision["directory"]
             if object_type == CONTENT:
-                if "origin" not in swh_id_parsed.metadata:
+                if "origin" not in swhid_parsed.metadata:
                     # when no origin context, content objects need to have their
                     # path prefixed by root directory id for proper breadcrumbs display
                     query_dict["path"] = directory + query_dict["path"]
@@ -149,9 +146,9 @@ def resolve_swh_persistent_id(
                 query_dict["path"] = query_dict["path"][1:-1]
 
     # snapshot context
-    if "visit" in swh_id_parsed.metadata:
+    if "visit" in swhid_parsed.metadata:
 
-        snp_swhid_parsed = get_persistent_identifier(swh_id_parsed.metadata["visit"])
+        snp_swhid_parsed = get_swhid(swhid_parsed.metadata["visit"])
         if snp_swhid_parsed.object_type != SNAPSHOT:
             raise BadInputExc("Visit must be a snapshot SWHID.")
         query_dict["snapshot"] = snp_swhid_parsed.object_id
@@ -202,14 +199,13 @@ def resolve_swh_persistent_id(
     elif object_type == ORIGIN:
         raise BadInputExc(
             (
-                "Origin PIDs (Persistent Identifiers) are not "
-                "publicly resolvable because they are for "
+                "Origin SWHIDs are not publicly resolvable because they are for "
                 "internal usage only"
             )
         )
 
-    if "lines" in swh_id_parsed.metadata and process_lines:
-        lines = swh_id_parsed.metadata["lines"].split("-")
+    if "lines" in swhid_parsed.metadata and process_lines:
+        lines = swhid_parsed.metadata["lines"].split("-")
         fragment += "#L" + lines[0]
         if len(lines) > 1:
             fragment += "-L" + lines[1]
@@ -222,48 +218,44 @@ def resolve_swh_persistent_id(
             + fragment
         )
 
-    return ResolvedPersistentId(swh_id_parsed=swh_id_parsed, browse_url=browse_url)
+    return ResolvedSWHID(swhid_parsed=swhid_parsed, browse_url=browse_url)
 
 
-def get_persistent_identifier(persistent_id: str) -> PersistentId:
-    """Check if a persistent identifier is valid.
+def get_swhid(swhid: str) -> SWHID:
+    """Check if a SWHID is valid and return it parsed.
 
         Args:
-            persistent_id: A string representing a Software Heritage
-                persistent identifier.
+            swhid: a SoftWare Heritage persistent IDentifier.
 
         Raises:
-            BadInputExc: if the provided persistent identifier can
-            not be parsed.
+            BadInputExc: if the provided SWHID can not be parsed.
 
         Return:
-            A persistent identifier object.
+            A parsed SWHID.
     """
     try:
-        pid_object = parse_persistent_identifier(persistent_id)
+        swhid_parsed = parse_swhid(swhid)
     except ValidationError as ve:
         raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
     else:
-        return pid_object
+        return swhid_parsed
 
 
-def group_swh_persistent_identifiers(
-    persistent_ids: Iterable[PersistentId],
-) -> Dict[str, List[bytes]]:
+def group_swhids(swhids: Iterable[SWHID],) -> Dict[str, List[bytes]]:
     """
-    Groups many Software Heritage persistent identifiers into a
+    Groups many SoftWare Heritage persistent IDentifiers into a
     dictionary depending on their type.
 
     Args:
-        persistent_ids: an iterable of Software Heritage persistent
-            identifier objects
+        swhids: an iterable of SoftWare Heritage persistent
+            IDentifier objects
 
     Returns:
         A dictionary with:
-            keys: persistent identifier types
-            values: persistent identifiers id
+            keys: object types
+            values: object hashes
     """
-    pids_by_type: Dict[str, List[bytes]] = {
+    swhids_by_type: Dict[str, List[bytes]] = {
         CONTENT: [],
         DIRECTORY: [],
         REVISION: [],
@@ -271,12 +263,12 @@ def group_swh_persistent_identifiers(
         SNAPSHOT: [],
     }
 
-    for pid in persistent_ids:
-        obj_id = pid.object_id
-        obj_type = pid.object_type
-        pids_by_type[obj_type].append(hash_to_bytes(obj_id))
+    for obj_swhid in swhids:
+        obj_id = obj_swhid.object_id
+        obj_type = obj_swhid.object_type
+        swhids_by_type[obj_type].append(hash_to_bytes(obj_id))
 
-    return pids_by_type
+    return swhids_by_type
 
 
 def get_swhids_info(
@@ -285,8 +277,7 @@ def get_swhids_info(
     extra_context: Optional[Dict[str, Any]] = None,
 ) -> List[SWHIDInfo]:
     """
-    Returns a list of dict containing info related to persistent
-    identifiers of swh objects.
+    Returns a list of dict containing info related to SWHIDs of objects.
 
     Args:
         swh_objects: an iterable of dict describing archived objects
@@ -296,7 +287,7 @@ def get_swhids_info(
             the objects
 
     Returns:
-        a list of dict containing persistent identifiers info
+        a list of dict containing SWHIDs info
 
     """
     swhids_info = []
@@ -323,16 +314,16 @@ def get_swhids_info(
                     snapshot_context["origin_info"]["url"], safe="/?:@&"
                 )
             if object_type != SNAPSHOT:
-                swhid_context["visit"] = get_swh_persistent_id(
+                swhid_context["visit"] = gen_swhid(
                     SNAPSHOT, snapshot_context["snapshot_id"]
                 )
             if object_type in (CONTENT, DIRECTORY):
                 if snapshot_context["release_id"] is not None:
-                    swhid_context["anchor"] = get_swh_persistent_id(
+                    swhid_context["anchor"] = gen_swhid(
                         RELEASE, snapshot_context["release_id"]
                     )
                 elif snapshot_context["revision_id"] is not None:
-                    swhid_context["anchor"] = get_swh_persistent_id(
+                    swhid_context["anchor"] = gen_swhid(
                         REVISION, snapshot_context["revision_id"]
                     )
 
@@ -343,9 +334,7 @@ def get_swhids_info(
                 and extra_context["revision"]
                 and "anchor" not in swhid_context
             ):
-                swhid_context["anchor"] = get_swh_persistent_id(
-                    REVISION, extra_context["revision"]
-                )
+                swhid_context["anchor"] = gen_swhid(REVISION, extra_context["revision"])
             elif (
                 extra_context
                 and "root_directory" in extra_context
@@ -356,7 +345,7 @@ def get_swhids_info(
                     or extra_context["root_directory"] != object_id
                 )
             ):
-                swhid_context["anchor"] = get_swh_persistent_id(
+                swhid_context["anchor"] = gen_swhid(
                     DIRECTORY, extra_context["root_directory"]
                 )
             path = None
@@ -367,17 +356,17 @@ def get_swhids_info(
             if path:
                 swhid_context["path"] = quote(path, safe="/?:@&")
 
-        swhid = get_swh_persistent_id(object_type, object_id)
-        swhid_url = reverse("browse-swh-id", url_args={"swh_id": swhid})
+        swhid = gen_swhid(object_type, object_id)
+        swhid_url = reverse("browse-swhid", url_args={"swhid": swhid})
 
         swhid_with_context = None
         swhid_with_context_url = None
         if swhid_context:
-            swhid_with_context = get_swh_persistent_id(
+            swhid_with_context = gen_swhid(
                 object_type, object_id, metadata=swhid_context
             )
             swhid_with_context_url = reverse(
-                "browse-swh-id", url_args={"swh_id": swhid_with_context}
+                "browse-swhid", url_args={"swhid": swhid_with_context}
             )
 
         swhids_info.append(

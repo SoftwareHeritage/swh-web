@@ -408,11 +408,11 @@ def test_api_origins_scroll(api_client, archive_data, origin_count):
 
 @given(origin())
 def test_api_origin_by_url(api_client, archive_data, origin):
-    url = reverse("api-1-origin", url_args={"origin_url": origin["url"]})
+    origin_url = origin["url"]
+    url = reverse("api-1-origin", url_args={"origin_url": origin_url})
     rv = api_client.get(url)
 
-    expected_origin = archive_data.origin_get(origin)
-
+    expected_origin = archive_data.origin_get([origin_url])[0]
     expected_origin = enrich_origin(expected_origin, rv.wsgi_request)
 
     assert rv.status_code == 200, rv.data

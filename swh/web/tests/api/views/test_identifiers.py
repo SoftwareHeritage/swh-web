@@ -25,7 +25,7 @@ from swh.web.tests.strategies import (
 
 
 @given(origin(), content(), directory(), release(), revision(), snapshot())
-def test_swh_id_resolve_success(
+def test_swhid_resolve_success(
     api_client, origin, content, directory, release, revision, snapshot
 ):
 
@@ -37,8 +37,8 @@ def test_swh_id_resolve_success(
         ("snp", SNAPSHOT, snapshot),
     ):
 
-        swh_id = "swh:1:%s:%s;origin=%s" % (obj_type_short, obj_id, origin["url"])
-        url = reverse("api-1-resolve-swh-pid", url_args={"swh_id": swh_id})
+        swhid = "swh:1:%s:%s;origin=%s" % (obj_type_short, obj_id, origin["url"])
+        url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
         resp = api_client.get(url)
 
@@ -69,10 +69,10 @@ def test_swh_id_resolve_success(
         assert resp.data == expected_result
 
 
-def test_swh_id_resolve_invalid(api_client):
+def test_swhid_resolve_invalid(api_client):
     rev_id_invalid = "96db9023b8_foo_50d6c108e9a3"
-    swh_id = "swh:1:rev:%s" % rev_id_invalid
-    url = reverse("api-1-resolve-swh-pid", url_args={"swh_id": swh_id})
+    swhid = "swh:1:rev:%s" % rev_id_invalid
+    url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
     resp = api_client.get(url)
 
@@ -86,7 +86,7 @@ def test_swh_id_resolve_invalid(api_client):
     unknown_revision(),
     unknown_snapshot(),
 )
-def test_swh_id_resolve_not_found(
+def test_swhid_resolve_not_found(
     api_client,
     unknown_content,
     unknown_directory,
@@ -103,9 +103,9 @@ def test_swh_id_resolve_not_found(
         ("snp", unknown_snapshot),
     ):
 
-        swh_id = "swh:1:%s:%s" % (obj_type_short, obj_id)
+        swhid = "swh:1:%s:%s" % (obj_type_short, obj_id)
 
-        url = reverse("api-1-resolve-swh-pid", url_args={"swh_id": swh_id})
+        url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
         resp = api_client.get(url)
 
@@ -113,21 +113,21 @@ def test_swh_id_resolve_not_found(
 
 
 def test_swh_origin_id_not_resolvable(api_client):
-    ori_pid = "swh:1:ori:8068d0075010b590762c6cb5682ed53cb3c13deb"
-    url = reverse("api-1-resolve-swh-pid", url_args={"swh_id": ori_pid})
+    ori_swhid = "swh:1:ori:8068d0075010b590762c6cb5682ed53cb3c13deb"
+    url = reverse("api-1-resolve-swhid", url_args={"swhid": ori_swhid})
     resp = api_client.get(url)
     assert resp.status_code == 400, resp.data
 
 
 @given(content(), directory())
-def test_api_known_swhpid_some_present(api_client, content, directory):
+def test_api_known_swhid_some_present(api_client, content, directory):
     content_ = "swh:1:cnt:%s" % content["sha1_git"]
     directory_ = "swh:1:dir:%s" % directory
     unknown_revision_ = "swh:1:rev:%s" % random_sha1()
     unknown_release_ = "swh:1:rel:%s" % random_sha1()
     unknown_snapshot_ = "swh:1:snp:%s" % random_sha1()
 
-    input_pids = [
+    input_swhids = [
         content_,
         directory_,
         unknown_revision_,
@@ -138,7 +138,7 @@ def test_api_known_swhpid_some_present(api_client, content, directory):
     url = reverse("api-1-known")
 
     resp = api_client.post(
-        url, data=input_pids, format="json", HTTP_ACCEPT="application/json"
+        url, data=input_swhids, format="json", HTTP_ACCEPT="application/json"
     )
 
     assert resp.status_code == 200, resp.data
@@ -152,35 +152,35 @@ def test_api_known_swhpid_some_present(api_client, content, directory):
     }
 
 
-def test_api_known_invalid_swhpid(api_client):
-    invalid_pid_sha1 = ["swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13de;"]
-    invalid_pid_type = ["swh:1:cnn:8068d0075010b590762c6cb5682ed53cb3c13deb"]
+def test_api_known_invalid_swhid(api_client):
+    invalid_swhid_sha1 = ["swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13de;"]
+    invalid_swhid_type = ["swh:1:cnn:8068d0075010b590762c6cb5682ed53cb3c13deb"]
 
     url = reverse("api-1-known")
 
     resp = api_client.post(
-        url, data=invalid_pid_sha1, format="json", HTTP_ACCEPT="application/json"
+        url, data=invalid_swhid_sha1, format="json", HTTP_ACCEPT="application/json"
     )
 
     assert resp.status_code == 400, resp.data
 
     resp2 = api_client.post(
-        url, data=invalid_pid_type, format="json", HTTP_ACCEPT="application/json"
+        url, data=invalid_swhid_type, format="json", HTTP_ACCEPT="application/json"
     )
 
     assert resp2.status_code == 400, resp.data
 
 
 def test_api_known_raises_large_payload_error(api_client):
-    random_pid = "swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13deb"
+    random_swhid = "swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13deb"
     limit = 10000
-    err_msg = "The maximum number of PIDs this endpoint can receive is 1000"
+    err_msg = "The maximum number of SWHIDs this endpoint can receive is 1000"
 
-    pids = [random_pid for i in range(limit)]
+    swhids = [random_swhid for i in range(limit)]
 
     url = reverse("api-1-known")
     resp = api_client.post(
-        url, data=pids, format="json", HTTP_ACCEPT="application/json"
+        url, data=swhids, format="json", HTTP_ACCEPT="application/json"
     )
 
     assert resp.status_code == 413, resp.data

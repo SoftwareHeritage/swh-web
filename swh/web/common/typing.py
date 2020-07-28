@@ -16,6 +16,13 @@ class OriginInfo(TypedDict):
     """URL of the origin"""
 
 
+class OriginMetadataInfo(TypedDict):
+    url: str
+    """URL of the origin"""
+    metadata: Dict[str, Any]
+    """Origin metadata associated to the origin"""
+
+
 class OriginVisitInfo(TypedDict):
     date: str
     """date of the visit in iso format"""

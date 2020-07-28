@@ -21,7 +21,7 @@ from django.views.generic.base import RedirectView
 
 from django_js_reverse.views import urls_js
 
-from swh.web.browse.identifiers import swh_id_browse
+from swh.web.browse.identifiers import swhid_browse
 from swh.web.config import get_config
 from swh.web.common.exc import (
     swh_handle400,
@@ -49,9 +49,9 @@ urlpatterns = [
     url(r"^$", _default_view, name="swh-web-homepage"),
     url(r"^jsreverse/$", urls_js, name="js_reverse"),
     url(
-        r"^(?P<swh_id>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
-        swh_id_browse,
-        name="browse-swh-id",
+        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        swhid_browse,
+        name="browse-swhid",
     ),
     url(r"^", include("swh.web.misc.urls")),
     url(r"^", include("swh.web.auth.views")),

@@ -7,7 +7,7 @@ from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
 from hypothesis import given
 
 from swh.model.identifiers import (
-    persistent_identifier,
+    swhid,
     CONTENT,
     DIRECTORY,
     ORIGIN,
@@ -16,7 +16,7 @@ from swh.model.identifiers import (
     SNAPSHOT,
 )
 from swh.web.common import service
-from swh.web.common.identifiers import resolve_swh_persistent_id
+from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
 from swh.web.misc.badges import _badge_config, _get_logo_data
 from swh.web.tests.django_asserts import assert_contains
@@ -100,8 +100,8 @@ def test_badge_errors(
         _check_generated_badge(resp, **url_args, error="not found")
 
         if object_type != ORIGIN:
-            object_pid = persistent_identifier(object_type, object_id)
-            url = reverse("swh-badge-pid", url_args={"object_pid": object_pid})
+            object_swhid = swhid(object_type, object_id)
+            url = reverse("swh-badge-swhid", url_args={"object_swhid": object_swhid})
             resp = client.get(url)
             _check_generated_badge(resp, **url_args, error="not found")
 
@@ -117,8 +117,8 @@ def test_badge_errors(
         resp = client.get(url)
         _check_generated_badge(resp, **url_args, error="invalid id")
 
-        object_pid = f"swh:1:{object_type[:3]}:{object_id}"
-        url = reverse("swh-badge-pid", url_args={"object_pid": object_pid})
+        object_swhid = f"swh:1:{object_type[:3]}:{object_id}"
+        url = reverse("swh-badge-swhid", url_args={"object_swhid": object_swhid})
         resp = client.get(url)
         _check_generated_badge(resp, "", "", error="invalid id")
 
@@ -132,8 +132,8 @@ def test_badge_endpoints_have_cors_header(client, origin, release):
     assert resp.status_code == 200, resp.content
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
 
-    release_pid = persistent_identifier(RELEASE, release)
-    url = reverse("swh-badge-pid", url_args={"object_pid": release_pid})
+    release_swhid = swhid(RELEASE, release)
+    url = reverse("swh-badge-swhid", url_args={"object_swhid": release_swhid})
     resp = client.get(url, HTTP_ORIGIN="https://example.org")
     assert resp.status_code == 200, resp.content
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
@@ -145,8 +145,8 @@ def _test_badge_endpoints(client, object_type, object_id):
     resp = client.get(url)
     _check_generated_badge(resp, **url_args)
     if object_type != ORIGIN:
-        pid = persistent_identifier(object_type, object_id)
-        url = reverse("swh-badge-pid", url_args={"object_pid": pid})
+        obj_swhid = swhid(object_type, object_id)
+        url = reverse("swh-badge-swhid", url_args={"object_swhid": obj_swhid})
         resp = client.get(url)
         _check_generated_badge(resp, **url_args)
 
@@ -162,8 +162,8 @@ def _check_generated_badge(response, object_type, object_id, error=None):
         link = reverse("browse-origin", query_params={"origin_url": object_id})
         text = "repository"
     elif error is None:
-        text = persistent_identifier(object_type, object_id)
-        link = resolve_swh_persistent_id(text)["browse_url"]
+        text = swhid(object_type, object_id)
+        link = resolve_swhid(text)["browse_url"]
         if object_type == RELEASE:
             release = service.lookup_release(object_id)
             text = release["name"]

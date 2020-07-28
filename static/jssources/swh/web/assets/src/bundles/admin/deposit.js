@@ -8,7 +8,7 @@
 function genSwhLink(data, type) {
   if (type === 'display') {
     if (data && data.startsWith('swh')) {
-      let browseUrl = Urls.browse_swh_id(data);
+      let browseUrl = Urls.browse_swhid(data);
       return `<a href="${browseUrl}">${data}</a>`;
     }
   }
@@ -51,8 +51,8 @@ export function initDepositAdmin() {
             name: 'id'
           },
           {
-            data: 'swh_id_context',
-            name: 'swh_id_context',
+            data: 'swhid_context',
+            name: 'swhid_context',
             render: (data, type, row) => {
               if (data && type === 'display') {
                 let originPattern = ';origin=';
@@ -102,8 +102,8 @@ export function initDepositAdmin() {
             visible: false
           },
           {
-            data: 'swh_id',
-            name: 'swh_id',
+            data: 'swhid',
+            name: 'swhid',
             render: (data, type, row) => {
               return genSwhLink(data, type);
             },
@@ -111,8 +111,8 @@ export function initDepositAdmin() {
             visible: false
           },
           {
-            data: 'swh_id_context',
-            name: 'swh_id_context',
+            data: 'swhid_context',
+            name: 'swhid_context',
             render: (data, type, row) => {
               return genSwhLink(data, type);
             },

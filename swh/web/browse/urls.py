@@ -14,7 +14,7 @@ import swh.web.browse.views.revision  # noqa
 import swh.web.browse.views.snapshot  # noqa
 
 from swh.web.browse.browseurls import BrowseUrls
-from swh.web.browse.identifiers import swh_id_browse
+from swh.web.browse.identifiers import swhid_browse
 from swh.web.common.utils import reverse
 
 
@@ -49,7 +49,7 @@ urlpatterns = [
     url(r"^vault/$", _browse_vault_view, name="browse-vault"),
     # for backward compatibility
     url(r"^origin/save/$", _browse_origin_save_view, name="browse-origin-save"),
-    url(r"^(?P<swh_id>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$", swh_id_browse),
+    url(r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$", swhid_browse),
 ]
 
 urlpatterns += BrowseUrls.get_url_patterns()
