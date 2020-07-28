@@ -1,3 +1,20 @@
+swh-web (0.0.246-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.246     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-07-28 08:11:28
+    +0200)
+  * Upstream changes:     - v0.0.246     - Update
+    swh.storage.origin_visit_get_by calls to latest api change     -
+    Update swh.storage.origin_get calls to latest api change     -
+    setup.py: Migrate from vcversioner to setuptools-scm     -
+    package.json: Upgrade dependencies     - tests: Fix flaky test     -
+    assets/save: Try to set origin type when clicking on "Save again"
+    - api/identifiers: Adapt to swh-model >= 0.5.0     - pytest.ini:
+    Prevent swh-storage pytest plugin loading     - Rename all
+    references of swh PIDs to SWHIDs for consistency
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 28 Jul 2020 06:28:05 +0000
+
 swh-web (0.0.245-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.245     - (tagged by Antoine Lambert
