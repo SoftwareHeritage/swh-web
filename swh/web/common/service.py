@@ -21,7 +21,7 @@ from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.origin_visits import get_origin_visit
-from swh.web.common.typing import OriginInfo, OriginVisitInfo
+from swh.web.common.typing import OriginInfo, OriginVisitInfo, OriginMetadataInfo
 
 
 search = config.search()
@@ -224,25 +224,21 @@ def lookup_origin(origin: OriginInfo) -> OriginInfo:
         origin information as dict.
 
     """
-    origins = [origin]
+    origin_urls = [origin["url"]]
     if origin["url"]:
         # handle case when user provided an origin url with a trailing
         # slash while the url in storage does not have it (e.g. GitHub)
         if origin["url"].endswith("/"):
-            origins.append({"url": origin["url"][:-1]})
+            origin_urls.append(origin["url"][:-1])
         # handle case when user provided an origin url without a trailing
         # slash while the url in storage have it (e.g. Debian source package)
         else:
-            origins.append({"url": f"{origin['url']}/"})
-    # Check all possible origin urls
-    for orig in origins:
-        origin_info = storage.origin_get(orig)
-        if origin_info:
-            break
-    if not origin_info:
+            origin_urls.append(f"{origin['url']}/")
+    origins = [o for o in storage.origin_get(origin_urls) if o is not None]
+    if not origins:
         msg = "Origin with url %s not found!" % origin["url"]
         raise NotFoundExc(msg)
-    return converters.from_origin(origin_info)
+    return converters.from_origin(origins[0].to_dict())
 
 
 def lookup_origins(
@@ -311,54 +307,52 @@ def search_origin(
         return (origins, page_token)
 
 
-def search_origin_metadata(fulltext, limit=50):
+def search_origin_metadata(
+    fulltext: str, limit: int = 50
+) -> Iterable[OriginMetadataInfo]:
     """Search for origins whose metadata match a provided string pattern.
 
     Args:
         fulltext: the string pattern to search for in origin metadata
-        offset: number of found origins to skip before returning results
         limit: the maximum number of found origins to return
 
     Returns:
-        list of origin metadata as dict.
+        Iterable of origin metadata information for existing origins
 
     """
     matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
         conjunction=[fulltext], limit=limit
     )
     results = []
-
-    for match in matches:
+    origins = storage.origin_get([match["id"] for match in matches])
+    for origin, match in zip(origins, matches):
+        if not origin:
+            continue
         match["from_revision"] = hashutil.hash_to_hex(match["from_revision"])
-
-        origin = storage.origin_get({"url": match["id"]})
         del match["id"]
-
-        result = converters.from_origin(origin)
-        if result:
-            result["metadata"] = match
-            results.append(result)
-
+        results.append(OriginMetadataInfo(url=origin.url, metadata=match))
     return results
 
 
-def lookup_origin_intrinsic_metadata(origin_dict):
+def lookup_origin_intrinsic_metadata(origin_url: str) -> Dict[str, Any]:
     """Return intrinsic metadata for origin whose origin matches given
     origin.
 
     Args:
-        origin_dict: origin's dict with keys ('type' AND 'url')
+        origin_url: origin url
+
+    Raises:
+        NotFoundExc when the origin is not found
 
     Returns:
         origin metadata.
 
     """
-    origin_info = storage.origin_get(origin_dict)
+    origins = [origin_url]
+    origin_info = storage.origin_get(origins)[0]
     if not origin_info:
-        msg = "Origin with url %s not found!" % origin_dict["url"]
-        raise NotFoundExc(msg)
+        raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
-    origins = [origin_info["url"]]
     match = _first_element(idx_storage.origin_intrinsic_metadata_get(origins))
     result = {}
     if match:
@@ -946,7 +940,7 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
     """Return information about visit visit_id with origin origin.
 
     Args:
-        origin (str): origin concerned by the visit
+        origin: origin concerned by the visit
         visit_id: the visit identifier to lookup
 
     Yields:
@@ -957,10 +951,9 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
     visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)
     if not visit:
         raise NotFoundExc(
-            "Origin %s or its visit " "with id %s not found!" % (origin_url, visit_id)
+            f"Origin {origin_url} or its visit with id {visit_id} not found!"
         )
-    visit["origin"] = origin_url
-    return converters.from_origin_visit({**visit, **visit_status.to_dict()})
+    return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
 
 
 def lookup_snapshot_sizes(snapshot_id):
@@ -1286,20 +1279,20 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
     )
 
 
-def lookup_missing_hashes(grouped_pids: Dict[str, List[bytes]]) -> Set[str]:
+def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
     """Lookup missing Software Heritage persistent identifier hash, using
     batch processing.
 
     Args:
         A dictionary with:
-        keys: persistent identifier type
-        values: list(bytes) persistent identifier hash
+        keys: object types
+        values: object hashes
     Returns:
         A set(hexadecimal) of the hashes not found in the storage
     """
     missing_hashes = []
 
-    for obj_type, obj_ids in grouped_pids.items():
+    for obj_type, obj_ids in grouped_swhids.items():
         if obj_type == CONTENT:
             missing_hashes.append(storage.content_missing_per_sha1_git(obj_ids))
         elif obj_type == DIRECTORY:

@@ -448,12 +448,22 @@ export function displaySaveRequestInfo(event, saveRequestId) {
 }
 
 export function fillSaveRequestFormAndScroll(visitType, originUrl) {
+  $('#swh-input-origin-url').val(originUrl);
+  let originTypeFound = false;
   $('#swh-input-visit-type option').each(function() {
     let val = $(this).val();
-    if (val === visitType) {
+    if (val && originUrl.includes(val)) {
       $(this).prop('selected', true);
+      originTypeFound = true;
     }
   });
-  $('#swh-input-origin-url').val(originUrl);
+  if (!originTypeFound) {
+    $('#swh-input-visit-type option').each(function() {
+      let val = $(this).val();
+      if (val === visitType) {
+        $(this).prop('selected', true);
+      }
+    });
+  }
   window.scrollTo(0, 0);
 }

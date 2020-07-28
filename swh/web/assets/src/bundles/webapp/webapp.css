@@ -394,11 +394,11 @@ ul.nav-sidebar a {
     padding-top: 4px;
 }
 
-.swh-id {
+.swhid {
     white-space: pre-wrap;
 }
 
-.swh-id .swh-id-option {
+.swhid .swhid-option {
     display: inline-block;
     margin-right: 5px;
     line-height: 1rem;

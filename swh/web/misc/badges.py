@@ -14,8 +14,8 @@ from pybadges import badge
 
 from swh.model.exceptions import ValidationError
 from swh.model.identifiers import (
-    persistent_identifier,
-    parse_persistent_identifier,
+    swhid,
+    parse_swhid,
     CONTENT,
     DIRECTORY,
     ORIGIN,
@@ -25,7 +25,7 @@ from swh.model.identifiers import (
 )
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.identifiers import resolve_swh_persistent_id
+from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
 
 
@@ -65,7 +65,7 @@ def _swh_badge(
     request: HttpRequest,
     object_type: str,
     object_id: str,
-    object_pid: Optional[str] = "",
+    object_swhid: Optional[str] = "",
 ) -> HttpResponse:
     """
     Generate a Software Heritage badge for a given object type and id.
@@ -77,8 +77,7 @@ def _swh_badge(
             or *snapshot*
         object_id: The id of the swh object, either an url for origin
             type or a *sha1* for other object types
-        object_pid: If provided, the object persistent
-            identifier will not be recomputed
+        object_swhid: If provided, the object SWHID will not be recomputed
 
     Returns:
         HTTP response with content type *image/svg+xml* containing the SVG
@@ -98,21 +97,21 @@ def _swh_badge(
                 "browse-origin", query_params={"origin_url": object_id}
             )
         else:
-            # when pid is provided, object type and id will be parsed
+            # when SWHID is provided, object type and id will be parsed
             # from it
-            if object_pid:
-                parsed_pid = parse_persistent_identifier(object_pid)
-                object_type = parsed_pid.object_type
-                object_id = parsed_pid.object_id
+            if object_swhid:
+                parsed_swhid = parse_swhid(object_swhid)
+                object_type = parsed_swhid.object_type
+                object_id = parsed_swhid.object_id
             swh_object = service.lookup_object(object_type, object_id)
-            if object_pid:
-                right_text = object_pid
+            if object_swhid:
+                right_text = object_swhid
             else:
-                right_text = persistent_identifier(object_type, object_id)
+                right_text = swhid(object_type, object_id)
 
-            whole_link = resolve_swh_persistent_id(right_text)["browse_url"]
-            # remove pid metadata if any for badge text
-            if object_pid:
+            whole_link = resolve_swhid(right_text)["browse_url"]
+            # remove SWHID metadata if any for badge text
+            if object_swhid:
                 right_text = right_text.split(";")[0]
             # use release name for badge text
             if object_type == RELEASE:
@@ -138,21 +137,20 @@ def _swh_badge(
     return HttpResponse(badge_data, content_type="image/svg+xml")
 
 
-def _swh_badge_pid(request: HttpRequest, object_pid: str) -> HttpResponse:
+def _swh_badge_swhid(request: HttpRequest, object_swhid: str) -> HttpResponse:
     """
-    Generate a Software Heritage badge for a given object persistent
-    identifier.
+    Generate a Software Heritage badge for a given object SWHID.
 
     Args:
         request (django.http.HttpRequest): input http request
-        object_pid (str): A swh object persistent identifier
+        object_swhid (str): a SWHID of an archived object
 
     Returns:
         django.http.HttpResponse: An http response with content type
             *image/svg+xml* containing the SVG badge data. If any error
             occurs, a status code of 400 will be returned.
     """
-    return _swh_badge(request, "", "", object_pid)
+    return _swh_badge(request, "", "", object_swhid)
 
 
 urlpatterns = [
@@ -162,8 +160,8 @@ urlpatterns = [
         name="swh-badge",
     ),
     url(
-        r"^badge/(?P<object_pid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
-        _swh_badge_pid,
-        name="swh-badge-pid",
+        r"^badge/(?P<object_swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        _swh_badge_swhid,
+        name="swh-badge-swhid",
     ),
 ]

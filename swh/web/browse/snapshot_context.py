@@ -17,7 +17,7 @@ from django.utils.html import escape
 import sentry_sdk
 
 from swh.model.identifiers import (
-    persistent_identifier,
+    swhid,
     snapshot_identifier,
     CONTENT,
     DIRECTORY,
@@ -499,7 +499,7 @@ def get_snapshot_context(
 
     is_empty = sum(snapshot_sizes.values()) == 0
 
-    swh_snp_id = persistent_identifier("snapshot", snapshot_id)
+    swh_snp_id = swhid("snapshot", snapshot_id)
 
     if visit_info:
         timestamp = format_utc_iso_date(visit_info["date"])

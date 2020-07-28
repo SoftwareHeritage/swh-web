@@ -1,0 +1,16 @@
+{
+  "scheduled": "2020-06-24T11:48:12.561643+00:00",
+  "started": "2020-06-24T12:59:11.103188+00:00",
+  "ended": "2020-06-24T12:59:12.065313+00:00",
+  "status": "eventful",
+  "type": "load-git",
+  "arguments": {
+    "args": [],
+    "kwargs": {
+      "url": "https://gitlab.inria.fr/solverstack/maphys/maphys/"
+    }
+  },
+  "duration": "1.0600971020758152",
+  "message": "[2020-06-24 12:59:12,063: INFO/ForkPoolWorker-161] Task swh.loader.git.tasks.UpdateGitRepository[4ff8b555-9535-4e75-b8ec-8e76165e14ec] succeeded in 1.0600971020758152s: {'status': 'eventful'}",
+  "name": "swh.loader.git.tasks.UpdateGitRepository"
+}

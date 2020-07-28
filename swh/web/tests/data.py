@@ -188,7 +188,8 @@ def _init_tests_data():
                 loader.storage = storage
             loader.load()
 
-        origin.update(storage.origin_get(origin))  # add an 'id' key if enabled
+        ori = storage.origin_get([origin["url"]])[0]
+        origin.update(ori.to_dict())  # add an 'id' key if enabled
         search.origin_update([{"url": origin["url"], "has_visits": True}])
 
     for i in range(250):

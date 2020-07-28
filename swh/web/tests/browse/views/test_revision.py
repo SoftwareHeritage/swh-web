@@ -9,7 +9,7 @@ from django.utils.html import escape
 from hypothesis import given
 
 from swh.model.identifiers import DIRECTORY, REVISION, SNAPSHOT
-from swh.web.common.identifiers import get_swh_persistent_id
+from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse, format_utc_iso_date, parse_timestamp
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import origin, revision, unknown_revision, new_origin
@@ -248,21 +248,21 @@ def _revision_browse_checks(
     assert_contains(resp, "vault-cook-directory")
     assert_contains(resp, "vault-cook-revision")
 
-    swh_rev_id = get_swh_persistent_id("revision", revision)
-    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+    swh_rev_id = gen_swhid("revision", revision)
+    swh_rev_id_url = reverse("browse-swhid", url_args={"swhid": swh_rev_id})
     assert_contains(resp, swh_rev_id)
     assert_contains(resp, swh_rev_id_url)
 
-    swh_dir_id = get_swh_persistent_id("directory", dir_id)
-    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
+    swh_dir_id = gen_swhid("directory", dir_id)
+    swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
 
     if origin_url:
         assert_contains(resp, "swh-take-new-snapshot")
 
-    swh_rev_id = get_swh_persistent_id(REVISION, revision)
-    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+    swh_rev_id = gen_swhid(REVISION, revision)
+    swh_rev_id_url = reverse("browse-swhid", url_args={"swhid": swh_rev_id})
 
     if origin_url:
         browse_origin_url = reverse(
@@ -270,25 +270,25 @@ def _revision_browse_checks(
         )
         assert_contains(resp, f'href="{browse_origin_url}"')
     elif snapshot:
-        swh_snp_id = get_swh_persistent_id("snapshot", snapshot["id"])
-        swh_snp_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_snp_id})
+        swh_snp_id = gen_swhid("snapshot", snapshot["id"])
+        swh_snp_id_url = reverse("browse-swhid", url_args={"swhid": swh_snp_id})
         assert_contains(resp, f'href="{swh_snp_id_url}"')
 
     swhid_context = {}
     if origin_url:
         swhid_context["origin"] = origin_url
     if snapshot:
-        swhid_context["visit"] = get_swh_persistent_id(SNAPSHOT, snapshot["id"])
+        swhid_context["visit"] = gen_swhid(SNAPSHOT, snapshot["id"])
 
-    swh_rev_id = get_swh_persistent_id(REVISION, revision, metadata=swhid_context)
-    swh_rev_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rev_id})
+    swh_rev_id = gen_swhid(REVISION, revision, metadata=swhid_context)
+    swh_rev_id_url = reverse("browse-swhid", url_args={"swhid": swh_rev_id})
     assert_contains(resp, swh_rev_id)
     assert_contains(resp, swh_rev_id_url)
 
-    swhid_context["anchor"] = get_swh_persistent_id(REVISION, revision)
+    swhid_context["anchor"] = gen_swhid(REVISION, revision)
     swhid_context["path"] = "/"
 
-    swh_dir_id = get_swh_persistent_id(DIRECTORY, dir_id, metadata=swhid_context)
-    swh_dir_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_dir_id})
+    swh_dir_id = gen_swhid(DIRECTORY, dir_id, metadata=swhid_context)
+    swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
