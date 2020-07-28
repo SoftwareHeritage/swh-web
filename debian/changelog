@@ -1,3 +1,9 @@
+swh-web (0.0.246-1~swh2) unstable-swh; urgency=medium
+
+  * Update missing dependency + bump
+
+ -- Antoine R. Dumont <ardumont@softwareheritage.org>  Tue, 28 Jul 2020 06:57:28 +0000
+
 swh-web (0.0.246-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.246     - (tagged by Antoine R. Dumont
