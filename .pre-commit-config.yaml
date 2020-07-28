@@ -1,0 +1,55 @@
+exclude: '^swh/web/tests/resources/'
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.4.0
+  hooks:
+  - id: trailing-whitespace
+  - id: flake8
+  - id: check-json
+  - id: check-yaml
+
+- repo: https://github.com/codespell-project/codespell
+  rev: v1.16.0
+  hooks:
+  - id: codespell
+    exclude: >
+        (?x)^(
+            cypress/integration/directory.spec.js|
+            yarn.lock|
+            package.json
+        )$
+
+- repo: local
+  hooks:
+  - id: mypy
+    name: mypy
+    entry: env DJANGO_SETTINGS_MODULE=swh.web.settings.development mypy
+    args: [swh]
+    pass_filenames: false
+    language: system
+    types: [python]
+
+- repo: local
+  hooks:
+  - id: eslint
+    name: eslint
+    entry: node_modules/.bin/eslint -c swh/web/assets/config/.eslintrc
+    language: system
+    types: [javascript]
+
+- repo: https://github.com/python/black
+  rev: 19.10b0
+  hooks:
+  - id: black
+
+# unfortunately, we are far from being able to enable this...
+# - repo: https://github.com/PyCQA/pydocstyle.git
+#   rev: 4.0.0
+#   hooks:
+#   - id: pydocstyle
+#     name: pydocstyle
+#     description: pydocstyle is a static analysis tool for checking compliance with Python docstring conventions.
+#     entry: pydocstyle --convention=google
+#     language: python
+#     types: [python]

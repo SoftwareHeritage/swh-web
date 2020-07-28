@@ -337,14 +337,13 @@ function instrumentDOM() {
         });
         fill(proto, 'removeEventListener', function (original) {
             return function (eventName, fn, options) {
-                var callback = fn;
                 try {
-                    callback = callback && (callback.__sentry_wrapped__ || callback);
+                    original.call(this, eventName, fn.__sentry_wrapped__, options);
                 }
                 catch (e) {
                     // ignore, accessing __sentry_wrapped__ will throw in some Selenium environments
                 }
-                return original.call(this, eventName, callback, options);
+                return original.call(this, eventName, fn, options);
             };
         });
     });

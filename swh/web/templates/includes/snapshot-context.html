@@ -20,7 +20,7 @@ See top-level LICENSE file for more information
   {% endif %}
 {% else %}
   <i class="{{ swh_object_icons.snapshot }} mdi-fw" aria-hidden="true" title="Snapshot"></i>
-  <a class="swh-heading-color" href="{% url 'browse-swh-id' snapshot_context.snapshot_swhid %}">
+  <a class="swh-heading-color" href="{% url 'browse-swhid' snapshot_context.snapshot_swhid %}">
     {{ snapshot_context.snapshot_swhid }}
   </a>
 {% endif %}

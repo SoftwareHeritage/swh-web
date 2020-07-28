@@ -8,7 +8,7 @@ import random
 from django.utils.html import escape
 from hypothesis import given
 
-from swh.web.common.identifiers import get_swh_persistent_id
+from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse, format_utc_iso_date
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import release, origin_with_releases, unknown_release
@@ -105,8 +105,8 @@ def _release_browse_checks(
     assert_contains(resp, target_type)
     assert_contains(resp, '<a href="%s">%s</a>' % (escape(target_url), target))
 
-    swh_rel_id = get_swh_persistent_id("release", release_id)
-    swh_rel_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_rel_id})
+    swh_rel_id = gen_swhid("release", release_id)
+    swh_rel_id_url = reverse("browse-swhid", url_args={"swhid": swh_rel_id})
     assert_contains(resp, swh_rel_id)
     assert_contains(resp, swh_rel_id_url)
 
@@ -116,8 +116,8 @@ def _release_browse_checks(
         )
         assert_contains(resp, f'href="{browse_origin_url}"')
     elif snapshot_id:
-        swh_snp_id = get_swh_persistent_id("snapshot", snapshot_id)
-        swh_snp_id_url = reverse("browse-swh-id", url_args={"swh_id": swh_snp_id})
+        swh_snp_id = gen_swhid("snapshot", snapshot_id)
+        swh_snp_id_url = reverse("browse-swhid", url_args={"swhid": swh_snp_id})
         assert_contains(resp, f'href="{swh_snp_id_url}"')
 
     if release_data["target_type"] == "revision":

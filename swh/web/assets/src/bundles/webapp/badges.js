@@ -5,20 +5,20 @@
  * See top-level LICENSE file for more information
  */
 
-export function showBadgeInfoModal(objectType, objectPid) {
+export function showBadgeInfoModal(objectType, objectSWHID) {
   let badgeImageUrl;
   let badgeLinkUrl;
   if (objectType === 'origin') {
-    badgeImageUrl = Urls.swh_badge(objectType, objectPid);
-    badgeLinkUrl = `${Urls.browse_origin()}?origin_url=${objectPid}`;
+    badgeImageUrl = Urls.swh_badge(objectType, objectSWHID);
+    badgeLinkUrl = `${Urls.browse_origin()}?origin_url=${objectSWHID}`;
   } else {
-    const pos = objectPid.indexOf(';');
+    const pos = objectSWHID.indexOf(';');
     if (pos !== -1) {
-      badgeImageUrl = Urls.swh_badge_pid(objectPid.slice(0, pos));
+      badgeImageUrl = Urls.swh_badge_swhid(objectSWHID.slice(0, pos));
     } else {
-      badgeImageUrl = Urls.swh_badge_pid(objectPid);
+      badgeImageUrl = Urls.swh_badge_swhid(objectSWHID);
     }
-    badgeLinkUrl = Urls.browse_swh_id(objectPid);
+    badgeLinkUrl = Urls.browse_swhid(objectSWHID);
   }
   let urlPrefix = `${window.location.protocol}//${window.location.hostname}`;
   if (window.location.port) {

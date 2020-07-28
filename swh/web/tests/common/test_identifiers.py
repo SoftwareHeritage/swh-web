@@ -16,15 +16,15 @@ from swh.model.identifiers import (
     RELEASE,
     REVISION,
     SNAPSHOT,
-    PersistentId,
+    SWHID,
 )
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.identifiers import (
-    get_swh_persistent_id,
-    resolve_swh_persistent_id,
-    get_persistent_identifier,
-    group_swh_persistent_identifiers,
+    gen_swhid,
+    resolve_swhid,
+    get_swhid,
+    group_swhids,
     get_swhids_info,
 )
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -44,27 +44,25 @@ from swh.web.tests.strategies import (
 
 
 @given(content())
-def test_get_swh_persistent_id(content):
+def test_gen_swhid(content):
     swh_object_type = CONTENT
     sha1_git = content["sha1_git"]
 
-    expected_swh_id = "swh:1:cnt:" + sha1_git
+    expected_swhid = "swh:1:cnt:" + sha1_git
 
-    assert get_swh_persistent_id(swh_object_type, sha1_git) == expected_swh_id
+    assert gen_swhid(swh_object_type, sha1_git) == expected_swhid
 
     with pytest.raises(BadInputExc) as e:
-        get_swh_persistent_id("foo", sha1_git)
+        gen_swhid("foo", sha1_git)
     assert e.match("Invalid object")
 
     with pytest.raises(BadInputExc) as e:
-        get_swh_persistent_id(swh_object_type, "not a valid id")
+        gen_swhid(swh_object_type, "not a valid id")
     assert e.match("Invalid object")
 
 
 @given(content(), directory(), release(), revision(), snapshot())
-def test_resolve_swh_persistent_id_legacy(
-    content, directory, release, revision, snapshot
-):
+def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (CONTENT, content["sha1_git"]),
         (DIRECTORY, directory),
@@ -73,7 +71,7 @@ def test_resolve_swh_persistent_id_legacy(
         (SNAPSHOT, snapshot),
     ):
 
-        swh_pid = get_swh_persistent_id(obj_type, obj_id)
+        swhid = gen_swhid(obj_type, obj_id)
 
         url_args = {}
         if obj_type == CONTENT:
@@ -87,18 +85,18 @@ def test_resolve_swh_persistent_id_legacy(
             f"browse-{obj_type}", url_args=url_args, query_params=query_params
         )
 
-        resolved_pid = resolve_swh_persistent_id(swh_pid, query_params)
+        resolved_swhid = resolve_swhid(swhid, query_params)
 
-        assert isinstance(resolved_pid["swh_id_parsed"], PersistentId)
-        assert str(resolved_pid["swh_id_parsed"]) == swh_pid
-        assert resolved_pid["browse_url"] == browse_url
+        assert isinstance(resolved_swhid["swhid_parsed"], SWHID)
+        assert str(resolved_swhid["swhid_parsed"]) == swhid
+        assert resolved_swhid["browse_url"] == browse_url
 
-    with pytest.raises(BadInputExc, match="Origin PIDs"):
-        resolve_swh_persistent_id(f"swh:1:ori:{random_sha1()}")
+    with pytest.raises(BadInputExc, match="Origin SWHIDs"):
+        resolve_swhid(f"swh:1:ori:{random_sha1()}")
 
 
 @given(content(), directory(), release(), revision(), snapshot())
-def test_get_persistent_identifier(content, directory, release, revision, snapshot):
+def test_get_swhid(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (CONTENT, content["sha1_git"]),
         (DIRECTORY, directory),
@@ -106,19 +104,19 @@ def test_get_persistent_identifier(content, directory, release, revision, snapsh
         (REVISION, revision),
         (SNAPSHOT, snapshot),
     ):
-        swh_pid = get_swh_persistent_id(obj_type, obj_id)
-        swh_parsed_pid = get_persistent_identifier(swh_pid)
+        swhid = gen_swhid(obj_type, obj_id)
+        swh_parsed_swhid = get_swhid(swhid)
 
-        assert isinstance(swh_parsed_pid, PersistentId)
-        assert str(swh_parsed_pid) == swh_pid
+        assert isinstance(swh_parsed_swhid, SWHID)
+        assert str(swh_parsed_swhid) == swhid
 
     with pytest.raises(BadInputExc, match="Error when parsing identifier"):
-        get_persistent_identifier("foo")
+        get_swhid("foo")
 
 
 @given(content(), directory(), release(), revision(), snapshot())
-def test_group_persistent_identifiers(content, directory, release, revision, snapshot):
-    swh_pids = []
+def test_group_swhids(content, directory, release, revision, snapshot):
+    swhids = []
     expected = {}
     for obj_type, obj_id in (
         (CONTENT, content["sha1_git"]),
@@ -127,14 +125,14 @@ def test_group_persistent_identifiers(content, directory, release, revision, sna
         (REVISION, revision),
         (SNAPSHOT, snapshot),
     ):
-        swh_pid = get_swh_persistent_id(obj_type, obj_id)
-        swh_pid = get_persistent_identifier(swh_pid)
-        swh_pids.append(swh_pid)
+        swhid = gen_swhid(obj_type, obj_id)
+        swhid = get_swhid(swhid)
+        swhids.append(swhid)
         expected[obj_type] = [hash_to_bytes(obj_id)]
 
-    pid_groups = group_swh_persistent_identifiers(swh_pids)
+    swhid_groups = group_swhids(swhids)
 
-    assert pid_groups == expected
+    assert swhid_groups == expected
 
 
 @given(directory_with_subdirs())
@@ -145,7 +143,7 @@ def test_get_swhids_info_directory_context(archive_data, directory):
         snapshot_context=None,
         extra_context=extra_context,
     )[0]
-    swhid_dir_parsed = get_persistent_identifier(swhid["swhid_with_context"])
+    swhid_dir_parsed = get_swhid(swhid["swhid_with_context"])
 
     assert swhid_dir_parsed.metadata == extra_context
 
@@ -179,9 +177,9 @@ def test_get_swhids_info_directory_context(archive_data, directory):
         swh_objects_info, snapshot_context=None, extra_context=extra_context,
     )
 
-    swhid_dir_parsed = get_persistent_identifier(swhids[0]["swhid_with_context"])
+    swhid_dir_parsed = get_swhid(swhids[0]["swhid_with_context"])
 
-    anchor = get_swh_persistent_id(DIRECTORY, directory)
+    anchor = gen_swhid(DIRECTORY, directory)
 
     assert swhid_dir_parsed.metadata == {
         "anchor": anchor,
@@ -189,7 +187,7 @@ def test_get_swhids_info_directory_context(archive_data, directory):
     }
 
     if dir_subdir_files:
-        swhid_cnt_parsed = get_persistent_identifier(swhids[1]["swhid_with_context"])
+        swhid_cnt_parsed = get_swhid(swhids[1]["swhid_with_context"])
 
         assert swhid_cnt_parsed.metadata == {
             "anchor": anchor,
@@ -223,9 +221,9 @@ def test_get_swhids_info_revision_context(archive_data, revision):
     )
 
     assert swhids[0]["context"] == {}
-    swhid_dir_parsed = get_persistent_identifier(swhids[1]["swhid_with_context"])
+    swhid_dir_parsed = get_swhid(swhids[1]["swhid_with_context"])
 
-    anchor = get_swh_persistent_id(REVISION, revision)
+    anchor = gen_swhid(REVISION, revision)
 
     assert swhid_dir_parsed.metadata == {
         "anchor": anchor,
@@ -233,7 +231,7 @@ def test_get_swhids_info_revision_context(archive_data, revision):
     }
 
     if dir_entry["type"] == "file":
-        swhid_cnt_parsed = get_persistent_identifier(swhids[2]["swhid_with_context"])
+        swhid_cnt_parsed = get_swhid(swhids[2]["swhid_with_context"])
         assert swhid_cnt_parsed.metadata == {
             "anchor": anchor,
             "path": f'/{dir_entry["name"]}',
@@ -353,34 +351,24 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
                 extra_context={"path": "/", "filename": dir_file["name"]},
             )
 
-            swhid_cnt_parsed = get_persistent_identifier(
-                swhids[0]["swhid_with_context"]
-            )
-            swhid_dir_parsed = get_persistent_identifier(
-                swhids[1]["swhid_with_context"]
-            )
-            swhid_rev_parsed = get_persistent_identifier(
-                swhids[2]["swhid_with_context"]
-            )
+            swhid_cnt_parsed = get_swhid(swhids[0]["swhid_with_context"])
+            swhid_dir_parsed = get_swhid(swhids[1]["swhid_with_context"])
+            swhid_rev_parsed = get_swhid(swhids[2]["swhid_with_context"])
 
-            swhid_snp_parsed = get_persistent_identifier(
+            swhid_snp_parsed = get_swhid(
                 swhids[3]["swhid_with_context"] or swhids[3]["swhid"]
             )
 
             swhid_rel_parsed = None
             if "release_name" in snp_ctx_params:
-                swhid_rel_parsed = get_persistent_identifier(
-                    swhids[4]["swhid_with_context"]
-                )
+                swhid_rel_parsed = get_swhid(swhids[4]["swhid_with_context"])
 
-            anchor = get_swh_persistent_id(
+            anchor = gen_swhid(
                 object_type=anchor_info["anchor_type"],
                 object_id=anchor_info["anchor_id"],
             )
 
-            snapshot_swhid = get_swh_persistent_id(
-                object_type=SNAPSHOT, object_id=snapshot_id
-            )
+            snapshot_swhid = gen_swhid(object_type=SNAPSHOT, object_id=snapshot_id)
 
             expected_cnt_context = {
                 "visit": snapshot_swhid,
@@ -453,12 +441,14 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
     directory_content = archive_data.directory_ls(directory)
-    directory_subdir = random.choice(
-        [e for e in directory_content if e["type"] == "dir"]
-    )
-    directory_file = random.choice(
-        [e for e in directory_content if e["type"] == "file"]
-    )
+    directory_subdirs = [e for e in directory_content if e["type"] == "dir"]
+    directory_subdir = None
+    if directory_subdirs:
+        directory_subdir = random.choice(directory_subdirs)
+    directory_files = [e for e in directory_content if e["type"] == "file"]
+    directory_file = None
+    if directory_files:
+        directory_file = random.choice(directory_files)
     random_rev_id = random.choice(archive_data.revision_log(head_rev_id))["id"]
 
     for snp_ctx_params in (
@@ -485,35 +475,37 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
             DIRECTORY, directory, snapshot_context, path="/"
         )
 
-        _check_resolved_swhid_browse_url(
-            DIRECTORY,
-            directory_subdir["target"],
-            snapshot_context,
-            path=f"/{directory_subdir['name']}/",
-        )
+        if directory_subdir:
+            _check_resolved_swhid_browse_url(
+                DIRECTORY,
+                directory_subdir["target"],
+                snapshot_context,
+                path=f"/{directory_subdir['name']}/",
+            )
 
-        _check_resolved_swhid_browse_url(
-            CONTENT,
-            directory_file["target"],
-            snapshot_context,
-            path=f"/{directory_file['name']}",
-        )
+        if directory_file:
+            _check_resolved_swhid_browse_url(
+                CONTENT,
+                directory_file["target"],
+                snapshot_context,
+                path=f"/{directory_file['name']}",
+            )
 
-        _check_resolved_swhid_browse_url(
-            CONTENT,
-            directory_file["target"],
-            snapshot_context,
-            path=f"/{directory_file['name']}",
-            lines="10",
-        )
+            _check_resolved_swhid_browse_url(
+                CONTENT,
+                directory_file["target"],
+                snapshot_context,
+                path=f"/{directory_file['name']}",
+                lines="10",
+            )
 
-        _check_resolved_swhid_browse_url(
-            CONTENT,
-            directory_file["target"],
-            snapshot_context,
-            path=f"/{directory_file['name']}",
-            lines="10-20",
-        )
+            _check_resolved_swhid_browse_url(
+                CONTENT,
+                directory_file["target"],
+                snapshot_context,
+                path=f"/{directory_file['name']}",
+                lines="10-20",
+            )
 
 
 def _check_resolved_swhid_browse_url(
@@ -531,19 +523,15 @@ def _check_resolved_swhid_browse_url(
         obj_context["origin"] = origin_url
         query_params["origin_url"] = origin_url
 
-    obj_context["visit"] = get_swh_persistent_id(SNAPSHOT, snapshot_id)
+    obj_context["visit"] = gen_swhid(SNAPSHOT, snapshot_id)
     query_params["snapshot"] = snapshot_id
 
     if object_type in (CONTENT, DIRECTORY, REVISION):
         if snapshot_context["release"]:
-            obj_context["anchor"] = get_swh_persistent_id(
-                RELEASE, snapshot_context["release_id"]
-            )
+            obj_context["anchor"] = gen_swhid(RELEASE, snapshot_context["release_id"])
             query_params["release"] = snapshot_context["release"]
         else:
-            obj_context["anchor"] = get_swh_persistent_id(
-                REVISION, snapshot_context["revision_id"]
-            )
+            obj_context["anchor"] = gen_swhid(REVISION, snapshot_context["revision_id"])
             if (
                 snapshot_context["branch"]
                 and snapshot_context["branch"] != snapshot_context["revision_id"]
@@ -576,9 +564,9 @@ def _check_resolved_swhid_browse_url(
     if lines:
         obj_context["lines"] = lines
 
-    obj_swhid = get_swh_persistent_id(object_type, object_id, metadata=obj_context)
+    obj_swhid = gen_swhid(object_type, object_id, metadata=obj_context)
 
-    obj_swhid_resolved = resolve_swh_persistent_id(obj_swhid)
+    obj_swhid_resolved = resolve_swhid(obj_swhid)
 
     url_args = {"sha1_git": object_id}
     if object_type == CONTENT:

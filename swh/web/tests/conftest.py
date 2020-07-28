@@ -19,6 +19,7 @@ from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common import converters
+from swh.web.common.typing import OriginVisitInfo
 from swh.web.tests.data import get_tests_data, override_storages
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest
@@ -222,9 +223,9 @@ class _ArchiveData:
         snp = snapshot_get_latest(self.storage, origin_url)
         return converters.from_snapshot(snp.to_dict())
 
-    def origin_get(self, origin_info):
-        origin = self.storage.origin_get(origin_info)
-        return converters.from_origin(origin)
+    def origin_get(self, origin_urls):
+        origins = self.storage.origin_get(origin_urls)
+        return [converters.from_origin(o.to_dict()) for o in origins]
 
     def origin_visit_get(self, origin_url):
         visits = list(self.storage.origin_visit_get(origin_url))
@@ -237,10 +238,14 @@ class _ArchiveData:
             )
         return visits
 
-    def origin_visit_get_by(self, origin_url, visit_id):
+    def origin_visit_get_by(self, origin_url: str, visit_id: int) -> OriginVisitInfo:
         visit = self.storage.origin_visit_get_by(origin_url, visit_id)
+        assert visit is not None
         visit_status = self.storage.origin_visit_status_get_latest(origin_url, visit_id)
-        return converters.from_origin_visit({**visit, **visit_status.to_dict()})
+        assert visit_status is not None
+        return converters.from_origin_visit(
+            {**visit_status.to_dict(), "type": visit.type}
+        )
 
     def origin_visit_status_get_latest(
         self,

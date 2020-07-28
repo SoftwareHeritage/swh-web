@@ -50,8 +50,7 @@ class ForbiddenExc(Exception):
 class LargePayloadExc(Exception):
     """The input size is too large.
 
-    Example: Asking to resolve 10000 persistent identifier when the limit
-    is 1000.
+    Example: Asking to resolve 10000 SWHIDs when the limit is 1000.
     """
 
     pass

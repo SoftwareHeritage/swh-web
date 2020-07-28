@@ -120,14 +120,30 @@ var TryCatch = /** @class */ (function () {
         });
         fill(proto, 'removeEventListener', function (original) {
             return function (eventName, fn, options) {
-                var callback = fn;
+                /**
+                 * There are 2 possible scenarios here:
+                 *
+                 * 1. Someone passes a callback, which was attached prior to Sentry initialization, or by using unmodified
+                 * method, eg. `document.addEventListener.call(el, name, handler). In this case, we treat this function
+                 * as a pass-through, and call original `removeEventListener` with it.
+                 *
+                 * 2. Someone passes a callback, which was attached after Sentry was initialized, which means that it was using
+                 * our wrapped version of `addEventListener`, which internally calls `wrap` helper.
+                 * This helper "wraps" whole callback inside a try/catch statement, and attached appropriate metadata to it,
+                 * in order for us to make a distinction between wrapped/non-wrapped functions possible.
+                 * If a function was wrapped, it has additional property of `__sentry_wrapped__`, holding the handler.
+                 *
+                 * When someone adds a handler prior to initialization, and then do it again, but after,
+                 * then we have to detach both of them. Otherwise, if we'd detach only wrapped one, it'd be impossible
+                 * to get rid of the initial handler and it'd stick there forever.
+                 */
                 try {
-                    callback = callback && (callback.__sentry_wrapped__ || callback);
+                    original.call(this, eventName, fn.__sentry_wrapped__, options);
                 }
                 catch (e) {
                     // ignore, accessing __sentry_wrapped__ will throw in some Selenium environments
                 }
-                return original.call(this, eventName, callback, options);
+                return original.call(this, eventName, fn, options);
             };
         });
     };

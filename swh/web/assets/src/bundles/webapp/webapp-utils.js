@@ -307,11 +307,11 @@ export function getBrowsedSwhObjectMetadata() {
 // SWHID metadata contain the following keys:
 //   * object_type: type of archived object
 //   * object_id: sha1 object identifier
-//   * swhid: SWH persistent identifier without contextual info
-//   * swhid_url: URL to resolve SWH persistent identifier without contextual info
+//   * swhid: SWHID without contextual info
+//   * swhid_url: URL to resolve SWHID without contextual info
 //   * context: object describing SWHID context
-//   * swhid_with_context: SWH persistent identifier with contextual info
-//   * swhid_with_context_url: URL to resolve SWH persistent identifier with contextual info
+//   * swhid_with_context: SWHID with contextual info
+//   * swhid_with_context_url: URL to resolve SWHID with contextual info
 let swhidsContext_ = {};
 
 export function setSwhIdsContext(swhidsContext) {
