@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Set, Iterable, Iterator, Optional, Tuple
 
 from swh.model import hashutil
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.model import OriginVisit
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest
@@ -859,7 +860,7 @@ def stat_counters():
 
 def _lookup_origin_visits(
     origin_url: str, last_visit: Optional[int] = None, limit: int = 10
-) -> Iterator[Dict[str, Any]]:
+) -> Iterator[OriginVisit]:
     """Yields the origin origins' visits.
 
     Args:
@@ -868,15 +869,19 @@ def _lookup_origin_visits(
         limit (int): Number of elements max to display
 
     Yields:
-       Dictionaries of origin_visit for that origin
+       OriginVisit for that origin
 
     """
     limit = min(limit, MAX_LIMIT)
-    for visit in storage.origin_visit_get(
-        origin_url, last_visit=last_visit, limit=limit
-    ):
-        visit["origin"] = origin_url
-        yield visit
+    page_token: Optional[str]
+    if last_visit is not None:
+        page_token = str(last_visit)
+    else:
+        page_token = None
+    visit_page = storage.origin_visit_get(
+        origin_url, page_token=page_token, limit=limit
+    )
+    yield from visit_page.results
 
 
 def lookup_origin_visits(
@@ -891,10 +896,11 @@ def lookup_origin_visits(
        Dictionaries of origin_visit for that origin
 
     """
-    visits = _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page)
-    for visit in visits:
-        visit_status = storage.origin_visit_status_get_latest(origin, visit["visit"])
-        yield converters.from_origin_visit({**visit, **visit_status.to_dict()})
+    for visit in _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page):
+        visit_status = storage.origin_visit_status_get_latest(origin, visit.visit)
+        yield converters.from_origin_visit(
+            {**visit_status.to_dict(), "type": visit.type}
+        )
 
 
 def lookup_origin_visit_latest(

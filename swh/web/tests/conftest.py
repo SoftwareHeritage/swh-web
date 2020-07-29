@@ -228,14 +228,25 @@ class _ArchiveData:
         return [converters.from_origin(o.to_dict()) for o in origins]
 
     def origin_visit_get(self, origin_url):
-        visits = list(self.storage.origin_visit_get(origin_url))
-        for i in range(len(visits)):
-            visit_status = self.storage.origin_visit_status_get_latest(
-                origin_url, visits[i]["visit"]
+        next_page_token = None
+        visits = []
+        while True:
+            visit_page = self.storage.origin_visit_get(
+                origin_url, page_token=next_page_token
             )
-            visits[i] = converters.from_origin_visit(
-                {**visits[i], **visit_status.to_dict()}
-            )
+            next_page_token = visit_page.next_page_token
+
+            for visit in visit_page.results:
+                visit_status = self.storage.origin_visit_status_get_latest(
+                    origin_url, visit.visit
+                )
+                visits.append(
+                    converters.from_origin_visit(
+                        {**visit_status.to_dict(), "type": visit.type}
+                    )
+                )
+            if not next_page_token:
+                break
         return visits
 
     def origin_visit_get_by(self, origin_url: str, visit_id: int) -> OriginVisitInfo:
