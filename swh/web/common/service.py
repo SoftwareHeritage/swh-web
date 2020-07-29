@@ -901,7 +901,7 @@ def lookup_origin_visit_latest(
     origin_url: str,
     require_snapshot: bool = False,
     type: Optional[str] = None,
-    allowed_statuses: Optional[Iterable[str]] = None,
+    allowed_statuses: Optional[List[str]] = None,
 ) -> Optional[OriginVisitInfo]:
     """Return the origin's latest visit
 
@@ -1028,7 +1028,7 @@ def lookup_snapshot(
 
 
 def lookup_latest_origin_snapshot(
-    origin: str, allowed_statuses: Iterable[str] = None
+    origin: str, allowed_statuses: List[str] = None
 ) -> Optional[Dict[str, Any]]:
     """Return information about the latest snapshot of an origin.
 

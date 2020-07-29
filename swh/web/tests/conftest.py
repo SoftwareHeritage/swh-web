@@ -9,7 +9,7 @@ import shutil
 import sys
 
 from subprocess import run, PIPE
-from typing import Optional, Iterable
+from typing import List, Optional
 
 import pytest
 
@@ -251,7 +251,7 @@ class _ArchiveData:
         self,
         origin_url,
         type: Optional[str] = None,
-        allowed_statuses: Optional[Iterable[str]] = None,
+        allowed_statuses: Optional[List[str]] = None,
         require_snapshot: bool = False,
     ):
         visit_and_status = origin_get_latest_visit_status(
