@@ -261,8 +261,11 @@ def lookup_origins(
 
 
 def search_origin(
-    url_pattern: str, limit: int = 50, with_visit: bool = False, page_token: Any = None
-) -> Tuple[List[OriginInfo], Any]:
+    url_pattern: str,
+    limit: int = 50,
+    with_visit: bool = False,
+    page_token: Optional[str] = None,
+) -> Tuple[List[OriginInfo], Optional[str]]:
     """Search for origins whose urls contain a provided string pattern
     or match a provided regular expression.
 
@@ -275,19 +278,19 @@ def search_origin(
         list of origin information as dict.
 
     """
+    if page_token:
+        assert isinstance(page_token, str)
+
     if search:
-        results = search.origin_search(
+        page_result = search.origin_search(
             url_pattern=url_pattern,
-            count=limit,
             page_token=page_token,
             with_visit=with_visit,
+            limit=limit,
         )
-        origins = list(map(converters.from_origin, results["results"]))
-        return (origins, results["next_page_token"])
+        origins = [converters.from_origin(ori_dict) for ori_dict in page_result.results]
     else:
         # Fallback to swh-storage if swh-search is not configured
-        offset = int(page_token) if page_token else 0
-        regexp = True
         search_words = [re.escape(word) for word in url_pattern.split()]
         if len(search_words) >= 7:
             url_pattern = ".*".join(search_words)
@@ -297,15 +300,16 @@ def search_origin(
                 pattern_parts.append(".*".join(permut))
             url_pattern = "|".join(pattern_parts)
 
-        origins_raw = storage.origin_search(
-            url_pattern, offset, limit, regexp, with_visit
+        page_result = storage.origin_search(
+            url_pattern,
+            page_token=page_token,
+            with_visit=with_visit,
+            limit=limit,
+            regexp=True,
         )
-        origins = list(map(converters.from_origin, origins_raw))
-        if len(origins) >= limit:
-            page_token = str(offset + len(origins))
-        else:
-            page_token = None
-        return (origins, page_token)
+        origins = [converters.from_origin(ori.to_dict()) for ori in page_result.results]
+
+    return (origins, page_result.next_page_token)
 
 
 def search_origin_metadata(
