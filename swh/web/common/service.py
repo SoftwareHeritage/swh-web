@@ -22,7 +22,12 @@ from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.origin_visits import get_origin_visit
-from swh.web.common.typing import OriginInfo, OriginVisitInfo, OriginMetadataInfo
+from swh.web.common.typing import (
+    OriginInfo,
+    OriginVisitInfo,
+    OriginMetadataInfo,
+    PagedResult,
+)
 
 
 search = config.search()
@@ -243,8 +248,8 @@ def lookup_origin(origin: OriginInfo) -> OriginInfo:
 
 
 def lookup_origins(
-    origin_from: int = 1, origin_count: int = 100
-) -> Iterator[OriginInfo]:
+    page_token: Optional[str], limit: int = 100
+) -> PagedResult[OriginInfo]:
     """Get list of archived software origins in a paginated way.
 
     Origins are sorted by id before returning them
@@ -253,11 +258,15 @@ def lookup_origins(
         origin_from (int): The minimum id of the origins to return
         origin_count (int): The maximum number of origins to return
 
-    Yields:
-        origins information as dicts
+    Returns:
+        Page of OriginInfo
+
     """
-    origins = storage.origin_get_range(origin_from, origin_count)
-    return map(converters.from_origin, origins)
+    page = storage.origin_list(page_token=page_token, limit=limit)
+    return PagedResult(
+        [converters.from_origin(o.to_dict()) for o in page.results],
+        next_page_token=page.next_page_token,
+    )
 
 
 def search_origin(

@@ -80,28 +80,27 @@ def api_origins(request):
         .. parsed-literal::
 
             :swh_web_api:`origins?origin_count=500`
+
     """
-    origin_from = int(request.query_params.get("origin_from", "1"))
-    origin_count = int(request.query_params.get("origin_count", "100"))
-    origin_count = min(origin_count, 10000)
-    results = api_lookup(
-        service.lookup_origins,
-        origin_from,
-        origin_count + 1,
-        enrich_fn=enrich_origin,
-        request=request,
-    )
-    response = {"results": results, "headers": {}}
-    if len(results) > origin_count:
-        origin_from = results.pop()["id"]
+    old_param_origin_from = request.query_params.get("origin_from")
+
+    if old_param_origin_from:
+        raise BadInputExc("Please use the Link header to browse through result")
+
+    page_token = request.query_params.get("page_token", None)
+    limit = min(int(request.query_params.get("origin_count", "100")), 10000)
+
+    page_result = service.lookup_origins(page_token, limit)
+    origins = [enrich_origin(o, request=request) for o in page_result.results]
+    next_page_token = page_result.next_page_token
+
+    response = {"results": origins, "headers": {}}
+    if next_page_token is not None:
         response["headers"]["link-next"] = reverse(
             "api-1-origins",
-            query_params={"origin_from": origin_from, "origin_count": origin_count},
+            query_params={"page_token": next_page_token, "origin_count": limit},
             request=request,
         )
-    for result in results:
-        if "id" in result:
-            del result["id"]
     return response
 
 
