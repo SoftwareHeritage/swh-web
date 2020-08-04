@@ -18,7 +18,7 @@ from swh.web.browse.snapshot_context import (
 from swh.web.common import service
 from swh.web.common.exc import handle_view_exception, BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import reverse, format_utc_iso_date, parse_timestamp
+from swh.web.common.utils import reverse, format_utc_iso_date, parse_iso8601_date_to_utc
 
 
 @browse_route(
@@ -255,7 +255,7 @@ def _origin_visits_browse(request, origin_url):
         visit["url"] = reverse("browse-origin-directory", query_params=query_params,)
         if not snapshot:
             visit["snapshot"] = ""
-        visit["date"] = parse_timestamp(visit["date"]).timestamp()
+        visit["date"] = parse_iso8601_date_to_utc(visit["date"]).timestamp()
 
     heading = "Origin visits - %s" % origin_url
 

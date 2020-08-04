@@ -135,9 +135,6 @@ def test_get_origin_visit(mocker, snapshots):
     visit = get_origin_visit(origin_info, visit_ts="2016-06-18 01:22")
     assert visit == visits[3]
 
-    visit = get_origin_visit(origin_info, visit_ts=1466208000)
-    assert visit == visits[3]
-
     visit = get_origin_visit(origin_info, visit_ts="2014-01-01")
     assert visit == visits[0]
 

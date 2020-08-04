@@ -29,7 +29,7 @@ from swh.web.common.utils import (
     reverse,
     gen_path_info,
     format_utc_iso_date,
-    parse_timestamp,
+    parse_iso8601_date_to_utc,
 )
 from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
@@ -118,21 +118,6 @@ def test_origin_content_view(client, archive_data, origin):
         timestamp=tdata["visit"]["date"],
     )
 
-    visit_unix_ts = parse_timestamp(tdata["visit"]["date"]).timestamp()
-    visit_unix_ts = int(visit_unix_ts)
-
-    _origin_content_view_test_helper(
-        client,
-        archive_data,
-        origin,
-        origin_visits[-1],
-        tdata["branches"],
-        tdata["releases"],
-        tdata["root_dir_sha1"],
-        tdata["content"],
-        timestamp=visit_unix_ts,
-    )
-
     _origin_content_view_test_helper(
         client,
         archive_data,
@@ -183,8 +168,6 @@ def test_origin_root_directory_view(client, archive_data, origin):
     root_dir_sha1 = head_rev["directory"]
     dir_content = archive_data.directory_ls(root_dir_sha1)
     branches, releases = process_snapshot_branches(snapshot)
-    visit_unix_ts = parse_timestamp(visit["date"]).timestamp()
-    visit_unix_ts = int(visit_unix_ts)
 
     _origin_directory_view_test_helper(
         client,
@@ -207,18 +190,6 @@ def test_origin_root_directory_view(client, archive_data, origin):
         root_dir_sha1,
         dir_content,
         visit_id=visit["visit"],
-    )
-
-    _origin_directory_view_test_helper(
-        client,
-        archive_data,
-        origin,
-        visit,
-        branches,
-        releases,
-        root_dir_sha1,
-        dir_content,
-        timestamp=visit_unix_ts,
     )
 
     _origin_directory_view_test_helper(
@@ -266,18 +237,6 @@ def test_origin_root_directory_view(client, archive_data, origin):
         root_dir_sha1,
         dir_content,
         visit_id=visit["visit"],
-    )
-
-    _origin_directory_view_test_helper(
-        client,
-        archive_data,
-        origin,
-        visit,
-        branches,
-        releases,
-        root_dir_sha1,
-        dir_content,
-        timestamp=visit_unix_ts,
     )
 
     _origin_directory_view_test_helper(
@@ -318,8 +277,6 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         e for e in archive_data.directory_ls(root_dir_sha1) if e["type"] == "dir"
     ]
     branches, releases = process_snapshot_branches(snapshot)
-    visit_unix_ts = parse_timestamp(visit["date"]).timestamp()
-    visit_unix_ts = int(visit_unix_ts)
 
     if len(subdirs) == 0:
         return
@@ -363,19 +320,6 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         root_dir_sha1,
         subdir_content,
         path=subdir_path,
-        timestamp=visit_unix_ts,
-    )
-
-    _origin_directory_view_test_helper(
-        client,
-        archive_data,
-        origin,
-        visit,
-        branches,
-        releases,
-        root_dir_sha1,
-        subdir_content,
-        path=subdir_path,
         timestamp=visit["date"],
     )
 
@@ -415,19 +359,6 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         subdir_content,
         path=subdir_path,
         visit_id=visit["visit"],
-    )
-
-    _origin_directory_view_test_helper(
-        client,
-        archive_data,
-        origin,
-        visit,
-        branches,
-        releases,
-        root_dir_sha1,
-        subdir_content,
-        path=subdir_path,
-        timestamp=visit_unix_ts,
     )
 
     _origin_directory_view_test_helper(
@@ -935,7 +866,7 @@ def _origin_content_view_test_helper(
 
     if timestamp:
         query_params["timestamp"] = format_utc_iso_date(
-            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
+            parse_iso8601_date_to_utc(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
     root_dir_url = reverse("browse-origin-directory", query_params=query_params)
@@ -1069,7 +1000,7 @@ def _origin_directory_view_test_helper(
 
     if timestamp:
         query_params["timestamp"] = format_utc_iso_date(
-            parse_timestamp(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
+            parse_iso8601_date_to_utc(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
     for d in dirs:

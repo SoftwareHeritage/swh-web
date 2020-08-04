@@ -69,7 +69,6 @@ Typing:
   principle of least surprise. At the very minimum it is possible to
   enter timestamps as:
 
-  - Unix epoch timestamp (see for instance the output of `date +%s`)
   - ISO 8601 timestamps (see for instance the output of `date -I`, `date -Is`)
   - YYYY[MM[DD[HH[MM[SS]]]]] ad-hoc format
   - YYYY[-MM[-DD[ HH:[MM:[SS:]]]]] ad-hoc format

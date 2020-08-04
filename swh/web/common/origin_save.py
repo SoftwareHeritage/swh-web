@@ -38,7 +38,7 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_CREATED,
 )
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import parse_timestamp, SWH_WEB_METRICS_REGISTRY
+from swh.web.common.utils import parse_iso8601_date_to_utc, SWH_WEB_METRICS_REGISTRY
 
 from swh.scheduler.utils import create_oneshot_task_dict
 
@@ -159,7 +159,7 @@ def _get_visit_info_for_save_request(save_request):
             origin = {"url": save_request.origin_url}
             origin_info = service.lookup_origin(origin)
             origin_visits = get_origin_visits(origin_info)
-            visit_dates = [parse_timestamp(v["date"]) for v in origin_visits]
+            visit_dates = [parse_iso8601_date_to_utc(v["date"]) for v in origin_visits]
             i = bisect_right(visit_dates, save_request.request_date)
             if i != len(visit_dates):
                 visit_date = visit_dates[i]

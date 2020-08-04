@@ -7,7 +7,7 @@
 
 from collections import defaultdict
 from copy import copy
-from typing import Any, Dict, List, Optional, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 from django.core.cache import cache
@@ -348,7 +348,7 @@ def get_snapshot_content(
 
 def get_origin_visit_snapshot(
     origin_info: OriginInfo,
-    visit_ts: Optional[Union[int, str]] = None,
+    visit_ts: Optional[str] = None,
     visit_id: Optional[int] = None,
     snapshot_id: Optional[str] = None,
 ) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo]]:
@@ -372,7 +372,7 @@ def get_origin_visit_snapshot(
 
     Args:
         origin_info: a dict filled with origin information
-        visit_ts: an ISO date string or Unix timestamp to parse
+        visit_ts: an ISO 8601 datetime string to parse
         visit_id: visit id for disambiguation in case several visits have
             the same timestamp
         snapshot_id: if provided, visit associated to the snapshot will be processed
