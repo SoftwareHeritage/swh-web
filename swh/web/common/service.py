@@ -92,35 +92,43 @@ def lookup_expression(expression, last_sha1, per_page):
         yield ctag
 
 
-def lookup_hash(q):
-    """Checks if the storage contains a given content checksum
+def lookup_hash(q: str) -> Dict[str, Any]:
+    """Check if the storage contains a given content checksum and return it if found.
 
-    Args: query string of the form <hash_algo:hash>
+    Args:
+        q: query string of the form <hash_algo:hash>
 
-    Returns: Dict with key found containing the hash info if the
+    Returns:
+        Dict with key found containing the hash info if the
     hash is present, None if not.
 
     """
-    algo, hash = query.parse_hash(q)
-    found = _first_element(storage.content_find({algo: hash}))
-    return {"found": converters.from_content(found), "algo": algo}
+    algo, hash_ = query.parse_hash(q)
+    found = _first_element(storage.content_find({algo: hash_}))
+    if found:
+        content = converters.from_content(found.to_dict())
+    else:
+        content = None
+    return {"found": content, "algo": algo}
 
 
-def search_hash(q):
-    """Checks if the storage contains a given content checksum
+def search_hash(q: str) -> Dict[str, bool]:
+    """Search storage for a given content checksum.
 
-    Args: query string of the form <hash_algo:hash>
+    Args:
+        q: query string of the form <hash_algo:hash>
 
-    Returns: Dict with key found to True or False, according to
+    Returns:
+        Dict with key found to True or False, according to
         whether the checksum is present or not
 
     """
-    algo, hash = query.parse_hash(q)
-    found = _first_element(storage.content_find({algo: hash}))
+    algo, hash_ = query.parse_hash(q)
+    found = _first_element(storage.content_find({algo: hash_}))
     return {"found": found is not None}
 
 
-def _lookup_content_sha1(q):
+def _lookup_content_sha1(q: str) -> Optional[bytes]:
     """Given a possible input, query for the content's sha1.
 
     Args:
@@ -130,13 +138,13 @@ def _lookup_content_sha1(q):
         binary sha1 if found or None
 
     """
-    algo, hash = query.parse_hash(q)
+    algo, hash_ = query.parse_hash(q)
     if algo != "sha1":
-        hashes = _first_element(storage.content_find({algo: hash}))
+        hashes = _first_element(storage.content_find({algo: hash_}))
         if not hashes:
             return None
-        return hashes["sha1"]
-    return hash
+        return hashes.sha1
+    return hash_
 
 
 def lookup_content_ctags(q):
@@ -793,15 +801,16 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
     elif entity["type"] == "file":  # content
         content = _first_element(storage.content_find({"sha1_git": entity["target"]}))
         if not content:
-            raise NotFoundExc("Content not found for revision %s" % sha1_git)
+            raise NotFoundExc(f"Content not found for revision {sha1_git}")
+        content_d = content.to_dict()
         if with_data:
-            c = _first_element(storage.content_get([content["sha1"]]))
-            content["data"] = c["data"]
+            c = _first_element(storage.content_get([content.sha1]))
+            content_d["data"] = c["data"]
         return {
             "type": "file",
             "path": "." if not dir_path else dir_path,
             "revision": sha1_git,
-            "content": converters.from_content(content),
+            "content": converters.from_content(content_d),
         }
     elif entity["type"] == "rev":  # revision
         revision = next(storage.revision_get([entity["target"]]))
@@ -815,7 +824,7 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         raise NotImplementedError("Entity of type %s not implemented." % entity["type"])
 
 
-def lookup_content(q):
+def lookup_content(q: str) -> Dict[str, Any]:
     """Lookup the content designed by q.
 
     Args:
@@ -825,14 +834,12 @@ def lookup_content(q):
         NotFoundExc if the requested content is not found
 
     """
-    algo, hash = query.parse_hash(q)
-    c = _first_element(storage.content_find({algo: hash}))
+    algo, hash_ = query.parse_hash(q)
+    c = _first_element(storage.content_find({algo: hash_}))
     if not c:
-        raise NotFoundExc(
-            "Content with %s checksum equals to %s not found!"
-            % (algo, hashutil.hash_to_hex(hash))
-        )
-    return converters.from_content(c)
+        hhex = hashutil.hash_to_hex(hash_)
+        raise NotFoundExc(f"Content with {algo} checksum equals to {hhex} not found!")
+    return converters.from_content(c.to_dict())
 
 
 def lookup_content_raw(q):

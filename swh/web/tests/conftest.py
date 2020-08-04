@@ -9,7 +9,7 @@ import shutil
 import sys
 
 from subprocess import run, PIPE
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import pytest
 
@@ -167,14 +167,14 @@ class _ArchiveData:
         # storage instance
         return getattr(self.storage, key)
 
-    def content_find(self, content):
+    def content_find(self, content: Dict[str, Any]) -> Dict[str, Any]:
         cnt_ids_bytes = {
             algo_hash: hash_to_bytes(content[algo_hash])
             for algo_hash in ALGORITHMS
             if content.get(algo_hash)
         }
         cnt = self.storage.content_find(cnt_ids_bytes)
-        return converters.from_content(cnt[0]) if cnt else cnt
+        return converters.from_content(cnt[0].to_dict()) if cnt else cnt
 
     def content_get_metadata(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
