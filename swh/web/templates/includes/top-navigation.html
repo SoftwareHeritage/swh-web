@@ -111,9 +111,7 @@ See top-level LICENSE file for more information
         {% include "includes/vault-create-tasks.html" %}
       {% endif %}
       {% include "includes/take-new-snapshot.html" %}
-      {% if user.is_staff %}
-        {% include "includes/show-metadata.html" %}
-      {% endif %}
+      {% include "includes/show-metadata.html" %}
     {% endif %}
   </div>
 </div>
