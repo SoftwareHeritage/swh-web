@@ -264,9 +264,10 @@ def origin_with_multiple_visits():
     """
     ret = []
     tests_data = get_tests_data()
+    storage = tests_data["storage"]
     for origin in tests_data["origins"]:
-        visits = list(tests_data["storage"].origin_visit_get(origin["url"]))
-        if len(visits) > 1:
+        visit_page = storage.origin_visit_get(origin["url"])
+        if len(visit_page.results) > 1:
             ret.append(origin)
     return sampled_from(ret)
 

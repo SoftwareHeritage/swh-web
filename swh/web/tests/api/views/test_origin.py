@@ -364,13 +364,32 @@ def test_api_lookup_origin_visit_not_found(api_client, origin):
     }
 
 
+def test_api_origins_wrong_input(api_client, archive_data):
+    """Should fail with 400 if the input is deprecated.
+
+    """
+    # fail if wrong input
+    url = reverse("api-1-origins", query_params={"origin_from": 1})
+    rv = api_client.get(url)
+
+    assert rv.status_code == 400, rv.data
+    assert rv["Content-Type"] == "application/json"
+
+    assert rv.data == {
+        "exception": "BadInputExc",
+        "reason": "Please use the Link header to browse through result",
+    }
+
+
 def test_api_origins(api_client, archive_data):
-    origins = list(archive_data.origin_get_range(0, 10000))
-    origin_urls = {origin["url"] for origin in origins}
+    page_result = archive_data.origin_list(limit=10000)
+    origins = page_result.results
+    origin_urls = {origin.url for origin in origins}
 
     # Get only one
     url = reverse("api-1-origins", query_params={"origin_count": 1})
     rv = api_client.get(url)
+
     assert rv.status_code == 200, rv.data
     assert rv["Content-Type"] == "application/json"
     assert len(rv.data) == 1
@@ -395,8 +414,9 @@ def test_api_origins(api_client, archive_data):
 
 @pytest.mark.parametrize("origin_count", [1, 2, 10, 100])
 def test_api_origins_scroll(api_client, archive_data, origin_count):
-    origins = list(archive_data.origin_get_range(0, 10000))
-    origin_urls = {origin["url"] for origin in origins}
+    page_result = archive_data.origin_list(limit=10000)
+    origins = page_result.results
+    origin_urls = {origin.url for origin in origins}
 
     url = reverse("api-1-origins", query_params={"origin_count": origin_count})
 

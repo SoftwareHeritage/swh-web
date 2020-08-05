@@ -1,6 +1,6 @@
 import * as tslib_1 from "tslib";
-import { captureException, withScope } from '@sentry/core';
-import { addExceptionMechanism, addExceptionTypeValue } from '@sentry/utils';
+import { API, captureException, withScope } from '@sentry/core';
+import { addExceptionMechanism, addExceptionTypeValue, logger } from '@sentry/utils';
 var ignoreOnError = 0;
 /**
  * @hidden
@@ -131,5 +131,27 @@ export function wrap(fn, options, before) {
         /*no-empty*/
     }
     return sentryWrapped;
+}
+/**
+ * Injects the Report Dialog script
+ * @hidden
+ */
+export function injectReportDialog(options) {
+    if (options === void 0) { options = {}; }
+    if (!options.eventId) {
+        logger.error("Missing eventId option in showReportDialog call");
+        return;
+    }
+    if (!options.dsn) {
+        logger.error("Missing dsn option in showReportDialog call");
+        return;
+    }
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = new API(options.dsn).getReportDialogEndpoint(options);
+    if (options.onLoad) {
+        script.onload = options.onLoad;
+    }
+    (document.head || document.body).appendChild(script);
 }
 //# sourceMappingURL=helpers.js.map

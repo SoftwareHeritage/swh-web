@@ -7,30 +7,32 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
-<button id="metadata-toggler" class="btn btn-default btn-sm swh-popover-toggler" data-toggle="popover" data-popover-content="#metadata-popover">
-  <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
-  Show metadata
-</button>
+{% if user.is_staff %}
+  <button id="metadata-toggler" class="btn btn-default btn-sm swh-popover-toggler" data-toggle="popover" data-popover-content="#metadata-popover">
+    <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
+    Show metadata
+  </button>
 
-<div id="metadata-popover" style="display:none;">
-  <div class="popover-heading">{{ swh_object_name }} metadata</div>
-  <div class="popover-body">
-    <table class="table">
-      <tbody>
-        {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-          {% if val is not None and val != '' %}
-            <tr>
-              <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
-              <td class="swh-metadata-table-row swh-metadata-table-value">
-                <pre>{{ val | escape }}</pre>
-              </td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
+  <div id="metadata-popover" style="display:none;">
+    <div class="popover-heading">{{ swh_object_name }} metadata</div>
+    <div class="popover-body">
+      <table class="table">
+        <tbody>
+          {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
+            {% if val is not None and val != '' %}
+              <tr>
+                <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
+                <td class="swh-metadata-table-row swh-metadata-table-value">
+                  <pre>{{ val | escape }}</pre>
+                </td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
+{% endif %}
 
 <script>
   swh.webapp.setBrowsedSwhObjectMetadata({{ swh_object_metadata|jsonify }})
