@@ -1,3 +1,17 @@
+swh-web (0.0.248-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.248     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-08-05 10:01:23
+    +0200)
+  * Upstream changes:     - v0.0.248     - package.json: Upgrade
+    dependencies     - templates: Fix browsed object metadata
+    availability from javascript     - service: Adapt according to the
+    latest storage.content_find changes     - Adapt swh-search
+    configuration (runtime + tests)     - origin: Migrate use to
+    storage.origin_list instead of origin_get_range
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 05 Aug 2020 08:49:00 +0000
+
 swh-web (0.0.246-1~swh2) unstable-swh; urgency=medium
 
   * Update missing dependency + bump
