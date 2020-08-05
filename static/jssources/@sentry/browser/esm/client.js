@@ -1,7 +1,8 @@
 import * as tslib_1 from "tslib";
-import { API, BaseClient } from '@sentry/core';
+import { BaseClient } from '@sentry/core';
 import { getGlobalObject, logger } from '@sentry/utils';
 import { BrowserBackend } from './backend';
+import { injectReportDialog } from './helpers';
 import { Breadcrumbs } from './integrations';
 import { SDK_NAME, SDK_VERSION } from './version';
 /**
@@ -57,25 +58,10 @@ var BrowserClient = /** @class */ (function (_super) {
             return;
         }
         if (!this._isEnabled()) {
-            logger.error('Trying to call showReportDialog with Sentry Client is disabled');
+            logger.error('Trying to call showReportDialog with Sentry Client disabled');
             return;
         }
-        var dsn = options.dsn || this.getDsn();
-        if (!options.eventId) {
-            logger.error('Missing `eventId` option in showReportDialog call');
-            return;
-        }
-        if (!dsn) {
-            logger.error('Missing `Dsn` option in showReportDialog call');
-            return;
-        }
-        var script = document.createElement('script');
-        script.async = true;
-        script.src = new API(dsn).getReportDialogEndpoint(options);
-        if (options.onLoad) {
-            script.onload = options.onLoad;
-        }
-        (document.head || document.body).appendChild(script);
+        injectReportDialog(tslib_1.__assign({}, options, { dsn: options.dsn || this.getDsn() }));
     };
     return BrowserClient;
 }(BaseClient));

@@ -9,7 +9,7 @@ import shutil
 import sys
 
 from subprocess import run, PIPE
-from typing import Optional, Iterable
+from typing import Any, Dict, List, Optional
 
 import pytest
 
@@ -167,14 +167,14 @@ class _ArchiveData:
         # storage instance
         return getattr(self.storage, key)
 
-    def content_find(self, content):
+    def content_find(self, content: Dict[str, Any]) -> Dict[str, Any]:
         cnt_ids_bytes = {
             algo_hash: hash_to_bytes(content[algo_hash])
             for algo_hash in ALGORITHMS
             if content.get(algo_hash)
         }
         cnt = self.storage.content_find(cnt_ids_bytes)
-        return converters.from_content(cnt[0]) if cnt else cnt
+        return converters.from_content(cnt[0].to_dict()) if cnt else cnt
 
     def content_get_metadata(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
@@ -228,14 +228,25 @@ class _ArchiveData:
         return [converters.from_origin(o.to_dict()) for o in origins]
 
     def origin_visit_get(self, origin_url):
-        visits = list(self.storage.origin_visit_get(origin_url))
-        for i in range(len(visits)):
-            visit_status = self.storage.origin_visit_status_get_latest(
-                origin_url, visits[i]["visit"]
+        next_page_token = None
+        visits = []
+        while True:
+            visit_page = self.storage.origin_visit_get(
+                origin_url, page_token=next_page_token
             )
-            visits[i] = converters.from_origin_visit(
-                {**visits[i], **visit_status.to_dict()}
-            )
+            next_page_token = visit_page.next_page_token
+
+            for visit in visit_page.results:
+                visit_status = self.storage.origin_visit_status_get_latest(
+                    origin_url, visit.visit
+                )
+                visits.append(
+                    converters.from_origin_visit(
+                        {**visit_status.to_dict(), "type": visit.type}
+                    )
+                )
+            if not next_page_token:
+                break
         return visits
 
     def origin_visit_get_by(self, origin_url: str, visit_id: int) -> OriginVisitInfo:
@@ -251,7 +262,7 @@ class _ArchiveData:
         self,
         origin_url,
         type: Optional[str] = None,
-        allowed_statuses: Optional[Iterable[str]] = None,
+        allowed_statuses: Optional[List[str]] = None,
         require_snapshot: bool = False,
     ):
         visit_and_status = origin_get_latest_visit_status(

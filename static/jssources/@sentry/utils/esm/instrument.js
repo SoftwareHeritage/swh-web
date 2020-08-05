@@ -138,6 +138,9 @@ function instrumentFetch() {
                 return response;
             }, function (error) {
                 triggerHandlers('fetch', tslib_1.__assign({}, commonHandlerData, { endTimestamp: Date.now(), error: error }));
+                // NOTE: If you are a Sentry user, and you are seeing this stack frame,
+                //       it means the sentry.javascript SDK caught an error invoking your application code.
+                //       This is expected behavior and NOT indicative of a bug with sentry.javascript.
                 throw error;
             });
         };

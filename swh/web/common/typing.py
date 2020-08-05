@@ -3,7 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, List, Optional, Union
+from swh.core.api.classes import PagedResult as CorePagedResult
+
+from typing import Any, Dict, List, Optional, TypeVar, Union
 from typing_extensions import TypedDict
 
 from django.http import QueryDict
@@ -213,3 +215,9 @@ class RevisionMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     synthetic: bool
     type: str
     snapshot: Optional[str]
+
+
+TResult = TypeVar("TResult")
+
+
+PagedResult = CorePagedResult[TResult, str]

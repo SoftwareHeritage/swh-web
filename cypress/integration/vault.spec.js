@@ -238,7 +238,7 @@ describe('Vault Cooking User Interface Tests', function() {
       cy.route({
         method: 'GET',
         url: this.vaultFetchDirectoryUrl,
-        response: `fx:${this.directory}.tar.gz,binary`,
+        response: `fx:${this.directory}.tar.gz`,
         headers: {
           'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
           'Content-Type': 'application/gzip'
@@ -341,7 +341,7 @@ describe('Vault Cooking User Interface Tests', function() {
       cy.route({
         method: 'GET',
         url: this.vaultFetchRevisionUrl,
-        response: `fx:${this.revision}.gitfast.gz,binary`,
+        response: `fx:${this.revision}.gitfast.gz`,
         headers: {
           'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
           'Content-Type': 'application/gzip'
@@ -442,7 +442,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.route({
       method: 'GET',
       url: this.vaultFetchDirectoryUrl,
-      response: `fx:${this.directory}.tar.gz,binary`,
+      response: `fx:${this.directory}.tar.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
         'Content-Type': 'application/gzip'
@@ -479,7 +479,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.route({
       method: 'GET',
       url: this.vaultFetchRevisionUrl,
-      response: `fx:${this.revision}.gitfast.gz,binary`,
+      response: `fx:${this.revision}.gitfast.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
         'Content-Type': 'application/gzip'

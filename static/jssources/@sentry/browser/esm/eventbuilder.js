@@ -1,7 +1,45 @@
-import { addExceptionMechanism, addExceptionTypeValue, isDOMError, isDOMException, isError, isErrorEvent, isEvent, isPlainObject, } from '@sentry/utils';
+import { Severity } from '@sentry/types';
+import { addExceptionMechanism, addExceptionTypeValue, isDOMError, isDOMException, isError, isErrorEvent, isEvent, isPlainObject, SyncPromise, } from '@sentry/utils';
 import { eventFromPlainObject, eventFromStacktrace, prepareFramesForEvent } from './parsers';
 import { computeStackTrace } from './tracekit';
-/** JSDoc */
+/**
+ * Builds and Event from a Exception
+ * @hidden
+ */
+export function eventFromException(options, exception, hint) {
+    var syntheticException = (hint && hint.syntheticException) || undefined;
+    var event = eventFromUnknownInput(exception, syntheticException, {
+        attachStacktrace: options.attachStacktrace,
+    });
+    addExceptionMechanism(event, {
+        handled: true,
+        type: 'generic',
+    });
+    event.level = Severity.Error;
+    if (hint && hint.event_id) {
+        event.event_id = hint.event_id;
+    }
+    return SyncPromise.resolve(event);
+}
+/**
+ * Builds and Event from a Message
+ * @hidden
+ */
+export function eventFromMessage(options, message, level, hint) {
+    if (level === void 0) { level = Severity.Info; }
+    var syntheticException = (hint && hint.syntheticException) || undefined;
+    var event = eventFromString(message, syntheticException, {
+        attachStacktrace: options.attachStacktrace,
+    });
+    event.level = level;
+    if (hint && hint.event_id) {
+        event.event_id = hint.event_id;
+    }
+    return SyncPromise.resolve(event);
+}
+/**
+ * @hidden
+ */
 export function eventFromUnknownInput(exception, syntheticException, options) {
     if (options === void 0) { options = {}; }
     var event;
@@ -56,8 +94,9 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
     });
     return event;
 }
-// this._options.attachStacktrace
-/** JSDoc */
+/**
+ * @hidden
+ */
 export function eventFromString(input, syntheticException, options) {
     if (options === void 0) { options = {}; }
     var event = {
