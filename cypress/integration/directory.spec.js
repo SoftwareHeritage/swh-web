@@ -72,4 +72,12 @@ describe('Directory Tests', function() {
     cy.get('.swh-directory-table')
       .should('be.visible');
   });
+
+  it('should have metadata available from javascript', function() {
+    cy.window().then(win => {
+      const metadata = win.swh.webapp.getBrowsedSwhObjectMetadata();
+      expect(metadata).to.not.be.empty;
+      expect(metadata).to.have.any.keys('directory');
+    });
+  });
 });

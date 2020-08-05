@@ -163,7 +163,7 @@ def _init_tests_data():
     storage = None
 
     # Create search instance
-    search = get_search("memory", {})
+    search = get_search("memory")
     search.initialize()
     search.origin_update({"url": origin["url"]} for origin in _TEST_ORIGINS)
 

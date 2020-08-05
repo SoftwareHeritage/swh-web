@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Set, Iterable, Iterator, Optional, Tuple
 
 from swh.model import hashutil
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.model import OriginVisit
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest
@@ -21,7 +22,12 @@ from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.origin_visits import get_origin_visit
-from swh.web.common.typing import OriginInfo, OriginVisitInfo, OriginMetadataInfo
+from swh.web.common.typing import (
+    OriginInfo,
+    OriginVisitInfo,
+    OriginMetadataInfo,
+    PagedResult,
+)
 
 
 search = config.search()
@@ -86,35 +92,43 @@ def lookup_expression(expression, last_sha1, per_page):
         yield ctag
 
 
-def lookup_hash(q):
-    """Checks if the storage contains a given content checksum
+def lookup_hash(q: str) -> Dict[str, Any]:
+    """Check if the storage contains a given content checksum and return it if found.
 
-    Args: query string of the form <hash_algo:hash>
+    Args:
+        q: query string of the form <hash_algo:hash>
 
-    Returns: Dict with key found containing the hash info if the
+    Returns:
+        Dict with key found containing the hash info if the
     hash is present, None if not.
 
     """
-    algo, hash = query.parse_hash(q)
-    found = _first_element(storage.content_find({algo: hash}))
-    return {"found": converters.from_content(found), "algo": algo}
+    algo, hash_ = query.parse_hash(q)
+    found = _first_element(storage.content_find({algo: hash_}))
+    if found:
+        content = converters.from_content(found.to_dict())
+    else:
+        content = None
+    return {"found": content, "algo": algo}
 
 
-def search_hash(q):
-    """Checks if the storage contains a given content checksum
+def search_hash(q: str) -> Dict[str, bool]:
+    """Search storage for a given content checksum.
 
-    Args: query string of the form <hash_algo:hash>
+    Args:
+        q: query string of the form <hash_algo:hash>
 
-    Returns: Dict with key found to True or False, according to
+    Returns:
+        Dict with key found to True or False, according to
         whether the checksum is present or not
 
     """
-    algo, hash = query.parse_hash(q)
-    found = _first_element(storage.content_find({algo: hash}))
+    algo, hash_ = query.parse_hash(q)
+    found = _first_element(storage.content_find({algo: hash_}))
     return {"found": found is not None}
 
 
-def _lookup_content_sha1(q):
+def _lookup_content_sha1(q: str) -> Optional[bytes]:
     """Given a possible input, query for the content's sha1.
 
     Args:
@@ -124,13 +138,13 @@ def _lookup_content_sha1(q):
         binary sha1 if found or None
 
     """
-    algo, hash = query.parse_hash(q)
+    algo, hash_ = query.parse_hash(q)
     if algo != "sha1":
-        hashes = _first_element(storage.content_find({algo: hash}))
+        hashes = _first_element(storage.content_find({algo: hash_}))
         if not hashes:
             return None
-        return hashes["sha1"]
-    return hash
+        return hashes.sha1
+    return hash_
 
 
 def lookup_content_ctags(q):
@@ -242,8 +256,8 @@ def lookup_origin(origin: OriginInfo) -> OriginInfo:
 
 
 def lookup_origins(
-    origin_from: int = 1, origin_count: int = 100
-) -> Iterator[OriginInfo]:
+    page_token: Optional[str], limit: int = 100
+) -> PagedResult[OriginInfo]:
     """Get list of archived software origins in a paginated way.
 
     Origins are sorted by id before returning them
@@ -252,16 +266,23 @@ def lookup_origins(
         origin_from (int): The minimum id of the origins to return
         origin_count (int): The maximum number of origins to return
 
-    Yields:
-        origins information as dicts
+    Returns:
+        Page of OriginInfo
+
     """
-    origins = storage.origin_get_range(origin_from, origin_count)
-    return map(converters.from_origin, origins)
+    page = storage.origin_list(page_token=page_token, limit=limit)
+    return PagedResult(
+        [converters.from_origin(o.to_dict()) for o in page.results],
+        next_page_token=page.next_page_token,
+    )
 
 
 def search_origin(
-    url_pattern: str, limit: int = 50, with_visit: bool = False, page_token: Any = None
-) -> Tuple[List[OriginInfo], Any]:
+    url_pattern: str,
+    limit: int = 50,
+    with_visit: bool = False,
+    page_token: Optional[str] = None,
+) -> Tuple[List[OriginInfo], Optional[str]]:
     """Search for origins whose urls contain a provided string pattern
     or match a provided regular expression.
 
@@ -274,19 +295,19 @@ def search_origin(
         list of origin information as dict.
 
     """
+    if page_token:
+        assert isinstance(page_token, str)
+
     if search:
-        results = search.origin_search(
+        page_result = search.origin_search(
             url_pattern=url_pattern,
-            count=limit,
             page_token=page_token,
             with_visit=with_visit,
+            limit=limit,
         )
-        origins = list(map(converters.from_origin, results["results"]))
-        return (origins, results["next_page_token"])
+        origins = [converters.from_origin(ori_dict) for ori_dict in page_result.results]
     else:
         # Fallback to swh-storage if swh-search is not configured
-        offset = int(page_token) if page_token else 0
-        regexp = True
         search_words = [re.escape(word) for word in url_pattern.split()]
         if len(search_words) >= 7:
             url_pattern = ".*".join(search_words)
@@ -296,15 +317,16 @@ def search_origin(
                 pattern_parts.append(".*".join(permut))
             url_pattern = "|".join(pattern_parts)
 
-        origins_raw = storage.origin_search(
-            url_pattern, offset, limit, regexp, with_visit
+        page_result = storage.origin_search(
+            url_pattern,
+            page_token=page_token,
+            with_visit=with_visit,
+            limit=limit,
+            regexp=True,
         )
-        origins = list(map(converters.from_origin, origins_raw))
-        if len(origins) >= limit:
-            page_token = str(offset + len(origins))
-        else:
-            page_token = None
-        return (origins, page_token)
+        origins = [converters.from_origin(ori.to_dict()) for ori in page_result.results]
+
+    return (origins, page_result.next_page_token)
 
 
 def search_origin_metadata(
@@ -779,15 +801,16 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
     elif entity["type"] == "file":  # content
         content = _first_element(storage.content_find({"sha1_git": entity["target"]}))
         if not content:
-            raise NotFoundExc("Content not found for revision %s" % sha1_git)
+            raise NotFoundExc(f"Content not found for revision {sha1_git}")
+        content_d = content.to_dict()
         if with_data:
-            c = _first_element(storage.content_get([content["sha1"]]))
-            content["data"] = c["data"]
+            c = _first_element(storage.content_get([content.sha1]))
+            content_d["data"] = c["data"]
         return {
             "type": "file",
             "path": "." if not dir_path else dir_path,
             "revision": sha1_git,
-            "content": converters.from_content(content),
+            "content": converters.from_content(content_d),
         }
     elif entity["type"] == "rev":  # revision
         revision = next(storage.revision_get([entity["target"]]))
@@ -801,7 +824,7 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         raise NotImplementedError("Entity of type %s not implemented." % entity["type"])
 
 
-def lookup_content(q):
+def lookup_content(q: str) -> Dict[str, Any]:
     """Lookup the content designed by q.
 
     Args:
@@ -811,14 +834,12 @@ def lookup_content(q):
         NotFoundExc if the requested content is not found
 
     """
-    algo, hash = query.parse_hash(q)
-    c = _first_element(storage.content_find({algo: hash}))
+    algo, hash_ = query.parse_hash(q)
+    c = _first_element(storage.content_find({algo: hash_}))
     if not c:
-        raise NotFoundExc(
-            "Content with %s checksum equals to %s not found!"
-            % (algo, hashutil.hash_to_hex(hash))
-        )
-    return converters.from_content(c)
+        hhex = hashutil.hash_to_hex(hash_)
+        raise NotFoundExc(f"Content with {algo} checksum equals to {hhex} not found!")
+    return converters.from_content(c.to_dict())
 
 
 def lookup_content_raw(q):
@@ -859,7 +880,7 @@ def stat_counters():
 
 def _lookup_origin_visits(
     origin_url: str, last_visit: Optional[int] = None, limit: int = 10
-) -> Iterator[Dict[str, Any]]:
+) -> Iterator[OriginVisit]:
     """Yields the origin origins' visits.
 
     Args:
@@ -868,15 +889,19 @@ def _lookup_origin_visits(
         limit (int): Number of elements max to display
 
     Yields:
-       Dictionaries of origin_visit for that origin
+       OriginVisit for that origin
 
     """
     limit = min(limit, MAX_LIMIT)
-    for visit in storage.origin_visit_get(
-        origin_url, last_visit=last_visit, limit=limit
-    ):
-        visit["origin"] = origin_url
-        yield visit
+    page_token: Optional[str]
+    if last_visit is not None:
+        page_token = str(last_visit)
+    else:
+        page_token = None
+    visit_page = storage.origin_visit_get(
+        origin_url, page_token=page_token, limit=limit
+    )
+    yield from visit_page.results
 
 
 def lookup_origin_visits(
@@ -891,17 +916,18 @@ def lookup_origin_visits(
        Dictionaries of origin_visit for that origin
 
     """
-    visits = _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page)
-    for visit in visits:
-        visit_status = storage.origin_visit_status_get_latest(origin, visit["visit"])
-        yield converters.from_origin_visit({**visit, **visit_status.to_dict()})
+    for visit in _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page):
+        visit_status = storage.origin_visit_status_get_latest(origin, visit.visit)
+        yield converters.from_origin_visit(
+            {**visit_status.to_dict(), "type": visit.type}
+        )
 
 
 def lookup_origin_visit_latest(
     origin_url: str,
     require_snapshot: bool = False,
     type: Optional[str] = None,
-    allowed_statuses: Optional[Iterable[str]] = None,
+    allowed_statuses: Optional[List[str]] = None,
 ) -> Optional[OriginVisitInfo]:
     """Return the origin's latest visit
 
@@ -1028,7 +1054,7 @@ def lookup_snapshot(
 
 
 def lookup_latest_origin_snapshot(
-    origin: str, allowed_statuses: Iterable[str] = None
+    origin: str, allowed_statuses: List[str] = None
 ) -> Optional[Dict[str, Any]]:
     """Return information about the latest snapshot of an origin.
 

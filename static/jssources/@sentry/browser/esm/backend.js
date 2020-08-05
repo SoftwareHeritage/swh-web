@@ -1,8 +1,8 @@
 import * as tslib_1 from "tslib";
 import { BaseBackend } from '@sentry/core';
 import { Severity } from '@sentry/types';
-import { addExceptionMechanism, supportsFetch, SyncPromise } from '@sentry/utils';
-import { eventFromString, eventFromUnknownInput } from './eventbuilder';
+import { supportsFetch } from '@sentry/utils';
+import { eventFromException, eventFromMessage } from './eventbuilder';
 import { FetchTransport, XHRTransport } from './transports';
 /**
  * The Sentry Browser SDK Backend.
@@ -34,34 +34,14 @@ var BrowserBackend = /** @class */ (function (_super) {
      * @inheritDoc
      */
     BrowserBackend.prototype.eventFromException = function (exception, hint) {
-        var syntheticException = (hint && hint.syntheticException) || undefined;
-        var event = eventFromUnknownInput(exception, syntheticException, {
-            attachStacktrace: this._options.attachStacktrace,
-        });
-        addExceptionMechanism(event, {
-            handled: true,
-            type: 'generic',
-        });
-        event.level = Severity.Error;
-        if (hint && hint.event_id) {
-            event.event_id = hint.event_id;
-        }
-        return SyncPromise.resolve(event);
+        return eventFromException(this._options, exception, hint);
     };
     /**
      * @inheritDoc
      */
     BrowserBackend.prototype.eventFromMessage = function (message, level, hint) {
         if (level === void 0) { level = Severity.Info; }
-        var syntheticException = (hint && hint.syntheticException) || undefined;
-        var event = eventFromString(message, syntheticException, {
-            attachStacktrace: this._options.attachStacktrace,
-        });
-        event.level = level;
-        if (hint && hint.event_id) {
-            event.event_id = hint.event_id;
-        }
-        return SyncPromise.resolve(event);
+        return eventFromMessage(this._options, message, level, hint);
     };
     return BrowserBackend;
 }(BaseBackend));
