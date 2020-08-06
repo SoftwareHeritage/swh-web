@@ -260,10 +260,11 @@ def _init_tests_data():
         path = ""
         if sha1 in content_path:
             path = content_path[sha1]
-        cnt = next(storage.content_get([sha1]))
-        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt["data"])
-        _, _, cnt["data"] = _re_encode_content(mimetype, encoding, cnt["data"])
-        content_display_data = prepare_content_for_display(cnt["data"], mimetype, path)
+        cnt_data = storage.content_get_data(sha1)
+        assert cnt_data is not None
+        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt_data)
+        _, _, cnt_data = _re_encode_content(mimetype, encoding, cnt_data)
+        content_display_data = prepare_content_for_display(cnt_data, mimetype, path)
 
         content_metadata.update(
             {

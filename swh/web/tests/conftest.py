@@ -185,10 +185,12 @@ class _ArchiveData:
             content, hashess={"sha1", "sha1_git", "sha256", "blake2s256"}
         )
 
-    def content_get(self, cnt_id):
+    def content_get_data(self, cnt_id: str) -> Optional[Dict[str, Any]]:
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        cnt = next(self.storage.content_get([cnt_id_bytes]))
-        return converters.from_content(cnt)
+        cnt_data = self.storage.content_get_data(cnt_id_bytes)
+        if cnt_data is None:
+            return None
+        return converters.from_content({"data": cnt_data, "sha1": cnt_id_bytes})
 
     def directory_get(self, dir_id):
         return {"id": dir_id, "content": self.directory_ls(dir_id)}

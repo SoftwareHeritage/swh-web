@@ -804,8 +804,9 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
             raise NotFoundExc(f"Content not found for revision {sha1_git}")
         content_d = content.to_dict()
         if with_data:
-            c = _first_element(storage.content_get([content.sha1]))
-            content_d["data"] = c["data"]
+            data = storage.content_get_data(content.sha1)
+            if data:
+                content_d["data"] = data
         return {
             "type": "file",
             "path": "." if not dir_path else dir_path,
@@ -842,7 +843,7 @@ def lookup_content(q: str) -> Dict[str, Any]:
     return converters.from_content(c.to_dict())
 
 
-def lookup_content_raw(q):
+def lookup_content_raw(q: str) -> Dict[str, Any]:
     """Lookup the content defined by q.
 
     Args:
@@ -859,14 +860,14 @@ def lookup_content_raw(q):
     """
     c = lookup_content(q)
     content_sha1_bytes = hashutil.hash_to_bytes(c["checksums"]["sha1"])
-    content = _first_element(storage.content_get([content_sha1_bytes]))
-    if not content:
-        algo, hash = query.parse_hash(q)
+    content_data = storage.content_get_data(content_sha1_bytes)
+    if not content_data:
+        algo, hash_ = query.parse_hash(q)
         raise NotFoundExc(
-            "Bytes of content with %s checksum equals to %s "
-            "are not available!" % (algo, hashutil.hash_to_hex(hash))
+            f"Bytes of content with {algo} checksum equals "
+            f"to {hashutil.hash_to_hex(hash_)} are not available!"
         )
-    return converters.from_content(content)
+    return converters.from_content({"sha1": content_sha1_bytes, "data": content_data})
 
 
 def stat_counters():

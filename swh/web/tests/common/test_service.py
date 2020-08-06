@@ -472,7 +472,9 @@ def test_lookup_directory_with_revision_with_path_to_file_and_data(
         if e["type"] == "file"
     ]
     expected_dir_entry = random.choice(dir_entries)
-    expected_data = archive_data.content_get(expected_dir_entry["checksums"]["sha1"])
+    expected_data = archive_data.content_get_data(
+        expected_dir_entry["checksums"]["sha1"]
+    )
 
     actual_dir_entry = service.lookup_directory_with_revision(
         revision, expected_dir_entry["name"], with_data=True
@@ -598,7 +600,7 @@ def test_lookup_content_raw_not_found():
 def test_lookup_content_raw(archive_data, content):
     actual_content = service.lookup_content_raw("sha256:%s" % content["sha256"])
 
-    expected_content = archive_data.content_get(content["sha1"])
+    expected_content = archive_data.content_get_data(content["sha1"])
 
     assert actual_content == expected_content
 
