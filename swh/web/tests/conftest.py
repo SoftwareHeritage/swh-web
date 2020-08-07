@@ -292,13 +292,13 @@ class _ArchiveData:
     def snapshot_get_branches(
         self, snapshot_id, branches_from="", branches_count=1000, target_types=None
     ):
-        snp = self.storage.snapshot_get_branches(
+        partial_branches = self.storage.snapshot_get_branches(
             hash_to_bytes(snapshot_id),
             branches_from.encode(),
             branches_count,
             target_types,
         )
-        return converters.from_snapshot(snp)
+        return converters.from_partial_branches(partial_branches)
 
     def snapshot_get_head(self, snapshot):
         if snapshot["branches"]["HEAD"]["target_type"] == "alias":

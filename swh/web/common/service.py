@@ -1046,12 +1046,12 @@ def lookup_snapshot(
         A dict filled with the snapshot content.
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    snapshot = storage.snapshot_get_branches(
+    partial_branches = storage.snapshot_get_branches(
         snapshot_id_bin, branches_from.encode(), branches_count, target_types
     )
-    if not snapshot:
-        raise NotFoundExc("Snapshot with id %s not found!" % snapshot_id)
-    return converters.from_snapshot(snapshot)
+    if not partial_branches:
+        raise NotFoundExc(f"Snapshot with id {snapshot_id} not found!")
+    return converters.from_partial_branches(partial_branches)
 
 
 def lookup_latest_origin_snapshot(
