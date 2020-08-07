@@ -84,7 +84,7 @@ def test_lookup_hash_does_not_exist():
 def test_lookup_hash_exist(archive_data, content):
     actual_lookup = service.lookup_hash("sha1:%s" % content["sha1"])
 
-    content_metadata = archive_data.content_get_metadata(content["sha1"])
+    content_metadata = archive_data.content_get(content["sha1"])
 
     assert {"found": content_metadata, "algo": "sha1"} == actual_lookup
 
@@ -619,18 +619,18 @@ def test_lookup_content_not_found():
 
 @given(content())
 def test_lookup_content_with_sha1(archive_data, content):
-    actual_content = service.lookup_content("sha1:%s" % content["sha1"])
+    actual_content = service.lookup_content(f"sha1:{content['sha1']}")
 
-    expected_content = archive_data.content_get_metadata(content["sha1"])
+    expected_content = archive_data.content_get(content["sha1"])
 
     assert actual_content == expected_content
 
 
 @given(content())
 def test_lookup_content_with_sha256(archive_data, content):
-    actual_content = service.lookup_content("sha256:%s" % content["sha256"])
+    actual_content = service.lookup_content(f"sha256:{content['sha256']}")
 
-    expected_content = archive_data.content_get_metadata(content["sha1"])
+    expected_content = archive_data.content_get(content["sha1"])
 
     assert actual_content == expected_content
 

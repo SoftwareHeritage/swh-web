@@ -230,7 +230,7 @@ def test_api_content_metadata(api_client, archive_data, content):
 
     assert rv.status_code == 200, rv.data
     assert rv["Content-Type"] == "application/json"
-    expected_data = archive_data.content_get_metadata(content["sha1"])
+    expected_data = archive_data.content_get(content["sha1"])
     for key, view_name in (
         ("data_url", "api-1-content-raw"),
         ("license_url", "api-1-content-license"),

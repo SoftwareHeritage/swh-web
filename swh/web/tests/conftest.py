@@ -176,13 +176,16 @@ class _ArchiveData:
         cnt = self.storage.content_find(cnt_ids_bytes)
         return converters.from_content(cnt[0].to_dict()) if cnt else cnt
 
-    def content_get_metadata(self, cnt_id):
+    def content_get(self, cnt_id: str) -> Dict[str, Any]:
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        metadata = self.storage.content_get_metadata([cnt_id_bytes])
-        contents = metadata[cnt_id_bytes]
-        content = None if not contents else contents[0]
+        content = self.storage.content_get([cnt_id_bytes])[0]
+        if content:
+            content_d = content.to_dict()
+            content_d.pop("ctime", None)
+        else:
+            content_d = None
         return converters.from_swh(
-            content, hashess={"sha1", "sha1_git", "sha256", "blake2s256"}
+            content_d, hashess={"sha1", "sha1_git", "sha256", "blake2s256"}
         )
 
     def content_get_data(self, cnt_id: str) -> Optional[Dict[str, Any]]:
