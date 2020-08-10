@@ -22,7 +22,7 @@ from swh.web.common import converters
 from swh.web.common.typing import OriginVisitInfo
 from swh.web.tests.data import get_tests_data, override_storages
 from swh.storage.algos.origin import origin_get_latest_visit_status
-from swh.storage.algos.snapshot import snapshot_get_latest
+from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
 
 # Used to skip some tests
 ctags_json_missing = (
@@ -286,8 +286,8 @@ class _ArchiveData:
         )
 
     def snapshot_get(self, snapshot_id):
-        snp = self.storage.snapshot_get(hash_to_bytes(snapshot_id))
-        return converters.from_snapshot(snp)
+        snp = snapshot_get_all_branches(self.storage, hash_to_bytes(snapshot_id))
+        return converters.from_snapshot(snp.to_dict())
 
     def snapshot_get_branches(
         self, snapshot_id, branches_from="", branches_count=1000, target_types=None

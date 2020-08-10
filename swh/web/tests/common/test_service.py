@@ -829,7 +829,7 @@ def test_lookup_known_objects(
     expected = archive_data.revision_get(revision)
     assert service.lookup_object(REVISION, revision) == expected
 
-    expected = archive_data.snapshot_get(snapshot)
+    expected = {**archive_data.snapshot_get(snapshot), "next_branch": None}
     assert service.lookup_object(SNAPSHOT, snapshot) == expected
 
 

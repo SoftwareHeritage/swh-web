@@ -460,7 +460,8 @@ def unknown_snapshot():
     into the test archive.
     """
     return sha1().filter(
-        lambda s: get_tests_data()["storage"].snapshot_get(hash_to_bytes(s)) is None
+        lambda s: get_tests_data()["storage"].snapshot_get_branches(hash_to_bytes(s))
+        is None
     )
 
 
