@@ -513,12 +513,14 @@ def test_browse_origin_directory_no_visit(client, mocker, origin):
         "swh.web.common.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
+    mock_service = mocker.patch("swh.web.common.origin_visits.service")
+    mock_service.lookup_origin_visit_latest.return_value = None
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
-    assert_contains(resp, "No visit", status_code=404)
-    assert mock_get_origin_visits.called
+    assert_contains(resp, "No valid visit", status_code=404)
+    assert not mock_get_origin_visits.called
 
 
 @given(origin())
@@ -557,6 +559,8 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
         "swh.web.common.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
+    mock_service = mocker.patch("swh.web.common.origin_visits.service")
+    mock_service.lookup_origin_visit_latest.return_value = None
     url = reverse(
         "browse-origin-content",
         query_params={"origin_url": origin["url"], "path": "foo"},
@@ -564,8 +568,8 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
     resp = client.get(url)
     assert resp.status_code == 404
     assert_template_used(resp, "error.html")
-    assert_contains(resp, "No visit", status_code=404)
-    assert mock_get_origin_visits.called
+    assert_contains(resp, "No valid visit", status_code=404)
+    assert not mock_get_origin_visits.called
 
 
 @given(origin())

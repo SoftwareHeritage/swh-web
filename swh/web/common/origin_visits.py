@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from django.core.cache import cache
 
+from swh.web.common import service
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
 from swh.web.common.utils import parse_iso8601_date_to_utc
@@ -110,25 +111,28 @@ def get_origin_visit(
     Raises:
         swh.web.common.exc.NotFoundExc: if no visit can be found
     """
+    # returns the latest full visit with a valid snapshot
+    visit = service.lookup_origin_visit_latest(
+        origin_info["url"], allowed_statuses=["full"], require_snapshot=True
+    )
+    if not visit:
+        # or the latest partial visit with a valid snapshot otherwise
+        visit = service.lookup_origin_visit_latest(
+            origin_info["url"], allowed_statuses=["partial"], require_snapshot=True
+        )
 
     if not visit_ts and not visit_id and not snapshot_id:
-        from swh.web.common import service
-
-        # returns the latest full visit with a valid snapshot
-        visit = service.lookup_origin_visit_latest(
-            origin_info["url"], allowed_statuses=["full"], require_snapshot=True
-        )
-        if not visit:
-            # or the latest partial visit with a valid snapshot otherwise
-            visit = service.lookup_origin_visit_latest(
-                origin_info["url"], allowed_statuses=["partial"], require_snapshot=True
-            )
         if visit:
             return visit
         else:
             raise NotFoundExc(
                 f"No valid visit for origin with url {origin_info['url']} found!"
             )
+
+    # no need to fetch all visits list and search in it if the latest
+    # visit matches some criteria
+    if visit and (visit["snapshot"] == snapshot_id or visit["visit"] == visit_id):
+        return visit
 
     visits = get_origin_visits(origin_info)
 

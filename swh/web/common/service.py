@@ -21,7 +21,6 @@ from swh.web import config
 from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
     OriginInfo,
     OriginVisitInfo,
@@ -567,6 +566,8 @@ def _lookup_revision_id_by(origin, branch_name, timestamp):
         origin = {"url": origin}
     else:
         raise TypeError('"origin" must be an int or a string.')
+
+    from swh.web.common.origin_visits import get_origin_visit
 
     visit = get_origin_visit(origin, visit_ts=timestamp)
     branch = _get_snapshot_branch(visit["snapshot"], branch_name)
