@@ -9,6 +9,8 @@ import 'waypoints/lib/jquery.waypoints';
 
 import {swhSpinnerSrc} from 'utils/constants';
 
+import diffPanelTemplate from './diff-panel.ejs';
+
 // number of changed files in the revision
 let changes = null;
 let nbChangedFiles = 0;
@@ -342,44 +344,11 @@ function genDiffPanel(diffData) {
   if (diffData.type === 'rename') {
     diffPanelTitle = `${diffData.from_path} &rarr; ${diffData.to_path}`;
   }
-  let diffPanelHtml =
-  `<div id="panel_${diffData.id}" class="card swh-file-diff-panel">
-    <div class="card-header bg-gray-light border-bottom-0">
-      <a data-toggle="collapse" href="#panel_${diffData.id}_content">
-        <div class="float-left swh-title-color">
-          <strong>${diffPanelTitle}</strong>
-        </div>
-      </a>
-      <div class="ml-auto float-right">
-        <div class="btn-group btn-group-toggle diff-styles" data-toggle="buttons" style="visibility: hidden;">
-          <label class="btn btn-default btn-sm form-check-label active unified-diff-button" onclick="swh.revision.showUnifiedDiff(event, '${diffData.id}')">
-            <input type="radio" name="diffs-switch" id="unified" autocomplete="off" checked> Unified
-          </label>
-          <label class="btn btn-default btn-sm form-check-label splitted-diff-button" onclick="swh.revision.showSplittedDiff(event, '${diffData.id}')">
-            <input type="radio" name="diffs-switch" id="side-by-side" autocomplete="off"> Side-by-side
-          </label>
-        </div>
-        <a href="${diffData.content_url}" class="btn btn-default btn-sm" role="button">View file</a>
-      </div>
-      <div class="clearfix"></div>
-    </div>
-    <div id="panel_${diffData.id}_content" class="collapse show">
-      <div class="swh-diff-loading text-center" id="${diffData.id}-loading" style="visibility: hidden;">
-        <img src=${swhSpinnerSrc}></img>
-        <p>Loading diff ...</p>
-      </div>
-      <div class="highlightjs swh-content" style="display: none;" id="${diffData.id}-highlightjs">
-        <div id="${diffData.id}-unified-diff">
-          <pre><code class="${diffData.id}" id="${diffData.id}"></code></pre>
-        </div>
-        <div style="width: 100%; display: none;" id="${diffData.id}-splitted-diff">
-          <pre class="float-left" style="width: 50%;"><code class="${diffData.id}" id="${diffData.id}-from"></code></pre>
-          <pre style="width: 50%"><code class="${diffData.id}" id="${diffData.id}-to"></code></pre>
-        </div>
-      </div>
-    </div>
-  </div>`;
-  return diffPanelHtml;
+  return diffPanelTemplate({
+    diffData: diffData,
+    diffPanelTitle: diffPanelTitle,
+    swhSpinnerSrc: swhSpinnerSrc
+  });
 }
 
 // setup waypoints to request diffs computation on the fly while scrolling
@@ -419,13 +388,13 @@ function setupWaypoints() {
 }
 
 // callback to switch from side-by-side diff to unified one
-export function showUnifiedDiff(event, diffId) {
+export function showUnifiedDiff(diffId) {
   $(`#${diffId}-splitted-diff`).css('display', 'none');
   $(`#${diffId}-unified-diff`).css('display', 'block');
 }
 
 // callback to switch from unified diff to side-by-side one
-export function showSplittedDiff(event, diffId) {
+export function showSplittedDiff(diffId) {
   $(`#${diffId}-unified-diff`).css('display', 'none');
   $(`#${diffId}-splitted-diff`).css('display', 'block');
 }
