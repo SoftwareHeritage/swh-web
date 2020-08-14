@@ -480,7 +480,7 @@ def lookup_release_multiple(sha1_git_list):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    sha1_bin_list = (_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list)
+    sha1_bin_list = [_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list]
     releases = storage.release_get(sha1_bin_list) or []
     return (converters.from_release(r) for r in releases)
 
@@ -520,7 +520,7 @@ def lookup_revision_multiple(sha1_git_list):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    sha1_bin_list = (_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list)
+    sha1_bin_list = [_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list]
     revisions = storage.revision_get(sha1_bin_list) or []
     return (converters.from_revision(r) for r in revisions)
 
