@@ -20,13 +20,11 @@ Revision
          identifier of a revision
     :query string origin_url: used internally to associate an origin url
         (e.g. https://github.com/user/repo) to the revision
-    :query string timestamp: used internally to associate an origin visit to the
-        revision, must be a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
-    :query int visit_id: used internally to specify a visit id instead of
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+        closest visit.
+    :query int visit_id: specify a visit id instead of
         using the provided timestamp
-    :query string path: used internally when navigating in the source tree
-        associated to the revision
+    :query string path: optional relative path from the revision root directory
     :statuscode 200: no error
     :statuscode 404: requested revision can not be found in the archive
 
@@ -36,8 +34,6 @@ Revision
 
         :swh_web_browse:`revision/f1b94134a4b879bc55c3dacdb496690c8ebdc03f/`
         :swh_web_browse:`revision/d1aa2b3f607b35dc5dbf613b2334b6d243ec2bda/`
-
-    .. _dateutil.parser.parse: http://dateutil.readthedocs.io/en/stable/parser.html
 
 .. http:get:: /browse/revision/(sha1_git)/log/
 

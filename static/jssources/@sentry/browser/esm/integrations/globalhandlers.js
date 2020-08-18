@@ -1,4 +1,5 @@
-import * as tslib_1 from "tslib";
+import { __assign } from "tslib";
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { getCurrentHub } from '@sentry/core';
 import { Severity } from '@sentry/types';
 import { addExceptionMechanism, addInstrumentationHandler, getLocationHref, isErrorEvent, isPrimitive, isString, logger, } from '@sentry/utils';
@@ -16,7 +17,7 @@ var GlobalHandlers = /** @class */ (function () {
         this._onErrorHandlerInstalled = false;
         /** JSDoc */
         this._onUnhandledRejectionHandlerInstalled = false;
-        this._options = tslib_1.__assign({ onerror: true, onunhandledrejection: true }, options);
+        this._options = __assign({ onerror: true, onunhandledrejection: true }, options);
     }
     /**
      * @inheritDoc
@@ -39,6 +40,7 @@ var GlobalHandlers = /** @class */ (function () {
             return;
         }
         addInstrumentationHandler({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             callback: function (data) {
                 var error = data.error;
                 var currentHub = getCurrentHub();
@@ -73,6 +75,7 @@ var GlobalHandlers = /** @class */ (function () {
             return;
         }
         addInstrumentationHandler({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             callback: function (e) {
                 var error = e;
                 // dig the object of the rejection out of known event types
@@ -124,6 +127,7 @@ var GlobalHandlers = /** @class */ (function () {
     /**
      * This function creates a stack from an old, error-less onerror handler.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     GlobalHandlers.prototype._eventFromIncompleteOnError = function (msg, url, line, column) {
         var ERROR_TYPES_RE = /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;
         // If 'message' is ErrorEvent, get real message from inside
@@ -151,6 +155,7 @@ var GlobalHandlers = /** @class */ (function () {
     /**
      * This function creates an Event from an TraceKitStackTrace that has part of it missing.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     GlobalHandlers.prototype._eventFromIncompleteRejection = function (error) {
         return {
             exception: {
@@ -164,6 +169,7 @@ var GlobalHandlers = /** @class */ (function () {
         };
     };
     /** JSDoc */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     GlobalHandlers.prototype._enhanceEventWithInitialFrame = function (event, url, line, column) {
         event.exception = event.exception || {};
         event.exception.values = event.exception.values || [];

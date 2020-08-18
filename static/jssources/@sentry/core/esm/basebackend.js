@@ -14,14 +14,9 @@ var BaseBackend = /** @class */ (function () {
         this._transport = this._setupTransport();
     }
     /**
-     * Sets up the transport so it can be used later to send requests.
-     */
-    BaseBackend.prototype._setupTransport = function () {
-        return new NoopTransport();
-    };
-    /**
      * @inheritDoc
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     BaseBackend.prototype.eventFromException = function (_exception, _hint) {
         throw new SentryError('Backend has to implement `eventFromException` method');
     };
@@ -44,6 +39,12 @@ var BaseBackend = /** @class */ (function () {
      */
     BaseBackend.prototype.getTransport = function () {
         return this._transport;
+    };
+    /**
+     * Sets up the transport so it can be used later to send requests.
+     */
+    BaseBackend.prototype._setupTransport = function () {
+        return new NoopTransport();
     };
     return BaseBackend;
 }());

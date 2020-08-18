@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /**
  * Checks whether given value's type is one of a few Error or Error-like
  * {@link isError}.
@@ -85,7 +87,6 @@ export function isPlainObject(wat) {
  * @returns A boolean representing the result.
  */
 export function isEvent(wat) {
-    // tslint:disable-next-line:strict-type-predicates
     return typeof Event !== 'undefined' && isInstanceOf(wat, Event);
 }
 /**
@@ -96,7 +97,6 @@ export function isEvent(wat) {
  * @returns A boolean representing the result.
  */
 export function isElement(wat) {
-    // tslint:disable-next-line:strict-type-predicates
     return typeof Element !== 'undefined' && isInstanceOf(wat, Element);
 }
 /**
@@ -114,9 +114,8 @@ export function isRegExp(wat) {
  * @param wat A value to be checked.
  */
 export function isThenable(wat) {
-    // tslint:disable:no-unsafe-any
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return Boolean(wat && wat.then && typeof wat.then === 'function');
-    // tslint:enable:no-unsafe-any
 }
 /**
  * Checks whether given value's type is a SyntheticEvent
@@ -126,7 +125,6 @@ export function isThenable(wat) {
  * @returns A boolean representing the result.
  */
 export function isSyntheticEvent(wat) {
-    // tslint:disable-next-line:no-unsafe-any
     return isPlainObject(wat) && 'nativeEvent' in wat && 'preventDefault' in wat && 'stopPropagation' in wat;
 }
 /**
@@ -139,7 +137,6 @@ export function isSyntheticEvent(wat) {
  */
 export function isInstanceOf(wat, base) {
     try {
-        // tslint:disable-next-line:no-unsafe-any
         return wat instanceof base;
     }
     catch (_e) {

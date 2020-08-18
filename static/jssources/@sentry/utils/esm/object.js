@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __values } from "tslib";
 import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive, isSyntheticEvent } from './is';
 import { Memo } from './memo';
 import { getFunctionName, htmlTreeAsString } from './misc';
@@ -19,7 +19,6 @@ export function fill(source, name, replacement) {
     var wrapped = replacement(original);
     // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
     // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
-    // tslint:disable-next-line:strict-type-predicates
     if (typeof wrapped === 'function') {
         try {
             wrapped.prototype = wrapped.prototype || {};
@@ -45,9 +44,7 @@ export function fill(source, name, replacement) {
  */
 export function urlEncode(object) {
     return Object.keys(object)
-        .map(
-    // tslint:disable-next-line:no-unsafe-any
-    function (key) { return encodeURIComponent(key) + "=" + encodeURIComponent(object[key]); })
+        .map(function (key) { return encodeURIComponent(key) + "=" + encodeURIComponent(object[key]); })
         .join('&');
 }
 /**
@@ -92,7 +89,6 @@ function getWalkSource(value) {
         catch (_oO) {
             source.currentTarget = '<unknown>';
         }
-        // tslint:disable-next-line:strict-type-predicates
         if (typeof CustomEvent !== 'undefined' && isInstanceOf(value, CustomEvent)) {
             source.detail = event_1.detail;
         }
@@ -107,7 +103,7 @@ function getWalkSource(value) {
 }
 /** Calculates bytes size of input string */
 function utf8Length(value) {
-    // tslint:disable-next-line:no-bitwise
+    // eslint-disable-next-line no-bitwise
     return ~-encodeURI(value).split(/%..|./).length;
 }
 /** Calculates bytes size of input object */
@@ -153,7 +149,6 @@ function serializeValue(value) {
  * - serializes Error objects
  * - filter global objects
  */
-// tslint:disable-next-line:cyclomatic-complexity
 function normalizeValue(value, key) {
     if (key === 'domain' && value && typeof value === 'object' && value._events) {
         return '[Domain]';
@@ -174,7 +169,6 @@ function normalizeValue(value, key) {
     if (isSyntheticEvent(value)) {
         return '[SyntheticEvent]';
     }
-    // tslint:disable-next-line:no-tautology-expression
     if (typeof value === 'number' && value !== value) {
         return '[NaN]';
     }
@@ -194,6 +188,7 @@ function normalizeValue(value, key) {
  * @param depth Optional number indicating how deep should walking be performed
  * @param memo Optional Memo class handling decycling
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function walk(key, value, depth, memo) {
     if (depth === void 0) { depth = +Infinity; }
     if (memo === void 0) { memo = new Memo(); }
@@ -201,12 +196,12 @@ export function walk(key, value, depth, memo) {
     if (depth === 0) {
         return serializeValue(value);
     }
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     // If value implements `toJSON` method, call it and return early
-    // tslint:disable:no-unsafe-any
     if (value !== null && value !== undefined && typeof value.toJSON === 'function') {
         return value.toJSON();
     }
-    // tslint:enable:no-unsafe-any
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
     // If normalized value is a primitive, there are no branches left to walk, so we can just bail out, as theres no point in going down that branch any further
     var normalized = normalizeValue(value, key);
     if (isPrimitive(normalized)) {
@@ -246,9 +241,9 @@ export function walk(key, value, depth, memo) {
  * - Takes care of Error objects serialization
  * - Optionally limit depth of final output
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function normalize(input, depth) {
     try {
-        // tslint:disable-next-line:no-unsafe-any
         return JSON.parse(JSON.stringify(input, function (key, value) { return walk(key, value, depth); }));
     }
     catch (_oO) {
@@ -260,9 +255,9 @@ export function normalize(input, depth) {
  * and truncated list that will be used inside the event message.
  * eg. `Non-error exception captured with keys: foo, bar, baz`
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function extractExceptionKeysForMessage(exception, maxLength) {
     if (maxLength === void 0) { maxLength = 40; }
-    // tslint:disable:strict-type-predicates
     var keys = Object.keys(getWalkSource(exception));
     keys.sort();
     if (!keys.length) {
@@ -293,7 +288,7 @@ export function dropUndefinedKeys(val) {
         var obj = val;
         var rv = {};
         try {
-            for (var _b = tslib_1.__values(Object.keys(obj)), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = __values(Object.keys(obj)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var key = _c.value;
                 if (typeof obj[key] !== 'undefined') {
                     rv[key] = dropUndefinedKeys(obj[key]);

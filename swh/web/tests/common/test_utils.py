@@ -5,7 +5,10 @@
 
 import datetime
 
+import pytest
+
 from swh.web.common import utils
+from swh.web.common.exc import BadInputExc
 
 
 def test_shorten_path_noop():
@@ -44,25 +47,33 @@ def test_shorten_path_sha256():
         assert utils.shorten_path(template % sha256) == template % short_sha256
 
 
-def test_parse_timestamp():
-    input_timestamps = [
-        None,
-        "2016-01-12",
-        "2016-01-12T09:19:12+0100",
-        "Today is January 1, 2047 at 8:21:00AM",
-        "1452591542",
-    ]
+@pytest.mark.parametrize(
+    "input_timestamp, output_date",
+    [
+        (
+            "2016-01-12",
+            datetime.datetime(2016, 1, 12, 0, 0, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            "2016-01-12T09:19:12+0100",
+            datetime.datetime(2016, 1, 12, 8, 19, 12, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            "2007-01-14T20:34:22Z",
+            datetime.datetime(2007, 1, 14, 20, 34, 22, tzinfo=datetime.timezone.utc),
+        ),
+    ],
+)
+def test_parse_iso8601_date_to_utc_ok(input_timestamp, output_date):
+    assert utils.parse_iso8601_date_to_utc(input_timestamp) == output_date
 
-    output_dates = [
-        None,
-        datetime.datetime(2016, 1, 12, 0, 0),
-        datetime.datetime(2016, 1, 12, 8, 19, 12, tzinfo=datetime.timezone.utc),
-        datetime.datetime(2047, 1, 1, 8, 21),
-        datetime.datetime(2016, 1, 12, 9, 39, 2, tzinfo=datetime.timezone.utc),
-    ]
 
-    for ts, exp_date in zip(input_timestamps, output_dates):
-        assert utils.parse_timestamp(ts) == exp_date
+@pytest.mark.parametrize(
+    "invalid_iso8601_timestamp", ["Today is January 1, 2047 at 8:21:00AM", "1452591542"]
+)
+def test_parse_iso8601_date_to_utc_ko(invalid_iso8601_timestamp):
+    with pytest.raises(BadInputExc):
+        utils.parse_iso8601_date_to_utc(invalid_iso8601_timestamp)
 
 
 def test_format_utc_iso_date():

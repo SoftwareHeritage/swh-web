@@ -3,24 +3,25 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from datetime import timedelta
 import os
 import random
 import time
 
 from copy import deepcopy
+from datetime import timedelta
+from typing import Dict, List, Optional, Set
 
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.model import Content, OriginVisitStatus
 from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
-from swh.model.model import Directory, Origin, OriginVisit
+from swh.model.model import Content, Directory, Origin, OriginVisit, OriginVisitStatus
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.storage.algos.snapshot import snapshot_get_latest
+from swh.storage.interface import Sha1
 from swh.storage.utils import now
 from swh.web import config
 from swh.web.browse.utils import (
@@ -209,7 +210,7 @@ def _init_tests_data():
         )
         storage.origin_visit_status_add([visit_status])
 
-    contents = set()
+    sha1s: Set[Sha1] = set()
     directories = set()
     revisions = set()
     releases = set()
@@ -239,31 +240,35 @@ def _init_tests_data():
             directories.add(hash_to_hex(dir_id))
             for entry in dir_iterator(storage, dir_id):
                 if entry["type"] == "file":
-                    contents.add(entry["sha1"])
+                    sha1s.add(entry["sha1"])
                     content_path[entry["sha1"]] = "/".join(
                         [hash_to_hex(dir_id), entry["path"].decode("utf-8")]
                     )
                 elif entry["type"] == "dir":
                     directories.add(hash_to_hex(entry["target"]))
 
-    _add_extra_contents(storage, contents)
+    _add_extra_contents(storage, sha1s)
 
     # Get all checksums for each content
-    result = storage.content_get_metadata(contents)
-    contents = []
-    for sha1, contents_metadata in result.items():
-        sha1 = contents_metadata[0]["sha1"]
+    result: List[Optional[Content]] = storage.content_get(list(sha1s))
+
+    contents: List[Dict] = []
+    for content in result:
+        assert content is not None
+        sha1 = hash_to_hex(content.sha1)
         content_metadata = {
-            algo: hash_to_hex(contents_metadata[0][algo]) for algo in DEFAULT_ALGORITHMS
+            algo: hash_to_hex(getattr(content, algo)) for algo in DEFAULT_ALGORITHMS
         }
 
         path = ""
-        if sha1 in content_path:
-            path = content_path[sha1]
-        cnt = next(storage.content_get([sha1]))
-        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt["data"])
-        _, _, cnt["data"] = _re_encode_content(mimetype, encoding, cnt["data"])
-        content_display_data = prepare_content_for_display(cnt["data"], mimetype, path)
+        if content.sha1 in content_path:
+            path = content_path[content.sha1]
+
+        cnt_data = storage.content_get_data(content.sha1)
+        assert cnt_data is not None
+        mimetype, encoding = get_mimetype_and_encoding_for_content(cnt_data)
+        _, _, cnt_data = _re_encode_content(mimetype, encoding, cnt_data)
+        content_display_data = prepare_content_for_display(cnt_data, mimetype, path)
 
         content_metadata.update(
             {
@@ -274,7 +279,7 @@ def _init_tests_data():
                 "data": content_display_data["content_data"],
             }
         )
-        _contents[hash_to_hex(sha1)] = content_metadata
+        _contents[sha1] = content_metadata
         contents.append(content_metadata)
 
     # Create indexer storage instance that will be shared by indexers

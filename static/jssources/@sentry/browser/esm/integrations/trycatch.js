@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __assign } from "tslib";
 import { fill, getFunctionName, getGlobalObject } from '@sentry/utils';
 import { wrap } from '../helpers';
 var DEFAULT_EVENT_TARGET = [
@@ -42,10 +42,34 @@ var TryCatch = /** @class */ (function () {
          * @inheritDoc
          */
         this.name = TryCatch.id;
-        this._options = tslib_1.__assign({ XMLHttpRequest: true, eventTarget: true, requestAnimationFrame: true, setInterval: true, setTimeout: true }, options);
+        this._options = __assign({ XMLHttpRequest: true, eventTarget: true, requestAnimationFrame: true, setInterval: true, setTimeout: true }, options);
     }
+    /**
+     * Wrap timer functions and event targets to catch errors
+     * and provide better metadata.
+     */
+    TryCatch.prototype.setupOnce = function () {
+        var global = getGlobalObject();
+        if (this._options.setTimeout) {
+            fill(global, 'setTimeout', this._wrapTimeFunction.bind(this));
+        }
+        if (this._options.setInterval) {
+            fill(global, 'setInterval', this._wrapTimeFunction.bind(this));
+        }
+        if (this._options.requestAnimationFrame) {
+            fill(global, 'requestAnimationFrame', this._wrapRAF.bind(this));
+        }
+        if (this._options.XMLHttpRequest && 'XMLHttpRequest' in global) {
+            fill(XMLHttpRequest.prototype, 'send', this._wrapXHR.bind(this));
+        }
+        if (this._options.eventTarget) {
+            var eventTarget = Array.isArray(this._options.eventTarget) ? this._options.eventTarget : DEFAULT_EVENT_TARGET;
+            eventTarget.forEach(this._wrapEventTarget.bind(this));
+        }
+    };
     /** JSDoc */
     TryCatch.prototype._wrapTimeFunction = function (original) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -63,8 +87,11 @@ var TryCatch = /** @class */ (function () {
         };
     };
     /** JSDoc */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     TryCatch.prototype._wrapRAF = function (original) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return function (callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return original.call(this, wrap(callback, {
                 mechanism: {
                     data: {
@@ -79,15 +106,17 @@ var TryCatch = /** @class */ (function () {
     };
     /** JSDoc */
     TryCatch.prototype._wrapEventTarget = function (target) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         var global = getGlobalObject();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         var proto = global[target] && global[target].prototype;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
             return;
         }
         fill(proto, 'addEventListener', function (original) {
             return function (eventName, fn, options) {
                 try {
-                    // tslint:disable-next-line:no-unbound-method strict-type-predicates
                     if (typeof fn.handleEvent === 'function') {
                         fn.handleEvent = wrap(fn.handleEvent.bind(fn), {
                             mechanism: {
@@ -105,7 +134,9 @@ var TryCatch = /** @class */ (function () {
                 catch (err) {
                     // can sometimes get 'Permission denied to access property "handle Event'
                 }
-                return original.call(this, eventName, wrap(fn, {
+                return original.call(this, eventName, 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                wrap(fn, {
                     mechanism: {
                         data: {
                             function: 'addEventListener',
@@ -149,15 +180,18 @@ var TryCatch = /** @class */ (function () {
     };
     /** JSDoc */
     TryCatch.prototype._wrapXHR = function (originalSend) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            var xhr = this; // tslint:disable-line:no-this-assignment
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            var xhr = this;
             var xmlHttpRequestProps = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
             xmlHttpRequestProps.forEach(function (prop) {
                 if (prop in xhr && typeof xhr[prop] === 'function') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     fill(xhr, prop, function (original) {
                         var wrapOptions = {
                             mechanism: {
@@ -180,29 +214,6 @@ var TryCatch = /** @class */ (function () {
             });
             return originalSend.apply(this, args);
         };
-    };
-    /**
-     * Wrap timer functions and event targets to catch errors
-     * and provide better metadata.
-     */
-    TryCatch.prototype.setupOnce = function () {
-        var global = getGlobalObject();
-        if (this._options.setTimeout) {
-            fill(global, 'setTimeout', this._wrapTimeFunction.bind(this));
-        }
-        if (this._options.setInterval) {
-            fill(global, 'setInterval', this._wrapTimeFunction.bind(this));
-        }
-        if (this._options.requestAnimationFrame) {
-            fill(global, 'requestAnimationFrame', this._wrapRAF.bind(this));
-        }
-        if (this._options.XMLHttpRequest && 'XMLHttpRequest' in global) {
-            fill(XMLHttpRequest.prototype, 'send', this._wrapXHR.bind(this));
-        }
-        if (this._options.eventTarget) {
-            var eventTarget = Array.isArray(this._options.eventTarget) ? this._options.eventTarget : DEFAULT_EVENT_TARGET;
-            eventTarget.forEach(this._wrapEventTarget.bind(this));
-        }
     };
     /**
      * @inheritDoc

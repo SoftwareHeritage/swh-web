@@ -83,27 +83,10 @@ def get_mimetype_and_encoding_for_content(content):
         associated to the provided content.
 
     """
-    # https://pypi.org/project/python-magic/
-    # packaged as python3-magic in debian buster
-    if hasattr(magic, "from_buffer"):
-        m = magic.Magic(mime=True, mime_encoding=True)
-        mime_encoding = m.from_buffer(content)
-        mime_type, encoding = mime_encoding.split(";")
-        encoding = encoding.replace(" charset=", "")
-    # https://pypi.org/project/file-magic/
-    # packaged as python3-magic in debian stretch
-    else:
-        # TODO: Remove that code when production environment is upgraded
-        #       to debian buster
-
-        # calls to the file-magic API are not thread-safe so they must
-        # be protected with a Lock to guarantee they will succeed
-        _lock.acquire()
-        magic_result = magic.detect_from_content(content)
-        _lock.release()
-        mime_type = magic_result.mime_type
-        encoding = magic_result.encoding
-
+    m = magic.Magic(mime=True, mime_encoding=True)
+    mime_encoding = m.from_buffer(content)
+    mime_type, encoding = mime_encoding.split(";")
+    encoding = encoding.replace(" charset=", "")
     return mime_type, encoding
 
 

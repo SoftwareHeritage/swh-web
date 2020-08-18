@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __assign } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { getGlobalObject } from '@sentry/utils';
 var global = getGlobalObject();
@@ -23,7 +23,7 @@ var UserAgent = /** @class */ (function () {
                 request.url = request.url || global.location.href;
                 request.headers = request.headers || {};
                 request.headers['User-Agent'] = global.navigator.userAgent;
-                return tslib_1.__assign({}, event, { request: request });
+                return __assign(__assign({}, event), { request: request });
             }
             return event;
         });

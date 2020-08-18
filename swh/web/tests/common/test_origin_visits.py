@@ -15,7 +15,11 @@ from swh.storage.utils import now
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.origin_visits import get_origin_visits, get_origin_visit
 from swh.web.common.typing import OriginInfo
-from swh.web.tests.strategies import new_origin, new_snapshots
+from swh.web.tests.strategies import (
+    new_origin,
+    new_snapshots,
+    origin_with_multiple_visits,
+)
 
 
 @given(new_snapshots(3))
@@ -135,9 +139,6 @@ def test_get_origin_visit(mocker, snapshots):
     visit = get_origin_visit(origin_info, visit_ts="2016-06-18 01:22")
     assert visit == visits[3]
 
-    visit = get_origin_visit(origin_info, visit_ts=1466208000)
-    assert visit == visits[3]
-
     visit = get_origin_visit(origin_info, visit_ts="2014-01-01")
     assert visit == visits[0]
 
@@ -236,3 +237,22 @@ def test_get_origin_visit_return_first_valid_partial_visit(
     # should return the last visit
     expected_visit = archive_data.origin_visit_get_by(new_origin.url, visits[-1])
     assert get_origin_visit((OriginInfo(url=new_origin.url))) == expected_visit
+
+
+@given(origin_with_multiple_visits())
+def test_get_origin_visit_latest_snapshot(mocker, origin):
+    origin_visits = get_origin_visits(origin)
+    first_visit = origin_visits[0]
+    latest_visit = origin_visits[-1]
+    mock_get_origin_visits = mocker.patch(
+        "swh.web.common.origin_visits.get_origin_visits"
+    )
+    mock_get_origin_visits.return_value = origin_visits
+
+    visit = get_origin_visit(origin, snapshot_id=latest_visit["snapshot"])
+    assert visit == latest_visit
+    assert not mock_get_origin_visits.called
+
+    visit = get_origin_visit(origin, snapshot_id=first_visit["snapshot"])
+    assert visit == first_visit
+    assert mock_get_origin_visits.called

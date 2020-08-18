@@ -9,6 +9,8 @@ from typing import Dict, Any
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
+from swh.storage.interface import PartialBranches
+
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
 
 
@@ -352,7 +354,7 @@ def from_origin_visit(visit: Dict[str, Any]) -> OriginVisitInfo:
 
 
 def from_snapshot(snapshot):
-    """Convert swh snapshot to serializable snapshot dictionary.
+    """Convert swh snapshot to serializable (partial) snapshot dictionary.
 
     """
     sv = from_swh(snapshot, hashess={"id", "target"}, bytess={"next_branch"})
@@ -367,6 +369,22 @@ def from_snapshot(snapshot):
                 sv["branches"][branch]["target"] = target
 
     return sv
+
+
+def from_partial_branches(branches: PartialBranches):
+    """Convert PartialBranches to serializable partial snapshot dictionary
+
+    """
+    return from_snapshot(
+        {
+            "id": branches["id"],
+            "branches": {
+                branch_name: branch.to_dict() if branch else None
+                for (branch_name, branch) in branches["branches"].items()
+            },
+            "next_branch": branches["next_branch"],
+        }
+    )
 
 
 def from_directory_entry(dir_entry):

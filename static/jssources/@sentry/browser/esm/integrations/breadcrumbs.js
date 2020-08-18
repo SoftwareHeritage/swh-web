@@ -1,4 +1,6 @@
-import * as tslib_1 from "tslib";
+import { __assign, __read, __spread } from "tslib";
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable max-lines */
 import { getCurrentHub } from '@sentry/core';
 import { Severity } from '@sentry/types';
 import { addInstrumentationHandler, getEventDescription, getGlobalObject, htmlTreeAsString, parseUrl, safeJoin, } from '@sentry/utils';
@@ -15,7 +17,7 @@ var Breadcrumbs = /** @class */ (function () {
          * @inheritDoc
          */
         this.name = Breadcrumbs.id;
-        this._options = tslib_1.__assign({ console: true, dom: true, fetch: true, history: true, sentry: true, xhr: true }, options);
+        this._options = __assign({ console: true, dom: true, fetch: true, history: true, sentry: true, xhr: true }, options);
     }
     /**
      * Create a breadcrumb of `sentry` from the events themselves
@@ -34,8 +36,80 @@ var Breadcrumbs = /** @class */ (function () {
         });
     };
     /**
+     * Instrument browser built-ins w/ breadcrumb capturing
+     *  - Console API
+     *  - DOM API (click/typing)
+     *  - XMLHttpRequest API
+     *  - Fetch API
+     *  - History API
+     */
+    Breadcrumbs.prototype.setupOnce = function () {
+        var _this = this;
+        if (this._options.console) {
+            addInstrumentationHandler({
+                callback: function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i] = arguments[_i];
+                    }
+                    _this._consoleBreadcrumb.apply(_this, __spread(args));
+                },
+                type: 'console',
+            });
+        }
+        if (this._options.dom) {
+            addInstrumentationHandler({
+                callback: function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i] = arguments[_i];
+                    }
+                    _this._domBreadcrumb.apply(_this, __spread(args));
+                },
+                type: 'dom',
+            });
+        }
+        if (this._options.xhr) {
+            addInstrumentationHandler({
+                callback: function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i] = arguments[_i];
+                    }
+                    _this._xhrBreadcrumb.apply(_this, __spread(args));
+                },
+                type: 'xhr',
+            });
+        }
+        if (this._options.fetch) {
+            addInstrumentationHandler({
+                callback: function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i] = arguments[_i];
+                    }
+                    _this._fetchBreadcrumb.apply(_this, __spread(args));
+                },
+                type: 'fetch',
+            });
+        }
+        if (this._options.history) {
+            addInstrumentationHandler({
+                callback: function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i] = arguments[_i];
+                    }
+                    _this._historyBreadcrumb.apply(_this, __spread(args));
+                },
+                type: 'history',
+            });
+        }
+    };
+    /**
      * Creates breadcrumbs from console API calls
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Breadcrumbs.prototype._consoleBreadcrumb = function (handlerData) {
         var breadcrumb = {
             category: 'console',
@@ -64,6 +138,7 @@ var Breadcrumbs = /** @class */ (function () {
     /**
      * Creates breadcrumbs from DOM API calls
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Breadcrumbs.prototype._domBreadcrumb = function (handlerData) {
         var target;
         // Accessing event.target can throw (see getsentry/raven-js#838, #768)
@@ -89,6 +164,7 @@ var Breadcrumbs = /** @class */ (function () {
     /**
      * Creates breadcrumbs from XHR API calls
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Breadcrumbs.prototype._xhrBreadcrumb = function (handlerData) {
         if (handlerData.endTimestamp) {
             // We only capture complete, non-sentry requests
@@ -108,6 +184,7 @@ var Breadcrumbs = /** @class */ (function () {
     /**
      * Creates breadcrumbs from fetch API calls
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Breadcrumbs.prototype._fetchBreadcrumb = function (handlerData) {
         // We only capture complete fetch requests
         if (!handlerData.endTimestamp) {
@@ -131,7 +208,7 @@ var Breadcrumbs = /** @class */ (function () {
         else {
             getCurrentHub().addBreadcrumb({
                 category: 'fetch',
-                data: tslib_1.__assign({}, handlerData.fetchData, { status_code: handlerData.response.status }),
+                data: __assign(__assign({}, handlerData.fetchData), { status_code: handlerData.response.status }),
                 type: 'http',
             }, {
                 input: handlerData.args,
@@ -142,6 +219,7 @@ var Breadcrumbs = /** @class */ (function () {
     /**
      * Creates breadcrumbs from history API calls
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Breadcrumbs.prototype._historyBreadcrumb = function (handlerData) {
         var global = getGlobalObject();
         var from = handlerData.from;
@@ -156,11 +234,9 @@ var Breadcrumbs = /** @class */ (function () {
         // Use only the path component of the URL if the URL matches the current
         // document (almost all the time when using pushState)
         if (parsedLoc.protocol === parsedTo.protocol && parsedLoc.host === parsedTo.host) {
-            // tslint:disable-next-line:no-parameter-reassignment
             to = parsedTo.relative;
         }
         if (parsedLoc.protocol === parsedFrom.protocol && parsedLoc.host === parsedFrom.host) {
-            // tslint:disable-next-line:no-parameter-reassignment
             from = parsedFrom.relative;
         }
         getCurrentHub().addBreadcrumb({
@@ -170,77 +246,6 @@ var Breadcrumbs = /** @class */ (function () {
                 to: to,
             },
         });
-    };
-    /**
-     * Instrument browser built-ins w/ breadcrumb capturing
-     *  - Console API
-     *  - DOM API (click/typing)
-     *  - XMLHttpRequest API
-     *  - Fetch API
-     *  - History API
-     */
-    Breadcrumbs.prototype.setupOnce = function () {
-        var _this = this;
-        if (this._options.console) {
-            addInstrumentationHandler({
-                callback: function () {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i] = arguments[_i];
-                    }
-                    _this._consoleBreadcrumb.apply(_this, tslib_1.__spread(args));
-                },
-                type: 'console',
-            });
-        }
-        if (this._options.dom) {
-            addInstrumentationHandler({
-                callback: function () {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i] = arguments[_i];
-                    }
-                    _this._domBreadcrumb.apply(_this, tslib_1.__spread(args));
-                },
-                type: 'dom',
-            });
-        }
-        if (this._options.xhr) {
-            addInstrumentationHandler({
-                callback: function () {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i] = arguments[_i];
-                    }
-                    _this._xhrBreadcrumb.apply(_this, tslib_1.__spread(args));
-                },
-                type: 'xhr',
-            });
-        }
-        if (this._options.fetch) {
-            addInstrumentationHandler({
-                callback: function () {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i] = arguments[_i];
-                    }
-                    _this._fetchBreadcrumb.apply(_this, tslib_1.__spread(args));
-                },
-                type: 'fetch',
-            });
-        }
-        if (this._options.history) {
-            addInstrumentationHandler({
-                callback: function () {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i] = arguments[_i];
-                    }
-                    _this._historyBreadcrumb.apply(_this, tslib_1.__spread(args));
-                },
-                type: 'history',
-            });
-        }
     };
     /**
      * @inheritDoc

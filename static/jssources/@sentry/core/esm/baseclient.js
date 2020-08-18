@@ -1,4 +1,5 @@
-import * as tslib_1 from "tslib";
+import { __assign } from "tslib";
+/* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
 import { Dsn, isPrimitive, isThenable, logger, normalize, SyncPromise, timestampWithMs, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
@@ -55,10 +56,12 @@ var BaseClient = /** @class */ (function () {
     /**
      * @inheritDoc
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     BaseClient.prototype.captureException = function (exception, hint, scope) {
         var _this = this;
         var eventId = hint && hint.event_id;
         this._processing = true;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._getBackend()
             .eventFromException(exception, hint)
             .then(function (event) {
@@ -76,6 +79,7 @@ var BaseClient = /** @class */ (function () {
         var promisedEvent = isPrimitive(message)
             ? this._getBackend().eventFromMessage("" + message, level, hint)
             : this._getBackend().eventFromException(message, hint);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         promisedEvent.then(function (event) {
             eventId = _this.captureEvent(event, hint, scope);
         });
@@ -207,7 +211,7 @@ var BaseClient = /** @class */ (function () {
     BaseClient.prototype._prepareEvent = function (event, scope, hint) {
         var _this = this;
         var _a = this.getOptions().normalizeDepth, normalizeDepth = _a === void 0 ? 3 : _a;
-        var prepared = tslib_1.__assign({}, event, { event_id: event.event_id || (hint && hint.event_id ? hint.event_id : uuid4()), timestamp: event.timestamp || timestampWithMs() });
+        var prepared = __assign(__assign({}, event), { event_id: event.event_id || (hint && hint.event_id ? hint.event_id : uuid4()), timestamp: event.timestamp || timestampWithMs() });
         this._applyClientOptions(prepared);
         this._applyIntegrationsMetadata(prepared);
         // If we have scope given to us, use it as the base for further modifications.
@@ -225,7 +229,6 @@ var BaseClient = /** @class */ (function () {
             result = finalScope.applyToEvent(prepared, hint);
         }
         return result.then(function (evt) {
-            // tslint:disable-next-line:strict-type-predicates
             if (typeof normalizeDepth === 'number' && normalizeDepth > 0) {
                 return _this._normalizeEvent(evt, normalizeDepth);
             }
@@ -246,16 +249,15 @@ var BaseClient = /** @class */ (function () {
         if (!event) {
             return null;
         }
-        // tslint:disable:no-unsafe-any
-        var normalized = tslib_1.__assign({}, event, (event.breadcrumbs && {
-            breadcrumbs: event.breadcrumbs.map(function (b) { return (tslib_1.__assign({}, b, (b.data && {
+        var normalized = __assign(__assign(__assign(__assign(__assign({}, event), (event.breadcrumbs && {
+            breadcrumbs: event.breadcrumbs.map(function (b) { return (__assign(__assign({}, b), (b.data && {
                 data: normalize(b.data, depth),
             }))); }),
-        }), (event.user && {
+        })), (event.user && {
             user: normalize(event.user, depth),
-        }), (event.contexts && {
+        })), (event.contexts && {
             contexts: normalize(event.contexts, depth),
-        }), (event.extra && {
+        })), (event.extra && {
             extra: normalize(event.extra, depth),
         }));
         // event.contexts.trace stores information about a Transaction. Similarly,
@@ -266,6 +268,7 @@ var BaseClient = /** @class */ (function () {
         // so this block overwrites the normalized event to add back the original
         // Transaction information prior to normalization.
         if (event.contexts && event.contexts.trace) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             normalized.contexts.trace = event.contexts.trace;
         }
         return normalized;
@@ -332,6 +335,7 @@ var BaseClient = /** @class */ (function () {
      */
     BaseClient.prototype._processEvent = function (event, hint, scope) {
         var _this = this;
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         var _a = this.getOptions(), beforeSend = _a.beforeSend, sampleRate = _a.sampleRate;
         if (!this._isEnabled()) {
             return SyncPromise.reject('SDK not enabled, will not send event.');
@@ -359,7 +363,6 @@ var BaseClient = /** @class */ (function () {
                     return;
                 }
                 var beforeSendResult = beforeSend(prepared, hint);
-                // tslint:disable-next-line:strict-type-predicates
                 if (typeof beforeSendResult === 'undefined') {
                     logger.error('`beforeSend` method has to return `null` or a valid event.');
                 }

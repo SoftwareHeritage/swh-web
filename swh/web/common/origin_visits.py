@@ -4,13 +4,14 @@
 # See top-level LICENSE file for more information
 
 import math
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from django.core.cache import cache
 
+from swh.web.common import service
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
-from swh.web.common.utils import parse_timestamp
+from swh.web.common.utils import parse_iso8601_date_to_utc
 
 
 def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
@@ -71,7 +72,7 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
                 last_visit += per_page
 
     def _visit_sort_key(visit):
-        ts = parse_timestamp(visit["date"]).timestamp()
+        ts = parse_iso8601_date_to_utc(visit["date"]).timestamp()
         return ts + (float(visit["visit"]) / 10e3)
 
     origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
@@ -83,7 +84,7 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
 
 def get_origin_visit(
     origin_info: OriginInfo,
-    visit_ts: Optional[Union[int, str]] = None,
+    visit_ts: Optional[str] = None,
     visit_id: Optional[int] = None,
     snapshot_id: Optional[str] = None,
 ) -> OriginVisitInfo:
@@ -101,7 +102,7 @@ def get_origin_visit(
 
     Args:
         origin_info: a dict filled with origin information
-        visit_ts: an ISO date string or Unix timestamp to parse
+        visit_ts: an ISO 8601 datetime string to parse
         snapshot_id: a snapshot identifier
 
     Returns:
@@ -110,25 +111,28 @@ def get_origin_visit(
     Raises:
         swh.web.common.exc.NotFoundExc: if no visit can be found
     """
+    # returns the latest full visit with a valid snapshot
+    visit = service.lookup_origin_visit_latest(
+        origin_info["url"], allowed_statuses=["full"], require_snapshot=True
+    )
+    if not visit:
+        # or the latest partial visit with a valid snapshot otherwise
+        visit = service.lookup_origin_visit_latest(
+            origin_info["url"], allowed_statuses=["partial"], require_snapshot=True
+        )
 
     if not visit_ts and not visit_id and not snapshot_id:
-        from swh.web.common import service
-
-        # returns the latest full visit with a valid snapshot
-        visit = service.lookup_origin_visit_latest(
-            origin_info["url"], allowed_statuses=["full"], require_snapshot=True
-        )
-        if not visit:
-            # or the latest partial visit with a valid snapshot otherwise
-            visit = service.lookup_origin_visit_latest(
-                origin_info["url"], allowed_statuses=["partial"], require_snapshot=True
-            )
         if visit:
             return visit
         else:
             raise NotFoundExc(
                 f"No valid visit for origin with url {origin_info['url']} found!"
             )
+
+    # no need to fetch all visits list and search in it if the latest
+    # visit matches some criteria
+    if visit and (visit["snapshot"] == snapshot_id or visit["visit"] == visit_id):
+        return visit
 
     visits = get_origin_visits(origin_info)
 
@@ -161,12 +165,12 @@ def get_origin_visit(
 
     if visit_ts:
 
-        target_visit_ts = math.floor(parse_timestamp(visit_ts).timestamp())
+        target_visit_ts = math.floor(parse_iso8601_date_to_utc(visit_ts).timestamp())
 
         # Find the visit with date closest to the target (in absolute value)
         (abs_time_delta, visit_idx) = min(
             (
-                (math.floor(parse_timestamp(visit["date"]).timestamp()), i)
+                (math.floor(parse_iso8601_date_to_utc(visit["date"]).timestamp()), i)
                 for (i, visit) in enumerate(visits)
             ),
             key=lambda ts_and_i: abs(ts_and_i[0] - target_visit_ts),

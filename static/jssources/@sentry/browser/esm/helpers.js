@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __assign } from "tslib";
 import { API, captureException, withScope } from '@sentry/core';
 import { addExceptionMechanism, addExceptionTypeValue, logger } from '@sentry/utils';
 var ignoreOnError = 0;
@@ -28,7 +28,6 @@ export function ignoreNextOnError() {
  */
 export function wrap(fn, options, before) {
     if (options === void 0) { options = {}; }
-    // tslint:disable-next-line:strict-type-predicates
     if (typeof fn !== 'function') {
         return fn;
     }
@@ -48,20 +47,22 @@ export function wrap(fn, options, before) {
         // Bail on wrapping and return the function as-is (defers to window.onerror).
         return fn;
     }
+    /* eslint-disable prefer-rest-params */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     var sentryWrapped = function () {
         var args = Array.prototype.slice.call(arguments);
-        // tslint:disable:no-unsafe-any
         try {
-            // tslint:disable-next-line:strict-type-predicates
             if (before && typeof before === 'function') {
                 before.apply(this, arguments);
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
             var wrappedArguments = args.map(function (arg) { return wrap(arg, options); });
             if (fn.handleEvent) {
                 // Attempt to invoke user-land function
                 // NOTE: If you are a Sentry user, and you are seeing this stack frame, it
                 //       means the sentry.javascript SDK caught an error invoking your application code. This
                 //       is expected behavior and NOT indicative of a bug with sentry.javascript.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return fn.handleEvent.apply(this, wrappedArguments);
             }
             // Attempt to invoke user-land function
@@ -69,18 +70,17 @@ export function wrap(fn, options, before) {
             //       means the sentry.javascript SDK caught an error invoking your application code. This
             //       is expected behavior and NOT indicative of a bug with sentry.javascript.
             return fn.apply(this, wrappedArguments);
-            // tslint:enable:no-unsafe-any
         }
         catch (ex) {
             ignoreNextOnError();
             withScope(function (scope) {
                 scope.addEventProcessor(function (event) {
-                    var processedEvent = tslib_1.__assign({}, event);
+                    var processedEvent = __assign({}, event);
                     if (options.mechanism) {
                         addExceptionTypeValue(processedEvent, undefined, undefined);
                         addExceptionMechanism(processedEvent, options.mechanism);
                     }
-                    processedEvent.extra = tslib_1.__assign({}, processedEvent.extra, { arguments: args });
+                    processedEvent.extra = __assign(__assign({}, processedEvent.extra), { arguments: args });
                     return processedEvent;
                 });
                 captureException(ex);
@@ -88,6 +88,7 @@ export function wrap(fn, options, before) {
             throw ex;
         }
     };
+    /* eslint-enable prefer-rest-params */
     // Accessing some objects may throw
     // ref: https://github.com/getsentry/sentry-javascript/issues/1168
     try {
@@ -97,7 +98,7 @@ export function wrap(fn, options, before) {
             }
         }
     }
-    catch (_oO) { } // tslint:disable-line:no-empty
+    catch (_oO) { } // eslint-disable-line no-empty
     fn.prototype = fn.prototype || {};
     sentryWrapped.prototype = fn.prototype;
     Object.defineProperty(fn, '__sentry_wrapped__', {
@@ -126,10 +127,9 @@ export function wrap(fn, options, before) {
                 },
             });
         }
+        // eslint-disable-next-line no-empty
     }
-    catch (_oO) {
-        /*no-empty*/
-    }
+    catch (_oO) { }
     return sentryWrapped;
 }
 /**
@@ -150,6 +150,7 @@ export function injectReportDialog(options) {
     script.async = true;
     script.src = new API(options.dsn).getReportDialogEndpoint(options);
     if (options.onLoad) {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         script.onload = options.onLoad;
     }
     (document.head || document.body).appendChild(script);
