@@ -1,10 +1,11 @@
-import * as tslib_1 from "tslib";
+import { __assign, __read, __spread } from "tslib";
 import { getCurrentHub } from '@sentry/hub';
 /**
  * This calls a function on the current hub.
  * @param method function to call on hub.
  * @param args to pass to function.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function callOnHub(method) {
     var args = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -12,8 +13,8 @@ function callOnHub(method) {
     }
     var hub = getCurrentHub();
     if (hub && hub[method]) {
-        // tslint:disable-next-line:no-unsafe-any
-        return hub[method].apply(hub, tslib_1.__spread(args));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return hub[method].apply(hub, __spread(args));
     }
     throw new Error("No hub defined or " + method + " was not found on the hub, please open a bug report.");
 }
@@ -23,6 +24,7 @@ function callOnHub(method) {
  * @param exception An exception-like object.
  * @returns The generated eventId.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function captureException(exception, captureContext) {
     var syntheticException;
     try {
@@ -56,7 +58,7 @@ export function captureMessage(message, captureContext) {
     // arrity of the `captureMessage(message, level)` method.
     var level = typeof captureContext === 'string' ? captureContext : undefined;
     var context = typeof captureContext !== 'string' ? { captureContext: captureContext } : undefined;
-    return callOnHub('captureMessage', message, level, tslib_1.__assign({ originalException: message, syntheticException: syntheticException }, context));
+    return callOnHub('captureMessage', message, level, __assign({ originalException: message, syntheticException: syntheticException }, context));
 }
 /**
  * Captures a manually created event and sends it to Sentry.
@@ -90,6 +92,7 @@ export function addBreadcrumb(breadcrumb) {
  * @param name of the context
  * @param context Any kind of data. This data will be normalized.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function setContext(name, context) {
     callOnHub('setContext', name, context);
 }
@@ -157,12 +160,13 @@ export function withScope(callback) {
  * @param args Arguments to pass to the client/fontend.
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function _callOnClient(method) {
     var args = [];
     for (var _i = 1; _i < arguments.length; _i++) {
         args[_i - 1] = arguments[_i];
     }
-    callOnHub.apply(void 0, tslib_1.__spread(['_invokeClient', method], args));
+    callOnHub.apply(void 0, __spread(['_invokeClient', method], args));
 }
 /**
  * Starts a new `Transaction` and returns it. This is the entry point to manual
@@ -182,6 +186,6 @@ export function _callOnClient(method) {
  * @param context Properties of the new `Transaction`.
  */
 export function startTransaction(context) {
-    return callOnHub('startTransaction', tslib_1.__assign({}, context));
+    return callOnHub('startTransaction', __assign({}, context));
 }
 //# sourceMappingURL=index.js.map

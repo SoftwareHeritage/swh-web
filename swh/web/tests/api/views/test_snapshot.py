@@ -23,7 +23,7 @@ def test_api_snapshot(api_client, archive_data, snapshot):
 
     assert rv.status_code == 200, rv.data
     assert rv["Content-Type"] == "application/json"
-    expected_data = archive_data.snapshot_get(snapshot)
+    expected_data = {**archive_data.snapshot_get(snapshot), "next_branch": None}
     expected_data = enrich_snapshot(expected_data, rv.wsgi_request)
     assert rv.data == expected_data
 

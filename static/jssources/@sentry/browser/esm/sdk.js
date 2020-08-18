@@ -153,7 +153,8 @@ export function close(timeout) {
  *
  * @returns The result of wrapped function call.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function wrap(fn) {
-    return internalWrap(fn)(); // tslint:disable-line:no-unsafe-any
+    return internalWrap(fn)();
 }
 //# sourceMappingURL=sdk.js.map

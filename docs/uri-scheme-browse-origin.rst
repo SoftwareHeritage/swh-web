@@ -91,8 +91,8 @@ Origin directory
         to retrieve the root directory
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its **sha1_git** value, from which to retrieve the root directory
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :query int visit_id: specify a visit id to retrieve the directory from instead
         of using the latest full visit by default
     :statuscode 200: no error
@@ -109,9 +109,7 @@ Origin directory
         :swh_web_browse:`origin/directory/?origin_url=https://github.com/python/cpython`
         :swh_web_browse:`origin/directory/?origin_url=https://github.com/python/cpython&path=Python`
         :swh_web_browse:`origin/directory/?origin_url=https://github.com/python/cpython&branch=refs/heads/2.7`
-        :swh_web_browse:`origin/directory/?origin_url=https://github.com/torvalds/linux&timestamp=1493926809`
         :swh_web_browse:`origin/directory/?origin_url=https://github.com/torvalds/linux&path=net/ethernet&timestamp=2016-09-14T10:36:21Z`
-        :swh_web_browse:`origin/directory/?origin_url=https://github.com/python/cpython&timestamp=1474620651`
         :swh_web_browse:`origin/directory/?origin_url=https://github.com/python/cpython&path=Python&timestamp=2017-05-05`
         :swh_web_browse:`origin/directory/?origin_url=https://github.com/python/cpython&branch=refs/heads/2.7&timestamp=2015-08`
 
@@ -192,8 +190,8 @@ Origin directory
     content can also be specified by using the branch query parameter.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :param string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :param path: optional parameter used to specify the path of a directory
         reachable from the origin root one
     :type path: string
@@ -259,8 +257,8 @@ Origin content
         to retrieve the content
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its **sha1_git** value, from which to retrieve the content
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :query int visit_id: specify a visit id to retrieve the content from instead
         of using the latest full visit by default
     :statuscode 200: no error
@@ -275,9 +273,7 @@ Origin content
         :swh_web_browse:`origin/content/?origin_url=https://github.com/git/git?path=git.c`
         :swh_web_browse:`origin/content/?origin_url=https://github.com/mozilla/gecko-dev&path=js/src/json.cpp`
         :swh_web_browse:`origin/content/?origin_url=https://github.com/git/git?path=git.c&branch=refs/heads/next`
-        :swh_web_browse:`origin/content/?origin_url=https://github.com/git/git&path=git.c&timestamp=1473933564`
         :swh_web_browse:`origin/content/?origin_url=https://github.com/git/git&path=git.c&timestamp=2016-05-05T00:0:00+00:00Z`
-        :swh_web_browse:`origin/content/?origin_url=https://github.com/mozilla/gecko-dev&path=js/src/json.cpp&timestamp=1490126182`
         :swh_web_browse:`origin/content/?origin_url=https://github.com/mozilla/gecko-dev&path=js/src/json.cpp&timestamp=2017-03-21#L904-L931`
         :swh_web_browse:`origin/content/?origin_url=https://github.com/git/git&path=git.c&branch=refs/heads/next&timestamp=2017-09-15`
 
@@ -320,8 +316,8 @@ Origin content
         to retrieve the content
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its **sha1_git** value, from which to retrieve the content
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :query int visit_id: specify a visit id to retrieve the content from instead
         of using the latest full visit by default
     :statuscode 200: no error
@@ -336,9 +332,7 @@ Origin content
         :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c`
         :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content/?path=js/src/json.cpp`
         :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c&branch=refs/heads/next`
-        :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c&timestamp=1473933564`
         :swh_web_browse:`origin/https://github.com/git/git/content/?path=git.c&timestamp=2016-05-05T00:0:00+00:00Z`
-        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content?path=js/src/json.cpp&timestamp=1490126182`
         :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/content?path=js/src/json.cpp&timestamp=2017-03-21#L904-L931`
         :swh_web_browse:`origin/https://github.com/git/git/content/git.c/?branch=refs/heads/next&timestamp=2017-09-15`
 
@@ -428,8 +422,8 @@ Origin content
     can also be specified by using the branch query parameter.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :param string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :param string path: path of a content reachable from the origin root directory
     :query string branch: specify the origin branch name from which
         to retrieve the content
@@ -448,9 +442,7 @@ Origin content
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/https://github.com/git/git/visit/1473933564/content/git.c/`
         :swh_web_browse:`origin/https://github.com/git/git/visit/2016-05-05T00:0:00+00:00Z/content/git.c/`
-        :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/visit/1490126182/content/js/src/json.cpp/`
         :swh_web_browse:`origin/https://github.com/mozilla/gecko-dev/visit/2017-03-21/content/js/src/json.cpp/#L904-L931`
         :swh_web_browse:`origin/https://github.com/git/git/visit/2017-09-15/content/git.c/?branch=refs/heads/next`
 
@@ -502,8 +494,8 @@ Origin history
         to retrieve the commit log
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its **sha1_git** value, from which to retrieve the commit log
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :query int visit_id: specify a visit id to retrieve the history log from instead
         of using the latest visit by default
     :statuscode 200: no error
@@ -571,8 +563,8 @@ Origin history
         to retrieve the commit log
     :query string revision: specify the origin revision, identified by the hexadecimal
         representation of its **sha1_git** value, from which to retrieve the commit log
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :query int visit_id: specify a visit id to retrieve the history log from instead
         of using the latest visit by default
     :statuscode 200: no error
@@ -585,9 +577,7 @@ Origin history
         :swh_web_browse:`origin/https://github.com/videolan/vlc/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release`
-        :swh_web_browse:`origin/https://github.com/videolan/vlc/log/?visit=1459651262`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?timestamp=2016-04-01`
-        :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release&timestamp=1438116814`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/log/?branch=refs/heads/release&timestamp=2017-05-05T03:14:23Z`
 
 
@@ -626,8 +616,8 @@ Origin history
     can also be specified by using the branch query parameter.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :param string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :query int per_page: the number of log entries to display per page
         (default is 20, max is 50)
     :query string branch: specify the origin branch name from which
@@ -645,9 +635,7 @@ Origin history
 
     .. parsed-literal::
 
-        :swh_web_browse:`origin/https://github.com/videolan/vlc/visit/1459651262/log/`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2016-04-01/log/`
-        :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/1438116814/log/?branch=refs/heads/release`
         :swh_web_browse:`origin/https://github.com/Kitware/CMake/visit/2017-05-05T03:14:23Z/log/?branch=refs/heads/release`
 
 Origin branches
@@ -670,8 +658,8 @@ Origin branches
 
     :query string origin_url: mandatory parameter providing the url of the origin
         (e.g. https://github.com/(user)/(repo))
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
     :statuscode 404: requested origin can not be found in the archive
@@ -706,8 +694,8 @@ Origin branches
     That list of branches is paginated, each page displaying a maximum of 100 branches.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
 
@@ -741,8 +729,8 @@ Origin branches
     That list of branches is paginated, each page displaying a maximum of 100 branches.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :param string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
 
@@ -773,8 +761,8 @@ Origin releases
 
     :query string origin_url: mandatory parameter providing the url of the origin
         (e.g. https://github.com/(user)/(repo))
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
     :statuscode 404: requested origin can not be found in the archive
@@ -809,8 +797,8 @@ Origin releases
     That list of releases is paginated, each page displaying a maximum of 100 releases.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :query string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :query string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
 
@@ -844,8 +832,8 @@ Origin releases
     That list of releases is paginated, each page displaying a maximum of 100 releases.
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
-    :param string timestamp: a date string (any format parsable by `dateutil.parser.parse`_)
-        or Unix timestamp to parse in order to find the closest visit.
+    :param string timestamp: an ISO 8601 datetime string to parse in order to find the
+      closest visit.
     :statuscode 200: no error
     :statuscode 404: requested origin can not be found in the archive
 
@@ -858,4 +846,3 @@ Origin releases
 
 
 .. _highlightjs: https://highlightjs.org/
-.. _dateutil.parser.parse: http://dateutil.readthedocs.io/en/stable/parser.html

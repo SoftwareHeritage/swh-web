@@ -1,4 +1,5 @@
 /** The status of an event. */
+// eslint-disable-next-line import/export
 export var Status;
 (function (Status) {
     /** The status could not be determined. */
@@ -14,8 +15,7 @@ export var Status;
     /** A server-side error ocurred during submission. */
     Status["Failed"] = "failed";
 })(Status || (Status = {}));
-// tslint:disable:completed-docs
-// tslint:disable:no-unnecessary-qualifier no-namespace
+// eslint-disable-next-line @typescript-eslint/no-namespace, import/export
 (function (Status) {
     /**
      * Converts a HTTP status code into a {@link Status}.

@@ -10,7 +10,7 @@ from hypothesis import given
 
 from swh.model.identifiers import DIRECTORY, REVISION, SNAPSHOT
 from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import reverse, format_utc_iso_date, parse_timestamp
+from swh.web.common.utils import reverse, format_utc_iso_date, parse_iso8601_date_to_utc
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import origin, revision, unknown_revision, new_origin
 
@@ -43,7 +43,7 @@ def test_revision_log_browse(client, archive_data, revision):
 
     revision_log_sorted = sorted(
         revision_log,
-        key=lambda rev: -parse_timestamp(rev["committer_date"]).timestamp(),
+        key=lambda rev: -parse_iso8601_date_to_utc(rev["committer_date"]).timestamp(),
     )
 
     url = reverse(

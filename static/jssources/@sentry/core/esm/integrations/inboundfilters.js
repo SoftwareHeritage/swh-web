@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __read, __spread } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/hub';
 import { getEventDescription, isMatchingPattern, logger } from '@sentry/utils';
 // "Script error." is hard coded into browsers for errors that it can't read.
@@ -103,11 +103,10 @@ var InboundFilters = /** @class */ (function () {
     /** JSDoc */
     InboundFilters.prototype._mergeOptions = function (clientOptions) {
         if (clientOptions === void 0) { clientOptions = {}; }
-        // tslint:disable:deprecation
         return {
-            allowUrls: tslib_1.__spread((this._options.whitelistUrls || []), (this._options.allowUrls || []), (clientOptions.whitelistUrls || []), (clientOptions.allowUrls || [])),
-            denyUrls: tslib_1.__spread((this._options.blacklistUrls || []), (this._options.denyUrls || []), (clientOptions.blacklistUrls || []), (clientOptions.denyUrls || [])),
-            ignoreErrors: tslib_1.__spread((this._options.ignoreErrors || []), (clientOptions.ignoreErrors || []), DEFAULT_IGNORE_ERRORS),
+            allowUrls: __spread((this._options.whitelistUrls || []), (this._options.allowUrls || []), (clientOptions.whitelistUrls || []), (clientOptions.allowUrls || [])),
+            denyUrls: __spread((this._options.blacklistUrls || []), (this._options.denyUrls || []), (clientOptions.blacklistUrls || []), (clientOptions.denyUrls || [])),
+            ignoreErrors: __spread((this._options.ignoreErrors || []), (clientOptions.ignoreErrors || []), DEFAULT_IGNORE_ERRORS),
             ignoreInternal: typeof this._options.ignoreInternal !== 'undefined' ? this._options.ignoreInternal : true,
         };
     };

@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __assign, __extends, __read, __spread } from "tslib";
 import { BaseClient } from '@sentry/core';
 import { getGlobalObject, logger } from '@sentry/utils';
 import { BrowserBackend } from './backend';
@@ -12,7 +12,7 @@ import { SDK_NAME, SDK_VERSION } from './version';
  * @see SentryClient for usage documentation.
  */
 var BrowserClient = /** @class */ (function (_super) {
-    tslib_1.__extends(BrowserClient, _super);
+    __extends(BrowserClient, _super);
     /**
      * Creates a new Browser SDK instance.
      *
@@ -22,29 +22,6 @@ var BrowserClient = /** @class */ (function (_super) {
         if (options === void 0) { options = {}; }
         return _super.call(this, BrowserBackend, options) || this;
     }
-    /**
-     * @inheritDoc
-     */
-    BrowserClient.prototype._prepareEvent = function (event, scope, hint) {
-        event.platform = event.platform || 'javascript';
-        event.sdk = tslib_1.__assign({}, event.sdk, { name: SDK_NAME, packages: tslib_1.__spread(((event.sdk && event.sdk.packages) || []), [
-                {
-                    name: 'npm:@sentry/browser',
-                    version: SDK_VERSION,
-                },
-            ]), version: SDK_VERSION });
-        return _super.prototype._prepareEvent.call(this, event, scope, hint);
-    };
-    /**
-     * @inheritDoc
-     */
-    BrowserClient.prototype._sendEvent = function (event) {
-        var integration = this.getIntegration(Breadcrumbs);
-        if (integration) {
-            integration.addSentryBreadcrumb(event);
-        }
-        _super.prototype._sendEvent.call(this, event);
-    };
     /**
      * Show a report dialog to the user to send feedback to a specific event.
      *
@@ -61,7 +38,30 @@ var BrowserClient = /** @class */ (function (_super) {
             logger.error('Trying to call showReportDialog with Sentry Client disabled');
             return;
         }
-        injectReportDialog(tslib_1.__assign({}, options, { dsn: options.dsn || this.getDsn() }));
+        injectReportDialog(__assign(__assign({}, options), { dsn: options.dsn || this.getDsn() }));
+    };
+    /**
+     * @inheritDoc
+     */
+    BrowserClient.prototype._prepareEvent = function (event, scope, hint) {
+        event.platform = event.platform || 'javascript';
+        event.sdk = __assign(__assign({}, event.sdk), { name: SDK_NAME, packages: __spread(((event.sdk && event.sdk.packages) || []), [
+                {
+                    name: 'npm:@sentry/browser',
+                    version: SDK_VERSION,
+                },
+            ]), version: SDK_VERSION });
+        return _super.prototype._prepareEvent.call(this, event, scope, hint);
+    };
+    /**
+     * @inheritDoc
+     */
+    BrowserClient.prototype._sendEvent = function (event) {
+        var integration = this.getIntegration(Breadcrumbs);
+        if (integration) {
+            integration.addSentryBreadcrumb(event);
+        }
+        _super.prototype._sendEvent.call(this, event);
     };
     return BrowserClient;
 }(BaseClient));

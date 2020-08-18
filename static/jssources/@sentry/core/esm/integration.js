@@ -1,10 +1,10 @@
-import * as tslib_1 from "tslib";
+import { __read, __spread } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/hub';
 import { logger } from '@sentry/utils';
 export var installedIntegrations = [];
 /** Gets integration to install */
 export function getIntegrationsToSetup(options) {
-    var defaultIntegrations = (options.defaultIntegrations && tslib_1.__spread(options.defaultIntegrations)) || [];
+    var defaultIntegrations = (options.defaultIntegrations && __spread(options.defaultIntegrations)) || [];
     var userIntegrations = options.integrations;
     var integrations = [];
     if (Array.isArray(userIntegrations)) {
@@ -31,13 +31,13 @@ export function getIntegrationsToSetup(options) {
         integrations = Array.isArray(integrations) ? integrations : [integrations];
     }
     else {
-        integrations = tslib_1.__spread(defaultIntegrations);
+        integrations = __spread(defaultIntegrations);
     }
     // Make sure that if present, `Debug` integration will always run last
     var integrationsNames = integrations.map(function (i) { return i.name; });
     var alwaysLastToRun = 'Debug';
     if (integrationsNames.indexOf(alwaysLastToRun) !== -1) {
-        integrations.push.apply(integrations, tslib_1.__spread(integrations.splice(integrationsNames.indexOf(alwaysLastToRun), 1)));
+        integrations.push.apply(integrations, __spread(integrations.splice(integrationsNames.indexOf(alwaysLastToRun), 1)));
     }
     return integrations;
 }

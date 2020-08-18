@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/typedef */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isThenable } from './is';
 /** SyncPromise internal states */
 var States;
@@ -58,6 +62,7 @@ var SyncPromise = /** @class */ (function () {
                 }
                 if (_this._state === States.RESOLVED) {
                     if (handler.onfulfilled) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         handler.onfulfilled(_this._value);
                     }
                 }
@@ -76,10 +81,6 @@ var SyncPromise = /** @class */ (function () {
             this._reject(e);
         }
     }
-    /** JSDoc */
-    SyncPromise.prototype.toString = function () {
-        return '[object SyncPromise]';
-    };
     /** JSDoc */
     SyncPromise.resolve = function (value) {
         return new SyncPromise(function (resolve) {
@@ -188,6 +189,10 @@ var SyncPromise = /** @class */ (function () {
                 resolve(val);
             });
         });
+    };
+    /** JSDoc */
+    SyncPromise.prototype.toString = function () {
+        return '[object SyncPromise]';
     };
     return SyncPromise;
 }());

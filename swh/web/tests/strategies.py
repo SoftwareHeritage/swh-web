@@ -188,9 +188,7 @@ def unknown_content():
     into the test archive.
     """
     return new_content().filter(
-        lambda c: next(
-            get_tests_data()["storage"].content_get([hash_to_bytes(c["sha1"])])
-        )
+        lambda c: get_tests_data()["storage"].content_get_data(hash_to_bytes(c["sha1"]))
         is None
     )
 
@@ -462,7 +460,8 @@ def unknown_snapshot():
     into the test archive.
     """
     return sha1().filter(
-        lambda s: get_tests_data()["storage"].snapshot_get(hash_to_bytes(s)) is None
+        lambda s: get_tests_data()["storage"].snapshot_get_branches(hash_to_bytes(s))
+        is None
     )
 
 

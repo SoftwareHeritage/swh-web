@@ -423,20 +423,19 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     head_rev_id = archive_data.snapshot_get_head(snapshot)
-    branch_info = random.choice(
-        [
-            {"name": k, "revision": v["target"]}
-            for k, v in snapshot["branches"].items()
-            if v["target_type"] == "revision"
-        ]
-    )
-    release_info = random.choice(
-        [
-            {"name": k, "release": v["target"]}
-            for k, v in snapshot["branches"].items()
-            if v["target_type"] == "release"
-        ]
-    )
+
+    branch_info = None
+    release_info = None
+    for branch_name in sorted(snapshot["branches"]):
+        target_type = snapshot["branches"][branch_name]["target_type"]
+        target = snapshot["branches"][branch_name]["target"]
+        if target_type == "revision" and branch_info is None:
+            branch_info = {"name": branch_name, "revision": target}
+        elif target_type == "release" and release_info is None:
+            release_info = {"name": branch_name, "release": target}
+        if branch_info and release_info:
+            break
+
     release_info["name"] = archive_data.release_get(release_info["release"])["name"]
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]

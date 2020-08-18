@@ -8,7 +8,6 @@ import { isRegExp, isString } from './is';
  */
 export function truncate(str, max) {
     if (max === void 0) { max = 0; }
-    // tslint:disable-next-line:strict-type-predicates
     if (typeof str !== 'string' || max === 0) {
         return str;
     }
@@ -29,7 +28,8 @@ export function snipLine(line, colno) {
         return newLine;
     }
     if (colno > ll) {
-        colno = ll; // tslint:disable-line:no-parameter-reassignment
+        // eslint-disable-next-line no-param-reassign
+        colno = ll;
     }
     var start = Math.max(colno - 60, 0);
     if (start < 5) {
@@ -57,12 +57,13 @@ export function snipLine(line, colno) {
  * @param delimiter string to be placed in-between values
  * @returns Joined values
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function safeJoin(input, delimiter) {
     if (!Array.isArray(input)) {
         return '';
     }
     var output = [];
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (var i = 0; i < input.length; i++) {
         var value = input[i];
         try {

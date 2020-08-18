@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __read, __spread } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { isInstanceOf } from '@sentry/utils';
 import { exceptionFromStacktrace } from '../parsers';
@@ -39,7 +39,7 @@ var LinkedErrors = /** @class */ (function () {
             return event;
         }
         var linkedErrors = this._walkErrorTree(hint.originalException, this._key);
-        event.exception.values = tslib_1.__spread(linkedErrors, event.exception.values);
+        event.exception.values = __spread(linkedErrors, event.exception.values);
         return event;
     };
     /**
@@ -52,7 +52,7 @@ var LinkedErrors = /** @class */ (function () {
         }
         var stacktrace = computeStackTrace(error[key]);
         var exception = exceptionFromStacktrace(stacktrace);
-        return this._walkErrorTree(error[key], key, tslib_1.__spread([exception], stack));
+        return this._walkErrorTree(error[key], key, __spread([exception], stack));
     };
     /**
      * @inheritDoc

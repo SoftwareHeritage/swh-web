@@ -11,14 +11,15 @@ var FunctionToString = /** @class */ (function () {
      * @inheritDoc
      */
     FunctionToString.prototype.setupOnce = function () {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         originalFunctionToString = Function.prototype.toString;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Function.prototype.toString = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
             var context = this.__sentry_original__ || this;
-            // tslint:disable-next-line:no-unsafe-any
             return originalFunctionToString.apply(context, args);
         };
     };

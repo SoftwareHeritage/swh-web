@@ -8,7 +8,6 @@ import { getGlobalObject } from './misc';
  */
 export function supportsErrorEvent() {
     try {
-        // tslint:disable:no-unused-expression
         new ErrorEvent('');
         return true;
     }
@@ -24,11 +23,9 @@ export function supportsErrorEvent() {
  */
 export function supportsDOMError() {
     try {
-        // It really needs 1 argument, not 0.
         // Chrome: VM89:1 Uncaught TypeError: Failed to construct 'DOMError':
         // 1 argument required, but only 0 present.
-        // @ts-ignore
-        // tslint:disable:no-unused-expression
+        // @ts-ignore It really needs 1 argument, not 0.
         new DOMError('');
         return true;
     }
@@ -44,7 +41,6 @@ export function supportsDOMError() {
  */
 export function supportsDOMException() {
     try {
-        // tslint:disable:no-unused-expression
         new DOMException('');
         return true;
     }
@@ -63,11 +59,8 @@ export function supportsFetch() {
         return false;
     }
     try {
-        // tslint:disable-next-line:no-unused-expression
         new Headers();
-        // tslint:disable-next-line:no-unused-expression
         new Request('');
-        // tslint:disable-next-line:no-unused-expression
         new Response();
         return true;
     }
@@ -78,6 +71,7 @@ export function supportsFetch() {
 /**
  * isNativeFetch checks if the given function is a native implementation of fetch()
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 function isNativeFetch(func) {
     return func && /^function fetch\(\)\s+\{\s+\[native code\]\s+\}$/.test(func.toString());
 }
@@ -93,7 +87,7 @@ export function supportsNativeFetch() {
     }
     var global = getGlobalObject();
     // Fast path to avoid DOM I/O
-    // tslint:disable-next-line:no-unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     if (isNativeFetch(global.fetch)) {
         return true;
     }
@@ -101,14 +95,14 @@ export function supportsNativeFetch() {
     // so create a "pure" iframe to see if that has native fetch
     var result = false;
     var doc = global.document;
-    // tslint:disable-next-line:no-unbound-method deprecation
+    // eslint-disable-next-line deprecation/deprecation
     if (doc && typeof doc.createElement === "function") {
         try {
             var sandbox = doc.createElement('iframe');
             sandbox.hidden = true;
             doc.head.appendChild(sandbox);
             if (sandbox.contentWindow && sandbox.contentWindow.fetch) {
-                // tslint:disable-next-line:no-unbound-method
+                // eslint-disable-next-line @typescript-eslint/unbound-method
                 result = isNativeFetch(sandbox.contentWindow.fetch);
             }
             doc.head.removeChild(sandbox);
@@ -126,7 +120,6 @@ export function supportsNativeFetch() {
  * @returns Answer to the given question.
  */
 export function supportsReportingObserver() {
-    // tslint:disable-next-line: no-unsafe-any
     return 'ReportingObserver' in getGlobalObject();
 }
 /**
@@ -144,7 +137,6 @@ export function supportsReferrerPolicy() {
         return false;
     }
     try {
-        // tslint:disable:no-unused-expression
         new Request('_', {
             referrerPolicy: 'origin',
         });
@@ -165,9 +157,11 @@ export function supportsHistory() {
     //       a try/catch block*, will cause Chrome to output an error to console.error
     // borrowed from: https://github.com/angular/angular.js/pull/13945/files
     var global = getGlobalObject();
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     var chrome = global.chrome;
-    // tslint:disable-next-line:no-unsafe-any
     var isChromePackagedApp = chrome && chrome.app && chrome.app.runtime;
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
     var hasHistoryApi = 'history' in global && !!global.history.pushState && !!global.history.replaceState;
     return !isChromePackagedApp && hasHistoryApi;
 }

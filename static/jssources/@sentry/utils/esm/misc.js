@@ -5,8 +5,9 @@ import { snipLine } from './string';
  *
  * @param request The module path to resolve
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function dynamicRequire(mod, request) {
-    // tslint:disable-next-line: no-unsafe-any
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return mod.require(request);
 }
 /**
@@ -15,7 +16,6 @@ export function dynamicRequire(mod, request) {
  * @returns Answer to given question
  */
 export function isNodeEnv() {
-    // tslint:disable:strict-type-predicates
     return Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
 }
 var fallbackGlobalObject = {};
@@ -46,10 +46,10 @@ export function uuid4() {
         var arr = new Uint16Array(8);
         crypto.getRandomValues(arr);
         // set 4 in byte 7
-        // tslint:disable-next-line:no-bitwise
+        // eslint-disable-next-line no-bitwise
         arr[3] = (arr[3] & 0xfff) | 0x4000;
         // set 2 most significant bits of byte 9 to '10'
-        // tslint:disable-next-line:no-bitwise
+        // eslint-disable-next-line no-bitwise
         arr[4] = (arr[4] & 0x3fff) | 0x8000;
         var pad = function (num) {
             var v = num.toString(16);
@@ -62,9 +62,9 @@ export function uuid4() {
     }
     // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#2117523
     return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        // tslint:disable-next-line:no-bitwise
+        // eslint-disable-next-line no-bitwise
         var r = (Math.random() * 16) | 0;
-        // tslint:disable-next-line:no-bitwise
+        // eslint-disable-next-line no-bitwise
         var v = c === 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
@@ -80,7 +80,7 @@ export function parseUrl(url) {
     if (!url) {
         return {};
     }
-    var match = url.match(/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
+    var match = url.match(/^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
     if (!match) {
         return {};
     }
@@ -159,11 +159,12 @@ export function addExceptionMechanism(event, mechanism) {
     if (mechanism === void 0) { mechanism = {}; }
     // TODO: Use real type with `keyof Mechanism` thingy and maybe make it better?
     try {
-        // @ts-ignore
-        // tslint:disable:no-non-null-assertion
+        // @ts-ignore Type 'Mechanism | {}' is not assignable to type 'Mechanism | undefined'
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         event.exception.values[0].mechanism = event.exception.values[0].mechanism || {};
         Object.keys(mechanism).forEach(function (key) {
-            // @ts-ignore
+            // @ts-ignore Mechanism has no index signature
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             event.exception.values[0].mechanism[key] = mechanism[key];
         });
     }
@@ -203,6 +204,7 @@ export function htmlTreeAsString(elem) {
         var separator = ' > ';
         var sepLength = separator.length;
         var nextStr = void 0;
+        // eslint-disable-next-line no-plusplus
         while (currentElem && height++ < MAX_TRAVERSE_HEIGHT) {
             nextStr = _htmlElementAsString(currentElem);
             // bail out if
@@ -242,6 +244,7 @@ function _htmlElementAsString(el) {
     if (elem.id) {
         out.push("#" + elem.id);
     }
+    // eslint-disable-next-line prefer-const
     className = elem.className;
     if (className && isString(className)) {
         classes = className.split(/\s+/);
@@ -290,12 +293,11 @@ export var crossPlatformPerformance = (function () {
     //
     // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
     // is not as widely supported. Namely, performance.timeOrigin is undefined in Safari as of writing.
-    // tslint:disable-next-line:strict-type-predicates
     if (performance.timeOrigin === undefined) {
         // As of writing, performance.timing is not available in Web Workers in mainstream browsers, so it is not always a
         // valid fallback. In the absence of a initial time provided by the browser, fallback to INITIAL_TIME.
-        // @ts-ignore
-        // tslint:disable-next-line:deprecation
+        // @ts-ignore ignored because timeOrigin is a readonly property but we want to override
+        // eslint-disable-next-line deprecation/deprecation
         performance.timeOrigin = (performance.timing && performance.timing.navigationStart) || INITIAL_TIME;
     }
     return performance;
