@@ -21,7 +21,6 @@ from swh.web import config
 from swh.web.common import converters
 from swh.web.common import query
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
     OriginInfo,
     OriginVisitInfo,
@@ -481,7 +480,7 @@ def lookup_release_multiple(sha1_git_list):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    sha1_bin_list = (_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list)
+    sha1_bin_list = [_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list]
     releases = storage.release_get(sha1_bin_list) or []
     return (converters.from_release(r) for r in releases)
 
@@ -521,7 +520,7 @@ def lookup_revision_multiple(sha1_git_list):
         ValueError if the identifier provided is not of sha1 nature.
 
     """
-    sha1_bin_list = (_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list)
+    sha1_bin_list = [_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list]
     revisions = storage.revision_get(sha1_bin_list) or []
     return (converters.from_revision(r) for r in revisions)
 
@@ -567,6 +566,8 @@ def _lookup_revision_id_by(origin, branch_name, timestamp):
         origin = {"url": origin}
     else:
         raise TypeError('"origin" must be an int or a string.')
+
+    from swh.web.common.origin_visits import get_origin_visit
 
     visit = get_origin_visit(origin, visit_ts=timestamp)
     branch = _get_snapshot_branch(visit["snapshot"], branch_name)
@@ -804,8 +805,9 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
             raise NotFoundExc(f"Content not found for revision {sha1_git}")
         content_d = content.to_dict()
         if with_data:
-            c = _first_element(storage.content_get([content.sha1]))
-            content_d["data"] = c["data"]
+            data = storage.content_get_data(content.sha1)
+            if data:
+                content_d["data"] = data
         return {
             "type": "file",
             "path": "." if not dir_path else dir_path,
@@ -842,7 +844,7 @@ def lookup_content(q: str) -> Dict[str, Any]:
     return converters.from_content(c.to_dict())
 
 
-def lookup_content_raw(q):
+def lookup_content_raw(q: str) -> Dict[str, Any]:
     """Lookup the content defined by q.
 
     Args:
@@ -859,14 +861,14 @@ def lookup_content_raw(q):
     """
     c = lookup_content(q)
     content_sha1_bytes = hashutil.hash_to_bytes(c["checksums"]["sha1"])
-    content = _first_element(storage.content_get([content_sha1_bytes]))
-    if not content:
-        algo, hash = query.parse_hash(q)
+    content_data = storage.content_get_data(content_sha1_bytes)
+    if not content_data:
+        algo, hash_ = query.parse_hash(q)
         raise NotFoundExc(
-            "Bytes of content with %s checksum equals to %s "
-            "are not available!" % (algo, hashutil.hash_to_hex(hash))
+            f"Bytes of content with {algo} checksum equals "
+            f"to {hashutil.hash_to_hex(hash_)} are not available!"
         )
-    return converters.from_content(content)
+    return converters.from_content({"sha1": content_sha1_bytes, "data": content_data})
 
 
 def stat_counters():
@@ -1045,12 +1047,12 @@ def lookup_snapshot(
         A dict filled with the snapshot content.
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    snapshot = storage.snapshot_get_branches(
+    partial_branches = storage.snapshot_get_branches(
         snapshot_id_bin, branches_from.encode(), branches_count, target_types
     )
-    if not snapshot:
-        raise NotFoundExc("Snapshot with id %s not found!" % snapshot_id)
-    return converters.from_snapshot(snapshot)
+    if not partial_branches:
+        raise NotFoundExc(f"Snapshot with id {snapshot_id} not found!")
+    return converters.from_partial_branches(partial_branches)
 
 
 def lookup_latest_origin_snapshot(

@@ -230,7 +230,7 @@ def test_api_content_metadata(api_client, archive_data, content):
 
     assert rv.status_code == 200, rv.data
     assert rv["Content-Type"] == "application/json"
-    expected_data = archive_data.content_get_metadata(content["sha1"])
+    expected_data = archive_data.content_get(content["sha1"])
     for key, view_name in (
         ("data_url", "api-1-content-raw"),
         ("license_url", "api-1-content-license"),
@@ -307,7 +307,7 @@ def test_api_content_raw_text(api_client, archive_data, content):
         == "attachment; filename=content_sha1_%s_raw" % content["sha1"]
     )
     assert rv["Content-Type"] == "application/octet-stream"
-    expected_data = archive_data.content_get(content["sha1"])
+    expected_data = archive_data.content_get_data(content["sha1"])
     assert rv.content == expected_data["data"]
 
 
@@ -324,7 +324,7 @@ def test_api_content_raw_text_with_filename(api_client, archive_data, content):
     assert rv["Content-Type"] == "application/octet-stream"
     assert rv["Content-disposition"] == "attachment; filename=filename.txt"
     assert rv["Content-Type"] == "application/octet-stream"
-    expected_data = archive_data.content_get(content["sha1"])
+    expected_data = archive_data.content_get_data(content["sha1"])
     assert rv.content == expected_data["data"]
 
 

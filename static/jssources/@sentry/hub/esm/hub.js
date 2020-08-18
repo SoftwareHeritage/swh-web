@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __assign, __read, __spread } from "tslib";
 import { consoleSandbox, getGlobalObject, isNodeEnv, logger, timestampWithMs, uuid4 } from '@sentry/utils';
 import { Scope } from './scope';
 /**
@@ -41,23 +41,6 @@ var Hub = /** @class */ (function () {
         this._stack.push({ client: client, scope: scope });
         this.bindClient(client);
     }
-    /**
-     * Internal helper function to call a method on the top client if it exists.
-     *
-     * @param method The method to call on the client.
-     * @param args Arguments to pass to the client function.
-     */
-    Hub.prototype._invokeClient = function (method) {
-        var _a;
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
-        var top = this.getStackTop();
-        if (top && top.client && top.client[method]) {
-            (_a = top.client)[method].apply(_a, tslib_1.__spread(args, [top.scope]));
-        }
-    };
     /**
      * @inheritDoc
      */
@@ -127,6 +110,7 @@ var Hub = /** @class */ (function () {
     /**
      * @inheritDoc
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     Hub.prototype.captureException = function (exception, hint) {
         var eventId = (this._lastEventId = uuid4());
         var finalHint = hint;
@@ -147,7 +131,7 @@ var Hub = /** @class */ (function () {
                 syntheticException: syntheticException,
             };
         }
-        this._invokeClient('captureException', exception, tslib_1.__assign({}, finalHint, { event_id: eventId }));
+        this._invokeClient('captureException', exception, __assign(__assign({}, finalHint), { event_id: eventId }));
         return eventId;
     };
     /**
@@ -173,7 +157,7 @@ var Hub = /** @class */ (function () {
                 syntheticException: syntheticException,
             };
         }
-        this._invokeClient('captureMessage', message, level, tslib_1.__assign({}, finalHint, { event_id: eventId }));
+        this._invokeClient('captureMessage', message, level, __assign(__assign({}, finalHint), { event_id: eventId }));
         return eventId;
     };
     /**
@@ -181,7 +165,7 @@ var Hub = /** @class */ (function () {
      */
     Hub.prototype.captureEvent = function (event, hint) {
         var eventId = (this._lastEventId = uuid4());
-        this._invokeClient('captureEvent', event, tslib_1.__assign({}, hint, { event_id: eventId }));
+        this._invokeClient('captureEvent', event, __assign(__assign({}, hint), { event_id: eventId }));
         return eventId;
     };
     /**
@@ -198,12 +182,13 @@ var Hub = /** @class */ (function () {
         if (!top.scope || !top.client) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         var _a = (top.client.getOptions && top.client.getOptions()) || {}, _b = _a.beforeBreadcrumb, beforeBreadcrumb = _b === void 0 ? null : _b, _c = _a.maxBreadcrumbs, maxBreadcrumbs = _c === void 0 ? DEFAULT_BREADCRUMBS : _c;
         if (maxBreadcrumbs <= 0) {
             return;
         }
         var timestamp = timestampWithMs();
-        var mergedBreadcrumb = tslib_1.__assign({ timestamp: timestamp }, breadcrumb);
+        var mergedBreadcrumb = __assign({ timestamp: timestamp }, breadcrumb);
         var finalBreadcrumb = beforeBreadcrumb
             ? consoleSandbox(function () { return beforeBreadcrumb(mergedBreadcrumb, hint); })
             : mergedBreadcrumb;
@@ -265,6 +250,7 @@ var Hub = /** @class */ (function () {
     /**
      * @inheritDoc
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Hub.prototype.setContext = function (name, context) {
         var top = this.getStackTop();
         if (!top.scope) {
@@ -328,9 +314,29 @@ var Hub = /** @class */ (function () {
         return this._callExtensionMethod('traceHeaders');
     };
     /**
+     * Internal helper function to call a method on the top client if it exists.
+     *
+     * @param method The method to call on the client.
+     * @param args Arguments to pass to the client function.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Hub.prototype._invokeClient = function (method) {
+        var _a;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var top = this.getStackTop();
+        if (top && top.client && top.client[method]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+            (_a = top.client)[method].apply(_a, __spread(args, [top.scope]));
+        }
+    };
+    /**
      * Calls global extension method and binding current instance to the function call
      */
-    // @ts-ignore
+    // @ts-ignore Function lacks ending return statement and return type does not include 'undefined'. ts(2366)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Hub.prototype._callExtensionMethod = function (method) {
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -338,7 +344,6 @@ var Hub = /** @class */ (function () {
         }
         var carrier = getMainCarrier();
         var sentry = carrier.__SENTRY__;
-        // tslint:disable-next-line: strict-type-predicates
         if (sentry && sentry.extensions && typeof sentry.extensions[method] === 'function') {
             return sentry.extensions[method].apply(this, args);
         }
@@ -397,11 +402,12 @@ function getHubFromActiveDomain(registry) {
         var property = 'domain';
         var carrier = getMainCarrier();
         var sentry = carrier.__SENTRY__;
-        // tslint:disable-next-line: strict-type-predicates
         if (!sentry || !sentry.extensions || !sentry.extensions[property]) {
             return getHubFromCarrier(registry);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         var domain = sentry.extensions[property];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         var activeDomain = domain.active;
         // If there no active domain, just return global hub
         if (!activeDomain) {

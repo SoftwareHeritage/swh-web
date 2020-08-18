@@ -84,7 +84,7 @@ def test_lookup_hash_does_not_exist():
 def test_lookup_hash_exist(archive_data, content):
     actual_lookup = service.lookup_hash("sha1:%s" % content["sha1"])
 
-    content_metadata = archive_data.content_get_metadata(content["sha1"])
+    content_metadata = archive_data.content_get(content["sha1"])
 
     assert {"found": content_metadata, "algo": "sha1"} == actual_lookup
 
@@ -472,7 +472,9 @@ def test_lookup_directory_with_revision_with_path_to_file_and_data(
         if e["type"] == "file"
     ]
     expected_dir_entry = random.choice(dir_entries)
-    expected_data = archive_data.content_get(expected_dir_entry["checksums"]["sha1"])
+    expected_data = archive_data.content_get_data(
+        expected_dir_entry["checksums"]["sha1"]
+    )
 
     actual_dir_entry = service.lookup_directory_with_revision(
         revision, expected_dir_entry["name"], with_data=True
@@ -598,7 +600,7 @@ def test_lookup_content_raw_not_found():
 def test_lookup_content_raw(archive_data, content):
     actual_content = service.lookup_content_raw("sha256:%s" % content["sha256"])
 
-    expected_content = archive_data.content_get(content["sha1"])
+    expected_content = archive_data.content_get_data(content["sha1"])
 
     assert actual_content == expected_content
 
@@ -617,18 +619,18 @@ def test_lookup_content_not_found():
 
 @given(content())
 def test_lookup_content_with_sha1(archive_data, content):
-    actual_content = service.lookup_content("sha1:%s" % content["sha1"])
+    actual_content = service.lookup_content(f"sha1:{content['sha1']}")
 
-    expected_content = archive_data.content_get_metadata(content["sha1"])
+    expected_content = archive_data.content_get(content["sha1"])
 
     assert actual_content == expected_content
 
 
 @given(content())
 def test_lookup_content_with_sha256(archive_data, content):
-    actual_content = service.lookup_content("sha256:%s" % content["sha256"])
+    actual_content = service.lookup_content(f"sha256:{content['sha256']}")
 
-    expected_content = archive_data.content_get_metadata(content["sha1"])
+    expected_content = archive_data.content_get(content["sha1"])
 
     assert actual_content == expected_content
 
@@ -827,7 +829,7 @@ def test_lookup_known_objects(
     expected = archive_data.revision_get(revision)
     assert service.lookup_object(REVISION, revision) == expected
 
-    expected = archive_data.snapshot_get(snapshot)
+    expected = {**archive_data.snapshot_get(snapshot), "next_branch": None}
     assert service.lookup_object(SNAPSHOT, snapshot) == expected
 
 

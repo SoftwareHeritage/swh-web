@@ -1,11 +1,11 @@
-import * as tslib_1 from "tslib";
+import { __extends } from "tslib";
 import { eventToSentryRequest } from '@sentry/core';
 import { Status } from '@sentry/types';
 import { logger, parseRetryAfterHeader, SyncPromise } from '@sentry/utils';
 import { BaseTransport } from './base';
 /** `XHR` based transport */
 var XHRTransport = /** @class */ (function (_super) {
-    tslib_1.__extends(XHRTransport, _super);
+    __extends(XHRTransport, _super);
     function XHRTransport() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** Locks transport after receiving 429 response */
@@ -38,7 +38,12 @@ var XHRTransport = /** @class */ (function (_super) {
                 }
                 if (status === Status.RateLimit) {
                     var now = Date.now();
-                    _this._disabledUntil = new Date(now + parseRetryAfterHeader(now, request.getResponseHeader('Retry-After')));
+                    /**
+                     * "The search for the header name is case-insensitive."
+                     * https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/getResponseHeader
+                     */
+                    var retryAfterHeader = request.getResponseHeader('Retry-After');
+                    _this._disabledUntil = new Date(now + parseRetryAfterHeader(now, retryAfterHeader));
                     logger.warn("Too many requests, backing off till: " + _this._disabledUntil);
                 }
                 reject(request);

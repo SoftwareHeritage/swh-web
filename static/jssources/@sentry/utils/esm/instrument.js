@@ -1,5 +1,4 @@
-/* tslint:disable:only-arrow-functions no-unsafe-any */
-import * as tslib_1 from "tslib";
+import { __assign, __values } from "tslib";
 import { isInstanceOf, isString } from './is';
 import { logger } from './logger';
 import { getFunctionName, getGlobalObject } from './misc';
@@ -56,7 +55,6 @@ function instrument(type) {
  * @hidden
  */
 export function addInstrumentationHandler(handler) {
-    // tslint:disable-next-line:strict-type-predicates
     if (!handler || typeof handler.type !== 'string' || typeof handler.callback !== 'function') {
         return;
     }
@@ -71,7 +69,7 @@ function triggerHandlers(type, data) {
         return;
     }
     try {
-        for (var _b = tslib_1.__values(handlers[type] || []), _c = _b.next(); !_c.done; _c = _b.next()) {
+        for (var _b = __values(handlers[type] || []), _c = _b.next(); !_c.done; _c = _b.next()) {
             var handler = _c.value;
             try {
                 handler(data);
@@ -132,12 +130,13 @@ function instrumentFetch() {
                 },
                 startTimestamp: Date.now(),
             };
-            triggerHandlers('fetch', tslib_1.__assign({}, commonHandlerData));
+            triggerHandlers('fetch', __assign({}, commonHandlerData));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return originalFetch.apply(global, args).then(function (response) {
-                triggerHandlers('fetch', tslib_1.__assign({}, commonHandlerData, { endTimestamp: Date.now(), response: response }));
+                triggerHandlers('fetch', __assign(__assign({}, commonHandlerData), { endTimestamp: Date.now(), response: response }));
                 return response;
             }, function (error) {
-                triggerHandlers('fetch', tslib_1.__assign({}, commonHandlerData, { endTimestamp: Date.now(), error: error }));
+                triggerHandlers('fetch', __assign(__assign({}, commonHandlerData), { endTimestamp: Date.now(), error: error }));
                 // NOTE: If you are a Sentry user, and you are seeing this stack frame,
                 //       it means the sentry.javascript SDK caught an error invoking your application code.
                 //       This is expected behavior and NOT indicative of a bug with sentry.javascript.
@@ -146,6 +145,7 @@ function instrumentFetch() {
         };
     });
 }
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /** Extract `method` from fetch call arguments */
 function getFetchMethod(fetchArgs) {
     if (fetchArgs === void 0) { fetchArgs = []; }
@@ -168,6 +168,7 @@ function getFetchUrl(fetchArgs) {
     }
     return String(fetchArgs[0]);
 }
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */
 /** JSDoc */
 function instrumentXHR() {
     if (!('XMLHttpRequest' in global)) {
@@ -180,13 +181,16 @@ function instrumentXHR() {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            var xhr = this; // tslint:disable-line:no-this-assignment
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            var xhr = this;
             var url = args[1];
             xhr.__sentry_xhr__ = {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 method: isString(args[0]) ? args[0].toUpperCase() : args[0],
                 url: args[1],
             };
             // if Sentry key appears in URL, don't capture it as a request
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (isString(url) && xhr.__sentry_xhr__.method === 'POST' && url.match(/sentry_key/)) {
                 xhr.__sentry_own_request__ = true;
             }
@@ -303,10 +307,13 @@ function instrumentDOM() {
     global.document.addEventListener('keypress', keypressEventHandler(triggerHandlers.bind(null, 'dom')), false);
     // After hooking into document bubbled up click and keypresses events, we also hook into user handled click & keypresses.
     ['EventTarget', 'Node'].forEach(function (target) {
+        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
         var proto = global[target] && global[target].prototype;
+        // eslint-disable-next-line no-prototype-builtins
         if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
             return;
         }
+        /* eslint-enable @typescript-eslint/no-unsafe-member-access */
         fill(proto, 'addEventListener', function (original) {
             return function (eventName, fn, options) {
                 if (fn && fn.handleEvent) {
@@ -441,6 +448,7 @@ function instrumentError() {
             url: url,
         });
         if (_oldOnErrorHandler) {
+            // eslint-disable-next-line prefer-rest-params
             return _oldOnErrorHandler.apply(this, arguments);
         }
         return false;
@@ -453,6 +461,7 @@ function instrumentUnhandledRejection() {
     global.onunhandledrejection = function (e) {
         triggerHandlers('unhandledrejection', e);
         if (_oldOnUnhandledRejectionHandler) {
+            // eslint-disable-next-line prefer-rest-params
             return _oldOnUnhandledRejectionHandler.apply(this, arguments);
         }
         return true;

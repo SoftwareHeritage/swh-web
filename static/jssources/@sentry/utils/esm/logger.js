@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { consoleSandbox, getGlobalObject } from './misc';
 // TODO: Implement different loggers for different environments
 var global = getGlobalObject();
@@ -27,7 +28,7 @@ var Logger = /** @class */ (function () {
             return;
         }
         consoleSandbox(function () {
-            global.console.log(PREFIX + "[Log]: " + args.join(' ')); // tslint:disable-line:no-console
+            global.console.log(PREFIX + "[Log]: " + args.join(' '));
         });
     };
     /** JSDoc */
@@ -40,7 +41,7 @@ var Logger = /** @class */ (function () {
             return;
         }
         consoleSandbox(function () {
-            global.console.warn(PREFIX + "[Warn]: " + args.join(' ')); // tslint:disable-line:no-console
+            global.console.warn(PREFIX + "[Warn]: " + args.join(' '));
         });
     };
     /** JSDoc */
@@ -53,7 +54,7 @@ var Logger = /** @class */ (function () {
             return;
         }
         consoleSandbox(function () {
-            global.console.error(PREFIX + "[Error]: " + args.join(' ')); // tslint:disable-line:no-console
+            global.console.error(PREFIX + "[Error]: " + args.join(' '));
         });
     };
     return Logger;

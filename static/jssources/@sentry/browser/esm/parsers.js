@@ -15,7 +15,6 @@ export function exceptionFromStacktrace(stacktrace) {
     if (frames && frames.length) {
         exception.stacktrace = { frames: frames };
     }
-    // tslint:disable-next-line:strict-type-predicates
     if (exception.type === undefined && exception.value === '') {
         exception.value = 'Unrecoverable error caught';
     }

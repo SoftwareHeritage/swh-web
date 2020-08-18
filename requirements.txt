@@ -10,11 +10,11 @@ djangorestframework
 django-webpack-loader
 docutils
 htmlmin
+iso8601
 lxml
 prometheus-client
 pybadges
 pygments
-python-dateutil
 python-keycloak >= 0.19.0
 python-magic >= 0.4.0
 python-memcached

@@ -46,7 +46,8 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
     if (isErrorEvent(exception) && exception.error) {
         // If it is an ErrorEvent with `error` property, extract it to get actual Error
         var errorEvent = exception;
-        exception = errorEvent.error; // tslint:disable-line:no-parameter-reassignment
+        // eslint-disable-next-line no-param-reassign
+        exception = errorEvent.error;
         event = eventFromStacktrace(computeStackTrace(exception));
         return event;
     }

@@ -22,16 +22,6 @@ var API = /** @class */ (function () {
     API.prototype.getStoreEndpoint = function () {
         return this._getIngestEndpoint('store');
     };
-    /** Returns the envelope endpoint URL. */
-    API.prototype._getEnvelopeEndpoint = function () {
-        return this._getIngestEndpoint('envelope');
-    };
-    /** Returns the ingest API endpoint for target. */
-    API.prototype._getIngestEndpoint = function (target) {
-        var base = this.getBaseApiEndpoint();
-        var dsn = this._dsnObject;
-        return "" + base + dsn.projectId + "/" + target + "/";
-    };
     /**
      * Returns the store endpoint URL with auth in the query string.
      *
@@ -47,17 +37,6 @@ var API = /** @class */ (function () {
      */
     API.prototype.getEnvelopeEndpointWithUrlEncodedAuth = function () {
         return this._getEnvelopeEndpoint() + "?" + this._encodedAuth();
-    };
-    /** Returns a URL-encoded string with auth config suitable for a query string. */
-    API.prototype._encodedAuth = function () {
-        var dsn = this._dsnObject;
-        var auth = {
-            // We send only the minimum set of required information. See
-            // https://github.com/getsentry/sentry-javascript/issues/2572.
-            sentry_key: dsn.user,
-            sentry_version: SENTRY_API_VERSION,
-        };
-        return urlEncode(auth);
     };
     /** Returns only the path component for the store endpoint. */
     API.prototype.getStoreEndpointPath = function () {
@@ -108,6 +87,27 @@ var API = /** @class */ (function () {
             return endpoint + "?" + encodedOptions.join('&');
         }
         return endpoint;
+    };
+    /** Returns the envelope endpoint URL. */
+    API.prototype._getEnvelopeEndpoint = function () {
+        return this._getIngestEndpoint('envelope');
+    };
+    /** Returns the ingest API endpoint for target. */
+    API.prototype._getIngestEndpoint = function (target) {
+        var base = this.getBaseApiEndpoint();
+        var dsn = this._dsnObject;
+        return "" + base + dsn.projectId + "/" + target + "/";
+    };
+    /** Returns a URL-encoded string with auth config suitable for a query string. */
+    API.prototype._encodedAuth = function () {
+        var dsn = this._dsnObject;
+        var auth = {
+            // We send only the minimum set of required information. See
+            // https://github.com/getsentry/sentry-javascript/issues/2572.
+            sentry_key: dsn.user,
+            sentry_version: SENTRY_API_VERSION,
+        };
+        return urlEncode(auth);
     };
     return API;
 }());

@@ -6,9 +6,6 @@
 import re
 
 from datetime import datetime, timezone
-from dateutil import parser as date_parser
-from dateutil import tz
-
 from typing import Optional, Dict, Any
 
 import docutils.parsers.rst
@@ -21,6 +18,8 @@ from docutils.writers.html5_polyglot import Writer, HTMLTranslator
 
 from django.urls import reverse as django_reverse
 from django.http import QueryDict, HttpRequest
+
+from iso8601 import parse_date, ParseError
 
 from prometheus_client.registry import CollectorRegistry
 
@@ -104,39 +103,32 @@ def datetime_to_utc(date):
     Returns:
         datetime.datetime: datetime in UTC without timezone info
     """
-    if date.tzinfo:
-        return date.astimezone(tz.gettz("UTC")).replace(tzinfo=timezone.utc)
+    if date.tzinfo and date.tzinfo != timezone.utc:
+        return date.astimezone(tz=timezone.utc)
     else:
         return date
 
 
-def parse_timestamp(timestamp):
-    """Given a time or timestamp (as string), parse the result as UTC datetime.
+def parse_iso8601_date_to_utc(iso_date: str) -> datetime:
+    """Given an ISO 8601 datetime string, parse the result as UTC datetime.
 
     Returns:
-        datetime.datetime: a timezone-aware datetime representing the
-            parsed value or None if the parsing fails.
+        a timezone-aware datetime representing the parsed date
+
+    Raises:
+        swh.web.common.exc.BadInputExc: provided date does not respect ISO 8601 format
 
     Samples:
         - 2016-01-12
         - 2016-01-12T09:19:12+0100
-        - Today is January 1, 2047 at 8:21:00AM
-        - 1452591542
+        - 2007-01-14T20:34:22Z
 
     """
-    if not timestamp:
-        return None
-
     try:
-        date = date_parser.parse(timestamp, ignoretz=False, fuzzy=True)
+        date = parse_date(iso_date)
         return datetime_to_utc(date)
-    except Exception:
-        try:
-            return datetime.utcfromtimestamp(float(timestamp)).replace(
-                tzinfo=timezone.utc
-            )
-        except (ValueError, OverflowError) as e:
-            raise BadInputExc(e)
+    except ParseError as e:
+        raise BadInputExc(e)
 
 
 def shorten_path(path):
@@ -151,7 +143,7 @@ def shorten_path(path):
 
 
 def format_utc_iso_date(iso_date, fmt="%d %B %Y, %H:%M UTC"):
-    """Turns a string representation of an ISO 8601 date string
+    """Turns a string representation of an ISO 8601 datetime string
     to UTC and format it into a more human readable one.
 
     For instance, from the following input
@@ -169,7 +161,7 @@ def format_utc_iso_date(iso_date, fmt="%d %B %Y, %H:%M UTC"):
     """
     if not iso_date:
         return iso_date
-    date = parse_timestamp(iso_date)
+    date = parse_iso8601_date_to_utc(iso_date)
     return date.strftime(fmt)
 
 

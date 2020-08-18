@@ -1,5 +1,8 @@
-// tslint:disable:object-literal-sort-keys
-import * as tslib_1 from "tslib";
+/**
+ * This was originally forked from https://github.com/occ/TraceKit, but has since been
+ * largely modified and is now maintained as part of Sentry JS SDK.
+ */
+import { __assign } from "tslib";
 // global reference to slice
 var UNKNOWN_FUNCTION = '?';
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
@@ -14,8 +17,8 @@ var chromeEval = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 // Based on our own mapping pattern - https://github.com/getsentry/sentry/blob/9f08305e09866c8bd6d0c24f5b0aabdd7dd6c59c/src/sentry/lang/javascript/errormapping.py#L83-L108
 var reactMinifiedRegexp = /Minified React error #\d+;/i;
 /** JSDoc */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function computeStackTrace(ex) {
-    // tslint:disable:no-unsafe-any
     var stack = null;
     var popSize = 0;
     if (ex) {
@@ -55,9 +58,8 @@ export function computeStackTrace(ex) {
     };
 }
 /** JSDoc */
-// tslint:disable-next-line:cyclomatic-complexity
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, complexity
 function computeStackTraceFromStackProp(ex) {
-    // tslint:disable:no-conditional-assignment
     if (!ex || !ex.stack) {
         return null;
     }
@@ -138,6 +140,7 @@ function computeStackTraceFromStackProp(ex) {
     };
 }
 /** JSDoc */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function computeStackTraceFromStacktraceProp(ex) {
     if (!ex || !ex.stacktrace) {
         return null;
@@ -147,12 +150,11 @@ function computeStackTraceFromStacktraceProp(ex) {
     // reliably in other circumstances.
     var stacktrace = ex.stacktrace;
     var opera10Regex = / line (\d+).*script (?:in )?(\S+)(?:: in function (\S+))?$/i;
-    var opera11Regex = / line (\d+), column (\d+)\s*(?:in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\))? in (.*):\s*$/i;
+    var opera11Regex = / line (\d+), column (\d+)\s*(?:in (?:<anonymous function: ([^>]+)>|([^)]+))\((.*)\))? in (.*):\s*$/i;
     var lines = stacktrace.split('\n');
     var stack = [];
     var parts;
     for (var line = 0; line < lines.length; line += 2) {
-        // tslint:disable:no-conditional-assignment
         var element = null;
         if ((parts = opera10Regex.exec(lines[line]))) {
             element = {
@@ -191,7 +193,7 @@ function computeStackTraceFromStacktraceProp(ex) {
 /** Remove N number of frames from the stack */
 function popFrames(stacktrace, popSize) {
     try {
-        return tslib_1.__assign({}, stacktrace, { stack: stacktrace.stack.slice(popSize) });
+        return __assign(__assign({}, stacktrace), { stack: stacktrace.stack.slice(popSize) });
     }
     catch (e) {
         return stacktrace;
@@ -202,6 +204,7 @@ function popFrames(stacktrace, popSize) {
  * https://github.com/getsentry/sentry-javascript/issues/1949
  * In this specific case we try to extract stacktrace.message.error.message
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractMessage(ex) {
     var message = ex && ex.message;
     if (!message) {

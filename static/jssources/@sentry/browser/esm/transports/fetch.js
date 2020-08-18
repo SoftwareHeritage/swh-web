@@ -1,4 +1,4 @@
-import * as tslib_1 from "tslib";
+import { __extends } from "tslib";
 import { eventToSentryRequest } from '@sentry/core';
 import { Status } from '@sentry/types';
 import { getGlobalObject, logger, parseRetryAfterHeader, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
@@ -6,7 +6,7 @@ import { BaseTransport } from './base';
 var global = getGlobalObject();
 /** `fetch` based transport */
 var FetchTransport = /** @class */ (function (_super) {
-    tslib_1.__extends(FetchTransport, _super);
+    __extends(FetchTransport, _super);
     function FetchTransport() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** Locks transport after receiving 429 response */
@@ -52,7 +52,12 @@ var FetchTransport = /** @class */ (function (_super) {
                 }
                 if (status === Status.RateLimit) {
                     var now = Date.now();
-                    _this._disabledUntil = new Date(now + parseRetryAfterHeader(now, response.headers.get('Retry-After')));
+                    /**
+                     * "The name is case-insensitive."
+                     * https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
+                     */
+                    var retryAfterHeader = response.headers.get('Retry-After');
+                    _this._disabledUntil = new Date(now + parseRetryAfterHeader(now, retryAfterHeader));
                     logger.warn("Too many requests, backing off till: " + _this._disabledUntil);
                 }
                 reject(response);

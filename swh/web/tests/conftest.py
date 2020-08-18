@@ -22,7 +22,7 @@ from swh.web.common import converters
 from swh.web.common.typing import OriginVisitInfo
 from swh.web.tests.data import get_tests_data, override_storages
 from swh.storage.algos.origin import origin_get_latest_visit_status
-from swh.storage.algos.snapshot import snapshot_get_latest
+from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
 
 # Used to skip some tests
 ctags_json_missing = (
@@ -176,19 +176,24 @@ class _ArchiveData:
         cnt = self.storage.content_find(cnt_ids_bytes)
         return converters.from_content(cnt[0].to_dict()) if cnt else cnt
 
-    def content_get_metadata(self, cnt_id):
+    def content_get(self, cnt_id: str) -> Dict[str, Any]:
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        metadata = self.storage.content_get_metadata([cnt_id_bytes])
-        contents = metadata[cnt_id_bytes]
-        content = None if not contents else contents[0]
+        content = self.storage.content_get([cnt_id_bytes])[0]
+        if content:
+            content_d = content.to_dict()
+            content_d.pop("ctime", None)
+        else:
+            content_d = None
         return converters.from_swh(
-            content, hashess={"sha1", "sha1_git", "sha256", "blake2s256"}
+            content_d, hashess={"sha1", "sha1_git", "sha256", "blake2s256"}
         )
 
-    def content_get(self, cnt_id):
+    def content_get_data(self, cnt_id: str) -> Optional[Dict[str, Any]]:
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        cnt = next(self.storage.content_get([cnt_id_bytes]))
-        return converters.from_content(cnt)
+        cnt_data = self.storage.content_get_data(cnt_id_bytes)
+        if cnt_data is None:
+            return None
+        return converters.from_content({"data": cnt_data, "sha1": cnt_id_bytes})
 
     def directory_get(self, dir_id):
         return {"id": dir_id, "content": self.directory_ls(dir_id)}
@@ -281,19 +286,19 @@ class _ArchiveData:
         )
 
     def snapshot_get(self, snapshot_id):
-        snp = self.storage.snapshot_get(hash_to_bytes(snapshot_id))
-        return converters.from_snapshot(snp)
+        snp = snapshot_get_all_branches(self.storage, hash_to_bytes(snapshot_id))
+        return converters.from_snapshot(snp.to_dict())
 
     def snapshot_get_branches(
         self, snapshot_id, branches_from="", branches_count=1000, target_types=None
     ):
-        snp = self.storage.snapshot_get_branches(
+        partial_branches = self.storage.snapshot_get_branches(
             hash_to_bytes(snapshot_id),
             branches_from.encode(),
             branches_count,
             target_types,
         )
-        return converters.from_snapshot(snp)
+        return converters.from_partial_branches(partial_branches)
 
     def snapshot_get_head(self, snapshot):
         if snapshot["branches"]["HEAD"]["target_type"] == "alias":

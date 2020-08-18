@@ -246,7 +246,7 @@ def test_content_raw_text(client, archive_data, content):
 
     resp = client.get(url)
 
-    content_data = archive_data.content_get(content["sha1"])["data"]
+    content_data = archive_data.content_get_data(content["sha1"])["data"]
 
     assert resp.status_code == 200
     assert resp["Content-Type"] == "text/plain"
@@ -286,7 +286,7 @@ def test_content_raw_bin(client, archive_data, content):
     resp = client.get(url)
 
     filename = content["path"].split("/")[-1]
-    content_data = archive_data.content_get(content["sha1"])["data"]
+    content_data = archive_data.content_get_data(content["sha1"])["data"]
 
     assert resp.status_code == 200
     assert resp["Content-Type"] == "application/octet-stream"
@@ -326,8 +326,7 @@ def test_content_request_errors(client, invalid_sha1, unknown_content):
 @given(content())
 def test_content_bytes_missing(client, archive_data, mocker, content):
     mock_service = mocker.patch("swh.web.browse.utils.service")
-    content_data = archive_data.content_get_metadata(content["sha1"])
-    content_data["data"] = None
+    content_data = archive_data.content_get(content["sha1"])
 
     mock_service.lookup_content.return_value = content_data
     mock_service.lookup_content_filetype.side_effect = Exception()
@@ -575,7 +574,7 @@ def _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releas
 
 
 def _process_content_for_display(archive_data, content):
-    content_data = archive_data.content_get(content["sha1"])
+    content_data = archive_data.content_get_data(content["sha1"])
 
     mime_type, encoding = get_mimetype_and_encoding_for_content(content_data["data"])
 
