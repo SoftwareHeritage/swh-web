@@ -160,10 +160,7 @@ describe('Test Diffs View', function() {
         let startElt = `#${diffId}-unified-diff .hljs-ln-numbers[data-line-number="${startLinesStr}"]`;
         let endElt = `#${diffId}-unified-diff .hljs-ln-numbers[data-line-number="${endLinesStr}"]`;
         cy.get(startElt).click();
-        cy.get('body').type(`{shift}`, {
-          release: false
-        });
-        cy.get(endElt).click();
+        cy.get(endElt).click({shiftKey: true});
 
         // check URL fragment has been updated
         const selectedLinesFragment =
@@ -236,10 +233,7 @@ describe('Test Diffs View', function() {
         let startElt = `#${singleDiffId} .hljs-ln-numbers[data-line-number="${startLine}"]`;
         let endElt = `#${singleDiffId} .hljs-ln-numbers[data-line-number="${endLine}"]`;
         cy.get(startElt).click();
-        cy.get('body').type(`{shift}`, {
-          release: false
-        });
-        cy.get(endElt).click();
+        cy.get(endElt).click({shiftKey: true});
 
         const selectedLinesFragment =
           swh.revision.selectedDiffLinesToFragment(startLines, endLines, false);
@@ -389,10 +383,7 @@ describe('Test Diffs View', function() {
         }
 
         cy.get(startElt).click();
-        cy.get('body').type(`{shift}`, {
-          release: false
-        });
-        cy.get(endElt).click();
+        cy.get(endElt).click({shiftKey: true});
 
         const selectedLinesFragment =
             swh.revision.selectedDiffLinesToFragment(startLines, endLines, false);
