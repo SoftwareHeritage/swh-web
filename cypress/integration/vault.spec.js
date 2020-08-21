@@ -246,7 +246,7 @@ describe('Vault Cooking User Interface Tests', function() {
       }).as('fetchCookedArchive');
 
       cy.get(`#vault-task-${this.directory} .vault-origin a`)
-        .should('have.text', this.origin[0].url)
+        .should('contain', this.origin[0].url)
         .should('have.attr', 'href', `${this.Urls.browse_origin()}?origin_url=${this.origin[0].url}`);
 
       cy.get(`#vault-task-${this.directory} .vault-object-info a`)

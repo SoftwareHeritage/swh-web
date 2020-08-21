@@ -6,6 +6,7 @@
  */
 
 import {handleFetchError, handleFetchErrors, csrfPost} from 'utils/functions';
+import vaultTableRowTemplate from './vault-table-row.ejs';
 
 let progress =
   `<div class="progress">
@@ -152,8 +153,7 @@ function checkVaultCookingTasks() {
       }
       for (let i = 0; i < vaultCookingTasks.length; ++i) {
         let cookingTask = vaultCookingTasks[i];
-
-        let rowTask = $('#vault-task-' + cookingTask.object_id);
+        let rowTask = $(`#vault-task-${cookingTask.object_id}`);
 
         if (!rowTask.length) {
 
@@ -169,53 +169,13 @@ function checkVaultCookingTasks() {
           let progressBar = $.parseHTML(progress)[0];
           let progressBarContent = $(progressBar).find('.progress-bar');
           updateProgressBar(progressBarContent, cookingTask);
-          let tableRow;
-          if (cookingTask.object_type === 'directory') {
-            tableRow =
-              `<tr id="vault-task-${cookingTask.object_id}" ` +
-              `title="Once downloaded, the directory can be extracted with the ` +
-              `following command:\n\n$ tar xvzf ${cookingTask.object_id}.tar.gz">`;
-          } else {
-            tableRow =
-              `<tr id="vault-task-${cookingTask.object_id}"  ` +
-              'title="Once downloaded, the git repository can be imported with the ' +
-              `following commands:\n\n$ git init\n$ zcat ${cookingTask.object_id}.gitfast.gz | ` +
-              'git fast-import">';
-          }
-          tableRow += '<td><div class="custom-control custom-checkbox">';
-          tableRow +=
-            '<input type="checkbox" class="custom-control-input vault-task-toggle-selection" ' +
-            `id="vault-task-toggle-selection-${cookingTask.object_id}"/>`;
-          tableRow +=
-            '<label class="custom-control-label" ' +
-            `for="vault-task-toggle-selection-${cookingTask.object_id}"></label></td>`;
-          if (cookingTask.origin) {
-            tableRow += `<td class="vault-origin">` +
-                        `<a href="${Urls.browse_origin()}?origin_url=${cookingTask.origin}">` +
-                        `${cookingTask.origin}</a></td>`;
-          } else {
-            tableRow += `<td class="vault-origin">unknown</td>`;
-          }
-          tableRow +=
-            `<td><i class="${swh.webapp.getSwhObjectIcon(cookingTask.object_type)} mdi-fw">` +
-            `</i>${cookingTask.object_type}</td>`;
-          tableRow += `<td class="vault-object-info" data-object-id="${cookingTask.object_id}">` +
-                      `<b>id:</b>&nbsp;<a href="${browseUrl}">${cookingTask.object_id}</a>`;
-          if (cookingTask.path) {
-            tableRow += `<br/><b>path:</b>&nbsp;${cookingTask.path}`;
-          }
-          tableRow += '</td>';
-          tableRow += `<td>${progressBar.outerHTML}</td>`;
-          let downloadLink = '';
-          if (cookingTask.status === 'done') {
-            downloadLink =
-              '<button class="btn btn-default btn-sm" ' +
-              `onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')">` +
-              '<i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
-          }
-          tableRow += `<td class="vault-dl-link">${downloadLink}</td>`;
-          tableRow += '</tr>';
-          table.prepend(tableRow);
+          table.prepend(vaultTableRowTemplate({
+            browseUrl: browseUrl,
+            cookingTask: cookingTask,
+            progressBar: progressBar,
+            Urls: Urls,
+            swh: swh
+          }));
         } else {
           let progressBar = rowTask.find('.progress-bar');
           updateProgressBar(progressBar, cookingTask);

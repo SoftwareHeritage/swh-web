@@ -64,10 +64,8 @@ describe('Code highlighting tests', function() {
 
     cy.get(`.hljs-ln-numbers[data-line-number="${lineStart}"]`)
       .click()
-      .get(`body`)
-      .type(`{shift}`, {release: false})
       .get(`.hljs-ln-numbers[data-line-number="${lineEnd}"]`)
-      .click()
+      .click({shiftKey: true})
       .get('.hljs-ln-line')
       .then(lines => {
         for (let line of lines) {
